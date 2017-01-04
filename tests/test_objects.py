@@ -1,8 +1,17 @@
 """Tests for CellProfiler.Objects
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from builtins import *
 import base64
 import bz2
-import cStringIO
+import io
 import unittest
 
 import numpy as np
@@ -612,7 +621,7 @@ class TestObjects(unittest.TestCase):
              'De6/SybK8T9rV90U5O/xI5MgXyH/RCoAXGWIf3s/BLzQhrIjigcqLm2opmGCZcGMA2sAhq67jkkl'
              'yHi9D/Zh1YXpNSuDg3nMuV+zU3OZzbX4YIcrm1mhFDDE04GWL/kNGIbqIbGB6PU7nVrJsrdEwpdC'
              '0586EWcLZ2bTo9dlylZc3P6YeRkHtaKSSX/4u5IpwoSDIuO2gA==')
-        stream = cStringIO.StringIO(bz2.decompress(base64.b64decode(d)))
+        stream = io.StringIO(bz2.decompress(base64.b64decode(d)))
         x = cpo.Objects()
         x.segmented = np.load(stream)
         y = cpo.Objects()

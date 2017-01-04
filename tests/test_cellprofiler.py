@@ -1,6 +1,13 @@
 '''test_cellprofiler - test the CellProfiler command-line interface
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import datetime
 import os
 import shutil
@@ -8,8 +15,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import urllib
-from cStringIO import StringIO
+import urllib.request, urllib.parse, urllib.error
+from io import StringIO
 
 import dateutil.parser
 
@@ -90,7 +97,7 @@ class TestCellProfiler(unittest.TestCase):
             #
             fly_pipe = \
                 "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
-            urllib.URLopener().open(fly_pipe).close()
+            urllib.request.URLopener().open(fly_pipe).close()
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
             self.run_cellprofiler("-c", "-r",

@@ -4,11 +4,22 @@ The knime bridge supports a ZMQ protocol that lets a single client
 run an analysis worker to get pipeline metadata and run a pipeline on
 an image set.
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import bytes
+from builtins import str
+from builtins import range
+from builtins import *
 import logging
 
 logger = logging.getLogger(__name__)
 
-from cStringIO import StringIO
+from io import StringIO
 import json
 import javabridge
 import numpy as np
@@ -255,7 +266,7 @@ class KnimeBridgeServer(threading.Thread):
 
         no_data = ()
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -286,7 +297,7 @@ class KnimeBridgeServer(threading.Thread):
                         sf.append((feature, 0))
                     else:
                         s = data[0]
-                        if isinstance(s, unicode):
+                        if isinstance(s, str):
                             s = s.encode("utf-8")
                         else:
                             s = str(s)
@@ -417,7 +428,7 @@ class KnimeBridgeServer(threading.Thread):
         metadata = [double_features, float_features,
                     int_features, string_features]
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -522,7 +533,7 @@ class KnimeBridgeServer(threading.Thread):
         return pipeline, m, object_set
 
     def raise_pipeline_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, str):
             message = message.encode("utf-8")
         else:
             message = str(message)
@@ -533,7 +544,7 @@ class KnimeBridgeServer(threading.Thread):
                  zmq.Frame(message)])
 
     def raise_cellprofiler_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, str):
             message = message.encode("utf-8")
         else:
             message = str(message)
@@ -611,7 +622,7 @@ class KnimeBridgeServer(threading.Thread):
                     ofeatures[name] = type_idx
         for key in features:
             features[key][cpmeas.IMAGE_NUMBER] = 0
-        features_out = dict([(k, v.items()) for k, v in features.items()])
+        features_out = dict([(k, list(v.items())) for k, v in list(features.items())])
         return jtypes, features_out
 
     def decode_image(self, channel_metadata, buf, grouping_allowed=False):

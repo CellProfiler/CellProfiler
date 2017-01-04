@@ -1,6 +1,17 @@
 """ CellProfiler.Objects.py - represents a labelling of objects in an image
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from builtins import *
+from builtins import object
+from past.utils import old_div
 import centrosome.index
 import centrosome.outline
 import numpy
@@ -236,13 +247,13 @@ class Objects(object):
             # Have to color 2 planes using the same color!
             # There's some chance that overlapping objects will get
             # the same color. Give me more colors to work with please.
-            colors = numpy.vstack([colors] * (1 + len(all_labels) / len(colors)))
+            colors = numpy.vstack([colors] * (1 + old_div(len(all_labels), len(colors))))
         r = numpy.random.mtrand.RandomState()
         alpha = numpy.zeros(all_labels[0][0].shape, numpy.float32)
         order = numpy.lexsort([counts])
         label_colors = []
         for idx, i in enumerate(order):
-            max_available = len(colors) / (len(all_labels) - idx)
+            max_available = old_div(len(colors), (len(all_labels) - idx))
             ncolors = min(counts[i], max_available)
             my_colors = colors[:ncolors]
             colors = colors[ncolors:]
@@ -474,7 +485,7 @@ class Segmentation(object):
             else:
                 self.__shape = tuple(
                         [numpy.max(sparse[axis]) + 2
-                         if axis in sparse.dtype.fields.keys() else 1
+                         if axis in list(sparse.dtype.fields.keys()) else 1
                          for axis in ("c", "t", "z", "y", "x")])
         return self.__shape
 
@@ -600,7 +611,7 @@ class Segmentation(object):
         available_columns = []
         lexsort_columns = []
         for axis in ("c", "t", "z", "y", "x"):
-            if axis in sparse.dtype.fields.keys():
+            if axis in list(sparse.dtype.fields.keys()):
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
                 lexsort_columns.insert(0, sparse[axis])
@@ -780,7 +791,7 @@ class ObjectSet(object):
     def get_object_names(self):
         """Return the names of all of the objects
         """
-        return self.__objects_by_name.keys()
+        return list(self.__objects_by_name.keys())
 
     object_names = property(get_object_names)
 
@@ -793,7 +804,7 @@ class ObjectSet(object):
     def all_objects(self):
         """Return a list of name / objects tuples
         """
-        return self.__objects_by_name.items()
+        return list(self.__objects_by_name.items())
 
     def get_types(self):
         '''Get then names of types of per-image set "things"
@@ -802,7 +813,7 @@ class ObjectSet(object):
         for instance ImageJ data tables. This function returns the thing types
         defined in the object set at this stage of the pipeline.
         '''
-        return self.__types_and_instances.keys()
+        return list(self.__types_and_instances.keys())
 
     def add_type_instance(self, type_name, instance_name, instance):
         '''Add a named instance of a type

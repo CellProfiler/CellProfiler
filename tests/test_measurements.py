@@ -1,7 +1,17 @@
 """ test_Measurements.py - tests for CellProfiler.Measurements
 """
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import *
+from past.utils import old_div
 import base64
 import os
 import sys
@@ -9,7 +19,7 @@ import tempfile
 import unittest
 import uuid
 import zlib
-from cStringIO import StringIO
+from io import StringIO
 
 import h5py
 import numpy as np
@@ -34,7 +44,7 @@ class TestMeasurements(unittest.TestCase):
         for case in test:
             result = cpmeas.Measurements.unwrap_string(
                     cpmeas.Measurements.wrap_string(case))
-            if not isinstance(case, unicode):
+            if not isinstance(case, str):
                 case = case.decode("utf-8")
             self.assertEqual(result, case)
 
@@ -191,10 +201,10 @@ class TestMeasurements(unittest.TestCase):
         bad_order = r.permutation(np.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(cpmeas.IMAGE, "Feature",
-                              unicode(vals[image_number - 1]),
+                              str(vals[image_number - 1]),
                               image_set_number=image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == str(v) for r, v in zip(result, vals)]))
 
     def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
         r = np.random.RandomState()
@@ -203,9 +213,9 @@ class TestMeasurements(unittest.TestCase):
         vals = r.uniform(size=100)
         bad_order = r.permutation(np.arange(1, 101))
         for image_number in bad_order:
-            m[cpmeas.IMAGE, "Feature", image_number] = unicode(vals[image_number - 1])
+            m[cpmeas.IMAGE, "Feature", image_number] = str(vals[image_number - 1])
         result = m[cpmeas.IMAGE, "Feature", :]
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == str(v) for r, v in zip(result, vals)]))
 
     def test_04_03_get_all_image_measurements_unicode(self):
         r = np.random.RandomState()
@@ -218,7 +228,7 @@ class TestMeasurements(unittest.TestCase):
                               vals[image_number - 1],
                               image_set_number=image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == str(v) for r, v in zip(result, vals)]))
 
     def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
         r = np.random.RandomState()
@@ -229,7 +239,7 @@ class TestMeasurements(unittest.TestCase):
         for image_number in bad_order:
             m[cpmeas.IMAGE, "Feature", image_number] = vals[image_number - 1]
         result = m[cpmeas.IMAGE, "Feature", :]
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == str(v) for r, v in zip(result, vals)]))
 
     def test_04_04_get_all_object_measurements(self):
         r = np.random.RandomState()
@@ -527,8 +537,8 @@ class TestMeasurements(unittest.TestCase):
         result = m.get_groupings(["Metadata_A", "Metadata_B"])
         for d, image_numbers in result:
             for image_number in image_numbers:
-                self.assertEqual(d["Metadata_A"], unicode(aa[image_number - 1]))
-                self.assertEqual(d["Metadata_B"], unicode(bb[image_number - 1]))
+                self.assertEqual(d["Metadata_A"], str(aa[image_number - 1]))
+                self.assertEqual(d["Metadata_B"], str(bb[image_number - 1]))
 
     def test_10_01_remove_image_measurement(self):
         m = cpmeas.Measurements()
@@ -1082,7 +1092,7 @@ class TestMeasurements(unittest.TestCase):
         image_numbers2, object_numbers2 = [
             x[order] for x in (image_numbers1, object_numbers1)]
 
-        split = int(len(image_numbers1) / 2)
+        split = int(old_div(len(image_numbers1), 2))
         m.add_relate_measurement(
                 1, "Foo", "O1", "O2",
                 image_numbers1[:split], object_numbers1[:split],
@@ -1179,7 +1189,7 @@ class TestMeasurements(unittest.TestCase):
 
             rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
                   for x in m.get_relationship_groups()]
-            self.assertItemsEqual(d.keys(), rg)
+            self.assertItemsEqual(list(d.keys()), rg)
 
             for key in d:
                 image_numbers2, object_numbers2 = d[key]
@@ -1257,9 +1267,8 @@ class TestMeasurements(unittest.TestCase):
                     np.logical_or,
                     [(image_numbers1 if ii == 0 else image_numbers2) == image_numbers[jj]
                      for ii, jj in zip(i, j)])
-            ei1, eo1, ei2, eo2 = map(
-                    lambda x: x[mask], (image_numbers1, object_numbers1,
-                                        image_numbers2, object_numbers2))
+            ei1, eo1, ei2, eo2 = [x[mask] for x in (image_numbers1, object_numbers1,
+                                        image_numbers2, object_numbers2)]
             eorder = np.lexsort((eo2, ei2, eo1, ei1))
             np.testing.assert_array_equal(ri1[rorder], ei1[eorder])
             np.testing.assert_array_equal(ri2[rorder], ei2[eorder])

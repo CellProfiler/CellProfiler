@@ -1,6 +1,14 @@
 '''test_knime_bridge.py - test the Knime bridge'''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
-from cStringIO import StringIO
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
+from io import StringIO
 import json
 import numpy as np
 import unittest
@@ -178,8 +186,8 @@ class TestKnimeBridge(unittest.TestCase):
 
         image_metadata = [
             ["Foo",
-             [["Y", image.shape[0], image.strides[0] / 8],
-              ["X", image.shape[1], image.strides[1] / 8]]]]
+             [["Y", image.shape[0], old_div(image.strides[0], 8)],
+              ["X", image.shape[1], old_div(image.strides[1], 8)]]]]
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
@@ -280,8 +288,8 @@ class TestKnimeBridge(unittest.TestCase):
 
         image_metadata = [
             ["Foo",
-             [["Y", image.shape[0], image.strides[0] / 8],
-              ["X", image.shape[1], image.strides[1] / 8]]]]
+             [["Y", image.shape[0], old_div(image.strides[0], 8)],
+              ["X", image.shape[1], old_div(image.strides[1], 8)]]]]
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
@@ -326,9 +334,9 @@ class TestKnimeBridge(unittest.TestCase):
 
         image_metadata = [
             ["Foo",
-             [["Z", image.shape[0], image.strides[0] / 8],
-              ["Y", image.shape[1], image.strides[1] / 8],
-              ["X", image.shape[2], image.strides[2] / 8]]]]
+             [["Z", image.shape[0], old_div(image.strides[0], 8)],
+              ["Y", image.shape[1], old_div(image.strides[1], 8)],
+              ["X", image.shape[2], old_div(image.strides[2], 8)]]]]
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),

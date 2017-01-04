@@ -3,9 +3,21 @@
 Image        - Represents an image with secondary attributes such as a mask and labels
 ImageSetList - Represents the list of image filenames that make up a pipeline run
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
-import StringIO
-import cPickle
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import *
+from builtins import object
+from past.utils import old_div
+import io
+import pickle
 import logging
 import math
 import struct
@@ -146,22 +158,22 @@ class Image(object):
             scale = math.pow(2.0, 64.0) - 1
         elif img.dtype.type is numpy.int8:
             scale = math.pow(2.0, 8.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         elif img.dtype.type is numpy.int16:
             scale = math.pow(2.0, 16.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         elif img.dtype.type is numpy.int32:
             scale = math.pow(2.0, 32.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         elif img.dtype.type is numpy.int64:
             scale = math.pow(2.0, 64.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         # Avoid temporaries by doing the shift/scale in place.
@@ -553,7 +565,7 @@ class ImageSet(object):
             if must_be_grayscale:
                 pd = image.pixel_data
 
-                pd = pd.transpose(-1, *range(pd.ndim - 1))
+                pd = pd.transpose(-1, *list(range(pd.ndim - 1)))
 
                 if pd.shape[-1] >= 3 and numpy.all(pd[0] == pd[1]) and numpy.all(pd[0] == pd[2]):
                     return GrayscaleImage(image)
@@ -595,7 +607,7 @@ class ImageSet(object):
 
         name - return the image provider with this name
         """
-        providers = filter(lambda x: x.name == name, self.__image_providers)
+        providers = [x for x in self.__image_providers if x.name == name]
         assert len(providers) > 0, "No provider of the %s image" % name
         assert len(providers) == 1, "More than one provider of the %s image" % name
         return providers[0]
@@ -605,8 +617,7 @@ class ImageSet(object):
 
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(lambda x: x.name != name,
-                                        self.__image_providers)
+        self.__image_providers = [x for x in self.__image_providers if x.name != name]
 
     def clear_image(self, name):
         '''Remove the image memory associated with a provider
@@ -730,7 +741,7 @@ class ImageSetList(object):
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i + 1)
-        return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
+        return keys, [(dict(list(zip(keys, k))), d[k]) for k in sort_order]
 
     def save_state(self):
         '''Return a string that can be used to load the image_set_list's state
@@ -738,14 +749,14 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO.StringIO()
-        cPickle.dump(self.count(), f)
+        f = io.StringIO()
+        pickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            cPickle.dump(image_set.keys, f)
-        cPickle.dump(self.legacy_fields, f)
+            pickle.dump(image_set.keys, f)
+        pickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -755,7 +766,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = cPickle.Unpickler(StringIO.StringIO(state))
+        p = pickle.Unpickler(io.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
@@ -785,5 +796,5 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
-    return u", ".join([u":".join([unicode(y) for y in x])
-                       for x in sorted(key.iteritems())])
+    return u", ".join([u":".join([str(y) for y in x])
+                       for x in sorted(key.items())])

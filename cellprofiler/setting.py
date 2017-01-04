@@ -1,6 +1,19 @@
 """ Setting.py - represents a module setting
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from builtins import *
+from builtins import object
 import logging
 from functools import reduce
 
@@ -152,7 +165,7 @@ class Setting(object):
         override this to do things like compare whether an integer
         setting's value matches a given number
         '''
-        return self.value == unicode(x)
+        return self.value == str(x)
 
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -192,7 +205,7 @@ class Setting(object):
 
         NOTE: strings are deprecated, use unicode_value instead.
         '''
-        if isinstance(self.__value, unicode):
+        if isinstance(self.__value, str):
             return str(utf16encode(self.__value))
         if not isinstance(self.__value, str):
             raise ValidationError("%s was not a string" % self.__value, self)
@@ -203,7 +216,7 @@ class Setting(object):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
-        return unicode(self.value_text)
+        return str(self.value_text)
 
 
 class HiddenCount(Setting):
@@ -239,7 +252,7 @@ class HiddenCount(Setting):
         return str(len(self.__sequence))
 
     def get_unicode_value(self):
-        return unicode(len(self.__sequence))
+        return str(len(self.__sequence))
 
 
 class Text(Setting):
@@ -730,7 +743,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = unicode(value) if isinstance(value, basestring) \
+        str_value = str(value) if isinstance(value, basestring) \
             else self.value_to_str(value)
         self.set_value_text(str_value)
 
@@ -1411,7 +1424,7 @@ class NameSubscriber(Setting):
         """Return true if this subscriber matches the category of the provider"""
         return all([setting.provided_attributes.get(key, None) ==
                     self.__required_attributes[key]
-                    for key in self.__required_attributes.keys()])
+                    for key in list(self.__required_attributes.keys())])
 
     def test_valid(self, pipeline):
         choices = self.get_choices(pipeline)
@@ -1424,7 +1437,7 @@ class NameSubscriber(Setting):
 
 def filter_duplicate_names(name_list):
     '''remove any repeated names from a list of (name, ...) keeping the last occurrence.'''
-    name_dict = dict(zip((n[0] for n in name_list), name_list))
+    name_dict = dict(list(zip((n[0] for n in name_list), name_list)))
     return [name_dict[n[0]] for n in name_list]
 
 
@@ -1601,7 +1614,7 @@ class Binary(Setting):
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
         if value == YES or value == NO or \
-                isinstance(value, str) or isinstance(value, unicode):
+                isinstance(value, str) or isinstance(value, str):
             super(Binary, self).set_value(value)
         else:
             str_value = (value and YES) or NO
@@ -1617,7 +1630,7 @@ class Binary(Setting):
             x = False
         return (self.value and x) or (not self.value and not x)
 
-    def __nonzero__(self):
+    def __bool__(self):
         '''Return the value when testing for True / False'''
         return self.value
 
@@ -1753,7 +1766,7 @@ class MultiChoice(Setting):
     def parse_value(self, value):
         if value is None:
             return ''
-        elif isinstance(value, str) or isinstance(value, unicode):
+        elif isinstance(value, str) or isinstance(value, str):
             return value
         elif hasattr(value, "__getitem__"):
             return ','.join(value)
@@ -3018,7 +3031,7 @@ class Filter(Setting):
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
                 s.append(
-                        cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
+                        cls.FilterPredicate.encode_symbol(str(element.symbol)))
             elif isinstance(element, basestring):
                 s.append(u'"' + cls.encode_literal(element) + u'"')
             else:
@@ -3227,7 +3240,7 @@ class FileCollectionDisplay(Setting):
         if file_tree is None:
             file_tree = self.file_tree
         count = 0
-        for key in file_tree.keys():
+        for key in list(file_tree.keys()):
             if key is None:
                 pass
             elif isinstance(file_tree[key], dict):
@@ -3261,7 +3274,7 @@ class FileCollectionDisplay(Setting):
     def get_all_modpaths(self, tree):
         '''Get all sub-modpaths from the branches of the given tree'''
         result = []
-        for key in tree.keys():
+        for key in list(tree.keys()):
             if key is None:
                 continue
             elif not isinstance(tree[key], dict):
@@ -3307,7 +3320,7 @@ class FileCollectionDisplay(Setting):
                     #
                     # Remove whole tree
                     #
-                    for key in subtree.keys():
+                    for key in list(subtree.keys()):
                         if key is None:
                             continue
                         if isinstance(subtree[key], dict):
@@ -3351,7 +3364,7 @@ class FileCollectionDisplay(Setting):
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
         kept = [tree[k][None] if isinstance(tree[k], dict)
                 else tree[k]
-                for k in tree.keys() if k is not None]
+                for k in list(tree.keys()) if k is not None]
         tree[None] = any(kept)
 
     def get_node_info(self, path):
@@ -3655,7 +3668,7 @@ class Joiner(Setting):
         all_names = {}
         best_name = None
         best_count = 0
-        for value_list in self.entities.values():
+        for value_list in list(self.entities.values()):
             for value in value_list:
                 if value in all_names:
                     all_names[value] += 1
@@ -3668,7 +3681,7 @@ class Joiner(Setting):
             return []
         else:
             return [dict([(k, best_name if best_name in self.entities[k]
-            else None) for k in self.entities.keys()])]
+            else None) for k in list(self.entities.keys())])]
 
     def build(self, dictionary_list):
         '''Build a value from a list of dictionaries'''
@@ -3688,7 +3701,7 @@ class Joiner(Setting):
                     "This setting needs to be initialized by choosing items from each column",
                     self)
         for d in join:
-            for column_name, value in d.items():
+            for column_name, value in list(d.items()):
                 if column_name in self.entities and \
                         (value not in self.entities[column_name] and
                                  value is not None):
@@ -3794,7 +3807,7 @@ class NumberConnector(object):
         return int(self.__fn())
 
     def __long__(self):
-        return long(self.__fn())
+        return int(self.__fn())
 
     def __float__(self):
         return float(self.__fn())
@@ -3862,7 +3875,7 @@ class AfterChangeSettingEvent(ChangeSettingEvent):
         ChangeSettingEvent.__init__(self, old_value, new_value)
 
 
-class DeleteSettingEvent:
+class DeleteSettingEvent(object):
     def __init__(self):
         pass
 

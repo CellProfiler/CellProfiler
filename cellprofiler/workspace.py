@@ -1,10 +1,19 @@
 """workspace.py - the workspace for an imageset
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import *
+from builtins import object
 import logging
 
 logger = logging.getLogger(__name__)
-from cStringIO import StringIO
+from io import StringIO
 import numpy as np
 import h5py
 import os
@@ -239,7 +248,7 @@ class Workspace(object):
 
     def get_outline_names(self):
         """The names of outlines of objects"""
-        return self.__outlines.keys()
+        return list(self.__outlines.keys())
 
     def add_outline(self, name, outline):
         """Add an object outline to the workspace"""

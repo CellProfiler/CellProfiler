@@ -18,6 +18,16 @@ the analysis worker runs three threads:
                    stops the main thread's run loop.
 """
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import map
+from builtins import str
+from builtins import *
+from builtins import object
 import logging
 import os
 import sys
@@ -119,10 +129,10 @@ if __name__ == "__main__":
 
 import time
 import threading
-import thread
+import _thread
 import random
 import zmq
-import cStringIO as StringIO
+import io as StringIO
 import traceback
 from weakref import WeakSet
 
@@ -238,7 +248,7 @@ class AnalysisWorker(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        for m in self.initial_measurements.values():
+        for m in list(self.initial_measurements.values()):
             m.close()
         self.initial_measurements = {}
 
@@ -489,12 +499,12 @@ class AnalysisWorker(object):
         # we write args and kwargs into the InteractionRequest to allow
         # more complex data to be sent by the underlying zmq machinery.
         arg_kwarg_dict = dict([('arg_%d' % idx, v) for idx, v in enumerate(args)] +
-                              [('kwarg_%s' % name, v) for (name, v) in kwargs.items()])
+                              [('kwarg_%s' % name, v) for (name, v) in list(kwargs.items())])
         req = InteractionRequest(
                 self.current_analysis_id,
                 module_num=module.module_num,
                 num_args=len(args),
-                kwargs_names=kwargs.keys(),
+                kwargs_names=list(kwargs.keys()),
                 **arg_kwarg_dict)
         rep = self.send(req)
         return rep.result
@@ -612,7 +622,7 @@ class AnalysisWorker(object):
                         if self.current_analysis_id in announcement:
                             analysis_id = self.current_analysis_id
                         else:
-                            analysis_id = random.choice(announcement.keys())
+                            analysis_id = random.choice(list(announcement.keys()))
                         return analysis_id, announcement[analysis_id]
         finally:
             announce_socket.close()
@@ -747,8 +757,8 @@ def exit_on_stdin_close():
 
 def start_daemon_thread(target=None, args=(), name=None):
     thread = threading.Thread(target=target, args=args, name=name)
-    thread.daemon = True
-    thread.start()
+    _thread.daemon = True
+    _thread.start()
 
 
 if __name__ == "__main__":

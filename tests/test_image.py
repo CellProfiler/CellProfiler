@@ -1,6 +1,14 @@
 """test_Image.py - test the CellProfiler.Image module
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
 import math
 import unittest
 
@@ -290,6 +298,6 @@ class TestImageSetList(unittest.TestCase):
         y.load_state(s)
         self.assertEquals(y.count(), 5)
         self.assertTrue('dictionary' in y.legacy_fields)
-        for key in d.keys():
+        for key in list(d.keys()):
             self.assertTrue(key in y.legacy_fields['dictionary'])
             self.assertEqual(y.legacy_fields['dictionary'][key], d[key])

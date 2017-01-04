@@ -2,7 +2,24 @@
 """
 from __future__ import with_statement
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import chr
+from builtins import map
+from builtins import zip
+from builtins import next
+from builtins import str
+from builtins import filter
+from builtins import range
+from past.builtins import basestring
+from builtins import *
+from past.utils import old_div
+from builtins import object
 import bisect
 import csv
 import hashlib
@@ -23,16 +40,16 @@ except:
     has_mat_read_error = False
 
 import os
-import StringIO  # XXX - replace with cStringIO?
+import io  # XXX - replace with cStringIO?
 import sys
 import tempfile
 import traceback
 import datetime
 import traceback
 import threading
-import urlparse
-import urllib
-import urllib2
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import re
 import numpy
 
@@ -229,8 +246,8 @@ def add_all_images(handles, image_set, object_set):
         if objects.has_small_removed_segmented():
             images['SmallRemovedSegmented' + object_name] = objects.small_removed_segmented
 
-    npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
-    for key, image in images.iteritems():
+    npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(images.keys())))
+    for key, image in list(images.items()):
         npy_images[key][0, 0] = image
     handles[PIPELINE] = npy_images
 
@@ -266,7 +283,7 @@ def map_feature_names(feature_names, max_size=63):
                             break
                 if remove_count == to_remove:
                     break
-            if name in mapping.keys() or len(name) > max_size:
+            if name in list(mapping.keys()) or len(name) > max_size:
                 # Panic mode - a duplication
                 if not seeded:
                     np.random.seed(0)
@@ -277,7 +294,7 @@ def map_feature_names(feature_names, max_size=63):
                     indices.sort()
                     name = npname[indices]
                     name = name.tostring()
-                    if not name in mapping.keys():
+                    if not name in list(mapping.keys()):
                         break
         else:
             name = feature_name
@@ -302,10 +319,10 @@ def add_all_measurements(handles, measurements):
         if object_name == cpmeas.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         object_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[object_name][0, 0] = object_measurements
-        for field, feature_name in mapping.iteritems():
+        for field, feature_name in list(mapping.items()):
             feature_measurements = np.ndarray((1, max_image_number),
                                               dtype='object')
             object_measurements[field][0, 0] = feature_measurements
@@ -321,10 +338,10 @@ def add_all_measurements(handles, measurements):
                     feature_measurements[0, i - 1] = np.zeros(0)
     if cpmeas.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(measurements.get_feature_names(cpmeas.EXPERIMENT))
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[cpmeas.EXPERIMENT][0, 0] = experiment_measurements
-        for field, feature_name in mapping.iteritems():
+        for field, feature_name in list(mapping.items()):
             feature_measurements = np.ndarray((1, 1), dtype='object')
             feature_measurements[0, 0] = measurements.get_experiment_measurement(feature_name)
             experiment_measurements[field][0, 0] = feature_measurements
@@ -367,7 +384,7 @@ class ImagePlaneDetails(object):
     def path(self):
         '''The file path if a file: URL, otherwise the URL'''
         if self.url.startswith("file:"):
-            return urllib.url2pathname(self.url[5:]).decode('utf8')
+            return urllib.request.url2pathname(self.url[5:]).decode('utf8')
         return self.url
 
     @property
@@ -477,7 +494,7 @@ def write_file_list(file_or_fd, file_list):
             len(file_list)))
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:
-            if isinstance(url, unicode):
+            if isinstance(url, str):
                 url = url.encode("utf-8")
             url = url.encode("string_escape").replace('"', r'\"')
             line = "\"%s\",,,\n" % url
@@ -580,7 +597,7 @@ class Pipeline(object):
 
     def copy(self, save_image_plane_details=True):
         '''Create a copy of the pipeline modules and settings'''
-        fd = StringIO.StringIO()
+        fd = io.StringIO()
         self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
@@ -674,7 +691,7 @@ class Pipeline(object):
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload
-            fd = StringIO.StringIO()
+            fd = io.StringIO()
             self.save(fd)
             fd.seek(0)
             self.loadtxt(fd, raise_on_error=True)
@@ -764,7 +781,7 @@ class Pipeline(object):
         elif hasattr(fd_or_filename, 'read') and hasattr(fd_or_filename, 'url'):
             # This is a URL file descriptor. Read into a StringIO so that
             # seek is available.
-            fd = StringIO.StringIO()
+            fd = io.StringIO()
             while True:
                 text = fd_or_filename.read()
                 if len(text) == 0:
@@ -778,10 +795,10 @@ class Pipeline(object):
             filename = fd_or_filename
         else:
             # Assume is string URL
-            parsed_path = urlparse.urlparse(fd_or_filename)
+            parsed_path = urllib.parse.urlparse(fd_or_filename)
             if len(parsed_path.scheme) < 2:
                 raise IOError("Could not find file, " + fd_or_filename)
-            fd = urllib2.urlopen(fd_or_filename)
+            fd = urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
@@ -804,7 +821,7 @@ class Pipeline(object):
                 m = cpmeas.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
                 pipeline_text = pipeline_text.encode('us-ascii')
-                self.load(StringIO.StringIO(pipeline_text))
+                self.load(io.StringIO(pipeline_text))
                 return
 
         if has_mat_read_error:
@@ -871,7 +888,7 @@ class Pipeline(object):
                 return None
 
         header = rl()
-        if not self.is_pipeline_txt_fd(StringIO.StringIO(header)):
+        if not self.is_pipeline_txt_fd(io.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
         version = NATIVE_VERSION
         from_matlab = False
@@ -916,9 +933,9 @@ class Pipeline(object):
            pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
-                int(pipeline_version / (100 ** i)) % 100
+                int(old_div(pipeline_version, (100 ** i))) % 100
                 for i in range(5)]
-            year = int(pipeline_version / (100 ** 5))
+            year = int(old_div(pipeline_version, (100 ** 5)))
             pipeline_date = datetime.datetime(
                 year, month, day, hour, minute, second).strftime(" @ %c")
         else:
@@ -967,7 +984,7 @@ class Pipeline(object):
         new_modules = []
         module_number = 1
         skip_attributes = ['svn_version', 'module_num']
-        for i in xrange(module_count):
+        for i in range(module_count):
             line = rl()
             if line is None:
                 break
@@ -1173,7 +1190,7 @@ class Pipeline(object):
                                   attribute_string))
             for setting in module.settings():
                 setting_text = setting.text
-                if isinstance(setting_text, unicode):
+                if isinstance(setting_text, str):
                     setting_text = setting_text.encode('utf-8')
                 else:
                     setting_text = str(setting_text)
@@ -1219,8 +1236,8 @@ class Pipeline(object):
         # For the output file, you have to bury it a little deeper - the root has to have
         # a single field named "handles"
         #
-        root = {'handles': np.ndarray((1, 1), dtype=make_cell_struct_dtype(handles.keys()))}
-        for key, value in handles.iteritems():
+        root = {'handles': np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(handles.keys())))}
+        for key, value in list(handles.items()):
             root['handles'][key][0, 0] = value
         self.savemat(filename, root)
 
@@ -1235,7 +1252,7 @@ class Pipeline(object):
                         created by CreateBatchFiles.
         '''
         assert (isinstance(m, cpmeas.Measurements))
-        fd = StringIO.StringIO()
+        fd = io.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT,
                           M_USER_PIPELINE if user_pipeline else M_PIPELINE,
@@ -1276,7 +1293,7 @@ class Pipeline(object):
             image_tools = []
         image_tools.insert(0, 'Image tools')
         npy_image_tools = np.ndarray((1, len(image_tools)), dtype=np.dtype('object'))
-        for tool, idx in zip(image_tools, range(0, len(image_tools))):
+        for tool, idx in zip(image_tools, list(range(0, len(image_tools)))):
             npy_image_tools[0, idx] = tool
 
         current = np.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
@@ -1316,7 +1333,7 @@ class Pipeline(object):
                     images[provider.name] = image.image
                 if image.mask is not None:
                     images['CropMask' + provider.name] = image.mask
-            for key, value in image_set.legacy_fields.iteritems():
+            for key, value in list(image_set.legacy_fields.items()):
                 if key != NUMBER_OF_IMAGE_SETS:
                     images[key] = value
 
@@ -1329,10 +1346,10 @@ class Pipeline(object):
                     images['SmallRemovedSegmented' + name] = objects.small_removed_segmented
 
         if len(images):
-            pipeline_dtype = make_cell_struct_dtype(images.keys())
+            pipeline_dtype = make_cell_struct_dtype(list(images.keys()))
             pipeline = np.ndarray((1, 1), dtype=pipeline_dtype)
             handles[PIPELINE] = pipeline
-            for name, image in images.items():
+            for name, image in list(images.items()):
                 pipeline[name][0, 0] = images[name]
 
         no_measurements = (measurements is None or len(measurements.get_object_names()) == 0)
@@ -1566,7 +1583,7 @@ class Pipeline(object):
         keys, groupings = self.get_groupings(workspace)
 
         if grouping is not None and set(keys) != set(grouping.keys()):
-            raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (", ".join(grouping.keys()), ", ".join(keys)))
+            raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (", ".join(list(grouping.keys())), ", ".join(keys)))
 
         for gn, (grouping_keys, image_numbers) in enumerate(groupings):
             if grouping is not None and grouping != grouping_keys:
@@ -2246,8 +2263,8 @@ class Pipeline(object):
         if not m:
             m = re.findall('\\\\g[<](.+?)[>]', pattern)
         if m:
-            m = filter((lambda x: not any(
-                    [x.startswith(y) for y in (cpmeas.C_SERIES, cpmeas.C_FRAME)])), m)
+            m = list(filter((lambda x: not any(
+                    [x.startswith(y) for y in (cpmeas.C_SERIES, cpmeas.C_FRAME)])), m))
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
@@ -2468,14 +2485,14 @@ class Pipeline(object):
         n = len(urls)
         for i, url in enumerate(urls):
             if i % 100 == 0:
-                path = urlparse.urlparse(url).path
+                path = urllib.parse.urlparse(url).path
                 if "/" in path:
                     filename = path.rsplit("/", 1)[1]
                 else:
                     filename = path
-                filename = urllib.url2pathname(filename)
+                filename = urllib.request.url2pathname(filename)
                 cpprefs.report_progress(
-                        uid, float(i) / n,
+                        uid, old_div(float(i), n),
                              u"Adding %s" % filename)
             pos = bisect.bisect_left(self.__file_list, url, start)
             if (pos == len(self.file_list) or
@@ -2571,9 +2588,9 @@ class Pipeline(object):
                 with open(pathname, "r") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
-                import urllib2
+                import urllib.request, urllib.error, urllib.parse
                 try:
-                    fd = urllib2.urlopen(pathname)
+                    fd = urllib.request.urlopen(pathname)
                     self.read_file_list(fd, add_undo=add_undo)
                 finally:
                     fd.close()
@@ -2582,8 +2599,8 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             return
         self.add_pathnames_to_file_list(
-                map((lambda x: x.strip()),
-                    filter((lambda x: len(x) > 0), path_or_fd)),
+                list(map((lambda x: x.strip()),
+                    list(filter((lambda x: len(x) > 0), path_or_fd)))),
                 add_undo=add_undo)
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
@@ -2853,7 +2870,7 @@ class Pipeline(object):
             pipeline.add_module(module2)
         '''
 
-        class UndoableAction:
+        class UndoableAction(object):
             def __init__(self, pipeline, name):
                 self.pipeline = pipeline
                 self.name = name
@@ -2925,7 +2942,7 @@ class Pipeline(object):
         module_num = new_module.module_num
         idx = module_num - 1
         self.__modules = self.__modules[:idx] + [new_module] + self.__modules[idx:]
-        for module, mn in zip(self.__modules[idx + 1:], range(module_num + 1, len(self.__modules) + 1)):
+        for module, mn in zip(self.__modules[idx + 1:], list(range(module_num + 1, len(self.__modules) + 1))):
             module.module_num = mn
         self.notify_listeners(ModuleAddedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification))
@@ -2998,13 +3015,13 @@ class Pipeline(object):
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            url = "file:" + urllib.pathname2url(path)
+            url = "file:" + urllib.request.pathname2url(path)
             ipd = ImagePlaneDetails(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
     def wp_add_image_metadata(self, path, metadata):
-        self.add_image_metadata("file:" + urllib.pathname2url(path), metadata)
+        self.add_image_metadata("file:" + urllib.request.pathname2url(path), metadata)
 
     def add_image_metadata(self, url, metadata, ipd=None):
         if metadata.image_count == 1:
@@ -3884,14 +3901,14 @@ def encapsulate_strings_in_arrays(handles):
         # cells - descend recursively
         flat = handles.flat
         for i in range(0, len(flat)):
-            if isinstance(flat[i], str) or isinstance(flat[i], unicode):
+            if isinstance(flat[i], str) or isinstance(flat[i], str):
                 flat[i] = encapsulate_string(flat[i])
             elif isinstance(flat[i], numpy.ndarray):
                 encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
-        for field in handles.dtype.fields.keys():
-            if isinstance(handles[field], str) or isinstance(handles[field], unicode):
+        for field in list(handles.dtype.fields.keys()):
+            if isinstance(handles[field], str) or isinstance(handles[field], str):
                 handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field], numpy.ndarray):
                 encapsulate_strings_in_arrays(handles[field])

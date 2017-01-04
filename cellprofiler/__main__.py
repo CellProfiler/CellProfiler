@@ -1,4 +1,11 @@
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import *
 import bioformats.formatreader
 import ctypes
 import cellprofiler
@@ -11,7 +18,7 @@ import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
-import cStringIO
+import io
 import h5py
 import json
 import logging
@@ -578,7 +585,7 @@ def get_batch_commands(filename):
     groupings = m.get_groupings(metadata_tags)
 
     for grouping in groupings:
-        group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
+        group_string = ",".join(["%s=%s" % (k, v) for k, v in list(grouping[0].items())])
 
         print("CellProfiler -c -r -p %s -g %s" % (filename, group_string))
 
@@ -654,7 +661,7 @@ def run_pipeline_headless(options, args):
 
         pipeline_text = pipeline_text.encode('us-ascii')
 
-        pipeline.load(cStringIO.StringIO(pipeline_text))
+        pipeline.load(io.StringIO(pipeline_text))
 
         if not pipeline.in_batch_mode():
             #

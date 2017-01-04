@@ -1,4 +1,14 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import *
+from builtins import object
 import os
 import re
 import sys
@@ -241,7 +251,7 @@ class Module(object):
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
         setting = handles[cpp.SETTINGS][0, 0]
-        setting[cpp.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
+        setting[cpp.MODULE_NAMES][0, module_idx] = str(self.module_class())
         setting[cpp.MODULE_NOTES][0, module_idx] = np.ndarray(shape=(len(self.notes), 1), dtype='object')
         for i in range(0, len(self.notes)):
             setting[cpp.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
@@ -251,9 +261,9 @@ class Module(object):
             if len(str(variable)) > 0:
                 setting[cpp.VARIABLE_VALUES][module_idx, i] = variable.get_unicode_value()
             if isinstance(variable, cps.NameProvider):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode("%s indep" % variable.group)
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = str("%s indep" % variable.group)
             elif isinstance(variable, cps.NameSubscriber):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(variable.group)
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = str(variable.group)
         setting[cpp.VARIABLE_REVISION_NUMBERS][0, module_idx] = self.variable_revision_number
         setting[cpp.MODULE_REVISION_NUMBERS][0, module_idx] = 0
         setting[cpp.SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0

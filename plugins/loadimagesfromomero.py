@@ -28,10 +28,19 @@ In the above example the pipeline "mypipeline" will be run with "1" as omero obj
 </ul>
 '''
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
 # module author: Bram Gerritsen
 # e-mail: b.gerritsen@nki.nl
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import *
+from past.utils import old_div
 import traceback
 
 import numpy as np
@@ -413,7 +422,7 @@ class OmeroLoadImages(cpm.Module):
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
         p.map = {}
-        p.map["oid"] = rlong(long(dataset_id))
+        p.map["oid"] = rlong(int(dataset_id))
         if limit is not None:
             f = omero.sys.Filter()
             f.limit = rint(int(limit))
@@ -433,7 +442,7 @@ class OmeroLoadImages(cpm.Module):
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
         p.map = {}
-        p.map["oid"] = rlong(long(plate_id))
+        p.map["oid"] = rlong(int(plate_id))
         if limit is not None:
             f = omero.sys.Filter()
             f.limit = rint(int(limit))
@@ -467,7 +476,7 @@ class OmeroLoadImages(cpm.Module):
     def load_image_set_info(self, image_set):
         '''Loads the image set information, creating the providers'''
         d = self.get_dictionary(image_set)
-        for image_name in d.keys():
+        for image_name in list(d.keys()):
             values = d[image_name]
             provider, version = values[:2]
             if (provider, version) == (P_OMERO, V_OMERO):
@@ -544,7 +553,7 @@ class OmeroLoadImages(cpm.Module):
                 row.append(value)
                 ratio.append(r)
             statistics = [header, row]
-            ratio = [x / sum(ratio) for x in ratio]
+            ratio = [old_div(x, sum(ratio)) for x in ratio]
             statistics_dict[channel.channel_number.value] = statistics
             ratio_dict[channel.channel_number.value] = ratio
 
@@ -641,7 +650,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
         '''
         self.__name = name
         self.__gateway = gateway
-        self.__pixels_id = long(pixels_id)
+        self.__pixels_id = int(pixels_id)
         self.__z = int(z)
         self.__c = int(c)
         self.__t = int(t)
@@ -709,7 +718,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
 
         image = np.frombuffer(omero_image_plane, dtype)
         image.shape = (height, width)
-        image = image.astype(np.float32) / float(scale)
+        image = old_div(image.astype(np.float32), float(scale))
         image = cpimage.Image(image)
         self.__cpimage_data = image
         self.__is_cached = True

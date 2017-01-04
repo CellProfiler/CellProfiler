@@ -5,7 +5,18 @@
            Create a function to populate a handles structure with preferences.
 """
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
+from builtins import str
+from builtins import range
+from builtins import *
+from past.utils import old_div
+from builtins import object
 import logging
 import multiprocessing
 import os
@@ -510,7 +521,7 @@ def remove_image_directory_listener(listener):
         __image_directory_listeners.remove(listener)
 
 
-class PreferenceChangedEvent:
+class PreferenceChangedEvent(object):
     def __init__(self, new_value):
         self.new_value = new_value
 
@@ -913,7 +924,7 @@ def set_data_file(path):
 
 
 def standardize_default_folder_names(setting_values, slot):
-    if setting_values[slot] in FOLDER_CHOICE_TRANSLATIONS.keys():
+    if setting_values[slot] in list(FOLDER_CHOICE_TRANSLATIONS.keys()):
         replacement = FOLDER_CHOICE_TRANSLATIONS[setting_values[slot]]
     elif (setting_values[slot].startswith("Default Image") or
               setting_values[slot].startswith("Default image") or
@@ -1416,7 +1427,7 @@ def set_jvm_heap_mb(value, save_config=True):
         value_mb = int(value)
     except:
         if value.lower().endswith("k"):
-            value_mb = int(value[:-1]) / 1000
+            value_mb = old_div(int(value[:-1]), 1000)
         elif value.lower().endswith("m"):
             value_mb = int(value[:-1])
         elif value.lower().endswith("g"):
@@ -1718,12 +1729,12 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
         if n_items < 100:
             freq = 1
         else:
-            freq = (n_items + 99) / 100
+            freq = old_div((n_items + 99), 100)
     output = []
     uid = uuid.uuid4()
     for i in range(0, n_items, freq):
-        report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
-        output += map(fn_map, sequence[i:i + freq])
+        report_progress(uuid, old_div(float(i), n_items), fn_report(sequence[i]))
+        output += list(map(fn_map, sequence[i:i + freq]))
     report_progress(uuid, 1, "Done")
     return output
 

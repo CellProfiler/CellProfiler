@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 """ test_haralick -- tests for centrosome.haralick
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import map
+from builtins import *
+from past.utils import old_div
 import unittest
 
 import centrosome.haralick as haralick
 import numpy as np
 
 gray4 = np.array([[0, 0, 1, 1], [0, 0, 1, 1], [0, 2, 2, 2], [2, 2, 3, 3]])
-gray = gray4 / (1.0 * gray4.max())
+gray = old_div(gray4, (1.0 * gray4.max()))
 labels = np.ones((4, 4), dtype='int32')
 
 
@@ -31,7 +41,7 @@ class TestHaralick(unittest.TestCase):
     def test_cooccurrence(self):
         P, levels = haralick.cooccurrence(gray4, labels, 0, 1)
         correct = np.array([[[2, 2, 1, 0], [0, 2, 0, 0], [0, 0, 3, 1], [0, 0, 0, 1]]], float)
-        correct = correct / np.sum(correct)
+        correct = old_div(correct, np.sum(correct))
         self.assertEqual(levels, 4)
         self.assertTrue((P == correct).all())
 
@@ -94,7 +104,7 @@ class TestHaralick(unittest.TestCase):
     def test_all_01(self):
         h = haralick.Haralick(gray, labels, 0, 1, nlevels=4)
         fv = h.all()
-        self.assertTrue((np.array(map(len, fv)) == 1).all())
+        self.assertTrue((np.array(list(map(len, fv))) == 1).all())
 
     def test_01_01_regression_edge(self):
         '''Test coocurrence with an object smaller than the scal near the edge.

@@ -40,6 +40,14 @@ class Objects(object):
         self.__parent_image = None
 
     @property
+    def dimensions(self):
+        if self.__parent_image:
+            return self.__parent_image.dimensions
+
+        shape = self.shape
+
+        return len(shape)
+
     def masked(self):
         mask = self.parent_image.mask
 

@@ -404,7 +404,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
             src_max = self.source_high.value
         return src_min, src_max
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # wants_automatic_low (# 3) and wants_automatic_high (# 4)

@@ -48,6 +48,11 @@ class Objects(object):
 
         return len(shape)
 
+    @property
+    def volumetric(self):
+        return self.dimensions is 3
+
+    @property
     def masked(self):
         mask = self.parent_image.mask
 

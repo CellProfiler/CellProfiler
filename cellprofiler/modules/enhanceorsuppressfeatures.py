@@ -282,7 +282,11 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
 
-        result_image = cellprofiler.image.Image(result, parent_image=image)
+        result_image = cellprofiler.image.Image(
+            result,
+            parent_image=image,
+            dimensions=image.dimensions
+        )
 
         workspace.image_set.add(self.y_name.value, result_image)
 

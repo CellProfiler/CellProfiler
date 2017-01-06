@@ -1077,9 +1077,15 @@ class Figure(wx.Frame):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
     def gridshow(self, x, y, image, cmap='gray'):
-        gx = self.__gridspec.get_geometry()[0]
+        gx, gy = self.__gridspec.get_geometry()
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=self.__gridspec[gx * x + y], wspace=0.1, hspace=0.1)
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
+            3,
+            3,
+            subplot_spec=self.__gridspec[gy * y + x],
+            wspace=0.1,
+            hspace=0.1
+        )
 
         z = image.shape[0]
 
@@ -1096,7 +1102,11 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
-            ax.imshow(image[position * (z - 1) / 8], cmap=cmap, norm=matplotlib.colors.LogNorm(vmin=vmin, vmax=vmax))
+            ax.imshow(
+                image[position * (z - 1) / 8],
+                cmap=cmap,
+                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+            )
 
             self.figure.add_subplot(ax)
 

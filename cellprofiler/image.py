@@ -100,7 +100,7 @@ class Image(object):
 
         self.dimensions = dimensions
 
-        self.spacing = spacing
+        self.__spacing = spacing
 
     @property
     def multichannel(self):
@@ -112,6 +112,20 @@ class Image(object):
             return True
 
         return False
+
+    @property
+    def spacing(self):
+        if self.__spacing is not None:
+            return self.__spacing
+
+        if self.parent_image is None:
+            return (1.0,) * self.dimensions
+
+        return self.parent_image.spacing
+
+    @spacing.setter
+    def spacing(self, spacing):
+        self.__spacing = spacing
 
     def get_image(self):
         """Return the primary image"""
@@ -222,12 +236,10 @@ class Image(object):
         #
         # Exclude channel, if present, from shape
         #
-        if image.ndim == 2:
-            shape = image.shape
-        elif image.ndim == 3:
-            shape = image.shape[:2]
+        if self.multichannel:
+            shape = image.shape[:-1]
         else:
-            shape = image.shape[1:]
+            shape = image.shape
 
         return numpy.ones(shape, dtype=numpy.bool)
 

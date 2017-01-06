@@ -28,28 +28,6 @@ THRESHOLD_IMAGE_NAME = "threshold"
 
 
 class TestIdentifySecondaryObjects(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        u64data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBUaHUgRmViIDE5IDE1OjQyOjQyIDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAyAIAAHic7VjLjtMwFHWfGqAalRmBYFZZshiGRIDEkqegErQVHY3E0k3cYOTEVeIMLV/DZ7BgMWu+iQVOm7SuJ2ncJM1ssGRF1/U5vvf4+sbpIQBAvw9Amz8PeK+DZWtFdk3ooT1CjGHX9lugCR5E41e8X0APwzFBF5AEyAerFo/33Ak9n09XP32iVkBQHzriZN76gTNGnj+YxMDo5yGeITLCPxDYbPG0z+gS+5i6ET7il0dX61ImrXvI+8/OWoeapEOD92NhPJz/EqznNxN06wrzu1E/RzP2+N0MmkxzIDO/hjwvMngOJJ7QHnjYfs2lVsG3JXx7obNJEF7GoWfg6xv4OvhuLHFF183CtyR8aL9BhPhADV9Ut6T1Df30mQ7U9v+OhA/toUen0IaMJ+ViXIXntsQT2m+p5lKmBX50IFT2sbHB0wBf+BkoQ8eq/JfzsE/z78OA+YH2ntAxJKv1q4ojbR+ycLUNXA0YJftdlo67xq+fGpXqn6ZjFq65gWsC/Uw3bjJvYt12PTeGnk+npwV1yoF7XmV+35J4QrvnMuT6mM2BOo+qPx8yeO5KPKGNXQtfYiuARMMOtFe3mDLjy1uH91W/k/x+FTDKL1DYFPxW9V/O67MC+m3zIw+f7cG5b0KCBJ6875Oi+Cz/VfNc1Y+8+VG2H7Ie7hNYyj4U1SHGX7W2f6eIdWOXfEzScVFkbI8GU3WepHsCHX9DJlsTiX7lqYMCn8ZrIprukS8r3qTvvLVuS7q0/W9LfHGL+eoCTn5m+VXWft5UfHl5/sdTTTxpz6zzdyT5G9o0YAS76NoB3GXdfT33FU+3ll7H5fdJ3vP+kUKrJ1wUVeK5J/GEds9CLsOT+dDDjnjnyVtvY74RMqlrQS/t/innp6xLnVtHx53SvvtU1mt1Gtf+N8nCNaM5f09+n/x5uFz3F9ht/x9tmR+3qub/A5FILLM='
-        data = base64.b64decode(u64data)
-        p = cpp.Pipeline()
-        fd = StringIO.StringIO(data)
-        p.load(fd)
-        self.assertTrue(len(p.modules()) == 3)
-        module = p.modules()[2]
-        self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
-        self.assertEqual(module.primary_objects.value, "Nuclei")
-        self.assertEqual(module.objects_name.value, "Cells")
-        self.assertEqual(module.method.value, cpmi2.M_PROPAGATION)
-        self.assertEqual(module.image_name.value, "OrigBlue")
-        self.assertEqual(module.threshold_method.value, cpmi.TM_OTSU)
-        self.assertEqual(module.threshold_scope, cpmi.TM_GLOBAL)
-        self.assertEqual(module.threshold_correction_factor.value, 1)
-        self.assertEqual(module.threshold_range.min, 0)
-        self.assertEqual(module.threshold_range.max, 1)
-        self.assertEqual(module.distance_to_dilate.value, 10)
-        self.assertEqual(module.regularization_factor.value, 0.05)
-        self.assertEqual(module.threshold_smoothing_choice, cpmi.TSM_NONE)
-
     def test_01_02_load_v2(self):
         data = ('eJztWt1u2zYUlh0nSFZ0a9OLDugNL5suNiQ3xtJgSO3G/fEWu0bjtS'
                 'iKbmMk2uZAk4ZEpXGLAnuUPUYv+zi97CNUdCRLZpVIkeM/QAQI+Rzx'

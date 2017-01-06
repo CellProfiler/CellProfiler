@@ -204,50 +204,20 @@ class ApplyThreshold(Identify):
         return self.get_threshold_measurement_objects(
                 pipeline, object_name, category, measurement)
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number, module_name,
-                         from_matlab):
-        if from_matlab and variable_revision_number < 4:
-            raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
-                                        "ApplyThreshold with revision < 4")
-        if from_matlab and variable_revision_number == 4:
-            setting_values = [setting_values[0],  # ImageName
-                              setting_values[1],  # ThresholdedImageName
-                              None,
-                              None,
-                              None,
-                              setting_values[2],  # LowThreshold
-                              setting_values[3],  # Shift
-                              setting_values[4],  # HighThreshold
-                              setting_values[5],  # DilationValue
-                              TM_MANUAL,  # Manual thresholding
-                              setting_values[6],  # BinaryChoice
-                              "0,1",  # Threshold range
-                              "1",  # Threshold correction factor
-                              ".2",  # Object fraction
-                              cps.NONE  # Enclosing objects name
-                              ]
-            setting_values[2] = (BINARY if float(setting_values[10]) > 0
-                                 else GRAYSCALE)  # binary flag
-            setting_values[3] = (cps.YES if float(setting_values[5]) > 0
-                                 else cps.NO)  # low threshold set
-            setting_values[4] = (cps.YES if float(setting_values[7]) > 0
-                                 else cps.NO)  # high threshold set
-            variable_revision_number = 2
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             setting_values = (setting_values[:9] +
                               [TM_MANUAL, setting_values[9], "O,1", "1",
                                ".2", cps.NONE])
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added Otsu options
             setting_values = list(setting_values)
             setting_values += [O_TWO_CLASS, O_WEIGHTED_VARIANCE,
                                O_FOREGROUND]
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             #
             # Only low or high, not both + removed manual threshold settings
             #
@@ -272,17 +242,17 @@ class ApplyThreshold(Identify):
                               ] + setting_values[8:]
             variable_revision_number = 4
 
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Added measurements to threshold methods
             setting_values = setting_values + [cps.NONE]
             variable_revision_number = 5
 
-        if (not from_matlab) and variable_revision_number == 5:
+        if variable_revision_number == 5:
             # Added adaptive thresholding settings
             setting_values += [FI_IMAGE_SIZE, "10"]
             variable_revision_number = 6
 
-        if (not from_matlab) and variable_revision_number == 6:
+        if variable_revision_number == 6:
             image_name, thresholded_image_name, binary, low_or_high, \
             shift, dilation, threshold_method, manual_threshold, \
             threshold_range, threshold_correction_factor, \
@@ -304,4 +274,4 @@ class ApplyThreshold(Identify):
         #
         setting_values = setting_values[:N_SETTINGS] + \
                          self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

@@ -137,8 +137,7 @@ class DisplayHistogram(cpm.Module):
                                      yscale=self.yscale.value,
                                      title=workspace.display_data.title)
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Add bins=100 to second position
             setting_values.insert(2, 100)
@@ -147,4 +146,4 @@ class DisplayHistogram(cpm.Module):
             # add wants_xbounds=False and xbounds=(0,1)
             setting_values = setting_values + [False, (0, 1)]
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

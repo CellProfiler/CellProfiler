@@ -1,4 +1,4 @@
-"""<b>Mask Image</b> hides certain portions of an image (based on previously identified 
+"""<b>Mask Image</b> hides certain portions of an image (based on previously identified
 objects or a binary image) so they are ignored by subsequent mask-respecting modules
 in the pipeline.
 <hr>
@@ -162,17 +162,8 @@ class MaskImage(cpm.Module):
                                         "Masked image: %s" % self.masked_image_name.value,
                                         sharexy=figure.subplot(0, 0))
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number,
-                         module_name, from_matlab):
-        """Adjust the setting_values to upgrade from a previous version
-
-        """
-        if from_matlab and variable_revision_number == 3:
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # Added ability to select an image
             #
@@ -180,7 +171,7 @@ class MaskImage(cpm.Module):
                                                cps.NONE]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Reordering setting values so the settings order and Help makes sense
             setting_values = [setting_values[1],  # Input image name
                               setting_values[2],  # Output image name
@@ -190,4 +181,4 @@ class MaskImage(cpm.Module):
                               setting_values[3]]  # Invert image?
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

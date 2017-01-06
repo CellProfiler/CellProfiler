@@ -191,23 +191,11 @@ class MakeProjection(cpm.Module):
                                      self.projection_image_name.value,
                                      sharexy=figure.subplot(0, 0))
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and module_name == 'Average':
-            setting_values = setting_values[:2] + P_AVERAGE
-            from_matlab = False
-            module_name = self.module_name
-            variable_revision_number = 1
-        if (from_matlab and module_name == 'MakeProjection' and
-                    variable_revision_number == 3):
-            setting_values = setting_values[:3]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Added frequency
             setting_values = setting_values + ["6"]
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class ImageProvider(cpi.AbstractImageProvider):

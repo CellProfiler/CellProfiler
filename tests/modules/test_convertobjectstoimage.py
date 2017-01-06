@@ -75,46 +75,6 @@ def objects(request):
     return objects
 
 
-def test_load_matlab(pipeline):
-    data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
-            'sSU1RyM+zUnArylTwKs1TMDRSMDS2Mja3MjBUMDIwsFQgGTAwevryMzAwrG'
-            'BiYKiY8zbcMf+WgUiZgsI1v45A31uNzn3WJbI5l7c81rLK9ZAO0V5lkikuz'
-            'PP1yQ2NQoE307/umL/p9b+jSR5Nj5kMPa+8M/Ce9nXO933f9z6fLr6cj2FH'
-            'LlMA77UoA+8EW62FOR7BJ8I7in2Wx7HOeBC547/2jOsXjha4XDBVsfvkYLP'
-            'or9zcDQ+LxOx/HTpm51j74sSpgy9+n+PYeS9BSLKtX/8j00TtP8KNTzqu7F'
-            'tk+c1g8cLajvXvjtVJhv+51vzzd8ZkdueTzpYz1C/tu1DPb/br2bQ9pip/3'
-            'SzaMw7G10Q4zI7me/Kt90Dm8gdThC1SCy7ax/+sn54UHvonPPznVs5DDqf3'
-            'LbvBvbOaWdP1Sajgv8ufytfckD/+zZbdL7CGL/Lz9LR0tTc+H7598Y1Wf9d'
-            '1KPpErNsM7qLneyer3st3XJveWe70IOT5HDnNmtY7sUVmyheKD9XK/l/K4s'
-            'f55eYtvU3+jwuXfBD4xLpZ4/G094q1crs/hZv0m8zJ/Wr/YF5+rUoOi2dP8'
-            'f2fhkIWbC9sBPi/zrm1fC5Lv/PjirWZy/epv91c9lzxVfLt6uuLZQL5Py89'
-            'oh5lv/SBbeCHlp6XEuc/3mg/cmjRyyqhuIt/Nn1r17E5V3uuid9gm/GHgNf'
-            'PdNztvn080WRe+vDSZkVHIb97ddOv2vXuf1e94LRydq3IWeez7LWc3Jbtey'
-            'o73kg/+1e97g77p29bQy/P2HVm/svHOb/fbbzIn/KZN+DePrWHkY79zpuZH'
-            '90pW3//yM42bSH33vLrv+7Hb/z376rp2nuzFWayKxrPF/a5OLdpemH2sXf7'
-            'FnxbvubvA+Pmx/NKJl7ofL6ySfnJPYnAPvXT3uLWn8xD2sNjDwoXTb9oWfR'
-            'zQuv+aVnz1y57sljE46yw8fW/PwPqpx4/Nvf/SRNr4ys/70lt+bflWl3+wc'
-            'Tn/2r660zeef/XfzaV/REATdyFtA==')
-
-    fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-
-    pipeline.load(fd)
-
-    assert len(pipeline.modules()) == 3
-
-    module = pipeline.modules()[2]
-
-    assert isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertToImage)
-
-    assert module.object_name.value == "Nuclei"
-
-    assert module.image_name.value == "NucleiImage"
-
-    assert module.image_mode.value == "Color"
-
-    assert module.colormap.value == "flag"
-
-
 def test_load_v1(pipeline):
     data = ('eJztWltv2jAUNpeidpW6rnvYpL74cZvaKKFF2ngZFNaNqVy0ok57WxoM9WR'
             'slDgU9kv2U/a4n7SfsBhCSbzQcGm5SIlkwXH8ne+c4xM7OXI5X7/In8GMos'

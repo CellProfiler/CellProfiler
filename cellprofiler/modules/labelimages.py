@@ -155,26 +155,3 @@ class LabelImages(cpm.Module):
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
                              col_labels=workspace.display_data.col_labels)
-
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Upgrade the pipeline settings to the current revision of the module
-
-        setting_values - setting strings from the pipeline
-        variable_revision_number - revision of the module that saved the settings
-        module_name - name of the module that saved the settings
-        from_matlab - settings are from the Matlab version of CellProfiler
-        '''
-        if from_matlab and variable_revision_number == 1:
-            label_name, rows_cols, row_or_column, image_cycles_per_well = \
-                setting_values
-            row_count, column_count = rows_cols.split(',')
-            if rows_cols == 'A02':
-                order = O_ROW
-            else:
-                order = O_COLUMN
-            setting_values = [image_cycles_per_well, column_count, row_count,
-                              order]
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab

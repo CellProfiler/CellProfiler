@@ -481,45 +481,15 @@ class EditObjectsManually(I.Identify):
                 pipeline, object_name, category, self.get_object_dictionary())
         return measurements
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Upgrade the settings written by a prior version of this module
-
-        setting_values - array of string values for the module's settings
-        variable_revision_number - revision number of module at time of saving
-        module_name - name of module that saved settings
-        from_matlab - was a pipeline saved by CP 1.0
-
-        returns upgraded settings, new variable revision number and matlab flag
-        '''
-        if from_matlab and variable_revision_number == 2:
-            object_name, filtered_object_name, outlines_name, \
-            renumber_or_retain = setting_values
-
-            if renumber_or_retain == "Renumber":
-                renumber_or_retain = R_RENUMBER
-            else:
-                renumber_or_retain = R_RETAIN
-
-            if outlines_name == cps.DO_NOT_USE:
-                wants_outlines = cps.NO
-            else:
-                wants_outlines = cps.YES
-
-            setting_values = [object_name, filtered_object_name,
-                              wants_outlines, outlines_name, renumber_or_retain]
-            variable_revision_number = 1
-            from_matlab = False
-            module_name = self.module_name
-
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Added wants image + image
             setting_values = setting_values + [cps.NO, cps.NONE]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added allow overlap, default = False
             setting_values = setting_values + [cps.NO]
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

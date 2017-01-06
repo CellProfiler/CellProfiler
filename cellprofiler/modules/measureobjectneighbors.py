@@ -1,4 +1,4 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each 
+'''<b>Measure Object Neighbors</b> calculates how many neighbors each
 object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
@@ -679,28 +679,14 @@ class MeasureObjectNeighbors(cpm.Module):
                                  self.distance_method.value)
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if from_matlab and variable_revision_number == 5:
-            wants_image = setting_values[2] != cps.DO_NOT_USE
-            distance_method = D_EXPAND if setting_values[1] == "0" else D_WITHIN
-            setting_values = [setting_values[0],
-                              distance_method,
-                              setting_values[1],
-                              cps.YES if wants_image else cps.NO,
-                              setting_values[2],
-                              cps.DEFAULT,
-                              cps.NO,
-                              "PercentTouching",
-                              cps.DEFAULT]
-            from_matlab = False
-            variable_revision_number = 1
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added neighbor objects
             # To upgrade, repeat object_name twice
             #
             setting_values = setting_values[:1] * 2 + setting_values[1:]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def get_colormap(name):

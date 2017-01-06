@@ -1163,85 +1163,9 @@ class MeasureImageQuality(cpm.Module):
                         accepted_image_list.append(image_name)
             return accepted_image_list
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Upgrade from previous versions of setting formats'''
-
-        if (from_matlab and variable_revision_number == 4 and
-                    module_name == 'MeasureImageSaturationBlur'):
-            image_names = []
-            for image_name in setting_values[:6]:
-                if image_name != cps.DO_NOT_USE:
-                    image_names.append(image_name)
-            wants_blur = setting_values[-2]
-            local_focus_score = setting_values[-1]
-            setting_values = []
-            for image_name in image_names:
-                setting_values += [image_name,
-                                   wants_blur,
-                                   local_focus_score,
-                                   cps.YES,  # check saturation
-                                   cps.NO,  # calculate threshold
-                                   cpthresh.TM_OTSU_GLOBAL,
-                                   .1,  # object fraction
-                                   cps.NO]  # compute power spectrum
-            variable_revision_number = 2
-            from_matlab = False
-            module_name = 'MeasureImageQuality'
-
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'MeasureImageQuality'):
-            # Slot 0 asked if blur should be checked on all images
-            # Slot 1 had the window size for all images
-            # Slots 2-4, 5-7, 8-10, 11-13 contain triples of:
-            # image name for blur and saturation
-            # image name for threshold calculation
-            # threshold method
-            #
-            # So here, we save the answer to the blur question and
-            # the window size and apply those to every image. We
-            # collect images in dictionaries that tell how the image
-            # should be checked.
-            #
-            d = {}
-            check_blur = setting_values[0]
-            window_size = setting_values[1]
-            for i in range(2, 14, 3):
-                saturation_image = setting_values[i]
-                threshold_image = setting_values[i + 1]
-                threshold_method = setting_values[i + 2]
-                if saturation_image != cps.DO_NOT_USE:
-                    if not d.has_key(saturation_image):
-                        d[saturation_image] = {"check_blur": check_blur,
-                                               "check_saturation": cps.YES,
-                                               "check_threshold": cps.NO,
-                                               "threshold_method": threshold_method}
-                    else:
-                        d[saturation_image]["check_blur"] = check_blur
-                        d[saturation_image]["check_saturation"] = cps.YES
-                if threshold_image != cps.DO_NOT_USE:
-                    if not d.has_key(threshold_image):
-                        d[threshold_image] = {"check_blur": cps.NO,
-                                              "check_saturation": cps.NO,
-                                              "check_threshold": cps.YES,
-                                              "threshold_method": threshold_method}
-                    else:
-                        d[threshold_image]["check_threshold"] = cps.YES
-                        d[threshold_image]["threshold_method"] = threshold_method
-            setting_values = []
-            for image_name in d.keys():
-                dd = d[image_name]
-                setting_values += [image_name, dd["check_blur"], window_size,
-                                   dd["check_saturation"],
-                                   dd["check_threshold"],
-                                   dd["threshold_method"],
-                                   ".10"]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # add power spectrum calculations
-            assert (not from_matlab)
             assert len(setting_values) % 7 == 0
             num_images = len(setting_values) / 7
             new_settings = []
@@ -1251,7 +1175,7 @@ class MeasureImageQuality(cpm.Module):
             setting_values = new_settings
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # add otsu threshold settings
             assert len(setting_values) % 8 == 0
             num_images = len(setting_values) / 8
@@ -1263,7 +1187,7 @@ class MeasureImageQuality(cpm.Module):
             setting_values = new_settings
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Rearrangement/consolidation of settings
             assert len(setting_values) % SETTINGS_PER_GROUP_V3 == 0
             num_images = len(setting_values) / SETTINGS_PER_GROUP_V3
@@ -1330,14 +1254,14 @@ class MeasureImageQuality(cpm.Module):
             setting_values = new_settings
             variable_revision_number = 4
 
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
             thresh_dict = dict(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS))
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [thresh_dict[x] if x in cpthresh.TM_GLOBAL_METHODS else x for x in setting_values]
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class ImageQualitySettingsGroup(cps.SettingsGroup):

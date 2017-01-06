@@ -1,4 +1,4 @@
-'''<b>Display Data On Image</b> 
+'''<b>Display Data On Image</b>
 produces an image with measured data on top of identified objects.
 <hr>
 This module displays either a single image measurement on an image of
@@ -413,20 +413,7 @@ class DisplayDataOnImage(cpm.Module):
                                             horizontalalignment='center')
                 axes.add_artist(text)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and (variable_revision_number == 2):
-            object_name, category, feature_nbr, image_name, size_scale, \
-            display_image, data_image, dpi_to_save, \
-            saved_image_contents = setting_values
-            objects_or_image = (OI_IMAGE if object_name == cpmeas.IMAGE
-                                else OI_OBJECTS)
-            measurement = '_'.join((category, feature_nbr, image_name, size_scale))
-            setting_values = [
-                objects_or_image, object_name, measurement, display_image,
-                "red", data_image, dpi_to_save, saved_image_contents]
-            from_matlab = False
-            variable_revision_number = 1
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             objects_or_image, objects_name, measurement, \
             image_name, text_color, display_image, \
@@ -456,7 +443,7 @@ class DisplayDataOnImage(cpm.Module):
             setting_values = setting_values + [
                 CMS_USE_MEASUREMENT_RANGE, "0.0,1.0"]
             variable_revision_number = 6
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 if __name__ == "__main__":

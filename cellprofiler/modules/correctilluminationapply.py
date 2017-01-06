@@ -265,30 +265,13 @@ class CorrectIlluminationApply(cpm.Module):
                                            "pipeline to get rid of this warning.") % image.rescale_option,
                                           image.divide_or_subtract)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        """Adjust settings based on revision # of save file
-
-        setting_values - sequence of string values as they appear in the
-                         saved pipeline
-        variable_revision_number - the variable revision number of the module
-                                   at the time of saving
-        module_name - the name of the module that did the saving
-        from_matlab - True if saved in CP Matlab, False if saved in pyCP
-
-        returns the updated setting_values, revision # and matlab flag
-        """
-        # No SVN records of revisions 1 & 2
-        if from_matlab and variable_revision_number == 3:
-            # Same order as pyCP
-            from_matlab = False
-            variable_revision_number = 1
-        if not from_matlab and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Added multiple settings, but, if you only had 1,
             # the order didn't change
             variable_revision_number = 2
 
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # If revsion < 2, remove rescaling option; warning user and suggest RescaleIntensity instead.
             # Keep the prior selection around for the validation warning.
             SLOT_RESCALE_OPTION = 4
@@ -304,4 +287,4 @@ class CorrectIlluminationApply(cpm.Module):
             for i, image in enumerate(self.images):
                 image.rescale_option = RE_NONE
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

@@ -1,4 +1,4 @@
-"""<b>Measure Object Intensity</b> measures several intensity features for 
+"""<b>Measure Object Intensity</b> measures several intensity features for
 identified objects.
 <hr>
 Given an image with objects identified (e.g. nuclei or cells), this
@@ -164,43 +164,12 @@ class MeasureObjectIntensity(cpm.Module):
         result += [self.add_object_button]
         return result
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
-
-        setting_values - a sequence of strings representing the settings
-                         for the module as stored in the pipeline
-        variable_revision_number - the variable revision number of the
-                         module at the time the pipeline was saved. Use this
-                         to determine how the incoming setting values map
-                         to those of the current module version.
-        module_name - the name of the module that did the saving. This can be
-                      used to import the settings from another module if
-                      that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
-        '''
-        if from_matlab and variable_revision_number == 2:
-            # Old matlab-style. Erase any setting values that are
-            # "Do not use"
-            new_setting_values = [setting_values[0], cps.DO_NOT_USE]
-            for setting_value in setting_values[1:]:
-                if setting_value != cps.DO_NOT_USE:
-                    new_setting_values.append(setting_value)
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 2
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 2:
-            assert not from_matlab
             num_imgs = setting_values.index(cps.DO_NOT_USE)
             setting_values = [str(num_imgs)] + setting_values[:num_imgs] + setting_values[num_imgs + 1:]
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values

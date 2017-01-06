@@ -40,50 +40,6 @@ class TestLoadSingleImage(unittest.TestCase, tests.modules.test_loadimages.Convt
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 
-    def test_01_00_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggpTVXwTSxSMDRTMDSxMjW3MrJQMDIwNFAgGTAwevryMzAwrGZk'
-                'YKiY8zbM1v+wgcDeFpapDEuFuIOvchpu3WDY9MJBVaNj0boTqn6pmp2LaxRO'
-                '6Sc86S9JT3mSnrjd77VExqRLnF8XBX+ZU/1+nl78OqYDt80OqFmHR7wy4A1O'
-                '8PXqq7bo67Tv8TF44LCmfsObxRMWNHb/PuFbwLLZ47r1Puf37gffXDLdKixe'
-                'PlFdfPMLtXsM7Rd7JwsdfRr9qeeuXOXBCb1b3vDZT+wIiP/Qum+X1Wvv5KX5'
-                'U5+utpzfvOxM4/mjk65V/jU887pX/tk2xavXJT5Fv/Dfc1lm3syHvoWbnwZo'
-                '/dE7bJ/DG6DxI93yT2zr+Y1vF7M/WqiYd+yI5orNi18U3Hk3rzzG/GPLmaDi'
-                'FKnWZwGNOf+7rsz/rF/84zfX/MfHA32YxV3j0qSOPkvUrJLZnnl4eaFy5xHu'
-                'QJd074sPfyh9ZT1aGvY0fe3ma5FLPq+c/ltuuu3zn2s07Sr97t1L9Ji8wLFG'
-                'mn31lcjfv+//u/fw+/OZybKbzhfH3bddqn88XOSm7TbHZGu9dwlLrT79LzM+'
-                'vv8c32mtb/OvObxbf5Cz5rnoy3SJp5Vs1se+FtZu+t9c9P15hmOt1Olr9YzH'
-                'iy8IAQDsQ/za')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage))
-        self.assertEqual(module.directory.dir_choice, cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, "./foo")
-        self.assertEqual(len(module.file_settings), 2)
-        fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "dna_image.tif")
-        self.assertEqual(fs.image_name, "DNA")
-        fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "cytoplasm_image.tif")
-        self.assertEqual(fs.image_name, "Cytoplasm")
-
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage))
-        self.assertEqual(module.directory.dir_choice, cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, "./bar")
-        self.assertEqual(len(module.file_settings), 1)
-        fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "DNAIllum.tif")
-        self.assertEqual(fs.image_name, "DNAIllum")
-
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

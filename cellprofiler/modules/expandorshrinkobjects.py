@@ -223,26 +223,6 @@ class ExpandOrShrinkObjects(cpm.Module):
             raise NotImplementedError("Unsupported operation: %s" %
                                       self.operation.value)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            inf = setting_values[4] == "Inf"
-            if setting_values[3] == "Expand":
-                operation = O_EXPAND_INF if inf else O_EXPAND
-            elif setting_values[3] == "Shrink":
-                operation = (O_SHRINK_INF if inf
-                             else O_DIVIDE if setting_values[4] == "0"
-                else O_SHRINK)
-            iterations = "1" if inf else setting_values[4]
-            wants_outlines = setting_values[5] != cps.DO_NOT_USE
-            setting_values = (setting_values[:2] +
-                              [operation, iterations, cps.NO,
-                               cps.YES if wants_outlines else cps.NO,
-                               setting_values[5]])
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         columns = get_object_measurement_columns(self.output_object_name.value)

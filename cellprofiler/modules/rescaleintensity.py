@@ -404,7 +404,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
             src_max = self.source_high.value
         return src_min, src_max
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # wants_automatic_low (# 3) and wants_automatic_high (# 4)
@@ -419,7 +419,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
                     setting_values[i] = CUSTOM_VALUE
 
             variable_revision_number = 2
-
+              
         if variable_revision_number == 2:
             #
             # removed settings low_truncation_choice, custom_low_truncation,
@@ -429,4 +429,4 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
 
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number

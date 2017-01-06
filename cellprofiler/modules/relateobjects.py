@@ -628,28 +628,8 @@ class RelateObjects(cpm.Module):
         for i in range(1, step_parent_count):
             self.add_step_parent()
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            setting_values = [setting_values[0],
-                              setting_values[1],
-                              setting_values[2],
-                              cps.DO_NOT_USE,
-                              cps.YES]
-            variable_revision_number = 3
-
-        if from_matlab and variable_revision_number == 3:
-            setting_values = list(setting_values)
-            setting_values[2] = (D_MINIMUM if setting_values[2] == cps.YES
-                                 else D_NONE)
-            variable_revision_number = 4
-
-        if from_matlab and variable_revision_number == 4:
-            if setting_values[2] == cps.DO_NOT_USE:
-                setting_values = (setting_values[:2] + [D_NONE] +
-                                  setting_values[3:])
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # Added other distance parents
             #
@@ -666,7 +646,7 @@ class RelateObjects(cpm.Module):
                                wants_step_parent_distances,
                                setting_values[3]])
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 Relate = RelateObjects

@@ -26,41 +26,6 @@ OBJECTS_NAME = "objects"
 
 
 class TestMaskImage(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1Pwyy9TMDZQMDS2MrG0MjFTMDIwsFQgGTAwevryMzAwtDEx'
-                'MFTMeRp+N++ygUjZ7S1azL7JokLlp1XFk5cwKeqZm7BMjIjemCk0Pe8RW3Ny'
-                'eKfx1pjPATGfFGxY+h3uqK18XHo2frNS4slNfcX73svU9/VPrmVw2M7u4N6T'
-                'mN+Umu1e5vzq0D6XOcmvfuQuaFx+8c/6DfHO/IcNHa9PYDnB7tn93NcqMfxz'
-                '5qcXTTcZHZlfnDqXKM3yTqLyX4EQ8+LjyjbOT4Tq3RXuJm33f8H2e8ZFDvmP'
-                'qzd7xhybuuN34v/N2y8tXPjiAle1/yzxf8sTnq5fe/Gtwyf7jl+isz4+f592'
-                '4dEu7p1fXT/sOfngpZbNIbmqG5XSXnPZ7wd+mNt6TsyxYiefMvP6pR+kLOyl'
-                'Z97uiP6+a/Wj21xxN2of/5h6YXXOH+4X9d2P56c9+C6yZ8P5mX6S15ntrTgq'
-                'v62f+iiz8fzD3fPZr/s8nJVw4NPe77dP/V73w7Du+q9c636dee1c/Rva7/B/'
-                '+d7Sq+hZ8S56vlvXcsZf1qec76o/3jH/1OIXVnHPjqz8etHC8NfuCns5DZtD'
-                'ZpruV47X6D0V7pc3+iGnXXPo2JVj5jf4FC5u5J77RGyt8v5dry7vsjnHdO4Q'
-                't2S06qeA+7Mnc1XlnFrMM//xwZ35jk0q81Z9Xadjp/1/z3OFfLnS+/GpXxfo'
-                'Pwj7tnAVn2Hdktx/76a+dri6a5uGVN/xpsy6eaXf5aTrXcXiBUPXZgvNl7tm'
-                'YXL3oNX1v/prKqZlil7crzHf6trZ//uP/g4/vuZzEcclK47ZrHMSuvJkJWZu'
-                'v71j97oVX9e+sfx9YkGul7xS5bXPLg8Ft2Uqn/qYYvdpg/b9g6nvYz/O337C'
-                'O2p+zHJrySoT59cblof++qcntf7vitLX+824l7vare+vk/l7bXphfVPS7385'
-                'zfV33p3+r793D88OABdDcYI=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MaskImage))
-        self.assertEqual(module.source_choice, M.IO_OBJECTS)
-        self.assertEqual(module.object_name, "Nuclei")
-        self.assertEqual(module.image_name, "OrigBlue")
-        self.assertEqual(module.masked_image_name, "MaskBlue")
-        self.assertFalse(module.invert_mask)
-
     def test_01_02_load_v1(self):
         data = ('eJztWutu0zAUTrpuYiBxEUjwB8k/+LFNa0g3qrEJQTvKpRLtKlpx0TbAS93V'
                 '4MZV4owVxDvwODwGj8IjkJOla2qypet6A2Ipao/jz9/nk+PEOXExV32R20QZ'

@@ -29,35 +29,6 @@ class TestCreateBatchFiles(unittest.TestCase):
     def test_01_00_test_load_version_8_please(self):
         self.assertEqual(C.CreateBatchFiles.variable_revision_number, 7)
 
-    def test_01_01_load_matlab(self):
-        '''Load a matlab pipeline containing a single CreateBatchFiles module'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggpTVVwLE1XMDRUMLC0Mja0MjVQMDIwsFQgGTAwevryMzAwaDAy'
-                'MFTMmRu00e+wgcDeJXlXV2pJMzMrCzdO5WxsOeXgKBLKw7OjQHeazPIuWZff'
-                'pTp/xP2Sl/eFqmbOL+l6/2fe+e+PGBl6OBz8639bOWlcMK184DLPP0BTTWwT'
-                'N0uf79/w41OW9Zyz8NM8H+DEGb1f/POT1K062+Umne95POOYXmTynKPGPk8f'
-                '3+E6+034t6NdYnaLls5byf0zUzoNqor3xev+Vjv12vpCoVROLUfZD4c5Vef2'
-                'N+jOv/JjWvKK8Oe6pXO71jG/Xr29N+/KAutVL7pskgxjX8iLBTr+9DKy/qr4'
-                'XUDw7ot7C++pl+ft9z//ODqi7sWLadXfdubNSH/xc/Lx3K6Qh7yh8vHlPvu3'
-                'Lfv9q9Z5r5Lu3y/3D6dy15d9fS2/QDnqZ3nQi7jvX76uactPfP2/tNF3IQBj'
-                'pbBe')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, C.CreateBatchFiles))
-        self.assertTrue(module.wants_default_output_directory.value)
-        self.assertEqual(len(module.mappings), 1)
-        self.assertEqual(module.mappings[0].local_directory.value, 'z:\\')
-        self.assertEqual(module.mappings[0].remote_directory.value, '/imaging/analysis')
-        self.assertFalse(module.remote_host_is_windows.value)
-        self.assertFalse(module.batch_mode.value)
-
     def test_01_02_load_v1(self):
         '''Load a version 1 pipeline'''
         data = ('eJztVdtOwjAY7pCDxMTond710gsdgwSiuzHDxEgiSGQhmpCYAgWadCvZwYhP'

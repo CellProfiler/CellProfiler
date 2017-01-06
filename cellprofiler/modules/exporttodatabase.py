@@ -3875,145 +3875,30 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         self.db_name.value = ''.join(['*'] * len(self.db_name.value))
         self.db_passwd.value = ''.join(['*'] * len(self.db_passwd.value))
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
         DIR_DEFAULT_OUTPUT = "Default output folder"
         DIR_DEFAULT_IMAGE = "Default input folder"
 
-        if from_matlab and variable_revision_number == 4:
-            setting_values = setting_values + [cps.NO]
-            variable_revision_number = 5
-        if from_matlab and variable_revision_number == 5:
-            if setting_values[-1] == cps.YES:
-                setting_values = setting_values[:-1] + ["Yes - V1.0 format"]
-            variable_revision_number = 6
-        if from_matlab and variable_revision_number == 6:
-            new_setting_values = [setting_values[0], setting_values[1]]
-            if setting_values[2] == cps.DO_NOT_USE:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append("MyExpt_")
-            else:
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[2])
-            new_setting_values.append(setting_values[3])
-            if setting_values[4] == '.':
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[4])
-            else:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append(setting_values[4])
-            if setting_values[5][:3] == cps.YES:
-                new_setting_values.append(cps.YES)
-            else:
-                new_setting_values.append(cps.NO)
-            from_matlab = False
-            variable_revision_number = 6
-            setting_values = new_setting_values
-        if from_matlab and variable_revision_number == 7:
-            #
-            # Added object names
-            #
-            setting_values = (setting_values[:-1] + [cpmeas.IMAGE] +
-                              [cps.DO_NOT_USE] * 3 + setting_values[-1:])
-            variable_revision_number = 8
-
-        if from_matlab and variable_revision_number == 8:
-            #
-            # Added more object names
-            #
-            setting_values = (setting_values[:-1] +
-                              [cps.DO_NOT_USE] * 3 + setting_values[-1:])
-            variable_revision_number = 9
-        if from_matlab and variable_revision_number == 9:
-            #
-            # Per-well export
-            #
-            setting_values = (setting_values[:-1] +
-                              [cps.NO, cps.DO_NOT_USE, cps.DO_NOT_USE] +
-                              setting_values[-1:])
-            variable_revision_number = 10
-        if from_matlab and variable_revision_number == 10:
-            new_setting_values = setting_values[0:2]
-            if setting_values[2] == cps.DO_NOT_USE:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append("MyExpt_")
-            else:
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[2])
-            new_setting_values.append(setting_values[3])
-            if setting_values[4] == '.':
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[4])
-            else:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append(setting_values[4])
-            if setting_values[18][:3] == cps.YES:
-                new_setting_values.append(cps.YES)
-            else:
-                new_setting_values.append(cps.NO)
-            #
-            # store_csvs
-            #
-            new_setting_values.append(cps.YES)
-            #
-            # DB host / user / password
-            #
-            new_setting_values += ['imgdb01', 'cpuser', 'password']
-            #
-            # SQLite file name
-            #
-            new_setting_values += ['DefaultDB.db']
-            #
-            # Aggregate mean, median & std dev
-            wants_mean = cps.NO
-            wants_std_dev = cps.NO
-            wants_median = cps.NO
-            for setting in setting_values[5:8]:
-                if setting == "Median":
-                    wants_median = cps.YES
-                elif setting == "Mean":
-                    wants_mean = cps.YES
-                elif setting == "Standard deviation":
-                    wants_std_dev = cps.YES
-            new_setting_values += [wants_mean, wants_median, wants_std_dev]
-            #
-            # Object export
-            #
-            if setting_values[8] == "All objects":
-                new_setting_values += [O_ALL, ""]
-            else:
-                objects_list = []
-                for setting in setting_values[8:15]:
-                    if setting not in (cpmeas.IMAGE, cps.DO_NOT_USE):
-                        objects_list.append(setting)
-                if len(objects_list) > 0:
-                    new_setting_values += [O_SELECT, ",".join(objects_list)]
-                else:
-                    new_setting_values += [O_NONE, ""]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 9
-
-        if (not from_matlab) and variable_revision_number == 6:
+        if variable_revision_number == 6:
             # Append default values for store_csvs, db_host, db_user,
             #  db_passwd, and sqlite_file to update to revision 7
             setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
             variable_revision_number = 7
 
-        if (not from_matlab) and variable_revision_number == 7:
+        if variable_revision_number == 7:
             # Added ability to selectively turn on aggregate measurements
             # which were all automatically calculated in version 7
             setting_values = setting_values + [True, True, True]
             variable_revision_number = 8
 
-        if (not from_matlab) and variable_revision_number == 8:
+        if variable_revision_number == 8:
             # Made it possible to choose objects to save
             #
             setting_values += [O_ALL, ""]
             variable_revision_number = 9
 
-        if (not from_matlab) and variable_revision_number == 9:
+        if variable_revision_number == 9:
             # Added aggregate per well choices
             #
             setting_values = (setting_values[:-2] +
@@ -4021,7 +3906,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                               setting_values[-2:])
             variable_revision_number = 10
 
-        if (not from_matlab) and variable_revision_number == 10:
+        if variable_revision_number == 10:
             #
             # Added a directory choice instead of a checkbox
             #
@@ -4035,7 +3920,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                               setting_values[6:])
             variable_revision_number = 11
 
-        if (not from_matlab) and variable_revision_number == 11:
+        if variable_revision_number == 11:
             #
             # Added separate "database type" of CSV files and removed
             # "store_csvs" setting
@@ -4048,21 +3933,21 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                               setting_values[9:])
             variable_revision_number = 12
 
-        if (not from_matlab) and variable_revision_number == 12:
+        if variable_revision_number == 12:
             #
             # Added maximum column size
             #
             setting_values = setting_values + ["64"]
             variable_revision_number = 13
 
-        if (not from_matlab) and variable_revision_number == 13:
+        if variable_revision_number == 13:
             #
             # Added single/multiple table choice
             #
             setting_values = setting_values + [OT_COMBINE]
             variable_revision_number = 14
 
-        if (not from_matlab) and variable_revision_number == 14:
+        if variable_revision_number == 14:
             #
             # Combined directory_choice and output_folder into directory
             #
@@ -4091,35 +3976,35 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values[SLOT_DIRCHOICE] = directory
 
-        if (not from_matlab) and variable_revision_number == 15:
+        if variable_revision_number == 15:
             #
             # Added 3 new args: url_prepend and thumbnail options
             #
             setting_values = setting_values + ["", cps.NO, ""]
             variable_revision_number = 16
 
-        if (not from_matlab) and variable_revision_number == 16:
+        if variable_revision_number == 16:
             #
             # Added binary choice for auto-scaling thumbnail intensities
             #
             setting_values = setting_values + [cps.NO]
             variable_revision_number = 17
 
-        if (not from_matlab) and variable_revision_number == 17:
+        if variable_revision_number == 17:
             #
             # Added choice for plate type in properties file
             #
             setting_values = setting_values + [NONE_CHOICE]
             variable_revision_number = 18
 
-        if (not from_matlab) and variable_revision_number == 18:
+        if variable_revision_number == 18:
             #
             # Added choices for plate and well metadata in properties file
             #
             setting_values = setting_values + [NONE_CHOICE, NONE_CHOICE]
             variable_revision_number = 19
 
-        if (not from_matlab) and variable_revision_number == 19:
+        if variable_revision_number == 19:
             #
             # Added configuration of image information, groups, filters in properties file
             #
@@ -4130,7 +4015,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
             setting_values = setting_values + [cps.NO, cps.NO]  # Filter specifications
             variable_revision_number = 20
 
-        if (not from_matlab) and variable_revision_number == 20:
+        if variable_revision_number == 20:
             #
             # Added configuration of workspace file
             #
@@ -4145,7 +4030,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                                C_IMAGE_NUMBER]  # y_measurement_type, y_object_name, y_measurement_name, y_index_name
             variable_revision_number = 21
 
-        if (not from_matlab) and variable_revision_number == 21:
+        if variable_revision_number == 21:
             #
             # Added experiment name and location object
             #
@@ -4155,7 +4040,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                 setting_values[SETTING_FIXED_SETTING_COUNT_V21:])
             variable_revision_number = 22
 
-        if (not from_matlab) and variable_revision_number == 22:
+        if variable_revision_number == 22:
             #
             # Added class table properties field
             #
@@ -4165,7 +4050,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                 setting_values[SETTING_FIXED_SETTING_COUNT_V22:])
             variable_revision_number = 23
 
-        if (not from_matlab) and variable_revision_number == 23:
+        if variable_revision_number == 23:
             #
             # Added wants_relationships_table
             #
@@ -4175,7 +4060,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                 setting_values[SETTING_FIXED_SETTING_COUNT_V23:])
             variable_revision_number = 24
 
-        if (not from_matlab) and variable_revision_number == 24:
+        if variable_revision_number == 24:
             #
             # Added allow_overwrite
             #
@@ -4185,7 +4070,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                 setting_values[SETTING_FIXED_SETTING_COUNT_V24:])
             variable_revision_number = 25
 
-        if (not from_matlab) and variable_revision_number == 25:
+        if variable_revision_number == 25:
             #
             # added wants_properties_image_url_prepend setting
             #
@@ -4200,7 +4085,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],
                                                    setting_values[OT_IDX])
 
-        if (not from_matlab) and variable_revision_number == 26:
+        if variable_revision_number == 26:
             #
             # added classification_type setting
             #
@@ -4210,7 +4095,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                 setting_values[SETTING_FIXED_SETTING_COUNT_V26:])
             variable_revision_number = 27
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class ColumnNameMapping:

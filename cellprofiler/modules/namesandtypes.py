@@ -1848,8 +1848,7 @@ class NamesAndTypes(cpm.Module):
                     "At least one channel must have all metadata keys specified. "
                     "All channels have at least one metadata key of (None).", self.join)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Changed naming of assignment methods
             setting_values[0] = ASSIGN_ALL if setting_values[0] == "Assign all images" else ASSIGN_RULES
@@ -1929,7 +1928,7 @@ class NamesAndTypes(cpm.Module):
             setting_values = new_setting_values
             variable_revision_number = 7
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     class FakeModpathResolver(object):
         '''Resolve one modpath to one ipd'''

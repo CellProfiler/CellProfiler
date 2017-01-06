@@ -1094,103 +1094,7 @@ class LoadImages(cpmodule.Module):
 
         return None
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-
-        #
-        # historic rewrites from CP1.0
-        #
-        def upgrade_1_to_2(setting_values):
-            """Upgrade rev 1 LoadImages to rev 2
-
-            Handle movie formats new to rev 2
-            """
-            new_values = list(setting_values[:10])
-            image_or_movie = setting_values[10]
-            if image_or_movie == 'Image':
-                new_values.append('individual images')
-            elif setting_values[11] == 'avi':
-                new_values.append('avi movies')
-            elif setting_values[11] == 'stk':
-                new_values.append('stk movies')
-            else:
-                raise ValueError('Unhandled movie type: %s' % (setting_values[11]))
-            new_values.extend(setting_values[12:])
-            return new_values, 2
-
-        def upgrade_2_to_3(setting_values):
-            """Added binary/grayscale question"""
-            new_values = list(setting_values)
-            new_values.append('grayscale')
-            new_values.append('')
-            return new_values, 3
-
-        def upgrade_3_to_4(setting_values):
-            """Added text exclusion at slot # 10"""
-            new_values = list(setting_values)
-            new_values.insert(10, cps.DO_NOT_USE)
-            return new_values, 4
-
-        def upgrade_4_to_5(setting_values):
-            new_values = list(setting_values)
-            new_values.append(cps.NO)
-            return new_values, 5
-
-        def upgrade_5_to_new_1(setting_values):
-            """Take the old LoadImages values and put them in the correct slots"""
-            loc = setting_values[13]
-            custom_path = loc
-            if loc == '.':
-                dir_choice = DEFAULT_INPUT_FOLDER_NAME
-            elif loc == '&':
-                dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
-            elif loc.startswith('.'):
-                dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
-            elif loc.startswith('&'):
-                dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
-                custom_path = '.' + loc[1:]
-            else:
-                dir_choice = ABSOLUTE_FOLDER_NAME
-
-            new_values = [
-                setting_values[11],  # file_types
-                setting_values[0],  # match_method
-                setting_values[9],  # order_group_size
-                setting_values[10],  # match_exclude
-                setting_values[12],  # descend_subdirectories
-                dir_choice,  # was location
-                custom_path,  # was location_other
-                setting_values[16]]  # check_images
-
-            for i in range(0, 4):
-                text_to_find = setting_values[i * 2 + 1]
-                image_name = setting_values[i * 2 + 2]
-                if text_to_find == cps.DO_NOT_USE or \
-                                image_name == cps.DO_NOT_USE or \
-                                text_to_find == '/' or \
-                                image_name == '/' or \
-                                text_to_find == '\\' or \
-                                image_name == '\\':
-                    break
-                new_values.extend([text_to_find, image_name, text_to_find])
-            return new_values, 1
-
-        #
-        # New revisions in CP2.0
-        #
-        def upgrade_new_1_to_2(setting_values):
-            """Add the metadata slots to the images"""
-            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
-            new_values.append(cps.NO)  # Group by metadata is off
-            for i in range((len(setting_values) - self.SLOT_FIRST_IMAGE_V1) / self.SLOT_IMAGE_FIELD_COUNT_V1):
-                off = self.SLOT_FIRST_IMAGE_V1 + i * self.SLOT_IMAGE_FIELD_COUNT_V1
-                new_values.extend([setting_values[off],
-                                   setting_values[off + 1],
-                                   setting_values[off + 2],
-                                   M_NONE,
-                                   cps.NONE,
-                                   cps.NONE])
-            return new_values, 2
-
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         def upgrade_new_2_to_3(setting_values):
             """Add the checkbox for excluding certain files"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V2])
@@ -1323,20 +1227,6 @@ class LoadImages(cpmodule.Module):
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_NONE
             return new_values, 11
 
-        if from_matlab:
-            if variable_revision_number == 1:
-                setting_values, variable_revision_number = upgrade_1_to_2(setting_values)
-            if variable_revision_number == 2:
-                setting_values, variable_revision_number = upgrade_2_to_3(setting_values)
-            if variable_revision_number == 3:
-                setting_values, variable_revision_number = upgrade_3_to_4(setting_values)
-            if variable_revision_number == 4:
-                setting_values, variable_revision_number = upgrade_4_to_5(setting_values)
-            if variable_revision_number == 5:
-                setting_values, variable_revision_number = upgrade_5_to_new_1(setting_values)
-            from_matlab = False
-
-        assert not from_matlab
         if variable_revision_number == 1:
             setting_values, variable_revision_number = upgrade_new_1_to_2(setting_values)
         if variable_revision_number == 2:
@@ -1370,7 +1260,7 @@ class LoadImages(cpmodule.Module):
         assert variable_revision_number == self.variable_revision_number, "Cannot read version %d of %s" % (
             variable_revision_number, self.module_name)
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def is_load_module(self):
         '''LoadImages creates image sets so it is a load module'''

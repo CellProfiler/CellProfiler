@@ -1050,13 +1050,7 @@ class CalculateImageOverlap(cpm.Module):
                  cpmeas.COLTYPE_FLOAT)
                 for feature in self.all_features()]
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab:
-            # Variable revision # wasn't in Matlab file
-            # All settings were identical to CP 2.0 v 1
-            from_matlab = False
-            variable_revision_number = 1
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # no object choice before rev 2
             old_setting_values = setting_values
@@ -1084,4 +1078,4 @@ class CalculateImageOverlap(cpm.Module):
             ]
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

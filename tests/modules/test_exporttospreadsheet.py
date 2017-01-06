@@ -48,37 +48,6 @@ class TestExportToSpreadsheet(unittest.TestCase):
         os.rmdir(self.output_dir)
         self.output_dir = None
 
-    def test_000_01_load_mat_pipe(self):
-        '''Load a matlab pipeline'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwTy5RMDBUMDS1MrKwMjJSMDIwsFQgGTAwevryMzAwvGRk'
-                'YKiY83baSb/DBgIOy6W9BVN3FzBouus5cE+XEwzo9LqgFKVosWvlbKmlhVMt'
-                'ND6w1gg+OtGv8FHzhmqm8PYJJkkvFZMjr1kYnzdOPu3HyJAXxvDsx44D1VJ2'
-                'qs9facaLVzEbu/GcPeUoZnb3Z/i99RM9A7yPX/fYvpHV+eOz1W7tZvK/DvuL'
-                'b8l9vaOtqi5Zz3T39UPLQt9X9L177v0oYa+jnCHLUePdh74fUbpS8Dd2n411'
-                'zHSjzLtM799/Xmy1ZIlVx66cH89a/wr2vNks/Grbq83xpdXC1jnbHylM1bQ9'
-                'cmXdgynOFpadyl+y+DMtkmS8J+2/4L/rhMGGug3ROq7n1PULW+q8RJuNjm77'
-                'sEIv8aeOh8zC676LZD8v/jy5UGVOy+SCY5ZHBfy0DngejPPZf1jy7H3p804V'
-                '2UL+L45kTK6+tG3iOoFC1miDc7yrg60O+Dr3+j3/f/Wfy9rLi6ZMv2AqbBuh'
-                'dWljv7DpPJ+G6Y3RcVP3r2nfs29jP9O/TxHn6v6f+/29dtYuv6r0zNd8q32M'
-                'V979bxonkX6p/sSDD3wGXPaXdsx/Mv2J+eufJz/+vf6DKf6+/Kdase93rZav'
-                'iP1qaxBocVrI/YXocn/fa0tE3Y9a9dxfXqz4cXll9Pnj1dO9DK+fTl32/fSn'
-                'b3v+blP9My9h19+bP4/dm7zjm3zsyo+3AAVEF7c=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(len(module.object_groups), 1)
-        og = module.object_groups[0]
-        self.assertEqual(og.name, "Image")
-        self.assertEqual(og.file_name, "Image.csv")
-
     def test_000_02_load_v1(self):
         '''Load a version 1 pipeline'''
         data = ('eJztWnFv0zgUd7ZuusHpNMRJ8A+S/2R3a5SMTQcTGi103FVHu4pVIISAc1N3'

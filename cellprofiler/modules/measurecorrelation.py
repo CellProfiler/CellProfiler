@@ -834,31 +834,8 @@ class MeasureCorrelation(cpm.Module):
                     result.append("%s_%s" % (i2, i1))
         return result
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         '''Adjust the setting values for pipelines saved under old revisions'''
-        if from_matlab and variable_revision_number == 3:
-            image_names = [x for x in setting_values[:4]
-                           if x.upper() != cps.DO_NOT_USE.upper()]
-            wants_image_measured = np.any([x == cpmeas.IMAGE
-                                           for x in setting_values[4:]])
-            object_names = [x for x in setting_values[4:]
-                            if not x in (cpmeas.IMAGE, cps.DO_NOT_USE)]
-            if wants_image_measured:
-                if len(object_names):
-                    m = M_IMAGES_AND_OBJECTS
-                else:
-                    m = M_IMAGES
-            elif len(object_names):
-                m = M_OBJECTS
-            else:
-                raise ValueError("Must either measure texture over images or over some set of objects")
-            if len(object_names) == 0:
-                object_names = [cps.NONE]
-            setting_values = ([str(len(image_names)), str(len(object_names))] +
-                              image_names + [m] + object_names)
-            from_matlab = False
-            variable_revision_number = 1
         if variable_revision_number == 1:
             #
             # Wording of image / object text changed
@@ -883,4 +860,4 @@ class MeasureCorrelation(cpm.Module):
                 setting_values[:idx_thr] + ["15.0"] + setting_values[idx_thr:]
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

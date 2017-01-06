@@ -28,37 +28,6 @@ FIGURE_NAME = "figname"
 
 
 class TestCalculateStatistics(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUnArylTwyy9TMDBTMLCwMjKzMrZQMDIwsFQgGTAwevryMzAwZDEy'
-                'MFTM2Rp00Ouwg8DcJZmhE7Y9WMru2D+v654Nl5ZGhtayL/t81VIVz057tyzE'
-                'X+6vSn9d2/zH6/IunY3yjSqYljjz5vd7PMa32Rr61Ry87+2+FPtj27I+2cOh'
-                'MgsETOZ+UKu4cPln+Utlo+Upcx50qEgWaeicv7/MUNrubNfyarFUzl8pWU1L'
-                'f94s6Sm26yheVFe3wNuH6VdPwDaZbx3cpzS9TeNf3765SE847O62L+LppuzH'
-                'ZzXP8j58QvuP5ZoP92btfCvxY11f8rFfivE1H/21f8R1vj8o+vjHfJvtR4oP'
-                'pges9l9+pHgB/9cK+18yLNe7rt8u4P9ZGxiYz3/qd0ChC8vMM5Fmtx2WJ78s'
-                '8ZmbPMvNQvtraPj27Jday4ONHJ0jXu45+P7zxu8Rz+fPsoqVvW8oxFuoKfJ/'
-                'WVN9wsfQGs9JBt4dBxwEHHcuUNT/ZfjfdfWi+vB5bsm76yu2pdqW++7VmqfO'
-                'L/dWXuueds62+ZPtP+zM7f7Pstg39TAAo3nSDA==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.CalculateStatistics))
-        self.assertEqual(module.grouping_values.value, "Dose")
-        self.assertEqual(len(module.dose_values), 1)
-        self.assertEqual(module.dose_values[0].measurement, "Dose")
-        self.assertFalse(module.dose_values[0].log_transform)
-        self.assertTrue(module.dose_values[0].wants_save_figure)
-        self.assertEqual(module.dose_values[0].figure_name, "DOSE")
-        self.assertEqual(module.dose_values[0].pathname.dir_choice,
-                         cps.DEFAULT_OUTPUT_FOLDER_NAME)
-
     def test_01_02_load_v1(self):
         data = ('eJztWNFu2jAUdWhA7SYmtJfx6KdpD12Wom5qUaUN6KohAasW1G5PlZuYNpKD'
                 'Uewwui/Y5+1xn9FPmN0mJHGhIQX2RFCU3Ot7zrn32kpiuo1+p9GE7w0Tdhv9'

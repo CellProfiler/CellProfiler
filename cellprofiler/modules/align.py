@@ -1,4 +1,4 @@
-'''<b>Align</b> aligns images relative to each other, for example, to correct 
+'''<b>Align</b> aligns images relative to each other, for example, to correct
 shifts in the optical path of a microscope in each channel of a multi-channel
 set of images.
 <hr>
@@ -629,109 +629,13 @@ class Align(cpm.Module):
                         for target in targets]
         return columns
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 4:
-            #
-            # The Matlab align module has the following layout
-            # 0:  Image1Name
-            # 1:  AlignedImage1Name
-            # 2:  Image2Name
-            # 3:  AlignedImage2Name
-            # 4:  Image3Name (or DoNotUse)
-            # 5:  AlignedImage3Name
-            # 6:  AlignMethod
-            # 7:  AlternateImage1 (aligned similarly to Image2)
-            # 8:  AlternateAlignedImage1
-            # 9:  AlternateImage2
-            # 10: AlternateAlignedImage2
-            new_setting_values = list(setting_values[:4])
-            if (setting_values[4] != cps.DO_NOT_USE and
-                        setting_values[5] != cps.DO_NOT_USE):
-                new_setting_values += [setting_values[4], setting_values[5],
-                                       A_SEPARATELY]
-            for i in (7, 9):
-                if (setting_values[i] != cps.DO_NOT_USE and
-                            setting_values[i + 1] != cps.DO_NOT_USE):
-                    new_setting_values += [setting_values[i],
-                                           setting_values[i + 1],
-                                           A_SIMILARLY]
-            new_setting_values += [setting_values[6], True]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-        elif from_matlab and variable_revision_number == 5:
-            #
-            # The Matlab align module has the following layout
-            # 0:  Image1Name
-            # 1:  AlignedImage1Name
-            # 2:  Image2Name
-            # 3:  AlignedImage2Name
-            # 4:  Image3Name (or DoNotUse)
-            # 5:  AlignedImage3Name
-            # 6:  AlignMethod
-            # 7:  AlternateImage1 (aligned similarly to Image2)
-            # 8:  AlternateAlignedImage1
-            # 9:  AlternateImage2
-            # 10: AlternateAlignedImage2
-            # 11: Wants cropping.
-            new_setting_values = list(setting_values[:4])
-            if (setting_values[4] != cps.DO_NOT_USE and
-                        setting_values[5] != cps.DO_NOT_USE):
-                new_setting_values += [setting_values[4], setting_values[5],
-                                       A_SEPARATELY]
-            for i in (7, 9):
-                if (setting_values[i] != cps.DO_NOT_USE and
-                            setting_values[i + 1] != cps.DO_NOT_USE):
-                    new_setting_values += [setting_values[i],
-                                           setting_values[i + 1],
-                                           A_SIMILARLY]
-            new_setting_values += [setting_values[6], setting_values[11]]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-        elif from_matlab and variable_revision_number == 6:
-            #
-            # The Matlab align module has the following layout
-            # 0:  Image1Name
-            # 1:  AlignedImage1Name
-            # 2:  Image2Name
-            # 3:  AlignedImage2Name
-            # 4:  Image3Name (or DoNotUse)
-            # 5:  AlignedImage3Name
-            # 6:  AlignMethod
-            # 7:  AlternateImage1 (aligned similarly to Image2)
-            # 8:  AlternateAlignedImage1
-            # 9:  AlternateImage2
-            # 10: AlternateAlignedImage2
-            # 11: MoreImageName3
-            # 12: MoreAlignedImageName3
-            # 13: MoreImageName4
-            # 14: MoreAlignedImageName4
-            # 15: Wants cropping.
-            new_setting_values = list(setting_values[:4])
-            if (setting_values[4] != cps.DO_NOT_USE and
-                        setting_values[5] != cps.DO_NOT_USE):
-                new_setting_values += [setting_values[4], setting_values[5],
-                                       A_SEPARATELY]
-            for i in (7, 9, 11, 13):
-                if (setting_values[i] != cps.DO_NOT_USE and
-                            setting_values[i + 1] != cps.DO_NOT_USE):
-                    new_setting_values += [setting_values[i],
-                                           setting_values[i + 1],
-                                           A_SIMILARLY]
-            new_setting_values += [setting_values[6], setting_values[11]]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Moved final settings (alignment method, cropping) to the top
             setting_values = (setting_values[-2:] + setting_values[:-2])
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # wants_cropping changed to crop_mode
             setting_values = (
                 setting_values[:1] +
@@ -739,7 +643,7 @@ class Align(cpm.Module):
                 setting_values[2:])
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def offset_slice(pixels1, pixels2, i, j):

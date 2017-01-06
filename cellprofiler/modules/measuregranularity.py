@@ -1,4 +1,4 @@
-'''<b>Measure Granularity</b> outputs spectra of size measurements 
+'''<b>Measure Granularity</b> outputs spectra of size measurements
 of the textures in the image.
 <hr>
 Image granularity is a texture measurement that tries a series of structure elements
@@ -394,12 +394,7 @@ class MeasureGranularity(cpm.Module):
                     result.append(image.image_name.value)
         return result
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            # Matlab and pyCP v1 are identical
-            from_matlab = False
-            variable_revision_number = 1
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # changed to use cps.SettingsGroup() but did not change the
             # ordering of any of the settings
@@ -415,7 +410,7 @@ class MeasureGranularity(cpm.Module):
                 setting_values = setting_values[IMAGE_SETTING_COUNT_V2:]
             setting_values = new_setting_values
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class GranularitySettingsGroup(cps.SettingsGroup):

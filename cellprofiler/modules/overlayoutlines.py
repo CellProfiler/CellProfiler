@@ -1,4 +1,4 @@
-'''<b>Overlay Outlines</b> places outlines produced by an 
+'''<b>Overlay Outlines</b> places outlines produced by an
 <b>Identify</b> module over a desired image.
 <hr>
 This module places outlines (in a special format produced by an <b>Identify</b> module)
@@ -393,25 +393,8 @@ class OverlayOutlines(cpm.Module):
 
         return output_image
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            # Order is
-            # image_name
-            # outline name
-            # max intensity
-            # output_image_name
-            # color
-            setting_values = [cps.YES if setting_values[0] == "Blank" else cps.NO,
-                              setting_values[0],
-                              setting_values[3],
-                              WANTS_COLOR,
-                              setting_values[2],
-                              setting_values[1],
-                              setting_values[4]]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # Added line width
             #
@@ -419,7 +402,7 @@ class OverlayOutlines(cpm.Module):
                              ["1"] + setting_values[NUM_FIXED_SETTINGS_V1:]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added overlay image / objects choice
             #
@@ -431,4 +414,4 @@ class OverlayOutlines(cpm.Module):
                 new_setting_values += [FROM_IMAGES, cps.NONE]
             setting_values = new_setting_values
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

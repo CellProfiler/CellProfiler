@@ -3043,29 +3043,16 @@ class TrackObjects(cpm.Module):
             return [str(self.pixel_radius.value)]
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            wants_image = setting_values[10] != cps.DO_NOT_USE
-            measurement = '_'.join(setting_values[2:6])
-            setting_values = [setting_values[0],  # tracking method
-                              setting_values[1],  # object name
-                              measurement,
-                              setting_values[6],  # pixel_radius
-                              setting_values[7],  # display_type
-                              wants_image,
-                              setting_values[10]]
-            variable_revision_number = 1
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             setting_values = setting_values + ["100", "100"]
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added phase 2 parameters
             setting_values = setting_values + [
                 "40", "40", "40", "50", "50", "50", "5"]
             variable_revision_number = 3
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Added Kalman choices:
             # Model
             # radius std
@@ -3075,14 +3062,14 @@ class TrackObjects(cpm.Module):
                               setting_values[9:])
             variable_revision_number = 4
 
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Added lifetime filtering: Wants filtering + min/max allowed lifetime
             setting_values = setting_values + [cps.NO, cps.YES, "1", cps.NO, "100"]
             variable_revision_number = 5
 
-        if (not from_matlab) and variable_revision_number == 5:
+        if variable_revision_number == 5:
             # Added mitosis alternative score + mitosis_max_distance
             setting_values = setting_values + ["80", "40"]
             variable_revision_number = 6
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

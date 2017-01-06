@@ -1,4 +1,4 @@
-'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid 
+'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid
 that has been defined by the <b>DefineGrid</b> module.
 <hr>
 This module identifies objects that are contained within in a grid pattern, allowing
@@ -430,44 +430,8 @@ class IdentifyObjectsInGrid(cpm.Module):
                                                color="red")
                 axes.add_line(line)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
-
-        setting_values - a sequence of strings representing the settings
-                         for the module as stored in the pipeline
-        variable_revision_number - the variable revision number of the
-                         module at the time the pipeline was saved. Use this
-                         to determine how the incoming setting values map
-                         to those of the current module version.
-        module_name - the name of the module that did the saving. This can be
-                      used to import the settings from another module if
-                      that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
-        '''
-        if from_matlab and variable_revision_number == 2:
-            grid_name, new_object_name, shape, old_object_name, \
-            diameter, save_outlines, failed_grid_choice = setting_values
-            if diameter == AM_AUTOMATIC:
-                diameter = "40"
-                diameter_choice = AM_AUTOMATIC
-            else:
-                diameter_choice = AM_MANUAL
-            wants_outlines = (cps.NO if save_outlines == cps.DO_NOT_USE
-                              else cps.YES)
-            setting_values = [grid_name, new_object_name, shape,
-                              diameter_choice, diameter, old_object_name,
-                              wants_outlines, save_outlines]
-            variable_revision_number = 1
-            from_matlab = False
-
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Change shape_choice names: Rectangle > Rectangle Forced Location, Natural Shape > Natural Shape and Location
             if setting_values[2] == "Rectangle":
                 setting_values[2] = SHAPE_RECTANGLE
@@ -475,7 +439,7 @@ class IdentifyObjectsInGrid(cpm.Module):
                 setting_values[2] = SHAPE_NATURAL
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimaryObjects'''

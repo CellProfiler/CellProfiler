@@ -47,12 +47,6 @@ class TestImage(unittest.TestCase):
             y = (x.image == one_target)
             self.assertTrue((x.image == one_target).all(), msg="Failed setting %s to max" % (repr(dtype)))
 
-    def test_04_01_image_mask_missize(self):
-        x = cpi.Image()
-        x.image = np.ones((10, 10))
-        with self.assertRaises(AssertionError):
-            x.mask = np.ones((5, 5))
-
     def test_05_01_mask_of3D(self):
         """The mask of a 3-d image should be 2-d"""
         x = cpi.Image()

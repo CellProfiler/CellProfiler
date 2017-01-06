@@ -1,9 +1,17 @@
 # coding=utf-8
 """ tools.py - cpfigure tools that do not depend on WX
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import centrosome.cpmorphology
-import cStringIO
+import io
 import matplotlib
 import numpy
 import scipy
@@ -14,7 +22,7 @@ def figure_to_image(figure, *args, **kwargs):
     #
     # Save the figure as a .PNG and then load it using scipy.misc.imread
     #
-    fd = cStringIO.StringIO()
+    fd = io.StringIO()
     kwargs = kwargs.copy()
     kwargs["format"] = 'png'
     figure.savefig(fd, *args, **kwargs)
@@ -35,8 +43,8 @@ def only_display_image(figure, shape):
     ax.set_axis_off()
     figure.subplots_adjust(0, 0, 1, 1, 0, 0)
     dpi = figure.dpi
-    width = float(shape[1]) / dpi
-    height = float(shape[0]) / dpi
+    width = old_div(float(shape[1]), dpi)
+    height = old_div(float(shape[0]), dpi)
     figure.set_figheight(height)
     figure.set_figwidth(width)
     bbox = matplotlib.transforms.Bbox(

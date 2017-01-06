@@ -1,4 +1,4 @@
-'''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
+"""<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
 objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape.
 <hr>
 <h4>What is a tertiary object?</h4>
@@ -51,8 +51,16 @@ identified tertiary objects.</li>
 </ul>
 
 See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
-'''
+"""
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
 import matplotlib
 import matplotlib.cm
 import numpy as np
@@ -64,13 +72,13 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as cpmi
+from . import identify as cpmi
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.setting import YES, NO
 
-'''The parent object relationship points to the secondary / larger objects'''
+"""The parent object relationship points to the secondary / larger objects"""
 R_PARENT = "Parent"
-'''The removed object relationship points to the primary / smaller objects'''
+"""The removed object relationship points to the primary / smaller objects"""
 R_REMOVED = "Removed"
 
 
@@ -339,11 +347,11 @@ class IdentifyTertiaryObjects(cpm.Module):
                                  sharexy=figure.subplot(0, 0))
 
     def is_object_identification_module(self):
-        '''IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module'''
+        """IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         subregion_name = self.subregion_objects_name.value
         columns = cpmi.get_object_measurement_columns(subregion_name)
         for parent in (self.primary_objects_name.value,

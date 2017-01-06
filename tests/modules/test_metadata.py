@@ -1,4 +1,14 @@
-import cStringIO
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+import io
 import os
 import tempfile
 import unittest
@@ -45,7 +55,7 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_w
         def callback(caller, event):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
@@ -102,7 +112,7 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_w
         def callback(caller, event):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
@@ -159,7 +169,7 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_w
         def callback(caller, event):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
@@ -219,7 +229,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         def callback(caller, event):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
@@ -271,7 +281,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         self.assertEqual(len(ipds), len(dd))
         for d, ipd in zip(dd, ipds):
             self.assertDictContainsSubset(d, ipd.metadata)
-        all_keys = pipeline.get_available_metadata_keys().keys()
+        all_keys = list(pipeline.get_available_metadata_keys().keys())
         if keys is not None:
             for key in keys:
                 self.assertIn(key, all_keys)

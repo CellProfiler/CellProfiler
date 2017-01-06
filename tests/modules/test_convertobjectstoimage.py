@@ -1,4 +1,13 @@
-import StringIO
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
+import io
 import base64
 import unittest
 import zlib
@@ -96,7 +105,7 @@ def test_load_matlab(pipeline):
             'zQuv+aVnz1y57sljE46yw8fW/PwPqpx4/Nvf/SRNr4ys/70lt+bflWl3+wc'
             'Tn/2r660zeef/XfzaV/REATdyFtA==')
 
-    fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+    fd = io.StringIO(zlib.decompress(base64.b64decode(data)))
 
     pipeline.load(fd)
 
@@ -139,7 +148,7 @@ def test_load_v1(pipeline):
             'nW8A/PM8nv+/7+fhiydiAz7vuYHdEFzSY9PIz99gtjx7dc/4kY/LGv8PmsR'
             'r2g==')
 
-    fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+    fd = io.StringIO(zlib.decompress(base64.b64decode(data)))
 
     pipeline.load(fd)
 
@@ -210,7 +219,7 @@ def test_run_grayscale(workspace, module):
 
     assert pixel_data.shape == objects.shape
 
-    expected = numpy.reshape(numpy.arange(256).astype(numpy.float32) / 255, (16, 16))
+    expected = numpy.reshape(old_div(numpy.arange(256).astype(numpy.float32), 255), (16, 16))
 
     if objects.segmented.ndim is 3:
         expected = numpy.tile(expected, (3, 1))

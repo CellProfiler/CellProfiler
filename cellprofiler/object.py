@@ -1,6 +1,17 @@
 """ CellProfiler.Objects.py - represents a labelling of objects in an image
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from builtins import *
+from builtins import object
+from past.utils import old_div
 import centrosome.index
 import centrosome.outline
 import numpy
@@ -95,11 +106,11 @@ class Objects(object):
         return dense.reshape(dense.shape[-3:])
 
     def set_ijv(self, ijv, shape=None):
-        '''Set the segmentation to an IJV object format
+        """Set the segmentation to an IJV object format
 
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
-        '''
+        """
         sparse = numpy.core.records.fromarrays(
                 (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
                 [("y", ijv.dtype, 1),
@@ -110,16 +121,16 @@ class Objects(object):
         self.__segmented = Segmentation(sparse=sparse, shape=shape)
 
     def get_ijv(self):
-        '''Get the segmentation in IJV object format
+        """Get the segmentation in IJV object format
 
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
-        '''
+        """
         sparse = self.__segmented.sparse
         return numpy.column_stack(
                 [sparse[axis] for axis in
-                 "y", "x",
-                 "label"])
+                 ("y", "x",
+                 "label")])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -224,13 +235,13 @@ class Objects(object):
         return self.parent_image.crop_image_similarly(image)
 
     def make_ijv_outlines(self, colors):
-        '''Make ijv-style color outlines
+        """Make ijv-style color outlines
 
         Make outlines, coloring each object differently to distinguish between
         objects that might overlap.
 
         colors: a N x 3 color map to be used to color the outlines
-        '''
+        """
         #
         # Get planes of non-overlapping objects. The idea here is to use
         # the most similar colors in the color space for objects that
@@ -249,13 +260,13 @@ class Objects(object):
             # Have to color 2 planes using the same color!
             # There's some chance that overlapping objects will get
             # the same color. Give me more colors to work with please.
-            colors = numpy.vstack([colors] * (1 + len(all_labels) / len(colors)))
+            colors = numpy.vstack([colors] * (1 + old_div(len(all_labels), len(colors))))
         r = numpy.random.mtrand.RandomState()
         alpha = numpy.zeros(all_labels[0][0].shape, numpy.float32)
         order = numpy.lexsort([counts])
         label_colors = []
         for idx, i in enumerate(order):
-            max_available = len(colors) / (len(all_labels) - idx)
+            max_available = old_div(len(colors), (len(all_labels) - idx))
             ncolors = min(counts[i], max_available)
             my_colors = colors[:ncolors]
             colors = colors[ncolors:]
@@ -283,7 +294,7 @@ class Objects(object):
         return self.relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
-        '''relate the object numbers in one label to those in another
+        """relate the object numbers in one label to those in another
 
         parent_labels - 2d label matrix of parent labels
 
@@ -292,15 +303,15 @@ class Objects(object):
         Returns two 1-d arrays. The first gives the number of children within
         each parent. The second gives the mapping of each child to its parent's
         object number.
-        '''
+        """
         histogram = self.histogram_from_labels(parent_labels, child_labels)
         return self.relate_histogram(histogram)
 
     def relate_histogram(self, histogram):
-        '''Return child counts and parents of children given a histogram
+        """Return child counts and parents of children given a histogram
 
         histogram - histogram from histogram_from_ijv or histogram_from_labels
-        '''
+        """
         parent_count = histogram.shape[0] - 1
         child_count = histogram.shape[1] - 1
 
@@ -434,24 +445,24 @@ class Objects(object):
 
 
 class Segmentation(object):
-    '''A segmentation of a space into labeled objects
+    """A segmentation of a space into labeled objects
 
     Supports overlapping objects and cacheing. Retrieval can be as a
     single plane (legacy), as multiple planes and as sparse ijv.
-    '''
+    """
     SEGMENTED = "segmented"
     UNEDITED_SEGMENTED = "unedited segmented"
     SMALL_REMOVED_SEGMENTED = "small removed segmented"
 
     def __init__(self, dense=None, sparse=None, shape=None):
-        '''Initialize the segmentation with either a dense or sparse labeling
+        """Initialize the segmentation with either a dense or sparse labeling
 
         dense - a 6-D labeling with the first axis allowing for alternative
                 labelings of the same hyper-voxel.
         sparse - the sparse labeling as a record array with axes from
                  cellprofiler.utilities.hdf_dict.HDF5ObjectSet
         shape - the 5-D shape of the imaging site if sparse.
-        '''
+        """
 
         self.__dense = dense
         self.__sparse = sparse
@@ -469,13 +480,13 @@ class Segmentation(object):
 
     @property
     def shape(self):
-        '''Get or estimate the shape of the segmentation matrix
+        """Get or estimate the shape of the segmentation matrix
 
         Order of precedence:
         Shape supplied in the constructor
         Shape of the dense representation
         maximum extent of the sparse representation + 1
-        '''
+        """
         if self.__shape is not None:
             return self.__shape
         if self.has_dense():
@@ -487,18 +498,18 @@ class Segmentation(object):
             else:
                 self.__shape = tuple(
                         [numpy.max(sparse[axis]) + 2
-                         if axis in sparse.dtype.fields.keys() else 1
+                         if axis in list(sparse.dtype.fields.keys()) else 1
                          for axis in ("c", "t", "z", "y", "x")])
         return self.__shape
 
     @shape.setter
     def shape(self, shape):
-        '''Set the shape of the segmentation array
+        """Set the shape of the segmentation array
 
         shape - the 5D shape of the array
 
         This fixes the shape of the 5D array for sparse representations
-        '''
+        """
         self.__shape = shape
         self.__explicit_shape = True
 
@@ -516,13 +527,13 @@ class Segmentation(object):
 
     @property
     def sparse(self):
-        '''Get the sparse representation of the segmentation
+        """Get the sparse representation of the segmentation
 
         returns a Numpy record array where every row represents
         the labeling of a pixel. The dtype record names are taken from
         HDF5ObjectSet.AXIS_[X,Y,Z,C,T] and AXIS_LABELS for the object
         numbers.
-        '''
+        """
         if self.__sparse is not None:
             return self.__sparse
 
@@ -532,7 +543,7 @@ class Segmentation(object):
         return self.__convert_dense_to_sparse()
 
     def get_dense(self):
-        '''Get the dense representation of the segmentation
+        """Get the dense representation of the segmentation
 
         return the segmentation as a 6-D array and a sequence of arrays of the
         object numbers in each 5-D hyperplane of the segmentation. The first
@@ -544,7 +555,7 @@ class Segmentation(object):
             # do something
 
         The remaining axes are in the order, C, T, Z, Y and X
-        '''
+        """
         if self.__dense is not None:
             return self.__dense, self.__indices
 
@@ -558,7 +569,7 @@ class Segmentation(object):
         axes = list(("c", "t", "z", "y", "x"))
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in axes, self.shape]
+            for aa in (axes, self.shape)]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping
@@ -613,7 +624,7 @@ class Segmentation(object):
         available_columns = []
         lexsort_columns = []
         for axis in ("c", "t", "z", "y", "x"):
-            if axis in sparse.dtype.fields.keys():
+            if axis in list(sparse.dtype.fields.keys()):
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
                 lexsort_columns.insert(0, sparse[axis])
@@ -786,14 +797,14 @@ class ObjectSet(object):
 
     def add_objects(self, objects, name):
         assert isinstance(objects, Objects), "objects must be an instance of CellProfiler.Objects"
-        assert ((not self.__objects_by_name.has_key(name)) or
+        assert ((name not in self.__objects_by_name) or
                 self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 
     def get_object_names(self):
         """Return the names of all of the objects
         """
-        return self.__objects_by_name.keys()
+        return list(self.__objects_by_name.keys())
 
     object_names = property(get_object_names)
 
@@ -806,19 +817,19 @@ class ObjectSet(object):
     def all_objects(self):
         """Return a list of name / objects tuples
         """
-        return self.__objects_by_name.items()
+        return list(self.__objects_by_name.items())
 
     def get_types(self):
-        '''Get then names of types of per-image set "things"
+        """Get then names of types of per-image set "things"
 
         The object set can store arbitrary types of things other than objects,
         for instance ImageJ data tables. This function returns the thing types
         defined in the object set at this stage of the pipeline.
-        '''
-        return self.__types_and_instances.keys()
+        """
+        return list(self.__types_and_instances.keys())
 
     def add_type_instance(self, type_name, instance_name, instance):
-        '''Add a named instance of a type
+        """Add a named instance of a type
 
         A thing of a given type can be stored in the object set so that
         it can be retrieved by name later in the pipeline. This function adds
@@ -827,17 +838,17 @@ class ObjectSet(object):
         type_name - the name of the instance's type
         instance_name - the name of the instance
         instance - the instance itself
-        '''
+        """
         if type_name not in self.__types_and_instances:
             self.__types_and_instances[type_name] = {}
         self.__types_and_instances[type_name][instance_name] = instance
 
     def get_type_instance(self, type_name, instance_name):
-        '''Get an named instance of a type
+        """Get an named instance of a type
 
         type_name - the name of the type of instance
         instance_name - the name of the instance to retrieve
-        '''
+        """
         if (type_name not in self.__types_and_instance or
                     instance_name not in self.__types_and_instances[type_name]):
             return None
@@ -845,7 +856,7 @@ class ObjectSet(object):
 
 
 def downsample_labels(labels):
-    '''Convert a labels matrix to the smallest possible integer format'''
+    """Convert a labels matrix to the smallest possible integer format"""
     labels_max = numpy.max(labels)
     if labels_max < 128:
         return labels.astype(numpy.int8)
@@ -855,13 +866,13 @@ def downsample_labels(labels):
 
 
 def crop_labels_and_image(labels, image):
-    '''Crop a labels matrix and an image to the lowest common size
+    """Crop a labels matrix and an image to the lowest common size
 
     labels - a n x m labels matrix
     image - a 2-d or 3-d image
 
     Assumes that points outside of the common boundary should be masked.
-    '''
+    """
     min_height = min(labels.shape[0], image.shape[0])
     min_width = min(labels.shape[1], image.shape[1])
     if image.ndim == 2:
@@ -873,7 +884,7 @@ def crop_labels_and_image(labels, image):
 
 
 def size_similarly(labels, secondary):
-    '''Size the secondary matrix similarly to the labels matrix
+    """Size the secondary matrix similarly to the labels matrix
 
     labels - labels matrix
     secondary - a secondary image or labels matrix which might be of
@@ -883,7 +894,7 @@ def size_similarly(labels, secondary):
 
     Either the mask is all ones or the result is a copy, so you can
     modify the output within the unmasked region w/o destroying the original.
-    '''
+    """
     if labels.shape[:2] == secondary.shape[:2]:
         return secondary, numpy.ones(secondary.shape, bool)
     if (labels.shape[0] <= secondary.shape[0] and

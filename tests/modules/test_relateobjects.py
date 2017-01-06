@@ -1,10 +1,20 @@
 '''test_relateobjects.py - test the RelateObjects module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt
@@ -423,8 +433,8 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
     def test_03_01_mean(self):
         '''Compute the mean for two parents and four children'''
         i, j = np.mgrid[0:20, 0:20]
-        parent_labels = (i / 10 + 1).astype(int)
-        child_labels = (i / 10).astype(int) + (j / 10).astype(int) * 2 + 1
+        parent_labels = (old_div(i, 10) + 1).astype(int)
+        child_labels = (old_div(i, 10)).astype(int) + (old_div(j, 10)).astype(int) * 2 + 1
         workspace, module = self.make_workspace(parent_labels, child_labels,
                                                 fake_measurement=True)
         module.wants_per_parent_means.value = True
@@ -448,7 +458,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         # Regression test - if there are no children, the per-parent means
         #                   should still be populated
         i, j = np.mgrid[0:20, 0:20]
-        parent_labels = (i / 10 + 1).astype(int)
+        parent_labels = (old_div(i, 10) + 1).astype(int)
         child_labels = np.zeros(parent_labels.shape, int)
         workspace, module = self.make_workspace(parent_labels, child_labels,
                                                 fake_measurement=True)

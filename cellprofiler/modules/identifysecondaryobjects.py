@@ -1,7 +1,16 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
-__doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
+__doc__ = """<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
 objects identified by another module (e.g., nuclei) as a starting point.
 <hr>
 <h4>What is a secondary object?</h4>
@@ -121,7 +130,7 @@ calculated as the sum of absolute differences in a 3x3 (8-connected) image
 neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
 
 <p>See also the other <b>Identify</b> modules.</p>
-''' % globals()
+""" % globals()
 
 import numpy as np
 import os
@@ -136,8 +145,8 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import identify as cpmi
-from identify import FI_IMAGE_SIZE
+from . import identify as cpmi
+from .identify import FI_IMAGE_SIZE
 import centrosome.threshold as cpthresh
 import centrosome.otsu
 from centrosome.propagate import propagate
@@ -154,10 +163,10 @@ M_WATERSHED_I = "Watershed - Image"
 M_DISTANCE_N = "Distance - N"
 M_DISTANCE_B = "Distance - B"
 
-'''# of setting values other than thresholding ones'''
+"""# of setting values other than thresholding ones"""
 N_SETTING_VALUES = 14
 
-'''Parent (seed) relationship of input objects to output objects'''
+"""Parent (seed) relationship of input objects to output objects"""
 R_PARENT = "Parent"
 
 
@@ -630,7 +639,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             lookup = scind.maximum(segmented_out,
                                    objects.segmented,
-                                   range(np.max(objects.segmented) + 1))
+                                   list(range(np.max(objects.segmented) + 1)))
             lookup = fix(lookup)
             lookup[0] = 0
             lookup[lookup != 0] = np.arange(np.sum(lookup != 0)) + 1
@@ -732,7 +741,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             workspace.display_data.object_count = object_count
 
     def display(self, workspace, figure):
-        from identify import TS_BINARY_IMAGE
+        from .identify import TS_BINARY_IMAGE
 
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
@@ -748,9 +757,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if object_count > 0:
             areas = scind.sum(np.ones(segmented_out.shape), segmented_out, np.arange(1, object_count + 1))
             areas.sort()
-            low_diameter = (np.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
-            median_diameter = (np.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
-            high_diameter = (np.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
+            low_diameter = (np.sqrt(old_div(float(areas[old_div(object_count, 10)]), np.pi)) * 2)
+            median_diameter = (np.sqrt(old_div(float(areas[old_div(object_count, 2)]), np.pi)) * 2)
+            high_diameter = (np.sqrt(old_div(float(areas[object_count * 9 / 10]), np.pi)) * 2)
             statistics.append(["10th pctile diameter",
                                "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter",
@@ -800,7 +809,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmented_labels, m1 = cpo.size_similarly(labels_out, segmented_labels)
             segmented_labels[~m1] = 0
             lookup = scind.maximum(segmented_labels, labels_out,
-                                   range(max_out + 1))
+                                   list(range(max_out + 1)))
             lookup = np.array(lookup, int)
             lookup[0] = 0
             segmented_labels_out = lookup[labels_out]
@@ -831,11 +840,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return segmented_labels_out
 
     def is_object_identification_module(self):
-        '''IdentifySecondaryObjects makes secondary objects sets so it's a identification module'''
+        """IdentifySecondaryObjects makes secondary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = cpmi.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
                      cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
@@ -891,10 +900,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return result
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
+        """Get the dictionary of parent child relationships
 
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
+        """
         object_dictionary = {
             self.objects_name.value: [self.primary_objects.value]
         }

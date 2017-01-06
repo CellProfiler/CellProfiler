@@ -1,6 +1,16 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from past.utils import old_div
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 
-__doc__ = '''
+__doc__ = """
 <b>Create Batch Files</b> produces files that allow individual batches of images to be processed
 separately on a cluster of computers.
 <hr>
@@ -21,17 +31,17 @@ the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 </p>
 
 For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
-''' % globals()
+""" % globals()
 
 import logging
 
 logger = logging.getLogger(__name__)
-import httplib
+import http.client
 import numpy as np
 import os
 import re
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import zlib
 
 import cellprofiler
@@ -46,9 +56,9 @@ import cellprofiler.workspace as cpw
 
 from cellprofiler.measurement import F_BATCH_DATA, F_BATCH_DATA_H5
 
-'''# of settings aside from the mappings'''
+"""# of settings aside from the mappings"""
 S_FIXED_COUNT = 9
-'''# of settings per mapping'''
+"""# of settings per mapping"""
 S_PER_MAPPING = 2
 
 
@@ -74,7 +84,7 @@ class CreateBatchFiles(cpm.Module):
 
     #
     def create_settings(self):
-        '''Create the module settings and name the module'''
+        """Create the module settings and name the module"""
         self.wants_default_output_directory = cps.Binary(
                 "Store batch files in default output folder?", True, doc="""
             Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
@@ -181,7 +191,7 @@ class CreateBatchFiles(cpm.Module):
                              "is not a multiple of %d" %
                              (len(setting_values) - S_FIXED_COUNT,
                               S_PER_MAPPING))
-        mapping_count = (len(setting_values) - S_FIXED_COUNT) / S_PER_MAPPING
+        mapping_count = old_div((len(setting_values) - S_FIXED_COUNT), S_PER_MAPPING)
         while mapping_count < len(self.mappings):
             del self.mappings[-1]
 
@@ -201,7 +211,7 @@ class CreateBatchFiles(cpm.Module):
         return result
 
     def prepare_run(self, workspace):
-        '''Invoke the image_set_list pickling mechanism and save the pipeline'''
+        """Invoke the image_set_list pickling mechanism and save the pipeline"""
 
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
@@ -222,9 +232,9 @@ class CreateBatchFiles(cpm.Module):
             if self.go_to_website:
                 try:
                     import webbrowser
-                    import urllib
+                    import urllib.request, urllib.parse, urllib.error
                     server_path = self.alter_path(os.path.dirname(path))
-                    query = urllib.urlencode(dict(data_dir=server_path))
+                    query = urllib.parse.urlencode(dict(data_dir=server_path))
                     url = cpprefs.get_batchprofiler_url() + \
                           "/NewBatch.py?" + query
                     webbrowser.open_new(url)
@@ -241,7 +251,7 @@ class CreateBatchFiles(cpm.Module):
         self.from_old_matlab.value = cps.NO
 
     def validate_module(self, pipeline):
-        '''Make sure the module settings are valid'''
+        """Make sure the module settings are valid"""
         # Ensure we're not an un-updatable version of the module from way back.
         if self.from_old_matlab.value:
             raise cps.ValidationError("The pipeline you loaded was from an old version of CellProfiler 1.0, "
@@ -254,19 +264,19 @@ class CreateBatchFiles(cpm.Module):
                                       self.wants_default_output_directory)
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError("CreateBatchFiles will not produce output in Test Mode",
                                       self.wants_default_output_directory)
 
     def save_pipeline(self, workspace, outf=None):
-        '''Save the pipeline in Batch_data.mat
+        """Save the pipeline in Batch_data.mat
 
         Save the pickled image_set_list state in a setting and put this
         module in batch mode.
 
         if outf is not None, it is used as a file object destination.
-        '''
+        """
         if outf is None:
             if self.wants_default_output_directory.value:
                 path = cpprefs.get_default_output_directory()
@@ -316,11 +326,11 @@ class CreateBatchFiles(cpm.Module):
         return True
 
     def in_batch_mode(self):
-        '''Tell the system whether we are in batch mode on the cluster'''
+        """Tell the system whether we are in batch mode on the cluster"""
         return self.batch_mode.value
 
     def enter_batch_mode(self, workspace):
-        '''Restore the image set list from its setting as we go into batch mode'''
+        """Restore the image set list from its setting as we go into batch mode"""
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
@@ -340,25 +350,25 @@ class CreateBatchFiles(cpm.Module):
                     default_image_directory)
 
     def turn_off_batch_mode(self):
-        '''Remove any indications that we are in batch mode
+        """Remove any indications that we are in batch mode
 
         This call restores the module to an editable state.
-        '''
+        """
         self.batch_mode.value = False
         self.batch_state = np.zeros((0,), np.uint8)
 
     def check_paths(self):
-        '''Check to make sure the default directories are remotely accessible'''
+        """Check to make sure the default directories are remotely accessible"""
         import wx
 
         def check(path):
-            more = urllib.urlencode(dict(path=path))
+            more = urllib.parse.urlencode(dict(path=path))
             url = ("/batchprofiler/cgi-bin/development/"
                    "CellProfiler_2.0/PathExists.py?%s") % more
-            conn = httplib.HTTPConnection("imageweb")
+            conn = http.client.HTTPConnection("imageweb")
             conn.request("GET", url)
             result = conn.getresponse()
-            if result.status != httplib.OK:
+            if result.status != http.client.OK:
                 raise RuntimeError("HTTP failed: %s" % result.reason)
             body = result.read()
             return body.find("OK") != -1
@@ -381,11 +391,11 @@ class CreateBatchFiles(cpm.Module):
             wx.MessageBox("All paths are accessible")
 
     def alter_path(self, path, **varargs):
-        '''Modify the path passed so that it can be executed on the remote host
+        """Modify the path passed so that it can be executed on the remote host
 
         path = path to modify
         regexp_substitution - if true, exclude \g<...> from substitution
-        '''
+        """
         regexp_substitution = varargs.get("regexp_substitution", False)
         for mapping in self.mappings:
             local_directory = mapping.local_directory.value

@@ -1,8 +1,20 @@
 '''test_straightenworms - test the StraightenWorms module'''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import itertools
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 import centrosome.cpmorphology as morph
 import numpy as np
@@ -160,7 +172,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
 
         # Trick the module into thinking it's read the data file
 
-        class P:
+        class P(object):
             def __init__(self):
                 self.radii_from_training = radii
 
@@ -253,7 +265,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         label[index[1:]] = 1
         label = np.cumsum(label)
         order = np.arange(len(i)) - index[label]
-        frac = order.astype(float) / count[label].astype(float)
+        frac = old_div(order.astype(float), count[label].astype(float))
         radius = (worm_radii[label] * (1 - frac) +
                   worm_radii[label + 1] * frac)
         iworm_radius = int(np.max(np.ceil(radius)))
@@ -699,7 +711,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 piece = img[i, mask[i, :]]
                 accumulator += np.sum(piece) * w
                 weight_accumulator += w * np.sum(mask[i, :])
-            return accumulator / weight_accumulator
+            return old_div(accumulator, weight_accumulator)
 
         def weighted_std(img, segments, mask):
             mean = weighted_mean(img, segments, mask)
@@ -749,8 +761,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
         image = workspace.image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        f1 = 1.0 / 3.0
-        f2 = 2.0 / 3.0
+        f1 = old_div(1.0, 3.0)
+        f2 = old_div(2.0, 3.0)
         stripes = [
             (9, ((10, 11, 2, 1),)),
             (10, ((8, 9, 1, 1), (9, 10, 1, f2), (9, 10, 2, f1), (10, 11, 2, 1), (11, 12, 2, f1), (11, 12, 3, f2),
@@ -796,7 +808,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
 
         s2 = lambda x: np.sum(np.sum(x, 0), 0)
         weights = s2(i_w)
-        expected_means = s2(image[:, :, np.newaxis] * i_w) / weights
+        expected_means = old_div(s2(image[:, :, np.newaxis] * i_w), weights)
         counts = s2(i_w > 0)
         expected_sds = np.sqrt(
                 s2(i_w * (image[:, :, np.newaxis] - expected_means[np.newaxis, np.newaxis, :]) ** 2) /
@@ -811,7 +823,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 self.assertEqual(len(value), 1)
                 self.assertAlmostEqual(value[0], expected[i])
         weights = s2(j_w)
-        expected_means = s2(image[:, :, np.newaxis] * j_w) / weights
+        expected_means = old_div(s2(image[:, :, np.newaxis] * j_w), weights)
         counts = s2(j_w > 0)
         expected_sds = np.sqrt(
                 s2(j_w * (image[:, :, np.newaxis] -
@@ -829,7 +841,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
 
         ww = i_w[:, :, :, np.newaxis] * j_w[:, :, np.newaxis, :]
         weights = s2(ww)
-        expected_means = s2(image[:, :, np.newaxis, np.newaxis] * ww) / weights
+        expected_means = old_div(s2(image[:, :, np.newaxis, np.newaxis] * ww), weights)
         counts = s2(ww > 0)
         expected_sds = np.sqrt(
                 s2(ww * (image[:, :, np.newaxis, np.newaxis] -

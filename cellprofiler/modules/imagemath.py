@@ -1,4 +1,4 @@
-'''<b>Image Math</b> performs simple mathematical operations on image intensities.
+"""<b>Image Math</b> performs simple mathematical operations on image intensities.
 <hr>
 This module can perform addition, subtraction, multiplication, division, or averaging
 of two or more image intensities, as well as inversion, log transform, or scaling by
@@ -12,8 +12,19 @@ display purposes, so additional rescaling may be needed. Please see the
 <b>RescaleIntensity</b> module for more scaling options.</p>
 
 See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import inflect
 import numpy
 
@@ -212,7 +223,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
 
     @property
     def operand_count(self):
-        '''# of operands, taking the operation into consideration'''
+        """# of operands, taking the operation into consideration"""
         if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NONE, O_NOT):
             return 1
         return len(self.images)
@@ -261,7 +272,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
     def prepare_settings(self, setting_values):
         value_count = len(setting_values)
         assert (value_count - FIXED_SETTING_COUNT) % IMAGE_SETTING_COUNT == 0
-        image_count = (value_count - FIXED_SETTING_COUNT) / IMAGE_SETTING_COUNT
+        image_count = old_div((value_count - FIXED_SETTING_COUNT), IMAGE_SETTING_COUNT)
         # always keep the first two images
         del self.images[2:]
         while len(self.images) < image_count:
@@ -435,7 +446,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
 
         display_names = workspace.display_data.display_names
 
-        columns = (len(pixel_data) + 1) / 2
+        columns = old_div((len(pixel_data) + 1), 2)
 
         figure.set_subplots((columns, 2), dimensions=workspace.display_data.dimensions)
 
@@ -449,7 +460,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
 
             figure.subplot_imshow(
                 i % columns,
-                int(i / columns),
+                int(old_div(i, columns)),
                 pixel_data[i],
                 title=display_names[i],
                 # sharexy=figure.subplot(0, 0),
@@ -458,7 +469,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             )
 
     def validate_module(self, pipeline):
-        '''Guarantee that at least one operand is an image'''
+        """Guarantee that at least one operand is an image"""
         for i in range(self.operand_count):
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:
@@ -494,8 +505,8 @@ class ImageMath(cellprofiler.module.ImageProcessing):
                                         setting_values[4:])
                 if name.lower() != cellprofiler.setting.DO_NOT_USE.lower()]
 
-            multiplier = 1.0 / sum([float(weight)
-                                    for name, weight in names_and_weights])
+            multiplier = old_div(1.0, sum([float(weight)
+                                    for name, weight in names_and_weights]))
             output_image = setting_values[3]
             setting_values = [O_ADD,  # Operation
                               "1",  # Exponent

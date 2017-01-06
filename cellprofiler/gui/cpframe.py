@@ -1,7 +1,15 @@
 # -*- Encoding: utf-8 -*-
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import cellprofiler
 import cellprofiler.gui
 import cellprofiler.gui.figure
@@ -196,7 +204,7 @@ class CPFrame(wx.Frame):
                                    self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__path_list_sash.SetAlignment(wx.LAYOUT_TOP)
-        self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
+        self.__path_list_sash.SetDefaultSize((screen_width, old_div(screen_height, 4)))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.AutoLayout = True
@@ -260,7 +268,7 @@ class CPFrame(wx.Frame):
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
         self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.LAYOUT_BOTTOM)
-        self.__imageset_sash.SetDefaultSize((screen_width, screen_height / 4))
+        self.__imageset_sash.SetDefaultSize((screen_width, old_div(screen_height, 4)))
         self.__imageset_sash.SetDefaultBorderSize(4)
         self.__imageset_sash.SetExtraBorderSize(2)
         self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
@@ -497,7 +505,7 @@ class CPFrame(wx.Frame):
                   (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
         for eyedee in ids:
             d[eyedee] = True
-        for k, v in d.iteritems():
+        for k, v in list(d.items()):
             self.menu_edit.Enable(k, v)
 
     def __add_menu(self):
@@ -751,7 +759,7 @@ class CPFrame(wx.Frame):
             self.__menu_data_tools_help_menu = wx.Menu()
 
             def on_plate_viewer_help(event):
-                import htmldialog
+                from . import htmldialog
                 dlg = htmldialog.HTMLDialog(
                         self, "Help on plate viewer", cellprofiler.gui.help.PLATEVIEWER_HELP)
                 dlg.Show()
@@ -777,7 +785,7 @@ class CPFrame(wx.Frame):
             self.__data_tools_menu = wx.Menu()
 
             def on_data_tool_overview(event):
-                import htmldialog
+                from . import htmldialog
                 from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
                 dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
                 dlg.Show()
@@ -960,7 +968,7 @@ class CPFrame(wx.Frame):
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_help_path_list(self, event):
-        import htmldialog
+        from . import htmldialog
         dlg = htmldialog.HTMLDialog(self, "Help on file list", cellprofiler.gui.help.HELP_ON_FILE_LIST)
         dlg.Show()
 
@@ -1193,8 +1201,8 @@ class CPFrame(wx.Frame):
     def __make_search_frame(self):
         """Make and hide the "search the help" frame"""
         background_color = cellprofiler.preferences.get_background_color()
-        size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
-                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
+        size = (old_div(wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X), 2),
+                old_div(wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y), 2))
         self.search_frame = wx.Frame(
                 self, title = "Search CellProfiler help",
                 size = size,

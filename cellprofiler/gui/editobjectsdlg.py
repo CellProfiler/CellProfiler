@@ -2,7 +2,16 @@
 """editobjectsdlg.py - a dialog box that lets the user edit objects
 
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import cellprofiler.gui.figure
 import cellprofiler.gui.tools
 import cellprofiler.object
@@ -115,7 +124,7 @@ class EditObjectsDialog(wx.Dialog):
         # Display a UI for choosing objects
         #
         frame_size = wx.GetDisplaySize()
-        frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
+        frame_size = [old_div(max(frame_size[0], frame_size[1]), 2)] * 2
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
         wx.Dialog.__init__(self, None, -1,
                            "",
@@ -607,7 +616,7 @@ class EditObjectsDialog(wx.Dialog):
         """Fix up the labels as we close"""
         if return_code == wx.OK:
             self.EndModal(return_code)
-            open_labels = set([d[self.K_LABEL] for d in self.artists.values()])
+            open_labels = set([d[self.K_LABEL] for d in list(self.artists.values())])
             for l in open_labels:
                 self.close_label(l, False)
             for idx in numpy.argwhere(~self.to_keep).flatten():
@@ -716,7 +725,7 @@ class EditObjectsDialog(wx.Dialog):
         else:
             set_lim = False
         orig_to_show = numpy.ones(len(self.to_keep), bool)
-        for d in self.artists.values():
+        for d in list(self.artists.values()):
             object_number = d[self.K_LABEL]
             if object_number < len(orig_to_show):
                 orig_to_show[object_number] = False
@@ -734,8 +743,8 @@ class EditObjectsDialog(wx.Dialog):
                 if min_intensity == max_intensity:
                     cimage = image.copy()
                 elif self.scaling_mode == self.SM_NORMALIZED:
-                    cimage = (image - min_intensity) / \
-                             (max_intensity - min_intensity)
+                    cimage = old_div((image - min_intensity), \
+                             (max_intensity - min_intensity))
                 else:
                     #
                     # Scale the image to 1 <= image <= e
@@ -743,7 +752,7 @@ class EditObjectsDialog(wx.Dialog):
                     #
                     cimage = numpy.log(
                             1 + (image - min_intensity) *
-                            ((numpy.e - 1) / (max_intensity - min_intensity)))
+                            (old_div((numpy.e - 1), (max_intensity - min_intensity))))
         else:
             cimage = numpy.zeros(
                     (self.shape[0],
@@ -751,7 +760,7 @@ class EditObjectsDialog(wx.Dialog):
                      3), numpy.float)
         if len(self.to_keep) > 1:
             in_artist = numpy.zeros(len(self.to_keep), bool)
-            for d in self.artists.values():
+            for d in list(self.artists.values()):
                 in_artist[d[self.K_LABEL]] = True
             if self.label_display_mode == self.ID_LABELS_OUTLINES:
                 for k, stipple in ((self.to_keep, False), (~self.to_keep, True)):
@@ -800,7 +809,7 @@ class EditObjectsDialog(wx.Dialog):
                             (self.lc[mask, i], (self.li[mask], self.lj[mask])),
                             shape=cimage.shape[:2]).toarray()
                     cimage[has_color > 0, i] = (
-                        rgbval[has_color > 0] / has_color[has_color > 0])
+                        old_div(rgbval[has_color > 0], has_color[has_color > 0]))
         self.orig_axes.imshow(cimage, interpolation=self.interpolation_mode)
         self.set_orig_axes_title()
         if set_lim:
@@ -1243,7 +1252,7 @@ class EditObjectsDialog(wx.Dialog):
 
     def join_objects(self, event):
         all_labels = numpy.unique([
-                                   v[self.K_LABEL] for v in self.artists.values()])
+                                   v[self.K_LABEL] for v in list(self.artists.values())])
         if len(all_labels) < 2:
             return
         assert all_labels[0] == numpy.min(all_labels)
@@ -1275,7 +1284,7 @@ class EditObjectsDialog(wx.Dialog):
             return
 
         all_labels = numpy.unique([
-                                   v[self.K_LABEL] for v in self.artists.values()])
+                                   v[self.K_LABEL] for v in list(self.artists.values())])
         for label in all_labels:
             self.close_label(label, display=False)
         object_number = all_labels[0]
@@ -1308,7 +1317,7 @@ class EditObjectsDialog(wx.Dialog):
             l1 = l[1:, :]
             llen = numpy.sqrt(numpy.sum((l1 - l0) ** 2, 1))
             # the unit vector
-            v = (l1 - l0) / llen[:, numpy.newaxis]
+            v = old_div((l1 - l0), llen[:, numpy.newaxis])
             pt = numpy.ones(l0.shape, l0.dtype)
             pt[:, 0] = pt_i
             pt[:, 1] = pt_j
@@ -1364,13 +1373,13 @@ class EditObjectsDialog(wx.Dialog):
         artist.remove()
         del self.artists[artist]
         if not any([d[self.K_LABEL] == object_number
-                    for d in self.artists.values()]):
+                    for d in list(self.artists.values())]):
             self.remove_label(object_number)
             self.init_labels()
             self.display()
         else:
             # Mark some other artist as edited.
-            for artist, d in self.artists.iteritems():
+            for artist, d in list(self.artists.items()):
                 if d[self.K_LABEL] == object_number:
                     d[self.K_EDITED] = True
 
@@ -1664,7 +1673,7 @@ class EditObjectsDialog(wx.Dialog):
         # Code is public domain
         #
         x, y = artist.get_data()
-        area = abs(numpy.sum((x[:-1] + x[1:]) * (y[:-1] - y[1:]))) / 2
+        area = old_div(abs(numpy.sum((x[:-1] + x[1:]) * (y[:-1] - y[1:]))), 2)
         return area
 
     @staticmethod
@@ -1689,8 +1698,8 @@ class EditObjectsDialog(wx.Dialog):
             idx_right = 1
         else:
             idx_right = idx + 1
-        return ((a[idx_left, :] + a[idx, :]) / 2,
-                (a[idx_right, :] + a[idx, :]) / 2)
+        return (old_div((a[idx_left, :] + a[idx, :]), 2),
+                old_div((a[idx_right, :] + a[idx, :]), 2))
 
     ################################
     #
@@ -1794,7 +1803,7 @@ class EditObjectsDialog(wx.Dialog):
         if (self.delete_mode_start is not None and
                     event.inaxes == self.orig_axes):
             (xmin, xmax), (ymin, ymax) = [
-                [fn(a, b) for fn in min, max]
+                [fn(a, b) for fn in (min, max)]
                 for a, b in
                 (self.delete_mode_start[0], event.xdata),
                 (self.delete_mode_start[1], event.ydata)]
@@ -1851,7 +1860,7 @@ class EditObjectsDialog(wx.Dialog):
             object_numbers.add(self.artists[artist][self.K_LABEL])
             artist.remove()
             del self.artists[artist]
-        for artist, d in self.artists.iteritems():
+        for artist, d in list(self.artists.items()):
             if d[self.K_LABEL] in object_numbers:
                 d[self.K_EDITED] = True
                 object_numbers.remove(d[self.K_LABEL])
@@ -1926,7 +1935,7 @@ class EditObjectsDialog(wx.Dialog):
         else:
             self.help_sash.Show(True)
             w, h = self.GetClientSizeTuple()
-            self.help_sash.SetDefaultSize((w, h / 3))
+            self.help_sash.SetDefaultSize((w, old_div(h, 3)))
         self.layout_sash()
 
     def on_help_sash_drag(self, event):
@@ -1995,7 +2004,7 @@ class EditObjectsDialog(wx.Dialog):
                     accepted = numpy.zeros(len(chain), bool)
                     accepted[0] = True
                     accepted[-1] = True
-                    accepted[int(len(chain) / 2)] = True
+                    accepted[int(old_div(len(chain), 2))] = True
                     while True:
                         idx1 = numpy.cumsum(accepted[:-1])
                         idx0 = idx1 - 1
@@ -2008,8 +2017,8 @@ class EditObjectsDialog(wx.Dialog):
                         if a[idxmax] < 4:
                             break
                         # Pick a point halfway in-between
-                        idx = int((aidx[idx0[idxmax]] +
-                                   aidx[idx1[idxmax]]) / 2)
+                        idx = int(old_div((aidx[idx0[idxmax]] +
+                                   aidx[idx1[idxmax]]), 2))
                         accepted[idx] = True
                     chain = chain[accepted]
                 artist = matplotlib.lines.Line2D(chain[:, 1], chain[:, 0],
@@ -2032,7 +2041,7 @@ class EditObjectsDialog(wx.Dialog):
 
         If edited, update the labeled pixels.
         """
-        my_artists = [artist for artist, data in self.artists.items()
+        my_artists = [artist for artist, data in list(self.artists.items())
                       if data[self.K_LABEL] == label]
         if any([self.artists[artist][self.K_EDITED]
                 for artist in my_artists]):

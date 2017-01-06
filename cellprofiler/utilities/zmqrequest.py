@@ -1,3 +1,13 @@
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 import errno
 import logging
 
@@ -9,7 +19,7 @@ import sys
 import threading
 import uuid
 import zmq
-import Queue
+import queue
 import numpy as np
 import cellprofiler.grid as cpg
 
@@ -85,7 +95,7 @@ def make_sendable_dictionary(d):
     '''Make a dictionary that passes muster with JSON'''
     result = {}
     fake_key_idx = 1
-    for k, v in d.items():
+    for k, v in list(d.items()):
         if (isinstance(k, basestring) and k.startswith('_')) or callable(d[k]):
             continue
         if isinstance(v, dict):
@@ -120,7 +130,7 @@ def make_sendable_sequence(l):
 def decode_sendable_dictionary(d):
     '''Decode the dictionary encoded by make_sendable_dictionary'''
     result = {}
-    for k, v in d.items():
+    for k, v in list(d.items()):
         if k == SD_KEY_DICT:
             continue
         if isinstance(v, dict):
@@ -213,8 +223,8 @@ class Communicable(object):
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:
-            print "Communicable could not instantiate %s from module %s with kwargs %s" % (
-                module, classname, attribute_dict)
+            print("Communicable could not instantiate %s from module %s with kwargs %s" % (
+                module, classname, attribute_dict))
             raise
         instance._remote = True
         instance._routing = routing
@@ -502,7 +512,7 @@ class Boundary(object):
         self.request_dictionary = {}
         self.zmq_context = zmq.Context()
         # The downward queue is used to feed replies to the socket thread
-        self.downward_queue = Queue.Queue()
+        self.downward_queue = queue.Queue()
 
         # socket for handling downward notifications
         self.selfnotify_socket = self.zmq_context.socket(zmq.SUB)
@@ -576,7 +586,7 @@ class Boundary(object):
             self.analysis_dictionary[analysis_id] = AnalysisContext(
                     analysis_id, upward_queue,
                     self.analysis_dictionary_lock)
-        response_queue = Queue.Queue()
+        response_queue = queue.Queue()
         self.send_to_boundary_thread(self.NOTIFY_REGISTER_ANALYSIS,
                                      (analysis_id, response_queue))
         response_queue.get()
@@ -609,7 +619,7 @@ class Boundary(object):
             if self.analysis_dictionary[analysis_id].cancelled:
                 return
             self.analysis_dictionary[analysis_id].cancel()
-        response_queue = Queue.Queue()
+        response_queue = queue.Queue()
         self.send_to_boundary_thread(self.NOTIFY_CANCEL_ANALYSIS,
                                      (analysis_id, response_queue))
         response_queue.get()
@@ -660,7 +670,7 @@ class Boundary(object):
                                     analysis_id, response_queue)
                         elif notification == self.NOTIFY_STOP:
                             received_stop = True
-                except Queue.Empty:
+                except queue.Empty:
                     pass
                 #
                 # Then process the poll result
@@ -711,15 +721,15 @@ class Boundary(object):
             # blocks?
             self.announce_socket.close()
             with self.analysis_dictionary_lock:
-                for analysis_context in self.analysis_dictionary.values():
+                for analysis_context in list(self.analysis_dictionary.values()):
                     analysis_context.cancel()
-                for request_class_queue in self.request_dictionary.values():
+                for request_class_queue in list(self.request_dictionary.values()):
                     #
                     # Tell each response class to stop. Wait for a reply
                     # which may be a thread instance. If so, join to the
                     # thread so there will be an orderly shutdown.
                     #
-                    response_queue = Queue.Queue()
+                    response_queue = queue.Queue()
                     request_class_queue.put(
                             [self, self.NOTIFY_STOP, response_queue])
                     thread = response_queue.get()
@@ -761,7 +771,7 @@ class Boundary(object):
     def announce_analyses(self):
         with self.analysis_dictionary_lock:
             valid_analysis_ids = [
-                analysis_id for analysis_id in self.analysis_dictionary.keys()
+                analysis_id for analysis_id in list(self.analysis_dictionary.keys())
                 if not self.analysis_dictionary[analysis_id].cancelled]
         self.announce_socket.send_json([
                                            (analysis_id, self.request_address)
@@ -789,7 +799,7 @@ class Boundary(object):
         response_queue.put("OK")
 
 
-__lock_queue = Queue.Queue()
+__lock_queue = queue.Queue()
 __lock_thread = None
 
 LOCK_REQUEST = "Lock request"
@@ -917,7 +927,7 @@ def lock_file(path, timeout=3):
     #
     # The coast is clear to lock
     #
-    q = Queue.Queue()
+    q = queue.Queue()
     start_lock_thread()
     __lock_queue.put((None, LOCK_REQUEST, (uid, path), q))
     q.get()
@@ -928,7 +938,7 @@ def unlock_file(path):
     '''Unlock the file at the given path'''
     if the_boundary is None:
         return
-    q = Queue.Queue()
+    q = queue.Queue()
     start_lock_thread()
     __lock_queue.put((None, UNLOCK_REQUEST, path, q))
     result = q.get()
@@ -948,9 +958,9 @@ if __name__ == '__main__':
         mysock.connect(address)
         req = Request(this='is', a='test', b=5, c=1.3, d=np.arange(10), e=[{'q': np.arange(5)}])
         rep = req.send(mysock)
-        print "subproc received", rep, rep.__dict__
+        print("subproc received", rep, rep.__dict__)
         rep = rep.reply(Reply(msg='FOO'), please_reply=True)
-        print "subproc received", rep, rep.__dict__
+        print("subproc received", rep, rep.__dict__)
 
 
     if 'subproc' in sys.argv[1:]:
@@ -958,7 +968,7 @@ if __name__ == '__main__':
     else:
         import subprocess
 
-        upq = Queue.Queue()
+        upq = queue.Queue()
         cv = threading.Condition()
         boundary = Boundary('tcp://127.0.0.1', upq, cv)
         s = subprocess.Popen(['python', sys.argv[0], 'subproc', boundary.request_address])
@@ -968,10 +978,10 @@ if __name__ == '__main__':
             while upq.empty():
                 cv.wait()
             req = upq.get()
-            print "mainproc received", req, req.__dict__
+            print("mainproc received", req, req.__dict__)
             rep = Reply(this='is', your='reply')
             rep2 = req.reply(rep, please_reply=True)
-            print "mainproc received", rep2, rep2.__dict__
+            print("mainproc received", rep2, rep2.__dict__)
             rep2.reply(Reply(message='done'))
 
         s.wait()

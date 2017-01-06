@@ -1,17 +1,28 @@
 # coding=utf-8
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import bisect
 import cellprofiler.gui
 import cellprofiler.preferences
 import logging
 import numpy
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import uuid
 import wx
 import wx.lib.scrolledpanel
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +259,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         for i, path in enumerate(paths):
             if i % 100 == 0:
                 cellprofiler.preferences.report_progress(
-                        uid, float(i) / npaths,
+                        uid, old_div(float(i), npaths),
                              "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
             display_name = urllib2.url2pathname(filename)
@@ -327,7 +338,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         For files, the user expects to see a path, not a URL
         """
         if folder.startswith("file:"):
-            return urllib.url2pathname(folder[5:]).decode("utf8")
+            return urllib.request.url2pathname(folder[5:]).decode("utf8")
         return folder
 
     def recalc(self):
@@ -589,8 +600,8 @@ class PathListCtrl(wx.PyScrolledWindow):
             paint_dc.SetFont(font)
             text_width, text_height = paint_dc.GetTextExtent(text)
             paint_dc.DrawText(text,
-                              (width - text_width) / 2,
-                              (height - text_height) / 2)
+                              old_div((width - text_width), 2),
+                              old_div((height - text_height), 2))
             paint_dc.SetFont(self.Font)
 
         selected_text = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
@@ -599,7 +610,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             y = self.GetScrollPos(wx.SB_VERTICAL)
             line_height = self.line_height + self.leading
             yline = min(y, len(self))
-            yline_max = min(yline + (height + line_height - 1) / line_height,
+            yline_max = min(yline + old_div((height + line_height - 1), line_height),
                             len(self))
             sel_width = 0
             #
@@ -681,7 +692,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             return -1
         x, y = event.GetPositionTuple()
         line_height = self.line_height + self.leading
-        idx = int(y / line_height) + self.GetScrollPos(wx.SB_VERTICAL)
+        idx = int(old_div(y, line_height)) + self.GetScrollPos(wx.SB_VERTICAL)
         idx = max(0, min(len(self) - 1, idx))
         if y < line_height:
             # It's the slightly bogus directory at the top
@@ -796,7 +807,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         idx_min = self.GetScrollPos(wx.SB_VERTICAL)
         current_x = self.GetScrollPos(wx.SB_HORIZONTAL)
         _, height = self.GetSizeTuple()
-        height = int(height / (self.line_height + self.leading))
+        height = int(old_div(height, (self.line_height + self.leading)))
         idx_max = idx_min + height
         if self.focus_item <= idx_min:
             self.Scroll(current_x, self.focus_item - 1)

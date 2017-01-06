@@ -116,7 +116,17 @@ SMC-3(6):610-621.
 <a href="http://dx.doi.org/10.1049/ji-3-2.1946.0074">(link)</a></li>
 </ul>
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from builtins import range
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -272,11 +282,11 @@ class MeasureTexture(cpm.Module):
         return self.images_or_objects in (IO_OBJECTS, IO_BOTH)
 
     def add_image_cb(self, can_remove=True):
-        '''Add an image to the image_groups collection
+        """Add an image to the image_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -290,11 +300,11 @@ class MeasureTexture(cpm.Module):
         self.image_groups.append(group)
 
     def add_object_cb(self, can_remove=True):
-        '''Add an object to the object_groups collection
+        """Add an object to the object_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for objects that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -313,11 +323,11 @@ class MeasureTexture(cpm.Module):
         self.object_groups.append(group)
 
     def add_scale_cb(self, can_remove=True):
-        '''Add a scale to the scale_groups collection
+        """Add a scale to the scale_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for scales that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -396,28 +406,28 @@ class MeasureTexture(cpm.Module):
             return []
 
     def get_features(self):
-        '''Return the feature names for this pipeline's configuration'''
+        """Return the feature names for this pipeline's configuration"""
         return F_HARALICK + ([F_GABOR] if self.wants_gabor else [])
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Get the measurements made on the given object in the given category
+        """Get the measurements made on the given object in the given category
 
         pipeline - pipeline being run
         object_name - name of objects being measured
         category - measurement category
-        '''
+        """
         if category in self.get_categories(pipeline, object_name):
             return self.get_features()
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        '''Get the list of images measured
+        """Get the list of images measured
 
         pipeline - pipeline being run
         object_name - name of objects being measured
         category - measurement category
         measurement - measurement made on images
-        '''
+        """
         measurements = self.get_measurements(pipeline, object_name, category)
         if measurement in measurements:
             return [x.image_name.value for x in self.image_groups]
@@ -425,14 +435,14 @@ class MeasureTexture(cpm.Module):
 
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_name):
-        '''Get the list of scales at which the measurement was taken
+        """Get the list of scales at which the measurement was taken
 
         pipeline - pipeline being run
         object_name - name of objects being measured
         category - measurement category
         measurement - name of measurement made
         image_name - name of image that was measured
-        '''
+        """
         if len(self.get_measurement_images(pipeline, object_name, category,
                                            measurement)) > 0:
             if measurement == F_GABOR:
@@ -444,7 +454,7 @@ class MeasureTexture(cpm.Module):
         return []
 
     def get_measurement_columns(self, pipeline):
-        '''Get column names output for each measurement.'''
+        """Get column names output for each measurement."""
         cols = []
         if self.wants_image_measurements():
             for feature in self.get_features():
@@ -581,7 +591,7 @@ class MeasureTexture(cpm.Module):
             return scale, -scale
 
     def run_image(self, image_name, scale, angle, workspace):
-        '''Run measurements on image'''
+        """Run measurements on image"""
         statistics = []
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)

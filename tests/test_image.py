@@ -1,6 +1,14 @@
 """test_Image.py - test the CellProfiler.Image module
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
 import math
 import unittest
 
@@ -192,7 +200,7 @@ class TestImageSetList(unittest.TestCase):
         y = x.get_image_set(0)
         self.assertEqual(x.count(), 1, "# of elements was %d, should be 1" % (x.count()))
         self.assertEqual(y.number, 0, "The image set should be #0, was %d" % y.number)
-        self.assertTrue(y.keys.has_key("number"), "The image set was missing a number key")
+        self.assertTrue("number" in y.keys, "The image set was missing a number key")
         self.assertEqual(y.keys["number"], 0,
                          "The number key should be zero, was %s" % (repr(y.keys["number"])))
 
@@ -289,7 +297,7 @@ class TestImageSetList(unittest.TestCase):
         y = cpi.ImageSetList()
         y.load_state(s)
         self.assertEquals(y.count(), 5)
-        self.assertTrue(y.legacy_fields.has_key('dictionary'))
-        for key in d.keys():
-            self.assertTrue(y.legacy_fields['dictionary'].has_key(key))
+        self.assertTrue('dictionary' in y.legacy_fields)
+        for key in list(d.keys()):
+            self.assertTrue(key in y.legacy_fields['dictionary'])
             self.assertEqual(y.legacy_fields['dictionary'][key], d[key])

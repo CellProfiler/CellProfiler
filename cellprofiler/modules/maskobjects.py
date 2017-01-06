@@ -1,4 +1,4 @@
-'''<b>Mask Objects</b> removes objects outside of a specified region or regions.
+"""<b>Mask Objects</b> removes objects outside of a specified region or regions.
 <hr>
 This module allows you to delete the objects or portions of objects that are
 outside of a region (mask) you specify. For example, after
@@ -24,8 +24,16 @@ of the region. </p>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
 mass of the masked objects.</li>
 </ul>
-'''
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -37,7 +45,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
+from . import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.setting import YES, NO
 
@@ -68,10 +76,10 @@ S_DICTIONARY = {
 
 
 def s_lookup(x):
-    '''Look up the current value for a setting choice w/backwards compatibility
+    """Look up the current value for a setting choice w/backwards compatibility
 
     x - setting value from pipeline
-    '''
+    """
     return S_DICTIONARY.get(x, x)
 
 
@@ -81,7 +89,7 @@ class MaskObjects(I.Identify):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings that control this module'''
+        """Create the settings that control this module"""
         self.object_name = cps.ObjectNameSubscriber(
                 "Select objects to be masked", cps.NONE, doc="""
             Select the objects that will be masked (that is, excluded in whole
@@ -195,7 +203,7 @@ class MaskObjects(I.Identify):
             %(NAMING_OUTLINES_HELP)s""" % globals())
 
     def settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image, self.overlap_choice,
                 self.overlap_fraction, self.retain_or_renumber,
@@ -203,7 +211,7 @@ class MaskObjects(I.Identify):
                 self.wants_inverted_mask]
 
     def help_settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image,
                 self.wants_inverted_mask,
@@ -211,7 +219,7 @@ class MaskObjects(I.Identify):
                 self.wants_outlines, self.outlines_name]
 
     def visible_settings(self):
-        '''The settings as they appear in the UI'''
+        """The settings as they appear in the UI"""
         result = [self.object_name, self.remaining_objects, self.mask_choice,
                   self.masking_image if self.mask_choice == MC_IMAGE
                   else self.masking_objects, self.wants_inverted_mask,
@@ -226,7 +234,7 @@ class MaskObjects(I.Identify):
         return result
 
     def run(self, workspace):
-        '''Run the module on an image set'''
+        """Run the module on an image set"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
@@ -271,7 +279,7 @@ class MaskObjects(I.Identify):
                     keep = pixel_counts == total_pixels
                 elif self.overlap_choice == P_REMOVE_PERCENTAGE:
                     fraction = self.overlap_fraction.value
-                    keep = pixel_counts / total_pixels >= fraction
+                    keep = old_div(pixel_counts, total_pixels) >= fraction
                 else:
                     raise NotImplementedError("Unknown overlap-handling choice: %s",
                                               self.overlap_choice.value)
@@ -335,7 +343,7 @@ class MaskObjects(I.Identify):
             workspace.display_data.mask = mask
 
     def display(self, workspace, figure):
-        '''Create an informative display for the module'''
+        """Create an informative display for the module"""
         import matplotlib
         from cellprofiler.gui.tools import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
@@ -363,8 +371,8 @@ class MaskObjects(I.Identify):
         # and the outlines of removed objects red.
         #
         final_outlines = outline(final_labels) > 0
-        original_color = np.array(cpprefs.get_secondary_outline_color(), float) / 255
-        final_color = np.array(cpprefs.get_primary_outline_color(), float) / 255
+        original_color = old_div(np.array(cpprefs.get_secondary_outline_color(), float), 255)
+        final_color = old_div(np.array(cpprefs.get_primary_outline_color(), float), 255)
         image[outlines, :] = original_color[np.newaxis, :]
         image[final_outlines, :] = final_color[np.newaxis, :]
 
@@ -376,7 +384,7 @@ class MaskObjects(I.Identify):
                                     sharexy=figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
@@ -398,22 +406,22 @@ class MaskObjects(I.Identify):
                                           object_dictionary)
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
+        """Get the dictionary of parent child relationships
 
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
+        """
         object_dictionary = {
             self.remaining_objects.value: [self.object_name.value]
         }
         return object_dictionary
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return names of the measurements made by this module
+        """Return names of the measurements made by this module
 
         pipeline - pipeline being run
         object_name - object being measured (or Image)
         category - category of measurement, for instance, "Location"
-        '''
+        """
         return self.get_object_measurements(pipeline, object_name, category,
                                             self.get_object_dictionary())
 

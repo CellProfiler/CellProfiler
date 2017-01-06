@@ -19,12 +19,20 @@ parts.
 Features names are in the format,
 "MT_Intensity_<i>Image name</i>_N<i>(radial degree)</i>M<i>(Azimuthal degree)</i>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 #################################
 #
 # Imports from useful Python libraries
 #
 #################################
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 
@@ -377,8 +385,8 @@ class MeasurementTemplate(cpm.Module):
         # the circle. Again, we use the indexing trick to look up the
         # values for each object.
         #
-        y = y.astype(float) / radius[labels]
-        x = x.astype(float) / radius[labels]
+        y = old_div(y.astype(float), radius[labels])
+        x = old_div(x.astype(float), radius[labels])
         #
         #################################
         #
@@ -543,11 +551,11 @@ class MeasurementTemplate(cpm.Module):
 
         returns a greyscale image based on the feature dictionary.
         '''
-        i, j = np.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(float) / radius
+        i, j = old_div(np.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(float), radius)
         mask = (i * i + j * j) <= 1
 
-        zernike_indexes = np.array(feature_dictionary.keys())
-        zernike_features = np.array(feature_dictionary.values())
+        zernike_indexes = np.array(list(feature_dictionary.keys()))
+        zernike_features = np.array(list(feature_dictionary.values()))
 
         z = construct_zernike_polynomials(
                 j, i, np.abs(zernike_indexes), mask=mask)

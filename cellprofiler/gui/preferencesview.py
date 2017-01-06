@@ -1,7 +1,17 @@
 # coding=utf-8
 """PreferencesView.py - displays the default preferences in the lower right corner
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import next
+from builtins import object
+from past.utils import old_div
 import cellprofiler.analysis
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
@@ -447,7 +457,7 @@ class PreferencesView(object):
         self.__progress_msg_ctrl.Label = message
         if remaining_time is not None:
             self.__progress_bar.Value = \
-                (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
+                old_div((100 * elapsed_time), (elapsed_time + remaining_time + .00001))
             timestr = 'Time %s/%s' % (
                 secs_to_timestr(elapsed_time),
                 secs_to_timestr(elapsed_time + remaining_time))
@@ -476,7 +486,7 @@ class PreferencesView(object):
             if len(self.__errors) == 0:
                 self.set_message_text(WELCOME_MESSAGE)
             else:
-                self.set_message_text(self.__errors.__iter__().next())
+                self.set_message_text(next(self.__errors.__iter__()))
 
     def set_error_text(self, error_text):
         self.set_message_text(error_text)
@@ -690,7 +700,7 @@ class ProgressWatcher(object):
         if (self.end_times is None) or (self.num_received == 0):
             return 2 * self.elapsed_time()  # We have not started the first module yet
         else:
-            expected_per_job = self.end_times[self.num_received] / self.num_received
+            expected_per_job = old_div(self.end_times[self.num_received], self.num_received)
             return expected_per_job * (self.num_jobs - self.num_received)
 
 

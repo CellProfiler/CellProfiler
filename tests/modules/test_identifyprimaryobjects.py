@@ -1,6 +1,16 @@
 """test_identifyprimautomatic.py: test the IdentifyPrimAutomatic module
 """
-import StringIO
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
+import io
 import base64
 import os
 import unittest
@@ -854,7 +864,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                                                 cellprofiler.pipeline.LoadExceptionEvent)))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         x = pipeline.modules()[0]
         self.assertTrue(isinstance(x, ID.IdentifyPrimaryObjects))
 
@@ -1007,7 +1017,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                 'afyW88ka9/zdp9/max52+Z//9VH5gW7l+6b8veb+e/Fd2NT9hcW7/P'
                 'zT67fOl/9tZZsgEA6Ux4DA==')
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
@@ -1049,7 +1059,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                 'LoRcQoQ0dCbO7/R43T5kMuKEwfL5KU88Y/1Muw587PMmD55NiWfzKh'
                 '5cRpTjSrOhW2wmZ3XIcSmedrR5S5tsaeU6Tl3C665H2Pp7OHd9/eW6'
                 'd9rj70YQvvDYRb5pD1zEqaDA/VZu1t7z19i3cgtq/w8+vUjz')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        fd = io.StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.load_error_handler)
         pipeline.load(fd)
@@ -1092,7 +1102,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
 
         pipeline.add_listener(callback)
         pipeline.load(
-                StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+                io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
@@ -1201,7 +1211,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
                     isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
@@ -1624,7 +1634,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
                     isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[4]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
         self.assertEqual(module.image_name, "Channel0")
@@ -1885,7 +1895,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                     isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         for module, averaging_method, variance_method in zip(
                 pipeline.modules(),
                 (I.RB_MEAN, I.RB_MEDIAN, I.RB_MODE),
@@ -2133,11 +2143,11 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image = np.zeros((120, 110))
         for i0, i1 in ((0, 60), (60, 120)):
             for j0, j1 in ((0, 55), (55, 110)):
-                dmin = float(i0 * 2 + j0) / 500.0
+                dmin = old_div(float(i0 * 2 + j0), 500.0)
                 dmult = 1.0 - dmin
                 # use the sine here to get a bimodal distribution of values
                 r = np.random.uniform(0, np.pi * 2, (60, 55))
-                rsin = (np.sin(r) + 1) / 2
+                rsin = old_div((np.sin(r) + 1), 2)
                 image[i0:i1, j0:j1] = dmin + rsin * dmult
         workspace, x = self.make_workspace(image)
         assert isinstance(x, ID.IdentifyPrimaryObjects)
@@ -2164,7 +2174,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 # the following makes a pattern of thresholds where
                 # each square has a different threshold from its 8-connected
                 # neighbors
-                dmin = float((i % 2) * 2 + (j % 2)) / 8.0
+                dmin = old_div(float((i % 2) * 2 + (j % 2)), 8.0)
                 dmult = 1.0 - dmin
 
                 def b(x):
@@ -2175,7 +2185,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 ((i0, i1), (j0, j1)) = dim
                 # use the sine here to get a bimodal distribution of values
                 r = np.random.uniform(0, np.pi * 2, (i1 - i0, j1 - j0))
-                rsin = (np.sin(r) + 1) / 2
+                rsin = old_div((np.sin(r) + 1), 2)
                 image[i0:i1, j0:j1] = dmin + rsin * dmult
         workspace, x = self.make_workspace(image)
         assert isinstance(x, ID.IdentifyPrimaryObjects)
@@ -2321,7 +2331,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         '''Test the background method with a mixture of gaussian distributions'''
         np.random.seed(103)
         image = np.random.normal(.2, .01, size=10000)
-        ind = np.random.permutation(int(image.shape[0]))[:image.shape[0] / 5]
+        ind = np.random.permutation(int(image.shape[0]))[:old_div(image.shape[0], 5)]
         image[ind] = np.random.normal(.5, .2, size=len(ind))
         image[image < 0] = 0
         image[image > 1] = 1
@@ -2429,7 +2439,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         # This array has two intensity peaks separated by a border.
         # You should get two objects, one within the other.
         #
-        pixels = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        pixels = old_div(np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
                            [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
@@ -2447,7 +2457,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                            [0, 0, 2, 2, 2, 2, 2, 2, 9, 9, 0, 0],
                            [0, 0, 2, 2, 2, 2, 2, 2, 9, 9, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], float) / 10.0
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], float), 10.0)
         expected = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
@@ -2524,7 +2534,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         #
         if True:
             return
-        pixels = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        pixels = old_div(np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
                            [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
@@ -2540,7 +2550,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                            [0, 0, 2, 2, 2, 2, 2, 2, 9, 2, 0, 0],
                            [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], float) / 10.0
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], float), 10.0)
         expected = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
@@ -2849,7 +2859,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''
     np.random.seed(0)
-    noise = np.random.uniform(low=1 - fraction / 2, high=1 + fraction / 2,
+    noise = np.random.uniform(low=1 - old_div(fraction, 2), high=1 + old_div(fraction, 2),
                               size=img.shape)
     return img * noise
 
@@ -2904,7 +2914,7 @@ class TestWeightedVariance(unittest.TestCase):
         #
         # The log of this array is [-4,-3],[-2,-1] and
         # the variance should be (.25 *2 + .25 *2)/4 = .25
-        img = np.array([[1.0 / 16., 1.0 / 8.0], [1.0 / 4.0, 1.0 / 2.0]])
+        img = np.array([[old_div(1.0, 16.), old_div(1.0, 8.0)], [old_div(1.0, 4.0), old_div(1.0, 2.0)]])
         binary_image = np.array([[False, False], [True, True]])
         output = T.weighted_variance(img, np.ones((2, 2), bool), binary_image)
         self.assertAlmostEqual(output, .25)
@@ -2914,7 +2924,7 @@ class TestWeightedVariance(unittest.TestCase):
         #
         # The log of this array is [-4,-3],[-2,-1] and
         # the variance should be (.25*2 + .25 *2)/4 = .25
-        img = np.array([[1.0 / 16., 1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 4.0, 1.0 / 2.0]])
+        img = np.array([[old_div(1.0, 16.), old_div(1.0, 16.0), old_div(1.0, 8.0)], [old_div(1.0, 4.0), old_div(1.0, 4.0), old_div(1.0, 2.0)]])
         mask = np.array([[False, True, True], [False, True, True]])
         binary_image = np.array([[False, False, False], [True, True, True]])
         output = T.weighted_variance(img, mask, binary_image)

@@ -1,12 +1,20 @@
 '''test_calculatestatistics.py - test the CalculateStatistics module
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 import base64
 import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from cellprofiler.preferences import set_headless
@@ -498,9 +506,9 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
 
         m = cpmeas.Measurements()
         nimages = None
-        for object_name in mdict.keys():
+        for object_name in list(mdict.keys()):
             odict = mdict[object_name]
-            for feature in odict.keys():
+            for feature in list(odict.keys()):
                 m.add_all_measurements(object_name, feature, odict[feature])
                 if nimages is None:
                     nimages = len(odict[feature])

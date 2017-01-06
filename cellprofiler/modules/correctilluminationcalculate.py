@@ -1,4 +1,4 @@
-'''<b>Correct Illumination - Calculate</b> calculates an illumination function that is used to correct uneven
+"""<b>Correct Illumination - Calculate</b> calculates an illumination function that is used to correct uneven
 illumination/lighting/shading or to reduce uneven background in images.
 <hr>
 This module calculates an illumination function that can either be saved to the
@@ -14,8 +14,18 @@ Illumination correction is a challenge to do properly; please see the
 on the CellProfiler website for further advice.
 
 See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import centrosome.cpmorphology as cpmm
 import numpy as np
 import scipy.linalg
@@ -78,19 +88,19 @@ class CorrectIlluminationCalculate(cpm.Module):
         """Create the setting variables
         """
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''
-            Choose the image to be used to calculate the illumination function.''')
+                "Select the input image", cps.NONE, doc="""
+            Choose the image to be used to calculate the illumination function.""")
 
         self.illumination_image_name = cps.ImageNameProvider(
-                "Name the output image", "IllumBlue", doc='''
-            Enter a name for the resultant illumination function.''',
+                "Name the output image", "IllumBlue", doc="""
+            Enter a name for the resultant illumination function.""",
                 provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
                                      cps.AVAILABLE_ON_LAST_ATTRIBUTE: False})
 
         self.intensity_choice = cps.Choice(
                 "Select how the illumination function is calculated",
                 [IC_REGULAR, IC_BACKGROUND],
-                IC_REGULAR, doc='''
+                IC_REGULAR, doc="""
             Choose which method you want to use to calculate the illumination function. You may chose
             from the following options:
             <ul>
@@ -122,32 +132,32 @@ class CorrectIlluminationCalculate(cpm.Module):
              mask will be excluded from consideration. This is useful, for instance, in cases where
              you have masked out the well edge in an image from a multi-well plate; the dark well
              edge would distort the illumination correction function along the interior well edge.
-             Masking the image beforehand solves this problem.</p>''' % globals())
+             Masking the image beforehand solves this problem.</p>""" % globals())
 
         self.dilate_objects = cps.Binary(
-                "Dilate objects in the final averaged image?", False, doc='''
+                "Dilate objects in the final averaged image?", False, doc="""
             <i>(Used only if the Regular method is selected)</i><br>
             For some applications, the incoming images are binary and each object
             should be dilated with a Gaussian filter in the final averaged
             (projection) image. This is for a sophisticated method of illumination
             correction where model objects are produced.
             Select <i>%(YES)s</i> to dilate objects for this approach.
-            ''' % globals())
+            """ % globals())
 
         self.object_dilation_radius = cps.Integer(
-                "Dilation radius", 1, 0, doc='''
+                "Dilation radius", 1, 0, doc="""
             <i>(Used only if the "%(IC_REGULAR)s" method and dilation is selected)</i><br>
-            This value should be roughly equal to the original radius of the objects''' % globals())
+            This value should be roughly equal to the original radius of the objects""" % globals())
 
         self.block_size = cps.Integer(
-                "Block size", 60, 1, doc='''
+                "Block size", 60, 1, doc="""
             <i>(Used only if "%(IC_BACKGROUND)s" is selected)</i><br>
             The block size should be large enough that every square block of pixels is likely
-            to contain some background pixels, where no objects are located.''' % globals())
+            to contain some background pixels, where no objects are located.""" % globals())
 
         self.rescale_option = cps.Choice(
                 "Rescale the illumination function?",
-                [cps.YES, cps.NO, RE_MEDIAN], doc='''
+                [cps.YES, cps.NO, RE_MEDIAN], doc="""
             The illumination function can be rescaled so that the pixel intensities
             are all equal to or greater than 1. You have the following options:
             <ul>
@@ -163,11 +173,11 @@ class CorrectIlluminationCalculate(cpm.Module):
             to be very dark. </li>
             <li>%(RE_MEDIAN)s<i>:</i> This option chooses the median value in the
             image to rescale so that division increases some values and decreases others.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.each_or_all = cps.Choice(
                 "Calculate function for each image individually, or based on all images?",
-                [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc='''
+                [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc="""
             Calculate a separate function for each image, or one for all the images?
             You can calculate the illumination function using just the current
             image or you can calculate the illumination function using all of
@@ -193,7 +203,7 @@ class CorrectIlluminationCalculate(cpm.Module):
             after the last cycle in the group and then use the resulting
             image in another pipeline. The option is useful if you want to exclude
             images that are filtered by a prior <b>FlagImage</b> module.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.smoothing_method = cps.Choice(
                 "Smoothing method",
@@ -203,7 +213,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                  SM_MEDIAN_FILTER,
                  SM_GAUSSIAN_FILTER,
                  SM_TO_AVERAGE,
-                 SM_SPLINES], doc='''
+                 SM_SPLINES], doc="""
              If requested, the resulting image is smoothed. See the
              <b>EnhanceOrSuppressFeatures</b> module help for more details. If you are using <i>Each</i> mode,
              this is almost certainly necessary. If you have few objects in each image or a
@@ -258,11 +268,11 @@ class CorrectIlluminationCalculate(cpm.Module):
              stained cells.", Proceedings of the 12th Scandinavian Conference on Image
              Analysis (SCIA), pp. 264-271</li>
              </ul>
-             ''' % globals())
+             """ % globals())
 
         self.automatic_object_width = cps.Choice(
                 "Method to calculate smoothing filter size",
-                [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc='''
+                [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc="""
             <i>(Used only if a smoothing method other than Fit Polynomial is selected)</i><br>
             Calculate the smoothing filter size. There are three options:
             <ul>
@@ -271,43 +281,43 @@ class CorrectIlluminationCalculate(cpm.Module):
             <li><i>%(FI_OBJECT_SIZE)s:</i> The size is obtained relative to the width
             of artifacts to be smoothed.</li>
             <li><i>%(FI_MANUALLY)s:</i> Use a manually entered value.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.object_width = cps.Integer(
-                "Approximate object size", 10, doc='''
+                "Approximate object size", 10, doc="""
             <i>(Used only if %(FI_AUTOMATIC)s is selected for smoothing filter size calculation)</i><br>
-            Enter the approximate width of the artifacts to be smoothed, in pixels.''' % globals())
+            Enter the approximate width of the artifacts to be smoothed, in pixels.""" % globals())
 
         self.size_of_smoothing_filter = cps.Integer(
-                "Smoothing filter size", 10, doc='''
+                "Smoothing filter size", 10, doc="""
             <i>(Used only if %(FI_MANUALLY)s is selected for smoothing filter size calculation)</i><br>
-            Enter the size of the desired smoothing filter, in pixels.''' % globals())
+            Enter the size of the desired smoothing filter, in pixels.""" % globals())
 
         self.save_average_image = cps.Binary(
-                "Retain the averaged image?", False, doc='''
+                "Retain the averaged image?", False, doc="""
             The averaged image is the illumination function
             prior to dilation or smoothing. It is an image produced during the calculations, not typically
             needed for downstream modules. It can be helpful to retain it in case you wish to try several
             different smoothing methods without taking the time to recalculate the averaged image each time.
             <p>Select <i>%(YES)s</i> to retain this averaged image. Use the <b>SaveImages</b> module to save
-            it to your hard drive.</p>''' % globals())
+            it to your hard drive.</p>""" % globals())
 
         self.average_image_name = cps.ImageNameProvider(
-                "Name the averaged image", "IllumBlueAvg", doc='''
+                "Name the averaged image", "IllumBlueAvg", doc="""
             <i>(Used only if the averaged image is to be retained for later use in the pipeline)</i><br>
-            Enter a name that will allow the averaged image to be selected later in the pipeline.''')
+            Enter a name that will allow the averaged image to be selected later in the pipeline.""")
 
         self.save_dilated_image = cps.Binary(
-                "Retain the dilated image?", False, doc='''
+                "Retain the dilated image?", False, doc="""
             The dilated image is the illumination function after dilation but prior to smoothing.
             It is an image produced during the calculations, and is not typically needed for downstream modules.
             <p>Select <i>%(YES)s</i> to retain this dilated image. Use the <b>SaveImages</b> module to save it
-            to your hard drive.</p>''' % globals())
+            to your hard drive.</p>""" % globals())
 
         self.dilated_image_name = cps.ImageNameProvider(
-                "Name the dilated image", "IllumBlueDilated", doc='''
+                "Name the dilated image", "IllumBlueDilated", doc="""
             <i>(Used only if the dilated image is to be retained for later use in the pipeline)</i><br>
-            Enter a name that will allow the dilated image to be selected later in the pipeline.''')
+            Enter a name that will allow the dilated image to be selected later in the pipeline.""")
 
         self.automatic_splines = cps.Binary(
                 "Automatically calculate spline parameters?", True, doc="""
@@ -553,16 +563,16 @@ class CorrectIlluminationCalculate(cpm.Module):
             workspace.display_data.output_image = output_image.pixel_data
 
     def is_aggregation_module(self):
-        '''Return True if aggregation is performed within a group'''
+        """Return True if aggregation is performed within a group"""
         return self.each_or_all != EA_EACH
 
     def post_group(self, workspace, grouping):
-        '''Handle tasks to be performed after a group has been processed
+        """Handle tasks to be performed after a group has been processed
 
         For CorrectIllumninationCalculate, we make sure the current image
         set includes the aggregate image. "run" may not have run if an
         image was filtered out.
-        '''
+        """
         if self.each_or_all != EA_EACH:
             image_set = workspace.image_set
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
@@ -662,7 +672,7 @@ class CorrectIlluminationCalculate(cpm.Module):
         elif self.automatic_object_width == FI_OBJECT_SIZE:
             return self.object_width.value * 2.35 / 3.5
         elif self.automatic_object_width == FI_AUTOMATIC:
-            return min(30, float(np.max(image_shape)) / 40.0)
+            return min(30, old_div(float(np.max(image_shape)), 40.0))
 
     def preprocess_image_for_averaging(self, orig_image):
         """Create a version of the image appropriate for averaging
@@ -721,9 +731,9 @@ class CorrectIlluminationCalculate(cpm.Module):
         return output_image
 
     def smooth_plane(self, pixel_data, mask):
-        '''Smooth one 2-d color plane of an image'''
+        """Smooth one 2-d color plane of an image"""
 
-        sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
+        sigma = old_div(self.smoothing_filter_size(pixel_data.shape), 2.35)
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
             output_pixels = fit_polynomial(pixel_data, mask)
         elif self.smoothing_method == SM_GAUSSIAN_FILTER:
@@ -756,7 +766,7 @@ class CorrectIlluminationCalculate(cpm.Module):
         return output_pixels
 
     def smooth_with_convex_hull(self, pixel_data, mask):
-        '''Use the convex hull transform to smooth the image'''
+        """Use the convex hull transform to smooth the image"""
         #
         # Apply an erosion, then the transform, then a dilation, heuristically
         # to ignore little spikey noisy things.
@@ -773,7 +783,7 @@ class CorrectIlluminationCalculate(cpm.Module):
             if shortest_side < 200:
                 scale = 1
             else:
-                scale = float(shortest_side) / 200
+                scale = old_div(float(shortest_side), 200)
             result = backgr(pixel_data, mask, scale=scale)
         else:
             mode = self.spline_bg_mode.value
@@ -817,11 +827,11 @@ class CorrectIlluminationCalculate(cpm.Module):
                 pixel_data = pixel_data.copy()
                 pixel_data[pixel_data < robust_minimum] = robust_minimum
             elif self.rescale_option == RE_MEDIAN:
-                idx = int(sorted_pixel_data.shape[0] / 2)
+                idx = int(old_div(sorted_pixel_data.shape[0], 2))
                 robust_minimum = sorted_pixel_data[idx]
             if robust_minimum == 0:
                 return pixel_data
-            return pixel_data / robust_minimum
+            return old_div(pixel_data, robust_minimum)
 
         if image.pixel_data.ndim == 2:
             output_pixels = scaling_fn_2d(image.pixel_data)
@@ -832,21 +842,21 @@ class CorrectIlluminationCalculate(cpm.Module):
         return output_image
 
     def validate_module(self, pipeline):
-        '''Produce error if 'All:First' is selected and input image is not provided by the file image provider.'''
+        """Produce error if 'All:First' is selected and input image is not provided by the file image provider."""
         if not pipeline.is_image_from_file(self.image_name.value) and self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
                     "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
                     self.each_or_all)
 
-        '''Modify the image provider attributes based on other setttings'''
+        """Modify the image provider attributes based on other setttings"""
         d = self.illumination_image_name.provided_attributes
         if self.each_or_all == EA_ALL_ACROSS:
             d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
-        elif d.has_key(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
+        elif cps.AVAILABLE_ON_LAST_ATTRIBUTE in d:
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
                     "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead." % EA_ALL_ACROSS,
@@ -937,12 +947,12 @@ class CorrectIlluminationCalculate(cpm.Module):
         return setting_values, variable_revision_number, from_matlab
 
     def post_pipeline_load(self, pipeline):
-        '''After loading, set each_or_all appropriately
+        """After loading, set each_or_all appropriately
 
         This function handles the legacy EA_ALL which guessed the user's
         intent: processing before the first cycle or not. We look for
         the image provider and see if it is a file image provider.
-        '''
+        """
         if self.each_or_all == EA_ALL:
             if pipeline.is_image_from_file(self.image_name.value):
                 self.each_or_all.value = EA_ALL_FIRST
@@ -974,23 +984,23 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
     D_MASK_COUNT = "mask_count"
 
     def serialize(self, d):
-        '''Save the internal state of the provider to a dictionary
+        """Save the internal state of the provider to a dictionary
 
         d - save to this dictionary, numpy arrays and json serializable only
-        '''
+        """
         d[self.D_NAME] = self.__name
         d[self.D_IMAGE_SUM] = self.__image_sum
         d[self.D_MASK_COUNT] = self.__mask_count
 
     @staticmethod
     def deserialize(d, module):
-        '''Restore a state saved by serialize
+        """Restore a state saved by serialize
 
         d - dictionary containing the state
         module - the module providing details on how to perform the correction
 
         returns a provider set up with the restored state
-        '''
+        """
         provider = CorrectIlluminationImageProvider(
                 d[CorrectIlluminationImageProvider.D_NAME],
                 module)
@@ -1027,7 +1037,7 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
             self.__mask_count = self.__mask_count + 1
 
     def reset(self):
-        '''Reset the image sum at the start of a group'''
+        """Reset the image sum at the start of a group"""
         self.__image_sum = None
         self.__cached_image = None
         self.__cached_avg_image = None
@@ -1057,11 +1067,11 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
                               self.__image_sum.dtype)
         mask = self.__mask_count > 0
         if pixel_data.ndim == 2:
-            pixel_data[mask] = self.__image_sum[mask] / self.__mask_count[mask]
+            pixel_data[mask] = old_div(self.__image_sum[mask], self.__mask_count[mask])
         else:
             for i in range(pixel_data.shape[2]):
                 pixel_data[mask, i] = \
-                    self.__image_sum[mask, i] / self.__mask_count[mask]
+                    old_div(self.__image_sum[mask, i], self.__mask_count[mask])
         self.__cached_avg_image = cpi.Image(pixel_data, mask)
         self.__cached_dilated_image = \
             self.__module.apply_dilation(self.__cached_avg_image)

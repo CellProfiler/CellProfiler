@@ -1,10 +1,17 @@
 '''test_invertforprinting - Test the InvertForPrinting module
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -170,7 +177,7 @@ class TestInvertForPrinting(unittest.TestCase):
 
         d = self.run_module(color_image=color_image, fn=fn)
         self.assertEqual(len(d), 2)
-        self.assertTrue(I_COLOR_OUT in d.keys())
+        self.assertTrue(I_COLOR_OUT in list(d.keys()))
         result = d[I_COLOR_OUT]
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
             diff = (result[:, :, o] - ((1 - color_image[:, :, i1]) *
@@ -188,7 +195,7 @@ class TestInvertForPrinting(unittest.TestCase):
 
         d = self.run_module(color_image=color_image, fn=fn)
         self.assertEqual(len(d), 4)
-        self.assertTrue(all([color in d.keys()
+        self.assertTrue(all([color in list(d.keys())
                              for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
         result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
@@ -210,7 +217,7 @@ class TestInvertForPrinting(unittest.TestCase):
                             blue_image=color_image[:, :, 2],
                             fn=fn)
         self.assertEqual(len(d), 4)
-        self.assertTrue(I_COLOR_OUT in d.keys())
+        self.assertTrue(I_COLOR_OUT in list(d.keys()))
         result = d[I_COLOR_OUT]
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
             np.testing.assert_almost_equal(
@@ -231,7 +238,7 @@ class TestInvertForPrinting(unittest.TestCase):
                             blue_image=color_image[:, :, 2],
                             fn=fn)
         self.assertEqual(len(d), 6)
-        self.assertTrue(all([color in d.keys()
+        self.assertTrue(all([color in list(d.keys())
                              for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
         result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
@@ -259,7 +266,7 @@ class TestInvertForPrinting(unittest.TestCase):
                                 blue_image=color_image[:, :, 2] if present[2] else None,
                                 fn=fn)
             self.assertEqual(len(d), 3 + np.sum(present))
-            self.assertTrue(all([color in d.keys()
+            self.assertTrue(all([color in list(d.keys())
                                  for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
             result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
             for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):

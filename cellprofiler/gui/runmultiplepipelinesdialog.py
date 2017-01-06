@@ -1,7 +1,17 @@
 # coding=utf-8
 """ runmultiplepipelinesdialog.py - Dialog to collect info for RunMultiplePipelines
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from builtins import object
 import cellprofiler.gui.pipeline
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -156,7 +166,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
             pipeline.load(file_path)
             if module_count[0] is not None:
                 index = self.file_chooser.InsertStringItem(
-                        sys.maxint, file_name)
+                        sys.maxsize, file_name)
                 self.file_chooser.SetStringItem(index, FC_DATE_COLUMN, mtime)
                 self.file_chooser.SetStringItem(index, FC_MODULE_COUNT_COLUMN,
                                                 str(module_count[0]))
@@ -180,7 +190,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                         self.directory_picker.Path,
                         self.file_chooser.GetItemText(i))
                 index = self.pipeline_list_view.InsertStringItem(
-                        sys.maxint, path)
+                        sys.maxsize, path)
                 self.pipeline_list_view.SetStringItem(
                         index, P_INPUT_DIRECTORY_COLUMN,
                         cellprofiler.preferences.get_default_image_directory())

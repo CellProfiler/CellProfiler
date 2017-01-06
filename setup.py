@@ -333,6 +333,7 @@ setuptools.setup(
         install_requires=[
             "cellh5",
             "centrosome>=1.0.4",
+            "future",
             "h5py",
             "inflect",
             "javabridge",
@@ -347,7 +348,8 @@ setuptools.setup(
             "python-bioformats",
             "pyzmq",
             "scikit-image>=0.12.3",
-            "scipy"
+            "scipy",
+            "six"
         ],
         keywords="",
         license="BSD",

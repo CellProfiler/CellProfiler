@@ -1,4 +1,4 @@
-'''<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
+"""<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
 <b>CorrectIlluminationCalculate</b>, to an image in order to correct for uneven
 illumination (uneven shading).
 <hr>
@@ -7,8 +7,16 @@ This module applies a previously created illumination correction function,
 either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalculate</b>.
 This module corrects each image in the pipeline using the function specified.
 
-See also <b>CorrectIlluminationCalculate</b>.'''
+See also <b>CorrectIlluminationCalculate</b>."""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.image  as cpi
@@ -55,28 +63,28 @@ class CorrectIlluminationApply(cpm.Module):
                                                 self.add_image)
 
     def add_image(self, can_delete=True):
-        '''Add an image and its settings to the list of images'''
+        """Add an image and its settings to the list of images"""
         image_name = cps.ImageNameSubscriber(
                 "Select the input image",
-                cps.NONE, doc='''
-            Select the image to be corrected.''')
+                cps.NONE, doc="""
+            Select the image to be corrected.""")
 
         corrected_image_name = cps.ImageNameProvider(
                 "Name the output image",
-                "CorrBlue", doc='''
-            Enter a name for the corrected image.''')
+                "CorrBlue", doc="""
+            Enter a name for the corrected image.""")
 
         illum_correct_function_image_name = cps.ImageNameSubscriber(
                 "Select the illumination function",
-                cps.NONE, doc='''
+                cps.NONE, doc="""
             Select the illumination correction function image that will be used to
             carry out the correction. This image is usually produced by another module
             or loaded as a .mat format image using the <b>Images</b> module or
-            <b>LoadSingleImage</b>.''')
+            <b>LoadSingleImage</b>.""")
 
         divide_or_subtract = cps.Choice(
                 "Select how the illumination function is applied",
-                [DOS_DIVIDE, DOS_SUBTRACT], doc='''
+                [DOS_DIVIDE, DOS_SUBTRACT], doc="""
             This choice depends on how the illumination function was calculated
             and on your physical model of the way illumination variation affects the
             background of images relative to the objects in images; it is also somewhat empirical.
@@ -89,7 +97,7 @@ class CorrectIlluminationApply(cpm.Module):
             is high (the cells are stained very strongly). If you created the illumination correction
             function using <i>%(IC_REGULAR)s</i>,
             then you will want to choose <i>%(DOS_DIVIDE)s</i> here.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)
@@ -154,7 +162,7 @@ class CorrectIlluminationApply(cpm.Module):
         # Figure out how many images there are based on the number of setting_values
         #
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
-        image_count = len(setting_values) / SETTINGS_PER_IMAGE
+        image_count = old_div(len(setting_values), SETTINGS_PER_IMAGE)
         del self.images[image_count:]
         while len(self.images) < image_count:
             self.add_image()
@@ -173,9 +181,9 @@ class CorrectIlluminationApply(cpm.Module):
             self.run_image(image, workspace)
 
     def run_image(self, image, workspace):
-        '''Perform illumination according to the parameters of one image setting group
+        """Perform illumination according to the parameters of one image setting group
 
-        '''
+        """
         #
         # Get the image names from the settings
         #
@@ -198,7 +206,7 @@ class CorrectIlluminationApply(cpm.Module):
         # Either divide or subtract the illumination image from the original
         #
         if image.divide_or_subtract == DOS_DIVIDE:
-            output_pixels = orig_image.pixel_data / illum_function_pixel_data
+            output_pixels = old_div(orig_image.pixel_data, illum_function_pixel_data)
         elif image.divide_or_subtract == DOS_SUBTRACT:
             output_pixels = orig_image.pixel_data - illum_function_pixel_data
             output_pixels[output_pixels < 0] = 0
@@ -222,7 +230,7 @@ class CorrectIlluminationApply(cpm.Module):
             workspace.display_data.images[illum_correct_name] = illum_function.pixel_data
 
     def display(self, workspace, figure):
-        ''' Display one row of orig / illum / output per image setting group'''
+        """ Display one row of orig / illum / output per image setting group"""
         figure.set_subplots((3, len(self.images)))
         for j, image in enumerate(self.images):
             image_name = image.image_name.value

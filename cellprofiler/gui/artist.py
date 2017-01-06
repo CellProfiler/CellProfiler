@@ -1,7 +1,18 @@
 # coding=utf-8
 """artist.py - Specialized matplotlib artists for CellProfiler
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import cellprofiler.gui.tools
 import centrosome.cpmorphology
 import centrosome.outline
@@ -11,15 +22,15 @@ import matplotlib.collections
 import numpy
 import scipy.ndimage
 
-'''Render the image in shades of gray'''
+"""Render the image in shades of gray"""
 MODE_GRAYSCALE = "grayscale"
-'''Render the image in shades of a color'''
+"""Render the image in shades of a color"""
 MODE_COLORIZE = "colorize"
-'''Render the image using a color map'''
+"""Render the image using a color map"""
 MODE_COLORMAP = "colormap"
-'''Render the image as RGB'''
+"""Render the image as RGB"""
 MODE_RGB = "rgb"
-'''Do not display'''
+"""Do not display"""
 MODE_HIDE = "hide"
 
 NORMALIZE_RAW = "raw"
@@ -244,7 +255,7 @@ class OutlinesMixin(ColorMixin):
                 else:
                     self._outlines |= centrosome.outline.outline(labels) != 0
             if self.line_width > 1:
-                hw = float(self.line_width) / 2
+                hw = old_div(float(self.line_width), 2)
                 d = scipy.ndimage.distance_transform_edt(~ self._outlines)
                 dti, dtj = numpy.where((d < hw + .5) & ~self._outlines)
                 self._outlines = self._outlines.astype(numpy.float32)
@@ -603,16 +614,16 @@ class CPImageArtist(matplotlib.artist.Artist):
                 if pd_min == pd_max:
                     pixel_data = numpy.zeros(pixel_data.shape, numpy.float32)
                 else:
-                    pixel_data = (pixel_data - pd_min) / (pd_max - pd_min)
+                    pixel_data = old_div((pixel_data - pd_min), (pd_max - pd_min))
             else:
                 pixel_data = pixel_data.copy()
                 pixel_data[pixel_data < image.vmin] = image.vmin
                 pixel_data[pixel_data > image.vmax] = image.vmax
             if image.normalization == NORMALIZE_LOG:
-                log_eps = numpy.log(1.0 / 256)
-                log_one_plus_eps = numpy.log(257.0 / 256)
-                pixel_data = (numpy.log(pixel_data + 1.0 / 256) - log_eps) / \
-                             (log_one_plus_eps - log_eps)
+                log_eps = numpy.log(old_div(1.0, 256))
+                log_one_plus_eps = numpy.log(old_div(257.0, 256))
+                pixel_data = old_div((numpy.log(pixel_data + old_div(1.0, 256)) - log_eps), \
+                             (log_one_plus_eps - log_eps))
             if image.mode == MODE_COLORIZE or image.mode == MODE_GRAYSCALE:
                 pixel_data = pixel_data[:, :, numpy.newaxis] * image.color3
             elif image.mode == MODE_COLORMAP:
@@ -639,7 +650,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         color_mask = (max_color_in != 0) & (max_color_out != 0)
         if numpy.any(color_mask):
             multiplier = numpy.min(
-                    max_color_in[color_mask] / max_color_out[color_mask])
+                    old_div(max_color_in[color_mask], max_color_out[color_mask]))
         else:
             multiplier = 1
         target[:, :, :3] *= multiplier
@@ -721,8 +732,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         heightDisplay = (t - b + 1) * magnification
 
         # resize viewport to display
-        sx = widthDisplay / self.axes.viewLim.width
-        sy = abs(heightDisplay / self.axes.viewLim.height)
+        sx = old_div(widthDisplay, self.axes.viewLim.width)
+        sy = abs(old_div(heightDisplay, self.axes.viewLim.height))
         im.apply_scaling(sx, sy)
         im.resize(widthDisplay, heightDisplay,
                   norm=1, radius=self.filterrad)
@@ -1075,7 +1086,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             if dlg.ShowModal() == wx.ID_OK:
                 color_data = dlg.GetColourData()
                 data.color = (tuple([
-                                        float(x) / 255 for x in color_data.Colour]))
+                                        old_div(float(x), 255) for x in color_data.Colour]))
                 self.refresh()
 
     def __on_colormap_dlg(self, event, msg, data):
@@ -1132,7 +1143,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             button_sizer.Realize()
 
             def on_slider(event, data=data):
-                data.alpha = float(slider.Value) / 255
+                data.alpha = old_div(float(slider.Value), 255)
                 self.refresh()
 
             slider.Bind(wx.EVT_SLIDER, on_slider)

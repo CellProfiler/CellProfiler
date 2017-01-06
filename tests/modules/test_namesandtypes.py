@@ -1,13 +1,25 @@
 '''test_namesandtypes.py - test the NamesAndTypes module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from past.utils import old_div
 import hashlib
 import numpy as np
 import os
-from cStringIO import StringIO
+from io import StringIO
 import tempfile
 import unittest
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from bioformats import load_image
 import cellprofiler.pipeline as cpp
@@ -56,7 +68,7 @@ def md(keys_and_counts):
     counts = np.array([c for k, c in keys_and_counts])
     divisors = np.hstack([[1], np.cumprod(counts[:-1])])
 
-    return [dict([(k, "k" + str(int(i / d) % c))
+    return [dict([(k, "k" + str(int(old_div(i, d)) % c))
                   for k, d, c in zip(keys, divisors, counts)])
             for i in range(np.prod(counts))]
 
@@ -684,7 +696,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 #             first = False
 
 
-    url_root = "file:" + urllib.pathname2url(os.path.abspath(os.path.curdir))
+    url_root = "file:" + urllib.request.pathname2url(os.path.abspath(os.path.curdir))
 
     def do_teest(self, module, channels, expected_tags, expected_metadata, additional=None):
         '''Ensure that NamesAndTypes recreates the column layout when run
@@ -722,7 +734,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         ipds.sort(key = lambda x: x.url)
         pipeline = cpp.Pipeline()
         pipeline.set_filtered_file_list(urls, module)
-        pipeline.set_image_plane_details(ipds, metadata.keys(), module)
+        pipeline.set_image_plane_details(ipds, list(metadata.keys()), module)
         module.module_num = 1
         pipeline.add_module(module)
         m = cpmeas.Measurements()
@@ -740,8 +752,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 self.fail("%s not in %s" % (tag, ",".join(expected_tag)))
         iscds = m.get_channel_descriptors()
         self.assertEqual(len(iscds), len(channels))
-        for channel_name in channels.keys():
-            iscd_match = filter(lambda x:x.name == channel_name, iscds)
+        for channel_name in list(channels.keys()):
+            iscd_match = [x for x in iscds if x.name == channel_name]
             self.assertEquals(len(iscd_match), 1)
             iscd = iscd_match[0]
             assert isinstance(iscd, cpp.Pipeline.ImageSetChannelDescriptor)
@@ -960,7 +972,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                          for i, m in enumerate(md([(mB0, 2), (mA0, 3)]))],
                     C1: [("%s%s%s" % (C1, m[M1], m[M2]), m)
                          for i, m in enumerate(md([(mB1, 2),(mA1, 3)]))] }
-                expected_keys = [[(M0, M1), (M2, )][i] for i in j0, j1]
+                expected_keys = [[(M0, M1), (M2, )][i] for i in (j0, j1)]
                 self.do_teest(n, data, expected_keys,
                               [(C0, M0), (C0, M3), (C1, M1), (C1, M2)])
 
@@ -1511,7 +1523,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, (34, 19))
         self.assertTrue(np.all(pixel_data >= 0))
-        self.assertTrue(np.all(pixel_data <= 1. / 16.))
+        self.assertTrue(np.all(pixel_data <= old_div(1., 16.)))
 
     def test_03_08_load_mask(self):
         path = maybe_download_example_image(
@@ -1591,12 +1603,12 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                     pixel_data = image.pixel_data
                     self.assertTrue(np.all(pixel_data >= 0))
                     if rescaled == N.INTENSITY_RESCALING_BY_METADATA:
-                        self.assertTrue(np.any(pixel_data > 1. / 16.))
+                        self.assertTrue(np.any(pixel_data > old_div(1., 16.)))
                     elif rescaled == N.INTENSITY_RESCALING_BY_DATATYPE:
-                        self.assertTrue(np.all(pixel_data <= 1. / 16.))
-                        self.assertTrue(np.any(pixel_data > 1. / 32.))
+                        self.assertTrue(np.all(pixel_data <= old_div(1., 16.)))
+                        self.assertTrue(np.any(pixel_data > old_div(1., 32.)))
                     else:
-                        self.assertTrue(np.all(pixel_data <= 1. / 32.))
+                        self.assertTrue(np.all(pixel_data <= old_div(1., 32.)))
 
     def test_03_12_load_single_image(self):
         # Test loading a pipeline whose image set loads a single image
@@ -1730,10 +1742,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             C_SERIES, C_FRAME:
             mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
             self.assertEqual(len(mnames), 2)
-            self.assertTrue(all([x in mnames for x in IMAGE_NAME, OBJECTS_NAME]))
+            self.assertTrue(all([x in mnames for x in (IMAGE_NAME, OBJECTS_NAME)]))
 
         mnames = m.get_measurements(p, OBJECTS_NAME, C_LOCATION)
-        self.assertTrue(all([x in mnames for x in FTR_CENTER_X, FTR_CENTER_Y]))
+        self.assertTrue(all([x in mnames for x in (FTR_CENTER_X, FTR_CENTER_Y)]))
 
     def test_05_01_validate_single_channel(self):
         # regression test for issue #1429

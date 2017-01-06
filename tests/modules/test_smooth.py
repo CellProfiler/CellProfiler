@@ -1,7 +1,15 @@
 '''test_smooth.py - test the smooth module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
-import StringIO
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
+import io
 import base64
 import unittest
 import zlib
@@ -63,7 +71,7 @@ class TestSmooth(unittest.TestCase):
                 'v3l9c8FQrxk5UNLwrCg8Mu46jPF+2z2lfURN/O37mU/oXxPXeiXfOdSA77g09crl'
                 '7DhdXHebz5sS9wLZ9mfrl/xw5M3/AOjFxSA=')
         pipeline = cpp.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         smooth = pipeline.modules()[1]
         self.assertEqual(smooth.module_name, 'Smooth')
@@ -89,7 +97,7 @@ class TestSmooth(unittest.TestCase):
                 '+OxWF+us6hvrfve+DF9F+5vvWQ5OD5WSuO9guXV9ucA/yq2s/29KodH7')
         data = zlib.decompress(data)
         pipeline = cpp.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         smooth = pipeline.modules()[1]
         self.assertEqual(smooth.module_name, 'Smooth')
@@ -117,7 +125,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
 """
         pipeline = cpp.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         smooth = pipeline.modules()[0]
         self.assertTrue(isinstance(smooth, S.Smooth))
@@ -137,7 +145,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         # clipping
         #
         i, j = np.mgrid[0:100, 0:100].astype(float) * np.pi / 50
-        image = (np.sin(i) + np.cos(j)) / 1.8 + .9
+        image = old_div((np.sin(i) + np.cos(j)), 1.8) + .9
         image += np.random.uniform(size=(100, 100)) * .1
         mask = np.ones(image.shape, bool)
         mask[40:60, 45:65] = False
@@ -170,7 +178,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
     def test_03_02_gaussian_auto_large(self):
         '''Test the smooth module with Gaussian smoothing in large automatic mode'''
-        sigma = 30.0 / 2.35
+        sigma = old_div(30.0, 2.35)
         image = np.random.uniform(size=(3200, 100)).astype(np.float32)
         mask = np.ones(image.shape, bool)
         mask[40:60, 45:65] = False
@@ -185,7 +193,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
     def test_03_03_gaussian_manual(self):
         '''Test the smooth module with Gaussian smoothing, manual sigma'''
-        sigma = 15.0 / 2.35
+        sigma = old_div(15.0, 2.35)
         np.random.seed(0)
         image = np.random.uniform(size=(100, 100)).astype(np.float32)
         mask = np.ones(image.shape, bool)
@@ -203,12 +211,12 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
     def test_04_01_median(self):
         '''test the smooth module with median filtering'''
-        object_size = 100.0 / 40.0
+        object_size = old_div(100.0, 40.0)
         np.random.seed(0)
         image = np.random.uniform(size=(100, 100)).astype(np.float32)
         mask = np.ones(image.shape, bool)
         mask[40:60, 45:65] = False
-        expected = median_filter(image, mask, object_size / 2 + 1)
+        expected = median_filter(image, mask, old_div(object_size, 2) + 1)
         workspace, module = self.make_workspace(image, mask)
         module.smoothing_method.value = S.MEDIAN_FILTER
         module.run(workspace)

@@ -1,11 +1,19 @@
-'''<b>Flip and rotate</b> flips (mirror image) and/or rotates an image
+"""<b>Flip and rotate</b> flips (mirror image) and/or rotates an image
 <hr>
 <h4>Available measurements</h4>
 <ul>
 <li><i>Rotation:</i> Angle of rotation for the input image.</li>
 </ul>
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 
@@ -37,9 +45,9 @@ C_ALL = [C_HORIZONTALLY, C_VERTICALLY]
 
 D_ANGLE = 'angle'
 
-'''Rotation measurement category'''
+"""Rotation measurement category"""
 M_ROTATION_CATEGORY = "Rotation"
-'''Rotation measurement format (+ image name)'''
+"""Rotation measurement format (+ image name)"""
 M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
 
 
@@ -63,7 +71,7 @@ class FlipAndRotate(cpm.Module):
 
         self.rotate_choice = cps.Choice(
                 "Select method to rotate image",
-                ROTATE_ALL, doc='''
+                ROTATE_ALL, doc="""
             <ul>
             <li><i>%(ROTATE_NONE)s:</i> Leave the image unrotated. This should be used
             if you want to flip the image only.</li>
@@ -77,20 +85,20 @@ class FlipAndRotate(cpm.Module):
             clicking the left mouse button, rotate the image by
             dragging with the mouse, then release the mouse button. Press the <i>Done</i> button on the image
             after rotating the image appropriately.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.wants_crop = cps.Binary(
-                "Crop away the rotated edges?", True, doc='''
+                "Crop away the rotated edges?", True, doc="""
             <i>(Used only when rotating images)</i> <br>
             When an image is rotated, there will be black space at the
             corners/edges; select <i>%(YES)s</i> to crop away the incomplete rows
             and columns of the image, or select <i>%(NO)s</i> to leave it as-is.
             <p>This cropping will produce an image that
             is not exactly the same size as the original, which may affect
-            downstream modules.</p>''' % globals())
+            downstream modules.</p>""" % globals())
 
         self.how_often = cps.Choice("Calculate rotation",
-                                    IO_ALL, doc='''
+                                    IO_ALL, doc="""
             <i>(Used only when using "%(ROTATE_MOUSE)s" to rotate images)</i> <br>
             Select the cycle(s) at which the calculation is requested and calculated.
             <ul>
@@ -98,7 +106,7 @@ class FlipAndRotate(cpm.Module):
             individually, e.g., for each cycle.</li>
             <li><i>%(IO_ONCE)s:</i> Define the rotation only once (on the first image), then
             then apply it to all images.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.first_pixel = cps.Coordinates(
                 "Enter coordinates of the top or left pixel", (0, 0))
@@ -146,7 +154,7 @@ class FlipAndRotate(cpm.Module):
 
     def prepare_group(self, workspace, grouping,
                       image_numbers):
-        '''Initialize the angle if appropriate'''
+        """Initialize the angle if appropriate"""
         if self.rotate_choice == ROTATE_MOUSE and self.how_often == IO_ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
 
@@ -190,7 +198,7 @@ class FlipAndRotate(cpm.Module):
                                               self.horiz_or_vert.value)
             elif self.rotate_choice == ROTATE_MOUSE:
                 d = self.get_dictionary()
-                if (self.how_often == IO_ONCE and d.has_key(D_ANGLE) and
+                if (self.how_often == IO_ONCE and D_ANGLE in d and
                             d[D_ANGLE] is not None):
                     angle = d[D_ANGLE]
                 else:
@@ -218,7 +226,7 @@ class FlipAndRotate(cpm.Module):
                 # The left and right halves are symmetric, so we compute
                 # on just two of the quadrants.
                 #
-                half = (np.array(crop.shape) / 2).astype(int)
+                half = (old_div(np.array(crop.shape), 2)).astype(int)
                 #
                 # Operate on the lower right
                 #
@@ -297,7 +305,7 @@ class FlipAndRotate(cpm.Module):
                                   sharexy=figure.subplot(0, 0))
 
     def handle_interaction(self, pixel_data):
-        '''Run a UI that gets an angle from the user'''
+        """Run a UI that gets an angle from the user"""
         import wx
 
         if pixel_data.ndim == 2:
@@ -316,8 +324,8 @@ class FlipAndRotate(cpm.Module):
         i, j, k = np.mgrid[0:isize,
                   0:int(isize * pixel_data.shape[1] / pixel_data.shape[0]),
                   0:3].astype(float)
-        i *= float(pixel_data.shape[0]) / float(isize)
-        j *= float(pixel_data.shape[0]) / float(isize)
+        i *= old_div(float(pixel_data.shape[0]), float(isize))
+        j *= old_div(float(pixel_data.shape[0]), float(isize))
         pixel_data = scind.map_coordinates(pixel_data, (i, j, k))
         #
         # Make a dialog box that contains the image
@@ -367,7 +375,7 @@ class FlipAndRotate(cpm.Module):
         arrow_cursor = wx.StockCursor(wx.CURSOR_ARROW)
 
         def get_angle(event):
-            center = np.array(canvas.Size) / 2
+            center = old_div(np.array(canvas.Size), 2)
             point = np.array(event.GetPositionTuple())
             offset = point - center
             return -np.arctan2(offset[1], offset[0]) * 180.0 / np.pi
@@ -522,7 +530,7 @@ class FlipAndRotate(cpm.Module):
 
 
 def affine_offset(shape, transform):
-    '''Calculate an offset given an array's shape and an affine transform
+    """Calculate an offset given an array's shape and an affine transform
 
     shape - the shape of the array to be transformed
     transform - the transform to be performed
@@ -530,6 +538,6 @@ def affine_offset(shape, transform):
     Return an offset for scipy.ndimage.affine_transform that does not
     transform the location of the center of the image (the image rotates
     or is flipped about the center).
-    '''
-    c = (np.array(shape[:2]) - 1).astype(float) / 2.0
+    """
+    c = old_div((np.array(shape[:2]) - 1).astype(float), 2.0)
     return -np.dot(transform - np.identity(2), c)

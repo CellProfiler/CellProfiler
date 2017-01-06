@@ -1,7 +1,15 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
 import cellprofiler.icons
 from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
 
-__doc__ = '''
+__doc__ = """
 <b>Measure Object Size Shape </b> measures several area and shape
 features of identified objects.
 <hr>
@@ -108,7 +116,7 @@ vol 3, p. 30 </li>
 </ul>
 
 See also <b>MeasureImageAreaOccupied</b>.
-''' % globals()
+""" % globals()
 
 import numpy as np
 import scipy.ndimage as scind
@@ -535,8 +543,8 @@ class MeasureObjectSizeShape(cpm.Module):
                      "%.2f" % np.std(data)))
 
     def get_measurement_columns(self, pipeline):
-        '''Return measurement column definitions.
-        All cols returned as float even though "Area" will only ever be int'''
+        """Return measurement column definitions.
+        All cols returned as float even though "Area" will only ever be int"""
         object_names = [s.value for s in self.settings()][:-1]
         measurement_names = self.get_feature_names()
         cols = []

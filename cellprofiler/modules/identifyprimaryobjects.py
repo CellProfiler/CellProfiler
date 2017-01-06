@@ -1,7 +1,17 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
-__doc__ = '''
+__doc__ = """
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images
 containing bright objects on a dark background.
 <hr>
@@ -154,7 +164,7 @@ segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
 
 <p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>,
 <b>IdentifyObjectsManually</b> and <b>ClassifyPixels</b> </p>
-''' % globals()
+""" % globals()
 
 import math
 import scipy.ndimage
@@ -163,7 +173,7 @@ import numpy as np
 import re
 import scipy.stats
 
-import identify as cpmi
+from . import identify as cpmi
 import cellprofiler.module
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
@@ -182,9 +192,9 @@ import centrosome.outline
 import cellprofiler.object
 from cellprofiler.setting import AUTOMATIC
 import centrosome.threshold as cpthresh
-from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
-from identify import draw_outline
-from identify import FI_IMAGE_SIZE
+from .identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
+from .identify import draw_outline
+from .identify import FI_IMAGE_SIZE
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 #################################################
@@ -236,7 +246,7 @@ OFF_ADAPTIVE_WINDOW_METHOD_V9 = 32
 OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
-'''The number of settings, exclusive of threshold settings in V10'''
+"""The number of settings, exclusive of threshold settings in V10"""
 N_SETTINGS_V10 = 22
 
 UN_INTENSITY = "Intensity"
@@ -253,7 +263,7 @@ LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
 
-'''Never fill holes'''
+"""Never fill holes"""
 FH_NEVER = "Never"
 FH_THRESHOLDING = "After both thresholding and declumping"
 FH_DECLUMP = "After declumping only"
@@ -291,7 +301,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         self.size_range = cps.IntegerRange(
                 SIZE_RANGE_SETTING_TEXT,
-                (10, 40), minval=1, doc='''
+                (10, 40), minval=1, doc="""
             This setting allows the user to make a distinction on the basis of size, which can
             be used in conjunction with the <i>%(EXCLUDE_SIZE_SETTING_TEXT)s</i> setting
             below to remove objects that fail this criteria.
@@ -314,11 +324,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <li>For non-round objects, the diameter here is actually the "equivalent diameter", i.e.,
             the diameter of a circle with the same area as the object.</li>
             </ul>
-            </p>''' % globals())
+            </p>""" % globals())
 
         self.exclude_size = cps.Binary(
                 EXCLUDE_SIZE_SETTING_TEXT,
-                True, doc='''
+                True, doc="""
             Select <i>%(YES)s</i> to discard objects outside the range you specified in the
             <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Select <i>%(NO)s</i> to ignore this
             criterion.
@@ -331,11 +341,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Select <i>%(YES)s</i> allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. </dd>
             </dl>
-            ''' % globals())
+            """ % globals())
 
         self.merge_objects = cps.Binary(
                 "Try to merge too small objects with nearby larger objects?",
-                False, doc='''
+                False, doc="""
             Select <i>%(YES)s</i> to cause objects that are
             smaller than the specified minimum diameter to be merged, if possible, with
             other surrounding objects.
@@ -347,11 +357,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             not notice that this is the case, since it may successfully piece together the
             objects again. It is therefore a good idea to run the
             module first without merging objects to make sure the settings are
-            reasonably effective.</p>''' % globals())
+            reasonably effective.</p>""" % globals())
 
         self.exclude_border_objects = cps.Binary(
                 "Discard objects touching the border of the image?",
-                True, doc='''
+                True, doc="""
             Select <i>%(YES)s</i> to discard objects that touch the border of the image.
             Select <i>%(NO)s</i> to ignore this criterion.
             <dl>
@@ -364,7 +374,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <p>Objects discarded due to border touching are outlined in yellow in the module's display.
             Note that if a per-object thresholding method is used or if the image has been
             previously cropped or masked, objects that touch the
-            border of the cropped or masked region may also discarded.</p>''' % globals())
+            border of the cropped or masked region may also discarded.</p>""" % globals())
 
         self.create_threshold_settings()
 
@@ -710,7 +720,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             #
             m = re.match("([0-9.])%", setting_values[OBJECT_FRACTION_VAR])
             if m:
-                setting_values[OBJECT_FRACTION_VAR] = str(float(m.groups()[0]) / 100.0)
+                setting_values[OBJECT_FRACTION_VAR] = str(old_div(float(m.groups()[0]), 100.0))
             #
             # Check the "DO_NOT_USE" status of the save outlines variable
             # to get the value for should_save_outlines
@@ -945,9 +955,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             if object_count > 0:
                 areas = scipy.ndimage.sum(np.ones(labeled_image.shape), labeled_image, np.arange(1, object_count + 1))
                 areas.sort()
-                low_diameter = (math.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
-                median_diameter = (math.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
-                high_diameter = (math.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
+                low_diameter = (math.sqrt(old_div(float(areas[old_div(object_count, 10)]), np.pi)) * 2)
+                median_diameter = (math.sqrt(old_div(float(areas[old_div(object_count, 2)]), np.pi)) * 2)
+                high_diameter = (math.sqrt(old_div(float(areas[object_count * 9 / 10]), np.pi)) * 2)
                 statistics.append(["10th pctile diameter",
                                    "%.1f pixels" % low_diameter])
                 statistics.append(["Median diameter",
@@ -999,13 +1009,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):
-        '''Limit the object count according to the rules
+        """Limit the object count according to the rules
 
         labeled_image - image to be limited
         object_count - check to see if this exceeds the maximum
 
         returns a new labeled_image and object count
-        '''
+        """
         if object_count > self.maximum_object_count.value:
             if self.limit_choice == LIMIT_ERASE:
                 labeled_image = np.zeros(labeled_image.shape, int)
@@ -1043,14 +1053,14 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         filter_size = self.calc_smoothing_filter_size()
         if filter_size == 0:
             return image
-        sigma = filter_size / 2.35
+        sigma = old_div(filter_size, 2.35)
         #
         # We not only want to smooth using a Gaussian, but we want to limit
         # the spread of the smoothing to 2 SD, partly to make things happen
         # locally, partly to make things run faster, partly to try to match
         # the Matlab behavior.
         #
-        filter_size = max(int(float(filter_size) / 2.0), 1)
+        filter_size = max(int(old_div(float(filter_size), 2.0)), 1)
         f = (1 / np.sqrt(2.0 * np.pi) / sigma *
              np.exp(-0.5 * np.arange(-filter_size, filter_size + 1) ** 2 /
                     sigma ** 2))
@@ -1071,7 +1081,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         masked_image = image.copy()
         masked_image[~mask] = 0
         smoothed_image = fgaussian(masked_image)
-        masked_image[mask] = smoothed_image[mask] / edge_array[mask]
+        masked_image[mask] = old_div(smoothed_image[mask], edge_array[mask])
         return masked_image
 
     def separate_neighboring_objects(self, workspace, labeled_image,
@@ -1099,18 +1109,18 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         reported_LoG_threshold = 0.5
         blurred_image = self.smooth_image(image, mask)
         if self.low_res_maxima.value and self.size_range.min > 10:
-            image_resize_factor = 10.0 / float(self.size_range.min)
+            image_resize_factor = old_div(10.0, float(self.size_range.min))
             if self.automatic_suppression.value:
                 maxima_suppression_size = 7
             else:
                 maxima_suppression_size = (self.maxima_suppression_size.value *
                                            image_resize_factor + .5)
             reported_maxima_suppression_size = \
-                maxima_suppression_size / image_resize_factor
+                old_div(maxima_suppression_size, image_resize_factor)
         else:
             image_resize_factor = 1.0
             if self.automatic_suppression.value:
-                maxima_suppression_size = self.size_range.min / 1.5
+                maxima_suppression_size = old_div(self.size_range.min, 1.5)
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
             reported_maxima_suppression_size = maxima_suppression_size
@@ -1118,19 +1128,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
             if self.wants_automatic_log_diameter.value:
-                diameter = (min(self.size_range.max, self.size_range.min ** 2) +
-                            self.size_range.min * 5) / 6
+                diameter = old_div((min(self.size_range.max, self.size_range.min ** 2) +
+                            self.size_range.min * 5), 6)
             else:
                 diameter = self.log_diameter.value
             reported_LoG_filter_diameter = diameter
-            sigma = float(diameter) / 2.35
+            sigma = old_div(float(diameter), 2.35)
             #
             # Shrink the image to save processing time
             #
             if image_resize_factor < 1.0:
                 shrunken = True
                 shrunken_shape = (np.array(image.shape) * image_resize_factor + 1).astype(int)
-                i_j = np.mgrid[0:shrunken_shape[0], 0:shrunken_shape[1]].astype(float) / image_resize_factor
+                i_j = old_div(np.mgrid[0:shrunken_shape[0], 0:shrunken_shape[1]].astype(float), image_resize_factor)
                 simage = scipy.ndimage.map_coordinates(image, i_j)
                 smask = scipy.ndimage.map_coordinates(mask.astype(float), i_j) > .99
                 diameter = diameter * image_resize_factor + 1
@@ -1242,8 +1252,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     def get_maxima(self, image, labeled_image, maxima_mask, image_resize_factor):
         if image_resize_factor < 1.0:
             shape = np.array(image.shape) * image_resize_factor
-            i_j = (np.mgrid[0:shape[0], 0:shape[1]].astype(float) /
-                   image_resize_factor)
+            i_j = (old_div(np.mgrid[0:shape[0], 0:shape[1]].astype(float),
+                   image_resize_factor))
             resized_image = scipy.ndimage.map_coordinates(image, i_j)
             resized_labels = scipy.ndimage.map_coordinates(
                     labeled_image, i_j, order=0).astype(labeled_image.dtype)
@@ -1262,11 +1272,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         else:
             binary_maxima_image = (resized_image > 0) & (labeled_image > 0)
         if image_resize_factor < 1.0:
-            inverse_resize_factor = (float(image.shape[0]) /
-                                     float(binary_maxima_image.shape[0]))
-            i_j = (np.mgrid[0:image.shape[0],
-                   0:image.shape[1]].astype(float) /
-                   inverse_resize_factor)
+            inverse_resize_factor = (old_div(float(image.shape[0]),
+                                     float(binary_maxima_image.shape[0])))
+            i_j = (old_div(np.mgrid[0:image.shape[0],
+                   0:image.shape[1]].astype(float),
+                   inverse_resize_factor))
             binary_maxima_image = scipy.ndimage.map_coordinates(
                     binary_maxima_image.astype(float), i_j) > .5
             assert (binary_maxima_image.shape[0] == image.shape[0])
@@ -1288,7 +1298,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(np.ones(labeled_image.shape),
                                                    labeled_image,
-                                                   np.array(range(0, object_count + 1), dtype=np.int32))
+                                                   np.array(list(range(0, object_count + 1)), dtype=np.int32))
             areas = np.array(areas, dtype=int)
             min_allowed_area = np.pi * (self.size_range.min * self.size_range.min) / 4
             max_allowed_area = np.pi * (self.size_range.max * self.size_range.max) / 4
@@ -1391,16 +1401,16 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             return self.smoothing_filter_size.value
 
     def is_object_identification_module(self):
-        '''IdentifyPrimaryObjects makes primary objects sets so it's a identification module'''
+        """IdentifyPrimaryObjects makes primary objects sets so it's a identification module"""
         return True
 
     def get_measurement_objects_name(self):
-        '''Return the name to be appended to image measurements made by module
-        '''
+        """Return the name to be appended to image measurements made by module
+        """
         return self.object_name.value
 
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimAutomatic'''
+        """Column definitions for measurements made by IdentifyPrimAutomatic"""
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
         columns += self.get_threshold_measurement_columns(pipeline)
         return columns

@@ -5,7 +5,17 @@ can resize an image by applying a resizing factor or by specifying the
 desired dimensions, in pixels. You can also select which interpolation
 method to use.
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import logging
 import traceback
 
@@ -31,7 +41,7 @@ I_BILINEAR = 'Bilinear'
 I_BICUBIC = 'Bicubic'
 
 I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
-'''The index of the additional image count setting'''
+"""The index of the additional image count setting"""
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
@@ -42,12 +52,12 @@ class Resize(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''
-            Select the image to be resized.''')
+                "Select the input image", cps.NONE, doc="""
+            Select the image to be resized.""")
 
         self.resized_image_name = cps.ImageNameProvider(
-                "Name the output image", "ResizedBlue", doc='''
-            Enter the name of the resized image.''')
+                "Name the output image", "ResizedBlue", doc="""
+            Enter the name of the resized image.""")
 
         self.size_method = cps.Choice(
                 "Resizing method",
@@ -61,10 +71,10 @@ class Resize(cpm.Module):
 
         self.resizing_factor = cps.Float(
                 "Resizing factor",
-                0.25, minval=0, doc='''
+                0.25, minval=0, doc="""
             <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
             Numbers less than one (that is, fractions) will shrink the image;
-            numbers greater than one (that is, multiples) will enlarge the image.''')
+            numbers greater than one (that is, multiples) will enlarge the image.""")
 
         self.use_manual_or_image = cps.Choice(
                 "Method to specify the dimensions", C_ALL, doc="""
@@ -77,14 +87,14 @@ class Resize(cpm.Module):
             </ul>""" % globals())
 
         self.specific_width = cps.Integer(
-                "Width of the final image", 100, minval=1, doc='''
+                "Width of the final image", 100, minval=1, doc="""
             <i>(Used only if resizing by specifying desired final dimensions)</i><br>
-            Enter the desired width of the final image, in pixels.''')
+            Enter the desired width of the final image, in pixels.""")
 
         self.specific_height = cps.Integer(
-                "Height of the final image", 100, minval=1, doc='''
+                "Height of the final image", 100, minval=1, doc="""
             <i>(Used only if resizing by specifying desired final dimensions)</i><br>
-            Enter the desired height of the final image, in pixels.''')
+            Enter the desired height of the final image, in pixels.""")
 
         self.specific_image = cps.ImageNameSubscriber(
                 "Select the image with the desired dimensions", cps.NONE, doc=""""
@@ -93,14 +103,14 @@ class Resize(cpm.Module):
 
         self.interpolation = cps.Choice(
                 "Interpolation method",
-                I_ALL, doc='''
+                I_ALL, doc="""
             <ul><li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
             corresponding pixel in the input image.</li>
             <li><i>Bilinear:</i> Each output pixel is given the intensity of the weighted average
             of the 2x2 neighborhood at the corresponding position in the input image.</li>
             <li><i>Bicubic:</i> Each output pixel is given the intensity of the weighted average
             of the 4x4 neighborhood at the corresponding position in the input image.</li>
-            </ul>''')
+            </ul>""")
 
         self.separator = cps.Divider(line=False)
 
@@ -113,7 +123,7 @@ class Resize(cpm.Module):
                                           self.add_image)
 
     def add_image(self, can_remove=True):
-        '''Add an image + associated questions and buttons'''
+        """Add an image + associated questions and buttons"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -165,7 +175,7 @@ class Resize(cpm.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Create the correct number of additional images'''
+        """Create the correct number of additional images"""
         try:
             additional_image_setting_count = \
                 int(setting_values[S_ADDITIONAL_IMAGE_COUNT])
@@ -200,15 +210,15 @@ class Resize(cpm.Module):
             elif self.use_manual_or_image == C_IMAGE:
                 shape = np.array(workspace.image_set.get_image(
                         self.specific_image.value).pixel_data.shape[:2]).astype(int)
-            factor = np.array(shape, float) / \
-                     np.array(image_pixels.shape[:2], float)
+            factor = old_div(np.array(shape, float), \
+                     np.array(image_pixels.shape[:2], float))
         #
         # Little bit of wierdness here. The input pixels are numbered 0 to
         # shape-1 and so are the output pixels. Therefore the affine transform
         # is the ratio of the two shapes-1
         #
-        ratio = ((np.array(image_pixels.shape[:2]).astype(float) - 1) /
-                 (shape.astype(float) - 1))
+        ratio = (old_div((np.array(image_pixels.shape[:2]).astype(float) - 1),
+                 (shape.astype(float) - 1)))
         transform = np.array([[ratio[0], 0], [0, ratio[1]]])
         if self.interpolation not in I_ALL:
             raise NotImplementedError("Unsupported interpolation method: %s" %
@@ -237,7 +247,7 @@ class Resize(cpm.Module):
             input_cropping = image.crop_mask
             cropping_shape = (
                 np.array(input_cropping.shape, float) * factor + .5).astype(int)
-            eps = np.array([.50001, .50001]) / factor
+            eps = old_div(np.array([.50001, .50001]), factor)
             i = np.linspace(eps[0], input_cropping.shape[0] + eps[0],
                             cropping_shape[0],
                             endpoint=False)
@@ -268,14 +278,14 @@ class Resize(cpm.Module):
                 workspace.display_data.output_image_names += [output_image_name]
 
     def display(self, workspace, figure):
-        '''Display the resized images
+        """Display the resized images
 
         workspace - the workspace being run
         statistics - a list of lists:
             0: index of this statistic
             1: input image name of image being aligned
             2: output image name of image being aligned
-        '''
+        """
         input_images = workspace.display_data.input_images
         output_images = workspace.display_data.output_images
         input_image_names = workspace.display_data.input_image_names

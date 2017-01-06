@@ -1,4 +1,4 @@
-'''<b>Measure Image Quality</b> measures features that indicate image quality.
+"""<b>Measure Image Quality</b> measures features that indicate image quality.
 <hr>
 This module can collect measurements indicating possible image abberations,
 e.g. blur (poor focus), intensity, saturation (i.e., the percentage
@@ -55,8 +55,19 @@ per-experiment table.</p></li>
 control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-74.
 <a href="http://dx.doi.org/10.1177/1087057111420292">(link)</a></li>
 </ul>
-'''
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import logging
 
 import numpy as np
@@ -73,10 +84,10 @@ from cellprofiler.setting import YES, NO
 import centrosome.threshold as cpthresh
 import itertools
 import centrosome.radial_power_spectrum as rps
-from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
-from identify import O_FOREGROUND, O_BACKGROUND
+from .identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
+from .identify import O_FOREGROUND, O_BACKGROUND
 from centrosome.threshold import TM_MOG, TM_OTSU
-from loadimages import C_FILE_NAME, C_SCALING
+from .loadimages import C_FILE_NAME, C_SCALING
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
@@ -89,12 +100,12 @@ from cellprofiler.preferences import \
 ##############################################
 
 # Setting variables
-'''Image selection'''
+"""Image selection"""
 O_ALL_LOADED = "All loaded images"  # Use all loaded images
 O_SELECT = "Select..."  # Select the images you want from a list, all treated the same
 
 # Measurement names
-'''Root module measurement name'''
+"""Root module measurement name"""
 C_IMAGE_QUALITY = 'ImageQuality'
 F_FOCUS_SCORE = 'FocusScore'
 F_LOCAL_FOCUS_SCORE = 'LocalFocusScore'
@@ -403,8 +414,8 @@ class MeasureImageQuality(cpm.Module):
             return group
 
     def prepare_settings(self, setting_values):
-        '''Adjust image_groups and threshold_groups to account for the expected # of
-            images, scales, and threshold methods'''
+        """Adjust image_groups and threshold_groups to account for the expected # of
+            images, scales, and threshold methods"""
         image_group_count = int(setting_values[1])
         del self.image_groups[:]
         for i in range(image_group_count):
@@ -422,7 +433,7 @@ class MeasureImageQuality(cpm.Module):
                     fn(image_group, can_remove)
 
     def settings(self):
-        '''The settings in the save / load order'''
+        """The settings in the save / load order"""
         result = [self.images_choice]
         result += [self.image_count]
         for image_group in self.image_groups:
@@ -447,7 +458,7 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def visible_settings(self):
-        '''The settings as displayed to the user'''
+        """The settings as displayed to the user"""
         result = [self.images_choice]
         if self.images_choice.value == O_ALL_LOADED:
             del self.image_groups[1:]
@@ -507,13 +518,13 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure a mesurement is selected in image_names'''
+        """Make sure a mesurement is selected in image_names"""
         if self.images_choice.value == O_SELECT:
             for image_group in self.image_groups:
                 if not image_group.image_names.get_selections():
                     raise cps.ValidationError("Please choose at least one image", image_group.image_names)
 
-        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
+        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
         d = {}
         for m, s in zip(measurements, sources):
@@ -529,32 +540,32 @@ class MeasureImageQuality(cpm.Module):
         return True
 
     def any_scaling(self):
-        '''True if some image has its rescaling value calculated'''
+        """True if some image has its rescaling value calculated"""
         return any([image_group.include_image_scalings.value
                     for image_group in self.image_groups])
 
     def any_threshold(self):
-        '''True if some image has its threshold calculated'''
+        """True if some image has its threshold calculated"""
         return any([image_group.calculate_threshold.value
                     for image_group in self.image_groups])
 
     def any_saturation(self):
-        '''True if some image has its saturation calculated'''
+        """True if some image has its saturation calculated"""
         return any([image_group.check_saturation.value
                     for image_group in self.image_groups])
 
     def any_blur(self):
-        '''True if some image has its blur calculated'''
+        """True if some image has its blur calculated"""
         return any([image_group.check_blur.value
                     for image_group in self.image_groups])
 
     def any_intensity(self):
-        '''True if some image has its intesnity calculated'''
+        """True if some image has its intesnity calculated"""
         return any([image_group.check_intensity.value
                     for image_group in self.image_groups])
 
     def get_measurement_columns(self, pipeline, return_sources=False):
-        '''Return column definitions for all measurements'''
+        """Return column definitions for all measurements"""
         columns = []
         sources = []
         for image_group in self.image_groups:
@@ -718,7 +729,7 @@ class MeasureImageQuality(cpm.Module):
 
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_names):
-        '''Get the scales (window_sizes) for the given measurement'''
+        """Get the scales (window_sizes) for the given measurement"""
         if object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY:
             if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION):
                 result = []
@@ -740,7 +751,7 @@ class MeasureImageQuality(cpm.Module):
         return []
 
     def run(self, workspace):
-        '''Calculate statistics over all image groups'''
+        """Calculate statistics over all image groups"""
         statistics = []
         for image_group in self.image_groups:
             statistics += self.run_on_image_group(image_group, workspace)
@@ -753,13 +764,13 @@ class MeasureImageQuality(cpm.Module):
             figure.subplot_table(0, 0, statistics)
 
     def post_run(self, workspace):
-        '''Calculate the experiment statistics at the end of a run'''
+        """Calculate the experiment statistics at the end of a run"""
         statistics = []
         for image_group in self.image_groups:
             statistics += self.calculate_experiment_threshold(image_group, workspace)
 
     def run_on_image_group(self, image_group, workspace):
-        '''Calculate statistics for a particular image'''
+        """Calculate statistics for a particular image"""
         statistics = []
         if image_group.include_image_scalings.value:
             statistics += self.retrieve_image_scalings(image_group, workspace)
@@ -777,7 +788,7 @@ class MeasureImageQuality(cpm.Module):
         return statistics
 
     def retrieve_image_scalings(self, image_group, workspace):
-        '''Grab the scalings from the image '''
+        """Grab the scalings from the image """
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -790,7 +801,7 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def calculate_focus_scores(self, image_group, workspace):
-        '''Calculate a local blur measurement and a image-wide one'''
+        """Calculate a local blur measurement and a image-wide one"""
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -811,14 +822,14 @@ class MeasureImageQuality(cpm.Module):
                     mean_image_value = np.mean(pixel_data)
                     squared_normalized_image = (pixel_data - mean_image_value) ** 2
                     if mean_image_value > 0:
-                        focus_score = (np.sum(squared_normalized_image) /
-                                       (np.product(pixel_data.shape) * mean_image_value))
+                        focus_score = (old_div(np.sum(squared_normalized_image),
+                                       (np.product(pixel_data.shape) * mean_image_value)))
                 #
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
                 i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
-                m, n = (np.array(shape) + scale - 1) / scale
+                m, n = old_div((np.array(shape) + scale - 1), scale)
                 i = (i * float(m) / float(shape[0])).astype(int)
                 j = (j * float(n) / float(shape[1])).astype(int)
                 grid = i * n + j + 1
@@ -846,11 +857,11 @@ class MeasureImageQuality(cpm.Module):
                     sums = fix(scind.sum(local_squared_normalized_image, grid,
                                          nz_grid_range))
                     pixel_counts = fix(scind.sum(np.ones(shape), grid, nz_grid_range))
-                    local_norm_var = (sums /
-                                      (pixel_counts * local_means[grid_mask]))
+                    local_norm_var = (old_div(sums,
+                                      (pixel_counts * local_means[grid_mask])))
                     local_norm_median = np.median(local_norm_var)
                     if np.isfinite(local_norm_median) and local_norm_median > 0:
-                        local_focus_score[-1] = np.var(local_norm_var) / local_norm_median
+                        local_focus_score[-1] = old_div(np.var(local_norm_var), local_norm_median)
 
             #
             # Add the measurements
@@ -876,7 +887,7 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def calculate_correlation(self, image_group, workspace):
-        '''Calculate a correlation measure from the Harlick feature set'''
+        """Calculate a correlation measure from the Harlick feature set"""
         result = []
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name,
@@ -901,7 +912,7 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def calculate_saturation(self, image_group, workspace):
-        '''Count the # of pixels at saturation'''
+        """Count the # of pixels at saturation"""
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -935,7 +946,7 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def calculate_image_intensity(self, image_group, workspace):
-        '''Calculate intensity-based metrics, mostly from MeasureImageIntensity'''
+        """Calculate intensity-based metrics, mostly from MeasureImageIntensity"""
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -961,7 +972,7 @@ class MeasureImageQuality(cpm.Module):
             pixel_max = 0
         else:
             pixel_sum = np.sum(pixels)
-            pixel_mean = pixel_sum / float(pixel_count)
+            pixel_mean = old_div(pixel_sum, float(pixel_count))
             pixel_std = np.std(pixels)
             pixel_median = np.median(pixels)
             pixel_mad = np.median(np.abs(pixels - pixel_median))
@@ -1031,7 +1042,7 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def calculate_thresholds(self, image_group, workspace):
-        '''Calculate a threshold for this image'''
+        """Calculate a threshold for this image"""
         result = []
         all_threshold_groups = self.get_all_threshold_groups(image_group)
 
@@ -1076,16 +1087,16 @@ class MeasureImageQuality(cpm.Module):
         return result
 
     def get_all_threshold_groups(self, image_group):
-        '''Get all threshold groups to apply to an image group
+        """Get all threshold groups to apply to an image group
 
         image_group - the image group to try thresholding on
-        '''
+        """
         if image_group.use_all_threshold_methods.value:
             return self.build_threshold_parameter_list()
         return image_group.threshold_groups
 
     def calculate_experiment_threshold(self, image_group, workspace):
-        '''Calculate experiment-wide threshold mean, median and standard-deviation'''
+        """Calculate experiment-wide threshold mean, median and standard-deviation"""
         m = workspace.measurements
         statistics = []
         all_threshold_groups = self.get_all_threshold_groups(image_group)
@@ -1111,9 +1122,9 @@ class MeasureImageQuality(cpm.Module):
         return statistics
 
     def build_threshold_parameter_list(self):
-        '''Build a set of temporary threshold groups containing all the threshold methods to be tested'''
+        """Build a set of temporary threshold groups containing all the threshold methods to be tested"""
 
-        # Produce a list of meaningful combinations of threshold settings.'''
+        # Produce a list of meaningful combinations of threshold settings."""
         threshold_args = []
         object_fraction = [0.05, 0.25, 0.75, 0.95]
         # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
@@ -1142,7 +1153,7 @@ class MeasureImageQuality(cpm.Module):
         return threshold_groups
 
     def images_to_process(self, image_group, workspace, pipeline=None):
-        '''Return a list of input image names appropriate to the setting choice '''
+        """Return a list of input image names appropriate to the setting choice """
         if self.images_choice.value == O_SELECT:
             return image_group.image_names.get_selections()
         elif self.images_choice.value == O_ALL_LOADED:
@@ -1165,7 +1176,7 @@ class MeasureImageQuality(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade from previous versions of setting formats'''
+        """Upgrade from previous versions of setting formats"""
 
         if (from_matlab and variable_revision_number == 4 and
                     module_name == 'MeasureImageSaturationBlur'):
@@ -1211,7 +1222,7 @@ class MeasureImageQuality(cpm.Module):
                 threshold_image = setting_values[i + 1]
                 threshold_method = setting_values[i + 2]
                 if saturation_image != cps.DO_NOT_USE:
-                    if not d.has_key(saturation_image):
+                    if saturation_image not in d:
                         d[saturation_image] = {"check_blur": check_blur,
                                                "check_saturation": cps.YES,
                                                "check_threshold": cps.NO,
@@ -1220,7 +1231,7 @@ class MeasureImageQuality(cpm.Module):
                         d[saturation_image]["check_blur"] = check_blur
                         d[saturation_image]["check_saturation"] = cps.YES
                 if threshold_image != cps.DO_NOT_USE:
-                    if not d.has_key(threshold_image):
+                    if threshold_image not in d:
                         d[threshold_image] = {"check_blur": cps.NO,
                                               "check_saturation": cps.NO,
                                               "check_threshold": cps.YES,
@@ -1229,7 +1240,7 @@ class MeasureImageQuality(cpm.Module):
                         d[threshold_image]["check_threshold"] = cps.YES
                         d[threshold_image]["threshold_method"] = threshold_method
             setting_values = []
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 dd = d[image_name]
                 setting_values += [image_name, dd["check_blur"], window_size,
                                    dd["check_saturation"],
@@ -1243,7 +1254,7 @@ class MeasureImageQuality(cpm.Module):
             # add power spectrum calculations
             assert (not from_matlab)
             assert len(setting_values) % 7 == 0
-            num_images = len(setting_values) / 7
+            num_images = old_div(len(setting_values), 7)
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 7):(idx * 7 + 7)]
@@ -1254,7 +1265,7 @@ class MeasureImageQuality(cpm.Module):
         if (not from_matlab) and variable_revision_number == 2:
             # add otsu threshold settings
             assert len(setting_values) % 8 == 0
-            num_images = len(setting_values) / 8
+            num_images = old_div(len(setting_values), 8)
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 8):(idx * 8 + 8)]
@@ -1266,10 +1277,10 @@ class MeasureImageQuality(cpm.Module):
         if (not from_matlab) and variable_revision_number == 3:
             # Rearrangement/consolidation of settings
             assert len(setting_values) % SETTINGS_PER_GROUP_V3 == 0
-            num_images = len(setting_values) / SETTINGS_PER_GROUP_V3
+            num_images = old_div(len(setting_values), SETTINGS_PER_GROUP_V3)
 
-            '''Since some settings are new/consolidated and can be repeated, handle
-            the old settings by using a dict'''
+            """Since some settings are new/consolidated and can be repeated, handle
+            the old settings by using a dict"""
             # Initialize the dictionary by image name
             d = {}
             unique_image_names = []
@@ -1305,7 +1316,7 @@ class MeasureImageQuality(cpm.Module):
 
             # Uniquify the scales and threshold methods
             import itertools
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 d[image_name]["blur_scales"] = list(set(d[image_name]["blur_scales"]))
                 d[image_name]["threshold_methods"] = [k for k, v in
                                                       itertools.groupby(sorted(d[image_name]["threshold_methods"]))]
@@ -1332,7 +1343,7 @@ class MeasureImageQuality(cpm.Module):
 
         if (not from_matlab) and variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
-            thresh_dict = dict(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS))
+            thresh_dict = dict(list(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS)))
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [thresh_dict[x] if x in cpthresh.TM_GLOBAL_METHODS else x for x in setting_values]
             variable_revision_number = 5
@@ -1343,11 +1354,11 @@ class MeasureImageQuality(cpm.Module):
 class ImageQualitySettingsGroup(cps.SettingsGroup):
     @property
     def threshold_algorithm(self):
-        '''The thresholding algorithm to run'''
+        """The thresholding algorithm to run"""
         return self.threshold_method.value.split(' ')[0]
 
     def threshold_feature_name(self, image_name, agg=None):
-        '''The feature name of the threshold measurement generated'''
+        """The feature name of the threshold measurement generated"""
         scale = self.threshold_scale
         if agg is None:
             hdr = F_THRESHOLD
@@ -1365,7 +1376,7 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
 
     @property
     def threshold_scale(self):
-        '''The "scale" for the threshold = minor parameterizations'''
+        """The "scale" for the threshold = minor parameterizations"""
         #
         # Distinguish Otsu choices from each other
         #
@@ -1388,7 +1399,7 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
             return str(int(self.object_fraction.value * 100))
 
     def threshold_description(self, image_name, agg=None):
-        '''Return a description of the threshold meant to be seen by the user
+        """Return a description of the threshold meant to be seen by the user
 
         image_name - name of thresholded image
 

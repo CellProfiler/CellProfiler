@@ -1,3 +1,14 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import cellprofiler.gui.artist
 import cellprofiler.gui.figure
 import cellprofiler.gui.help
@@ -74,7 +85,7 @@ class VWRow(object):
     @property
     def color(self):
         """The color control's current color scaled for matplotlib"""
-        return tuple([float(x) / 255 for x in self.color_ctrl.GetColour()])
+        return tuple([old_div(float(x), 255) for x in self.color_ctrl.GetColour()])
 
     def on_choice(self, event):
         self.data.name = self.chooser.GetStringSelection()
@@ -82,7 +93,7 @@ class VWRow(object):
 
     def on_color_change(self, event):
         self.data.color = tuple(
-                [float(c) / 255. for c in self.color_ctrl.GetColour()])
+                [old_div(float(c), 255.) for c in self.color_ctrl.GetColour()])
         self.vw.redraw()
 
     def on_check_change(self, event):
@@ -130,7 +141,7 @@ class VWImageRow(VWRow):
             normalization = cellprofiler.gui.artist.NORMALIZE_LINEAR
         else:
             normalization = cellprofiler.gui.artist.NORMALIZE_RAW
-        alpha = 1.0 / (len(vw.image_rows) + 1.0)
+        alpha = old_div(1.0, (len(vw.image_rows) + 1.0))
         self.data = bind_data_class(cellprofiler.gui.artist.ImageData, self.color_ctrl, vw.redraw)(
                 name, None,
                 mode=cellprofiler.gui.artist.MODE_HIDE,
@@ -610,7 +621,7 @@ class ViewWorkspace(object):
             else:
                 if object_name not in object_values:
                     if any([not m.has_feature(object_name, lf) for lf in
-                            cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]):
+                            (cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y)]):
                         continue
                     object_values[object_name] = []
                 object_values[object_name].append(
@@ -619,11 +630,11 @@ class ViewWorkspace(object):
             self.axes.set_title("\n".join(title_lines))
         else:
             self.axes.set_title("Image set # %d" % m.image_number)
-        for object_name, value_rows in object_values.items():
+        for object_name, value_rows in list(object_values.items()):
             values = [vr[0] for vr in value_rows]
             measurement_rows = [vr[1] for vr in value_rows]
             x, y = [m[object_name, ftr] for ftr in
-                    cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]
+                    (cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y)]
             for i in range(len(x)):
                 xi, yi = x[i], y[i]
                 if numpy.isnan(xi) or numpy.isnan(yi):
@@ -640,9 +651,9 @@ class ViewWorkspace(object):
                         fontstyle = "normal"
                     color = measurement_row.foreground_color
                     fontcolor, backgroundcolor = [
-                        tuple([float(c) / 255 for c in color][:3]) for color in
-                        measurement_row.foreground_color,
-                        measurement_row.background_color]
+                        tuple([old_div(float(c), 255) for c in color][:3]) for color in
+                        (measurement_row.foreground_color,
+                        measurement_row.background_color)]
 
                     fmt = "%%.%df" % measurement_row.precision
                     a = self.axes.annotate(
@@ -821,7 +832,7 @@ class MeasurementRow(object):
                 self.font = font_picker.GetSelectedFont()
                 self.foreground_color = foreground_color.GetColour()
                 self.background_color = background_color.GetColour()
-                self.background_alpha = float(alpha.Value) / 100
+                self.background_alpha = old_div(float(alpha.Value), 100)
                 self.box_style = box_style.GetStringSelection()
                 self.precision = precision.Value
                 self.on_change(event)

@@ -1,4 +1,4 @@
-'''<b>Relate Objects</b> assigns relationships; all objects (e.g. speckles) within a
+"""<b>Relate Objects</b> assigns relationships; all objects (e.g. speckles) within a
 parent object (e.g. nucleus) become its children.
 <hr>
 This module allows you to associate <i>child</i> objects with <i>parent</i> objects.
@@ -28,8 +28,17 @@ module.</li>
 </ul>
 
 See also: <b>ReassignObjectNumbers</b>, <b>MaskObjects</b>.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import re
 import sys
 
@@ -59,19 +68,19 @@ C_MEAN = "Mean"
 
 FF_MEAN = '%s_%%s_%%s' % C_MEAN
 
-'''Distance category'''
+"""Distance category"""
 C_DISTANCE = 'Distance'
 
-'''Centroid distance feature'''
+"""Centroid distance feature"""
 FEAT_CENTROID = 'Centroid'
 
-'''Minimum distance feature'''
+"""Minimum distance feature"""
 FEAT_MINIMUM = 'Minimum'
 
-'''Centroid distance measurement (FF_DISTANCE % parent)'''
+"""Centroid distance measurement (FF_DISTANCE % parent)"""
 FF_CENTROID = '%s_%s_%%s' % (C_DISTANCE, FEAT_CENTROID)
 
-'''Minimum distance measurement (FF_MINIMUM % parent)'''
+"""Minimum distance measurement (FF_MINIMUM % parent)"""
 FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
 
 FIXED_SETTING_COUNT = 5
@@ -161,7 +170,7 @@ class RelateObjects(cpm.Module):
         self.step_parent_names.append(group)
 
     def get_step_parents(self, pipeline):
-        '''Return the possible step-parents associated with the parent'''
+        """Return the possible step-parents associated with the parent"""
         step_parents = set()
         parent_name = self.parent_name.value
         for module in pipeline.modules():
@@ -190,7 +199,7 @@ class RelateObjects(cpm.Module):
 
     @property
     def has_step_parents(self):
-        '''True if there are possible step-parents for the parent object'''
+        """True if there are possible step-parents for the parent object"""
         return (len(self.step_parent_names) > 0 and
                 len(self.step_parent_names[0].step_parent_name.choices) > 0)
 
@@ -319,7 +328,7 @@ class RelateObjects(cpm.Module):
                 sharey=figure.subplot(0, 0))
 
     def get_parent_names(self):
-        '''Get the names of parents to be measured for distance'''
+        """Get the names of parents to be measured for distance"""
         parent_names = [self.parent_name.value]
         if self.wants_step_parent_distances.value:
             parent_names += [group.step_parent_name.value
@@ -327,7 +336,7 @@ class RelateObjects(cpm.Module):
         return parent_names
 
     def calculate_centroid_distances(self, workspace, parent_name):
-        '''Calculate the centroid-centroid distance between parent & child'''
+        """Calculate the centroid-centroid distance between parent & child"""
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
         sub_object_name = self.sub_object_name.value
@@ -350,7 +359,7 @@ class RelateObjects(cpm.Module):
         meas.add_measurement(sub_object_name, FF_CENTROID % parent_name, dist)
 
     def calculate_minimum_distances(self, workspace, parent_name):
-        '''Calculate the distance from child center to parent perimeter'''
+        """Calculate the distance from child center to parent perimeter"""
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
         sub_object_name = self.sub_object_name.value
@@ -431,7 +440,7 @@ class RelateObjects(cpm.Module):
         meas.add_measurement(sub_object_name, FF_MINIMUM % parent_name, dist)
 
     def get_parents_of(self, workspace, parent_name):
-        '''Return the parents_of measurment or equivalent
+        """Return the parents_of measurment or equivalent
 
         parent_name - name of parent objects
 
@@ -439,7 +448,7 @@ class RelateObjects(cpm.Module):
         the Parent measurement. Look for a direct parent / child link first
         and then look for relationships between self.parent_name and the
         named parent.
-        '''
+        """
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
         parent_feature = FF_PARENT % parent_name
@@ -488,10 +497,10 @@ class RelateObjects(cpm.Module):
     ignore_features = set(M_NUMBER_OBJECT_NUMBER)
 
     def should_aggregate_feature(self, feature_name):
-        '''Return True if aggregate measurements should be made on a feature
+        """Return True if aggregate measurements should be made on a feature
 
         feature_name - name of a measurement, such as Location_Center_X
-        '''
+        """
         if feature_name.startswith(C_MEAN):
             return False
         if feature_name.startswith(C_PARENT):
@@ -501,10 +510,10 @@ class RelateObjects(cpm.Module):
         return True
 
     def validate_module(self, pipeline):
-        '''Validate the module's settings
+        """Validate the module's settings
 
         Relate will complain if the children and parents are related
-        by a prior module or if a step-parent is named twice'''
+        by a prior module or if a step-parent is named twice"""
         for module in pipeline.modules():
             if module == self:
                 break
@@ -549,7 +558,7 @@ class RelateObjects(cpm.Module):
         return columns
 
     def get_measurement_columns(self, pipeline):
-        '''Return the column definitions for this module's measurements'''
+        """Return the column definitions for this module's measurements"""
         columns = [(self.sub_object_name.value,
                     FF_PARENT % self.parent_name.value,
                     cpmeas.COLTYPE_INTEGER),
@@ -566,7 +575,7 @@ class RelateObjects(cpm.Module):
         return columns
 
     def get_object_relationships(self, pipeline):
-        '''Return the object relationships produced by this module'''
+        """Return the object relationships produced by this module"""
         parent_name = self.parent_name.value
         sub_object_name = self.sub_object_name.value
         return [(R_PARENT, parent_name, sub_object_name,
@@ -621,8 +630,8 @@ class RelateObjects(cpm.Module):
         the number of relevant settings so they map correctly to the values.
         """
         setting_count = len(setting_values)
-        step_parent_count = ((setting_count - FIXED_SETTING_COUNT) /
-                             VARIABLE_SETTING_COUNT)
+        step_parent_count = (old_div((setting_count - FIXED_SETTING_COUNT),
+                             VARIABLE_SETTING_COUNT))
         assert len(self.step_parent_names) > 0
         self.step_parent_names = self.step_parent_names[:1]
         for i in range(1, step_parent_count):

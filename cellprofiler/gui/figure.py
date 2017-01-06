@@ -1,7 +1,19 @@
 # coding=utf-8
 """ figure.py - provides a frame with a figure inside
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from past.utils import old_div
 import cellprofiler.gui
 import cellprofiler.gui.artist
 import cellprofiler.gui.help
@@ -9,7 +21,7 @@ import cellprofiler.preferences
 import cellprofiler.preferences
 import centrosome.cpmorphology
 import centrosome.outline
-import tools
+from . import tools
 import csv
 import functools
 import javabridge
@@ -58,7 +70,7 @@ def log_transform(im):
         im[numpy.isnan(im)] = 0
         (minimum, maximum) = (im[im > 0].min(), im[numpy.isfinite(im)].max())
         if (maximum > minimum) and (maximum > 0):
-            return (numpy.log(im.clip(minimum, maximum)) - numpy.log(minimum)) / (numpy.log(maximum) - numpy.log(minimum))
+            return old_div((numpy.log(im.clip(minimum, maximum)) - numpy.log(minimum)), (numpy.log(maximum) - numpy.log(minimum)))
     except:
         pass
     return orig
@@ -129,7 +141,7 @@ def make_1_or_3_channels(im):
     if im.shape[2] == 3:
         return (im * 255).clip(0, 255).astype(numpy.uint8)
     out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.float32)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
+    for chanidx, weights in zip(list(range(im.shape[2])), wraparound(COLOR_VALS)):
         for idx, v in enumerate(weights):
             out[:, :, idx] += v * im[:, :, chanidx]
     return (out * 255).clip(0, 255).astype(numpy.uint8)
@@ -141,7 +153,7 @@ def make_3_channels_float(im):
     if im.ndim == 2:
         return numpy.dstack((im, im, im)).astype(numpy.double).clip(0, 1)
     out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.double)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
+    for chanidx, weights in zip(list(range(im.shape[2])), wraparound(COLOR_VALS)):
         for idx, v in enumerate(weights):
             out[:, :, idx] += v * im[:, :, chanidx]
     return out.clip(0, 1)
@@ -240,10 +252,10 @@ def get_menu_id(d, idx):
     return d[idx]
 
 
-'''mouse tool mode - do nothing'''
+"""mouse tool mode - do nothing"""
 MODE_NONE = 0
 
-'''mouse tool mode - show pixel data'''
+"""mouse tool mode - show pixel data"""
 MODE_MEASURE_LENGTH = 2
 
 
@@ -454,13 +466,13 @@ class Figure(wx.Frame):
                 y = y + height - best_height
                 height = best_height
             elif valign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
-                y += (height - best_height) / 2
+                y += old_div((height - best_height), 2)
             height = best_height
         if width > best_width:
             if halign == wx.ALIGN_RIGHT:
                 x = x + width - best_width
             elif halign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
-                x += (width - best_width) / 2
+                x += old_div((width - best_width), 2)
             width = best_width
         ctrl.SetPosition(wx.Point(x, y))
         ctrl.SetSize(wx.Size(width, height))
@@ -472,7 +484,7 @@ class Figure(wx.Frame):
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
         """
-        if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
+        if any([not hasattr(self, bar) for bar in ("navtoolbar", "status_bar")]):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
@@ -551,11 +563,11 @@ class Figure(wx.Frame):
 
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
-        x, y = [int(round(xy)) for xy in xi, yi]
+        x, y = [int(round(xy)) for xy in (xi, yi)]
         if not self.in_bounds(im, x, y):
             return fields
         if im.dtype.type == numpy.uint8:
-            im = im.astype(numpy.float32) / 255.0
+            im = old_div(im.astype(numpy.float32), 255.0)
         if im.ndim == 2:
             fields += ["Intensity: %.4f" % (im[y, x])]
         elif im.ndim == 3 and im.shape[2] == 3:
@@ -627,7 +639,7 @@ class Figure(wx.Frame):
                     if isinstance(
                             artist, cellprofiler.gui.artist.CPImageArtist):
                         fields += ["%s: %.4f" % (k, v) for k, v in
-                                   artist.get_channel_values(xi, yi).items()]
+                                   list(artist.get_channel_values(xi, yi).items())]
         else:
             fields = []
         return fields
@@ -803,7 +815,7 @@ class Figure(wx.Frame):
         popup = self.get_imshow_menu(subplot_xy)
         self.PopupMenu(popup, pos)
 
-    def get_imshow_menu(self, (x, y)):
+    def get_imshow_menu(self, xxx_todo_changeme):
         """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
@@ -811,6 +823,7 @@ class Figure(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         """
+        (x, y) = xxx_todo_changeme
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
@@ -1064,7 +1077,7 @@ class Figure(wx.Frame):
 
             def on_slider(event, cplabels=cplabels,
                           draw_fn=self.figure.canvas.draw_idle):
-                cplabels[CPLD_ALPHA_VALUE] = float(slider.Value) / 100.
+                cplabels[CPLD_ALPHA_VALUE] = old_div(float(slider.Value), 100.)
                 draw_fn()
 
             dlg.Layout()
@@ -1096,7 +1109,7 @@ class Figure(wx.Frame):
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
 
-            if position / 3 != 2:
+            if old_div(position, 3) != 2:
                 ax.set_xticklabels([])
 
             if position % 3 != 0:
@@ -1340,7 +1353,7 @@ class Figure(wx.Frame):
                         cplabels[CPLD_NAME],
                         cplabels[CPLD_LABELS],
                         linewidth=cplabels[CPLD_LINE_WIDTH],
-                        colors=numpy.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.))
+                        colors=old_div(numpy.array(cplabels[CPLD_OUTLINE_COLOR], float), 255.)))
 
     @allow_sharexy
     def subplot_imshow_color(self, x, y, image, title=None,
@@ -1424,7 +1437,7 @@ class Figure(wx.Frame):
                                                   shape=shape).toarray()
                           for i in range(4)]
             for i, plane in enumerate((r, g, b)):
-                image[a != 0, i] = plane[a != 0] / a[a != 0]
+                image[a != 0, i] = old_div(plane[a != 0], a[a != 0])
         return self.subplot_imshow(x, y, image, title, clear,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
@@ -1519,13 +1532,13 @@ class Figure(wx.Frame):
                 continue
             for labels in cplabel[CPLD_LABELS]:
                 if cplabel[CPLD_MODE] == CPLDM_OUTLINES:
-                    oc = numpy.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3] / 255
+                    oc = old_div(numpy.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3], 255)
                     lm = centrosome.outline.outline(labels) != 0
                     lo = lm.astype(float)
                     lw = float(cplabel[CPLD_LINE_WIDTH])
                     if lw > 1:
                         # Alpha-blend for distances beyond 1
-                        hw = lw / 2
+                        hw = old_div(lw, 2)
                         d = scipy.ndimage.distance_transform_edt(~lm)
                         dti, dtj = numpy.where((d < hw + .5) & ~lm)
                         lo[dti, dtj] = numpy.minimum(1, hw + .5 - d[dti, dtj])
@@ -1564,10 +1577,10 @@ class Figure(wx.Frame):
         """
 
         nx, ny = self.subplots.shape
-        xstart = float(x) / float(nx)
-        ystart = float(y) / float(ny)
-        width = float(n_cols) / float(nx)
-        height = float(n_rows) / float(ny)
+        xstart = old_div(float(x), float(nx))
+        ystart = old_div(float(y), float(ny))
+        width = old_div(float(n_cols), float(nx))
+        height = old_div(float(n_rows), float(ny))
         cw, ch = self.figure.canvas.GetSizeTuple()
         ctrl = wx.grid.Grid(self.figure.canvas)
         self.widgets.append(
@@ -1578,7 +1591,7 @@ class Figure(wx.Frame):
         ctrl.CreateGrid(nrows, ncols)
         if col_labels is not None:
             for i, value in enumerate(col_labels):
-                ctrl.SetColLabelValue(i, unicode(value))
+                ctrl.SetColLabelValue(i, str(value))
         else:
             ctrl.SetColLabelSize(0)
         if row_labels is not None:
@@ -1586,7 +1599,7 @@ class Figure(wx.Frame):
             ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
             max_width = 0
             for i, value in enumerate(row_labels):
-                value = unicode(value)
+                value = str(value)
                 ctrl.SetRowLabelValue(i, value)
                 max_width = max(
                         max_width,
@@ -1597,7 +1610,7 @@ class Figure(wx.Frame):
 
         for i, row in enumerate(statistics):
             for j, value in enumerate(row):
-                ctrl.SetCellValue(i, j, unicode(value))
+                ctrl.SetCellValue(i, j, str(value))
                 ctrl.SetReadOnly(i, j, True)
         ctrl.AutoSize()
         ctrl.Show()
@@ -1763,15 +1776,15 @@ class Figure(wx.Frame):
             xmin /= 1.5
             xmax *= 1.5
         else:
-            xmin = xmin - (xmax - xmin) / 20.
-            xmax = xmax + (xmax - xmin) / 20.
+            xmin = xmin - old_div((xmax - xmin), 20.)
+            xmax = xmax + old_div((xmax - xmin), 20.)
 
         if yscale == 'log':
             ymin /= 1.5
             ymax *= 1.5
         else:
-            ymin = ymin - (ymax - ymin) / 20.
-            ymax = ymax + (ymax - ymin) / 20.
+            ymin = ymin - old_div((ymax - ymin), 20.)
+            ymax = ymax + old_div((ymax - ymin), 20.)
 
         axes.axis([xmin, xmax, ymin, ymax])
 
@@ -1879,14 +1892,14 @@ class Figure(wx.Frame):
         plot = axes.imshow(clean_data, cmap=cmap, interpolation='nearest',
                            shape=data.shape)
         axes.set_title(title)
-        axes.set_xticks(range(ncols))
-        axes.set_yticks(range(nrows))
-        axes.set_xticklabels(range(1, ncols + 1), minor=False)
+        axes.set_xticks(list(range(ncols)))
+        axes.set_yticks(list(range(nrows)))
+        axes.set_xticklabels(list(range(1, ncols + 1)), minor=False)
         axes.set_yticklabels(alphabet[:nrows], minor=False)
         axes.axis('image')
 
         if colorbar and not numpy.all(numpy.isnan(data)):
-            if self.colorbar.has_key(axes):
+            if axes in self.colorbar:
                 cb = self.colorbar[axes]
                 cb.set_clim(numpy.min(clean_data), numpy.max(clean_data))
                 cb.update_normal(clean_data)
@@ -1927,7 +1940,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
     data = numpy.zeros(plate_shape)
     data[:] = numpy.nan
     display_error = True
-    for well, val in plate_dict.items():
+    for well, val in list(plate_dict.items()):
         r = alphabet.index(well[0].upper())
         c = int(well[1:]) - 1
         if r >= data.shape[0] or c >= data.shape[1]:
@@ -1959,13 +1972,13 @@ def show_image(url, parent=None, needs_raise_after=True):
         wx.MessageBox('Failed to open file, "%s"' % filename,
                       caption="File open error")
         return
-    except javabridge.JavaException, je:
+    except javabridge.JavaException as je:
         wx.MessageBox(
                 'Could not open "%s" as an image.' % filename,
                 caption="File format error")
         return
 
-    except Exception, e:
+    except Exception as e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None,
                              "Failed to load %s" % url,
@@ -2103,8 +2116,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         heightDisplay = (t - b + 1) * magnification
 
         # resize viewport to display
-        sx = widthDisplay / self.axes.viewLim.width
-        sy = abs(heightDisplay / self.axes.viewLim.height)
+        sx = old_div(widthDisplay, self.axes.viewLim.width)
+        sy = abs(old_div(heightDisplay, self.axes.viewLim.height))
         im.apply_scaling(sx, sy)
         im.resize(widthDisplay, heightDisplay,
                   norm=1, radius=self.filterrad)

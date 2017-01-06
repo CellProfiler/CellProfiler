@@ -1,17 +1,27 @@
-"""Image.py
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
-Image        - Represents an image with secondary attributes such as a mask and labels
-ImageSetList - Represents the list of image filenames that make up a pipeline run
-"""
+from future import standard_library
 
-import StringIO
-import cPickle
+standard_library.install_aliases()
+
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import *
+from builtins import object
+
+from past.utils import old_div
+
+import io
+import pickle
 import logging
 import math
 import struct
 import sys
 import zlib
-
 import numpy
 
 logger = logging.getLogger(__name__)
@@ -146,22 +156,22 @@ class Image(object):
             scale = math.pow(2.0, 64.0) - 1
         elif img.dtype.type is numpy.int8:
             scale = math.pow(2.0, 8.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         elif img.dtype.type is numpy.int16:
             scale = math.pow(2.0, 16.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         elif img.dtype.type is numpy.int32:
             scale = math.pow(2.0, 32.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         elif img.dtype.type is numpy.int64:
             scale = math.pow(2.0, 64.0)
-            mval = -scale / 2.0
+            mval = old_div(-scale, 2.0)
             scale -= 1
             fix_range = True
         # Avoid temporaries by doing the shift/scale in place.
@@ -282,7 +292,7 @@ class Image(object):
 
     @property
     def has_crop_mask(self):
-        '''True if the image or its ancestors has a crop mask'''
+        """True if the image or its ancestors has a crop mask"""
         return self.__has_crop_mask or self.has_masking_objects or (self.has_parent_image and self.parent_image.has_crop_mask)
 
     def crop_image_similarly(self, image):
@@ -312,12 +322,12 @@ class Image(object):
 
     @property
     def file_name(self):
-        '''The name of the file holding this image
+        """The name of the file holding this image
 
         If the image is derived, then return the file name of the first
         ancestor that has a file name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
-        '''
+        """
         if self.__file_name is not None:
             return self.__file_name
         elif self.has_parent_image:
@@ -327,12 +337,12 @@ class Image(object):
 
     @property
     def path_name(self):
-        '''The path to the file holding this image
+        """The path to the file holding this image
 
         If the image is derived, then return the path name of the first
         ancestor that has a path name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
-        '''
+        """
         if not self.__path_name is None:
             return self.__path_name
         elif self.has_parent_image:
@@ -342,18 +352,18 @@ class Image(object):
 
     @property
     def has_channel_names(self):
-        '''True if there are channel names on this image'''
+        """True if there are channel names on this image"""
         return self.channel_names is not None
 
     @property
     def scale(self):
-        '''The scale at acquisition
+        """The scale at acquisition
 
         This is the intensity scale used by the acquisition device. For
         instance, a microscope might use a 12-bit a/d converter to acquire
         an image and store that information using the TIF MaxSampleValue
         tag = 4095.
-        '''
+        """
         if self.__scale is None and self.has_parent_image:
             return self.parent_image.scale
 
@@ -433,7 +443,7 @@ class RGBImage(object):
 
     @property
     def pixel_data(self):
-        '''Return the pixel data without the alpha channel'''
+        """Return the pixel data without the alpha channel"""
         return self.__image.pixel_data[:, :, :3]
 
 
@@ -457,7 +467,7 @@ class AbstractImageProvider(object):
         raise NotImplementedError("Please implement get_name for your class")
 
     def release_memory(self):
-        '''Release whatever memory is associated with the image'''
+        """Release whatever memory is associated with the image"""
         logger.warning("Warning: no memory release function implemented for %s image",
                        self.get_name())
 
@@ -540,7 +550,7 @@ class ImageSet(object):
                       discard alpha channel.
         """
         name = str(name)
-        if not self.__images.has_key(name):
+        if name not in self.__images:
             image = self.get_image_provider(name).provide_image(self)
 
         else:
@@ -553,7 +563,7 @@ class ImageSet(object):
             if must_be_grayscale:
                 pd = image.pixel_data
 
-                pd = pd.transpose(-1, *range(pd.ndim - 1))
+                pd = pd.transpose(-1, *list(range(pd.ndim - 1)))
 
                 if pd.shape[-1] >= 3 and numpy.all(pd[0] == pd[1]) and numpy.all(pd[0] == pd[2]):
                     return GrayscaleImage(image)
@@ -595,7 +605,7 @@ class ImageSet(object):
 
         name - return the image provider with this name
         """
-        providers = filter(lambda x: x.name == name, self.__image_providers)
+        providers = [x for x in self.__image_providers if x.name == name]
         assert len(providers) > 0, "No provider of the %s image" % name
         assert len(providers) == 1, "More than one provider of the %s image" % name
         return providers[0]
@@ -605,16 +615,15 @@ class ImageSet(object):
 
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(lambda x: x.name != name,
-                                        self.__image_providers)
+        self.__image_providers = [x for x in self.__image_providers if x.name != name]
 
     def clear_image(self, name):
-        '''Remove the image memory associated with a provider
+        """Remove the image memory associated with a provider
 
         name - the name of the provider
-        '''
+        """
         self.get_image_provider(name).release_memory()
-        if self.__images.has_key(name):
+        if name in self.__images:
             del self.__images[name]
 
     @property
@@ -660,7 +669,7 @@ class ImageSetList(object):
         else:
             keys = keys_or_number
             k = make_dictionary_key(keys)
-            if self.__image_sets_by_key.has_key(k):
+            if k in self.__image_sets_by_key:
                 number = self.__image_sets_by_key[k].number
             else:
                 number = len(self.__image_sets)
@@ -699,7 +708,7 @@ class ImageSetList(object):
         return len(self.__image_sets)
 
     def get_groupings(self, keys):
-        '''Return the groupings of an image set list over a set of keys
+        """Return the groupings of an image set list over a set of keys
 
         keys - a sequence of keys that match some of the image set keys
 
@@ -712,7 +721,7 @@ class ImageSetList(object):
                     that gives the group's values for each key.
                     The second element is a list of image numbers of
                     the images in the group
-        '''
+        """
         #
         # Sort order for dictionary keys
         #
@@ -726,36 +735,36 @@ class ImageSetList(object):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             key_values = tuple([str(image_set.keys[key]) for key in keys])
-            if not d.has_key(key_values):
+            if key_values not in d:
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i + 1)
-        return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
+        return keys, [(dict(list(zip(keys, k))), d[k]) for k in sort_order]
 
     def save_state(self):
-        '''Return a string that can be used to load the image_set_list's state
+        """Return a string that can be used to load the image_set_list's state
 
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
-        '''
-        f = StringIO.StringIO()
-        cPickle.dump(self.count(), f)
+        """
+        f = io.StringIO()
+        pickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            cPickle.dump(image_set.keys, f)
-        cPickle.dump(self.legacy_fields, f)
+            pickle.dump(image_set.keys, f)
+        pickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
-        '''Load an image_set_list's state from the string returned from save_state'''
+        """Load an image_set_list's state from the string returned from save_state"""
 
         self.__image_sets = []
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = cPickle.Unpickler(StringIO.StringIO(state))
+        p = pickle.Unpickler(io.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
@@ -784,6 +793,6 @@ class ImageSetList(object):
 
 
 def make_dictionary_key(key):
-    '''Make a dictionary into a stable key for another dictionary'''
-    return u", ".join([u":".join([unicode(y) for y in x])
-                       for x in sorted(key.iteritems())])
+    """Make a dictionary into a stable key for another dictionary"""
+    return u", ".join([u":".join([str(y) for y in x])
+                       for x in sorted(key.items())])

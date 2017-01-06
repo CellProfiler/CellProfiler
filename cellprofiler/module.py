@@ -1,3 +1,14 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import *
+from builtins import object
 import os
 import re
 import sys
@@ -9,7 +20,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting as cps
-import pipeline as cpp
+from . import pipeline as cpp
 import skimage.color
 
 
@@ -111,7 +122,7 @@ class Module(object):
         settings = handles[cpp.SETTINGS][0, 0]
         setting_values = []
         self.__notes = []
-        if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
+        if (cpp.MODULE_NOTES in settings.dtype.fields and
                     settings[cpp.MODULE_NOTES].shape[1] > idx):
             n = settings[cpp.MODULE_NOTES][0, idx].flatten()
             for x in n:
@@ -121,9 +132,9 @@ class Module(object):
                     else:
                         x = x[0]
                 self.__notes.append(x)
-        if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
+        if cpp.SHOW_WINDOW in settings.dtype.fields:
             self.__show_window = settings[cpp.SHOW_WINDOW][0, idx] != 0
-        if settings.dtype.fields.has_key(cpp.BATCH_STATE):
+        if cpp.BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
             self.batch_state = np.array(settings[cpp.BATCH_STATE][0, idx].tostring())
@@ -181,7 +192,7 @@ class Module(object):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -199,7 +210,7 @@ class Module(object):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         return setting_values, variable_revision_number, from_matlab
 
     def post_pipeline_load(self, pipeline):
@@ -240,7 +251,7 @@ class Module(object):
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
         setting = handles[cpp.SETTINGS][0, 0]
-        setting[cpp.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
+        setting[cpp.MODULE_NAMES][0, module_idx] = str(self.module_class())
         setting[cpp.MODULE_NOTES][0, module_idx] = np.ndarray(shape=(len(self.notes), 1), dtype='object')
         for i in range(0, len(self.notes)):
             setting[cpp.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
@@ -250,9 +261,9 @@ class Module(object):
             if len(str(variable)) > 0:
                 setting[cpp.VARIABLE_VALUES][module_idx, i] = variable.get_unicode_value()
             if isinstance(variable, cps.NameProvider):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode("%s indep" % variable.group)
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = str("%s indep" % variable.group)
             elif isinstance(variable, cps.NameSubscriber):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(variable.group)
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = str(variable.group)
         setting[cpp.VARIABLE_REVISION_NUMBERS][0, module_idx] = self.variable_revision_number
         setting[cpp.MODULE_REVISION_NUMBERS][0, module_idx] = 0
         setting[cpp.SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0
@@ -262,22 +273,22 @@ class Module(object):
         setting[cpp.BATCH_STATE][0, module_idx] = np.fromstring(self.batch_state.tostring(), np.uint8)
 
     def in_batch_mode(self):
-        '''Return True if the module knows that the pipeline is in batch mode'''
+        """Return True if the module knows that the pipeline is in batch mode"""
         return None
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart
+        """Check to see if changing the given setting means you have to restart
 
         Some settings, esp in modules like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to call "prepare_run".
-        '''
+        """
         return False
 
     def turn_off_batch_mode(self):
-        '''Reset the module to an editable state if batch mode is on
+        """Reset the module to an editable state if batch mode is on
 
         A module is allowed to create hidden information that it uses
         to turn batch mode on or to save state to be used in batch mode.
@@ -285,7 +296,7 @@ class Module(object):
         even if it is a batch pipeline; all modules should be restored
         to a state that's appropriate for creating a batch file, not
         for running a batch file
-        '''
+        """
         pass
 
     def test_valid(self, pipeline):
@@ -297,9 +308,9 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -314,14 +325,14 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
     def validate_module(self, pipeline):
-        '''Implement this to validate module settings
+        """Implement this to validate module settings
 
         Module implementers should implement validate_module to
         further validate a module's settings. For instance, load_data
@@ -330,27 +341,27 @@ class Module(object):
 
         Throw a cps.ValidationError, selecting the most egregiously offending
         setting to indicate failure.
-        '''
+        """
         pass
 
     def validate_module_warnings(self, pipeline):
-        '''Implement this to flag potentially dangerous settings
+        """Implement this to flag potentially dangerous settings
 
         Module implementers should implement validate_module_warnings to
         find setting combinations that can cause unexpected results.
         Implementers should throw a cps.ValidationError, selecting the
         most egregiously offending setting to indicate failure.
-        '''
+        """
         pass
 
     def other_providers(self, group):
-        '''Return a list of hidden name/object/etc. providers supplied by the module for this group
+        """Return a list of hidden name/object/etc. providers supplied by the module for this group
 
         group - a group supported by a subclass of NameProvider
 
         This routine returns additional providers beyond those that
         are listed by the module's visible_settings.
-        '''
+        """
         return []
 
     def get_module_num(self):
@@ -362,7 +373,7 @@ class Module(object):
         those modules create) previous to a given module.
         """
         if self.__module_num == -1:
-            raise (Exception('Module has not been created'))
+            raise Exception
         return self.__module_num
 
     def set_module_num(self, module_num):
@@ -391,20 +402,20 @@ class Module(object):
     enabled = property(get_enabled, set_enabled)
 
     def get_use_as_data_tool(self):
-        '''True if the module is being used as a data tool
+        """True if the module is being used as a data tool
 
         This flag can be used to modify the visible_settings and other things
         to make the module's behavior more appropriate for use as a data tool.
         For instance, you shouldn't offer to show measurements as a color
         map in DisplayDataOnImage if you don't have access to the segmentation
         because you're running as a data tool.
-        '''
+        """
         return self.__as_data_tool
 
     def set_use_as_data_tool(self, as_data_tool):
-        '''Mark the module as being used as a data tool
+        """Mark the module as being used as a data tool
 
-        '''
+        """
         self.__as_data_tool = as_data_tool
 
     use_as_data_tool = property(get_use_as_data_tool, set_use_as_data_tool)
@@ -420,7 +431,7 @@ class Module(object):
         return self.__settings
 
     def help_settings(self):
-        '''Override this if you want the settings for help to be in a different order'''
+        """Override this if you want the settings for help to be in a different order"""
         return self.settings()
 
     def setting(self, setting_num):
@@ -437,7 +448,7 @@ class Module(object):
         return self.settings()
 
     def get_show_window(self):
-        '''True if the user wants to see the figure for this module'''
+        """True if the user wants to see the figure for this module"""
         return self.__show_window
 
     def set_show_window(self, show_window):
@@ -446,7 +457,7 @@ class Module(object):
     show_window = property(get_show_window, set_show_window)
 
     def get_wants_pause(self):
-        '''True if the user wants to pause at this module while debugging'''
+        """True if the user wants to pause at this module while debugging"""
         return self.__wants_pause
 
     def set_wants_pause(self, wants_pause):
@@ -520,12 +531,12 @@ class Module(object):
         return False
 
     def is_create_batch_module(self):
-        '''If true, the module will pickle the pipeline into a batch file and exit
+        """If true, the module will pickle the pipeline into a batch file and exit
 
         This is needed by modules which can't properly operate in a batch
         mode (e.g. do all their work post_run or don't work so well if
         run in parallel)
-        '''
+        """
         return False
 
     def is_aggregation_module(self):
@@ -539,15 +550,15 @@ class Module(object):
         return False
 
     def needs_conversion(self):
-        '''Return True if the module needs to be converted from legacy
+        """Return True if the module needs to be converted from legacy
 
         A module can throw an exception if it is impossible to convert - for
         instance, LoadData.
-        '''
+        """
         return False
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
-        '''Convert the input processing of this module from the legacy format
+        """Convert the input processing of this module from the legacy format
 
         Legacy modules like LoadImages should copy their settings into
         the Metadata, NamesAndTypes and Groups modules when this call is made.
@@ -560,7 +571,7 @@ class Module(object):
 
         groups - the pipeline's Groups module
 
-        '''
+        """
         pass
 
     def is_object_identification_module(self):
@@ -629,7 +640,7 @@ class Module(object):
         pass
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It gives a module an opportunity to
@@ -650,11 +661,11 @@ class Module(object):
                         pathname stored in the settings or legacy fields.
 
         Returns True if it succeeds.
-        '''
+        """
         return True
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets in an image set list
+        """Return the image groupings of the image sets in an image set list
 
         get_groupings is called after prepare_run
 
@@ -675,11 +686,11 @@ class Module(object):
 
         Returns None to indicate that the module does not contribute any
         groupings.
-        '''
+        """
         return None
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to start processing a new grouping
+        """Prepare to start processing a new grouping
 
         workspace - the workspace for the group. The pipeline, measurements
                     and image_set_list are valid at this point and you can
@@ -692,19 +703,19 @@ class Module(object):
 
         prepare_group is called once after prepare_run if there are no
         groups.
-        '''
+        """
         pass
 
     def post_group(self, workspace, grouping):
-        '''Do post-processing after a group completes
+        """Do post-processing after a group completes
 
         workspace - the workspace at the end of the group
         grouping - the group that's being run
-        '''
+        """
         pass
 
     def get_measurement_columns(self, pipeline):
-        '''Return a sequence describing the measurement columns needed by this module
+        """Return a sequence describing the measurement columns needed by this module
 
         This call should return one element per image or object measurement
         made by the module during image set analysis. The element itself
@@ -716,11 +727,11 @@ class Module(object):
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
-        '''
+        """
         return []
 
     def get_object_relationships(self, pipeline):
-        '''Return a sequence describing the relationships recorded in measurements
+        """Return a sequence describing the relationships recorded in measurements
 
         This method reports the relationships recorded in the measurements
         using add_relate_measurement. Modules that add relationships should
@@ -738,16 +749,16 @@ class Module(object):
         MCA_AVAILABLE_POST_GROUP indicates that the relationship is not available
         until the group has completed - all relationships with a group's
         image number will be written in that case.
-        '''
+        """
         return []
 
     def get_dictionary(self, ignore=None):
-        '''Get the dictionary for this module
-        '''
+        """Get the dictionary for this module
+        """
         return self.shared_state
 
     def get_dictionary_for_worker(self):
-        '''Get the dictionary that should be shared between analysis workers
+        """Get the dictionary that should be shared between analysis workers
 
         A module might use the dictionary for cacheing information stored on
         disk or that's difficult to compute. It might also use it to store
@@ -757,14 +768,14 @@ class Module(object):
         in its dictionary. In these cases, the module should create a dictionary
         that can be JSON serialized in get_dictionary_for_worker and then
         reconstruct the result of JSON deserialization in set_dictionary_in_worker.
-        '''
+        """
         return self.get_dictionary()
 
     def set_dictionary_for_worker(self, d):
-        '''Initialize this worker's dictionary using results from first worker
+        """Initialize this worker's dictionary using results from first worker
 
         see get_dictionary_for_worker for details.
-        '''
+        """
         self.get_dictionary().clear()
         self.get_dictionary().update(d)
 
@@ -822,7 +833,7 @@ class Module(object):
         return False
 
     def should_stop_writing_measurements(self):
-        '''Returns True if measurements should not be taken after this module
+        """Returns True if measurements should not be taken after this module
 
         The ExportToDatabase and ExportToExcel modules expect that no
         measurements will be recorded in latter modules. This function
@@ -830,33 +841,33 @@ class Module(object):
         keep being made, but returns True for these modules, indicating
         that any subsequent modules will lose their measurements and should
         not write any.
-        '''
+        """
         return False
 
     def needs_default_image_folder(self, pipeline):
-        '''Returns True if the module needs the default image folder
+        """Returns True if the module needs the default image folder
 
         pipeline - pipeline being run
 
         Legacy modules might need the default image folder as does any module
         that uses the DirectoryPath setting.
-        '''
+        """
         for setting in self.visible_settings():
             if isinstance(setting, cps.DirectoryPath):
                 return True
         return False
 
     def obfuscate(self):
-        '''Erase any sensitive information in a module's settings
+        """Erase any sensitive information in a module's settings
 
         You should implement "obfuscate" to erase information like
         passwords or file names so that the pipeline can be uploaded
         for error reporting without revealing that information.
-        '''
+        """
         pass
 
     def on_activated(self, workspace):
-        '''Called when the module is activated in the GUI
+        """Called when the module is activated in the GUI
 
         workspace - the workspace that's currently running
 
@@ -864,19 +875,19 @@ class Module(object):
         elements of the pipeline, such as the image plane details or image
         set list. You're allowed to modify these parts of the pipeline
         in the UI thread until on_deactivated is called.
-        '''
+        """
         pass
 
     def on_deactivated(self):
-        '''Called when the module is deactivated in the GUI
+        """Called when the module is deactivated in the GUI
 
         This is the signal that the settings have been unhooked from the
         GUI and can't be used to edit the pipeline
-        '''
+        """
         pass
 
     def on_setting_changed(self, setting, pipeline):
-        '''Called when a setting has been changed in the GUI'''
+        """Called when a setting has been changed in the GUI"""
         pass
 
 

@@ -1,7 +1,18 @@
 # coding=utf-8
 """PipelineListView.py
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import filter
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
@@ -12,7 +23,7 @@ import cellprofiler.preferences
 import logging
 import math
 import os
-import StringIO
+import io
 import sys
 import time
 import wx
@@ -61,17 +72,17 @@ NOTDEBUG = "notdebug"
 UNAVAILABLE = "unavailable"
 
 PLV_HITTEST_SLIDER = 4096
-'''Module has an associated warning'''
+"""Module has an associated warning"""
 PLV_STATE_WARNING = 1024
-'''Module has an associated error'''
+"""Module has an associated error"""
 PLV_STATE_ERROR = 2048
-'''Mask of warning / error bits'''
+"""Mask of warning / error bits"""
 PLV_STATE_ERROR_MASK = PLV_STATE_ERROR + PLV_STATE_WARNING
-'''Bit is set if the module is unavailable = not in pipeline'''
+"""Bit is set if the module is unavailable = not in pipeline"""
 PLV_STATE_UNAVAILABLE = 4096
-'''Bit is clear if the pipeline can't proceeed past this module'''
+"""Bit is clear if the pipeline can't proceeed past this module"""
 PLV_STATE_PROCEED = 8192
-'''Report that the slider has moved'''
+"""Report that the slider has moved"""
 EVT_PLV_SLIDER_MOTION = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_PAUSE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_EYE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
@@ -88,7 +99,7 @@ image_index_dictionary = {}
 def get_image_index(name):
     """Return the index of an image in the image list"""
     global image_index_dictionary
-    if not image_index_dictionary.has_key(name):
+    if name not in image_index_dictionary:
         image_index_dictionary[name] = len(image_index_dictionary)
     return image_index_dictionary[name]
 
@@ -308,8 +319,8 @@ class PipelineListView(object):
 
     def set_debug_mode(self, mode):
         if (mode == True) and (self.__pipeline is not None):
-            modules = filter((lambda m: not m.is_input_module()),
-                             self.__pipeline.modules())
+            modules = list(filter((lambda m: not m.is_input_module()),
+                             self.__pipeline.modules()))
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
         self.list_ctrl.set_test_mode(mode)
@@ -589,7 +600,7 @@ class PipelineListView(object):
         if len(modules_to_save) == 0:
             event.Veto()
             return
-        fd = StringIO.StringIO()
+        fd = io.StringIO()
         self.__pipeline.savetxt(fd, modules_to_save,
                                 save_image_plane_details=False)
         pipeline_data_object = PipelineDataObject()
@@ -726,7 +737,7 @@ class PipelineListView(object):
         wx.BeginBusyCursor()
         try:
             pipeline = cellprofiler.gui.pipeline.Pipeline()
-            pipeline.load(StringIO.StringIO(data))
+            pipeline.load(io.StringIO(data))
             n_input_modules = self.get_input_item_count()
             for i, module in enumerate(pipeline.modules(False)):
                 module.module_num = i + index + n_input_modules + 1
@@ -1157,12 +1168,12 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 return None, wx.LIST_HITTEST_NOWHERE, None
         elif x < x0:
             return None, wx.LIST_HITTEST_NOWHERE, None
-        column = int((x - x0) / self.column_width)
+        column = int(old_div((x - x0), self.column_width))
         if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
         if not self.show_show_frame_column and column == EYE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
-        row = int(y / self.line_height)
+        row = int(old_div(y, self.line_height))
         if row >= len(self.items):
             return None, wx.LIST_HITTEST_BELOW, None
         if column < 3:
@@ -1290,7 +1301,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """
         position = self.CalcUnscrolledPosition(position)
         y = position[1]
-        row = int((y + self.line_height / 2) / self.line_height)
+        row = int(old_div((y + old_div(self.line_height, 2)), self.line_height))
         return max(0, min(row, self.ItemCount))
 
     def update_drop_insert_point(self, index):
@@ -1310,7 +1321,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """Return the index of the item at the given position"""
         position = self.CalcUnscrolledPosition(position)
         y = position[1]
-        row = int(y / self.line_height)
+        row = int(old_div(y, self.line_height))
         return max(0, min(row, self.ItemCount - 1))
 
     def get_active_item(self):
@@ -1404,7 +1415,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """
         if not self.test_mode:
             return None
-        top = (self.line_height - self.bmp_slider.Height) / 2 + self.line_height * self.running_item
+        top = old_div((self.line_height - self.bmp_slider.Height), 2) + self.line_height * self.running_item
         return wx.Rect(1, top, self.bmp_slider.Width, self.bmp_slider.Height)
 
     def on_paint(self, event):
@@ -1573,7 +1584,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             self.Select(index, True)
             if anchoring:
                 self.anchor = index
-        window_height = int(self.GetSizeTuple()[1] / self.line_height)
+        window_height = int(old_div(self.GetSizeTuple()[1], self.line_height))
         #
         # Always keep the active item in view
         #

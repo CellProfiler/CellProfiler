@@ -56,7 +56,16 @@ the pixel with the maximum intensity within the object.</li>
 
 See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from past.utils import old_div
 import centrosome.outline as cpmo
 import numpy as np
 import scipy.ndimage as nd
@@ -67,7 +76,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from identify import C_LOCATION
+from .identify import C_LOCATION
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -115,11 +124,11 @@ class MeasureObjectIntensity(cpm.Module):
         self.add_object_button = cps.DoSomething("", "Add another object", self.add_object)
 
     def add_image(self, can_remove=True):
-        '''Add an image to the image_groups collection
+        """Add an image to the image_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -132,11 +141,11 @@ class MeasureObjectIntensity(cpm.Module):
         self.images.append(group)
 
     def add_object(self, can_remove=True):
-        '''Add an object to the object_groups collection
+        """Add an object to the object_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -166,7 +175,7 @@ class MeasureObjectIntensity(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -184,7 +193,7 @@ class MeasureObjectIntensity(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             # Old matlab-style. Erase any setting values that are
             # "Do not use"
@@ -246,7 +255,7 @@ class MeasureObjectIntensity(cpm.Module):
             objects.add(group.name.value)
 
     def get_measurement_columns(self, pipeline):
-        '''Return the column definitions for measurements made by this module'''
+        """Return the column definitions for measurements made by this module"""
         columns = []
         for image_name in [im.name for im in self.images]:
             for object_name in [obj.name for obj in self.objects]:
@@ -367,7 +376,7 @@ class MeasureObjectIntensity(cpm.Module):
                         integrated_intensity[lindexes - 1] = \
                             fix(nd.sum(limg, llabels, lindexes))
                         mean_intensity[lindexes - 1] = \
-                            integrated_intensity[lindexes - 1] / lcount
+                            old_div(integrated_intensity[lindexes - 1], lcount)
                         std_intensity[lindexes - 1] = np.sqrt(
                                 fix(nd.mean((limg - mean_intensity[llabels - 1]) ** 2,
                                             llabels, lindexes)))
@@ -388,8 +397,8 @@ class MeasureObjectIntensity(cpm.Module):
 
                         i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
                         i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
-                        cmi_x[lindexes - 1] = i_x / integrated_intensity[lindexes - 1]
-                        cmi_y[lindexes - 1] = i_y / integrated_intensity[lindexes - 1]
+                        cmi_x[lindexes - 1] = old_div(i_x, integrated_intensity[lindexes - 1])
+                        cmi_y[lindexes - 1] = old_div(i_y, integrated_intensity[lindexes - 1])
                         diff_x = cm_x - cmi_x[lindexes - 1]
                         diff_y = cm_y - cmi_y[lindexes - 1]
                         mass_displacement[lindexes - 1] = \
@@ -404,9 +413,9 @@ class MeasureObjectIntensity(cpm.Module):
                         areas = lcount.astype(int)
                         indices = np.cumsum(areas) - areas
                         for dest, fraction in (
-                                (lower_quartile_intensity, 1.0 / 4.0),
-                                (median_intensity, 1.0 / 2.0),
-                                (upper_quartile_intensity, 3.0 / 4.0)):
+                                (lower_quartile_intensity, old_div(1.0, 4.0)),
+                                (median_intensity, old_div(1.0, 2.0)),
+                                (upper_quartile_intensity, old_div(3.0, 4.0))):
                             qindex = indices.astype(float) + areas * fraction
                             qfraction = qindex - np.floor(qindex)
                             qindex = qindex.astype(int)
@@ -427,7 +436,7 @@ class MeasureObjectIntensity(cpm.Module):
                         #
                         madimg = np.abs(limg - median_intensity[llabels - 1])
                         order = np.lexsort((madimg, llabels))
-                        qindex = indices.astype(float) + areas / 2.0
+                        qindex = indices.astype(float) + old_div(areas, 2.0)
                         qfraction = qindex - np.floor(qindex)
                         qindex = qindex.astype(int)
                         qmask = qindex < indices + areas - 1
@@ -449,7 +458,7 @@ class MeasureObjectIntensity(cpm.Module):
                         integrated_intensity_edge[lindexes - 1] = \
                             fix(nd.sum(eimg, elabels, lindexes))
                         mean_intensity_edge[lindexes - 1] = \
-                            integrated_intensity_edge[lindexes - 1] / ecount
+                            old_div(integrated_intensity_edge[lindexes - 1], ecount)
                         std_intensity_edge[lindexes - 1] = \
                             np.sqrt(fix(nd.mean(
                                     (eimg - mean_intensity_edge[elabels - 1]) ** 2,

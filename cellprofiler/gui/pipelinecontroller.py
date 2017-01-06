@@ -1,7 +1,22 @@
 # coding=utf-8
 """PipelineController.py - controls (modifies) a pipeline
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
+from builtins import *
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import filter
+from builtins import map
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import cellprofiler
 import cellprofiler.analysis
 import cellprofiler.image
@@ -24,28 +39,29 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-import cpframe
-import cStringIO
+from . import cpframe
+import io
 import csv
 import datetime
-import errordialog
+from . import errordialog
 import exceptions
 import h5py
 import hashlib
 import logging
 import numpy
 import os
-import Queue
+import queue
 import random
 import re
-import runmultiplepipelinesdialog
+from . import runmultiplepipelinesdialog
 import string
 import sys
 import threading
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]
@@ -86,7 +102,7 @@ class PipelineController(object):
         cellprofiler.preferences.add_output_directory_listener(self.__on_output_directory_change)
 
         # interaction/display requests and exceptions from an Analysis
-        self.interaction_request_queue = Queue.PriorityQueue()
+        self.interaction_request_queue = queue.PriorityQueue()
         self.interaction_pending = False
         self.debug_request_queue = None
 
@@ -737,8 +753,8 @@ class PipelineController(object):
                                  "ExampleSBSImages/ExampleSBS.cppipe",
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
-            import urllib2
-            filename, headers = urllib.urlretrieve(dlg.Value)
+            import urllib.request, urllib.error, urllib.parse
+            filename, headers = urllib.request.urlretrieve(dlg.Value)
             try:
                 self.do_load_pipeline(filename)
             finally:
@@ -802,7 +818,7 @@ class PipelineController(object):
         """
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
-                if isinstance(url, unicode):
+                if isinstance(url, str):
                     url = url.encode()
                 fd.write(url + "\n")
 
@@ -925,7 +941,7 @@ class PipelineController(object):
 
         except cellprofiler.pipeline.PipelineLoadCancelledException:
             self.__pipeline.clear()
-        except Exception, instance:
+        except Exception as instance:
             from cellprofiler.gui.errordialog import display_error_dialog
             errordialog.display_error_dialog(self.__frame, instance, self.__pipeline,
                                              continue_only=True)
@@ -989,18 +1005,18 @@ class PipelineController(object):
             ftr = cellprofiler.pipeline.M_PIPELINE
         pipeline_text = m.get_experiment_measurement(ftr)
         pipeline_text = pipeline_text.encode('us-ascii')
-        self.__pipeline.load(cStringIO.StringIO(pipeline_text))
+        self.__pipeline.load(io.StringIO(pipeline_text))
         return True
 
     def __clear_errors(self):
-        for key, error in self.__setting_errors.iteritems():
+        for key, error in list(self.__setting_errors.items()):
             self.__frame.preferences_view.pop_error_text(error)
         self.__setting_errors = {}
 
     def __on_save_as_pipeline(self, event):
         try:
             self.do_save_pipeline()
-        except Exception, e:
+        except Exception as e:
             wx.MessageBox('Exception:\n%s' % e, 'Could not save pipeline...', wx.ICON_ERROR | wx.OK, self.__frame)
 
     def do_save_pipeline(self):
@@ -1053,7 +1069,7 @@ class PipelineController(object):
                 try:
                     self.__workspace.refresh_image_set()
                     self.__workspace.measurements.write_image_sets(dlg.Path)
-                except Exception, e:
+                except Exception as e:
                     errordialog.display_error_dialog(self.__frame, e, self.__pipeline,
                                                      "Failed to export image sets",
                                                      continue_only=True)
@@ -1133,7 +1149,7 @@ class PipelineController(object):
         data = pv.PlateData()
         try:
             self.__workspace.refresh_image_set()
-        except Exception, e:
+        except Exception as e:
             errordialog.display_error_dialog(self.__frame, e, self.__pipeline,
                                              "Failed to make image sets",
                                              continue_only=True)
@@ -1535,7 +1551,7 @@ class PipelineController(object):
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 self.on_pathlist_browse(None)
             else:
-                path = urllib.url2pathname(paths[0][5:])
+                path = urllib.request.url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
                 self.on_pathlist_browse(
                     None,
@@ -1570,7 +1586,7 @@ class PipelineController(object):
             self.on_pathlist_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if path.startswith("file:"):
-                path = urllib.url2pathname(path[5:])
+                path = urllib.request.url2pathname(path[5:])
                 self.on_pathlist_browse(None, default_dir=path)
             else:
                 self.on_pathlist_browse(None)
@@ -1612,7 +1628,7 @@ class PipelineController(object):
             from scipy.io.matlab.mio import loadmat
             try:
                 maybe_image = loadmat(os.path.abspath(path))
-                if "Image" in maybe_image.keys():
+                if "Image" in list(maybe_image.keys()):
                     show_image(paths[0], self.__frame)
                     return
             except:
@@ -1648,7 +1664,7 @@ class PipelineController(object):
     def on_pathlist_refresh(self, urls):
         """Refresh the pathlist by checking for existence of file URLs"""
 
-        urls = filter((lambda url: url.startswith("file:")), urls)
+        urls = list(filter((lambda url: url.startswith("file:")), urls))
 
         def refresh_msg(idx):
             return "Checked %d of %d" % (idx, len(urls))
@@ -1662,7 +1678,7 @@ class PipelineController(object):
             assert isinstance(dlg, wx.ProgressDialog)
             to_remove = []
             for idx, url in enumerate(urls):
-                path = urllib.url2pathname(url[5:])
+                path = urllib.request.url2pathname(url[5:])
                 if not os.path.isfile(path):
                     to_remove.append(url)
                 if idx % 100 == 0:
@@ -1702,7 +1718,7 @@ class PipelineController(object):
             h, w = dlg.GetSizeTuple()
             if w < 480:
                 dlg.SetSize((max(w, 480), h))
-            queue = Queue.Queue()
+            queue = queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
 
@@ -1749,7 +1765,7 @@ class PipelineController(object):
             def update_pulse(msg):
                 waiting_for = int((datetime.datetime.now() - t0).total_seconds())
                 if waiting_for > 60:
-                    minutes = int(waiting_for) / 60
+                    minutes = old_div(int(waiting_for), 60)
                     seconds = waiting_for % 60
                     msg += "\nElapsed time: %d minutes, %d seconds" % (minutes, seconds)
                     msg += "\nConsider using the LoadData module for loading large numbers of images."
@@ -1914,12 +1930,12 @@ class PipelineController(object):
                 if module.is_input_module():
                     continue
                 category = module.category
-                if isinstance(category, (str, unicode)):
+                if isinstance(category, (str, str)):
                     categories = [category, "All"]
                 else:
                     categories = list(category) + ["All"]
                 for category in categories:
-                    if not d.has_key(category):
+                    if category not in d:
                         d[category] = []
                     d[category].append(module_name)
             except:
@@ -1929,7 +1945,7 @@ class PipelineController(object):
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()
             for module_name in sorted(d[category]):
-                if self.module_name_to_menu_id.has_key(module_name):
+                if module_name in self.module_name_to_menu_id:
                     menu_id = self.module_name_to_menu_id[module_name]
                 else:
                     menu_id = wx.NewId()
@@ -1973,7 +1989,7 @@ class PipelineController(object):
         from cellprofiler.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
         assert isinstance(event, wx.CommandEvent)
-        if self.menu_id_to_module_name.has_key(event.Id):
+        if event.Id in self.menu_id_to_module_name:
             module_name = self.menu_id_to_module_name[event.Id]
 
             def loader(module_num, module_name=module_name):
@@ -1989,8 +2005,7 @@ class PipelineController(object):
 
     def __get_selected_modules(self):
         """Get the modules selected in the GUI, but not input modules"""
-        return filter(lambda x: not x.is_input_module(),
-                      self.__pipeline_list_view.get_selected_modules())
+        return [x for x in self.__pipeline_list_view.get_selected_modules() if not x.is_input_module()]
 
     def ok_to_edit_pipeline(self):
         """Return True if ok to edit pipeline
@@ -2017,7 +2032,7 @@ class PipelineController(object):
             selected_modules = self.__get_selected_modules()
             for module in selected_modules:
                 for setting in module.settings():
-                    if self.__setting_errors.has_key(setting.key()):
+                    if setting.key() in self.__setting_errors:
                         self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))
                 self.__pipeline.remove_module(module.module_num)
             has_input_modules = any([m.is_input_module()
@@ -2276,7 +2291,7 @@ class PipelineController(object):
         if ok:
             try:
                 self.__pipeline.test_valid()
-            except cellprofiler.settings.ValidationError, v:
+            except cellprofiler.settings.ValidationError as v:
                 ok = False
                 reason = v.message
         if not ok:
@@ -2316,7 +2331,7 @@ class PipelineController(object):
             self.enable_module_controls_panel_buttons()
             self.populate_goto_menu()
 
-        except Exception, e:
+        except Exception as e:
             # Catastrophic failure
             errordialog.display_error_dialog(self.__frame,
                                              e,
@@ -2351,12 +2366,12 @@ class PipelineController(object):
                 style=wx.ICON_ERROR | wx.OK)
 
     def analysis_event_handler(self, evt):
-        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
+        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = list(range(3))
 
         if isinstance(evt, cellprofiler.analysis.AnalysisStarted):
             wx.CallAfter(self.show_analysis_controls)
         elif isinstance(evt, cellprofiler.analysis.AnalysisProgress):
-            print "Progress", evt.counts
+            print("Progress", evt.counts)
             total_jobs = sum(evt.counts.values())
             completed = sum(map(
                 (lambda status: evt.counts.get(status, 0)),
@@ -2365,12 +2380,12 @@ class PipelineController(object):
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress,
                          total_jobs, completed)
         elif isinstance(evt, cellprofiler.analysis.AnalysisFinished):
-            print ("Cancelled!" if evt.cancelled else "Finished!")
+            print(("Cancelled!" if evt.cancelled else "Finished!"))
             # drop any interaction/display requests or exceptions
             while True:
                 try:
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-                except Queue.Empty:
+                except queue.Empty:
                     break
             if evt.cancelled:
                 self.pipeline_list = []
@@ -2425,7 +2440,7 @@ class PipelineController(object):
 
         try:
             pri_func_args = self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-        except Queue.Empty:
+        except queue.Empty:
             return
 
         self.interaction_pending = True
@@ -2549,7 +2564,7 @@ class PipelineController(object):
 
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
-        self.debug_request_queue = Queue.Queue()
+        self.debug_request_queue = queue.Queue()
 
         evtlist = [evt]
 
@@ -2583,7 +2598,7 @@ class PipelineController(object):
                     try:
                         evtlist[0] = self.debug_request_queue.get(timeout=.25)
                         return True
-                    except Queue.Empty:
+                    except queue.Empty:
                         keep_going, skip = dlg.UpdatePulse(
                             "Debugging remotely, Cancel to abandon")
                         if not keep_going:
@@ -2633,7 +2648,7 @@ class PipelineController(object):
             measurements = cellprofiler.measurement.load_measurements(path)
             pipeline_txt = measurements.get_experiment_measurement(
                 cellprofiler.pipeline.M_PIPELINE)
-            self.__pipeline.loadtxt(cStringIO.StringIO(pipeline_txt.encode("utf-8")))
+            self.__pipeline.loadtxt(io.StringIO(pipeline_txt.encode("utf-8")))
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
@@ -2648,7 +2663,7 @@ class PipelineController(object):
             self.__analysis.start(self.analysis_event_handler,
                                   overwrite=False)
 
-        except Exception, e:
+        except Exception as e:
             # Catastrophic failure
             errordialog.display_error_dialog(self.__frame,
                                              e,
@@ -2860,7 +2875,7 @@ class PipelineController(object):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
             cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
-        except Exception, instance:
+        except Exception as instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
             event = cellprofiler.pipeline.RunExceptionEvent(instance, module)
@@ -3023,7 +3038,7 @@ class PipelineController(object):
         choices = []
 
         for grouping, image_numbers in self.__groupings:
-            text = ["%s=%s" % (k, v) for k, v in grouping.iteritems()]
+            text = ["%s=%s" % (k, v) for k, v in list(grouping.items())]
             text = ', '.join(text)
             choices.append(text)
         lb = wx.ListBox(dialog, choices=choices)
@@ -3100,7 +3115,7 @@ class PipelineController(object):
         if len(choices) > 1:
             # Get rid of columns with redundant info
             useless_columns = []
-            cvalues = choices.values()
+            cvalues = list(choices.values())
             for i, f in enumerate(features):
                 if all([cv[i] == cvalues[0][i] for cv in cvalues[1:]]):
                     useless_columns.insert(0, i)
@@ -3144,8 +3159,8 @@ class PipelineController(object):
                         name = f[(len(cellprofiler.measurement.C_PATH_NAME) + 1):] + " folder"
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
-                    for row in choices.values():
-                        w, h = self.list_ctrl.GetTextExtent(unicode(row[i]))
+                    for row in list(choices.values()):
+                        w, h = self.list_ctrl.GetTextExtent(str(row[i]))
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)
@@ -3157,11 +3172,11 @@ class PipelineController(object):
                                             (k,
                                              [u"%06d" % v if isinstance(v, int) else
                                               u"%020.10f" % v if isinstance(v, float) else
-                                              unicode(v) for v in [k] + choices[k]]) for k in choices])
+                                              str(v) for v in [k] + choices[k]]) for k in choices])
 
                 for image_number in sorted(choices.keys()):
-                    row = [unicode(image_number)] + \
-                          [unicode(x) for x in choices[image_number]]
+                    row = [str(image_number)] + \
+                          [str(x) for x in choices[image_number]]
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
                 wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
@@ -3214,8 +3229,8 @@ class PipelineController(object):
             if module.is_input_module():
                 if not self.do_step(module, False):
                     return False
-        modules = filter((lambda m: not m.is_input_module()),
-                         self.__pipeline.modules())
+        modules = list(filter((lambda m: not m.is_input_module()),
+                         self.__pipeline.modules()))
         #
         # Select the first executable module
         #
@@ -3253,7 +3268,7 @@ class PipelineController(object):
                 self.show_parameter_sample_options(
                     self.__module_view.get_current_module().get_module_num(), event)
             else:
-                print "No current module"
+                print("No current module")
 
     def show_parameter_sample_options(self, module_num, event):
         if self.__parameter_sample_frame is None:

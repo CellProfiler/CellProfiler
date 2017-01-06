@@ -1,11 +1,21 @@
 """test_measureobjectintensity - test the MeasureObjectIntensity module
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import base64
 import math
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -310,14 +320,14 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertEqual(data[0], value, "%s expected %f != actual %f" % (meas_name, value, data[0]))
 
     def test_03_02_02_intensity_location(self):
-        image = np.array([
+        image = old_div(np.array([
             [0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 1, 1, 1, 0],
             [0, 1, 1, 1, 1, 2, 0],
             [0, 1, 1, 1, 1, 1, 0],
             [0, 1, 1, 1, 1, 1, 0],
             [0, 1, 1, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0]]).astype(float) / 2.0
+            [0, 0, 0, 0, 0, 0, 0]]).astype(float), 2.0)
         labels = (image != 0).astype(int)
         workspace, module = self.make_workspace(labels, image)
         self.assertTrue(isinstance(module, MOI.MeasureObjectIntensity))
@@ -526,29 +536,29 @@ class TestMeasureObjects(unittest.TestCase):
         m = pipeline.run()
         feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.LOWER_QUARTILE_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
-        self.assertAlmostEqual(data[0], 1.0 / 4.0, 2)
-        self.assertAlmostEqual(data[1], 1.0 / 8.0, 2)
-        self.assertAlmostEqual(data[2], 1.0 / 12.0, 2)
-        self.assertAlmostEqual(data[3], 1.0 / 16.0, 2)
+        self.assertAlmostEqual(data[0], old_div(1.0, 4.0), 2)
+        self.assertAlmostEqual(data[1], old_div(1.0, 8.0), 2)
+        self.assertAlmostEqual(data[2], old_div(1.0, 12.0), 2)
+        self.assertAlmostEqual(data[3], old_div(1.0, 16.0), 2)
         feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MEDIAN_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
-        self.assertAlmostEqual(data[0], 1.0 / 2.0, 2)
-        self.assertAlmostEqual(data[1], 1.0 / 4.0, 2)
-        self.assertAlmostEqual(data[2], 1.0 / 6.0, 2)
-        self.assertAlmostEqual(data[3], 1.0 / 8.0, 2)
+        self.assertAlmostEqual(data[0], old_div(1.0, 2.0), 2)
+        self.assertAlmostEqual(data[1], old_div(1.0, 4.0), 2)
+        self.assertAlmostEqual(data[2], old_div(1.0, 6.0), 2)
+        self.assertAlmostEqual(data[3], old_div(1.0, 8.0), 2)
         feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.UPPER_QUARTILE_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
-        self.assertAlmostEqual(data[0], 3.0 / 4.0, 2)
-        self.assertAlmostEqual(data[1], 3.0 / 8.0, 2)
-        self.assertAlmostEqual(data[2], 3.0 / 12.0, 2)
-        self.assertAlmostEqual(data[3], 3.0 / 16.0, 2)
+        self.assertAlmostEqual(data[0], old_div(3.0, 4.0), 2)
+        self.assertAlmostEqual(data[1], old_div(3.0, 8.0), 2)
+        self.assertAlmostEqual(data[2], old_div(3.0, 12.0), 2)
+        self.assertAlmostEqual(data[3], old_div(3.0, 16.0), 2)
         feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MAD_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
 
-        self.assertAlmostEqual(data[0], 1.0 / 4.0, 2)
-        self.assertAlmostEqual(data[1], 1.0 / 8.0, 2)
-        self.assertAlmostEqual(data[2], 1.0 / 12.0, 2)
-        self.assertAlmostEqual(data[3], 1.0 / 16.0, 2)
+        self.assertAlmostEqual(data[0], old_div(1.0, 4.0), 2)
+        self.assertAlmostEqual(data[1], old_div(1.0, 8.0), 2)
+        self.assertAlmostEqual(data[2], old_div(1.0, 12.0), 2)
+        self.assertAlmostEqual(data[3], old_div(1.0, 16.0), 2)
 
     def test_03_07_median_intensity_masked(self):
         np.random.seed(37)
@@ -557,7 +567,7 @@ class TestMeasureObjects(unittest.TestCase):
         mask[:, :5] = False
         pixel_data = np.random.uniform(size=(10, 10)).astype(np.float32)
         pixel_data[~mask] = 1
-        expected = np.sort(pixel_data[mask])[np.sum(mask) / 2]
+        expected = np.sort(pixel_data[mask])[old_div(np.sum(mask), 2)]
         self.assertNotEqual(expected, np.median(pixel_data))
         workspace, module = self.make_workspace(labels, pixel_data, mask)
         module.run(workspace)

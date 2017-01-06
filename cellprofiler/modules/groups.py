@@ -1,3 +1,12 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
 
@@ -401,11 +410,11 @@ class Groups(cpm.Module):
             order = np.lexsort((group_indexes, group_numbers))
 
             for idx in order:
-                row = [unicode(x[idx]) for x in all_features]
+                row = [str(x[idx]) for x in all_features]
                 self.image_set_list.data.append(row)
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets in an image set list
+        """Return the image groupings of the image sets in an image set list
 
         returns a tuple of key_names and group_list:
         key_names - the names of the keys that identify the groupings
@@ -418,7 +427,7 @@ class Groups(cpm.Module):
         and 'Metadata_Column' and a group_list of:
         [ ({'Row':'A','Column':'01'), [0,96,192]),
           (('Row':'A','Column':'02'), [1,97,193]),... ]
-        '''
+        """
         if not self.wants_groups:
             return
         key_list = self.get_grouping_tags()
@@ -436,25 +445,25 @@ class Groups(cpm.Module):
         return key_list, m.get_groupings(key_list)
 
     def get_grouping_tags(self):
-        '''Return the metadata keys used for grouping'''
+        """Return the metadata keys used for grouping"""
         if not self.wants_groups:
             return None
         return ["_".join((cpmeas.C_METADATA, g.metadata_choice.value))
                 for g in self.grouping_metadata]
 
     def change_causes_prepare_run(self, setting):
-        '''Return True if changing the setting passed changes the image sets
+        """Return True if changing the setting passed changes the image sets
 
         setting - the setting that was changed
-        '''
+        """
         return setting in self.settings()
 
     def is_load_module(self):
-        '''Marks this module as a module that affects the image sets
+        """Marks this module as a module that affects the image sets
 
         Groups is a load module because it can reorder image sets, but only
         if grouping is turned on.
-        '''
+        """
         return self.wants_groups.value
 
     @classmethod
@@ -462,7 +471,7 @@ class Groups(cpm.Module):
         return True
 
     def prepare_run(self, workspace):
-        '''Reorder the image sets and assign group number and index'''
+        """Reorder the image sets and assign group number and index"""
         if workspace.pipeline.in_batch_mode():
             return True
 
@@ -513,10 +522,10 @@ class Groups(cpm.Module):
         pass
 
     def get_measurement_columns(self, pipeline):
-        '''Return the measurments recorded by this module
+        """Return the measurments recorded by this module
 
         GroupNumber and GroupIndex are accounted for by the pipeline itself.
-        '''
+        """
         result = []
         if self.wants_groups:
             result.append((cpmeas.EXPERIMENT,

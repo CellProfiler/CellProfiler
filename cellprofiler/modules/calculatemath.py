@@ -1,4 +1,4 @@
-'''<b>Calculate Math</b> takes measurements produced by previous modules and
+"""<b>Calculate Math</b> takes measurements produced by previous modules and
 performs basic arithmetic operations.
 <hr>
 The arithmetic operations available in this module include addition,
@@ -27,8 +27,19 @@ an object measurement.</li>
 The result of these calculations is a new measurement in the "Math" category.
 
 See also all <b>Measure</b> modules.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import logging
 
 logger = logging.getLogger(__package__)
@@ -64,7 +75,7 @@ class CalculateMath(cpm.Module):
     def create_settings(self):
         # XXX needs to use cps.SettingsGroup
         class Operand(object):
-            '''Represents the collection of settings needed by each operand'''
+            """Represents the collection of settings needed by each operand"""
 
             def __init__(self, index, operation):
                 self.__index = index
@@ -94,27 +105,27 @@ class CalculateMath(cpm.Module):
 
             @property
             def operand_choice(self):
-                '''Either MC_IMAGE for image measurements or MC_OBJECT for object'''
+                """Either MC_IMAGE for image measurements or MC_OBJECT for object"""
                 return self.__operand_choice
 
             @property
             def operand_objects(self):
-                '''Get measurements from these objects'''
+                """Get measurements from these objects"""
                 return self.__operand_objects
 
             @property
             def operand_measurement(self):
-                '''The measurement providing the value of the operand'''
+                """The measurement providing the value of the operand"""
                 return self.__operand_measurement
 
             @property
             def multiplicand(self):
-                '''Premultiply the measurement by this value'''
+                """Premultiply the measurement by this value"""
                 return self.__multiplicand
 
             @property
             def exponent(self):
-                '''Raise the measurement to this power'''
+                """Raise the measurement to this power"""
                 return self.__exponent
 
             @property
@@ -135,7 +146,7 @@ class CalculateMath(cpm.Module):
                                               self.__operand_choice.value)
 
             def operand_name(self):
-                '''A fancy name based on what operation is being performed'''
+                """A fancy name based on what operation is being performed"""
                 if self.__index == 0:
                     return ("first operand"
                             if self.__operation in (O_ADD, O_MULTIPLY) else
@@ -160,12 +171,12 @@ class CalculateMath(cpm.Module):
                 return self.operand_text("Select the %s measurement")
 
             def settings(self):
-                '''The operand settings to be saved in the output file'''
+                """The operand settings to be saved in the output file"""
                 return [self.operand_choice, self.operand_objects,
                         self.operand_measurement, self.multiplicand, self.exponent]
 
             def visible_settings(self):
-                '''The operand settings to be displayed'''
+                """The operand settings to be displayed"""
                 self.operand_choice.text = self.operand_choice_text()
                 self.operand_objects.text = self.operand_objects_text()
                 self.operand_measurement.text = self.operand_measurement_text()
@@ -240,10 +251,10 @@ class CalculateMath(cpm.Module):
         return result
 
     def post_pipeline_load(self, pipeline):
-        '''Fixup any measurement names that might have been ambiguously loaded
+        """Fixup any measurement names that might have been ambiguously loaded
 
         pipeline - for access to other module's measurements
-        '''
+        """
         for operand in self.operands:
             measurement = operand.operand_measurement.value
             pieces = measurement.split('_')
@@ -300,7 +311,7 @@ class CalculateMath(cpm.Module):
                 # ensure that the data can be changed in-place by floating point ops
                 value = value.astype(np.float)
 
-            if isinstance(value, str) or isinstance(value, unicode):
+            if isinstance(value, str) or isinstance(value, str):
                 try:
                     value = float(value)
                 except ValueError:
@@ -351,7 +362,7 @@ class CalculateMath(cpm.Module):
                     # count > 1 -> mean
                     #
                     def bincount(indexes, weights=None, minlength=None):
-                        '''Minlength was added to numpy at some point....'''
+                        """Minlength was added to numpy at some point...."""
                         result = np.bincount(indexes, weights)
                         if minlength is not None and len(result) < minlength:
                             result = np.hstack(
@@ -362,8 +373,8 @@ class CalculateMath(cpm.Module):
 
                     c0 = bincount(i0, minlength=len(values[0]))
                     c1 = bincount(i1, minlength=len(values[1]))
-                    v1 = bincount(i0, values[1][i1], minlength=len(values[0])) / c0
-                    v0 = bincount(i1, values[0][i0], minlength=len(values[1])) / c1
+                    v1 = old_div(bincount(i0, values[1][i1], minlength=len(values[0])), c0)
+                    v0 = old_div(bincount(i1, values[0][i0], minlength=len(values[1])), c1)
                     break
             else:
                 logger.warning(
@@ -424,9 +435,9 @@ class CalculateMath(cpm.Module):
                     else:
                         result = np.array([np.NaN] * len(numerator))
                 else:
-                    result = numerator / denominator
+                    result = old_div(numerator, denominator)
             else:
-                result = numerator / denominator
+                result = old_div(numerator, denominator)
                 result[denominator == 0] = np.NaN
         else:
             raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
@@ -474,11 +485,11 @@ class CalculateMath(cpm.Module):
                              col_labels=workspace.display_data.col_labels)
 
     def get_operands(self):
-        '''Return the operand structures that participate in the calculation
+        """Return the operand structures that participate in the calculation
 
         Return just the first operand for unary operations, return both
         for binary.
-        '''
+        """
         if self.operation == O_NONE:
             return self.operands[0],
         else:
@@ -513,13 +524,13 @@ class CalculateMath(cpm.Module):
         return []
 
     def validate_module(self, pipeline):
-        '''Do further validation on this module's settings
+        """Do further validation on this module's settings
 
         pipeline - this module's pipeline
 
         Check to make sure the output measurements aren't duplicated
         by prior modules.
-        '''
+        """
         all_object_names = [operand.operand_objects.value
                             for operand in self.operands
                             if operand.object != cpmeas.IMAGE]

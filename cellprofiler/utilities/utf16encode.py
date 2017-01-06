@@ -1,7 +1,16 @@
 '''utf16encode.py - encode unicode strings as escaped utf16
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import chr
+from builtins import str
 def utf16encode(x):
     '''Encode a unicode string in 7-bit US ascii
 
@@ -39,18 +48,18 @@ def utf16decode(x):
             if z == "\\":
                 state = 0
             else:
-                y += unicode(z)
+                y += str(z)
         elif state == 0:
             if z == "u":
                 state = 1
                 acc = ""
             else:
-                y += unicode(z)
+                y += str(z)
                 state = -1
         elif state < 4:
             state += 1
             acc += z
         else:
             state = -1
-            y += unichr(int(acc + z, 16))
+            y += chr(int(acc + z, 16))
     return y

@@ -1,7 +1,15 @@
 """
 cpjvm.py - CellProfiler-specific JVM utilities
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
 import bioformats.formatreader
 import cellprofiler.preferences
 import javabridge
@@ -20,7 +28,7 @@ def get_jars():
     """
 
     class_path = []
-    if os.environ.has_key("CLASSPATH"):
+    if "CLASSPATH" in os.environ:
         class_path += os.environ["CLASSPATH"].split(os.pathsep)
         logging.debug(
                 "Adding Java class path from environment variable, ""CLASSPATH""")
@@ -93,7 +101,7 @@ def cp_start_vm():
         args.append("-Djava.awt.headless=true")
 
     heap_size = str(cellprofiler.preferences.get_jvm_heap_mb()) + "m"
-    if os.environ.has_key("CP_JDWP_PORT"):
+    if "CP_JDWP_PORT" in os.environ:
         args.append(
                 ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
                  ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])

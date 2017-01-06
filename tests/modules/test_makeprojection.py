@@ -1,11 +1,21 @@
 '''test_makeprojection - Test the MakeProjection module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -196,7 +206,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
-        module.prepare_group(workspace, {}, range(1, len(images_and_masks) + 1))
+        module.prepare_group(workspace, {}, list(range(1, len(images_and_masks) + 1)))
         for i in range(image_count):
             if i > 0:
                 image_set_list.purge_image_set(i - 1)
@@ -232,7 +242,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected = np.zeros((10, 10), np.float32)
         for image, mask in images_and_masks:
             expected += image
-        expected = expected / len(images_and_masks)
+        expected = old_div(expected, len(images_and_masks))
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
         self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
@@ -250,7 +260,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected[mask] += image[mask]
             expected_count[mask] += 1
             expected_mask = mask | expected_mask
-        expected = expected / expected_count
+        expected = old_div(expected, expected_count)
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertTrue(image.has_mask)
         self.assertTrue(np.all(expected_mask == image.mask))
@@ -264,7 +274,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected = np.zeros((10, 10, 3), np.float32)
         for image, mask in images_and_masks:
             expected += image
-        expected = expected / len(images_and_masks)
+        expected = old_div(expected, len(images_and_masks))
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
         self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
@@ -282,7 +292,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected[mask, :] += image[mask, :]
             expected_count[mask] += 1
             expected_mask = mask | expected_mask
-        expected = expected / expected_count[:, :, np.newaxis]
+        expected = old_div(expected, expected_count[:, :, np.newaxis])
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertTrue(image.has_mask)
         np.testing.assert_equal(image.mask, expected_mask)
@@ -338,7 +348,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         images = np.array([x[0] for x in images_and_masks])
         x = np.sum(images, 0)
         x2 = np.sum(images ** 2, 0)
-        expected = x2 / 10.0 - x ** 2 / 100.0
+        expected = old_div(x2, 10.0) - old_div(x ** 2, 100.0)
         np.testing.assert_almost_equal(image.pixel_data, expected, 4)
 
     def test_05_01_power(self):
@@ -441,4 +451,4 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
                                    run_last=False)
         np.testing.assert_array_almost_equal(
                 image.pixel_data,
-                (images_and_masks[0][0] + images_and_masks[1][0]) / 2)
+                old_div((images_and_masks[0][0] + images_and_masks[1][0]), 2))

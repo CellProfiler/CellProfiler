@@ -1,27 +1,40 @@
 # coding=utf-8
 """ModuleView.py - implements a view on a module
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.builtins import basestring
+from past.utils import old_div
+from builtins import object
 import cellprofiler.gui.pipeline
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import cornerbuttonmixin
-import htmldialog
+from . import cornerbuttonmixin
+from . import htmldialog
 import logging
 import matplotlib.cm
-import metadatactrl
-import namesubscriber
+from . import metadatactrl
+from . import namesubscriber
 import numpy
 import os
-import Queue
-import regexp_editor
+import queue
+from . import regexp_editor
 import stat
 import sys
 import threading
 import time
-import treecheckboxdialog
+from . import treecheckboxdialog
 import uuid
 import weakref
 import wx
@@ -859,7 +872,7 @@ class ModuleView(object):
                 control.Value = v.value
 
         if (getattr(v, 'has_tooltips', False) and
-                v.has_tooltips and v.tooltips.has_key(control.Value)):
+                v.has_tooltips and control.Value in v.tooltips):
             control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
         return control
 
@@ -883,7 +896,7 @@ class ModuleView(object):
                     pieces = [object_name] + feature.split('_')
                     d1 = d
                     for piece in pieces:
-                        if not d1.has_key(piece):
+                        if piece not in d1:
                             d1[piece] = {}
                             d1[None] = 0
                         d1 = d1[piece]
@@ -898,7 +911,7 @@ class ModuleView(object):
                     pieces = [object_name] + feature.split('_')
                     d1 = d
                     for piece in pieces:
-                        if not d1.has_key(piece):
+                        if piece not in d1:
                             break
                         d1 = d1[piece]
                     d1[None] = True
@@ -908,7 +921,7 @@ class ModuleView(object):
                 #
                 def get_state(d):
                     leaf_state = d[None]
-                    for subtree_key in [x for x in d.keys() if x is not None]:
+                    for subtree_key in [x for x in list(d.keys()) if x is not None]:
                         subtree_state = get_state(d[subtree_key])
                         if leaf_state is 0:
                             leaf_state = subtree_state
@@ -929,7 +942,7 @@ class ModuleView(object):
                             name = v.make_measurement_choice(object_name, prefix)
                             if name in choices:
                                 result.append(name)
-                        for key in [x for x in d.keys() if x is not None]:
+                        for key in [x for x in list(d.keys()) if x is not None]:
                             if prefix is None:
                                 sub_prefix = key
                             else:
@@ -939,7 +952,7 @@ class ModuleView(object):
                         return result
 
                     selections = []
-                    for object_name in [x for x in d.keys() if x is not None]:
+                    for object_name in [x for x in list(d.keys()) if x is not None]:
                         selections += collect_state(object_name, None,
                                                     d[object_name])
                     proposed_value = v.get_value_string(selections)
@@ -979,7 +992,7 @@ class ModuleView(object):
                                     continue
                                 d[dirname] = lambda dirpath=dirpath: fn_populate(dirpath)
                         except:
-                            print "Warning: failed to list directory %s" % root
+                            print("Warning: failed to list directory %s" % root)
                         return d
 
                     d = fn_populate(root)
@@ -987,7 +1000,7 @@ class ModuleView(object):
 
                     def populate_selection(d, selection, root):
                         s0 = selection[0]
-                        if not d.has_key(s0):
+                        if s0 not in d:
                             d[s0] = fn_populate(os.path.join(root, s0))
                         elif hasattr(d[s0], "__call__"):
                             d[s0] = d[s0]()
@@ -1026,7 +1039,7 @@ class ModuleView(object):
                         elif d[None] is False:
                             return [prefix]
                         result = []
-                        for key in d.keys():
+                        for key in list(d.keys()):
                             if key is None:
                                 continue
                             result += collect_state(os.path.join(prefix, key),
@@ -1034,7 +1047,7 @@ class ModuleView(object):
                         return result
 
                     selections = []
-                    for object_name in [x for x in d.keys() if x is not None]:
+                    for object_name in [x for x in list(d.keys()) if x is not None]:
                         selections += collect_state(object_name, d[object_name])
                     proposed_value = v.get_value_string(selections)
                     setting_edited_event = SettingEditedEvent(v, self.__module,
@@ -1103,7 +1116,7 @@ class ModuleView(object):
             sm = matplotlib.cm.ScalarMappable(cmap=cm)
             i, j = numpy.mgrid[0:12, 0:128]
             if cm.N < 128:
-                j *= int((cm.N + 128) / 128)
+                j *= int(old_div((cm.N + 128), 128))
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
             bitmap = wx.BitmapFromBufferRGBA(128, 12, image.tostring())
         except:
@@ -1649,7 +1662,7 @@ class ModuleView(object):
             else:
                 style = 0
                 text = v.get_value_text()
-                if not isinstance(text, (unicode, str)):
+                if not isinstance(text, (str, str)):
                     text = str(text)
                 if getattr(v, "multiline_display", False):
                     style = wx.TE_MULTILINE | wx.TE_PROCESS_ENTER
@@ -1669,7 +1682,7 @@ class ModuleView(object):
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, control)
         elif not (v.get_value_text() == control.Value):
             text = v.get_value_text()
-            if not isinstance(text, (unicode, str)):
+            if not isinstance(text, (str, str)):
                 text = str(text)
             control.Value = text
         if text is not None:
@@ -2124,7 +2137,7 @@ class ModuleView(object):
     def __on_cell_change(self, event, setting, control):
         if not self.__handle_change:
             return
-        proposed_value = unicode(control.GetValue())
+        proposed_value = str(control.GetValue())
         self.on_value_change(setting, control, proposed_value, event,
                              EDIT_TIMEOUT_SEC * 1000)
 
@@ -2244,7 +2257,7 @@ class ModuleView(object):
                 self.__module.test_valid(self.__pipeline)
                 level = logging.WARNING
                 self.__module.test_module_warnings(self.__pipeline)
-            except cellprofiler.setting.ValidationError, instance:
+            except cellprofiler.setting.ValidationError as instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
         # update settings' foreground/background
@@ -2356,7 +2369,7 @@ class FilterPanelController(object):
         key = tuple(address)
         line_name = self.line_name(address)
         self.hide_show_dict[line_name] = True
-        if self.sizer_dict.has_key(key):
+        if key in self.sizer_dict:
             if len(address) > 0:
                 self.hide_show_dict[self.remove_button_name(address)] = True
                 self.hide_show_dict[self.add_button_name(address)] = True
@@ -2389,12 +2402,12 @@ class FilterPanelController(object):
             sizer.Add(self.make_add_rules_button(address), 0,
                       wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
             key = tuple(address[:-1] + [address[-1] + 1])
-            if not self.sizer_dict.has_key(key):
+            if key not in self.sizer_dict:
                 if len(address) == 1:
                     key = None
                 else:
                     key = tuple(address[:-2] + [address[-2] + 1])
-                    if not self.sizer_dict.has_key(key):
+                    if key not in self.sizer_dict:
                         key = None
         if key is not None:
             next_sizer = self.sizer_dict[key]
@@ -2410,7 +2423,7 @@ class FilterPanelController(object):
     def get_tokens(self):
         try:
             tokens = self.v.parse()
-        except Exception, e:
+        except Exception as e:
             logger.debug("Failed to parse filter (value=%s): %s",
                          self.v.value_text, str(e))
             tokens = self.v.default()
@@ -2430,7 +2443,7 @@ class FilterPanelController(object):
             for key in self.hide_show_dict:
                 self.hide_show_dict[key] = False
             self.populate_subpanel(structure, [])
-            for key, value in self.hide_show_dict.iteritems():
+            for key, value in list(self.hide_show_dict.items()):
                 self.panel.FindWindowByName(key).Show(value)
             self.panel.Layout()
         except:
@@ -2613,13 +2626,13 @@ class FilterPanelController(object):
         """
         key = tuple(address + [index])
         next_key = tuple(address + [index + 1])
-        if self.sizer_item_dict.has_key(next_key):
+        if next_key in self.sizer_item_dict:
             next_ctrl = self.sizer_item_dict[next_key]
         else:
             next_ctrl = self.stretch_spacer_dict[tuple(address)]
         index = self.get_sizer_index(sizer, next_ctrl)
         sizer.Insert(index, item, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_HORIZONTAL)
-        if not self.sizer_item_dict.has_key(key):
+        if key not in self.sizer_item_dict:
             self.sizer_item_dict[key] = item
 
     def make_literal(self, token, index, address, sizer):
@@ -2940,7 +2953,7 @@ class FileCollectionDisplayController(object):
                                     self.FOLDER_OPEN_IMAGE_INDEX,
                                     wx.TreeItemIcon_Expanded)
         self.tree_ctrl.SetMinSize((100, 300))
-        self.tree_ctrl.SetMaxSize((sys.maxint, 300))
+        self.tree_ctrl.SetMaxSize((sys.maxsize, 300))
         self.file_drop_target = self.FCDCDropTarget(self.on_drop_files,
                                                     self.on_drop_text)
         self.tree_ctrl.SetDropTarget(self.file_drop_target)
@@ -2989,8 +3002,8 @@ class FileCollectionDisplayController(object):
             dc.SetFont(font)
             text_width, text_height = dc.GetTextExtent(text)
             dc.DrawText(text,
-                        (width - text_width) / 2,
-                        (height - text_height) / 2)
+                        old_div((width - text_width), 2),
+                        old_div((height - text_height), 2))
 
     def on_browse(self, event):
         logger.debug("Browsing for file collection directory")
@@ -3035,7 +3048,7 @@ class FileCollectionDisplayController(object):
         """
         parent_key = tuple(modpath[:-1])
         modpath = tuple(modpath)
-        if self.modpath_to_item.has_key(modpath):
+        if modpath in self.modpath_to_item:
             item = self.modpath_to_item[modpath]
             if text is not None:
                 self.tree_ctrl.SetItemText(item, text)
@@ -3045,7 +3058,7 @@ class FileCollectionDisplayController(object):
             text = modpath[-1]
         if len(modpath) == 1:
             parent_item = self.root_item
-        elif self.modpath_to_item.has_key(parent_key):
+        elif parent_key in self.modpath_to_item:
             parent_item = self.modpath_to_item[parent_key]
         else:
             parent_item = self.add_item(parent_key, sort=sort)
@@ -3080,7 +3093,7 @@ class FileCollectionDisplayController(object):
 
     def remove_item(self, modpath):
         modpath = tuple(modpath)
-        if self.modpath_to_item.has_key(modpath):
+        if modpath in self.modpath_to_item:
             item = self.modpath_to_item[modpath]
             n_children = self.tree_ctrl.GetChildrenCount(item, False)
             if n_children > 0:
@@ -3188,7 +3201,7 @@ class FileCollectionDisplayController(object):
     def on_delete_selected(self, event):
         mods = [self.get_item_address(item)
                 for item in self.tree_ctrl.GetSelections()]
-        mods = filter(lambda x: x is not None, mods)
+        mods = [x for x in mods if x is not None]
         self.v.on_remove([self.v.get_tree_modpaths(mod) for mod in mods])
 
     def get_item_address(self, item):
@@ -3357,7 +3370,7 @@ class FileCollectionDisplayController(object):
             text, node_type, tooltip = self.v.get_node_info(sub_modpath)
             cellprofiler.preferences.report_progress(
                     operation_id,
-                    float(count) / float(total),
+                    old_div(float(count), float(total)),
                     "Processing %s" % text)
             count += 1
             image_id = self.get_image_id_from_nodetype(node_type)
@@ -3365,7 +3378,7 @@ class FileCollectionDisplayController(object):
                 node_is_filtered = (not file_tree[x]) or is_filtered
                 if node_is_filtered and not show_filtered:
                     continue
-                if existing_items.has_key(x):
+                if x in existing_items:
                     existing_items[x][1] = True
                     item_id = existing_items[x][0]
                     self.tree_ctrl.SetItemText(item_id, text)
@@ -3409,7 +3422,7 @@ class FileCollectionDisplayController(object):
                                 text += "\t%d of %d files" % (
                                     unfiltered_files, n_files)
                         text += ")"
-                if existing_items.has_key(x):
+                if x in existing_items:
                     existing_items[x][1] = True
                     item_id = existing_items[x][0]
                     self.tree_ctrl.SetItemText(item_id, text)
@@ -3428,7 +3441,7 @@ class FileCollectionDisplayController(object):
 
             color = self.FILTERED_COLOR if node_is_filtered else self.ACTIVE_COLOR
             self.tree_ctrl.SetItemTextColour(item_id, color)
-        for last_part, (item_id, keep) in existing_items.iteritems():
+        for last_part, (item_id, keep) in list(existing_items.items()):
             if not keep:
                 self.remove_item(modpath + [last_part])
         if needs_sort:
@@ -3665,7 +3678,7 @@ class JoinerController(object):
                                      flag=wx.ALIGN_BOTTOM)
                 all_subcontrols[move_down_button_name] = True
 
-        for key, value in all_subcontrols.iteritems():
+        for key, value in list(all_subcontrols.items()):
             ctrl = self.panel.FindWindowByName(key)
             ctrl.Show(value)
 
@@ -3754,7 +3767,7 @@ class BinaryMatrixController(object):
 
     def update(self):
         h, w = self.setting.get_size()
-        hh, ww = [(x - 1) / 2 for x in h, w]
+        hh, ww = [old_div((x - 1), 2) for x in (h, w)]
         if self.height_ctrl.Value != hh:
             self.height_ctrl.Value = hh
         if self.width_ctrl.Value != ww:
@@ -3792,7 +3805,7 @@ class BinaryMatrixController(object):
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT), 1, wx.SOLID)
         bBackground, bForeground = [
             wx.Brush(color) for color in
-            wx.Colour(80, 80, 80, 255), wx.WHITE]
+            (wx.Colour(80, 80, 80, 255), wx.WHITE)]
         rw = 2 * ex + dx
         rh = 2 * ey + dy
         for x in range(w):
@@ -3832,8 +3845,8 @@ class BinaryMatrixController(object):
             wx.SystemSettings.GetMetric(m) for m in (
                 wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
                 wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
-        i = int((y - ey) / (2 * ey + dy + by))
-        j = int((x - ex) / (2 * ex + dx + bx))
+        i = int(old_div((y - ey), (2 * ey + dy + by)))
+        j = int(old_div((x - ex), (2 * ex + dx + bx)))
         h, w = self.setting.get_size()
         if (i < 0 or j < 0 or i >= h or j >= w or
                 not self.get_matrix_element_rect(i, j).ContainsXY(x, y)):
@@ -3844,7 +3857,7 @@ class BinaryMatrixController(object):
         matrix = self.setting.get_matrix()
         h, w = self.setting.get_size()
         d = self.width_ctrl.Value * 2 + 1 - w
-        n = abs(int(d / 2))
+        n = abs(int(old_div(d, 2)))
         if d < 0:
             matrix = [row[n:-n] for row in matrix]
         elif d > 0:
@@ -3859,7 +3872,7 @@ class BinaryMatrixController(object):
         matrix = self.setting.get_matrix()
         h, w = self.setting.get_size()
         d = self.height_ctrl.Value * 2 + 1 - h
-        n = abs(int(d / 2))
+        n = abs(int(old_div(d, 2)))
         if d < 0:
             matrix = matrix[n:-n]
         elif d > 0:
@@ -4023,7 +4036,7 @@ class DataTypeController(object):
             value = self.DT_TO_DTC.get(d[feature], self.DTC_TEXT)
             if choice.GetStringSelection() != value:
                 choice.SetStringSelection(value)
-        self.n_items = len(d.keys())
+        self.n_items = len(list(d.keys()))
         for choice in needs_bind:
             choice.Bind(wx.EVT_CHOICE, self.on_choice_changed)
 
@@ -4152,7 +4165,7 @@ class TableController(wx.grid.PyGridTableBase):
         col = event.GetRowOrCol()
         width = grid.GetColSize(col)
         table = grid.GetTable()
-        self.column_size[col] = int(width * 1.1) / grid.CharWidth
+        self.column_size[col] = old_div(int(width * 1.1), grid.CharWidth)
         tm = wx.grid.GridTableMessage(
                 self,
                 wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
@@ -4185,12 +4198,12 @@ class TableController(wx.grid.PyGridTableBase):
     def GetValue(self, row, col):
         if self.IsEmptyCell(row, col):
             return None
-        s = unicode(self.v.data[row][col])
+        s = str(self.v.data[row][col])
         if len(self.column_size) <= col:
             self.column_size += [self.v.max_field_size] * (col - len(self.column_size) + 1)
         field_size = self.column_size[col]
         if len(s) > field_size:
-            half = int(field_size - 3) / 2
+            half = old_div(int(field_size - 3), 2)
             s = s[:half] + "..." + s[-half:]
         return s
 
@@ -4365,7 +4378,7 @@ class ModuleSizer(wx.PySizer):
             if edit_width + help_width + max_text_width < width:
                 edit_width = width - max_text_width - help_width
             elif edit_width * 4 < width:
-                edit_width = width / 4
+                edit_width = old_div(width, 4)
             text_width = max([width - edit_width - help_width,
                               self.__min_text_width])
             widths = [text_width, edit_width, help_width]
@@ -4397,9 +4410,9 @@ class ModuleSizer(wx.PySizer):
                     item_height = self.get_row_height(i)
                     assert isinstance(edit_item, wx.SizerItem)
                     border = edit_item.GetBorder()
-                    third_width = (text_width + edit_width - 2 * border) / 3
-                    item_location = wx.Point(text_width - third_width / 2,
-                                             height + border + item_height / 2)
+                    third_width = old_div((text_width + edit_width - 2 * border), 3)
+                    item_location = wx.Point(text_width - old_div(third_width, 2),
+                                             height + border + old_div(item_height, 2))
                     item_size = wx.Size(third_width, edit_item.Size[1])
                     item_location = panel.CalcScrolledPosition(item_location)
                     edit_item.SetDimension(item_location, item_size)
@@ -4419,9 +4432,9 @@ class ModuleSizer(wx.PySizer):
                         if (item.Flag & wx.EXPAND) == 0:
                             item_size = item.CalcMin()
                             if item.Flag & wx.ALIGN_CENTER_VERTICAL:
-                                item_y = height + (row_height - item_size[1]) / 2
+                                item_y = height + old_div((row_height - item_size[1]), 2)
                             if item.Flag & wx.ALIGN_CENTER_HORIZONTAL:
-                                item_x += (widths[j] - item_size[0]) / 2
+                                item_x += old_div((widths[j] - item_size[0]), 2)
                             elif item.Flag & wx.ALIGN_RIGHT:
                                 item_x += widths[j] - item_size[0]
                         else:
@@ -4437,7 +4450,7 @@ class ModuleSizer(wx.PySizer):
                 self.__printed_exception = True
 
 
-validation_queue = Queue.Queue()
+validation_queue = queue.Queue()
 pipeline_queue_thread = None  # global, protected by above lock
 request_pipeline_cache = threading.local()  # used to cache the last requested pipeline
 validation_queue_keep_running = True
@@ -4501,7 +4514,7 @@ def validate_module(pipeline, module_num, test_mode, callback):
         level = logging.WARNING
         module.test_module_warnings(pipeline)
         level = logging.INFO
-    except cellprofiler.setting.ValidationError, instance:
+    except cellprofiler.setting.ValidationError as instance:
         message = instance.message
         setting_idx = [m.key() for m in module.visible_settings()].index(instance.get_setting().key())
     wx.CallAfter(callback, setting_idx, message, level)

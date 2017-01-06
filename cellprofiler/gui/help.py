@@ -1,6 +1,10 @@
 # coding=utf-8
 """ help.py - contains menu structures for help menus in CP
 """
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
 #######################################################
 #
@@ -18,6 +22,9 @@
 #
 ########################################################
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import cellprofiler.icons
 import logging
 import os
@@ -1353,7 +1360,7 @@ module help.</p>""" % globals()
 # Help for the module figure windows
 #
 ####################################################
-'''The help menu for the figure window'''
+"""The help menu for the figure window"""
 
 MODULE_DISPLAY_MENU_BAR_HELP = """
 From the menu bar of each module display window, you have the following options:
@@ -2315,7 +2322,7 @@ process the slices in all stacks together as if they were constituents of only o
 #
 #########################################################
 
-'''The help to be displayed if someone asks for help on a module but none is selected'''
+"""The help to be displayed if someone asks for help on a module but none is selected"""
 HELP_ON_MODULE_BUT_NONE_SELECTED = (
     "The help button can be used to obtain help for the currently selected module "
     "in the pipeline panel on the left side of the CellProfiler interface.\n\n"
@@ -2421,7 +2428,7 @@ channel.  "Alpha" determines the weight each channel contributes to the summed i
 #
 #########################################################
 
-'''The help menu for CP's main window'''
+"""The help menu for CP's main window"""
 MAIN_HELP = (
     ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),
     ("Navigating The Menu Bar", (
@@ -2462,12 +2469,12 @@ MAIN_HELP = (
 
 def make_help_menu(h, window, menu=None):
     import wx
-    import htmldialog
+    from . import htmldialog
     if menu is None:
         menu = wx.Menu()
     for key, value in h:
         my_id = wx.NewId()
-        if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
+        if hasattr(value, "__iter__") and not isinstance(value, (str, str)):
             menu.AppendMenu(my_id, key, make_help_menu(value, window))
         else:
             def show_dialog(event, key=key, value=value):

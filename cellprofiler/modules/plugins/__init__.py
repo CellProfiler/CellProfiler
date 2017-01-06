@@ -1,12 +1,20 @@
 """Plugin modules - redirect module loads to the user's plugin
 directory.
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 # These examples:
 # http://blog.dowski.com/2008/07/31/customizing-the-python-import-system/
 # http://www.secomputing.co.uk/2009/05/importing-python-packages-in-memory.html
 # were helpful when writing this code.
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import object
 import glob
 import imp
 import os.path
@@ -49,7 +57,7 @@ class PluginImporter(object):
             mod.__file__ = os.path.join(cpprefs.get_plugin_directory(), modname + '.py')
 
             contents = open(mod.__file__, "r").read()
-            exec compile(contents, mod.__file__, "exec") in mod.__dict__
+            exec(compile(contents, mod.__file__, "exec"), mod.__dict__)
             return mod
         except:
             if fullname in sys.module:

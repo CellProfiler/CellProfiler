@@ -1,7 +1,17 @@
 # coding=utf-8
 """preferencesdlg.py Edit global preferences
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from past.builtins import basestring
+from builtins import object
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
 import cellprofiler.preferences
@@ -102,9 +112,9 @@ class PreferencesDlg(wx.Dialog):
                 ctl = wx.CheckBox(scrollpanel, -1)
                 ctl.Value = getter()
             elif isinstance(ui_info, IntegerPreference):
-                minval = (-sys.maxint if ui_info.minval is None
+                minval = (-sys.maxsize if ui_info.minval is None
                           else ui_info.minval)
-                maxval = (sys.maxint if ui_info.maxval is None
+                maxval = (sys.maxsize if ui_info.maxval is None
                           else ui_info.maxval)
                 ctl = wx.SpinCtrl(scrollpanel,
                                   min=minval,

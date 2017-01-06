@@ -1,4 +1,4 @@
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and
+"""<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
 This module loads a file that supplies text or numerical data associated with
@@ -148,8 +148,19 @@ image loading was requested by the user.</li>
 </ul>
 
 See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics</b>.
-'''
+"""
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import division
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import next
+from builtins import zip
+from builtins import str
+from builtins import range
 import csv
 import hashlib
 import logging
@@ -157,12 +168,13 @@ import os
 import sys
 
 import numpy as np
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except:
-    from StringIO import StringIO
+    from io import StringIO
 import matplotlib.mlab
 
 import cellprofiler.module as cpm
@@ -171,7 +183,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
-import identify as I
+from . import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
@@ -195,10 +207,10 @@ DIR_OTHER = 'Elsewhere...'
 DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
            NO_FOLDER_NAME, ABSOLUTE_FOLDER_NAME]
 
-'''Reserve extra space in pathnames for batch processing name rewrites'''
+"""Reserve extra space in pathnames for batch processing name rewrites"""
 PATH_PADDING = 20
 
-'''Cache of header columns for files'''
+"""Cache of header columns for files"""
 header_cache = {}
 
 
@@ -212,12 +224,12 @@ header_cache = {}
 ###################################################################
 
 def header_to_column(field):
-    '''Convert the field name in the header to a column name
+    """Convert the field name in the header to a column name
 
     This function converts Image_FileName to FileName and
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
-    '''
+    """
     for name in (C_PATH_NAME, C_FILE_NAME, C_URL,
                  C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL):
         if field.startswith(cpmeas.IMAGE + '_' + name + '_'):
@@ -226,12 +238,12 @@ def header_to_column(field):
 
 
 def is_path_name_feature(feature):
-    '''Return true if the feature name is a path name'''
+    """Return true if the feature name is a path name"""
     return feature.startswith(C_PATH_NAME + '_')
 
 
 def is_file_name_feature(feature):
-    '''Return true if the feature name is a file name'''
+    """Return true if the feature name is a file name"""
     return feature.startswith(C_FILE_NAME + '_')
 
 
@@ -240,12 +252,12 @@ def is_url_name_feature(feature):
 
 
 def is_objects_path_name_feature(feature):
-    '''Return true if the feature name is the path to a labels file'''
+    """Return true if the feature name is the path to a labels file"""
     return feature.startswith(C_OBJECTS_PATH_NAME + "_")
 
 
 def is_objects_file_name_feature(feature):
-    '''Return true if the feature name is a labels file name'''
+    """Return true if the feature name is a labels file name"""
     return feature.startswith(C_OBJECTS_FILE_NAME + "_")
 
 
@@ -254,7 +266,7 @@ def is_objects_url_name_feature(feature):
 
 
 def get_image_name(feature):
-    '''Extract the image name from a feature name'''
+    """Extract the image name from a feature name"""
     if is_path_name_feature(feature):
         return feature[len(C_PATH_NAME + '_'):]
     if is_file_name_feature(feature):
@@ -265,7 +277,7 @@ def get_image_name(feature):
 
 
 def get_objects_name(feature):
-    '''Extract the objects name from a feature name'''
+    """Extract the objects name from a feature name"""
     if is_objects_path_name_feature(feature):
         return feature[len(C_OBJECTS_PATH_NAME + "_"):]
     if is_objects_file_name_feature(feature):
@@ -276,38 +288,38 @@ def get_objects_name(feature):
 
 
 def make_path_name_feature(image):
-    '''Return the path name feature, given an image name
+    """Return the path name feature, given an image name
 
     The path name feature is the name of the measurement that stores
     the image's path name.
-    '''
+    """
     return C_PATH_NAME + '_' + image
 
 
 def make_file_name_feature(image):
-    '''Return the file name feature, given an image name
+    """Return the file name feature, given an image name
 
     The file name feature is the name of the measurement that stores
     the image's file name.
-    '''
+    """
     return C_FILE_NAME + '_' + image
 
 
 def make_objects_path_name_feature(objects_name):
-    '''Return the path name feature, given an object name
+    """Return the path name feature, given an object name
 
     The path name feature is the name of the measurement that stores
     the objects file path name.
-    '''
+    """
     return C_OBJECTS_PATH_NAME + '_' + objects_name
 
 
 def make_objects_file_name_feature(objects_name):
-    '''Return the file name feature, given an object name
+    """Return the file name feature, given an object name
 
     The file name feature is the name of the measurement that stores
     the objects file name.
-    '''
+    """
     return C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
@@ -331,7 +343,7 @@ class LoadData(cpm.Module):
             </ul></p>""" % globals())
 
         def get_directory_fn():
-            '''Get the directory for the CSV file name'''
+            """Get the directory for the CSV file name"""
             return self.csv_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -453,7 +465,7 @@ class LoadData(cpm.Module):
 
         try:
             self.open_csv()
-        except IOError, e:
+        except IOError as e:
             import errno
             if e.errno == errno.EWOULDBLOCK:
                 raise cps.ValidationError("Another program (Excel?) is locking the CSV file %s." %
@@ -464,16 +476,16 @@ class LoadData(cpm.Module):
 
         try:
             self.get_header()
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError(
                     "The CSV file, %s, is not in the proper format. See this module's help for details on CSV format. (error: %s)" %
                     (self.csv_path, e), self.csv_file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings
+        """Check for potentially dangerous settings
 
         The best practice is to have a single LoadImages or LoadData module.
-        '''
+        """
         from cellprofiler.modules.loadimages import LoadImages
 
         for module in pipeline.modules():
@@ -567,7 +579,7 @@ class LoadData(cpm.Module):
             output = []
             for h in header:
                 if not h.startswith('file_'):
-                    if isinstance(h, unicode):
+                    if isinstance(h, str):
                         output.append(h.encode("utf-8"))
                     else:
                         output.append(h)
@@ -599,7 +611,7 @@ class LoadData(cpm.Module):
 
     @property
     def csv_path(self):
-        '''The path and file name of the CSV file to be loaded'''
+        """The path and file name of the CSV file to be loaded"""
         if cpprefs.get_data_file() is not None:
             return cpprefs.get_data_file()
         if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
@@ -614,15 +626,15 @@ class LoadData(cpm.Module):
 
     @property
     def legacy_field_key(self):
-        '''The key to use to retrieve the metadata from the image set list'''
+        """The key to use to retrieve the metadata from the image set list"""
         return 'LoadTextMetadata_%d' % self.module_num
 
     def get_cache_info(self):
-        '''Get the cached information for the data file'''
+        """Get the cached information for the data file"""
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
         if cpprefs.is_url_path(self.csv_path):
-            if not header_cache.has_key(self.csv_path):
+            if self.csv_path not in header_cache:
                 header_cache[self.csv_path] = entry
             return entry
         ctime = os.stat(self.csv_path).st_ctime
@@ -632,24 +644,24 @@ class LoadData(cpm.Module):
         return entry
 
     def open_csv(self, do_not_cache=False):
-        '''Open the csv file or URL, returning a file descriptor'''
+        """Open the csv file or URL, returning a file descriptor"""
         global header_cache
 
         if cpprefs.is_url_path(self.csv_path):
-            if not header_cache.has_key(self.csv_path):
+            if self.csv_path not in header_cache:
                 header_cache[self.csv_path] = {}
             entry = header_cache[self.csv_path]
-            if entry.has_key("URLEXCEPTION"):
+            if "URLEXCEPTION" in entry:
                 raise entry["URLEXCEPTION"]
-            if entry.has_key("URLDATA"):
+            if "URLDATA" in entry:
                 fd = StringIO(entry["URLDATA"])
             else:
                 if do_not_cache:
                     raise RuntimeError('Need to fetch URL manually.')
-                import urllib2
+                import urllib.request, urllib.error, urllib.parse
                 try:
-                    url_fd = urllib2.urlopen(self.csv_path)
-                except Exception, e:
+                    url_fd = urllib.request.urlopen(self.csv_path)
+                except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
                 fd = StringIO()
@@ -673,7 +685,7 @@ class LoadData(cpm.Module):
             wx.MessageBox("Could not read %s" % self.csv_path)
             return
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
         sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(sizer)
@@ -682,7 +694,7 @@ class LoadData(cpm.Module):
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append([unicode(s, 'utf8') if isinstance(s, str) else s
+            list_ctl.Append([str(s, 'utf8') if isinstance(s, str) else s
                              for s in line[:len(header)]])
         frame.SetMinSize((640, 480))
         frame.SetIcon(get_cp_icon())
@@ -690,23 +702,23 @@ class LoadData(cpm.Module):
         frame.Show()
 
     def get_header(self, do_not_cache=False):
-        '''Read the header fields from the csv file
+        """Read the header fields from the csv file
 
         Open the csv file indicated by the settings and read the fields
         of its first line. These should be the measurement columns.
-        '''
+        """
         entry = self.get_cache_info()
-        if entry.has_key("header"):
+        if "header" in entry:
             return entry["header"]
 
         fd = self.open_csv(do_not_cache=do_not_cache)
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         fd.close()
         if header[0].startswith('ELN_RUN_ID'):
             try:
                 data = self.convert()
-            except Exception, e:
+            except Exception as e:
                 raise RuntimeError("%s" % e)
             header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
@@ -729,41 +741,41 @@ class LoadData(cpm.Module):
         return list(object_names)
 
     def other_providers(self, group):
-        '''Get name providers from the CSV header'''
+        """Get name providers from the CSV header"""
         if group == 'imagegroup' and self.wants_images.value:
             try:
                 # do not load URLs automatically
                 return self.get_image_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
         elif group == 'objectgroup' and self.wants_images:
             try:
                 # do not load URLs automatically
                 return self.get_object_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
 
         return []
 
     def is_image_from_file(self, image_name):
-        '''Return True if LoadData provides the given image name'''
+        """Return True if LoadData provides the given image name"""
         providers = self.other_providers('imagegroup')
         return image_name in providers
 
     def is_load_module(self):
-        '''LoadData can make image sets so it's a load module'''
+        """LoadData can make image sets so it's a load module"""
         return True
 
     def prepare_run(self, workspace):
         pipeline = workspace.pipeline
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        '''Load the CSV file at the outset and populate the image set list'''
+        """Load the CSV file at the outset and populate the image set list"""
         if pipeline.in_batch_mode():
             return True
         fd = self.open_csv()
         reader = csv.reader(fd)
-        header = [header_to_column(column) for column in reader.next()]
+        header = [header_to_column(column) for column in next(reader)]
         if header[0].startswith('ELN_RUN_ID'):
             reader = self.convert()
             header = list(reader.dtype.names)
@@ -777,14 +789,14 @@ class LoadData(cpm.Module):
                     break
                 if len(row) == 0:
                     continue
-                row = [unicode(s, 'utf8') if isinstance(s, str) else s
+                row = [str(s, 'utf8') if isinstance(s, str) else s
                        for s in row]
                 if len(row) != len(header):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d" %
                                      (i, len(row), len(header)))
                 rows.append(row)
         else:
-            rows = [[unicode(s, 'utf8') if isinstance(s, str) else s
+            rows = [[str(s, 'utf8') if isinstance(s, str) else s
                      for s in row] for row in reader
                     if len(row) > 0]
         fd.close()
@@ -817,11 +829,11 @@ class LoadData(cpm.Module):
             else:
                 category, feature = column.split("_", 1)
             if category in IMAGE_CATEGORIES:
-                if not image_columns.has_key(feature):
+                if feature not in image_columns:
                     image_columns[feature] = []
                 image_columns[feature].append(i)
             elif category in OBJECTS_CATEGORIES:
-                if not object_columns.has_key(feature):
+                if feature not in object_columns:
                     object_columns[feature] = []
                 object_columns[feature].append(i)
             else:
@@ -853,7 +865,7 @@ class LoadData(cpm.Module):
                     (image_columns, C_URL, C_FILE_NAME, C_PATH_NAME),
                     (object_columns, C_OBJECTS_URL, C_OBJECTS_FILE_NAME,
                      C_OBJECTS_PATH_NAME)):
-                for name in d.keys():
+                for name in list(d.keys()):
                     url_column = file_name_column = path_name_column = None
                     for k in d[name]:
                         if header[k].startswith(url_category):
@@ -935,7 +947,7 @@ class LoadData(cpm.Module):
             columns[feature] = c
             for row in rows:
                 value = row[index]
-                if column_type.has_key(feature):
+                if feature in column_type:
                     datatype = column_type[feature]
                 else:
                     datatype = previous_column_types[feature]
@@ -951,18 +963,18 @@ class LoadData(cpm.Module):
             #  loadimages)
             #
             image_numbers = m.match_metadata(
-                    metadata_columns.keys(),
-                    [columns[k] for k in metadata_columns.keys()])
+                    list(metadata_columns.keys()),
+                    [columns[k] for k in list(metadata_columns.keys())])
             image_numbers = np.array(image_numbers, int).flatten()
             max_image_number = np.max(image_numbers)
             new_columns = {}
-            for key, values in columns.iteritems():
+            for key, values in list(columns.items()):
                 new_values = [None] * max_image_number
                 for image_number, value in zip(image_numbers, values):
                     new_values[image_number - 1] = value
                 new_columns[key] = new_values
             columns = new_columns
-        for feature, values in columns.iteritems():
+        for feature, values in list(columns.items()):
             m.add_all_measurements(cpmeas.IMAGE, feature, values)
         if self.wants_image_groupings and \
                         len(self.metadata_fields.selections) > 0:
@@ -973,7 +985,7 @@ class LoadData(cpm.Module):
         return True
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -987,7 +999,7 @@ class LoadData(cpm.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
 
         if self.wants_images:
             m = workspace.measurements
@@ -1015,7 +1027,7 @@ class LoadData(cpm.Module):
                             fullname = url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = unicode(pathname2url(fullname), "utf-8")
+                            url = str(pathname2url(fullname), "utf-8")
                             m.add_measurement(cpmeas.IMAGE, url_feature, url,
                                               image_set_number=image_number)
                             if file_feature is not None:
@@ -1061,7 +1073,7 @@ class LoadData(cpm.Module):
                 index=frame)
 
     def run(self, workspace):
-        '''Populate the images and objects'''
+        """Populate the images and objects"""
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_set = workspace.image_set
@@ -1098,7 +1110,7 @@ class LoadData(cpm.Module):
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:
-                        print warning
+                        print(warning)
                         #
                         # Process any object tags
                         #
@@ -1132,10 +1144,10 @@ class LoadData(cpm.Module):
         figure.subplot_table(0, 0, workspace.display_data.statistics)
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets
+        """Return the image groupings of the image sets
 
         See CPModule for documentation
-        '''
+        """
         if (self.wants_images.value and
                 self.wants_image_groupings.value and
                     len(self.metadata_fields.selections) > 0):
@@ -1149,15 +1161,15 @@ class LoadData(cpm.Module):
         return None
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements output by this module'''
+        """Return column definitions for measurements output by this module"""
         entry = None
         try:
             entry = self.get_cache_info()
-            if entry.has_key("measurement_columns"):
+            if "measurement_columns" in entry:
                 return entry["measurement_columns"]
             fd = self.open_csv()
             reader = csv.reader(fd)
-            header = [header_to_column(x) for x in reader.next()]
+            header = [header_to_column(x) for x in next(reader)]
             if header[0].startswith('ELN_RUN_ID'):
                 reader = self.convert()
                 header = reader.dtype.names
@@ -1282,9 +1294,9 @@ class LoadData(cpm.Module):
         return result
 
     def has_synthetic_well_metadata(self):
-        '''Determine if we should synthesize a well metadata feature
+        """Determine if we should synthesize a well metadata feature
 
-        '''
+        """
         fields = self.get_header()
         has_well_col = False
         has_well_row = False
@@ -1317,14 +1329,14 @@ class LoadData(cpm.Module):
                  and column[1].startswith(category + "_")]]
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart
+        """Check to see if changing the given setting means you have to restart
 
         Some settings, esp in modules like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to do "prepare_run".
-        '''
+        """
         if self.wants_images or setting == self.wants_images:
             return True
         return False
@@ -1421,14 +1433,14 @@ LoadText = LoadData
 
 
 def best_cast(sequence, coltype=None):
-    '''Return the best cast (integer, float or string) of the sequence
+    """Return the best cast (integer, float or string) of the sequence
 
     sequence - a sequence of strings
 
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
-    '''
-    if (isinstance(coltype, (str, unicode)) and
+    """
+    if (isinstance(coltype, (str, str)) and
             coltype.startswith(cpmeas.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
         return np.array(sequence)
@@ -1455,13 +1467,13 @@ int32_min = np.iinfo(np.int32).min
 
 
 def get_loaddata_type(x):
-    '''Return the type to use to represent x
+    """Return the type to use to represent x
 
     If x is a 32-bit integer, return cpmeas.COLTYPE_INTEGER.
     If x cannot be represented in 32 bits but is an integer,
     return cpmeas.COLTYPE_VARCHAR
     If x can be represented as a float, return COLTYPE_FLOAT
-    '''
+    """
     global int32_max, int32_min
 
     try:

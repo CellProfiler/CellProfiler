@@ -1,10 +1,18 @@
 '''test_identifyobjectsingrid.py - test the IdentifyObjectsInGrid module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -154,8 +162,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         ni = gridding.rows
         nj = gridding.columns
         i, j = np.mgrid[0:(i0 + di * (ni + 1)), 0:(j0 + di * (nj + 1))]
-        i = np.round((i - i0).astype(float) / di).astype(int)
-        j = np.round((j - j0).astype(float) / dj).astype(int)
+        i = np.round(old_div((i - i0).astype(float), di)).astype(int)
+        j = np.round(old_div((j - j0).astype(float), dj)).astype(int)
         mask = ((i >= 0) & (j >= 0) & (i < ni) & (j < nj))
         grid = np.zeros((gridding.image_height, gridding.image_width), int)
         g = grid[:i.shape[0], :i.shape[1]]
@@ -181,7 +189,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
             gridding.x_locations[jspot.flatten()]
         idist = (i - y_locations[expected])
         jdist = (j - x_locations[expected])
-        expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
+        expected[idist ** 2 + jdist ** 2 > (old_div(float(diameter + 1), 2)) ** 2] = 0
         workspace, module = self.make_workspace(gridding)
         self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
         module.diameter_choice.value = I.AM_MANUAL
@@ -261,12 +269,12 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
             gridding.x_locations[jspot.flatten()]
         idist = (i - y_locations[expected])
         jdist = (j - x_locations[expected])
-        expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
+        expected[idist ** 2 + jdist ** 2 > (old_div(float(diameter + 1), 2)) ** 2] = 0
         #
         # Make a fuzzy mask to account for the diameter being +/- 1
         #
         mask = np.ones(expected.shape, bool)
-        mask[np.abs(np.sqrt(idist ** 2 + jdist ** 2) - float(diameter + 1) / 2) <= 1] = False
+        mask[np.abs(np.sqrt(idist ** 2 + jdist ** 2) - old_div(float(diameter + 1), 2)) <= 1] = False
         #
         # Make a labels matrix that's like the expected one, but
         # is relabeled randomly
@@ -313,8 +321,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         idist = (i - y_locations[expected])
         jdist = (j - x_locations[expected])
         guide_labels = expected.copy()
-        expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
-        guide_labels[idist ** 2 + jdist ** 2 > ((random_diameters[guide_labels] + 1) / 2) ** 2] = 0
+        expected[idist ** 2 + jdist ** 2 > (old_div(float(diameter + 1), 2)) ** 2] = 0
+        guide_labels[idist ** 2 + jdist ** 2 > (old_div((random_diameters[guide_labels] + 1), 2)) ** 2] = 0
         workspace, module = self.make_workspace(gridding, guide_labels)
         self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
         module.diameter_choice.value = I.AM_MANUAL
@@ -356,8 +364,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         #
         # save some bad places - at the corners of the grids
         #
-        bad_x_locations = (x_locations - gridding.x_spacing / 2).astype(int)
-        bad_y_locations = (y_locations - gridding.y_spacing / 2).astype(int)
+        bad_x_locations = (x_locations - old_div(gridding.x_spacing, 2)).astype(int)
+        bad_y_locations = (y_locations - old_div(gridding.y_spacing, 2)).astype(int)
         #
         # Perturb the X and Y locations and diameters randomly
         #
@@ -368,8 +376,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         idist = (i - y_locations[expected])
         jdist = (j - x_locations[expected])
         guide_labels = expected.copy()
-        expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
-        guide_labels[idist ** 2 + jdist ** 2 > ((random_diameters[guide_labels] + 1) / 2) ** 2] = 0
+        expected[idist ** 2 + jdist ** 2 > (old_div(float(diameter + 1), 2)) ** 2] = 0
+        guide_labels[idist ** 2 + jdist ** 2 > (old_div((random_diameters[guide_labels] + 1), 2)) ** 2] = 0
         #
         # Add objects in bad places
         #
@@ -425,8 +433,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         idist = (i - y_locations[expected])
         jdist = (j - x_locations[expected])
         guide_labels = expected.copy()
-        expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
-        guide_labels[idist ** 2 + jdist ** 2 > ((random_diameters[guide_labels] + 1) / 2) ** 2] = 0
+        expected[idist ** 2 + jdist ** 2 > (old_div(float(diameter + 1), 2)) ** 2] = 0
+        guide_labels[idist ** 2 + jdist ** 2 > (old_div((random_diameters[guide_labels] + 1), 2)) ** 2] = 0
         #
         # Erase the last one... this triggered the bug
         #
@@ -479,8 +487,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         #
         # save some bad places - at the corners of the grids
         #
-        bad_x_locations = (x_locations - gridding.x_spacing / 2).astype(int)
-        bad_y_locations = (y_locations - gridding.y_spacing / 2).astype(int)
+        bad_x_locations = (x_locations - old_div(gridding.x_spacing, 2)).astype(int)
+        bad_y_locations = (y_locations - old_div(gridding.y_spacing, 2)).astype(int)
         #
         # Perturb the X and Y locations and diameters randomly
         #
@@ -490,7 +498,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         random_diameters = np.random.uniform(size=y_locations.shape[0] + 1) * 4 * 3
         idist = (i - y_locations[guide_labels])
         jdist = (j - x_locations[guide_labels])
-        guide_labels[idist ** 2 + jdist ** 2 > ((random_diameters[guide_labels] + 1) / 2) ** 2] = 0
+        guide_labels[idist ** 2 + jdist ** 2 > (old_div((random_diameters[guide_labels] + 1), 2)) ** 2] = 0
         expected = guide_labels.copy()
         guide_labels[guide_labels != 0] += gridding.rows * gridding.columns * (
             np.random.uniform(size=np.sum(guide_labels != 0)) > .5)

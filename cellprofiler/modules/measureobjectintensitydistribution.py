@@ -32,7 +32,19 @@ of the moment and the ZernikePhase feature gives the moment's orientation.</li>
 
 See also <b>MeasureObjectIntensity</b>.
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import filter
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys
 
 import centrosome.zernike as cpmz
@@ -92,21 +104,21 @@ OF_FRAC_AT_D = '_'.join((M_CATEGORY, F_FRAC_AT_D, "%s", FF_OVERFLOW))
 OF_MEAN_FRAC = '_'.join((M_CATEGORY, F_MEAN_FRAC, "%s", FF_OVERFLOW))
 OF_RADIAL_CV = '_'.join((M_CATEGORY, F_RADIAL_CV, "%s", FF_OVERFLOW))
 
-'''# of settings aside from groups'''
+"""# of settings aside from groups"""
 SETTINGS_STATIC_COUNT = 3
-'''# of settings in image group'''
+"""# of settings in image group"""
 SETTINGS_IMAGE_GROUP_COUNT = 1
-'''# of settings in object group'''
+"""# of settings in object group"""
 SETTINGS_OBJECT_GROUP_COUNT = 3
-'''# of settings in bin group, v1'''
+"""# of settings in bin group, v1"""
 SETTINGS_BIN_GROUP_COUNT_V1 = 1
-'''# of settings in bin group, v2'''
+"""# of settings in bin group, v2"""
 SETTINGS_BIN_GROUP_COUNT_V2 = 3
 SETTINGS_BIN_GROUP_COUNT = 3
-'''# of settings in heatmap group, v4'''
+"""# of settings in heatmap group, v4"""
 SETTINGS_HEATMAP_GROUP_COUNT_V4 = 7
 SETTINGS_HEATMAP_GROUP_COUNT = 7
-'''Offset of center choice in object group'''
+"""Offset of center choice in object group"""
 SETTINGS_CENTER_CHOICE_OFFSET = 1
 
 A_FRAC_AT_D = "Fraction at Distance"
@@ -172,7 +184,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         self.add_bin_count(can_remove=False)
 
     def add_image(self, can_remove=True):
-        '''Add an image to be measured'''
+        """Add an image to be measured"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -185,7 +197,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         self.images.append(group)
 
     def add_object(self, can_remove=True):
-        '''Add an object to be measured (plus optional centers)'''
+        """Add an object to be measured (plus optional centers)"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -223,7 +235,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         self.objects.append(group)
 
     def add_bin_count(self, can_remove=True):
-        '''Add another radial bin count at which to measure'''
+        """Add another radial bin count at which to measure"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -405,7 +417,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust the numbers of images, objects and bin counts'''
+        """Adjust the numbers of images, objects and bin counts"""
         image_count, objects_count, bin_counts_count, heatmap_count = \
             [int(x) for x in setting_values[:4]]
         for sequence, add_fn, count in \
@@ -475,7 +487,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         stats = workspace.display_data.stats
         n_plots = len(workspace.display_data.heatmaps) + 1
         n_vert = int(np.sqrt(n_plots))
-        n_horiz = int(np.ceil(float(n_plots) / n_vert))
+        n_horiz = int(np.ceil(old_div(float(n_plots), n_vert)))
         figure.set_subplots((n_horiz, n_vert))
         figure.subplot_table(0, 0, stats, col_labels=header)
         idx = 1
@@ -489,7 +501,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                     heatmap.object_name.get_objects_name(),
                     heatmap.measurement.value)
                 x = idx % n_horiz
-                y = int(idx / n_horiz)
+                y = int(old_div(idx, n_horiz))
                 colormap = heatmap.colormap.value
                 if colormap == cps.DEFAULT:
                     colormap = cpprefs.get_default_colormap()
@@ -517,7 +529,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
     def do_measurements(self, workspace, image_name, object_name,
                         center_object_name, center_choice,
                         bin_count_settings, dd):
-        '''Perform the radial measurements on the image set
+        """Perform the radial measurements on the image set
 
         workspace - workspace that holds images / objects
         image_name - make measurements on this image
@@ -531,7 +543,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         d - a dictionary for saving reusable partial results
 
         returns one statistics tuple per ring.
-        '''
+        """
         assert isinstance(workspace, cpw.Workspace)
         assert isinstance(workspace.object_set, cpo.ObjectSet)
         bin_count = bin_count_settings.bin_count.value
@@ -570,7 +582,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
         name = (object_name if center_object_name is None
                 else "%s_%s" % (object_name, center_object_name))
-        if dd.has_key(name):
+        if name in dd:
             normalized_distance, i_center, j_center, good_mask = dd[name]
         else:
             d_to_edge = distance_to_edge(labels)
@@ -670,11 +682,11 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             normalized_distance = np.zeros(labels.shape)
             if wants_scaled:
                 total_distance = d_from_center + d_to_edge
-                normalized_distance[good_mask] = (d_from_center[good_mask] /
-                                                  (total_distance[good_mask] + .001))
+                normalized_distance[good_mask] = (old_div(d_from_center[good_mask],
+                                                  (total_distance[good_mask] + .001)))
             else:
                 normalized_distance[good_mask] = \
-                    d_from_center[good_mask] / maximum_radius
+                    old_div(d_from_center[good_mask], maximum_radius)
             dd[name] = [normalized_distance, i_center, j_center, good_mask]
         ngood_pixels = np.sum(good_mask)
         good_labels = labels[good_mask]
@@ -685,15 +697,15 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                                (nobjects, bin_count + 1)).toarray()
         sum_by_object = np.sum(histogram, 1)
         sum_by_object_per_bin = np.dstack([sum_by_object] * (bin_count + 1))[0]
-        fraction_at_distance = histogram / sum_by_object_per_bin
+        fraction_at_distance = old_div(histogram, sum_by_object_per_bin)
         number_at_distance = coo_matrix((np.ones(ngood_pixels), labels_and_bins),
                                         (nobjects, bin_count + 1)).toarray()
         object_mask = number_at_distance > 0
         sum_by_object = np.sum(number_at_distance, 1)
         sum_by_object_per_bin = np.dstack([sum_by_object] * (bin_count + 1))[0]
-        fraction_at_bin = number_at_distance / sum_by_object_per_bin
-        mean_pixel_fraction = fraction_at_distance / (fraction_at_bin +
-                                                      np.finfo(float).eps)
+        fraction_at_bin = old_div(number_at_distance, sum_by_object_per_bin)
+        mean_pixel_fraction = old_div(fraction_at_distance, (fraction_at_bin +
+                                                      np.finfo(float).eps))
         masked_fraction_at_distance = masked_array(fraction_at_distance,
                                                    ~object_mask)
         masked_mean_pixel_fraction = masked_array(mean_pixel_fraction,
@@ -724,8 +736,8 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             pixel_count = coo_matrix((np.ones(bin_pixels), labels_and_radii),
                                      (nobjects, 8)).toarray()
             mask = pixel_count == 0
-            radial_means = masked_array(radial_values / pixel_count, mask)
-            radial_cv = np.std(radial_means, 1) / np.mean(radial_means, 1)
+            radial_means = masked_array(old_div(radial_values, pixel_count), mask)
+            radial_cv = old_div(np.std(radial_means, 1), np.mean(radial_means, 1))
             radial_cv[np.sum(~mask, 1) == 0] = 0
             for measurement, feature, overflow_feature in (
                     (fraction_at_distance[:, bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
@@ -771,7 +783,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             #
             ijv = objects.ijv
             l = ijv[:, 2]
-            yx = (ijv[:, :2] - ij[l, :]) / r[l, np.newaxis]
+            yx = old_div((ijv[:, :2] - ij[l, :]), r[l, np.newaxis])
             z = cpmz.construct_zernike_polynomials(
                     yx[:, 1], yx[:, 0], zernike_indexes)
             for image_group in self.images:
@@ -802,7 +814,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                     vi = scind.sum(
                             pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
                             labels=l_, index=objects.indices)
-                    magnitude = np.sqrt(vr * vr + vi * vi) / areas
+                    magnitude = old_div(np.sqrt(vr * vr + vi * vi), areas)
                     ftr = self.get_zernike_magnitude_name(image_name, n, m)
                     meas[object_name, ftr] = magnitude
                     if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
@@ -811,22 +823,22 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                         meas[object_name, ftr] = phase
 
     def get_zernike_magnitude_name(self, image_name, n, m):
-        '''The feature name of the magnitude of a Zernike moment
+        """The feature name of the magnitude of a Zernike moment
 
         image_name - the name of the image being measured
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
-        '''
+        """
         return "_".join(
                 (M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, str(n), str(m)))
 
     def get_zernike_phase_name(self, image_name, n, m):
-        '''The feature name of the phase of a Zernike moment
+        """The feature name of the phase of a Zernike moment
 
         image_name - the name of the image being measured
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
-        '''
+        """
         return "_".join(
                 (M_CATEGORY, FF_ZERNIKE_PHASE, image_name, str(n), str(m)))
 
@@ -958,7 +970,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
 
 
 class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
-    '''An object name subscriber limited by the objects in the objects' group'''
+    """An object name subscriber limited by the objects in the objects' group"""
 
     def set_module(self, module):
         assert isinstance(module, MeasureObjectIntensityDistribution)
@@ -972,14 +984,14 @@ class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
 
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.objects) > 1
 
     def get_objects_name(self):
-        '''Return the name of the objects to use in the display'''
+        """Return the name of the objects to use in the display"""
         if len(self.__module.objects) == 1:
             return self.__module.objects[0].object_name.value
         else:
@@ -987,7 +999,7 @@ class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
 
 
 class MORDImageNameSubscriber(cps.ImageNameSubscriber):
-    '''An image name subscriber limited by the images in the image group'''
+    """An image name subscriber limited by the images in the image group"""
 
     def set_module(self, module):
         assert isinstance(module, MeasureObjectIntensityDistribution)
@@ -1001,14 +1013,14 @@ class MORDImageNameSubscriber(cps.ImageNameSubscriber):
 
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.images) > 1
 
     def get_image_name(self):
-        '''Return the name of the image to use in the display'''
+        """Return the name of the image to use in the display"""
         if len(self.__module.images) == 1:
             return self.__module.images[0].image_name.value
         else:

@@ -1,7 +1,14 @@
 # coding=utf-8
 """ an htmldialog with an ok button
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 long_text = """\
 This is a very important parameter which tells the module what you are
 looking for. Most options within this module use this estimate of the

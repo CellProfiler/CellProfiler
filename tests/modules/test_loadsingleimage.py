@@ -1,13 +1,21 @@
 '''test_loadsingleimage - Test the LoadSingleImage module
 '''
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 import base64
 import hashlib
 import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image
 import cellprofiler.image
@@ -584,7 +592,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 os.remove(os.path.join(directory, filename))
                 os.rmdir(directory)
             except:
-                print "Failed to delete directory " + directory
+                print("Failed to delete directory " + directory)
 
     def test_04_02_object_outlines(self):
         labels = numpy.zeros((30, 40), int)
@@ -630,7 +638,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 os.remove(os.path.join(directory, filename))
                 os.rmdir(directory)
             except:
-                print "Failed to delete directory " + directory
+                print("Failed to delete directory " + directory)
 
     def test_05_01_convert_single_image(self):
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org

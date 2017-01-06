@@ -1,7 +1,16 @@
 # coding=utf-8
 """regexp_editor - give a user feedback on their regular expression
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from builtins import object
 import re
 import wx
 import wx.stc
@@ -236,7 +245,7 @@ class RegexpDialog(wx.Dialog):
         self.test_display.Text = self.__test_text
         try:
             parse(self.__value, RegexpState())
-        except ValueError, e:
+        except ValueError as e:
             self.test_display.Text = e.message
             self.test_display.StartStyling(0, 0xff)
             self.test_display.SetStyling(len(self.test_display.Text),

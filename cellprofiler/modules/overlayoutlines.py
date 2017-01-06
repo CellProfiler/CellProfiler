@@ -1,4 +1,4 @@
-'''<b>Overlay Outlines</b> places outlines produced by an 
+"""<b>Overlay Outlines</b> places outlines produced by an 
 <b>Identify</b> module over a desired image.
 <hr>
 This module places outlines (in a special format produced by an <b>Identify</b> module)
@@ -6,8 +6,17 @@ on any desired image (grayscale, color, or blank). The
 resulting image can be saved using the <b>SaveImages</b> module.
 
 See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryObjects</b>.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import centrosome.outline
 import numpy as np
 from scipy.ndimage import distance_transform_edt
@@ -156,7 +165,7 @@ class OverlayOutlines(cpm.Module):
 
     def prepare_settings(self, setting_values):
         num_settings = \
-            (len(setting_values) - NUM_FIXED_SETTINGS) / NUM_OUTLINE_SETTINGS
+            old_div((len(setting_values) - NUM_FIXED_SETTINGS), NUM_OUTLINE_SETTINGS)
         if len(self.outlines) == 0:
             self.add_outline(False)
         elif len(self.outlines) > num_settings:
@@ -219,7 +228,7 @@ class OverlayOutlines(cpm.Module):
         workspace.display_data.pixel_data = pixel_data
 
     def __can_composite_objects(self):
-        '''Return True if we can use object compositing during display'''
+        """Return True if we can use object compositing during display"""
         for outline in self.outlines:
             if outline.outline_choice == FROM_IMAGES:
                 return False
@@ -350,7 +359,7 @@ class OverlayOutlines(cpm.Module):
         return pixel_data
 
     def get_outline(self, workspace, outline):
-        '''Get outline, with aliasing and taking widths into account'''
+        """Get outline, with aliasing and taking widths into account"""
         if outline.outline_choice == FROM_IMAGES:
             name = outline.outline_name.value
             pixel_data = workspace.image_set.get_image(name).pixel_data
@@ -363,7 +372,7 @@ class OverlayOutlines(cpm.Module):
                     pixel_data | centrosome.outline.outline(labels)
         if self.wants_color == WANTS_GRAYSCALE:
             return pixel_data.astype(bool)
-        color = np.array(outline.color.to_rgb(), float) / 255.0
+        color = old_div(np.array(outline.color.to_rgb(), float), 255.0)
         if pixel_data.ndim == 2:
             if len(color) == 3:
                 color = np.hstack((color, [1]))
@@ -377,7 +386,7 @@ class OverlayOutlines(cpm.Module):
         if hasattr(np, 'float16'):
             output_image = output_image.astype(np.float16)
         if self.line_width.value > 1:
-            half_line_width = float(self.line_width.value) / 2
+            half_line_width = old_div(float(self.line_width.value), 2)
             d, (i, j) = distance_transform_edt(output_image[:, :, 3] == 0,
                                                return_indices=True)
             mask = (d > 0) & (d <= half_line_width - .5)

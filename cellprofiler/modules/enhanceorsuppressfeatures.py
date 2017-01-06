@@ -1,12 +1,20 @@
-'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features 
+"""<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features 
 (such as speckles, ring shapes, and neurites), which can improve subsequent
 identification of objects.
 <hr>
 This module enhances or suppresses the intensity of certain pixels relative
 to the rest of the image, by applying image processing filters to the image. It
 produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 from centrosome.cpmorphology import opening, closing, white_tophat
 from centrosome.filter import enhance_dark_holes, circular_hough
@@ -258,7 +266,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
         #
         # Match against Matlab's strel('disk') operation.
         #
-        radius = (float(self.object_size.value) - 1.0) / 2.0
+        radius = old_div((float(self.object_size.value) - 1.0), 2.0)
         mask = image.mask if image.has_mask else None
         pixel_data = image.pixel_data
         if self.method == ENHANCE:
@@ -305,8 +313,8 @@ class EnhanceOrSuppressFeatures(cpm.Module):
                 if image.has_mask:
                     result[~mask] = pixel_data[~mask]
             elif self.enhance_method == E_DARK_HOLES:
-                min_radius = max(1, int(self.hole_size.min / 2))
-                max_radius = int((self.hole_size.max + 1) / 2)
+                min_radius = max(1, int(old_div(self.hole_size.min, 2)))
+                max_radius = int(old_div((self.hole_size.max + 1), 2))
                 result = enhance_dark_holes(pixel_data, min_radius,
                                             max_radius, mask)
             elif self.enhance_method == E_CIRCLES:
@@ -349,7 +357,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -367,7 +375,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if not from_matlab and variable_revision_number == 1:
             #
             # V1 -> V2, added enhance method and hole size

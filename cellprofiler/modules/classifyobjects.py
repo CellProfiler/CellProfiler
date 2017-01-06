@@ -1,4 +1,4 @@
-'''<b>Classify Objects</b> classifies objects into different classes according 
+"""<b>Classify Objects</b> classifies objects into different classes according 
 to the value of measurements you choose.
 <hr>
 This module classifies objects into a number of different bins
@@ -50,8 +50,17 @@ binned into bins above ("high") and below ("low") the cutoff.</li>
 </ul>
 
 See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
-'''
+"""
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -60,6 +69,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
+from functools import reduce
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
@@ -233,11 +243,11 @@ class ClassifyObjects(cpm.Module):
             Enter the name to be given to the classified object image.""")
 
     def add_single_measurement(self, can_delete=True):
-        '''Add a single measurement to the group of single measurements
+        """Add a single measurement to the group of single measurements
 
         can_delete - True to include a "remove" button, False if you're not
                      allowed to remove it.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=True))
@@ -352,7 +362,7 @@ class ClassifyObjects(cpm.Module):
         group.can_delete = can_delete
 
         def number_of_bins():
-            '''Return the # of bins in this classification'''
+            """Return the # of bins in this classification"""
             if group.bin_choice == BC_EVEN:
                 value = group.bin_count.value
             else:
@@ -366,10 +376,10 @@ class ClassifyObjects(cpm.Module):
         group.number_of_bins = number_of_bins
 
         def measurement_name():
-            '''Get the measurement name to use inside the bin name
+            """Get the measurement name to use inside the bin name
 
             Account for conflicts with previous measurements
-            '''
+            """
             measurement_name = group.measurement.value
             other_same = 0
             for other in self.single_measurements:
@@ -382,7 +392,7 @@ class ClassifyObjects(cpm.Module):
             return measurement_name
 
         def bin_feature_names():
-            '''Return the feature names for each bin'''
+            """Return the feature names for each bin"""
             if group.wants_custom_names:
                 return [name.strip()
                         for name in group.bin_names.value.split(",")]
@@ -512,7 +522,7 @@ class ClassifyObjects(cpm.Module):
             self.display_single_measurement(workspace, figure)
 
     def get_feature_name_matrix(self):
-        '''Get a 2x2 matrix of feature names for two measurements'''
+        """Get a 2x2 matrix of feature names for two measurements"""
         if self.wants_custom_names:
             return np.array([[self.low_low_custom_name.value,
                               self.low_high_custom_name.value],
@@ -641,7 +651,7 @@ class ClassifyObjects(cpm.Module):
             patch.set_facecolor(colors[i + 1, :])
 
     def run_single_measurement(self, group, workspace):
-        '''Classify objects based on one measurement'''
+        """Classify objects based on one measurement"""
         object_name = group.object_name.value
         feature = group.measurement.value
         objects = workspace.object_set.get_objects(object_name)
@@ -706,7 +716,7 @@ class ClassifyObjects(cpm.Module):
                 workspace.display_data.values.append(values[~np.isnan(values)])
 
     def display_single_measurement(self, workspace, figure):
-        '''Display an array of single measurements'''
+        """Display an array of single measurements"""
         figure.set_subplots((3, len(self.single_measurements)))
         for i, group in enumerate(self.single_measurements):
             bin_hits = workspace.display_data.bins[i]
@@ -744,7 +754,7 @@ class ClassifyObjects(cpm.Module):
                                          sharexy=figure.subplot(2, 0))
 
     def get_colors(self, count):
-        '''Get colors used for two-measurement labels image'''
+        """Get colors used for two-measurement labels image"""
         import matplotlib.cm as cm
         cmap = cm.get_cmap(cpprefs.get_default_colormap())
         #
@@ -777,7 +787,7 @@ class ClassifyObjects(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -795,7 +805,7 @@ class ClassifyObjects(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if (from_matlab and
                     module_name == 'ClassifyObjectsByTwoMeasurements' and
                     variable_revision_number == 2):

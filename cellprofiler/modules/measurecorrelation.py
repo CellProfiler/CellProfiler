@@ -1,4 +1,4 @@
-'''<b>Measure Correlation</b> measures the colocalization and correlation between intensities in different images (e.g., different color channels) on a pixel-by-pixel basis, within identified
+"""<b>Measure Correlation</b> measures the colocalization and correlation between intensities in different images (e.g., different color channels) on a pixel-by-pixel basis, within identified
 objects or across an entire image.
 <hr>
 Given two or more images, this module calculates the correlation & colocalization (Overlap, Manders, Costes' Automated Threshold & Rank Weighted Colocalization) between the
@@ -40,8 +40,18 @@ Di = abs(Rank(Ri) - Rank(Gi)) (absolute difference in ranks between R and G) and
 and Gi_coloc =  Gi when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics 12:407).
 </li></ul>
 
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 import scipy.stats as scistat
@@ -57,28 +67,28 @@ M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
 M_IMAGES_AND_OBJECTS = "Both"
 
-'''Feature name format for the correlation measurement'''
+"""Feature name format for the correlation measurement"""
 F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
 
-'''Feature name format for the slope measurement'''
+"""Feature name format for the slope measurement"""
 F_SLOPE_FORMAT = "Correlation_Slope_%s_%s"
 
-'''Feature name format for the overlap coefficient measurement'''
+"""Feature name format for the overlap coefficient measurement"""
 F_OVERLAP_FORMAT = "Correlation_Overlap_%s_%s"
 
-'''Feature name format for the Manders Coefficient measurement'''
+"""Feature name format for the Manders Coefficient measurement"""
 F_K_FORMAT = "Correlation_K_%s_%s"
 
-'''Feature name format for the Manders Coefficient measurement'''
+"""Feature name format for the Manders Coefficient measurement"""
 F_KS_FORMAT = "Correlation_KS_%s_%s"
 
-'''Feature name format for the Manders Coefficient measurement'''
+"""Feature name format for the Manders Coefficient measurement"""
 F_MANDERS_FORMAT = "Correlation_Manders_%s_%s"
 
-'''Feature name format for the RWC Coefficient measurement'''
+"""Feature name format for the RWC Coefficient measurement"""
 F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 
-'''Feature name format for the Costes Coefficient measurement'''
+"""Feature name format for the Costes Coefficient measurement"""
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
@@ -88,7 +98,7 @@ class MeasureCorrelation(cpm.Module):
     variable_revision_number = 3
 
     def create_settings(self):
-        '''Create the initial settings for the module'''
+        """Create the initial settings for the module"""
         self.image_groups = []
         self.add_image(can_delete=False)
         self.spacer_1 = cps.Divider()
@@ -99,12 +109,12 @@ class MeasureCorrelation(cpm.Module):
         self.spacer_2 = cps.Divider()
         self.thr = cps.Float(
                 "Set threshold as percentage of maximum intensity for the images",
-                15, minval=0, maxval=99, doc='''\
-            Select the threshold as a percentage of the maximum intensity of the above image [0-99].''')
+                15, minval=0, maxval=99, doc="""\
+            Select the threshold as a percentage of the maximum intensity of the above image [0-99].""")
 
         self.images_or_objects = cps.Choice(
                 'Select where to measure correlation',
-                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''
+                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc="""
             You can measure the correlation in several ways:
             <ul>
             <li><i>%(M_OBJECTS)s:</i> Measure correlation only in those pixels previously
@@ -112,7 +122,7 @@ class MeasureCorrelation(cpm.Module):
             <li><i>%(M_IMAGES)s:</i> Measure the correlation across all pixels in the images.</li>
             <li><i>%(M_IMAGES_AND_OBJECTS)s:</i> Calculate both measurements above.</li>
             </ul>
-            All methods measure correlation on a pixel by pixel basis.''' % globals())
+            All methods measure correlation on a pixel by pixel basis.""" % globals())
 
         self.object_groups = []
         self.add_object(can_delete=False)
@@ -123,17 +133,17 @@ class MeasureCorrelation(cpm.Module):
         self.add_object_button = cps.DoSomething("", 'Add another object', self.add_object)
 
     def add_image(self, can_delete=True):
-        '''Add an image to the image_groups collection
+        """Add an image to the image_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-                'Select an image to measure', cps.NONE, doc='''
-            Select an image to measure the correlation from.'''))
+                'Select an image to measure', cps.NONE, doc="""
+            Select an image to measure the correlation from."""))
 
         if len(self.image_groups) == 0:  # Insert space between 1st two images for aesthetics
             group.append("extra_divider", cps.Divider(line=False))
@@ -144,21 +154,21 @@ class MeasureCorrelation(cpm.Module):
         self.image_groups.append(group)
 
     def add_object(self, can_delete=True):
-        '''Add an object to the object_groups collection'''
+        """Add an object to the object_groups collection"""
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
 
         group.append("object_name", cps.ObjectNameSubscriber(
-                'Select an object to measure', cps.NONE, doc='''
-            Select the objects to be measured.'''))
+                'Select an object to measure', cps.NONE, doc="""
+            Select the objects to be measured."""))
 
         if can_delete:
             group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))
         self.object_groups.append(group)
 
     def settings(self):
-        '''Return the settings to be saved in the pipeline'''
+        """Return the settings to be saved in the pipeline"""
         result = [self.image_count, self.object_count]
         result += [image_group.image_name for image_group in self.image_groups]
         result += [self.thr]
@@ -167,7 +177,7 @@ class MeasureCorrelation(cpm.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Make sure there are the right number of image and object slots for the incoming settings'''
+        """Make sure there are the right number of image and object slots for the incoming settings"""
         image_count = int(setting_values[0])
         object_count = int(setting_values[1])
         if image_count < 2:
@@ -194,25 +204,25 @@ class MeasureCorrelation(cpm.Module):
         return result
 
     def get_image_pairs(self):
-        '''Yield all permutations of pairs of images to correlate
+        """Yield all permutations of pairs of images to correlate
 
         Yields the pairs of images in a canonical order.
-        '''
+        """
         for i in range(self.image_count.value - 1):
             for j in range(i + 1, self.image_count.value):
                 yield (self.image_groups[i].image_name.value,
                        self.image_groups[j].image_name.value)
 
     def wants_images(self):
-        '''True if the user wants to measure correlation on whole images'''
+        """True if the user wants to measure correlation on whole images"""
         return self.images_or_objects in (M_IMAGES, M_IMAGES_AND_OBJECTS)
 
     def wants_objects(self):
-        '''True if the user wants to measure per-object correlations'''
+        """True if the user wants to measure per-object correlations"""
         return self.images_or_objects in (M_OBJECTS, M_IMAGES_AND_OBJECTS)
 
     def run(self, workspace):
-        '''Calculate measurements on an image set'''
+        """Calculate measurements on an image set"""
         col_labels = ["First image", "Second image", "Objects", "Measurement", "Value"]
         statistics = []
         for first_image_name, second_image_name in self.get_image_pairs():
@@ -237,7 +247,7 @@ class MeasureCorrelation(cpm.Module):
 
     def run_image_pair_images(self, workspace, first_image_name,
                               second_image_name):
-        '''Calculate the correlation between the pixels of two images'''
+        """Calculate the correlation between the pixels of two images"""
         first_image = workspace.image_set.get_image(first_image_name,
                                                     must_be_grayscale=True)
         second_image = workspace.image_set.get_image(second_image_name,
@@ -294,7 +304,7 @@ class MeasureCorrelation(cpm.Module):
 
             denom = 2 * covar
             num = (yvar - xvar) + np.sqrt((yvar - xvar) * (yvar - xvar) + 4 * (covar * covar))
-            a = (num / denom)
+            a = (old_div(num, denom))
             b = (ymean - a * xmean)
 
             i = 1
@@ -326,8 +336,8 @@ class MeasureCorrelation(cpm.Module):
             # Manders Coefficient
             M1 = 0
             M2 = 0
-            M1 = fi_thresh.sum() / tot_fi_thr
-            M2 = si_thresh.sum() / tot_si_thr
+            M1 = old_div(fi_thresh.sum(), tot_fi_thr)
+            M2 = old_div(si_thresh.sum(), tot_si_thr)
 
             result += [[first_image_name, second_image_name, "-", "Manders Coefficient","%.3f"%M1],
                        [second_image_name, first_image_name, "-", "Manders Coefficient","%.3f"%M2]]
@@ -348,27 +358,27 @@ class MeasureCorrelation(cpm.Module):
 
             R = max(Rank_im1.max(), Rank_im2.max()) + 1
             Di = abs(Rank_im1 - Rank_im2)
-            weight = ((R - Di) * 1.0) / R
+            weight = old_div(((R - Di) * 1.0), R)
             weight_thresh = weight[combined_thresh]
-            RWC1 = (fi_thresh * weight_thresh).sum() / tot_fi_thr
-            RWC2 = (si_thresh * weight_thresh).sum() / tot_si_thr
+            RWC1 = old_div((fi_thresh * weight_thresh).sum(), tot_fi_thr)
+            RWC2 = old_div((si_thresh * weight_thresh).sum(), tot_si_thr)
             result += [[first_image_name, second_image_name, "-", "RWC Coefficient", "%.3f" % RWC1],
                        [second_image_name, first_image_name, "-", "RWC Coefficient", "%.3f" % RWC2]]
 
             # Costes' Automated Threshold
             C1 = 0
             C2 = 0
-            C1 = fi_thresh_c.sum() / tot_fi_thr_c
-            C2 = si_thresh_c.sum() / tot_si_thr_c
+            C1 = old_div(fi_thresh_c.sum(), tot_fi_thr_c)
+            C2 = old_div(si_thresh_c.sum(), tot_si_thr_c)
 
             result += [[first_image_name, second_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C1],
                        [second_image_name, first_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C2]]
 
             # Overlap Coefficient
             overlap = 0
-            overlap = (fi_thresh * si_thresh).sum() / np.sqrt((fi_thresh ** 2).sum() * (si_thresh ** 2).sum())
-            K1 = (fi_thresh * si_thresh).sum() / (fi_thresh ** 2).sum()
-            K2 = (fi_thresh * si_thresh).sum() / (si_thresh ** 2).sum()
+            overlap = old_div((fi_thresh * si_thresh).sum(), np.sqrt((fi_thresh ** 2).sum() * (si_thresh ** 2).sum()))
+            K1 = old_div((fi_thresh * si_thresh).sum(), (fi_thresh ** 2).sum())
+            K2 = old_div((fi_thresh * si_thresh).sum(), (si_thresh ** 2).sum())
             result += [[first_image_name, second_image_name, "-", "Overlap Coefficient", "%.3f" % overlap]]
 
         else:
@@ -426,7 +436,7 @@ class MeasureCorrelation(cpm.Module):
 
     def run_image_pair_objects(self, workspace, first_image_name,
                                second_image_name, object_name):
-        '''Calculate per-object correlations between intensities in two images'''
+        """Calculate per-object correlations between intensities in two images"""
         first_image = workspace.image_set.get_image(first_image_name,
                                                     must_be_grayscale=True)
         second_image = workspace.image_set.get_image(second_image_name,
@@ -530,8 +540,8 @@ class MeasureCorrelation(cpm.Module):
                 [first_image_name, second_image_name, object_name, "Max Correlation coeff", "%.3f" % np.max(corr)]]
 
             # Threshold as percentage of maximum intensity of objects in each channel
-            tff = (self.thr.value / 100) * fix(scind.maximum(first_pixels, labels, lrange))
-            tss = (self.thr.value / 100) * fix(scind.maximum(second_pixels, labels, lrange))
+            tff = (old_div(self.thr.value, 100)) * fix(scind.maximum(first_pixels, labels, lrange))
+            tss = (old_div(self.thr.value, 100)) * fix(scind.maximum(second_pixels, labels, lrange))
 
             combined_thresh = (first_pixels > tff[labels - 1]) & (second_pixels > tss[labels - 1])
             fi_thresh = first_pixels[combined_thresh]
@@ -555,7 +565,7 @@ class MeasureCorrelation(cpm.Module):
 
             denom = 2 * covar
             num = (yvar - xvar) + np.sqrt((yvar - xvar) * (yvar - xvar) + 4 * (covar * covar))
-            a = (num / denom)
+            a = (old_div(num, denom))
             b = (ymean - a * xmean)
 
             i = 1
@@ -589,8 +599,8 @@ class MeasureCorrelation(cpm.Module):
             M2 = np.zeros(len(lrange))
 
             if np.any(combined_thresh):
-                M1 = np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
-                M2 = np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
+                M1 = old_div(np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)), np.array(tot_fi_thr))
+                M2 = old_div(np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)), np.array(tot_si_thr))
             result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff","%.3f"%np.mean(M1)],
                        [first_image_name, second_image_name, object_name,"Median Manders coeff","%.3f"%np.median(M1)],
                        [first_image_name, second_image_name, object_name,"Min Manders coeff","%.3f"%np.min(M1)],
@@ -619,10 +629,10 @@ class MeasureCorrelation(cpm.Module):
             weight = (R - Di) * 1.0 / R
             weight_thresh = weight[combined_thresh]
             if np.any(combined_thresh_c):
-                RWC1 = np.array(scind.sum(fi_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
-                        tot_fi_thr)
-                RWC2 = np.array(scind.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
-                        tot_si_thr)
+                RWC1 = old_div(np.array(scind.sum(fi_thresh * weight_thresh, labels[combined_thresh], lrange)), np.array(
+                        tot_fi_thr))
+                RWC2 = old_div(np.array(scind.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)), np.array(
+                        tot_si_thr))
 
             result += [[first_image_name, second_image_name, object_name, "Mean RWC coeff", "%.3f" % np.mean(RWC1)],
                        [first_image_name, second_image_name, object_name, "Median RWC coeff", "%.3f" % np.median(RWC1)],
@@ -637,8 +647,8 @@ class MeasureCorrelation(cpm.Module):
             C1 = np.zeros(len(lrange))
             C2 = np.zeros(len(lrange))
             if np.any(combined_thresh_c):
-                C1 = np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_fi_thr_c)
-                C2 = np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_si_thr_c)
+                C1 = old_div(np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)), np.array(tot_fi_thr_c))
+                C2 = old_div(np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)), np.array(tot_si_thr_c))
             result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff (Costes)","%.3f"%np.mean(C1)],
                        [first_image_name, second_image_name, object_name,"Median Manders coeff (Costes)","%.3f"%np.median(C1)],
                        [first_image_name, second_image_name, object_name,"Min Manders coeff (Costes)","%.3f"%np.min(C1)],
@@ -657,15 +667,15 @@ class MeasureCorrelation(cpm.Module):
 
             if np.any(combined_thresh):
                 overlap = fix(
-                        scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
+                        old_div(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
                                   labels[combined_thresh],
-                                  lrange) / pdt)
-                K1 = fix((scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
-                                    labels[combined_thresh], lrange)) / (np.array(fpsq)))
+                                  lrange), pdt))
+                K1 = fix(old_div((scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
+                                    labels[combined_thresh], lrange)), (np.array(fpsq))))
                 K2 = fix(
-                        scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
+                        old_div(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
                                   labels[combined_thresh],
-                                  lrange) / np.array(spsq))
+                                  lrange), np.array(spsq)))
             else:
                 overlap = K1 = K2 = np.zeros(len(lrange))
             result += [
@@ -719,7 +729,7 @@ class MeasureCorrelation(cpm.Module):
             return result
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for all measurements made by this module'''
+        """Return column definitions for all measurements made by this module"""
         columns = []
         for first_image, second_image in self.get_image_pairs():
             if self.wants_images():
@@ -803,10 +813,10 @@ class MeasureCorrelation(cpm.Module):
         return columns
 
     def get_categories(self, pipeline, object_name):
-        '''Return the categories supported by this module for the given object
+        """Return the categories supported by this module for the given object
 
         object_name - name of the measured object or cpmeas.IMAGE
-        '''
+        """
         if ((object_name == cpmeas.IMAGE and self.wants_images()) or
                 ((object_name != cpmeas.IMAGE) and self.wants_objects() and
                      (object_name in [x.object_name.value for x in self.object_groups]))):
@@ -824,7 +834,7 @@ class MeasureCorrelation(cpm.Module):
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
-        '''Return the joined pairs of images measured'''
+        """Return the joined pairs of images measured"""
         result = []
         if measurement in self.get_measurements(pipeline, object_name, category):
             for i1, i2 in self.get_image_pairs():
@@ -836,7 +846,7 @@ class MeasureCorrelation(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust the setting values for pipelines saved under old revisions'''
+        """Adjust the setting values for pipelines saved under old revisions"""
         if from_matlab and variable_revision_number == 3:
             image_names = [x for x in setting_values[:4]
                            if x.upper() != cps.DO_NOT_USE.upper()]

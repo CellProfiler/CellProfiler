@@ -9,7 +9,15 @@ with the <b>SaveImages</b> modules.
 you can by bypass this module and use the <b>SaveImages</b> module directly
 by specifying "Objects" as the type of image to save.
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import centrosome.cpmorphology
 import matplotlib.cm
 import numpy
@@ -131,7 +139,7 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
 
                 alpha[mask] = 1
             elif self.image_mode == "Grayscale":
-                pixel_data[mask] = labels[mask].astype(float) / numpy.max(labels)
+                pixel_data[mask] = old_div(labels[mask].astype(float), numpy.max(labels))
 
                 alpha[mask] = 1
             elif self.image_mode == "Color":
@@ -178,9 +186,9 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
         mask = alpha > 0
 
         if self.image_mode == "Color":
-            pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, numpy.newaxis]
+            pixel_data[mask, :] = old_div(pixel_data[mask, :], alpha[mask][:, numpy.newaxis])
         elif self.image_mode != "Binary (black & white)":
-            pixel_data[mask] = pixel_data[mask] / alpha[mask]
+            pixel_data[mask] = old_div(pixel_data[mask], alpha[mask])
 
         image = cellprofiler.image.Image(
             pixel_data,

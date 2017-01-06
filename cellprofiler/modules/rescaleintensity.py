@@ -1,12 +1,20 @@
-'''<b>RescaleIntensity</b> changes the intensity range of an image to your
+"""<b>RescaleIntensity</b> changes the intensity range of an image to your
 desired specifications.
 <hr>
 This module lets you rescale the intensity of the input images by any of several
 methods. You should use caution when interpreting intensity and texture measurements
 derived from images that have been rescaled because certain options for this module
 do not preserve the relative intensities from image to image.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy
 import skimage.exposure
 
@@ -56,7 +64,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
 
         self.rescale_method = cellprofiler.setting.Choice(
                 'Rescaling method',
-                choices=M_ALL, doc='''
+                choices=M_ALL, doc="""
             There are a number of options for rescaling the input image:
             <ul>
             <li><i>%(M_STRETCH)s:</i> Find the minimum and maximum values within the unmasked part of the image
@@ -84,7 +92,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
             or can be a value loaded by the <b>Metadata</b> module.</li>
             <li><i>%(M_SCALE_BY_IMAGE_MAXIMUM)s:</i> Scale an image so that its maximum value is the
             same as the maximum value within the reference image.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.wants_automatic_low = cellprofiler.setting.Choice(
                 'Method to calculate the minimum intensity',
@@ -208,7 +216,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
         return d[HIGH_ALL_IMAGES]
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Handle initialization per-group
+        """Handle initialization per-group
 
         pipeline - the pipeline being run
         image_set_list - the list of image sets for the whole experiment
@@ -221,7 +229,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
         We use prepare_group to compute the minimum or maximum values
         among all images in the group for certain values of
         "wants_automatic_[low,high]".
-        '''
+        """
         if (self.wants_automatic_high != HIGH_ALL_IMAGES and
                     self.wants_automatic_low != LOW_ALL_IMAGES):
             return True
@@ -258,7 +266,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
             self.set_automatic_minimum(workspace.image_set_list, min_value)
 
     def is_aggregation_module(self):
-        '''We scan through all images in a group in some cases'''
+        """We scan through all images in a group in some cases"""
         return ((self.wants_automatic_high == HIGH_ALL_IMAGES) or
                 (self.wants_automatic_low == LOW_ALL_IMAGES))
 
@@ -330,7 +338,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
         if value == 0.0:
             raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
 
-        return data / float(value)
+        return old_div(data, float(value))
 
     def divide_by_image_minimum(self, input_image):
         data = input_image.pixel_data
@@ -379,7 +387,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
         return self.divide(input_image.pixel_data * reference_max, image_max)
 
     def get_source_range(self, input_image, workspace):
-        '''Get the source range, accounting for automatically computed values'''
+        """Get the source range, accounting for automatically computed values"""
         if (self.wants_automatic_high == CUSTOM_VALUE and
                     self.wants_automatic_low == CUSTOM_VALUE):
             return self.source_scale.min, self.source_scale.max

@@ -1,12 +1,22 @@
 '''test_exporttodatabase.py - test the ExportToDatabase module
 '''
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
 import base64
 import numpy as np
 import os
 import PIL.Image as PILImage
 import scipy.ndimage
-from StringIO import StringIO
+from io import StringIO
 import tempfile
 import traceback
 import unittest
@@ -1901,10 +1911,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                         cursor.execute(statement)
                     except Exception:
                         traceback.print_exc()
-                        print "Failed to drop table %s" % table_name
+                        print("Failed to drop table %s" % table_name)
         except:
             traceback.print_exc()
-            print "Failed to drop all tables"
+            print("Failed to drop all tables")
         finally:
             try:
                 cursor.nextset()
@@ -1945,7 +1955,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -1956,7 +1966,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Make sure no relationships tables were created.
             #
@@ -2019,7 +2029,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT,
@@ -2033,7 +2043,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertEqual(row[3], i + 1)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2086,7 +2096,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], len(ALTOBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
                          "%s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
@@ -2112,7 +2122,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[4], ALTOBJ_VALUE[i], 4)
                 self.assertEqual(row[5], i + 1)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2153,7 +2163,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[4], FLOAT_VALUE)
             self.assertEqual(row[5], STRING_VALUE)
             self.assertEqual(row[6], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2164,7 +2174,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2210,7 +2220,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
             self.assertAlmostEqual(row[6], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column,
@@ -2223,7 +2233,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2276,7 +2286,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
             self.assertAlmostEqual(row[6], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column,
@@ -2289,7 +2299,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2352,7 +2362,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertAlmostEqual(row[5], np.mean(om[~np.isnan(om)]))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2366,7 +2376,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertTrue(row[2] is None)
                 else:
                     self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2431,7 +2441,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[4], len(OBJ_VALUE))
             mask = ~(np.isnan(om) | np.isinf(om))
             self.assertAlmostEqual(row[5], np.mean(om[mask]))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2445,7 +2455,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertTrue(row[2] is None)
                 else:
                     self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2494,7 +2504,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertAlmostEqual(row[5], np.mean(om[np.isfinite(om)]))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2505,7 +2515,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertTrue(row[2] is None or i != 0)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2547,7 +2557,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, wierd_obj_column,
@@ -2560,7 +2570,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2604,7 +2614,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column,
@@ -2617,7 +2627,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2644,7 +2654,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             row = self.cursor.fetchone()
             self.assertEqual(len(row), 1)
             self.assertEqual(row[0], backslash_string)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Experiment"))
 
@@ -2683,7 +2693,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertAlmostEqual(row[4], FLOAT_VALUE)
                 self.assertEqual(row[5], STRING_VALUE)
                 self.assertEqual(row[6], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2695,7 +2705,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], j + 1)
                     self.assertEqual(row[1], i + 1)
                     self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -2757,7 +2767,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertAlmostEqual(row[2], FLOAT_VALUE)
                 self.assertEqual(row[3], STRING_VALUE)
                 self.assertEqual(row[4], len(OBJ_VALUE))
-                self.assertRaises(StopIteration, cursor.next)
+                self.assertRaises(StopIteration, cursor.__next__)
                 statement = ("select ImageNumber, ObjectNumber, %s_%s "
                              "from %sPer_Object order by ImageNumber, ObjectNumber" %
                              (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2768,7 +2778,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], 1)
                     self.assertEqual(row[1], i + 1)
                     self.assertAlmostEqual(row[2], value)
-                self.assertRaises(StopIteration, cursor.next)
+                self.assertRaises(StopIteration, cursor.__next__)
             finally:
                 if cursor is not None:
                     cursor.close()
@@ -2811,7 +2821,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             row = cursor.fetchone()
             self.assertEqual(len(row), 1)
             self.assertEqual(row[0], backslash_string)
-            self.assertRaises(StopIteration, cursor.next)
+            self.assertRaises(StopIteration, cursor.__next__)
         finally:
             if cursor is not None:
                 cursor.close()
@@ -2870,7 +2880,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, cursor.next)
+            self.assertRaises(StopIteration, cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2881,7 +2891,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, cursor.next)
+            self.assertRaises(StopIteration, cursor.__next__)
         finally:
             if cursor is not None:
                 cursor.close()
@@ -2930,7 +2940,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertAlmostEqual(row[2], FLOAT_VALUE)
                 self.assertEqual(row[3], STRING_VALUE)
                 self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, cursor.next)
+            self.assertRaises(StopIteration, cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -2942,7 +2952,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], j + 1)
                     self.assertEqual(row[1], i + 1)
                     self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, cursor.next)
+            self.assertRaises(StopIteration, cursor.__next__)
         finally:
             if cursor is not None:
                 cursor.close()
@@ -2995,7 +3005,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.get_table_name(cpmeas.EXPERIMENT))
         cursor.execute(statement)
         row = cursor.fetchone()
-        self.assertRaises(StopIteration, cursor.next)
+        self.assertRaises(StopIteration, cursor.__next__)
         self.assertEqual(len(row), 3)
         for feature, value in zip(
                 (cpp.M_PIPELINE, cpp.M_VERSION, cpp.M_TIMESTAMP), row):
@@ -3035,7 +3045,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
@@ -3045,7 +3055,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3096,7 +3106,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
@@ -3106,7 +3116,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3143,7 +3153,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
@@ -3153,7 +3163,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3195,7 +3205,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT, long_obj_column])
             self.cursor.execute(statement)
@@ -3206,7 +3216,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3267,7 +3277,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertAlmostEqual(row[5], np.mean(om[~np.isnan(om)]))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
@@ -3280,7 +3290,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertTrue(row[2] is None)
                 else:
                     self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3329,7 +3339,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertTrue(row[5] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
@@ -3339,7 +3349,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3386,7 +3396,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertTrue(row[5] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
@@ -3396,7 +3406,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3438,7 +3448,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(
                     module, OBJECT_NAME, [OBJ_MEASUREMENT, wierd_obj_column])
             self.cursor.execute(statement)
@@ -3449,7 +3459,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3493,7 +3503,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT, long_obj_column])
             self.cursor.execute(statement)
@@ -3504,7 +3514,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
                 self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3535,7 +3545,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read from the other table
             #
@@ -3548,7 +3558,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], ALTOBJ_VALUE[i], 4)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME,
                                       "Per_%s" % ALTOBJECT_NAME))
@@ -3585,7 +3595,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read from the other table
             #
@@ -3598,7 +3608,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], ALTOBJ_VALUE[i], 4)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3638,7 +3648,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertAlmostEqual(row[2], FLOAT_VALUE)
                 self.assertEqual(row[3], STRING_VALUE)
                 self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
@@ -3649,7 +3659,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], j + 1)
                     self.assertEqual(row[1], i + 1)
                     self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3694,7 +3704,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertAlmostEqual(row[4], FLOAT_VALUE)
                 self.assertEqual(row[5], STRING_VALUE)
                 self.assertEqual(row[6], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
@@ -3706,7 +3716,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], j + 1)
                     self.assertEqual(row[1], i + 1)
                     self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -3755,7 +3765,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[5], STRING_VALUE)
                 self.assertEqual(row[6], len(OBJ_VALUE))
                 self.assertAlmostEqual(row[7], np.mean(OBJ_VALUE), delta=.0001)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             statement = ("select ImageNumber, ObjectNumber, %s_%s, %s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT,
@@ -3770,7 +3780,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], i + 1)
                     self.assertAlmostEqual(row[2], value)
                     self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -3809,7 +3819,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, cursor.next)
+            self.assertRaises(StopIteration, cursor.__next__)
             statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             cursor.execute(statement)
@@ -3819,7 +3829,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i + 1)
                 self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, cursor.next)
+            self.assertRaises(StopIteration, cursor.__next__)
         finally:
             if cursor is not None:
                 cursor.close()
@@ -3837,7 +3847,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         fd = open(sql_file, 'rt')
         sql_text = fd.read()
         fd.close()
-        print sql_text
+        print(sql_text)
         for statement in sql_text.split(';'):
             if len(statement.strip()) == 0:
                 continue
@@ -4070,7 +4080,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(len(row), 2)
                 self.assertEqual(row[0], i + 1)
                 self.assertTrue(row[1] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data too
             #
@@ -4087,7 +4097,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4102,7 +4112,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(len(row), 2)
                 self.assertEqual(row[0], i + 1)
                 self.assertEqual(row[1], INT_VALUE)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data
             #
@@ -4119,7 +4129,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4160,7 +4170,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], i + 1)
                 self.assertTrue(row[1] is None)
                 self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data too
             #
@@ -4177,7 +4187,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4196,7 +4206,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], i + 1)
                 self.assertEqual(row[1], INT_VALUE)
                 self.assertAlmostEqual(row[2], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data
             #
@@ -4213,7 +4223,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4250,7 +4260,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(len(row), 2)
                 self.assertEqual(row[0], i + 1)
                 self.assertTrue(row[1] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data too
             #
@@ -4264,7 +4274,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4279,7 +4289,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(len(row), 2)
                 self.assertEqual(row[0], i + 1)
                 self.assertEqual(row[1], INT_VALUE)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data
             #
@@ -4293,7 +4303,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -4334,7 +4344,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], i + 1)
                 self.assertTrue(row[1] is None)
                 self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data too
             #
@@ -4348,7 +4358,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4367,7 +4377,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(row[0], i + 1)
                 self.assertEqual(row[1], INT_VALUE)
                 self.assertAlmostEqual(row[2], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data
             #
@@ -4381,7 +4391,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4429,7 +4439,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(len(row), 2)
                     self.assertEqual(row[0], i + 1)
                     self.assertTrue(row[1] is None)
-                self.assertRaises(StopIteration, cursor.next)
+                self.assertRaises(StopIteration, cursor.__next__)
                 #
                 # Read the object data too
                 #
@@ -4446,7 +4456,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                         self.assertEqual(row[0], i + 1)
                         self.assertEqual(row[1], j + 1)
                         self.assertTrue(row[2] is None)
-                self.assertRaises(StopIteration, cursor.next)
+                self.assertRaises(StopIteration, cursor.__next__)
                 #
                 # Run post_group and see that the values do show up
                 #
@@ -4462,7 +4472,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(len(row), 2)
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], INT_VALUE)
-                self.assertRaises(StopIteration, cursor.next)
+                self.assertRaises(StopIteration, cursor.__next__)
                 #
                 # Read the object data
                 #
@@ -4479,7 +4489,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                         self.assertEqual(row[0], i + 1)
                         self.assertEqual(row[1], j + 1)
                         self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-                self.assertRaises(StopIteration, cursor.next)
+                self.assertRaises(StopIteration, cursor.__next__)
             finally:
                 cursor.close()
                 connection.close()
@@ -4518,7 +4528,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(len(row), 2)
                 self.assertEqual(row[0], i + 1)
                 self.assertTrue(row[1] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data too
             #
@@ -4535,7 +4545,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4550,7 +4560,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(len(row), 2)
                 self.assertEqual(row[0], i + 1)
                 self.assertEqual(row[1], INT_VALUE)
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Read the object data
             #
@@ -4567,7 +4577,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[0], i + 1)
                     self.assertEqual(row[1], j + 1)
                     self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             #
             # Finally, confirm that the Per_Object item is a view
             #
@@ -4657,7 +4667,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     ("cell_y_loc", "%s_Location_Center_Y" % OBJECT_NAME),
                     ("image_path_cols", "%s_%s_%s" % (cpmeas.IMAGE, E.C_PATH_NAME, IMAGE_NAME)),
                     ("image_file_cols", "%s_%s_%s" % (cpmeas.IMAGE, E.C_FILE_NAME, IMAGE_NAME))):
-                self.assertTrue(dictionary.has_key(k))
+                self.assertTrue(k in dictionary)
                 self.assertEqual(dictionary[k], v)
         finally:
             E.ExportToDatabase.get_measurement_columns = old_get_measurement_columns
@@ -4692,17 +4702,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             where field = 'image_table' and value = '%s'""" % image_table
             self.cursor.execute(statement)
             experiment_id = int(self.cursor.fetchone()[0])
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             properties = module.get_property_file_text(workspace)
             self.assertEqual(len(properties), 1)
-            for k, v in properties[0].properties.iteritems():
+            for k, v in list(properties[0].properties.items()):
                 statement = """
                 select max(value) from Experiment_Properties where
                 field = '%s' and experiment_id = %d and object_name = '%s'
                 """ % (k, experiment_id, properties[0].object_name)
                 self.cursor.execute(statement)
                 dbvalue = self.cursor.fetchone()[0]
-                self.assertRaises(StopIteration, self.cursor.next)
+                self.assertRaises(StopIteration, self.cursor.__next__)
                 self.assertEqual(dbvalue, v)
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
@@ -4732,17 +4742,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             where field = 'image_table' and value = '%s'""" % image_table
             self.cursor.execute(statement)
             experiment_id = int(self.cursor.fetchone()[0])
-            self.assertRaises(StopIteration, self.cursor.next)
+            self.assertRaises(StopIteration, self.cursor.__next__)
             properties = module.get_property_file_text(workspace)
             self.assertEqual(len(properties), 2)
-            for k, v in properties[0].properties.iteritems():
+            for k, v in list(properties[0].properties.items()):
                 statement = """
                 select max(value) from Experiment_Properties where
                 field = '%s' and experiment_id = %d and object_name = '%s'
                 """ % (k, experiment_id, properties[0].object_name)
                 self.cursor.execute(statement)
                 dbvalue = self.cursor.fetchone()[0]
-                self.assertRaises(StopIteration, self.cursor.next)
+                self.assertRaises(StopIteration, self.cursor.__next__)
                 self.assertEqual(dbvalue, v)
         finally:
             self.drop_tables(module, (
@@ -5327,7 +5337,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     os.remove(os.path.join(output_dir, filename))
                 os.rmdir(output_dir)
             except:
-                print "Failed to remove %s" % output_dir
+                print("Failed to remove %s" % output_dir)
 
     def test_15_01_post_run_experiment_measurement_mysql(self):
         if not self.__test_mysql:

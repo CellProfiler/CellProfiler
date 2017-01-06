@@ -1,13 +1,22 @@
 '''test_measureneurons.py - test the MeasureNeurons module
 '''
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
 import base64
 import os
 import tempfile
 import traceback
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 import scipy.ndimage
@@ -44,7 +53,7 @@ class TestMeasureNeurons(unittest.TestCase):
                     if os.path.exists(p):
                         os.remove(p)
                 except:
-                    print "Failed to remove %s" % p
+                    print("Failed to remove %s" % p)
                     traceback.print_exc()
             os.rmdir(self.temp_dir)
 

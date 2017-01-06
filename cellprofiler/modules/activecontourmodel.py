@@ -5,7 +5,16 @@
 Active contour model
 
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -123,18 +132,18 @@ def chan_vese(image, mask, iterations, alpha, threshold):
 
             exterior_points = numpy.flatnonzero(phi > 0)
 
-            interior_mean = numpy.sum(image.flat[interior_points]) / (len(interior_points) + epsilon)
+            interior_mean = old_div(numpy.sum(image.flat[interior_points]), (len(interior_points) + epsilon))
 
-            exterior_mean = numpy.sum(image.flat[exterior_points]) / (len(exterior_points) + epsilon)
+            exterior_mean = old_div(numpy.sum(image.flat[exterior_points]), (len(exterior_points) + epsilon))
 
             force = (image.flat[index] - interior_mean) ** 2 - (image.flat[index] - exterior_mean) ** 2
 
             curvature = get_curvature(phi, index)
 
-            gradient_descent = force / numpy.max(numpy.abs(force)) + alpha * curvature
+            gradient_descent = old_div(force, numpy.max(numpy.abs(force))) + alpha * curvature
 
             # -- maintain the CFL condition
-            dt = 0.45 / (numpy.max(numpy.abs(gradient_descent)) + epsilon)
+            dt = old_div(0.45, (numpy.max(numpy.abs(gradient_descent)) + epsilon))
 
             # -- evolve the curve
             phi.flat[index] += dt * gradient_descent
@@ -196,41 +205,41 @@ def get_curvature(phi, index):
     xp1[xp1 >= dimx] = dimx - 1
 
     # -- get central derivatives of SDF at x,y
-    dx = (phi[z, y, xm1] - phi[z, y, xp1]) / 2  # (l-r)/2
+    dx = old_div((phi[z, y, xm1] - phi[z, y, xp1]), 2)  # (l-r)/2
 
     dxx = phi[z, y, xm1] - 2 * phi[z, y, x] + phi[z, y, xp1]  # l-2c+r
 
     dx2 = dx * dx
 
-    dy = (phi[z, ym1, x] - phi[z, yp1, x]) / 2  # (u-d)/2
+    dy = old_div((phi[z, ym1, x] - phi[z, yp1, x]), 2)  # (u-d)/2
 
     dyy = phi[z, ym1, x] - 2 * phi[z, y, x] + phi[z, yp1, x]  # u-2c+d
 
     dy2 = dy * dy
 
-    dz = (phi[zm1, y, x] - phi[zp1, y, x]) / 2  # (b-f)/2
+    dz = old_div((phi[zm1, y, x] - phi[zp1, y, x]), 2)  # (b-f)/2
 
     dzz = phi[zm1, y, x] - 2 * phi[z, y, x] + phi[zp1, y, x]  # b-2c+f
 
     dz2 = dz * dz
 
     # (ul+dr-ur-dl)/4
-    dxy = (phi[z, ym1, xm1] + phi[z, yp1, xp1] - phi[z, ym1, xp1] - phi[z, yp1, xm1]) / 4
+    dxy = old_div((phi[z, ym1, xm1] + phi[z, yp1, xp1] - phi[z, ym1, xp1] - phi[z, yp1, xm1]), 4)
 
     # (lf+rb-rf-lb)/4
-    dxz = (phi[zp1, y, xm1] + phi[zm1, y, xp1] - phi[zp1, y, xp1] - phi[zm1, y, xm1]) / 4
+    dxz = old_div((phi[zp1, y, xm1] + phi[zm1, y, xp1] - phi[zp1, y, xp1] - phi[zm1, y, xm1]), 4)
 
     # (uf+db-df-ub)/4
-    dyz = (phi[zp1, ym1, x] + phi[zm1, yp1, x] - phi[zp1, yp1, x] - phi[zm1, ym1, x]) / 4
+    dyz = old_div((phi[zp1, ym1, x] + phi[zm1, yp1, x] - phi[zp1, yp1, x] - phi[zm1, ym1, x]), 4)
 
     # -- compute curvature (Kappa)
-    curvature = ((dxx * (dy2 + dz2) + dyy * (dx2 + dz2) + dzz * (dx2 + dy2) - 2 * dx * dy * dxy - 2 * dx * dz * dxz - 2 * dy * dz * dyz) / (dx2 + dy2 + dz2 + epsilon))
+    curvature = (old_div((dxx * (dy2 + dz2) + dyy * (dx2 + dz2) + dzz * (dx2 + dy2) - 2 * dx * dy * dxy - 2 * dx * dz * dxz - 2 * dy * dz * dyz), (dx2 + dy2 + dz2 + epsilon)))
 
     return curvature
 
 
 def mymax(a, b):
-    return (a + b + numpy.abs(a - b)) / 2
+    return old_div((a + b + numpy.abs(a - b)), 2)
 
 
 # -- level set re-initialization by the sussman method
@@ -291,27 +300,27 @@ def sussman(D, dt):
 
 # -- whole matrix derivatives
 def shiftd(m):
-    return m[:, range(1, m.shape[1]) + [m.shape[1] - 1], :]
+    return m[:, list(range(1, m.shape[1])) + [m.shape[1] - 1], :]
 
 
 def shiftl(m):
-    return m[:, :, range(1, m.shape[2]) + [m.shape[2] - 1]]
+    return m[:, :, list(range(1, m.shape[2])) + [m.shape[2] - 1]]
 
 
 def shiftr(m):
-    return m[:, :, [0] + range(0, m.shape[2] - 1)]
+    return m[:, :, [0] + list(range(0, m.shape[2] - 1))]
 
 
 def shiftu(m):
-    return m[:, [0] + range(0, m.shape[1] - 1), :]
+    return m[:, [0] + list(range(0, m.shape[1] - 1)), :]
 
 
 def shiftf(m):
-    return m[[0] + range(0, m.shape[0] - 1), :, :]
+    return m[[0] + list(range(0, m.shape[0] - 1)), :, :]
 
 
 def shiftb(m):
-    return m[range(1, m.shape[0]) + [m.shape[0] - 1], :, :]
+    return m[list(range(1, m.shape[0])) + [m.shape[0] - 1], :, :]
 
 
 # Convergence Test

@@ -1,7 +1,16 @@
 # coding: latin-1
 """test_preferences.py - test the preferences module
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import *
+from builtins import object
 import tempfile
 import unittest
 
@@ -21,7 +30,7 @@ class TestPreferences(unittest.TestCase):
                 (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
                 (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
                 (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder')):
-            self.assertTrue(value in cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys(), "%s not in dictionary" % value)
+            self.assertTrue(value in list(cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys()), "%s not in dictionary" % value)
             self.assertEqual(expected, cpprefs.FOLDER_CHOICE_TRANSLATIONS[value])
 
     def test_01_02_slot_translations(self):
@@ -66,7 +75,7 @@ class TestPreferences(unittest.TestCase):
 class TestPreferences_02(unittest.TestCase):
     def setUp(self):
         # force the test to use a special config object
-        class FakeConfig:
+        class FakeConfig(object):
             def Exists(self, arg):
                 return True
 
@@ -89,5 +98,5 @@ class TestPreferences_02(unittest.TestCase):
         cpprefs.__dict__['__headless_config'] = self.old_headless_config
 
     def test_01_01_default_directory_none(self):
-        print cpprefs.get_default_image_directory()
+        print(cpprefs.get_default_image_directory())
         self.assertTrue(True)

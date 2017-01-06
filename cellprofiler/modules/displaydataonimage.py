@@ -1,12 +1,22 @@
-'''<b>Display Data On Image</b> 
+"""<b>Display Data On Image</b> 
 produces an image with measured data on top of identified objects.
 <hr>
 This module displays either a single image measurement on an image of
 your choosing, or one object measurement per object on top
 of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
-'''
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -213,7 +223,7 @@ class DisplayDataOnImage(cpm.Module):
         return result
 
     def use_color_map(self):
-        '''True if the measurement values are rendered using a color map'''
+        """True if the measurement values are rendered using a color map"""
         return self.objects_or_image == OI_OBJECTS and \
                self.color_or_text == CT_COLOR and not self.use_as_data_tool
 
@@ -248,10 +258,10 @@ class DisplayDataOnImage(cpm.Module):
             value = measurements.get_current_image_measurement(
                     self.measurement.value)
             values = [value]
-            x = [pixel_data.shape[1] / 2]
+            x = [old_div(pixel_data.shape[1], 2)]
             x_offset = np.random.uniform(high=1.0, low=-1.0)
             x[0] += x_offset
-            y = [pixel_data.shape[0] / 2]
+            y = [old_div(pixel_data.shape[0], 2)]
             y_offset = np.sqrt(1 - x_offset ** 2)
             y[0] += y_offset
         else:
@@ -299,8 +309,8 @@ class DisplayDataOnImage(cpm.Module):
             if not self.use_color_map():
                 fig.subplots_adjust(0.1, .1, .9, .9, 0, 0)
             shape = pixel_data.shape
-            width = float(shape[1]) / fig.dpi
-            height = float(shape[0]) / fig.dpi
+            width = old_div(float(shape[1]), fig.dpi)
+            height = old_div(float(shape[0]), fig.dpi)
             fig.set_figheight(height)
             fig.set_figwidth(width)
         elif self.saved_image_contents == E_IMAGE:
@@ -319,7 +329,7 @@ class DisplayDataOnImage(cpm.Module):
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
         import wx
-        import loadimages as LI
+        from . import loadimages as LI
         import os.path
         im_id = self.image_name.value
 
@@ -328,7 +338,7 @@ class DisplayDataOnImage(cpm.Module):
         pathname_feature = "_".join((LI.C_PATH_NAME, image_name))
         filename_feature = "_".join((LI.C_FILE_NAME, image_name))
         if not all([m.has_feature(cpmeas.IMAGE, f)
-                    for f in pathname_feature, filename_feature]):
+                    for f in (pathname_feature, filename_feature)]):
             with wx.FileDialog(
                     None,
                     message="Image file for display",
@@ -374,7 +384,7 @@ class DisplayDataOnImage(cpm.Module):
             else:
                 pixel_data = (labels != 0).astype(np.float32)
             if pixel_data.ndim == 3:
-                pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
+                pixel_data = old_div(np.sum(pixel_data, 2), pixel_data.shape[2])
             colormap_name = self.colormap.value
             if colormap_name == cps.DEFAULT:
                 colormap_name = cpprefs.get_default_colormap()
@@ -437,7 +447,7 @@ class DisplayDataOnImage(cpm.Module):
             variable_revision_number = 2
 
         if variable_revision_number == 2:
-            '''Added annotation offset'''
+            """Added annotation offset"""
             setting_values = setting_values + ["0"]
             variable_revision_number = 3
 
@@ -460,8 +470,8 @@ class DisplayDataOnImage(cpm.Module):
 
 
 if __name__ == "__main__":
-    ''' For debugging purposes only...
-    '''
+    """ For debugging purposes only...
+    """
     import wx
     from cellprofiler.gui.datatoolframe import DataToolFrame
 

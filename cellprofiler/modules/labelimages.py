@@ -1,4 +1,4 @@
-'''<b>LabelImages</b> assigns plate metadata to image sets.
+"""<b>LabelImages</b> assigns plate metadata to image sets.
 <hr>
 <b>LabelImages</b> assigns a plate number, well and site number to each image
 set based on the order in which they are processed. You can use <b>Label
@@ -21,13 +21,24 @@ number of images per plate is the same. </li>
 </ul>
 
 See also the <b>Metadata</b> module.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
+from functools import reduce
 
 O_ROW = "Row"
 O_COLUMN = "Column"
@@ -76,12 +87,12 @@ class LabelImages(cpm.Module):
             is by row and then by column.</p>""" % globals())
 
     def settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.site_count, self.column_count, self.row_count,
                 self.order]
 
     def run(self, workspace):
-        '''Run one image set'''
+        """Run one image set"""
         m = workspace.measurements
         well_count, site_index = divmod(m.image_set_number - 1, self.site_count.value)
         if self.order == O_ROW:
@@ -94,7 +105,7 @@ class LabelImages(cpm.Module):
 
         row_text_indexes = [
             x % 26 for x in reversed(
-                    [int(row_index / (26 ** i)) for i in range(self.row_digits)])]
+                    [int(old_div(row_index, (26 ** i))) for i in range(self.row_digits)])]
 
         row_text = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[x] for x in row_text_indexes]
         row_text = reduce(lambda x, y: x + y, row_text)
@@ -114,16 +125,16 @@ class LabelImages(cpm.Module):
 
     @property
     def row_digits(self):
-        '''The number of letters it takes to represent a row.
+        """The number of letters it takes to represent a row.
 
         If a plate has more than 26 rows, you need two digits. The following
         is sufficiently general.
-        '''
-        return int(1 + np.log(self.row_count.value) / np.log(26))
+        """
+        return int(1 + old_div(np.log(self.row_count.value), np.log(26)))
 
     @property
     def column_digits(self):
-        '''The number of digits it takes to represent a column.'''
+        """The number of digits it takes to represent a column."""
 
         return int(1 + np.log10(self.column_count.value))
 
@@ -150,7 +161,7 @@ class LabelImages(cpm.Module):
         return []
 
     def display(self, workspace, figure):
-        '''Display the plate / well information in a figure table'''
+        """Display the plate / well information in a figure table"""
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
@@ -158,13 +169,13 @@ class LabelImages(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade the pipeline settings to the current revision of the module
+        """Upgrade the pipeline settings to the current revision of the module
 
         setting_values - setting strings from the pipeline
         variable_revision_number - revision of the module that saved the settings
         module_name - name of the module that saved the settings
         from_matlab - settings are from the Matlab version of CellProfiler
-        '''
+        """
         if from_matlab and variable_revision_number == 1:
             label_name, rows_cols, row_or_column, image_cycles_per_well = \
                 setting_values

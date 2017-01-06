@@ -1,9 +1,18 @@
 '''test_enhanceorsuppressspeckles - test the EnhanceOrSuppressSpeckles module'''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -2315,8 +2324,8 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
                               0, 0, 0, 0, 122, 169, 310, 310, 278, 243, 208, 149, 75, 20, 145, 125, 0, 24, 0, 0, 0, 78,
                               0, 4, 0, 0, 59, 12, 59, 0, 0, 0, 59, 12, 35, 86, 0, 8, 82, 35, 75, 75, 47, 0, 0, 0, 31, 0,
                               71, 0, 47, 47, 47, 86, 0, 0, 0, 0, 0, 55, 20, 0, 20, 0, 55, 0, 31, 31, 0, 55, 31, 0, 27]])
-        data = data.astype(float) / 255
-        expected = expected.astype(float) / 1000
+        data = old_div(data.astype(float), 255)
+        expected = old_div(expected.astype(float), 1000)
         workspace, module = self.make_workspace(data, None)
         self.assertTrue(isinstance(module, E.EnhanceOrSuppressSpeckles))
         module.method.value = E.ENHANCE

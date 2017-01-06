@@ -1,10 +1,20 @@
 '''test_flipandrotate - test the FlipAndRotate module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -361,8 +371,8 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         # to angle.
         #
         i, j = np.mgrid[-5:6, -9:10]
-        angle = np.arctan2(i.astype(float) / 5.0, j.astype(float) / 9.0)
-        img = (1 + np.cos(angle)) / 2
+        angle = np.arctan2(old_div(i.astype(float), 5.0), old_div(j.astype(float), 9.0))
+        img = old_div((1 + np.cos(angle)), 2)
         self.assertAlmostEqual(img[5, 0], 0)
         self.assertAlmostEqual(img[5, 18], 1)
         self.assertAlmostEqual(img[0, 9], .5)
@@ -403,18 +413,18 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
             #
             i_max = min(pixel_data.shape[0] - 1,
                         max(0, int(-np.sin(rangle) * 8 +
-                                   float(pixel_data.shape[0]) / 2)))
+                                   old_div(float(pixel_data.shape[0]), 2))))
             j_max = min(pixel_data.shape[1] - 1,
                         max(0, int(np.cos(rangle) * 8 +
-                                   float(pixel_data.shape[1] / 2))))
+                                   float(old_div(pixel_data.shape[1], 2)))))
             self.assertTrue(pixel_data[i_max, j_max] > .9)
             self.assertTrue(output_image.mask[i_max, j_max])
             i_min = min(pixel_data.shape[0] - 1,
                         max(0, int(np.sin(rangle) * 8 +
-                                   float(pixel_data.shape[0]) / 2)))
+                                   old_div(float(pixel_data.shape[0]), 2))))
             j_min = min(pixel_data.shape[1] - 1,
                         max(0, int(-np.cos(rangle) * 8 +
-                                   float(pixel_data.shape[1]) / 2)))
+                                   old_div(float(pixel_data.shape[1]), 2))))
             self.assertTrue(pixel_data[i_min, j_min] < .1)
             self.assertFalse(output_image.mask[i_min, j_min])
             #
@@ -454,8 +464,8 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                 #
                 # Account for extra pixels due to twisting
                 #
-                line_i = 4 + (pixels.shape[0] - 20) / 2
-                line_j = 4 + (pixels.shape[1] - 20) / 2
+                line_i = 4 + old_div((pixels.shape[0] - 20), 2)
+                line_j = 4 + old_div((pixels.shape[1] - 20), 2)
                 self.assertTrue(np.all(pixels[line_i, line_j:line_j + 12] > .2))
                 self.assertTrue(np.all(pixels[:20, :20][np.abs(i - line_i) > 1] < .1))
             else:
@@ -463,8 +473,8 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                                        -np.arctan2(pt1[1] - pt0[1],
                                                    pt1[0] - pt0[0]) * 180.0 /
                                        np.pi, 3)
-                line_i = 4 + (pixels.shape[0] - 20) / 2
-                line_j = 15 + (pixels.shape[1] - 20) / 2
+                line_i = 4 + old_div((pixels.shape[0] - 20), 2)
+                line_j = 15 + old_div((pixels.shape[1] - 20), 2)
                 self.assertTrue(np.all(pixels[line_i:line_i + 12, line_j] > .2))
                 self.assertTrue(np.all(pixels[:20, :20][np.abs(j - line_j) > 1] < .1))
 
@@ -472,7 +482,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         '''Turn cropping on and check that the cropping mask covers the mask'''
         image = np.random.uniform(size=(19, 21))
         i, j = np.mgrid[0:19, 0:21].astype(float)
-        image = i / 100 + j / 10000
+        image = old_div(i, 100) + old_div(j, 10000)
         for angle in range(10, 360, 10):
             #
             # Run the module with cropping to get the crop mask
@@ -502,7 +512,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
             output_image, angle = self.run_module(image, fn=fn)
             self.assertTrue(isinstance(crop_output_image, cpi.Image))
             pixel_data = output_image.pixel_data
-            slop = (np.array(pixel_data.shape) - np.array(image.shape)) / 2
+            slop = old_div((np.array(pixel_data.shape) - np.array(image.shape)), 2)
             mask = output_image.mask
             pixel_data = pixel_data[slop[0]:image.shape[0] + slop[0],
                          slop[1]:image.shape[1] + slop[1]]

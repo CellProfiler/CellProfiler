@@ -1,10 +1,18 @@
 '''test_editobjectsmanually - test the EditObjectsManually module
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -194,20 +202,20 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
              "Foo": {}
              }
 
-        for object_name, category_d in d.iteritems():
+        for object_name, category_d in list(d.items()):
             #
             # Check get_categories for the object
             #
             categories = module.get_categories(None, object_name)
-            self.assertEqual(len(categories), len([k for k in category_d.keys()
+            self.assertEqual(len(categories), len([k for k in list(category_d.keys())
                                                    if k != "Foo"]))
             for category in categories:
-                self.assertTrue(category_d.has_key(category))
-            for category in category_d.keys():
+                self.assertTrue(category in category_d)
+            for category in list(category_d.keys()):
                 if category != "Foo":
                     self.assertTrue(category in categories)
 
-            for category, expected_features in category_d.iteritems():
+            for category, expected_features in list(category_d.items()):
                 #
                 # check get_measurements for each category
                 #

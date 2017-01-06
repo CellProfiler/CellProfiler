@@ -1,11 +1,22 @@
 '''test_trackobjects.py - testing of the TrackObjects module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -482,7 +493,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER,
                                           [1] * len(labels_list))
         measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX,
-                                          range(1, len(labels_list) + 1))
+                                          list(range(1, len(labels_list) + 1)))
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
@@ -493,7 +504,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                          measurements, image_set_list))
 
         first = True
-        for labels, index in zip(labels_list, range(len(labels_list))):
+        for labels, index in zip(labels_list, list(range(len(labels_list)))):
             object_set = cpo.ObjectSet()
             objects = cpo.Objects()
             objects.segmented = labels
@@ -633,7 +644,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         m(T.F_INTEGRATED_DISTANCE, [0, 2, 3, 5])
         m(T.F_LABEL, [1, 1, 1, 1])
         m(T.F_LIFETIME, [1, 2, 3, 4])
-        m(T.F_LINEARITY, [1, 1, np.sqrt(5) / 3, 1.0 / 5.0])
+        m(T.F_LINEARITY, [1, 1, old_div(np.sqrt(5), 3), old_div(1.0, 5.0)])
 
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "3"))
@@ -1013,12 +1024,12 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                     self.assertEqual(column[0], object_name)
                     if wants or feature in second_phase:
                         self.assertEqual(len(column), 4)
-                        self.assertTrue(column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP))
+                        self.assertTrue(cpmeas.MCA_AVAILABLE_POST_GROUP in column[3])
                         self.assertTrue(column[3][cpmeas.MCA_AVAILABLE_POST_GROUP])
                     else:
                         self.assertTrue(
                                 (len(column) == 3) or
-                                (not column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP)) or
+                                (cpmeas.MCA_AVAILABLE_POST_GROUP not in column[3]) or
                                 (not column[3][cpmeas.MCA_AVAILABLE_POST_GROUP]))
 
     def test_06_01_measurements(self):
@@ -1177,7 +1188,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         module = workspace.module
         self.assertTrue(isinstance(module, T.TrackObjects))
-        for feature, expected in d.iteritems():
+        for feature, expected in list(d.items()):
             if np.isscalar(expected[0]):
                 mname = module.image_measurement_name(feature)
                 values = m.get_all_measurements(cpmeas.IMAGE, mname)
@@ -1373,7 +1384,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         module.run_as_data_tool(workspace)
         d200 = np.sqrt(200)
         tot = np.sqrt(13 ** 2 + 14 ** 2)
-        lin = tot / (d200 + 5)
+        lin = old_div(tot, (d200 + 5))
         self.check_measurements(workspace, {
             T.F_LABEL: [np.array([1]), np.array([1, 1]), np.array([1, 1])],
             T.F_PARENT_IMAGE_NUMBER: [np.array([0]), np.array([1, 1]), np.array([2, 2])],
@@ -1606,7 +1617,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         distance = np.array([np.sqrt(2 * 100 * 100)])
         d200 = np.sqrt(200)
         tot = np.sqrt(13 ** 2 + 14 ** 2)
-        lin = tot / (d200 + 5)
+        lin = old_div(tot, (d200 + 5))
         self.check_measurements(workspace, {
             T.F_LABEL: [np.array([1]), np.zeros(0), np.array([1]),
                         np.array([1]), np.array([1, 1]), np.array([1, 1]),

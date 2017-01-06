@@ -1,5 +1,14 @@
 # coding=utf-8
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from past.builtins import basestring
 import cellprofiler
 import cellprofiler.gui.help
 import cellprofiler.icons
@@ -99,7 +108,7 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
 
     index_fd.close()
 
-    print "Wrote CellProfiler Manual to", webpage_path
+    print("Wrote CellProfiler Manual to", webpage_path)
 
 
 def output_gui_html(webpage_path):
@@ -113,7 +122,7 @@ def output_gui_html(webpage_path):
         help_text += "<ul>\n"
         for key, value in h:
             help_text += "<li>"
-            if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
+            if hasattr(value, "__iter__") and not isinstance(value, (str, str)):
                 help_text += "<b>%s</b>" % key
                 help_text = write_menu(prefix + "_" + key, value, help_text)
             else:
@@ -168,13 +177,13 @@ def output_module_html(webpage_path):
     for module_name in sorted(cellprofiler.modules.get_module_names()):
         module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
-                module.create_settings.im_func.func_code.co_filename)[0]
+                module.create_settings.__func__.__code__.co_filename)[0]
         if location == cellprofiler.preferences.get_plugin_directory():
             continue
-        if isinstance(module.category, (str, unicode)):
+        if isinstance(module.category, (str, str)):
             module.category = [module.category]
         for category in module.category:
-            if not d.has_key(category):
+            if category not in d:
                 d[category] = {}
             d[category][module_name] = module
         result = module.get_help()
@@ -226,7 +235,7 @@ def search_module_help(text):
     for module_name in cellprofiler.modules.get_module_names():
         module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
-                module.create_settings.im_func.func_code.co_filename)[0]
+                module.create_settings.__func__.__code__.co_filename)[0]
         if location == cellprofiler.preferences.get_plugin_directory():
             continue
         help_text = module.get_help()
@@ -333,4 +342,4 @@ def __search_menu_helper(menu, search_fn):
         if len(matches) > 0:
             return [(menu[0], menu[1], matches)]
         return []
-    return sum(map(lambda x: __search_menu_helper(x, search_fn), menu[1]), [])
+    return sum([__search_menu_helper(x, search_fn) for x in menu[1]], [])

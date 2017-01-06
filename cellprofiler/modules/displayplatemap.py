@@ -1,4 +1,4 @@
-'''<b>Display Platemap </b> displays a desired measurement in a plate map view.
+"""<b>Display Platemap </b> displays a desired measurement in a plate map view.
 <hr>
 <b>Display Platemap</b> is a tool for browsing image-based data laid out on
 multi-well plates common to high-throughput biological screens. The display
@@ -12,8 +12,18 @@ blank.
 
 See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 <b>DisplayScatterPlot</b>.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import map
+from builtins import zip
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -57,33 +67,33 @@ class DisplayPlatemap(cpm.Module):
 
         self.object = cps.ObjectNameSubscriber(
                 'Select the object whose measurements will be displayed',
-                cps.NONE, doc='''
+                cps.NONE, doc="""
             Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
-            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
+            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.""")
 
         self.plot_measurement = cps.Measurement(
                 'Select the measurement to plot',
-                self.get_object, cps.NONE, doc='''
-            Choose the image or object measurement made by a previous module to plot.''')
+                self.get_object, cps.NONE, doc="""
+            Choose the image or object measurement made by a previous module to plot.""")
 
         self.plate_name = cps.Measurement('Select your plate metadata',
                                           lambda: cpmeas.IMAGE,
-                                          'Metadata_Plate', doc='''
+                                          'Metadata_Plate', doc="""
             Choose the metadata tag that corresponds to the plate identifier. That is,
             each plate should have a metadata tag containing a specifier corresponding
             uniquely to that plate.
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>%(USING_METADATA_HELP_REF)s.</p>""" % globals())
 
         self.plate_type = cps.Choice(
                 'Multiwell plate format',
                 ['96', '384'], doc=
-                '''The module assumes that your data is laid out in a multi-well plate format
+                """The module assumes that your data is laid out in a multi-well plate format
                 common to high-throughput biological screens. Supported formats are:
                 <ul>
                 <li><i>96:</i> A 96-well plate with 8 rows &times; 12 columns</li>
                 <li><i>384:</i> A 384-well plate with 16 rows &times; 24 columns</li>
-                </ul>''')
+                </ul>""")
 
         self.well_format = cps.Choice(
                 "Well metadata format",
@@ -97,34 +107,34 @@ class DisplayPlatemap(cpm.Module):
 
         self.well_name = cps.Measurement(
                 'Select your well metadata',
-                lambda: cpmeas.IMAGE, 'Metadata_Well', doc='''
+                lambda: cpmeas.IMAGE, 'Metadata_Well', doc="""
             Choose the metadata tag that corresponds to the well identifier.
             The row-column format of these entries should be an
             alphabetical character (specifying the plate row), followed by two integer
             characters (specifying the plate column). For example, a standard format
             96-well plate would span from "A1" to "H12", whereas a 384-well plate (16
             rows and 24 columns) would span from well "A01" to well "P24"."
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>%(USING_METADATA_HELP_REF)s.</p>""" % globals())
 
         self.well_row = cps.Measurement('Select your well row metadata',
-                                        lambda: cpmeas.IMAGE, 'Metadata_WellRow', doc='''
+                                        lambda: cpmeas.IMAGE, 'Metadata_WellRow', doc="""
             Choose the metadata tag that corresponds to the well row identifier, typically
             specified as an alphabetical character. For example, a standard format
             96-well plate would span from  row "A" to "H", whereas a 384-well plate (16
             rows and 24 columns) would span from row "A" to "P".
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>%(USING_METADATA_HELP_REF)s.</p>""" % globals())
 
         self.well_col = cps.Measurement('Select your well column metadata',
-                                        lambda: cpmeas.IMAGE, 'Metadata_WellCol', doc='''
+                                        lambda: cpmeas.IMAGE, 'Metadata_WellCol', doc="""
             Choose the metadata tag that corresponds to the well column identifier, typically
             specified with two integer characters. For example, a standard format
             96-well plate would span from column "01" to "12", whereas a 384-well plate (16
             rows and 24 columns) would span from column "01" to "24".
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>%(USING_METADATA_HELP_REF)s.</p>""" % globals())
 
         self.agg_method = cps.Choice(
                 'How should the values be aggregated?',
-                AGG_NAMES, AGG_NAMES[0], doc='''
+                AGG_NAMES, AGG_NAMES[0], doc="""
             Measurements must be aggregated to a
             single number for each well so that they can be represented by a color.
             Options are:
@@ -135,15 +145,15 @@ class DisplayPlatemap(cpm.Module):
             <li><i>%(AGG_CV)s:</i> Coefficient of variation, defined as the ratio of the standard
             deviation to the mean. This is useful for comparing between data sets with
             different units or widely different means.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.title = cps.Text(
                 'Enter a title for the plot, if desired', '',
-                doc='''
+                doc="""
             Enter a title for the plot. If you leave this blank,
             the title will default
             to <i>(cycle N)</i> where <i>N</i> is the current image
-            cycle being executed.''')
+            cycle being executed.""")
 
     def settings(self):
         return [self.objects_or_image, self.object, self.plot_measurement,
@@ -170,9 +180,9 @@ class DisplayPlatemap(cpm.Module):
         if self.show_window:
             m = workspace.get_measurements()
             # Get plates
-            plates = map(
-                    unicode,
-                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value))
+            plates = list(map(
+                    str,
+                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)))
             # Get wells
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)
@@ -195,8 +205,8 @@ class DisplayPlatemap(cpm.Module):
                 else:
                     pm_dict[plate] = {well: [data]}
 
-            for plate, sub_dict in pm_dict.items():
-                for well, vals in sub_dict.items():
+            for plate, sub_dict in list(pm_dict.items()):
+                for well, vals in list(sub_dict.items()):
                     vals = np.hstack(vals)
                     if self.agg_method == AGG_AVG:
                         pm_dict[plate][well] = np.mean(vals)
@@ -205,7 +215,7 @@ class DisplayPlatemap(cpm.Module):
                     elif self.agg_method == AGG_MEDIAN:
                         pm_dict[plate][well] = np.median(vals)
                     elif self.agg_method == AGG_CV:
-                        pm_dict[plate][well] = np.std(vals) / np.mean(vals)
+                        pm_dict[plate][well] = old_div(np.std(vals), np.mean(vals))
                     else:
                         raise NotImplemented
             workspace.display_data.pm_dict = pm_dict

@@ -1,6 +1,19 @@
 """Test the LoadImages module
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import filter
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import base64
 import glob
 import hashlib
@@ -11,9 +24,9 @@ import tempfile
 import time
 import traceback
 import unittest
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import cellprofiler.image as I
 import cellprofiler.measurement as measurements
@@ -40,7 +53,7 @@ OBJECTS_NAME = "objects"
 OUTLINES_NAME = "outlines"
 
 
-class ConvtesterMixin:
+class ConvtesterMixin(object):
     '''Mixin class that supplies a generic legacy conversion tester method
 
     '''
@@ -95,8 +108,8 @@ class ConvtesterMixin:
         for feature in ff1:
             if feature.startswith(measurements.C_METADATA):
                 self.assertTrue(m2.has_feature(measurements.IMAGE, feature))
-        ff1a = filter((lambda x: not x.startswith(measurements.C_METADATA)),
-                      ff1)
+        ff1a = list(filter((lambda x: not x.startswith(measurements.C_METADATA)),
+                      ff1))
         self.assertEqual(m1.image_set_count, m2.image_set_count)
         image_numbers = m1.get_image_numbers()
         #
@@ -1842,11 +1855,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print "Failed to remove %s" % p
+                        print("Failed to remove %s" % p)
                 try:
                     os.rmdir(directory)
                 except:
-                    print "Failed to remove " + directory
+                    print("Failed to remove " + directory)
 
     def test_06_07_subfolders(self):
         '''Test recursion down the list of subfolders'''
@@ -1868,8 +1881,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             try:
                 os.symlink(os.path.join(directory, filenames[0][0]),
                            os.path.join(directory, filenames[-1][0], filenames[0][0]))
-            except Exception, e:
-                print "ignoring symlink exception:", e
+            except Exception as e:
+                print("ignoring symlink exception:", e)
             load_images = LI.LoadImages()
             load_images.module_num = 1
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
@@ -1912,12 +1925,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print "Failed to remove " + p
+                        print("Failed to remove " + p)
                         traceback.print_exc()
                 try:
                     os.rmdir(path)
                 except:
-                    print "Failed to remove " + path
+                    print("Failed to remove " + path)
                     traceback.print_exc()
 
     def test_06_08_some_subfolders(self):
@@ -1986,12 +1999,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print "Failed to remove " + p
+                        print("Failed to remove " + p)
                         traceback.print_exc()
                 try:
                     os.rmdir(path)
                 except:
-                    print "Failed to remove " + path
+                    print("Failed to remove " + path)
                     traceback.print_exc()
 
     def get_example_pipeline_data(self):
@@ -2083,12 +2096,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                       'PathName': ['DNA', 'Cytoplasm'],
                       'MD5Digest': ['DNA', 'Cytoplasm'],
                       'Metadata': ['WellRow', 'WellCol', 'Well']}
-        for cat, expected in categories.items():
+        for cat, expected in list(categories.items()):
             assert set(expected) == set(module.get_measurements(pipeline,
                                                                 measurements.IMAGE, cat))
         module.images[0].metadata_choice.value = LI.M_BOTH
         categories['Metadata'] += ['Year', 'Month', 'Day']
-        for cat, expected in categories.items():
+        for cat, expected in list(categories.items()):
             assert set(expected) == set(module.get_measurements(
                     pipeline, measurements.IMAGE, cat))
 
@@ -2144,10 +2157,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 category_dict = {}
                 for column in expected_cols:
                     category, feature = column[1].split("_", 1)
-                    if not category_dict.has_key(category):
+                    if category not in category_dict:
                         category_dict[category] = []
                     category_dict[category].append(feature)
-                for category in category_dict.keys():
+                for category in list(category_dict.keys()):
                     self.assertTrue(category in categories)
                     expected_features = category_dict[category]
                     features = module.get_measurements(None, measurements.IMAGE,
@@ -2199,10 +2212,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             category_dict = {}
             for column in expected_cols:
                 category, feature = column[1].split("_", 1)
-                if not category_dict.has_key(category):
+                if category not in category_dict:
                     category_dict[category] = []
                 category_dict[category].append(feature)
-            for category in category_dict.keys():
+            for category in list(category_dict.keys()):
                 self.assertTrue(category in categories)
                 expected_features = category_dict[category]
                 features = module.get_measurements(None, measurements.IMAGE,
@@ -2876,8 +2889,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertEqual(m.get_current_image_measurement(LI.I.FF_COUNT % OBJECTS_NAME), 9)
         i, j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
         c = np.bincount(image.ravel())[1:].astype(float)
-        x = np.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
-        y = np.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
+        x = old_div(np.bincount(image.ravel(), j.ravel())[1:].astype(float), c)
+        y = old_div(np.bincount(image.ravel(), i.ravel())[1:].astype(float), c)
         v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_NUMBER_OBJECT_NUMBER)
         self.assertTrue(np.all(v == np.arange(1, 10)))
         v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_LOCATION_CENTER_X)
@@ -3212,7 +3225,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for j, image_name in ((1, IMAGE_NAME), (2, ALT_IMAGE_NAME)):
                 filename = "channel%d-A0%d.png" % (j, i)
                 full_path = os.path.join(self.directory, filename)
-                url = "file:" + urllib.pathname2url(full_path)
+                url = "file:" + urllib.request.pathname2url(full_path)
                 for category, expected in (
                         (LI.C_FILE_NAME, filename),
                         (LI.C_PATH_NAME, self.directory),

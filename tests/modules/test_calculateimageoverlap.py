@@ -1,12 +1,20 @@
 '''test_calculateimageoverlap - test the CalculateImageOverlap module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import base64
 import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 import scipy.ndimage as ndimage
@@ -393,7 +401,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=ground_truth), dict(image=test))
         module.run(workspace)
         measurements = workspace.measurements
-        precision = 100.0 / 101.0
+        precision = old_div(100.0, 101.0)
         f_factor = 2 * precision / (1 + precision)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0.01),
                                   (C.FTR_FALSE_NEG_RATE, 0),
@@ -442,7 +450,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=ground_truth), dict(image=test, mask=mask))
         module.run(workspace)
         measurements = workspace.measurements
-        precision = 50.0 / 51.0
+        precision = old_div(50.0, 51.0)
         f_factor = 2 * precision / (1 + precision)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0.02),
                                   (C.FTR_FALSE_NEG_RATE, 0),
@@ -517,7 +525,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=test, crop_mask=cropping))
         module.run(workspace)
         measurements = workspace.measurements
-        precision = 100.0 / 101.0
+        precision = old_div(100.0, 101.0)
         f_factor = 2 * precision / (1 + precision)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0.01),
                                   (C.FTR_FALSE_NEG_RATE, 0),
@@ -904,13 +912,13 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         workspace, module = self.make_workspace(
                 dict(image=img), dict(image=img.transpose()))
         module.max_points._Number__minval = 1
-        module.max_points.value = np.sum(img | img.transpose()) / 2
+        module.max_points.value = old_div(np.sum(img | img.transpose()), 2)
         module.run(workspace)
         decimated_emd = workspace.measurements[
             cpmeas.IMAGE,
             module.measurement_name(C.FTR_EARTH_MOVERS_DISTANCE)]
         self.assertLess(decimated_emd, emd * 2)
-        self.assertGreater(decimated_emd, emd / 2)
+        self.assertGreater(decimated_emd, old_div(emd, 2))
 
     def test_06_05_decimate_skel(self):
         #

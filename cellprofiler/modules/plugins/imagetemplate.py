@@ -10,12 +10,19 @@ can use HTML markup here and in the settings text; the Python HTML control
 does not fully support the HTML specification, so you may have to experiment
 to get it to display correctly.
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 #################################
 #
 # Imports from useful Python libraries
 #
 #################################
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import numpy as np
 from scipy.ndimage import gaussian_gradient_magnitude, correlate1d
 

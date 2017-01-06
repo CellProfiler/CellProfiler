@@ -1,7 +1,14 @@
 # coding=utf-8
 """datatoolframe.py - Holder for a data tool
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import cellprofiler.image
 import cellprofiler.gui
 import cellprofiler.gui.figure
@@ -31,8 +38,8 @@ class DataToolFrame(wx.Frame):
         module_name: name of module to instantiate
         measurements_file_name: name of measurements file
         """
-        assert kwds.has_key("module_name"), "DataToolFrame() needs a module_name argument"
-        assert kwds.has_key("measurements_file_name"), "DataToolFrame() needs a measurements_file_name argument"
+        assert "module_name" in kwds, "DataToolFrame() needs a module_name argument"
+        assert "measurements_file_name" in kwds, "DataToolFrame() needs a measurements_file_name argument"
         module_name = kwds["module_name"]
         measurements_file_name = kwds["measurements_file_name"]
 

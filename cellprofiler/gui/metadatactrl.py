@@ -1,7 +1,19 @@
 # coding=utf-8
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import chr
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
 import cellprofiler.measurement
 import cellprofiler.preferences
 import wx
@@ -126,7 +138,7 @@ class MetadataControl(wx.PyControl):
                 if value[index] in ('g', '?'):
                     state = STATE_PRE
                 else:
-                    self.__tokens.append(unicode(value[index]))
+                    self.__tokens.append(str(value[index]))
                     state = STATE_INITIAL
             elif state == STATE_PRE:
                 if value[index] != '<':
@@ -384,7 +396,7 @@ class MetadataControl(wx.PyControl):
 
     def on_char(self, event):
         self.delete_selection()
-        c = unichr(event.GetUnicodeKey())
+        c = chr(event.GetUnicodeKey())
         self.__tokens.insert(self.__cursor_pos, c)
         self.move_cursor_pos(self.__cursor_pos + 1)
         self.on_token_change()

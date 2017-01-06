@@ -1,5 +1,14 @@
 '''test_loaddata - Test the LoadData (formerly LoadText) module'''
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
 import base64
 import hashlib
 import os
@@ -7,7 +16,7 @@ import re
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from bioformats import write_image, PT_UINT8
@@ -327,7 +336,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, unicode), "Expected <type 'unicode'> got %s" % type(data))
+        self.assertTrue(isinstance(data, str), "Expected <type 'unicode'> got %s" % type(data))
         self.assertEqual(data, "1234567890123")
         os.remove(filename)
 
@@ -618,9 +627,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         fmt = "%15s %30s %20s"
-        print fmt % ("Object", "Feature", "Type")
+        print(fmt % ("Object", "Feature", "Type"))
         for object_name, feature, coltype in columns:
-            print fmt % (object_name, feature, coltype)
+            print(fmt % (object_name, feature, coltype))
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(any([(column[0] == cpmeas.IMAGE and
                                   column[1] == colname and

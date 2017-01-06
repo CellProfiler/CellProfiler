@@ -1,4 +1,4 @@
-'''<b>Crop</b> crops or masks an image.
+"""<b>Crop</b> crops or masks an image.
 <hr>
 This module crops images into a rectangle, ellipse, an arbitrary shape provided by
 you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created
@@ -21,8 +21,18 @@ defined in this module (e.g., an ellipse
 you drew) so that you can use the <i>Image</i> option in future analyses. To do
 this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b>
 module help for more information on saving cropping shapes.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import object
+from past.utils import old_div
 import logging
 import math
 import sys
@@ -422,7 +432,7 @@ class Crop(cpm.Module):
                                  self.cropped_image_name.value)
 
     def get_measurement_columns(self, pipeline):
-        '''Return information on the measurements made during cropping'''
+        """Return information on the measurements made during cropping"""
         return [(cpmeas.IMAGE,
                  x % self.cropped_image_name.value,
                  cpmeas.COLTYPE_INTEGER)
@@ -431,7 +441,7 @@ class Crop(cpm.Module):
     def ui_crop(self, workspace, orig_image):
         """Crop into a rectangle or ellipse, guided by UI"""
         d = self.get_dictionary(workspace.image_set_list)
-        if ((not d.has_key(self.shape.value)) or
+        if ((self.shape.value not in d) or
                     self.individual_or_once == IO_INDIVIDUALLY):
             d[self.shape.value] = \
                 workspace.interaction_request(self, d.get(self.shape.value, None), orig_image.pixel_data)
@@ -441,7 +451,7 @@ class Crop(cpm.Module):
             return self.apply_rectangle_cropping(workspace, orig_image)
 
     def handle_interaction(self, current_shape, orig_image):
-        '''Show the cropping user interface'''
+        """Show the cropping user interface"""
         import matplotlib as M
         import matplotlib.cm
         import wx
@@ -478,13 +488,13 @@ class Crop(cpm.Module):
         current_handle = [None]
 
         def data_xy(mouse_event):
-            '''Return the mouse event's x & y converted into data-relative coords'''
+            """Return the mouse event's x & y converted into data-relative coords"""
             x = mouse_event.xdata
             y = mouse_event.ydata
             return x, y
 
         class handle(M.patches.Rectangle):
-            dm = max((10, min(pixel_data.shape) / 50))
+            dm = max((10, old_div(min(pixel_data.shape), 50)))
             height, width = (dm, dm)
 
             def __init__(self, x, y, on_move):
@@ -492,16 +502,16 @@ class Crop(cpm.Module):
                 y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
                 self.__color = cpprefs.get_primary_outline_color()
-                self.__color = np.hstack((self.__color, [255])).astype(float) / 255.0
+                self.__color = old_div(np.hstack((self.__color, [255])).astype(float), 255.0)
                 self.__on_move = on_move
-                super(handle, self).__init__((x - self.width / 2, y - self.height / 2),
+                super(handle, self).__init__((x - old_div(self.width, 2), y - old_div(self.height, 2)),
                                              self.width, self.height,
                                              edgecolor=self.__color,
                                              facecolor="none")
                 self.set_picker(True)
 
             def move(self, x, y):
-                self.set_xy((x - self.width / 2, y - self.height / 2))
+                self.set_xy((x - old_div(self.width, 2), y - old_div(self.height, 2)))
                 self.__on_move(x, y)
 
             def select(self, on):
@@ -523,13 +533,13 @@ class Crop(cpm.Module):
 
             @property
             def center_x(self):
-                '''The handle's notion of its x coordinate'''
-                return self.get_x() + self.get_width() / 2
+                """The handle's notion of its x coordinate"""
+                return self.get_x() + old_div(self.get_width(), 2)
 
             @property
             def center_y(self):
-                '''The handle's notion of its y coordinate'''
-                return self.get_y() + self.get_height() / 2
+                """The handle's notion of its y coordinate"""
+                return self.get_y() + old_div(self.get_height(), 2)
 
             def handle_pick(self, event):
                 mouse_event = event.mouseevent
@@ -562,7 +572,7 @@ class Crop(cpm.Module):
                 self.__left, self.__top = top_left
                 self.__right, self.__bottom = bottom_right
                 color = cpprefs.get_primary_outline_color()
-                color = np.hstack((color, [255])).astype(float) / 255.0
+                color = old_div(np.hstack((color, [255])).astype(float), 255.0)
                 self.rectangle = M.patches.Rectangle(
                         (min(self.__left, self.__right),
                          min(self.__bottom, self.__top)),
@@ -622,13 +632,13 @@ class Crop(cpm.Module):
 
         class crop_ellipse(object):
             def __init__(self, center, radius):
-                '''Draw an ellipse with control points at the ellipse center and
-                a given x and y radius'''
+                """Draw an ellipse with control points at the ellipse center and
+                a given x and y radius"""
                 self.center_x, self.center_y = center
-                self.radius_x = self.center_x + radius[0] / 2
-                self.radius_y = self.center_y + radius[1] / 2
+                self.radius_x = self.center_x + old_div(radius[0], 2)
+                self.radius_y = self.center_y + old_div(radius[1], 2)
                 color = cpprefs.get_primary_outline_color()
-                color = np.hstack((color, [255])).astype(float) / 255.0
+                color = old_div(np.hstack((color, [255])).astype(float), 255.0)
                 self.ellipse = M.patches.Ellipse(center, self.width, self.height,
                                                  edgecolor=color,
                                                  facecolor="none")
@@ -673,10 +683,10 @@ class Crop(cpm.Module):
         if self.shape == SH_ELLIPSE:
             if current_shape is None:
                 current_shape = {
-                    EL_XCENTER: pixel_data.shape[1] / 2,
-                    EL_YCENTER: pixel_data.shape[0] / 2,
-                    EL_XRADIUS: pixel_data.shape[1] / 2,
-                    EL_YRADIUS: pixel_data.shape[0] / 2
+                    EL_XCENTER: old_div(pixel_data.shape[1], 2),
+                    EL_YCENTER: old_div(pixel_data.shape[0], 2),
+                    EL_XRADIUS: old_div(pixel_data.shape[1], 2),
+                    EL_YRADIUS: old_div(pixel_data.shape[0], 2)
                 }
             ellipse = current_shape
             shape = crop_ellipse((ellipse[EL_XCENTER], ellipse[EL_YCENTER]),
@@ -684,8 +694,8 @@ class Crop(cpm.Module):
         else:
             if current_shape is None:
                 current_shape = {
-                    RE_LEFT: pixel_data.shape[1] / 4,
-                    RE_TOP: pixel_data.shape[0] / 4,
+                    RE_LEFT: old_div(pixel_data.shape[1], 4),
+                    RE_TOP: old_div(pixel_data.shape[0], 4),
                     RE_RIGHT: pixel_data.shape[1] * 3 / 4,
                     RE_BOTTOM: pixel_data.shape[0] * 3 / 4
                 }
@@ -732,8 +742,8 @@ class Crop(cpm.Module):
             return {
                 EL_XCENTER: shape.center_x,
                 EL_YCENTER: shape.center_y,
-                EL_XRADIUS: shape.width / 2,
-                EL_YRADIUS: shape.height / 2
+                EL_XRADIUS: old_div(shape.width, 2),
+                EL_YRADIUS: old_div(shape.height, 2)
             }
 
     def get_ellipse_cropping(self, workspace, orig_image):
@@ -814,9 +824,9 @@ class Crop(cpm.Module):
         """
         pixel_data = pixel_data.copy()
         i_histogram = pixel_data.sum(axis=1)
-        i_cumsum = np.cumsum(i_histogram > pixel_data.shape[0] / 2)
+        i_cumsum = np.cumsum(i_histogram > old_div(pixel_data.shape[0], 2))
         j_histogram = pixel_data.sum(axis=0)
-        j_cumsum = np.cumsum(j_histogram > pixel_data.shape[1] / 2)
+        j_cumsum = np.cumsum(j_histogram > old_div(pixel_data.shape[1], 2))
         i_first = np.argwhere(i_cumsum == 1)[0]
         i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
         i_end = i_last + 1

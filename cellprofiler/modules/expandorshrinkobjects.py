@@ -1,4 +1,4 @@
-'''<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
+"""<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
 <hr>
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be
@@ -29,8 +29,15 @@ object processing module <b>ConvertToImage</b> and then save them with the
 the expanded/shrunken objects.</li>
 </ul>
 
-<p>See also <b>Identify</b> modules.</p>'''
+<p>See also <b>Identify</b> modules.</p>"""
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import numpy as np
 from centrosome.cpmorphology import binary_shrink, thin
 from centrosome.cpmorphology import fill_labeled_holes, adjacent
@@ -68,17 +75,17 @@ class ExpandOrShrinkObjects(cpm.Module):
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
                 "Select the input objects",
-                cps.NONE, doc='''
-            Select the objects that you want to expand or shrink.''')
+                cps.NONE, doc="""
+            Select the objects that you want to expand or shrink.""")
 
         self.output_object_name = cps.ObjectNameProvider(
                 "Name the output objects",
-                "ShrunkenNuclei", doc='''
-            Enter a name for the resulting objects.''')
+                "ShrunkenNuclei", doc="""
+            Enter a name for the resulting objects.""")
 
         self.operation = cps.Choice(
                 "Select the operation",
-                O_ALL, doc='''
+                O_ALL, doc="""
             Select the operation that you want to perform:
             <ul>
             <li><i>%(O_SHRINK_INF)s:</i> Remove all pixels but one from filled objects. Thin objects
@@ -101,7 +108,7 @@ class ExpandOrShrinkObjects(cpm.Module):
             <li><i>%(O_SPUR)s:</i> Remove or reduce the length of spurs in a skeletonized image.
             The algorithm reduces spur size by the number of pixels indicated in the
             setting <i>Number of pixels by which to expand or shrink</i>.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.iterations = cps.Integer(
                 "Number of pixels by which to expand or shrink", 1, minval=1)
@@ -184,7 +191,7 @@ class ExpandOrShrinkObjects(cpm.Module):
                                      sharexy=figure.subplot(0, 0))
 
     def do_labels(self, labels):
-        '''Run whatever transformation on the given labels matrix'''
+        """Run whatever transformation on the given labels matrix"""
         if (self.operation in (O_SHRINK, O_SHRINK_INF) and
                 self.wants_fill_holes.value):
             labels = fill_labeled_holes(labels)
@@ -244,7 +251,7 @@ class ExpandOrShrinkObjects(cpm.Module):
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = get_object_measurement_columns(self.output_object_name.value)
         return columns
 

@@ -1,4 +1,4 @@
-'''<b>Invert For Printing</b> inverts fluorescent images into 
+"""<b>Invert For Printing</b> inverts fluorescent images into 
 brightfield-looking images for printing.
 <hr>
 This module turns a single or multi-channel immunofluorescent-stained image
@@ -11,8 +11,15 @@ already a color image. The module can produce either three grayscale
 images or one color image as output.
 
 If you want to invert the grayscale intensities of an image, use <b>ImageMath</b>.
-'''
+"""
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -59,8 +66,8 @@ class InvertForPrinting(cpm.Module):
                 "Select the blue image", cps.NONE)
 
         self.color_input_image = cps.ImageNameSubscriber(
-                "Select the color image", cps.NONE, doc='''
-            Select the color image to use.''')
+                "Select the color image", cps.NONE, doc="""
+            Select the color image to use.""")
 
         # Output settings
         self.output_color_choice = cps.Choice(
@@ -87,12 +94,12 @@ class InvertForPrinting(cpm.Module):
 
         self.color_output_image = cps.ImageNameProvider(
                 "Name the inverted color image",
-                "InvertedColor", doc='''
+                "InvertedColor", doc="""
             <i>(Used only when producing a color output image)</i><br>
-            Enter a name for the inverted color image.''')
+            Enter a name for the inverted color image.""")
 
     def settings(self):
-        '''Return the settings as saved in the pipeline'''
+        """Return the settings as saved in the pipeline"""
         return [self.input_color_choice,
                 self.wants_red_input, self.red_input_image,
                 self.wants_green_input, self.green_input_image,
@@ -117,7 +124,7 @@ class InvertForPrinting(cpm.Module):
                 self.wants_blue_output, self.blue_output_image]
 
     def visible_settings(self):
-        '''Return the settings as displayed in the UI'''
+        """Return the settings as displayed in the UI"""
         result = [self.input_color_choice]
         if self.input_color_choice == CC_GRAYSCALE:
             for wants_input, input_image in \
@@ -143,7 +150,7 @@ class InvertForPrinting(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure the user has at least one of the grayscale boxes checked'''
+        """Make sure the user has at least one of the grayscale boxes checked"""
         if (self.input_color_choice == CC_GRAYSCALE and
                 (not self.wants_red_input.value) and
                 (not self.wants_green_input.value) and

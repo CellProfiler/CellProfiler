@@ -1,7 +1,16 @@
 # coding=utf-8
 """CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import object
+from past.utils import old_div
 import wx
 import wx.lib.mixins.gridlabelrenderer
 
@@ -52,8 +61,8 @@ class CornerButtonMixin(object):
         w, h = self.GridCornerLabelWindow.GetTextExtent(self.label)
         w += 2 * self.BUTTON_PADDING
         h += 2 * self.BUTTON_PADDING
-        x = crect.X + (crect.width - w) / 2
-        y = crect.Y + (crect.height - h) / 2
+        x = crect.X + old_div((crect.width - w), 2)
+        y = crect.Y + old_div((crect.height - h), 2)
         return wx.Rect(x, y, w, h)
 
     def corner_hit_test(self, x, y):
@@ -90,8 +99,8 @@ class CornerButtonMixin(object):
                     flags = 0
                 rn.DrawPushButton(corner, dc, r, flags)
                 w, h = self.GridCornerLabelWindow.GetTextExtent(self.label)
-                x = r.X + (r.width - w) / 2
-                y = r.Y + (r.height - h) / 2
+                x = r.X + old_div((r.width - w), 2)
+                y = r.Y + old_div((r.height - h), 2)
                 dc.DrawText(self.label, x, y)
 
         finally:

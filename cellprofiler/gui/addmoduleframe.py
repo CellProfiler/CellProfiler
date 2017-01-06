@@ -1,13 +1,21 @@
 """AddModuleFrame.py - this is the window frame and the subwindows
 that give you the GUI to add a module to a pipeline
 """
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import object
 import cellprofiler.module
 import cellprofiler.gui
 import cellprofiler.gui.html.manual
 import cellprofiler.modules
 import cellprofiler.preferences
-import cpframe
+from . import cpframe
 import wx
 
 
@@ -143,7 +151,7 @@ class AddModuleFrame(wx.Frame):
                         self.__module_files.insert(-2, category)
                         self.__module_dict[category] = {}
                     self.__module_dict[category][module.module_name] = loader
-            except Exception, e:
+            except Exception as e:
                 import traceback
                 import logging
                 logging.root.error(
@@ -155,7 +163,7 @@ class AddModuleFrame(wx.Frame):
     def __on_category_selected(self, event):
         category = self.__get_selected_category()
         self.__module_list_box.Clear()
-        keys = self.__module_dict[category].keys()
+        keys = list(self.__module_dict[category].keys())
         keys.sort()
         self.__module_list_box.AppendItems(keys)
         self.__module_list_box.Select(0)

@@ -4,11 +4,22 @@ The knime bridge supports a ZMQ protocol that lets a single client
 run an analysis worker to get pipeline metadata and run a pipeline on
 an image set.
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import bytes
+from builtins import str
+from builtins import range
+from builtins import *
 import logging
 
 logger = logging.getLogger(__name__)
 
-from cStringIO import StringIO
+from io import StringIO
 import json
 import javabridge
 import numpy as np
@@ -47,7 +58,7 @@ CLEAN_PIPELINE_REPLY_1 = "clean-pipeline-reply-1"
 
 
 class KnimeBridgeServer(threading.Thread):
-    '''The server maintains the port and hands off the requests to workers
+    """The server maintains the port and hands off the requests to workers
 
     example of use:
 
@@ -61,7 +72,7 @@ class KnimeBridgeServer(threading.Thread):
         notify_socket.bind("inproc://Notify")
         ....
         notify_socket.send("Stop")
-    '''
+    """
 
     def __init__(self, context, address, notify_address, notify_stop, **kwargs):
         super(KnimeBridgeServer, self).__init__(**kwargs)
@@ -136,7 +147,7 @@ class KnimeBridgeServer(threading.Thread):
                                 try:
                                     self.dispatch[message_type](
                                             session_id, message_type, msg)
-                                except Exception, e:
+                                except Exception as e:
                                     logger.warn(e.message, exc_info=1)
                                     self.raise_cellprofiler_exception(
                                             session_id, e.message)
@@ -151,20 +162,20 @@ class KnimeBridgeServer(threading.Thread):
             javabridge.detach()
 
     def connect(self, session_id, message_type, message):
-        '''Handle the connect message'''
+        """Handle the connect message"""
         self.socket.send_multipart(
                 [zmq.Frame(session_id),
                  zmq.Frame(),
                  zmq.Frame(CONNECT_REPLY_1)])
 
     def pipeline_info(self, session_id, message_type, message):
-        '''Handle the pipeline info message'''
+        """Handle the pipeline info message"""
         logger.info("Handling pipeline info request")
         pipeline_txt = message.pop(0).bytes
         pipeline = cpp.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -183,14 +194,14 @@ class KnimeBridgeServer(threading.Thread):
         self.socket.send_multipart(msg_out)
 
     def clean_pipeline(self, session_id, message_type, message):
-        '''Handle the clean pipeline request message'''
+        """Handle the clean pipeline request message"""
         logger.info("Handling clean pipeline request")
         pipeline_txt = message.pop(0).bytes
         module_names = json.loads(message.pop(0).bytes)
         pipeline = cpp.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -212,7 +223,7 @@ class KnimeBridgeServer(threading.Thread):
         self.socket.send_multipart(msg_out)
 
     def run_request(self, session_id, message_type, message):
-        '''Handle the run request message'''
+        """Handle the run request message"""
         pipeline, m, object_set = self.prepare_run(message, session_id)
         if pipeline is None:
             return
@@ -233,7 +244,7 @@ class KnimeBridgeServer(threading.Thread):
                 if workspace.disposition in \
                         (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
                     break
-            except Exception, e:
+            except Exception as e:
                 msg = "Encountered error while running module, \"%s\": %s" % (
                     module.module_name, e.message)
                 logger.warning(msg, exc_info=1)
@@ -255,7 +266,7 @@ class KnimeBridgeServer(threading.Thread):
 
         no_data = ()
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -286,14 +297,14 @@ class KnimeBridgeServer(threading.Thread):
                         sf.append((feature, 0))
                     else:
                         s = data[0]
-                        if isinstance(s, unicode):
+                        if isinstance(s, str):
                             s = s.encode("utf-8")
                         else:
                             s = str(s)
                         string_data.append(np.frombuffer(s, np.uint8))
         data = np.hstack([
                              np.frombuffer(np.hstack(ditem).data, np.uint8)
-                             for ditem in double_data, float_data, int_data, string_data
+                             for ditem in (double_data, float_data, int_data, string_data)
                              if len(ditem) > 0])
         self.socket.send_multipart(
                 [zmq.Frame(session_id),
@@ -303,7 +314,7 @@ class KnimeBridgeServer(threading.Thread):
                  zmq.Frame(bytes(data.data))])
 
     def run_group_request(self, session_id, message_type, message):
-        '''Handle a run-group request message'''
+        """Handle a run-group request message"""
         pipeline = cpp.Pipeline()
         m = cpmeas.Measurements()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
@@ -341,13 +352,13 @@ class KnimeBridgeServer(threading.Thread):
                     return
                 image_group.create_dataset(channel_name,
                                            data=pixel_data)
-        except Exception, e:
+        except Exception as e:
             self.raise_cellprofiler_exception(
                     session_id, e.message)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -387,7 +398,7 @@ class KnimeBridgeServer(threading.Thread):
                     if workspace.disposition in \
                             (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
                         break
-                except Exception, e:
+                except Exception as e:
                     msg = "Encountered error while running module, \"%s\": %s" % (
                         module.module_name, e.message)
                     logger.warning(msg, exc_info=1)
@@ -417,7 +428,7 @@ class KnimeBridgeServer(threading.Thread):
         metadata = [double_features, float_features,
                     int_features, string_features]
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -467,7 +478,7 @@ class KnimeBridgeServer(threading.Thread):
                         int_data.append(data.astype('<i4'))
         data = np.hstack([
                              np.frombuffer(np.ascontiguousarray(np.hstack(ditem)).data, np.uint8)
-                             for ditem in double_data, float_data, int_data
+                             for ditem in (double_data, float_data, int_data)
                              if len(ditem) > 0])
         data = np.ascontiguousarray(data)
         self.socket.send_multipart(
@@ -478,12 +489,12 @@ class KnimeBridgeServer(threading.Thread):
                  zmq.Frame(data)])
 
     def prepare_run(self, message, session_id, grouping_allowed=False):
-        '''Prepare a pipeline and measurements to run
+        """Prepare a pipeline and measurements to run
 
         message - the run-request or run-groups-request message
         session_id - the session ID for the session
         grouping_allowed - true to allow grouped images
-        '''
+        """
         pipeline = cpp.Pipeline()
         m = cpmeas.Measurements()
         object_set = cpo.ObjectSet()
@@ -505,14 +516,14 @@ class KnimeBridgeServer(threading.Thread):
                         channel_metadata, message.pop(0).bytes,
                         grouping_allowed=grouping_allowed)
                 m.add(channel_name, cpi.Image(pixel_data))
-        except Exception, e:
+        except Exception as e:
             logger.warn("Failed to decode message", exc_info=1)
             self.raise_cellprofiler_exception(
                     session_id, e.message)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -522,7 +533,7 @@ class KnimeBridgeServer(threading.Thread):
         return pipeline, m, object_set
 
     def raise_pipeline_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, str):
             message = message.encode("utf-8")
         else:
             message = str(message)
@@ -533,7 +544,7 @@ class KnimeBridgeServer(threading.Thread):
                  zmq.Frame(message)])
 
     def raise_cellprofiler_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, str):
             message = message.encode("utf-8")
         else:
             message = str(message)
@@ -544,12 +555,12 @@ class KnimeBridgeServer(threading.Thread):
                  zmq.Frame(message)])
 
     def split_pipeline(self, pipeline):
-        '''Split the pipeline into input modules and everything else
+        """Split the pipeline into input modules and everything else
 
         pipeline - the pipeline to be split
 
         returns a two-tuple of input modules and other
-        '''
+        """
         input_modules = []
         other_modules = []
         for module in pipeline.modules():
@@ -560,7 +571,7 @@ class KnimeBridgeServer(threading.Thread):
         return input_modules, other_modules
 
     def find_channels(self, input_modules):
-        '''Find image providers in the input modules'''
+        """Find image providers in the input modules"""
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
@@ -569,7 +580,7 @@ class KnimeBridgeServer(threading.Thread):
         return channels
 
     def find_measurements(self, modules, pipeline):
-        '''Scan the modules for features
+        """Scan the modules for features
 
         modules - modules to scan for features
         pipeline - the pipeline they came from
@@ -579,7 +590,7 @@ class KnimeBridgeServer(threading.Thread):
             A dictionary whose key is the object name and whose
             value is a list of two-tuples of feature name and index into
             the java types array.
-        '''
+        """
         jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
@@ -611,18 +622,18 @@ class KnimeBridgeServer(threading.Thread):
                     ofeatures[name] = type_idx
         for key in features:
             features[key][cpmeas.IMAGE_NUMBER] = 0
-        features_out = dict([(k, v.items()) for k, v in features.items()])
+        features_out = dict([(k, list(v.items())) for k, v in list(features.items())])
         return jtypes, features_out
 
     def decode_image(self, channel_metadata, buf, grouping_allowed=False):
-        '''Decode an image sent via the wire format
+        """Decode an image sent via the wire format
 
         channel_metadata: sequence of 3 tuples of axis name, dimension and stride
         buf: byte-buffer, low-endian representation of doubles
         grouping_allowed: true if we can accept images grouped by X or T
 
         returns numpy array in y, x indexing format.
-        '''
+        """
         pixel_data = np.frombuffer(buf, "<f8")
         strides_out = [None] * len(channel_metadata)
         dimensions_out = [None] * len(channel_metadata)

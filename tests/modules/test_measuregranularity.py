@@ -1,10 +1,19 @@
 '''test_measuregranularity - Test the MeasureGranularity module
 '''
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -23,7 +32,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 import sys
 
-print sys.path
+print(sys.path)
 
 IMAGE_NAME = 'myimage'
 OBJECTS_NAME = 'myobjects'
@@ -255,7 +264,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         # Make an image with granularity at scale 2
         #
         i, j = np.mgrid[0:80, 0:80]
-        image = ((i / 8).astype(int) % 2 == (j / 8).astype(int) % 2).astype(float)
+        image = ((old_div(i, 8)).astype(int) % 2 == (old_div(j, 8)).astype(int) % 2).astype(float)
         #
         # The 4x4 blocks need two erosions before disappearing. The corners
         # need an additional two erosions before disappearing
@@ -279,7 +288,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         # Make an image with granularity at scale 2
         #
         i, j = np.mgrid[0:80, 0:80]
-        image = ((i / 4).astype(int) % 2 == (j / 4).astype(int) % 2).astype(float)
+        image = ((old_div(i, 4)).astype(int) % 2 == (old_div(j, 4)).astype(int) % 2).astype(float)
         #
         # Add in a background offset
         #
@@ -311,7 +320,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         # Make an image with granularity at scale 2
         #
         i, j = np.mgrid[0:80, 0:80]
-        image = ((i / 4).astype(int) % 2 == (j / 4).astype(int) % 2).astype(float)
+        image = ((old_div(i, 4)).astype(int) % 2 == (old_div(j, 4)).astype(int) % 2).astype(float)
         #
         # Scale the pixels down so we have some dynamic range and offset
         # so the background is .2
@@ -437,7 +446,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         # Make an image with granularity at scale 2
         #
         i, j = np.mgrid[0:80, 0:80]
-        image = ((i / 8).astype(int) % 2 == (j / 8).astype(int) % 2).astype(float)
+        image = ((old_div(i, 8)).astype(int) % 2 == (old_div(j, 8)).astype(int) % 2).astype(float)
         #
         # The 4x4 blocks need two erosions before disappearing. The corners
         # need an additional two erosions before disappearing

@@ -1,4 +1,4 @@
-'''<b>Measure Image Intensity</b> measures the total intensity in an image 
+"""<b>Measure Image Intensity</b> measures the total intensity in an image 
 by summing all of the pixel intensities (excluding masked pixels).
 <hr>
 This module will sum all pixel values to measure the total image
@@ -34,8 +34,17 @@ of the pixels in the object have lower values.</li>
 </ul>
 
 See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
-'''
+"""
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.module as cpm
@@ -43,37 +52,37 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 
-'''Number of settings saved/loaded per image measured'''
+"""Number of settings saved/loaded per image measured"""
 SETTINGS_PER_IMAGE = 3
 
-'''Measurement feature name format for the TotalIntensity measurement'''
+"""Measurement feature name format for the TotalIntensity measurement"""
 F_TOTAL_INTENSITY = "Intensity_TotalIntensity_%s"
 
-'''Measurement feature name format for the MeanIntensity measurement'''
+"""Measurement feature name format for the MeanIntensity measurement"""
 F_MEAN_INTENSITY = 'Intensity_MeanIntensity_%s'
 
-'''Measurement feature name format for the MeanIntensity measurement'''
+"""Measurement feature name format for the MeanIntensity measurement"""
 F_MEDIAN_INTENSITY = 'Intensity_MedianIntensity_%s'
 
-'''Measurement feature name format for the StdIntensity measurement'''
+"""Measurement feature name format for the StdIntensity measurement"""
 F_STD_INTENSITY = 'Intensity_StdIntensity_%s'
 
-'''Measurement feature name format for the MedAbsDevIntensity measurement'''
+"""Measurement feature name format for the MedAbsDevIntensity measurement"""
 F_MAD_INTENSITY = 'Intensity_MADIntensity_%s'
 
-'''Measurement feature name format for the MaxIntensity measurement'''
+"""Measurement feature name format for the MaxIntensity measurement"""
 F_MAX_INTENSITY = 'Intensity_MaxIntensity_%s'
 
-'''Measurement feature name format for the MinIntensity measurement'''
+"""Measurement feature name format for the MinIntensity measurement"""
 F_MIN_INTENSITY = 'Intensity_MinIntensity_%s'
 
-'''Measurement feature name format for the TotalArea measurement'''
+"""Measurement feature name format for the TotalArea measurement"""
 F_TOTAL_AREA = 'Intensity_TotalArea_%s'
 
-'''Measurement feature name format for the PercentMaximal measurement'''
+"""Measurement feature name format for the PercentMaximal measurement"""
 F_PERCENT_MAXIMAL = 'Intensity_PercentMaximal_%s'
 
-'''Measurement feature name format for the Quartile measurements'''
+"""Measurement feature name format for the Quartile measurements"""
 F_UPPER_QUARTILE = 'Intensity_UpperQuartileIntensity_%s'
 F_LOWER_QUARTILE = 'Intensity_LowerQuartileIntensity_%s'
 
@@ -88,7 +97,7 @@ class MeasureImageIntensity(cpm.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings & name the module'''
+        """Create the settings & name the module"""
         self.divider_top = cps.Divider(line=False)
         self.images = []
         self.add_image_measurement(can_remove=False)
@@ -103,11 +112,11 @@ class MeasureImageIntensity(cpm.Module):
 
         group.append("image_name", cps.ImageNameSubscriber(
                 "Select the image to measure",
-                cps.NONE, doc='''
+                cps.NONE, doc="""
             Choose an image name from the drop-down menu to calculate intensity for that
             image. Use the <i>Add another image</i> button below to add additional images which will be
             measured. You can add the same image multiple times if you want to measure
-            the intensity within several different objects.'''))
+            the intensity within several different objects."""))
 
         group.append("wants_objects", cps.Binary(
                 "Measure the intensity only from areas enclosed by objects?",
@@ -115,10 +124,10 @@ class MeasureImageIntensity(cpm.Module):
             Select <i>%(YES)s</i> to measure only those pixels within an object of choice.""" % globals()))
 
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc='''
+                "Select the input objects", cps.NONE, doc="""
             <i>(Used only when measuring intensity from area enclosed by objects)</i><br>
             Select the objects that the intensity will be aggregated within. The intensity measurement will be
-            restricted to the pixels within these objects.'''))
+            restricted to the pixels within these objects."""))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("",
@@ -158,23 +167,23 @@ class MeasureImageIntensity(cpm.Module):
 
     def prepare_settings(self, setting_values):
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
-        image_count = len(setting_values) / SETTINGS_PER_IMAGE
+        image_count = old_div(len(setting_values), SETTINGS_PER_IMAGE)
         while image_count > len(self.images):
             self.add_image_measurement()
         while image_count < len(self.images):
             self.remove_image_measurement(self.images[-1].key)
 
     def get_non_redundant_image_measurements(self):
-        '''Return a non-redundant sequence of image measurement objects'''
+        """Return a non-redundant sequence of image measurement objects"""
         dict = {}
         for im in self.images:
             key = ((im.image_name, im.object_name) if im.wants_objects.value
                    else (im.image_name,))
             dict[key] = im
-        return dict.values()
+        return list(dict.values())
 
     def run(self, workspace):
-        '''Perform the measurements on the imageset'''
+        """Perform the measurements on the imageset"""
         #
         # Then measure each
         #
@@ -192,11 +201,11 @@ class MeasureImageIntensity(cpm.Module):
                              col_labels=workspace.display_data.col_labels)
 
     def measure(self, im, workspace):
-        '''Perform measurements according to the image measurement in im
+        """Perform measurements according to the image measurement in im
 
         im - image measurement info (see ImageMeasurement class above)
         workspace - has all the details for current image set
-        '''
+        """
         image = workspace.image_set.get_image(im.image_name.value,
                                               must_be_grayscale=True)
         pixels = image.pixel_data
@@ -231,7 +240,7 @@ class MeasureImageIntensity(cpm.Module):
             pixel_count = np.product(pixels.shape)
 
             pixel_sum = np.sum(pixels)
-            pixel_mean = pixel_sum / float(pixel_count)
+            pixel_mean = old_div(pixel_sum, float(pixel_count))
             pixel_std = np.std(pixels)
             pixel_median = np.median(pixels)
             pixel_mad = np.median(np.abs(pixels - pixel_median))
@@ -271,7 +280,7 @@ class MeasureImageIntensity(cpm.Module):
                                             ('Total area', pixel_count))]
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = []
         for im in self.get_non_redundant_image_measurements():
             for feature, coltype in ((F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
@@ -319,11 +328,11 @@ class MeasureImageIntensity(cpm.Module):
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
                          module_name, from_matlab):
-        '''Account for prior versions when loading
+        """Account for prior versions when loading
 
         We handle Matlab revision # 2 here. We don't support thresholding
         because it was generally unused. The first setting is the image name.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[0],  # image name
                               cps.NO,  # wants objects

@@ -1,10 +1,20 @@
 '''test_align.py - test the Align module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from cellprofiler.preferences import set_headless
@@ -247,8 +257,8 @@ Name the second output image:AlignedImage2
                                     (mask1 is not None) or (mask2 is not None)):
                             continue
 
-                        image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+                        image1 = old_div(np.random.randint(0, 10, size=shape).astype(float), 10.0)
+                        image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 20] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
@@ -349,8 +359,8 @@ Name the second output image:AlignedImage2
                         if method == A.M_CROSS_CORRELATION and (
                                     (mask1 is not None) or (mask2 is not None)):
                             continue
-                        image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+                        image1 = old_div(np.random.randint(0, 10, size=shape).astype(float), 10.0)
+                        image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 20] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
@@ -417,8 +427,8 @@ Name the second output image:AlignedImage2
                         if method == A.M_CROSS_CORRELATION and (
                                     (mask1 is not None) or (mask2 is not None)):
                             continue
-                        image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+                        image1 = old_div(np.random.randint(0, 10, size=shape).astype(float), 10.0)
+                        image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 20] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
@@ -483,15 +493,15 @@ Name the second output image:AlignedImage2
         shape = (53, 62)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]
         for offset in ((3, 5), (-3, 5), (3, -5), (-3, -5)):
-            image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-            image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+            image1 = old_div(np.random.randint(0, 10, size=shape).astype(float), 10.0)
+            image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 20] = .5
             si1, si2 = self.slice_helper(offset[0], image1.shape[0])
             sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
             image2 = np.zeros(image1.shape)
             image2 = image1[(i + shape[0] - offset[0]) % shape[0],
                             (j + shape[1] - offset[1]) % shape[1]]
             image2 += (np.random.uniform(size=shape) - .5) * .1 * np.std(image2)
-            image3 = (i * 100 + j).astype(np.float32) / 10000
+            image3 = old_div((i * 100 + j).astype(np.float32), 10000)
             workspace, module = self.make_workspace((image1, image2, image3),
                                                     (None, None, None))
             self.assertTrue(isinstance(module, A.Align))
@@ -573,9 +583,9 @@ Name the second output image:AlignedImage2
                                     (mask1 is not None) or (mask2 is not None)):
                             continue
                         image1 = np.dstack([
-                                               np.random.randint(0, 10, size=shape[:2])
-                                           .astype(float) / 10.0] * 3)
-                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20, :] = .5
+                                               old_div(np.random.randint(0, 10, size=shape[:2])
+                                           .astype(float), 10.0)] * 3)
+                        image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 20, :] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
@@ -644,7 +654,7 @@ Name the second output image:AlignedImage2
                                     (mask1 is not None) or (mask2 is not None)):
                             continue
                         image1 = np.random.randint(0, 1, size=shape).astype(bool)
-                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 10] = True
+                        image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 10] = True
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape, bool)
@@ -773,8 +783,8 @@ Name the second output image:AlignedImage2
         shape = (61, 43)
         for method in (A.M_CROSS_CORRELATION, A.M_MUTUAL_INFORMATION):
             i, j = np.mgrid[0:shape[0], 0:shape[1]]
-            image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-            image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+            image1 = old_div(np.random.randint(0, 10, size=shape).astype(float), 10.0)
+            image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 20] = .5
             image2 = image1[2:-2, 2:-2]
             for order, i1_name, i2_name in (
                     ((image1, image2), "Aligned0", "Aligned1"),
@@ -805,8 +815,8 @@ Name the second output image:AlignedImage2
         np.random.seed(612)
         shape = (61, 43)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]
-        image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+        image1 = old_div(np.random.randint(0, 10, size=shape).astype(float), 10.0)
+        image1[np.sqrt(((i - old_div(shape[0], 2)) ** 2 + (j - old_div(shape[1], 2)) ** 2)) < 20] = .5
         image2 = image1[2:-2, 2:-2]
         workspace, module = self.make_workspace((image1, image2), (None, None))
         self.assertTrue(isinstance(module, A.Align))

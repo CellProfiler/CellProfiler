@@ -1,10 +1,20 @@
 '''test_graytocolor.py - Test the GrayToColor module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 import numpy as np
@@ -292,7 +302,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         r.seed(41)
         images = [r.uniform(size=(11, 13)) for _ in range(5)]
         colors = [r.randint(0, 255, size=3) for _ in range(5)]
-        weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
+        weights = r.uniform(low=old_div(1.0, 255), high=1.5, size=5).tolist()
         color_names = \
             ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
         workspace, module = self.make_workspace(

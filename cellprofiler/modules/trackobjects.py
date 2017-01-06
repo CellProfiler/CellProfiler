@@ -1,3 +1,15 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
 
 TM_OVERLAP = 'Overlap'
@@ -15,16 +27,16 @@ KM_VEL = 1
 KM_NO_VEL = 0
 KM_NONE = -1
 
-'''Random motion model, for instance Brownian motion'''
+"""Random motion model, for instance Brownian motion"""
 M_RANDOM = "Random"
-'''Velocity motion model, object position depends on prior velocity'''
+"""Velocity motion model, object position depends on prior velocity"""
 M_VELOCITY = "Velocity"
-'''Random and velocity models'''
+"""Random and velocity models"""
 M_BOTH = "Both"
 
 RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
 RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
-ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>''' % globals()
+ONLY_IF_2ND_PHASE_LAP_TEXT = """<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>""" % globals()
 
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
@@ -188,7 +200,7 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
-from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from .identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
@@ -233,31 +245,31 @@ F_EXPT_FILT_NUMTRACKS = "%s_FilteredNumberOfTracks" % F_PREFIX
 
 
 def kalman_feature(model, matrix_or_vector, i, j=None):
-    '''Return the feature name for a Kalman feature
+    """Return the feature name for a Kalman feature
 
     model - model used for Kalman feature: velocity or static
     matrix_or_vector - the part of the Kalman state to save, vec, COV or noise
     i - the name for the first (or only for vec and noise) index into the vector
     j - the name of the second index into the matrix
-    '''
+    """
     pieces = [F_KALMAN, model, matrix_or_vector, i]
     if j is not None:
         pieces.append(j)
     return "_".join(pieces)
 
 
-'''# of objects in the current frame without parents in the previous frame'''
+"""# of objects in the current frame without parents in the previous frame"""
 F_NEW_OBJECT_COUNT = "NewObjectCount"
-'''# of objects in the previous frame without parents in the new frame'''
+"""# of objects in the previous frame without parents in the new frame"""
 F_LOST_OBJECT_COUNT = "LostObjectCount"
-'''# of parents that split into more than one child'''
+"""# of parents that split into more than one child"""
 F_SPLIT_COUNT = "SplitObjectCount"
-'''# of children that are merged from more than one parent'''
+"""# of children that are merged from more than one parent"""
 F_MERGE_COUNT = "MergedObjectCount"
-'''Object area measurement for LAP method
+"""Object area measurement for LAP method
 
 The final part of the LAP method needs the object area measurement
-which is stored using this name.'''
+which is stored using this name."""
 F_AREA = "Area"
 
 F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
@@ -531,7 +543,7 @@ class TrackObjects(cpm.Module):
             the settings.</p>""" % globals())
 
         self.gap_cost = cps.Integer(
-                'Gap closing cost', 40, minval=1, doc='''
+                'Gap closing cost', 40, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting assigns a cost to keeping a gap caused
             when an object is missing from one of the frames of a track (the
@@ -548,10 +560,10 @@ class TrackObjects(cpm.Module):
             <li>Set the gap closing cost lower if tracks
             are not properly joined due to gaps caused by mis-segmentation.</li>
             </ul></dd>
-            </dl></p>''' % globals())
+            </dl></p>""" % globals())
 
         self.split_cost = cps.Integer(
-                'Split alternative cost', 40, minval=1, doc='''
+                'Split alternative cost', 40, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of keeping two tracks distinct
             when the alternative is to make them into one track that
@@ -576,10 +588,10 @@ class TrackObjects(cpm.Module):
             <li>If you are confident that there should be no splits present in the data,
             the cost can be set to 1 (the minimum value possible)</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.merge_cost = cps.Integer(
-                'Merge alternative cost', 40, minval=1, doc='''
+                'Merge alternative cost', 40, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of keeping two tracks
             distinct when the alternative is to merge them into one.
@@ -605,10 +617,10 @@ class TrackObjects(cpm.Module):
             <li>If you are confident that there should be no merges present in the data,
             the cost can be set to 1 (the minimum value possible)</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.mitosis_cost = cps.Integer(
-                'Mitosis alternative cost', 80, minval=1, doc='''
+                'Mitosis alternative cost', 80, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of not linking a parent and two daughters
             via the mitosis model. the %(TM_LAP)s tracking method weighs this
@@ -630,17 +642,17 @@ class TrackObjects(cpm.Module):
             and decrease it to prevent more mitoses candidates from being
             accepted.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.mitosis_max_distance = cps.Integer(
-                'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''
+                'Maximum mitosis distance, in pixel units', 40, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the maximum allowed distance in pixels of either
             of the daughter candidate centroids after mitosis from the parent candidate.
-            ''' % globals())
+            """ % globals())
 
         self.max_gap_score = cps.Integer(
-                'Maximum gap displacement, in pixel units', 5, minval=1, doc='''
+                'Maximum gap displacement, in pixel units', 5, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase.
@@ -657,10 +669,10 @@ class TrackObjects(cpm.Module):
             <li>This setting may be the culprit if an object is not tracked fame-to-frame despite optimizing
             the LAP first-pass settings.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.max_merge_score = cps.Integer(
-                'Maximum merge score', 50, minval=1, doc='''
+                'Maximum merge score', 50, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large
             merge scores. The merge score has two components:
@@ -675,10 +687,10 @@ class TrackObjects(cpm.Module):
             <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
             <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.max_split_score = cps.Integer(
-                'Maximum split score', 50, minval=1, doc='''
+                'Maximum split score', 50, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large split scores. The split score has two components:
             <ul>
@@ -692,10 +704,10 @@ class TrackObjects(cpm.Module):
             <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
             <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.max_frame_distance = cps.Integer(
-                'Maximum temporal gap, in frames', 5, minval=1, doc='''
+                'Maximum temporal gap, in frames', 5, minval=1, doc="""
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
             This setting controls the maximum number of frames that can
@@ -710,10 +722,10 @@ class TrackObjects(cpm.Module):
             <li>Set the maximum gap lower to reduce the chance of erroneously connecting to the wrong object after
             correctly losing the original object (e.g., if the cell dies or moves off-screen).</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.wants_lifetime_filtering = cps.Binary(
-                'Filter objects by lifetime?', False, doc='''
+                'Filter objects by lifetime?', False, doc="""
             Select <i>%(YES)s</i> if you want objects to be filtered by their
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
@@ -728,12 +740,12 @@ class TrackObjects(cpm.Module):
             Splits continue the lifetime count from their parents, so the minimum
             lifetime value does not apply to them.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>""" % globals())
 
         self.wants_minimum_lifetime = cps.Binary(
-                'Filter using a minimum lifetime?', True, doc='''
+                'Filter using a minimum lifetime?', True, doc="""
             <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(YES)s</i> to filter the object on the basis of a minimum number of frames.''' % globals())
+            Select <i>%(YES)s</i> to filter the object on the basis of a minimum number of frames.""" % globals())
 
         self.min_lifetime = cps.Integer(
                 'Minimum lifetime', 1, minval=1, doc="""
@@ -741,9 +753,9 @@ class TrackObjects(cpm.Module):
             which last this number of frames or lower are filtered out.""")
 
         self.wants_maximum_lifetime = cps.Binary(
-                'Filter using a maximum lifetime?', False, doc='''
+                'Filter using a maximum lifetime?', False, doc="""
             <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(YES)s</i> to filter the object on the basis of a maximum number of frames.''' % globals())
+            Select <i>%(YES)s</i> to filter the object on the basis of a maximum number of frames.""" % globals())
 
         self.max_lifetime = cps.Integer(
                 'Maximum lifetime', 100, doc="""
@@ -771,9 +783,9 @@ class TrackObjects(cpm.Module):
             will only show the penultimate result and not the final product.</p>.""" % globals())
 
         self.image_name = cps.ImageNameProvider(
-                "Name the output image", "TrackedCells", doc='''
+                "Name the output image", "TrackedCells", doc="""
             <i>(Used only if saving the color-coded image)</i><br>
-            Enter a name to give the color-coded image of tracked labels.''')
+            Enter a name to give the color-coded image of tracked labels.""")
 
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,
@@ -789,7 +801,7 @@ class TrackObjects(cpm.Module):
                 self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance]
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
+        """Make sure that the user has selected some limits when filtering"""
         if (self.tracking_method == TM_LAP and
                 self.wants_lifetime_filtering.value and
                 (self.wants_minimum_lifetime.value == False and self.wants_minimum_lifetime.value == False)):
@@ -840,7 +852,7 @@ class TrackObjects(cpm.Module):
         return self.get_dictionary(workspace.image_set_list)
 
     def __get(self, field, workspace, default):
-        if self.get_ws_dictionary(workspace).has_key(field):
+        if field in self.get_ws_dictionary(workspace):
             return self.get_ws_dictionary(workspace)[field]
         return default
 
@@ -852,7 +864,7 @@ class TrackObjects(cpm.Module):
         assert isinstance(m, cpmeas.Measurements)
         d = self.get_ws_dictionary(workspace)
         group_number = m.get_group_number()
-        if not d.has_key("group_number") or d["group_number"] != group_number:
+        if "group_number" not in d or d["group_number"] != group_number:
             d["group_number"] = group_number
             group_indexes = np.array([
                                          (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
@@ -876,7 +888,7 @@ class TrackObjects(cpm.Module):
         self.__set("coordinates", workspace, value)
 
     def get_orig_coordinates(self, workspace):
-        '''The coordinates of the first occurrence of an object's ancestor'''
+        """The coordinates of the first occurrence of an object's ancestor"""
         return self.__get("orig coordinates", workspace, np.zeros((2, 0), int))
 
     def set_orig_coordinates(self, workspace, value):
@@ -919,32 +931,32 @@ class TrackObjects(cpm.Module):
         self.__set("kalman_states", workspace, value)
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Erase any tracking information at the start of a run'''
+        """Erase any tracking information at the start of a run"""
         d = self.get_dictionary(workspace.image_set_list)
         d.clear()
 
         return True
 
     def measurement_name(self, feature):
-        '''Return a measurement name for the given feature'''
+        """Return a measurement name for the given feature"""
         if self.tracking_method == TM_LAP:
             return "%s_%s" % (F_PREFIX, feature)
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
 
     def image_measurement_name(self, feature):
-        '''Return a measurement name for an image measurement'''
+        """Return a measurement name for an image measurement"""
         if self.tracking_method == TM_LAP:
             return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
         return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
                                 str(self.pixel_radius.value))
 
     def add_measurement(self, workspace, feature, values):
-        '''Add a measurement to the workspace's measurements
+        """Add a measurement to the workspace's measurements
 
         workspace - current image set's workspace
         feature - name of feature being measured
         values - one value per object
-        '''
+        """
         workspace.measurements.add_measurement(
                 self.object_name.value,
                 self.measurement_name(feature),
@@ -1020,7 +1032,7 @@ class TrackObjects(cpm.Module):
         recolored_labels = indexer[labels]
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0, 0, 0))
-        norm = matplotlib.colors.BoundaryNorm(range(256), 256)
+        norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(numpy.ma.array(recolored_labels, mask=(labels == 0)),
                         cmap=cm, norm=norm)
         if self.display_type == DT_COLOR_AND_NUMBER:
@@ -1033,7 +1045,7 @@ class TrackObjects(cpm.Module):
                             arrowprops=dict(visible=False))
 
     def run_distance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         old_i, old_j = self.get_saved_coordinates(workspace)
         if len(old_i):
             distances, (i, j) = distance_transform_edt(objects.segmented == 0,
@@ -1073,7 +1085,7 @@ class TrackObjects(cpm.Module):
         self.set_saved_labels(workspace, objects.segmented)
 
     def run_lapdistance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         m = workspace.measurements
 
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -1146,7 +1158,7 @@ class TrackObjects(cpm.Module):
             t = t + 1
             t = np.column_stack((t, x))
             a = np.arange(len(old_i)) + 2
-            x = np.searchsorted(t[0:(t.size / 2), 0], a)
+            x = np.searchsorted(t[0:(old_div(t.size, 2)), 0], a)
             a = np.arange(len(old_i)) + 1
             b = np.arange(len(old_i)) + len(new_i) + 1
             c = np.zeros(len(old_i)) + costDie
@@ -1195,7 +1207,7 @@ class TrackObjects(cpm.Module):
                 kalman_used[old_idx[mask], mask]
             linking_distance[mask] = d[old_idx[mask], mask]
             standard_deviation[mask] = \
-                linking_distance[mask] / noise_sd[old_idx[mask]]
+                old_div(linking_distance[mask], noise_sd[old_idx[mask]])
             model_type[mask] = model_types[model_idx[mask]]
             link_type[mask] = LT_PHASE_1
             #
@@ -1205,7 +1217,7 @@ class TrackObjects(cpm.Module):
             # the center is within the cell, then the error is
             # proportional to the radius and the square to the area.
             #
-            measurement_variance = areas.astype(float) / np.pi
+            measurement_variance = old_div(areas.astype(float), np.pi)
             #
             # Broadcast the measurement error into a diagonal matrix
             #
@@ -1282,7 +1294,7 @@ class TrackObjects(cpm.Module):
         self.set_saved_labels(workspace, objects.segmented)
 
     def get_kalman_models(self):
-        '''Return tuples of model and names of the vector elements'''
+        """Return tuples of model and names of the vector elements"""
         if self.static_model:
             models = [(F_STATIC_MODEL, (F_Y, F_X))]
         else:
@@ -1292,7 +1304,7 @@ class TrackObjects(cpm.Module):
         return models
 
     def save_kalman_measurements(self, workspace):
-        '''Save the first-pass state_vec, state_cov and state_noise'''
+        """Save the first-pass state_vec, state_cov and state_noise"""
 
         m = workspace.measurements
         object_name = self.object_name.value
@@ -1344,7 +1356,7 @@ class TrackObjects(cpm.Module):
                     m.add_measurement(object_name, mname, values)
 
     def run_overlap(self, workspace, objects):
-        '''Track objects by maximum # of overlapping pixels'''
+        """Track objects by maximum # of overlapping pixels"""
         current_labels = objects.segmented
         old_labels = self.get_saved_labels(workspace)
         i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
@@ -1427,7 +1439,7 @@ class TrackObjects(cpm.Module):
                                              cpmeas.GROUP_NUMBER, i)
             group_index = m.get_measurement(cpmeas.IMAGE,
                                             cpmeas.GROUP_INDEX, i)
-            if ((not group_numbers.has_key(group_number)) or
+            if ((group_number not in group_numbers) or
                     (group_numbers[group_number][1] > group_index)):
                 group_numbers[group_number] = (i, group_index)
 
@@ -1448,7 +1460,7 @@ class TrackObjects(cpm.Module):
         return z
 
     def is_aggregation_module(self):
-        '''We connect objects across imagesets within a group = aggregation'''
+        """We connect objects across imagesets within a group = aggregation"""
         return True
 
     def post_group(self, workspace, grouping):
@@ -1466,13 +1478,13 @@ class TrackObjects(cpm.Module):
             return
 
         gap_cost = float(self.gap_cost.value)
-        split_alternative_cost = float(self.split_cost.value) / 2
+        split_alternative_cost = old_div(float(self.split_cost.value), 2)
         merge_alternative_cost = float(self.merge_cost.value)
         mitosis_alternative_cost = float(self.mitosis_cost.value)
 
         max_gap_score = self.max_gap_score.value
         max_merge_score = self.max_merge_score.value
-        max_split_score = self.max_split_score.value / 2  # to match legacy
+        max_split_score = old_div(self.max_split_score.value, 2)  # to match legacy
         max_frame_difference = self.max_frame_distance.value
 
         m = workspace.measurements
@@ -1679,7 +1691,7 @@ class TrackObjects(cpm.Module):
         merge_off = gap_end
         if len(P1) > 0:
             # Do the initial winnowing in chunks of 10m pairs
-            lchunk_size = 10000000 / len(P1)
+            lchunk_size = old_div(10000000, len(P1))
             chunks = []
             for lstart in range(0, len(L), lchunk_size):
                 lend = min(len(L), lstart + lchunk_size)
@@ -1688,7 +1700,7 @@ class TrackObjects(cpm.Module):
                 z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
-                    chunks.append([_[mask] for _ in merge_p1idx, merge_lidx, z])
+                    chunks.append([_[mask] for _ in (merge_p1idx, merge_lidx, z)])
             if len(chunks) > 0:
                 merge_p1idx, merge_lidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1708,7 +1720,7 @@ class TrackObjects(cpm.Module):
             merge_scores = d * rho
             mask = merge_scores <= max_merge_score
             merge_p1idx, merge_lidx, merge_scores = [
-                _[mask] for _ in merge_p1idx, merge_lidx, merge_scores]
+                _[mask] for _ in (merge_p1idx, merge_lidx, merge_scores)]
             merge_len = np.sum(mask)
             if merge_len > 0:
                 #
@@ -1745,7 +1757,7 @@ class TrackObjects(cpm.Module):
 
         split_off = merge_end
         if len(P2) > 0:
-            lchunk_size = 10000000 / len(P2)
+            lchunk_size = old_div(10000000, len(P2))
             chunks = []
             for fstart in range(0, len(L), lchunk_size):
                 fend = min(len(L), fstart + lchunk_size)
@@ -1755,7 +1767,7 @@ class TrackObjects(cpm.Module):
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
                     chunks.append(
-                            [_[mask] for _ in split_p2idx, split_fidx, z])
+                            [_[mask] for _ in (split_p2idx, split_fidx, z)])
             if len(chunks) > 0:
                 split_p2idx, split_fidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1774,7 +1786,7 @@ class TrackObjects(cpm.Module):
             split_scores = d * rho
             mask = (split_scores <= max_split_score)
             split_p2idx, split_fidx, split_scores = \
-                [_[mask] for _ in split_p2idx, split_fidx, split_scores]
+                [_[mask] for _ in (split_p2idx, split_fidx, split_scores)]
             split_len = np.sum(mask)
             if split_len > 0:
                 #
@@ -1860,7 +1872,7 @@ class TrackObjects(cpm.Module):
         # Useful debugging diagnostics
         #
         def desc(node):
-            '''Describe a node for graphviz'''
+            """Describe a node for graphviz"""
             fl = F
             if node < start_end_end:
                 fmt = "N%d:%d"
@@ -1888,7 +1900,7 @@ class TrackObjects(cpm.Module):
                              int(fl[idx, ONIDX])))
 
         def write_graph(path, x, y):
-            '''Write a graphviz DOT file'''
+            """Write a graphviz DOT file"""
             with open(path, "w") as fd:
                 fd.write("digraph trackobjects {\n")
                 graph_idx = np.where(
@@ -1913,13 +1925,13 @@ class TrackObjects(cpm.Module):
             #
             if x[pidx] == midx + mitosis_off and not \
                     any([y[idx] >= mitosis_off and y[idx] < mitosis_end
-                         for idx in lidx, ridx]):
-                alt_score = sum([score_matrix[y[idx], idx] for idx in lidx, ridx])
+                         for idx in (lidx, ridx)]):
+                alt_score = sum([score_matrix[y[idx], idx] for idx in (lidx, ridx)])
                 #
                 # Taking the alt score would cost us a mitosis alternative
                 # cost, but would remove half of a gap alternative.
                 #
-                alt_score += mitosis_alternative_cost - gap_cost / 2
+                alt_score += mitosis_alternative_cost - old_div(gap_cost, 2)
                 #
                 # Alternatively, taking the mitosis score would cost us
                 # the gap alternatives of the left and right.
@@ -2282,7 +2294,7 @@ class TrackObjects(cpm.Module):
         self.recalculate_group(workspace, image_numbers)
 
     def calculate_area_penalty(self, a1, a2):
-        '''Calculate a penalty for areas that don't match
+        """Calculate a penalty for areas that don't match
 
         Ideally, area should be conserved while tracking. We divide the larger
         of the two by the smaller of the two to get the area penalty
@@ -2292,14 +2304,14 @@ class TrackObjects(cpm.Module):
         penalty (sqrt((a1 + a2) / b) for a1+a2 > b and b / (a1 + a2) for
         a1+a2 < b. I can't think of a good reason why they should be
         asymmetric.
-        '''
-        result = a1 / a2
-        result[result < 1] = 1 / result[result < 1]
+        """
+        result = old_div(a1, a2)
+        result[result < 1] = old_div(1, result[result < 1])
         result[np.isnan(result)] = np.inf
         return result
 
     def get_gap_pair_scores(self, F, L, max_gap):
-        '''Compute scores for matching last frame with first to close gaps
+        """Compute scores for matching last frame with first to close gaps
 
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
@@ -2314,7 +2326,7 @@ class TrackObjects(cpm.Module):
                  the track whose index is the second element of the array.
 
                  an M-element vector of scores.
-        '''
+        """
         #
         # There have to be at least two things to match
         #
@@ -2384,7 +2396,7 @@ class TrackObjects(cpm.Module):
         return np.column_stack((ai, aj)), d * rho
 
     def get_mitotic_triple_scores(self, F, L):
-        '''Compute scores for matching a parent to two daughters
+        """Compute scores for matching a parent to two daughters
 
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
@@ -2397,7 +2409,7 @@ class TrackObjects(cpm.Module):
                  columns are the indices of the daughters in the F array
 
                  an M-element vector of distances of the parent from the expected
-        '''
+        """
         X = 0
         Y = 1
         IIDX = 2
@@ -2423,8 +2435,8 @@ class TrackObjects(cpm.Module):
         i, j = i[mask], j[mask]
         if len(i) == 0:
             return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
-        center_x = (F[i, X] + F[j, X]) / 2
-        center_y = (F[i, Y] + F[j, Y]) / 2
+        center_x = old_div((F[i, X] + F[j, X]), 2)
+        center_y = old_div((F[i, Y] + F[j, Y]), 2)
         frame = F[i, IIDX]
 
         # Find all parent-daughter pairs where the parent
@@ -2447,11 +2459,11 @@ class TrackObjects(cpm.Module):
         return np.column_stack((i[ij], j[ij], k)), d * rho
 
     def recalculate_group(self, workspace, image_numbers):
-        '''Recalculate all measurements once post_group has run
+        """Recalculate all measurements once post_group has run
 
         workspace - the workspace being operated on
         image_numbers - the image numbers of the group's image sets' measurements
-        '''
+        """
         m = workspace.measurements
         object_name = self.object_name.value
 
@@ -2506,18 +2518,18 @@ class TrackObjects(cpm.Module):
         ancestral_object_index = ancestral_object_index[labels]
 
         def start(image_index):
-            '''Return the start index in the array for the given image index'''
+            """Return the start index in the array for the given image index"""
             return idx.fwd_idx[image_index]
 
         def end(image_index):
-            '''Return the end index in the array for the given image index'''
+            """Return the end index in the array for the given image index"""
             return start(image_index) + idx.counts[0][image_index]
 
         def slyce(image_index):
             return slice(start(image_index), end(image_index))
 
         class wrapped(object):
-            '''make an indexable version of a measurement, with parent and ancestor fetching'''
+            """make an indexable version of a measurement, with parent and ancestor fetching"""
 
             def __init__(self, feature_name):
                 self.feature_name = feature_name
@@ -2608,7 +2620,7 @@ class TrackObjects(cpm.Module):
             # Linearity = ratio of displacement and integrated
             # distance. NaN for new cells is ok.
             #
-            linearity[index] = tot_distance / integrated[index]
+            linearity[index] = old_div(tot_distance, integrated[index])
             #
             # Add 1 to lifetimes / one for new
             #
@@ -2620,10 +2632,10 @@ class TrackObjects(cpm.Module):
             for this_label, this_lifetime in zip(label[index], lifetimes[index]):
                 age[this_label] = this_lifetime
 
-        all_labels = age.keys()
-        all_ages = age.values()
+        all_labels = list(age.keys())
+        all_ages = list(age.values())
         if self.wants_lifetime_filtering.value:
-            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime or v >= maximum_lifetime]
+            labels_to_filter = [k for k, v in list(age.items()) if v <= minimum_lifetime or v >= maximum_lifetime]
         for image_number in image_numbers:
             index = image_index[image_number]
 
@@ -2647,13 +2659,13 @@ class TrackObjects(cpm.Module):
             m.add_experiment_measurement(F_EXPT_FILT_NUMTRACKS, nlabels - len(labels_to_filter))
 
     def map_objects(self, workspace, new_of_old, old_of_new, i, j):
-        '''Record the mapping of old to new objects and vice-versa
+        """Record the mapping of old to new objects and vice-versa
 
         workspace - workspace for current image set
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
         i, j - the coordinates for each new object.
-        '''
+        """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_number = m.get_current_image_measurement(cpp.IMAGE_NUMBER)
@@ -2717,7 +2729,7 @@ class TrackObjects(cpm.Module):
             distance[has_old] = np.sqrt(diff_i[has_old] ** 2 + diff_j[has_old] ** 2)
             integrated_distance[has_old] = (old_distance[old_indexes] + distance[has_old])
             displacement[has_old] = np.sqrt((i[has_old] - orig_i[has_old]) ** 2 + (j[has_old] - orig_j[has_old]) ** 2)
-            linearity[has_old] = displacement[has_old] / integrated_distance[has_old]
+            linearity[has_old] = old_div(displacement[has_old], integrated_distance[has_old])
         self.add_measurement(workspace, F_TRAJECTORY_X, diff_j)
         self.add_measurement(workspace, F_TRAJECTORY_Y, diff_i)
         self.add_measurement(workspace, F_DISTANCE_TRAVELED, distance)
@@ -2801,7 +2813,7 @@ class TrackObjects(cpm.Module):
                         r_image_numbers, r_child_object_numbers)
 
     def recalculate_kalman_filters(self, workspace, image_numbers):
-        '''Rerun the kalman filters to improve the motion models'''
+        """Rerun the kalman filters to improve the motion models"""
         m = workspace.measurements
         object_name = self.object_name.value
         object_number = m[object_name, cpmeas.OBJECT_NUMBER, image_numbers]
@@ -2870,7 +2882,7 @@ class TrackObjects(cpm.Module):
             jj = x[this_slice]
             new_kalman_states = []
             r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                    (old_div(area[this_slice].astype(float), np.pi), np.zeros(n_objects),
                      np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
             for kalman_state in kalman_states:
@@ -2904,7 +2916,7 @@ class TrackObjects(cpm.Module):
             ii = y[this_slice]
             jj = x[this_slice]
             r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                    (old_div(area[this_slice].astype(float), np.pi), np.zeros(n_objects),
                      np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
             new_kalman_states = []
@@ -2986,7 +2998,7 @@ class TrackObjects(cpm.Module):
             else:
                 pg_meas = [
                     self.measurement_name(feature)
-                    for feature in F_LINKING_DISTANCE, F_MOVEMENT_MODEL]
+                    for feature in (F_LINKING_DISTANCE, F_MOVEMENT_MODEL)]
                 result = [
                     c if c[1] not in pg_meas else (c[0], c[1], c[2], attributes)
                     for c in result]
@@ -2994,7 +3006,7 @@ class TrackObjects(cpm.Module):
         return result
 
     def get_object_relationships(self, pipeline):
-        '''Return the object relationships produced by this module'''
+        """Return the object relationships produced by this module"""
         object_name = self.object_name.value
         if self.wants_second_phase and self.tracking_method == TM_LAP:
             when = cpmeas.MCA_AVAILABLE_POST_GROUP

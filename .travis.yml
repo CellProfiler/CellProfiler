@@ -45,11 +45,10 @@ install:
   - pip install joblib
   - pip install scikit-learn
   - pip install --no-deps pyzmq==13.1.0
-  - pip install --requirement requirements.txt
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
   - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
   - pip freeze
-  - pip install --no-deps .
+  - pip install --no-deps --requirement requirements.txt
 script:
   - python setup.py test -a -x

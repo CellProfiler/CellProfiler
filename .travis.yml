@@ -49,6 +49,6 @@ install:
   - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
   - pip freeze
-  - pip install --no-deps --requirement requirements.txt
+  - pip install --requirement requirements.txt
 script:
   - python setup.py test -a -x

@@ -458,7 +458,7 @@ class MeasureObjectSizeShape(cpm.Module):
 
                 volume[labels == label] = True
 
-                verts, faces = skimage.measure.marching_cubes(
+                verts, faces, _, _ = skimage.measure.marching_cubes(
                     volume,
                     spacing=spacing,
                     level=0

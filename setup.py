@@ -324,6 +324,9 @@ setuptools.setup(
             }
         ],
         description="",
+        dependency_links=[
+            "git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev"
+        ],
         entry_points={
             "console_scripts": [
                 "cellprofiler=cellprofiler.__main__:main"
@@ -346,7 +349,7 @@ setuptools.setup(
             "pytest",
             "python-bioformats",
             "pyzmq",
-            "scikit-image>=0.12.3",
+            "scikit-image==0.13.0dev",
             "scipy"
         ],
         keywords="",

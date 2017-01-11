@@ -99,6 +99,8 @@ class RandomWalkerAlgorithm(cellprofiler.module.ImageSegmentation):
 
         workspace.object_set.add_objects(objects, y_name)
 
+        self.add_measurements(workspace.measurements, y_data)
+
         if self.show_window:
             workspace.display_data.x_data = x_data
 

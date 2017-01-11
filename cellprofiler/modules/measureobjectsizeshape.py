@@ -471,6 +471,12 @@ class MeasureObjectSizeShape(cpm.Module):
             else:
                 self.record_measurement(workspace, object_name, F_PERIMETER, perimeters)
 
+            for feature in self.get_feature_names():
+                if feature in [F_AREA, F_EXTENT, F_CENTER_X, F_CENTER_Y, F_CENTER_Z, F_PERIMETER]:
+                    continue
+
+                self.record_measurement(workspace, object_name, feature, [np.nan])
+
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,

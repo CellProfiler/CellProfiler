@@ -56,6 +56,10 @@ class Test(setuptools.Command):
         sys.exit(errno)
 
 
+cmdclass = {
+    "test": Test
+}
+
 version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
 version = version_file.read().strip()
 
@@ -80,6 +84,7 @@ setuptools.setup(
             "Topic :: Scientific/Engineering :: Image Recognition",
             "Topic :: Scientific/Engineering"
         ],
+        cmdclass=cmdclass,
         console=[
             {
                 "icon_resources": [

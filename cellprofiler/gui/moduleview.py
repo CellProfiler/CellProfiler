@@ -910,7 +910,7 @@ class ModuleView(object):
                     leaf_state = d[None]
                     for subtree_key in [x for x in d.keys() if x is not None]:
                         subtree_state = get_state(d[subtree_key])
-                        if leaf_state is 0:
+                        if leaf_state == 0:
                             leaf_state = subtree_state
                         elif leaf_state != subtree_state:
                             leaf_state = None

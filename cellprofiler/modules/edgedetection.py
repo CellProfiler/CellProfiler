@@ -72,7 +72,7 @@ class EdgeDetection(cellprofiler.module.ImageProcessing):
 
         dimensions = x.dimensions
 
-        if dimensions is 2:
+        if dimensions == 2:
             y_data = skimage.filters.sobel(x_data, mask=mask_data)
         else:
             y_data = numpy.zeros_like(x_data)

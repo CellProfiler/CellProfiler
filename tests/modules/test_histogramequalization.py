@@ -66,7 +66,7 @@ def test_run_mask(image, image_set, module, workspace):
 
     if image.multichannel:
         mask_data[5:-5, 5:-5, :] = True
-    elif image.dimensions is 3:
+    elif image.volumetric:
         mask_data[:, 5:-5, 5:-5] = True
     else:
         mask_data[5:-5, 5:-5] = True

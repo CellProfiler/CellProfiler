@@ -60,7 +60,7 @@ class ImageGradient(cellprofiler.module.ImageProcessing):
 
         x_data = skimage.img_as_uint(x_data)
 
-        if x.dimensions is 3 or x.multichannel:
+        if x.volumetric or x.multichannel:
             y_data = numpy.zeros_like(x_data)
 
             for z, image in enumerate(x_data):

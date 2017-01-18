@@ -157,7 +157,7 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
 
                 mapper = matplotlib.cm.ScalarMappable(cmap=cm)
 
-                if labels.ndim is 3:
+                if labels.ndim == 3:
                     for index, plane in enumerate(mask):
                         pixel_data[index, plane, :] = mapper.to_rgba(
                             centrosome.cpmorphology.distance_color_labels(labels[index])
@@ -192,7 +192,7 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
         workspace.image_set.add(self.image_name.value, image)
 
         if self.show_window:
-            if image.dimensions is 2:
+            if image.dimensions == 2:
                 workspace.display_data.ijv = objects.ijv
             else:
                 workspace.display_data.segmented = objects.segmented
@@ -211,7 +211,7 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
         figure.set_subplots((2, 1), dimensions=dimensions)
 
         # TODO: volumetric IJV
-        if dimensions is 2:
+        if dimensions == 2:
             figure.subplot_imshow_ijv(
                 0,
                 0,

@@ -314,7 +314,7 @@ setuptools.setup(
             "Topic :: Scientific/Engineering :: Image Recognition",
             "Topic :: Scientific/Engineering"
         ],
-        cmdclass=cmdclass,
+        # cmdclass=cmdclass,
         console=[
             {
                 "icon_resources": [
@@ -348,7 +348,7 @@ setuptools.setup(
             "pyamg!=3.2.0",
             "pytest",
             "python-bioformats",
-            "pyzmq",
+            "pyzmq<15.4",
             "scikit-image==0.13.0dev",
             "scipy"
         ],

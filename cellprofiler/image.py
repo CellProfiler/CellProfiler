@@ -104,11 +104,11 @@ class Image(object):
 
     @property
     def multichannel(self):
-        return True if self.dimensions is 2 and self.pixel_data.ndim is 3 else False
+        return True if self.dimensions == 2 and self.pixel_data.ndim == 3 else False
 
     @property
     def volumetric(self):
-        if self.dimensions is 3:
+        if self.dimensions == 3:
             return True
 
         return False

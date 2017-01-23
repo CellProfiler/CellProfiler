@@ -7,6 +7,19 @@ import numpy
 import skimage.data
 import pytest
 
+import cellprofiler.__main__
+import cellprofiler.utilities.cpjvm
+import sys
+
+
+# http://stackoverflow.com/a/35394239
+def pytest_sessionstart(session):
+    cellprofiler.utilities.cpjvm.cp_start_vm()
+
+
+def pytest_sessionfinish(session, exitstatus):
+    cellprofiler.__main__.stop_cellprofiler()
+
 
 @pytest.fixture(
     scope="module",

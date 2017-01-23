@@ -17,7 +17,6 @@ import traceback
 import unittest
 import uuid
 import zmq
-import sys
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.pipeline as cpp
@@ -33,7 +32,6 @@ IMAGE_FEATURE = "imagefeature"
 OBJECTS_FEATURE = "objectsfeature"
 
 
-@unittest.skipIf(sys.platform.startswith("win"), "does not terminate on windows")
 class TestAnalysis(unittest.TestCase):
     class FakeWorker(threading.Thread):
         '''A mockup of a ZMQ client to the boundary

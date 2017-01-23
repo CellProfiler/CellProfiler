@@ -6,6 +6,7 @@ import numpy as np
 import unittest
 import uuid
 import zmq
+import sys
 
 from cellprofiler.worker import NOTIFY_STOP
 from cellprofiler.knime_bridge import KnimeBridgeServer, \
@@ -23,6 +24,7 @@ from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape
 from cellprofiler.modules.saveimages import SaveImages
 
 
+@unittest.skipIf(sys.platform.startswith("win"), "does not terminate on windows")
 class TestKnimeBridge(unittest.TestCase):
     def setUp(self):
         context = zmq.Context.instance()

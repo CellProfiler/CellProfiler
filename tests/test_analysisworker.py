@@ -8,6 +8,7 @@ import threading
 import traceback
 import unittest
 import uuid
+import sys
 
 import cellprofiler.analysis
 import cellprofiler.gui.errordialog
@@ -25,6 +26,7 @@ import tests.modules
 import zmq
 
 
+@unittest.skipIf(sys.platform.startswith("win"), "requires analysis tests")
 class TestAnalysisWorker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

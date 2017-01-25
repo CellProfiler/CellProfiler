@@ -24,7 +24,7 @@ OBJECTS_NAME = 'objectsname'
 
 
 class TestOverlayOutlines(unittest.TestCase):
-    def make_workspace(self, image, outline=None, labels=None):
+    def make_workspace(self, image, labels=None):
         '''Make a workspace for testing ApplyThreshold'''
         m = cellprofiler.measurement.Measurements()
         object_set = cellprofiler.object.ObjectSet()
@@ -32,22 +32,15 @@ class TestOverlayOutlines(unittest.TestCase):
         module.blank_image.value = False
         module.image_name.value = INPUT_IMAGE_NAME
         module.output_image_name.value = OUTPUT_IMAGE_NAME
-        if outline is not None:
-            module.outlines[0].outline_name.value = OUTLINE_NAME
-            m.add(OUTLINE_NAME, cellprofiler.image.Image(outline))
-            module.outlines[0].outline_choice.value = cellprofiler.modules.overlayoutlines.FROM_IMAGES
-        if labels is not None:
-            objects = cellprofiler.object.Objects()
-            if len(labels) > 1:
-                ijv = numpy.vstack(
-                        [numpy.column_stack(list(numpy.where(l > 0)) + [l[l > 0]])
-                         for l in labels])
-                objects.set_ijv(ijv, shape=labels[0].shape)
-            else:
-                objects.segmented = labels[0]
-            object_set.add_objects(objects, OBJECTS_NAME)
-            module.outlines[0].outline_choice.value = cellprofiler.modules.overlayoutlines.FROM_OBJECTS
-            module.outlines[0].objects_name.value = OBJECTS_NAME
+
+        objects = cellprofiler.object.Objects()
+        if len(labels) > 1:
+            ijv = numpy.vstack([numpy.column_stack(list(numpy.where(l > 0)) + [l[l > 0]]) for l in labels])
+            objects.set_ijv(ijv, shape=labels[0].shape)
+        else:
+            objects.segmented = labels[0]
+        object_set.add_objects(objects, OBJECTS_NAME)
+        module.outlines[0].objects_name.value = OBJECTS_NAME
 
         pipeline = cellprofiler.pipeline.Pipeline()
         workspace = cellprofiler.workspace.Workspace(pipeline, module, m, object_set, m, None)
@@ -91,7 +84,7 @@ class TestOverlayOutlines(unittest.TestCase):
         self.assertTrue(module.blank_image.value)
         self.assertEqual(module.wants_color.value, cellprofiler.modules.overlayoutlines.WANTS_COLOR)
         self.assertEqual(len(module.outlines), 1)
-        self.assertEqual(module.outlines[0].outline_name.value, "NucleiOutlines")
+        self.assertEqual(module.outlines[0].objects_name.value, cellprofiler.setting.NONE)
         self.assertEqual(module.outlines[0].color.value, "Blue")
         self.assertEqual(module.max_type.value, cellprofiler.modules.overlayoutlines.MAX_IMAGE)
 
@@ -129,7 +122,7 @@ class TestOverlayOutlines(unittest.TestCase):
         self.assertEqual(module.image_name.value, "OrigBlue")
         self.assertEqual(module.wants_color.value, cellprofiler.modules.overlayoutlines.WANTS_COLOR)
         self.assertEqual(len(module.outlines), 1)
-        self.assertEqual(module.outlines[0].outline_name.value, "NucleiOutlines")
+        self.assertEqual(module.outlines[0].objects_name.value, cellprofiler.setting.NONE)
         self.assertEqual(module.outlines[0].color.value, "Green")
         self.assertEqual(module.max_type.value, cellprofiler.modules.overlayoutlines.MAX_IMAGE)
 
@@ -165,7 +158,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         for outline, name, color in zip(module.outlines,
                                         ("PrimaryOutlines", "SecondaryOutlines"),
                                         ("Red", "Green")):
-            self.assertEqual(outline.outline_name, name)
+            self.assertEqual(outline.objects_name.value, cellprofiler.setting.NONE)
             self.assertEqual(outline.color, color)
 
     def test_01_03_load_v3(self):
@@ -210,9 +203,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
                  cellprofiler.modules.overlayoutlines.FROM_IMAGES, "Nuclei"),
                 (module.outlines[1], "SecondaryOutlines", "Green",
                  cellprofiler.modules.overlayoutlines.FROM_OBJECTS, "Cells")):
-            self.assertEqual(outline.outline_name, name)
             self.assertEqual(outline.color, color)
-            self.assertEqual(outline.outline_choice, choice)
             self.assertEqual(outline.objects_name, objects_name)
 
     def test_02_01_gray_to_color_outlines(self):
@@ -226,19 +217,13 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         expected[:, :, 0][outline.astype(bool)] = 1
         expected[:, :, 1][outline.astype(bool)] = 0
         expected[:, :, 2][outline.astype(bool)] = 0
-        for i in range(2):
-            if i == 0:
-                workspace, module = self.make_workspace(image, outline)
-            else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
-
-            module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
-            module.outlines[0].color.value = "Red"
-            module.line_width.value = 0.0
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+        module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_02_02_color_to_color_outlines(self):
         numpy.random.seed(0)
@@ -251,20 +236,13 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         expected[:, :, 0][outline.astype(bool)] = 1
         expected[:, :, 1][outline.astype(bool)] = 0
         expected[:, :, 2][outline.astype(bool)] = 0
-        for i in range(2):
-            if i == 0:
-                outline[21:30, 21:30] = 0
-                workspace, module = self.make_workspace(image, outline)
-            else:
-                outline[21:30, 21:30] = 1
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
-            module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
-            module.outlines[0].color.value = "Red"
-            module.line_width.value = 0.0
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+        module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_02_03_blank_to_color_outlines(self):
         numpy.random.seed(0)
@@ -277,20 +255,14 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         expected[:, :, 0][outline.astype(bool)] = 1
         expected[:, :, 1][outline.astype(bool)] = 0
         expected[:, :, 2][outline.astype(bool)] = 0
-        for i in range(2):
-            if i == 0:
-                workspace, module = self.make_workspace(image, outline)
-            else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
-            workspace, module = self.make_workspace(image, outline)
-            module.blank_image.value = True
-            module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
-            module.outlines[0].color.value = "Red"
-            module.line_width.value = 0.0
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+        module.blank_image.value = True
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+        module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_02_04_wrong_size_gray_to_color(self):
         '''Regression test of img-961'''
@@ -305,18 +277,13 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         sub_expected[:, :, 0][outline[:50, :40].astype(bool)] = 1
         sub_expected[:, :, 1][outline[:50, :40].astype(bool)] = 0
         sub_expected[:, :, 2][outline[:50, :40].astype(bool)] = 0
-        for i in range(2):
-            if i == 0:
-                workspace, module = self.make_workspace(image, outline)
-            else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
-            module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
-            module.outlines[0].color.value = "Red"
-            module.line_width.value = 0.0
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+        module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_02_05_wrong_size_color_to_color(self):
         numpy.random.seed(25)
@@ -330,19 +297,13 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         sub_expected[:, :, 0][outline[:50, :40].astype(bool)] = 1
         sub_expected[:, :, 1][outline[:50, :40].astype(bool)] = 0
         sub_expected[:, :, 2][outline[:50, :40].astype(bool)] = 0
-        for i in range(2):
-            if i == 0:
-                workspace, module = self.make_workspace(image, outline)
-            else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
-            workspace, module = self.make_workspace(image, outline)
-            module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
-            module.outlines[0].color.value = "Red"
-            module.line_width.value = 0.0
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+        module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_03_01_blank_to_gray(self):
         numpy.random.seed(0)
@@ -352,19 +313,13 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         outline[21:30, 21:30] = 0
         expected = numpy.zeros_like(image)
         expected[outline.astype(bool)] = 1
-        for i in range(2):
-            if i == 0:
-                workspace, module = self.make_workspace(image, outline)
-            else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
-            workspace, module = self.make_workspace(image, outline)
-            module.blank_image.value = True
-            module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
-            module.line_width.value = 0.0
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+        module.blank_image.value = True
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_03_02_gray_max_image(self):
         numpy.random.seed(0)
@@ -374,7 +329,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         outline[21:30, 21:30] = 0
         expected = image.copy()
         expected[outline.astype(bool)] = numpy.max(image)
-        workspace, module = self.make_workspace(image, outline)
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.blank_image.value = False
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
         module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_IMAGE
@@ -391,7 +346,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         outline[21:30, 21:30] = 0
         expected = image.copy()
         expected[outline.astype(bool)] = 1
-        workspace, module = self.make_workspace(image, outline)
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.blank_image.value = False
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
         module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
@@ -409,7 +364,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         outline[21:30, 21:30] = False
         expected = image.copy()
         expected[:50, :40][outline[:50, :40]] = 1
-        workspace, module = self.make_workspace(image, outline)
+        workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.blank_image.value = False
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
         module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE

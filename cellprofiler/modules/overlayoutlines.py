@@ -36,16 +36,18 @@ FROM_OBJECTS = "Objects"
 NUM_FIXED_SETTINGS_V1 = 5
 NUM_FIXED_SETTINGS_V2 = 6
 NUM_FIXED_SETTINGS_V3 = 6
+NUM_FIXED_SETTINGS_V4 = 6
 NUM_FIXED_SETTINGS = 6
 
 NUM_OUTLINE_SETTINGS_V2 = 2
 NUM_OUTLINE_SETTINGS_V3 = 4
-NUM_OUTLINE_SETTINGS = 4
+NUM_OUTLINE_SETTINGS_V4 = 2
+NUM_OUTLINE_SETTINGS = 2
 
 
 class OverlayOutlines(cellprofiler.module.Module):
     module_name = 'OverlayOutlines'
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Image Processing"
 
     def create_settings(self):
@@ -131,28 +133,6 @@ class OverlayOutlines(cellprofiler.module.Module):
             group.append("divider", cellprofiler.setting.Divider(line=False))
 
         group.append(
-            "outline_choice",
-            cellprofiler.setting.Choice(
-                "Load outlines from an image or objects?",
-                [FROM_OBJECTS, FROM_IMAGES],
-                doc="""
-                This setting selects what source the outlines come from:
-                <ul>
-                    <li><i>{FROM_OBJECTS}:</i> Create the image directly from the objects. This option will improve
-                    the functionality of the contrast options for this module's interactive display and will save
-                    memory.</li>
-                    <li><i>{FROM_IMAGES}:</i> Prior versions of <b>OverlayOutlines</b> would only display outline
-                    images which were optional outputs of the identify modules. For legacy pipelines or to continue
-                    using the outline images instead of objects, choose this option.</li>
-                </ul>
-                """.format(**{
-                    "FROM_OBJECTS": FROM_OBJECTS,
-                    "FROM_IMAGES": FROM_IMAGES
-                })
-            )
-        )
-
-        group.append(
             "objects_name",
             cellprofiler.setting.ObjectNameSubscriber(
                 "Select objects to display",
@@ -161,31 +141,20 @@ class OverlayOutlines(cellprofiler.module.Module):
             )
         )
 
-        group.append(
-            "outline_name",
-            cellprofiler.setting.OutlineNameSubscriber(
-                "Select outlines to display",
-                cellprofiler.setting.NONE,
-                doc="""
-                Choose outlines to display, from a previous <b>Identify</b> module. Each of the <b>Identify</b>
-                modules has a checkbox that determines whether the outlines are saved. If you have checked this,
-                you were asked to supply a name for the outline; you can then select that name here.
-                """
-            )
-        )
-
         default_color = (COLOR_ORDER[len(self.outlines)] if len(self.outlines) < len(COLOR_ORDER) else COLOR_ORDER[0])
 
         group.append("color", cellprofiler.setting.Color("Select outline color", default_color))
 
         if can_remove:
-            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this outline", self.outlines, group))
+            group.append(
+                "remover",
+                cellprofiler.setting.RemoveSettingButton("", "Remove this outline", self.outlines, group)
+            )
 
         self.outlines.append(group)
 
     def prepare_settings(self, setting_values):
-        num_settings = \
-            (len(setting_values) - NUM_FIXED_SETTINGS) / NUM_OUTLINE_SETTINGS
+        num_settings = (len(setting_values) - NUM_FIXED_SETTINGS) / NUM_OUTLINE_SETTINGS
         if len(self.outlines) == 0:
             self.add_outline(False)
         elif len(self.outlines) > num_settings:
@@ -198,27 +167,20 @@ class OverlayOutlines(cellprofiler.module.Module):
         result = [self.blank_image, self.image_name, self.output_image_name,
                   self.wants_color, self.max_type, self.line_width]
         for outline in self.outlines:
-            result += [outline.outline_name, outline.color,
-                       outline.outline_choice, outline.objects_name]
+            result += [outline.color, outline.objects_name]
         return result
 
     def visible_settings(self):
         result = [self.blank_image]
         if not self.blank_image.value:
             result += [self.image_name]
-        result += [self.output_image_name, self.wants_color,
-                   self.line_width, self.spacer]
-        if (self.wants_color.value == WANTS_GRAYSCALE and not
-        self.blank_image.value):
+        result += [self.output_image_name, self.wants_color, self.line_width, self.spacer]
+        if (self.wants_color.value == WANTS_GRAYSCALE and not self.blank_image.value):
             result += [self.max_type]
         for outline in self.outlines:
-            result += [outline.outline_choice]
+            result += [outline.objects_name]
             if self.wants_color.value == WANTS_COLOR:
                 result += [outline.color]
-            if outline.outline_choice == FROM_IMAGES:
-                result += [outline.outline_name]
-            else:
-                result += [outline.objects_name]
             if hasattr(outline, "remover"):
                 result += [outline.remover]
         result += [self.add_outline_button]
@@ -237,7 +199,7 @@ class OverlayOutlines(cellprofiler.module.Module):
             output_image = cellprofiler.image.Image(pixel_data, parent_image=image)
             workspace.image_set.add(self.output_image_name.value, output_image)
             workspace.display_data.image_pixel_data = image.pixel_data
-        if self.__can_composite_objects() and self.show_window:
+        if self.show_window:
             workspace.display_data.labels = {}
             for outline in self.outlines:
                 name = outline.objects_name.value
@@ -247,41 +209,30 @@ class OverlayOutlines(cellprofiler.module.Module):
 
         workspace.display_data.pixel_data = pixel_data
 
-    def __can_composite_objects(self):
-        '''Return True if we can use object compositing during display'''
-        for outline in self.outlines:
-            if outline.outline_choice == FROM_IMAGES:
-                return False
-        return True
-
     def display(self, workspace, figure):
         from cellprofiler.gui.figure import CPLD_LABELS, CPLD_NAME, \
             CPLD_OUTLINE_COLOR, CPLD_MODE, CPLDM_OUTLINES, CPLD_LINE_WIDTH
 
         figure.set_subplots((1, 1))
 
-        if self.__can_composite_objects():
-            if self.blank_image:
-                pixel_data = numpy.zeros(workspace.display_data.pixel_data.shape)
-            else:
-                pixel_data = workspace.display_data.image_pixel_data
-            cplabels = []
-            ldict = workspace.display_data.labels
-            for outline in self.outlines:
-                name = outline.objects_name.value
-                if self.wants_color.value == WANTS_COLOR:
-                    color = numpy.array(outline.color.to_rgb(), float)
-                else:
-                    color = numpy.ones(3) * 255.0
-                d = {CPLD_NAME: name,
-                     CPLD_LABELS: ldict[name],
-                     CPLD_OUTLINE_COLOR: color,
-                     CPLD_MODE: CPLDM_OUTLINES,
-                     CPLD_LINE_WIDTH: self.line_width.value}
-                cplabels.append(d)
+        if self.blank_image:
+            pixel_data = numpy.zeros(workspace.display_data.pixel_data.shape)
         else:
-            pixel_data = workspace.display_data.pixel_data
-            cplabels = None
+            pixel_data = workspace.display_data.image_pixel_data
+        cplabels = []
+        ldict = workspace.display_data.labels
+        for outline in self.outlines:
+            name = outline.objects_name.value
+            if self.wants_color.value == WANTS_COLOR:
+                color = numpy.array(outline.color.to_rgb(), float)
+            else:
+                color = numpy.ones(3) * 255.0
+            d = {CPLD_NAME: name,
+                 CPLD_LABELS: ldict[name],
+                 CPLD_OUTLINE_COLOR: color,
+                 CPLD_MODE: CPLDM_OUTLINES,
+                 CPLD_LINE_WIDTH: self.line_width.value}
+            cplabels.append(d)
         if self.blank_image.value:
             if self.wants_color.value == WANTS_COLOR:
                 figure.subplot_imshow(0, 0, pixel_data,
@@ -379,16 +330,11 @@ class OverlayOutlines(cellprofiler.module.Module):
 
     def get_outline(self, workspace, outline):
         '''Get outline, with aliasing and taking widths into account'''
-        if outline.outline_choice == FROM_IMAGES:
-            name = outline.outline_name.value
-            pixel_data = workspace.image_set.get_image(name).pixel_data
-        else:
-            name = outline.objects_name.value
-            objects = workspace.object_set.get_objects(name)
-            pixel_data = numpy.zeros(objects.shape, bool)
-            for labels, indexes in objects.get_labels():
-                pixel_data = \
-                    pixel_data | centrosome.outline.outline(labels)
+        name = outline.objects_name.value
+        objects = workspace.object_set.get_objects(name)
+        pixel_data = numpy.zeros(objects.shape, bool)
+        for labels, indexes in objects.get_labels():
+            pixel_data = pixel_data | centrosome.outline.outline(labels)
         if self.wants_color == WANTS_GRAYSCALE:
             return pixel_data.astype(bool)
         color = numpy.array(outline.color.to_rgb(), float) / 255.0
@@ -459,4 +405,19 @@ class OverlayOutlines(cellprofiler.module.Module):
                 new_setting_values += [FROM_IMAGES, cellprofiler.setting.NONE]
             setting_values = new_setting_values
             variable_revision_number = 3
+
+        if (not from_matlab) and variable_revision_number == 3:
+            new_setting_values = setting_values[:NUM_FIXED_SETTINGS_V3]
+
+            colors = setting_values[NUM_FIXED_SETTINGS_V3 + 1::NUM_OUTLINE_SETTINGS_V3]
+
+            names = setting_values[NUM_FIXED_SETTINGS_V3 + 3::NUM_OUTLINE_SETTINGS_V3]
+
+            for color, name in zip(colors, names):
+                new_setting_values += [color, name]
+
+            setting_values = new_setting_values
+
+            variable_revision_number = 4
+
         return setting_values, variable_revision_number, from_matlab

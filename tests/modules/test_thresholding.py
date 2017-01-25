@@ -314,14 +314,14 @@ def test_run_local_otsu(image, module, workspace):
     disk = skimage.morphology.disk(8)
 
     if image.volumetric:
-        expected = numpy.zeros_like(data, dtype=numpy.bool)
+        expected = numpy.zeros_like(data)
 
         for index, plane in enumerate(data):
             expected[index] = skimage.filters.rank.otsu(plane, disk)
     else:
         expected = skimage.filters.rank.otsu(data, disk)
 
-    expected = expected >= data
+    expected = data >= expected
 
     numpy.testing.assert_array_equal(expected, actual)
 
@@ -346,13 +346,13 @@ def test_run_local_percentile(image, module, workspace):
     disk = skimage.morphology.disk(8)
 
     if image.volumetric:
-        expected = numpy.zeros_like(data, dtype=numpy.bool)
+        expected = numpy.zeros_like(data)
 
         for index, plane in enumerate(data):
             expected[index] = skimage.filters.rank.percentile(plane, disk)
     else:
         expected = skimage.filters.rank.percentile(data, disk)
 
-    expected = expected >= data
+    expected = data >= expected
 
     numpy.testing.assert_array_equal(expected, actual)

@@ -211,26 +211,26 @@ class Thresholding(cellprofiler.module.ImageProcessing):
                 disk = skimage.morphology.disk(self.radius.value)
 
                 if x.volumetric:
-                    y_data = numpy.zeros_like(x_data, dtype=numpy.bool)
+                    y_data = numpy.zeros_like(x_data)
 
                     for index, data in enumerate(x_data):
                         y_data[index] = skimage.filters.rank.otsu(data, disk)
                 else:
                     y_data = skimage.filters.rank.otsu(x_data, disk)
 
-                y_data = y_data >= x_data
+                y_data = x_data >= y_data
             elif self.local_operation.value == u"Percentile":
                 disk = skimage.morphology.disk(self.radius.value)
 
                 if x.volumetric:
-                    y_data = numpy.zeros_like(x_data, dtype=numpy.bool)
+                    y_data = numpy.zeros_like(x_data)
 
                     for index, data in enumerate(x_data):
                         y_data[index] = skimage.filters.rank.percentile(data, disk)
                 else:
                     y_data = skimage.filters.rank.percentile(x_data, disk)
 
-                y_data = y_data >= x_data
+                y_data = x_data >= y_data
         else:
             if self.global_operation.value == u"Iterative selection thresholding":
                 y_data = skimage.filters.threshold_isodata(

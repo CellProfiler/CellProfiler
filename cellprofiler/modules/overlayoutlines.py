@@ -1,12 +1,11 @@
-'''<b>Overlay Outlines</b> places outlines produced by an 
-<b>Identify</b> module over a desired image.
+"""
+<b>Overlay Outlines</b> places outlines produced by an <b>Identify</b> module over a desired image.
 <hr>
-This module places outlines (in a special format produced by an <b>Identify</b> module)
-on any desired image (grayscale, color, or blank). The
-resulting image can be saved using the <b>SaveImages</b> module.
-
-See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryObjects</b>.
-'''
+This module places outlines (in a special format produced by an <b>Identify</b> module) on any
+desired image (grayscale, color, or blank). The resulting image can be saved using the
+<b>SaveImages</b> module. See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects,
+IdentifyTertiaryObjects</b>.
+"""
 
 import centrosome.outline
 import numpy as np
@@ -52,61 +51,79 @@ class OverlayOutlines(cpm.Module):
 
     def create_settings(self):
         self.blank_image = cps.Binary(
-                "Display outlines on a blank image?",
-                False, doc="""
-            Select <i>%(YES)s</i> to produce an
-            image of the outlines on a black background.
-            <p>Select <i>%(NO)s</i>, the module will overlay the
-            outlines on an image of your choosing.</p>""" % globals())
+            "Display outlines on a blank image?",
+            False,
+            doc="""
+            Select <i>{YES}</i> to produce an image of the outlines on a black background.
+            <p>Select <i>{NO}</i>, the module will overlay the outlines on an image of your choosing.</p>
+            """.format(**{
+                "YES": YES,
+                "NO": NO
+            })
+        )
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select image on which to display outlines", cps.NONE, doc="""
-            <i>(Used only when a blank image has not been selected)</i> <br>
-            Choose the image to serve as the background for the outlines.
-            You can choose from images that were loaded or created by modules
-            previous to this one.""")
+            "Select image on which to display outlines",
+            cps.NONE,
+            doc="""
+            <i>(Used only when a blank image has not been selected)</i><br>
+            Choose the image to serve as the background for the outlines. You can choose from images that were
+            loaded or created by modules previous to this one.
+            """
+        )
 
         self.line_width = cps.Float(
-                "Width of outlines", "1", doc="""
-            Enter the width, in pixels, of the
-            outlines to be displayed on the image.""")
+            "Width of outlines",
+            "1",
+            doc="""
+            Enter the width, in pixels, of the outlines to be displayed on the image.
+            """
+        )
 
         self.output_image_name = cps.ImageNameProvider(
-                "Name the output image", "OrigOverlay", doc="""
-            Enter the name of the output image with the outlines overlaid.
-            This image can be selected in later modules (for instance, <b>SaveImages</b>).""")
+            "Name the output image",
+            "OrigOverlay",
+            doc="""
+            Enter the name of the output image with the outlines overlaid. This image can be selected in later
+            modules (for instance, <b>SaveImages</b>).
+            """
+        )
 
         self.wants_color = cps.Choice(
-                "Outline display mode",
-                [WANTS_COLOR, WANTS_GRAYSCALE], doc="""
-            Specify how to display the outline contours around
-            your objects. Color outlines produce a clearer display for
-            images where the cell borders have a high intensity, but take
-            up more space in memory. Grayscale outlines are displayed with
-            either the highest possible intensity or the same intensity
-            as the brightest pixel in the image.""")
+            "Outline display mode",
+            [WANTS_COLOR, WANTS_GRAYSCALE],
+            doc="""
+            Specify how to display the outline contours around your objects. Color outlines produce a clearer
+            display for images where the cell borders have a high intensity, but take up more space in memory.
+            Grayscale outlines are displayed with either the highest possible intensity or the same intensity
+            as the brightest pixel in the image.
+            """
+        )
 
         self.spacer = cps.Divider(line=False)
 
         self.max_type = cps.Choice(
-                "Select method to determine brightness of outlines",
-                [MAX_IMAGE, MAX_POSSIBLE], doc="""
-            <i>(Used only when outline display mode is grayscale)</i> <br>
-            The following options are possible for setting the intensity
-            (brightness) of the outlines:
+            "Select method to determine brightness of outlines",
+            [MAX_IMAGE, MAX_POSSIBLE],
+            doc="""
+            <i>(Used only when outline display mode is grayscale)</i><br>
+            The following options are possible for setting the intensity (brightness) of the outlines:
             <ul>
-            <li><i>%(MAX_IMAGE)s:</i> Set the brighness to the
-            the same as the brightest point in the image.</li>
-            <li><i>%(MAX_POSSIBLE)s:</i> Set to the maximum
-            possible value for this image format.</li>
-            </ul>
-            If your image is quite dim, then putting bright white lines
-            onto it may not be useful. It may be preferable to make the
-            outlines equal to the maximal brightness already occurring
-            in the image.""" % globals())
+                <li><i>{MAX_IMAGE}:</i> Set the brighness to the the same as the brightest point in the
+                image.</li>
+                <li><i>{MAX_POSSIBLE}:</i> Set to the maximum possible value for this image format.</li>
+            </ul>If your image is quite dim, then putting bright white lines onto it may not be useful. It may
+            be preferable to make the outlines equal to the maximal brightness already occurring in the image.
+            """.format(**{
+                "MAX_IMAGE": MAX_IMAGE,
+                "MAX_POSSIBLE": MAX_POSSIBLE
+            })
+        )
 
         self.outlines = []
+
         self.add_outline(can_remove=False)
+
         self.add_outline_button = cps.DoSomething("", "Add another outline", self.add_outline)
 
     def add_outline(self, can_remove=True):
@@ -114,41 +131,54 @@ class OverlayOutlines(cpm.Module):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
 
-        group.append("outline_choice", cps.Choice(
+        group.append(
+            "outline_choice",
+            cps.Choice(
                 "Load outlines from an image or objects?",
-                [FROM_OBJECTS, FROM_IMAGES], doc="""
-            This setting selects what source the outlines come from:
-            <ul>
-            <li><i>%(FROM_OBJECTS)s:</i> Create the image directly from the
-            objects. This option will improve the functionality of the
-            contrast options for this module's interactive display and will
-            save memory.</li>
-            <li><i>%(FROM_IMAGES)s:</i> Prior versions of <b>OverlayOutlines</b> would only
-            display outline images which were optional outputs of the identify
-            modules. For legacy pipelines or to continue using the outline
-            images instead of objects, choose this option.</li>
-            </ul>
-            """ % globals()))
+                [FROM_OBJECTS, FROM_IMAGES],
+                doc="""
+                This setting selects what source the outlines come from:
+                <ul>
+                    <li><i>{FROM_OBJECTS}:</i> Create the image directly from the objects. This option will improve
+                    the functionality of the contrast options for this module's interactive display and will save
+                    memory.</li>
+                    <li><i>{FROM_IMAGES}:</i> Prior versions of <b>OverlayOutlines</b> would only display outline
+                    images which were optional outputs of the identify modules. For legacy pipelines or to continue
+                    using the outline images instead of objects, choose this option.</li>
+                </ul>
+                """.format(**{
+                    "FROM_OBJECTS": FROM_OBJECTS,
+                    "FROM_IMAGES": FROM_IMAGES
+                })
+            )
+        )
 
-        group.append("objects_name", cps.ObjectNameSubscriber(
-                "Select objects to display", cps.NONE,
-                doc="""Choose the objects whose outlines you would like
-        to display."""))
-        group.append("outline_name", cps.OutlineNameSubscriber(
+        group.append(
+            "objects_name",
+            cps.ObjectNameSubscriber(
+                "Select objects to display",
+                cps.NONE,
+                doc="Choose the objects whose outlines you would like to display."
+            )
+        )
+
+        group.append(
+            "outline_name",
+            cps.OutlineNameSubscriber(
                 "Select outlines to display",
-                cps.NONE, doc="""
-            Choose outlines to display, from a previous <b>Identify</b>
-            module. Each of the <b>Identify</b> modules has a checkbox that
-            determines whether the outlines are saved. If you have checked this,
-            you were asked to supply a name for the outline; you
-            can then select that name here.
-            """))
+                cps.NONE,
+                doc="""
+                Choose outlines to display, from a previous <b>Identify</b> module. Each of the <b>Identify</b>
+                modules has a checkbox that determines whether the outlines are saved. If you have checked this,
+                you were asked to supply a name for the outline; you can then select that name here.
+                """
+            )
+        )
 
-        default_color = (COLOR_ORDER[len(self.outlines)]
-                         if len(self.outlines) < len(COLOR_ORDER)
-                         else COLOR_ORDER[0])
-        group.append("color", cps.Color(
-                "Select outline color", default_color))
+        default_color = (COLOR_ORDER[len(self.outlines)] if len(self.outlines) < len(COLOR_ORDER) else COLOR_ORDER[0])
+
+        group.append("color", cps.Color("Select outline color", default_color))
+
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this outline", self.outlines, group))
 

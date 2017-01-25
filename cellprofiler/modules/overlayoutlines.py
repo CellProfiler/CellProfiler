@@ -7,9 +7,10 @@ desired image (grayscale, color, or blank). The resulting image can be saved usi
 IdentifyTertiaryObjects</b>.
 """
 
-import centrosome.outline
 import numpy
 import scipy.ndimage
+import skimage.color
+import skimage.segmentation
 
 import cellprofiler.image
 import cellprofiler.module
@@ -290,41 +291,38 @@ class OverlayOutlines(cellprofiler.module.Module):
         return pixel_data
 
     def run_color(self, workspace):
-        image_set = workspace.image_set
+        outline = self.outlines[0]
+
+        objects = workspace.object_set.get_objects(outline.objects_name.value)
+
         if self.blank_image.value:
-            pixel_data = None
-            pdmax = 1
+            pixel_data = numpy.zeros(objects.shape + (3,))
         else:
-            image = image_set.get_image(self.image_name.value)
-            pixel_data = image.pixel_data
-            if pixel_data.ndim == 2:
-                pixel_data = numpy.dstack((pixel_data, pixel_data, pixel_data))
+            image = workspace.image_set.get_image(self.image_name.value)
+
+            if image.multichannel:
+                pixel_data = image.pixel_data
             else:
-                pixel_data = pixel_data.copy()
-            pdmax = float(numpy.max(pixel_data))
-            if pdmax <= 0:
-                pdmax = 1
-        for outline in self.outlines:
-            outline_img = self.get_outline(workspace, outline)
-            if pixel_data is None:
-                pixel_data = numpy.zeros(list(outline_img.shape[:2]) + [3], numpy.float32)
-            i_max = min(outline_img.shape[0], pixel_data.shape[0])
-            j_max = min(outline_img.shape[1], pixel_data.shape[1])
-            outline_img = outline_img[:i_max, :j_max, :]
-            window = pixel_data[:i_max, :j_max, :]
-            # Original:
-            #   alpha = outline_img[:,:,3]
-            #   pixel_data[:i_max, :j_max, :] = (
-            #       window * (1 - alpha[:,:,np.newaxis]) +
-            #       outline_img[:,:,:3] * alpha[:,:,np.newaxis] * pdmax)
-            #
-            # Memory reduced:
-            alpha = outline_img[:, :, 3]
-            outline_img[:, :, :3] *= pdmax
-            outline_img[:, :, :3] *= alpha[:, :, numpy.newaxis]
-            # window is a view on pixel_data
-            window *= (1 - alpha)[:, :, numpy.newaxis]
-            window += outline_img[:, :, :3]
+                pixel_data = skimage.color.gray2rgb(image.pixel_data)
+
+        color = tuple(c / 255.0 for c in outline.color.to_rgb())
+
+        for labels, _ in objects.get_labels():
+            if objects.volumetric:
+                for index, plane in enumerate(labels):
+                    pixel_data[index] = skimage.segmentation.mark_boundaries(
+                        pixel_data[index],
+                        plane,
+                        color=color,
+                        mode="inner"
+                    )
+            else:
+                pixel_data = skimage.segmentation.mark_boundaries(
+                    pixel_data,
+                    labels,
+                    color=color,
+                    mode="inner"
+                )
 
         return pixel_data
 
@@ -333,8 +331,8 @@ class OverlayOutlines(cellprofiler.module.Module):
         name = outline.objects_name.value
         objects = workspace.object_set.get_objects(name)
         pixel_data = numpy.zeros(objects.shape, bool)
-        for labels, indexes in objects.get_labels():
-            pixel_data = pixel_data | centrosome.outline.outline(labels)
+        for labels, _ in objects.get_labels():
+            pixel_data = pixel_data | skimage.segmentation.find_boundaries(labels, mode="inner")
         if self.wants_color == WANTS_GRAYSCALE:
             return pixel_data.astype(bool)
         color = numpy.array(outline.color.to_rgb(), float) / 255.0
@@ -344,23 +342,20 @@ class OverlayOutlines(cellprofiler.module.Module):
             pixel_data = pixel_data > 0
             output_image = color[numpy.newaxis, numpy.newaxis, :] * pixel_data[:, :, numpy.newaxis]
         else:
-            output_image = numpy.dstack([pixel_data[:, :, i] for i in range(3)] +
-                                        [numpy.sum(pixel_data, 2) > 0])
+            output_image = numpy.dstack([pixel_data[:, :, i] for i in range(3)] + [numpy.sum(pixel_data, 2) > 0])
         # float16s are slower, but since we're potentially allocating an image
         # 4 times larger than our input, the tradeoff is worth it.
         if hasattr(numpy, 'float16'):
             output_image = output_image.astype(numpy.float16)
         if self.line_width.value > 1:
             half_line_width = float(self.line_width.value) / 2
-            d, (i, j) = scipy.ndimage.distance_transform_edt(output_image[:, :, 3] == 0,
-                                                             return_indices=True)
+            d, (i, j) = scipy.ndimage.distance_transform_edt(output_image[:, :, 3] == 0, return_indices=True)
             mask = (d > 0) & (d <= half_line_width - .5)
             output_image[mask, :] = output_image[i[mask], j[mask], :]
             #
             # Do a little aliasing here using an alpha channel
             #
-            mask = ((d > max(0, half_line_width - .5)) &
-                    (d < half_line_width + .5))
+            mask = ((d > max(0, half_line_width - .5)) & (d < half_line_width + .5))
             d = half_line_width + .5 - d
             output_image[mask, :3] = output_image[i[mask], j[mask], :3]
             output_image[mask, 3] = d[mask]

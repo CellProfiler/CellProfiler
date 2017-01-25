@@ -4,6 +4,8 @@ import unittest
 import zlib
 
 import numpy
+import numpy.testing
+import skimage.segmentation
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -24,7 +26,7 @@ OBJECTS_NAME = 'objectsname'
 
 
 class TestOverlayOutlines(unittest.TestCase):
-    def make_workspace(self, image, labels=None):
+    def make_workspace(self, image, labels=None, dimensions=2):
         '''Make a workspace for testing ApplyThreshold'''
         m = cellprofiler.measurement.Measurements()
         object_set = cellprofiler.object.ObjectSet()
@@ -44,7 +46,7 @@ class TestOverlayOutlines(unittest.TestCase):
 
         pipeline = cellprofiler.pipeline.Pipeline()
         workspace = cellprofiler.workspace.Workspace(pipeline, module, m, object_set, m, None)
-        m.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image))
+        m.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, dimensions=dimensions))
         return workspace, module
 
     def test_01_00_load_matlab(self):
@@ -223,7 +225,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_02_02_color_to_color_outlines(self):
         numpy.random.seed(0)
@@ -242,7 +244,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_02_03_blank_to_color_outlines(self):
         numpy.random.seed(0)
@@ -262,7 +264,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_02_04_wrong_size_gray_to_color(self):
         '''Regression test of img-961'''
@@ -283,7 +285,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_02_05_wrong_size_color_to_color(self):
         numpy.random.seed(25)
@@ -400,4 +402,107 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
+
+    def test_color_outlines_on_blank_volume(self):
+        image = numpy.zeros((9, 9, 9))
+
+        labels = numpy.zeros_like(image)
+
+        k, i, j = numpy.mgrid[-4:5, -4:5, -4:5]
+
+        labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+
+        module.blank_image.value = True
+
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+
+        module.outlines[0].color.value = "Red"
+
+        module.run(workspace)
+
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected = numpy.zeros(labels.shape + (3,))
+
+        for index, plane in enumerate(labels):
+            expected[index] = skimage.segmentation.mark_boundaries(
+                image[index],
+                plane,
+                color=(1, 0, 0),
+                mode="inner"
+            )
+
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
+
+    def test_color_outlines_on_gray_volume(self):
+        numpy.random.seed(0)
+
+        image = numpy.random.uniform(size=(9, 9, 9)).astype(numpy.float32)
+
+        labels = numpy.zeros_like(image)
+
+        k, i, j = numpy.mgrid[-4:5, -4:5, -4:5]
+
+        labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+
+        module.blank_image.value = False
+
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+
+        module.outlines[0].color.value = "Red"
+
+        module.run(workspace)
+
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected = numpy.zeros(labels.shape + (3,))
+
+        for index, plane in enumerate(labels):
+            expected[index] = skimage.segmentation.mark_boundaries(
+                image[index],
+                plane,
+                color=(1, 0, 0),
+                mode="inner"
+            )
+
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
+
+    def test_color_outlines_on_color_volume(self):
+        numpy.random.seed(0)
+
+        image = numpy.random.uniform(size=(9, 9, 9, 3)).astype(numpy.float32)
+
+        labels = numpy.zeros((9, 9, 9))
+
+        k, i, j = numpy.mgrid[-4:5, -4:5, -4:5]
+
+        labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+
+        module.blank_image.value = False
+
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+
+        module.outlines[0].color.value = "Red"
+
+        module.run(workspace)
+
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected = numpy.zeros_like(image)
+
+        for index, plane in enumerate(labels):
+            expected[index] = skimage.segmentation.mark_boundaries(
+                image[index],
+                plane,
+                color=(1, 0, 0),
+                mode="inner"
+            )
+
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)

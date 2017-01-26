@@ -5,6 +5,7 @@ import zlib
 
 import numpy
 import numpy.testing
+import skimage.color
 import skimage.segmentation
 
 import cellprofiler.image
@@ -321,7 +322,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_03_02_gray_max_image(self):
         numpy.random.seed(0)
@@ -338,7 +339,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_03_02_gray_max_possible(self):
         numpy.random.seed(0)
@@ -355,7 +356,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_03_03_wrong_size_gray(self):
         '''Regression test of IMG-961 - image and outline size differ'''
@@ -506,3 +507,112 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             )
 
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
+
+    def test_gray_outlines_on_blank_volume(self):
+        image = numpy.zeros((9, 9, 9))
+
+        labels = numpy.zeros_like(image)
+
+        k, i, j = numpy.mgrid[-4:5, -4:5, -4:5]
+
+        labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+
+        module.blank_image.value = True
+
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
+
+        module.run(workspace)
+
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected = numpy.zeros(labels.shape + (3,))
+
+        for index, plane in enumerate(labels):
+            expected[index] = skimage.segmentation.mark_boundaries(
+                image[index],
+                plane,
+                color=1.0,
+                mode="inner"
+            )
+
+        expected = skimage.color.rgb2gray(expected)
+
+        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
+
+    def test_gray_outlines_max_possible_on_volume(self):
+        numpy.random.seed(0)
+
+        image = numpy.random.uniform(size=(9, 9, 9)).astype(numpy.float32)
+
+        labels = numpy.zeros_like(image)
+
+        k, i, j = numpy.mgrid[-4:5, -4:5, -4:5]
+
+        labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+
+        module.blank_image.value = False
+
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
+
+        module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
+
+        module.run(workspace)
+
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected = numpy.zeros(labels.shape + (3,))
+
+        for index, plane in enumerate(labels):
+            expected[index] = skimage.segmentation.mark_boundaries(
+                image[index],
+                plane,
+                color=1.0,
+                mode="inner"
+            )
+
+        expected = skimage.color.rgb2gray(expected)
+
+        numpy.testing.assert_array_almost_equal(output_image.pixel_data, expected)
+
+    def test_gray_outlines_image_max_on_volume(self):
+        numpy.random.seed(0)
+
+        image = numpy.random.uniform(size=(9, 9, 9)).astype(numpy.float32)
+
+        image_max = numpy.max(image)
+
+        labels = numpy.zeros_like(image)
+
+        k, i, j = numpy.mgrid[-4:5, -4:5, -4:5]
+
+        labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+
+        module.blank_image.value = False
+
+        module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
+
+        module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_IMAGE
+
+        module.run(workspace)
+
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected = numpy.zeros(labels.shape + (3,))
+
+        for index, plane in enumerate(labels):
+            expected[index] = skimage.segmentation.mark_boundaries(
+                image[index],
+                plane,
+                color=image_max,
+                mode="inner"
+            )
+
+        expected = skimage.color.rgb2gray(expected)
+
+        numpy.testing.assert_array_almost_equal(output_image.pixel_data, expected)

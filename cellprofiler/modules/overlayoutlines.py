@@ -271,24 +271,45 @@ class OverlayOutlines(cellprofiler.module.Module):
                                          cplabels=cplabels)
 
     def run_bw(self, workspace):
-        image_set = workspace.image_set
+        outline = self.outlines[0]
+
+        objects = workspace.object_set.get_objects(outline.objects_name.value)
+
         if self.blank_image.value:
-            shape = self.get_outline(workspace, self.outlines[0]).shape[:2]
-            pixel_data = numpy.zeros(shape)
-            maximum = 1
+            pixel_data = numpy.zeros(objects.shape + (3,))
+
+            color = 1.0
         else:
-            image = image_set.get_image(self.image_name.value,
-                                        must_be_grayscale=True)
-            pixel_data = image.pixel_data
-            maximum = 1 if self.max_type == MAX_POSSIBLE else numpy.max(pixel_data)
-            pixel_data = pixel_data.copy()
-        for outline in self.outlines:
-            mask = self.get_outline(workspace, outline)
-            i_max = min(mask.shape[0], pixel_data.shape[0])
-            j_max = min(mask.shape[1], pixel_data.shape[1])
-            mask = mask[:i_max, :j_max]
-            pixel_data[:i_max, :j_max][mask] = maximum
-        return pixel_data
+            image = workspace.image_set.get_image(self.image_name.value)
+
+            if image.multichannel:
+                pixel_data = image.pixel_data
+            else:
+                pixel_data = skimage.color.gray2rgb(image.pixel_data)
+
+            if self.max_type.value == MAX_POSSIBLE:
+                color = 1.0
+            else:
+                color = numpy.max(pixel_data)
+
+        for labels, _ in objects.get_labels():
+            if objects.volumetric:
+                for index, plane in enumerate(labels):
+                    pixel_data[index] = skimage.segmentation.mark_boundaries(
+                        pixel_data[index],
+                        plane,
+                        color=color,
+                        mode="inner"
+                    )
+            else:
+                pixel_data = skimage.segmentation.mark_boundaries(
+                    pixel_data,
+                    labels,
+                    color=color,
+                    mode="inner"
+                )
+
+        return skimage.color.rgb2gray(pixel_data)
 
     def run_color(self, workspace):
         outline = self.outlines[0]

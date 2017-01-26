@@ -189,9 +189,10 @@ class OverlayOutlines(cellprofiler.module.Module):
 
     def run(self, workspace):
         if self.wants_color.value == WANTS_COLOR:
-            pixel_data = self.run_color(workspace)
+            pixel_data = self.run_color(workspace, self.base_image(workspace))
         else:
-            pixel_data = self.run_bw(workspace)
+            pixel_data = self.run_bw(workspace, self.base_image(workspace))
+
         if self.blank_image.value:
             output_image = cellprofiler.image.Image(pixel_data)
             workspace.image_set.add(self.output_image_name.value, output_image)
@@ -270,64 +271,45 @@ class OverlayOutlines(cellprofiler.module.Module):
                                          sharexy=figure.subplot(0, 0),
                                          cplabels=cplabels)
 
-    def run_bw(self, workspace):
-        outline = self.outlines[0]
-
-        objects = workspace.object_set.get_objects(outline.objects_name.value)
-
+    def base_image(self, workspace):
         if self.blank_image.value:
-            pixel_data = numpy.zeros(objects.shape + (3,))
+            outline = self.outlines[0]
 
+            objects = workspace.object_set.get_objects(outline.objects_name.value)
+
+            return numpy.zeros(objects.shape + (3,))
+
+        image = workspace.image_set.get_image(self.image_name.value)
+
+        if image.multichannel:
+            return image.pixel_data
+
+        return skimage.color.gray2rgb(image.pixel_data)
+
+    def run_bw(self, workspace, pixel_data):
+        if self.blank_image.value or self.max_type.value == MAX_POSSIBLE:
             color = 1.0
         else:
-            image = workspace.image_set.get_image(self.image_name.value)
+            color = numpy.max(pixel_data)
 
-            if image.multichannel:
-                pixel_data = image.pixel_data
-            else:
-                pixel_data = skimage.color.gray2rgb(image.pixel_data)
+        for outline in self.outlines:
+            objects = workspace.object_set.get_objects(outline.objects_name.value)
 
-            if self.max_type.value == MAX_POSSIBLE:
-                color = 1.0
-            else:
-                color = numpy.max(pixel_data)
-
-        for labels, _ in objects.get_labels():
-            if objects.volumetric:
-                for index, plane in enumerate(labels):
-                    pixel_data[index] = skimage.segmentation.mark_boundaries(
-                        pixel_data[index],
-                        plane,
-                        color=color,
-                        mode="inner"
-                    )
-            else:
-                pixel_data = skimage.segmentation.mark_boundaries(
-                    pixel_data,
-                    labels,
-                    color=color,
-                    mode="inner"
-                )
+            pixel_data = self.draw_outlines(pixel_data, objects, color)
 
         return skimage.color.rgb2gray(pixel_data)
 
-    def run_color(self, workspace):
-        outline = self.outlines[0]
+    def run_color(self, workspace, pixel_data):
+        for outline in self.outlines:
+            objects = workspace.object_set.get_objects(outline.objects_name.value)
 
-        objects = workspace.object_set.get_objects(outline.objects_name.value)
+            color = tuple(c / 255.0 for c in outline.color.to_rgb())
 
-        if self.blank_image.value:
-            pixel_data = numpy.zeros(objects.shape + (3,))
-        else:
-            image = workspace.image_set.get_image(self.image_name.value)
+            pixel_data = self.draw_outlines(pixel_data, objects, color)
 
-            if image.multichannel:
-                pixel_data = image.pixel_data
-            else:
-                pixel_data = skimage.color.gray2rgb(image.pixel_data)
+        return pixel_data
 
-        color = tuple(c / 255.0 for c in outline.color.to_rgb())
-
+    def draw_outlines(self, pixel_data, objects, color):
         for labels, _ in objects.get_labels():
             if objects.volumetric:
                 for index, plane in enumerate(labels):
@@ -346,42 +328,6 @@ class OverlayOutlines(cellprofiler.module.Module):
                 )
 
         return pixel_data
-
-    def get_outline(self, workspace, outline):
-        '''Get outline, with aliasing and taking widths into account'''
-        name = outline.objects_name.value
-        objects = workspace.object_set.get_objects(name)
-        pixel_data = numpy.zeros(objects.shape, bool)
-        for labels, _ in objects.get_labels():
-            pixel_data = pixel_data | skimage.segmentation.find_boundaries(labels, mode="inner")
-        if self.wants_color == WANTS_GRAYSCALE:
-            return pixel_data.astype(bool)
-        color = numpy.array(outline.color.to_rgb(), float) / 255.0
-        if pixel_data.ndim == 2:
-            if len(color) == 3:
-                color = numpy.hstack((color, [1]))
-            pixel_data = pixel_data > 0
-            output_image = color[numpy.newaxis, numpy.newaxis, :] * pixel_data[:, :, numpy.newaxis]
-        else:
-            output_image = numpy.dstack([pixel_data[:, :, i] for i in range(3)] + [numpy.sum(pixel_data, 2) > 0])
-        # float16s are slower, but since we're potentially allocating an image
-        # 4 times larger than our input, the tradeoff is worth it.
-        if hasattr(numpy, 'float16'):
-            output_image = output_image.astype(numpy.float16)
-        if self.line_width.value > 1:
-            half_line_width = float(self.line_width.value) / 2
-            d, (i, j) = scipy.ndimage.distance_transform_edt(output_image[:, :, 3] == 0, return_indices=True)
-            mask = (d > 0) & (d <= half_line_width - .5)
-            output_image[mask, :] = output_image[i[mask], j[mask], :]
-            #
-            # Do a little aliasing here using an alpha channel
-            #
-            mask = ((d > max(0, half_line_width - .5)) & (d < half_line_width + .5))
-            d = half_line_width + .5 - d
-            output_image[mask, :3] = output_image[i[mask], j[mask], :3]
-            output_image[mask, 3] = d[mask]
-
-        return output_image
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

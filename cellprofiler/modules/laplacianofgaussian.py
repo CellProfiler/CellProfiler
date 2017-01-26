@@ -78,7 +78,7 @@ class LaplacianOfGaussian(cellprofiler.module.ImageProcessing):
 
         dimensions = x.dimensions
 
-        if dimensions is 2:
+        if dimensions == 2:
             sigma = (self.x.value, self.y.value)
         else:
             sigma = (self.z.value, self.x.value, self.y.value)

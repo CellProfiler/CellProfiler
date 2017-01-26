@@ -40,7 +40,7 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_02_throws_on_wx_import(self):
         def import_wx():
-            pass
+            import wx
 
         self.assertRaises(ImportError, import_wx)
 

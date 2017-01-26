@@ -747,7 +747,7 @@ class Figure(wx.Frame):
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
         else:
-            if dimensions is 2:
+            if dimensions == 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
             else:
                 self.set_grids(subplots)
@@ -1141,7 +1141,7 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
-        if dimensions is 2:
+        if dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax
             if interpolation is None:

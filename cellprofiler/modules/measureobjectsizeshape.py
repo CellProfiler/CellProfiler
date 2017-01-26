@@ -298,7 +298,79 @@ class MeasureObjectSizeShape(cpm.Module):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
 
-        if len(objects.shape) is 2:
+        if objects.volumetric:
+            labels = objects.segmented
+
+            props = skimage.measure.regionprops(labels)
+
+            # Area
+            areas = [prop.area for prop in props]
+
+            self.record_measurement(workspace, object_name, F_AREA, areas)
+
+            # Extent
+            extents = [prop.extent for prop in props]
+
+            self.record_measurement(workspace, object_name, F_EXTENT, extents)
+
+            # Centers of mass
+            import mahotas
+
+            if objects.has_parent_image:
+                image = objects.parent_image
+
+                data = image.pixel_data
+
+                spacing = image.spacing
+            else:
+                data = np.ones_like(labels)
+
+                spacing = (1.0, 1.0, 1.0)
+
+            centers = mahotas.center_of_mass(data, labels=labels)
+
+            if np.any(labels == 0):
+                # Remove the 0-label center of mass
+                centers = centers[1:]
+
+            center_z, center_x, center_y = centers.transpose()
+
+            self.record_measurement(workspace, object_name, F_CENTER_X, center_x)
+
+            self.record_measurement(workspace, object_name, F_CENTER_Y, center_y)
+
+            self.record_measurement(workspace, object_name, F_CENTER_Z, center_z)
+
+            # Perimeters
+            perimeters = []
+
+            for label in np.unique(labels):
+                if label == 0:
+                    continue
+
+                volume = np.zeros_like(labels, dtype='bool')
+
+                volume[labels == label] = True
+
+                verts, faces, _, _ = skimage.measure.marching_cubes(
+                    volume,
+                    spacing=spacing,
+                    level=0
+                )
+
+                perimeters += [skimage.measure.mesh_surface_area(verts, faces)]
+
+            if len(perimeters) == 0:
+                self.record_measurement(workspace, object_name, F_PERIMETER, [0])
+            else:
+                self.record_measurement(workspace, object_name, F_PERIMETER, perimeters)
+
+            for feature in self.get_feature_names():
+                if feature in [F_AREA, F_EXTENT, F_CENTER_X, F_CENTER_Y, F_CENTER_Z, F_PERIMETER]:
+                    continue
+
+                self.record_measurement(workspace, object_name, feature, [np.nan])
+        else:
             #
             # Do the ellipse-related measurements
             #
@@ -404,78 +476,6 @@ class MeasureObjectSizeShape(cpm.Module):
                              [(self.get_zernike_name((n, m)), zf[(n, m)])
                               for n, m in zernike_numbers]):
                 self.record_measurement(workspace, object_name, f, m)
-        else:
-            labels = objects.segmented
-
-            props = skimage.measure.regionprops(labels)
-
-            # Area
-            areas = [prop.area for prop in props]
-
-            self.record_measurement(workspace, object_name, F_AREA, areas)
-
-            # Extent
-            extents = [prop.extent for prop in props]
-
-            self.record_measurement(workspace, object_name, F_EXTENT, extents)
-
-            # Centers of mass
-            import mahotas
-
-            if objects.has_parent_image:
-                image = objects.parent_image
-
-                data = image.pixel_data
-
-                spacing = image.spacing
-            else:
-                data = np.ones_like(labels)
-
-                spacing = (1.0, 1.0, 1.0)
-
-            centers = mahotas.center_of_mass(data, labels=labels)
-
-            if np.any(labels == 0):
-                # Remove the 0-label center of mass
-                centers = centers[1:]
-
-            center_z, center_x, center_y = centers.transpose()
-
-            self.record_measurement(workspace, object_name, F_CENTER_X, center_x)
-
-            self.record_measurement(workspace, object_name, F_CENTER_Y, center_y)
-
-            self.record_measurement(workspace, object_name, F_CENTER_Z, center_z)
-
-            # Perimeters
-            perimeters = []
-
-            for label in np.unique(labels):
-                if label == 0:
-                    continue
-
-                volume = np.zeros_like(labels, dtype='bool')
-
-                volume[labels == label] = True
-
-                verts, faces, _, _ = skimage.measure.marching_cubes(
-                    volume,
-                    spacing=spacing,
-                    level=0
-                )
-
-                perimeters += [skimage.measure.mesh_surface_area(verts, faces)]
-
-            if len(perimeters) == 0:
-                self.record_measurement(workspace, object_name, F_PERIMETER, [0])
-            else:
-                self.record_measurement(workspace, object_name, F_PERIMETER, perimeters)
-
-            for feature in self.get_feature_names():
-                if feature in [F_AREA, F_EXTENT, F_CENTER_X, F_CENTER_Y, F_CENTER_Z, F_PERIMETER]:
-                    continue
-
-                self.record_measurement(workspace, object_name, feature, [np.nan])
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

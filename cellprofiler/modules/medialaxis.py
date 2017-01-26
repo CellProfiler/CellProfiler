@@ -36,7 +36,7 @@ class MedialAxis(cellprofiler.module.ImageProcessing):
         if x.multichannel:
             x_data = skimage.color.rgb2gray(x_data)
 
-        if x.dimensions is 3:
+        if x.volumetric:
             y_data = numpy.zeros_like(x_data)
 
             for z, image in enumerate(x_data):

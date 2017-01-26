@@ -74,11 +74,19 @@ class OverlayOutlines(cellprofiler.module.Module):
             """
         )
 
-        self.line_width = cellprofiler.setting.Float(
-            "Width of outlines",
-            "1",
+        self.line_mode = cellprofiler.setting.Choice(
+            "How to outline",
+            ["Inner", "Outer", "Thick"],
+            value="Inner",
             doc="""
-            Enter the width, in pixels, of the outlines to be displayed on the image.
+            Specify how to mark the boundaries around an object:
+            <ul>
+                <li><i>Inner:</i> outline the pixels just inside of objects, leaving background pixels untouched.</li>
+                <li><i>Outer:</i> outline pixels in the background around object boundaries. When two objects touch,
+                their boundary is also marked.</li>
+                <li><i>Thick:</i> any pixel not completely surrounded by pixels of the same label is marked as a
+                boundary. This results in boundaries that are 2 pixels thick.</li>
+            </ul>
             """
         )
 
@@ -166,7 +174,7 @@ class OverlayOutlines(cellprofiler.module.Module):
 
     def settings(self):
         result = [self.blank_image, self.image_name, self.output_image_name,
-                  self.wants_color, self.max_type, self.line_width]
+                  self.wants_color, self.max_type, self.line_mode]
         for outline in self.outlines:
             result += [outline.color, outline.objects_name]
         return result
@@ -175,7 +183,7 @@ class OverlayOutlines(cellprofiler.module.Module):
         result = [self.blank_image]
         if not self.blank_image.value:
             result += [self.image_name]
-        result += [self.output_image_name, self.wants_color, self.line_width, self.spacer]
+        result += [self.output_image_name, self.wants_color, self.line_mode, self.spacer]
         if (self.wants_color.value == WANTS_GRAYSCALE and not self.blank_image.value):
             result += [self.max_type]
         for outline in self.outlines:
@@ -307,14 +315,14 @@ class OverlayOutlines(cellprofiler.module.Module):
                         pixel_data[index],
                         plane,
                         color=color,
-                        mode="inner"
+                        mode=self.line_mode.value.lower()
                     )
             else:
                 pixel_data = skimage.segmentation.mark_boundaries(
                     pixel_data,
                     labels,
                     color=color,
-                    mode="inner"
+                    mode=self.line_mode.value.lower()
                 )
 
         return pixel_data
@@ -359,7 +367,9 @@ class OverlayOutlines(cellprofiler.module.Module):
             variable_revision_number = 3
 
         if (not from_matlab) and variable_revision_number == 3:
-            new_setting_values = setting_values[:NUM_FIXED_SETTINGS_V3]
+            new_setting_values = setting_values[:NUM_FIXED_SETTINGS_V3 - 1]
+
+            new_setting_values += ["Inner"]
 
             colors = setting_values[NUM_FIXED_SETTINGS_V3 + 1::NUM_OUTLINE_SETTINGS_V3]
 

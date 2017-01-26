@@ -156,7 +156,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         self.assertEqual(module.output_image_name, "PrimaryOverlay")
         self.assertEqual(module.wants_color, "Color")
         self.assertEqual(module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE)
-        self.assertAlmostEqual(module.line_width.value, 1.5)
+        self.assertEqual(module.line_mode.value, "Inner")
         self.assertEqual(len(module.outlines), 2)
         for outline, name, color in zip(module.outlines,
                                         ("PrimaryOutlines", "SecondaryOutlines"),
@@ -199,7 +199,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         self.assertEqual(module.output_image_name, "PrimaryOverlay")
         self.assertEqual(module.wants_color, "Color")
         self.assertEqual(module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE)
-        self.assertAlmostEqual(module.line_width.value, 1.5)
+        self.assertEqual(module.line_mode.value, "Inner")
         self.assertEqual(len(module.outlines), 2)
         for outline, name, color, choice, objects_name in (
                 (module.outlines[0], "PrimaryOutlines", "Red",
@@ -223,7 +223,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
         module.outlines[0].color.value = "Red"
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -242,7 +242,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
         module.outlines[0].color.value = "Red"
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -262,7 +262,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.blank_image.value = True
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
         module.outlines[0].color.value = "Red"
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -283,7 +283,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
         module.outlines[0].color.value = "Red"
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -303,7 +303,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
         module.outlines[0].color.value = "Red"
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(numpy.all(output_image.pixel_data == expected))
@@ -319,7 +319,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
         module.blank_image.value = True
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -336,7 +336,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.blank_image.value = False
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
         module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_IMAGE
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -353,7 +353,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.blank_image.value = False
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
         module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -371,7 +371,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.blank_image.value = False
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
         module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(numpy.all(output_image.pixel_data == expected))
@@ -400,7 +400,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         workspace, module = self.make_workspace(image, labels=labels)
         module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
         module.outlines[0].color.value = "Red"
-        module.line_width.value = 0.0
+        module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)

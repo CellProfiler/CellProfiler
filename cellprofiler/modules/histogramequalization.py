@@ -11,6 +11,7 @@ common frequencies are more distinct, increasing contrast.
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
+import numpy
 import skimage.exposure
 
 
@@ -38,21 +39,29 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
             """
         )
 
+        self.local = cellprofiler.setting.Binary(
+            u"Local",
+            False
+        )
+
     def settings(self):
         __settings__ = super(HistogramEqualization, self).settings()
 
         return __settings__ + [
             self.nbins,
-            self.mask
+            self.mask,
+            self.local
         ]
 
     def visible_settings(self):
         __settings__ = super(HistogramEqualization, self).settings()
 
-        return __settings__ + [
-            self.nbins,
-            self.mask
-        ]
+        __settings__ += [self.local, self.nbins]
+
+        if not self.local.value:
+            __settings__ += [self.mask]
+
+        return __settings__
 
     def run(self, workspace):
         x_name = self.x_name.value
@@ -78,7 +87,16 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
 
         nbins = self.nbins.value
 
-        y_data = skimage.exposure.equalize_hist(x_data, nbins=nbins, mask=mask_data)
+        if self.local.value:
+            if x.volumetric:
+                y_data = numpy.zeros_like(x_data)
+
+                for index, plane in enumerate(x_data):
+                    y_data[index] = skimage.exposure.equalize_adapthist(plane, nbins=nbins)
+            else:
+                y_data = skimage.exposure.equalize_adapthist(x_data, nbins=nbins)
+        else:
+            y_data = skimage.exposure.equalize_hist(x_data, nbins=nbins, mask=mask_data)
 
         y = cellprofiler.image.Image(
             dimensions=dimensions,

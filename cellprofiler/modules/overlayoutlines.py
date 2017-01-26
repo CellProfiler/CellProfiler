@@ -8,10 +8,10 @@ IdentifyTertiaryObjects</b>.
 """
 
 import numpy
-import scipy.ndimage
 import skimage.color
 import skimage.segmentation
 
+import cellprofiler.gui.figure
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
@@ -188,88 +188,78 @@ class OverlayOutlines(cellprofiler.module.Module):
         return result
 
     def run(self, workspace):
+        base_image, dimensions = self.base_image(workspace)
+
         if self.wants_color.value == WANTS_COLOR:
-            pixel_data = self.run_color(workspace, self.base_image(workspace))
+            pixel_data = self.run_color(workspace, base_image)
         else:
-            pixel_data = self.run_bw(workspace, self.base_image(workspace))
+            pixel_data = self.run_bw(workspace, base_image)
 
-        if self.blank_image.value:
-            output_image = cellprofiler.image.Image(pixel_data)
-            workspace.image_set.add(self.output_image_name.value, output_image)
-        else:
+        output_image = cellprofiler.image.Image(pixel_data, dimensions=dimensions)
+
+        workspace.image_set.add(self.output_image_name.value, output_image)
+
+        if not self.blank_image.value:
             image = workspace.image_set.get_image(self.image_name.value)
-            output_image = cellprofiler.image.Image(pixel_data, parent_image=image)
-            workspace.image_set.add(self.output_image_name.value, output_image)
-            workspace.display_data.image_pixel_data = image.pixel_data
-        if self.show_window:
-            workspace.display_data.labels = {}
-            for outline in self.outlines:
-                name = outline.objects_name.value
-                objects = workspace.object_set.get_objects(name)
-                workspace.display_data.labels[name] = \
-                    [labels for labels, indexes in objects.get_labels()]
 
-        workspace.display_data.pixel_data = pixel_data
+            output_image.parent_image = image
+
+        if self.show_window:
+            workspace.display_data.pixel_data = pixel_data
+
+            workspace.display_data.image_pixel_data = base_image
+
+            workspace.display_data.dimensions = dimensions
 
     def display(self, workspace, figure):
-        from cellprofiler.gui.figure import CPLD_LABELS, CPLD_NAME, \
-            CPLD_OUTLINE_COLOR, CPLD_MODE, CPLDM_OUTLINES, CPLD_LINE_WIDTH
+        dimensions = workspace.display_data.dimensions
 
-        figure.set_subplots((1, 1))
-
-        if self.blank_image:
-            pixel_data = numpy.zeros(workspace.display_data.pixel_data.shape)
-        else:
-            pixel_data = workspace.display_data.image_pixel_data
-        cplabels = []
-        ldict = workspace.display_data.labels
-        for outline in self.outlines:
-            name = outline.objects_name.value
-            if self.wants_color.value == WANTS_COLOR:
-                color = numpy.array(outline.color.to_rgb(), float)
-            else:
-                color = numpy.ones(3) * 255.0
-            d = {CPLD_NAME: name,
-                 CPLD_LABELS: ldict[name],
-                 CPLD_OUTLINE_COLOR: color,
-                 CPLD_MODE: CPLDM_OUTLINES,
-                 CPLD_LINE_WIDTH: self.line_width.value}
-            cplabels.append(d)
         if self.blank_image.value:
-            if self.wants_color.value == WANTS_COLOR:
-                figure.subplot_imshow(0, 0, pixel_data,
-                                      self.output_image_name.value,
-                                      cplabels=cplabels)
-            else:
-                figure.subplot_imshow_bw(0, 0, pixel_data,
-                                         self.output_image_name.value,
-                                         cplabels=cplabels)
-        else:
-            figure.set_subplots((2, 1))
+            figure.set_subplots((1, 1), dimensions=dimensions)
 
-            image_pixel_data = workspace.display_data.image_pixel_data
-            if image_pixel_data.ndim == 2:
-                figure.subplot_imshow_bw(0, 0, image_pixel_data,
-                                         "Original: %s" %
-                                         self.image_name.value)
-            else:
-                figure.subplot_imshow_color(0, 0, image_pixel_data,
-                                            "Original: %s" %
-                                            self.image_name.value)
             if self.wants_color.value == WANTS_COLOR:
-                if cplabels is not None and pixel_data.ndim == 2:
-                    fn = figure.subplot_imshow_grayscale
-                else:
-                    fn = figure.subplot_imshow
-                fn(1, 0, pixel_data,
-                   self.output_image_name.value,
-                   sharexy=figure.subplot(0, 0),
-                   cplabels=cplabels)
+                figure.subplot_imshow(
+                    0,
+                    0,
+                    workspace.display_data.pixel_data,
+                    self.output_image_name.value,
+                    dimensions=dimensions
+                )
             else:
-                figure.subplot_imshow_bw(1, 0, pixel_data,
-                                         self.output_image_name.value,
-                                         sharexy=figure.subplot(0, 0),
-                                         cplabels=cplabels)
+                figure.subplot_imshow_bw(
+                    0,
+                    0,
+                    workspace.display_data.pixel_data,
+                    self.output_image_name.value,
+                    dimensions=dimensions
+                )
+        else:
+            figure.set_subplots((2, 1), dimensions=dimensions)
+
+            figure.subplot_imshow_bw(
+                0,
+                0,
+                workspace.display_data.image_pixel_data,
+                self.output_image_name.value,
+                dimensions=dimensions
+            )
+
+            if self.wants_color.value == WANTS_COLOR:
+                figure.subplot_imshow(
+                    1,
+                    0,
+                    workspace.display_data.pixel_data,
+                    self.output_image_name.value,
+                    dimensions=dimensions
+                )
+            else:
+                figure.subplot_imshow_bw(
+                    1,
+                    0,
+                    workspace.display_data.pixel_data,
+                    self.output_image_name.value,
+                    dimensions=dimensions
+                )
 
     def base_image(self, workspace):
         if self.blank_image.value:
@@ -277,14 +267,14 @@ class OverlayOutlines(cellprofiler.module.Module):
 
             objects = workspace.object_set.get_objects(outline.objects_name.value)
 
-            return numpy.zeros(objects.shape + (3,))
+            return numpy.zeros(objects.shape + (3,)), objects.dimensions
 
         image = workspace.image_set.get_image(self.image_name.value)
 
         if image.multichannel:
-            return image.pixel_data
+            return image.pixel_data, image.dimensions
 
-        return skimage.color.gray2rgb(image.pixel_data)
+        return skimage.color.gray2rgb(image.pixel_data), image.dimensions
 
     def run_bw(self, workspace, pixel_data):
         if self.blank_image.value or self.max_type.value == MAX_POSSIBLE:

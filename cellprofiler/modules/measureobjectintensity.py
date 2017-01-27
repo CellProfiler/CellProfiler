@@ -453,7 +453,7 @@ class MeasureObjectIntensity(cpm.Module):
                         #
                         madimg = np.abs(limg - median_intensity[llabels - 1])
                         order = np.lexsort((madimg, llabels))
-                        qindex = indices.astype(float) + areas / 2.0
+                        qindex = indices.astype(float) + areas / image.dimensions
                         qfraction = qindex - np.floor(qindex)
                         qindex = qindex.astype(int)
                         qmask = qindex < indices + areas - 1

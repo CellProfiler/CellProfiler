@@ -841,6 +841,123 @@ def test_masked_edge(image, module, objects, workspace):
     module.run(workspace)
 
 
+def test_image(measurements, module, objects, image, workspace):
+    data = numpy.zeros((11, 20))
+
+    i, j = numpy.mgrid[-5:6, -5:15]
+    data[i ** 2 + j ** 2 <= 25] = 0.5
+    data[i ** 2 + j ** 2 <= 16] = 0.25
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    i, j = numpy.mgrid[-5:6, -15:5]
+    data[i ** 2 + j ** 2 <= 9] = 0.5
+    data[i ** 2 + j ** 2 <= 4] = 0.75
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    image.pixel_data = data
+
+    image.dimensions = 2
+
+    labels = skimage.measure.label(data > 0)
+
+    objects.segmented = labels
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_IntegratedIntensity_MyImage": [29.0, 18.0],
+        "Intensity_MeanIntensity_MyImage": [0.35802469135802467, 0.62068965517241381],
+        "Intensity_StdIntensity_MyImage": [0.14130275484271107, 0.14112677192883538],
+        "Intensity_MinIntensity_MyImage": [0.25, 0.5],
+        "Intensity_MaxIntensity_MyImage": [1.0, 1.0],
+        "Intensity_IntegratedIntensityEdge_MyImage": [14.0, 8.0],
+        "Intensity_MeanIntensityEdge_MyImage": [0.5, 0.5],
+        "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
+        "Intensity_MinIntensityEdge_MyImage": [0.5, 0.5],
+        "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.5],
+        "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
+        "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.5],
+        "Intensity_MedianIntensity_MyImage": [0.25, 0.5],
+        "Intensity_MADIntensity_MyImage": [0.0, 0.0],
+        "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.75],
+        "Location_CenterMassIntensity_X_MyImage": [5.0, 15.0],
+        "Location_CenterMassIntensity_Y_MyImage": [5.0, 5.0],
+        "Location_CenterMassIntensity_Z_MyImage": [1.0, 1.0],
+        "Location_MaxIntensity_X_MyImage": [5.0, 15.0],
+        "Location_MaxIntensity_Y_MyImage": [5.0, 5.0],
+        "Location_MaxIntensity_Z_MyImage": [1.0, 1.0]
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_measurement(OBJECT_NAME, feature)
+
+        numpy.testing.assert_array_almost_equal(
+            value,
+            actual,
+            err_msg="{} expected {}, got {}".format(feature, value, actual)
+        )
+
+
+def test_image_masked(measurements, module, objects, image, workspace):
+    data = numpy.zeros((11, 20))
+
+    i, j = numpy.mgrid[-5:6, -5:15]
+    data[i ** 2 + j ** 2 <= 25] = 0.5
+    data[i ** 2 + j ** 2 <= 16] = 0.25
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    i, j = numpy.mgrid[-5:6, -15:5]
+    data[i ** 2 + j ** 2 <= 9] = 0.5
+    data[i ** 2 + j ** 2 <= 4] = 0.75
+    data[i ** 2 + j ** 2 == 0] = 1
+
+    mask = numpy.ones_like(data)
+    mask[:, 11:] = 0
+
+    image.pixel_data = data
+    image.dimensions = 2
+    image.mask = mask > 0
+
+    labels = skimage.measure.label(data > 0)
+
+    objects.segmented = labels
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_IntegratedIntensity_MyImage": [29.0, 0.0],
+        "Intensity_MeanIntensity_MyImage": [0.35802469135802467, numpy.nan],
+        "Intensity_StdIntensity_MyImage": [0.14130275484271107, numpy.nan],
+        "Intensity_MinIntensity_MyImage": [0.25, 0.0],
+        "Intensity_MaxIntensity_MyImage": [1.0, 0.0],
+        "Intensity_IntegratedIntensityEdge_MyImage": [14.0, 0.0],
+        "Intensity_MeanIntensityEdge_MyImage": [0.5, numpy.nan],
+        "Intensity_StdIntensityEdge_MyImage": [0.0, numpy.nan],
+        "Intensity_MinIntensityEdge_MyImage": [0.5, 0.0],
+        "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.0],
+        "Intensity_MassDisplacement_MyImage": [0.0, numpy.nan],
+        "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.0],
+        "Intensity_MedianIntensity_MyImage": [0.25, 0.0],
+        "Intensity_MADIntensity_MyImage": [0.0, 0.0],
+        "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.0],
+        "Location_CenterMassIntensity_X_MyImage": [5.0, numpy.nan],
+        "Location_CenterMassIntensity_Y_MyImage": [5.0, numpy.nan],
+        "Location_CenterMassIntensity_Z_MyImage": [1.0, 1.0],
+        "Location_MaxIntensity_X_MyImage": [5.0, 5.0],
+        "Location_MaxIntensity_Y_MyImage": [5.0, 0.0],
+        "Location_MaxIntensity_Z_MyImage": [1.0, 1.0]
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_measurement(OBJECT_NAME, feature)
+
+        numpy.testing.assert_array_almost_equal(
+            value,
+            actual,
+            err_msg="{} expected {}, got {}".format(feature, value, actual)
+        )
+
+
 def test_volume(measurements, module, objects, volume, workspace):
     labels = skimage.measure.label(volume.pixel_data > 0)
 
@@ -859,7 +976,7 @@ def test_volume(measurements, module, objects, volume, workspace):
         "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
         "Intensity_MinIntensityEdge_MyImage": [0.5, 0.5],
         "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.5],
-        # "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
+        "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
         "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.5],
         "Intensity_MedianIntensity_MyImage": [0.5, 0.5],
         "Intensity_MADIntensity_MyImage": [0.0, 0.0],
@@ -906,10 +1023,10 @@ def test_volume_masked(measurements, module, objects, volume, workspace):
         "Intensity_StdIntensityEdge_MyImage": [0.0, numpy.nan],
         "Intensity_MinIntensityEdge_MyImage": [0.5, 0.0],
         "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.0],
-        # "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
+        "Intensity_MassDisplacement_MyImage": [0.0, numpy.nan],
         "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.0],
         "Intensity_MedianIntensity_MyImage": [0.5, 0.0],
-        # "Intensity_MADIntensity_MyImage": [0.0, 0.0],
+        "Intensity_MADIntensity_MyImage": [0.0, 0.0],
         "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.0],
         "Location_CenterMassIntensity_X_MyImage": [5.0, numpy.nan],
         "Location_CenterMassIntensity_Y_MyImage": [5.0, numpy.nan],

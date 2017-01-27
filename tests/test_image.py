@@ -94,6 +94,52 @@ class TestImage(unittest.TestCase):
 
         self.assertFalse(x.multichannel)
 
+    def test_spacing_image_default(self):
+        data = np.ones((5, 5))
+
+        x = cpi.Image(image=data)
+
+        self.assertEqual(x.spacing, (1.0, 1.0))
+
+    def test_spacing_image(self):
+        data = np.ones((5, 5))
+
+        x = cpi.Image(image=data, spacing=(0.33, 0.33))
+
+        self.assertEqual(x.spacing, (0.33, 0.33))
+
+    def test_spacing_parent_image(self):
+        data = np.ones((5, 5))
+
+        px = cpi.Image(image=data, spacing=(0.33, 0.33))
+
+        x = cpi.Image(image=data, parent_image=px)
+
+        self.assertEqual(x.spacing, (0.33, 0.33))
+
+    def test_spacing_volume_default(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertEqual(x.spacing, (1.0, 1.0, 1.0))
+
+    def test_spacing_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+
+        self.assertEqual(x.spacing, (0.77, 0.33, 0.33))
+
+    def test_spacing_volume_parent_image(self):
+        data = np.ones((5, 10, 10))
+
+        px = cpi.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+
+        x = cpi.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
+
+        self.assertEqual(x.spacing, (0.77, 0.33, 0.33))
+
 
 IMAGE_NAME = "image"
 

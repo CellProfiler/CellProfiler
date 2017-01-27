@@ -1,8 +1,7 @@
-"""CellProfiler - base directory for CellProfiler code
-"""
+import os.path
 
-import pkg_resources
 
 __test__ = False
 
-__version__ = pkg_resources.get_distribution("cellprofiler").version
+__version_file__ = open(os.path.join(os.path.dirname(__file__), 'VERSION'))
+__version__ = __version_file__.read().strip()

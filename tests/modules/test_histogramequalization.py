@@ -16,6 +16,8 @@ def test_run(image, image_set, module, workspace):
 
     module.mask.value = "Leave blank"
 
+    module.local.value = False
+
     module.run(workspace)
 
     actual = image_set.get_image("HistogramEqualization")
@@ -33,12 +35,47 @@ def test_run(image, image_set, module, workspace):
     numpy.testing.assert_array_equal(expected.pixel_data, actual.pixel_data)
 
 
+def test_run_local(image, image_set, module, workspace):
+    module.x_name.value = "example"
+
+    module.y_name.value = "HistogramEqualization"
+
+    module.nbins.value = 256
+
+    module.local.value = True
+
+    module.run(workspace)
+
+    actual = image_set.get_image("HistogramEqualization")
+
+    data = image.pixel_data
+
+    if image.volumetric:
+        expected_data = numpy.zeros_like(data)
+
+        for index, plane in enumerate(data):
+            expected_data[index] = skimage.exposure.equalize_adapthist(plane)
+    else:
+        expected_data = skimage.exposure.equalize_adapthist(data)
+
+
+    expected = cellprofiler.image.Image(
+        image=expected_data,
+        parent_image=image,
+        dimensions=image.dimensions
+    )
+
+    numpy.testing.assert_array_equal(expected.pixel_data, actual.pixel_data)
+
+
 def test_run_nbins(image, image_set, module, workspace):
     module.x_name.value = "example"
 
     module.y_name.value = "HistogramEqualization"
 
     module.nbins.value = 128
+
+    module.local.value = False
 
     module.mask.value = "Leave blank"
 
@@ -83,6 +120,8 @@ def test_run_mask(image, image_set, module, workspace):
     module.y_name.value = "HistogramEqualization"
 
     module.nbins.value = 256
+
+    module.local.value = False
 
     module.mask.value = "Mask"
 

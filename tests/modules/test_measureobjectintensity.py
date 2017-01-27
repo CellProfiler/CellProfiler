@@ -3,19 +3,21 @@ import base64
 import math
 import zlib
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.modules.measureobjectintensity
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
 import centrosome.outline
 import numpy
 import numpy.testing
 import pytest
 import skimage.measure
 import skimage.segmentation
+
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.identify
+import cellprofiler.modules.measureobjectintensity
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.workspace
 
 cellprofiler.preferences.set_headless()
 
@@ -184,7 +186,7 @@ def test_supplied_measurements(module):
     expected_categories = tuple(
         sorted([
             cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.C_LOCATION
+            cellprofiler.modules.identify.C_LOCATION
         ])
     )
 
@@ -196,7 +198,7 @@ def test_supplied_measurements(module):
 
     assert len(measurements) == len(cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS)
 
-    measurements = module.get_measurements(None, 'MyObjects1', cellprofiler.modules.measureobjectintensity.C_LOCATION)
+    measurements = module.get_measurements(None, 'MyObjects1', cellprofiler.modules.identify.C_LOCATION)
 
     assert len(measurements) == len(cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)
 
@@ -226,7 +228,7 @@ def test_get_measurement_columns(module):
 
         category = column[1].split('_')[0]
 
-        assert category in (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.C_LOCATION)
+        assert category in (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.identify.C_LOCATION)
 
         if category == cellprofiler.modules.measureobjectintensity.INTENSITY:
             assert column[1][column[1].find('_') + 1:] in [m + '_MyImage' for m in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS]
@@ -244,7 +246,7 @@ def test_zero(image, measurements, module, objects, workspace):
 
     for category, features in ((cellprofiler.modules.measureobjectintensity.INTENSITY,
                                 cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS),
-                               (cellprofiler.modules.measureobjectintensity.C_LOCATION,
+                               (cellprofiler.modules.identify.C_LOCATION,
                                 cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)):
         for meas_name in features:
             feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
@@ -310,8 +312,8 @@ def test_one(image, measurements, module, objects, workspace):
             (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 1),
             (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 1),
             (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 1),
-            (cellprofiler.modules.measureobjectintensity.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_X, 3),
-            (cellprofiler.modules.measureobjectintensity.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_Y, 2)
+            (cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_X, 3),
+            (cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_Y, 2)
     ):
         feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
 
@@ -384,7 +386,7 @@ def test_intensity_location(image, measurements, module, objects, workspace):
 
     for feature, value in ((cellprofiler.modules.measureobjectintensity.LOC_MAX_X, 5),
                            (cellprofiler.modules.measureobjectintensity.LOC_MAX_Y, 2)):
-        feature_name = "%s_%s_%s" % (cellprofiler.modules.measureobjectintensity.C_LOCATION, feature, 'MyImage')
+        feature_name = "%s_%s_%s" % (cellprofiler.modules.identify.C_LOCATION, feature, 'MyImage')
 
         values = measurements.get_current_measurement(OBJECT_NAME, feature_name)
 
@@ -768,7 +770,7 @@ def test_ijv(image, module, objects, workspace):
 
     for cname, fnames in ((cellprofiler.modules.measureobjectintensity.INTENSITY,
                            cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS),
-                          (cellprofiler.modules.measureobjectintensity.C_LOCATION,
+                          (cellprofiler.modules.identify.C_LOCATION,
                            cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)):
         for fname in fnames:
             mname = "_".join([cname, fname, IMAGE_NAME])

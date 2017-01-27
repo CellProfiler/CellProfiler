@@ -882,10 +882,10 @@ def test_image(measurements, module, objects, image, workspace):
         "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.75],
         "Location_CenterMassIntensity_X_MyImage": [5.0, 15.0],
         "Location_CenterMassIntensity_Y_MyImage": [5.0, 5.0],
-        "Location_CenterMassIntensity_Z_MyImage": [1.0, 1.0],
+        "Location_CenterMassIntensity_Z_MyImage": [0.0, 0.0],
         "Location_MaxIntensity_X_MyImage": [5.0, 15.0],
         "Location_MaxIntensity_Y_MyImage": [5.0, 5.0],
-        "Location_MaxIntensity_Z_MyImage": [1.0, 1.0]
+        "Location_MaxIntensity_Z_MyImage": [0.0, 0.0]
     }
 
     for feature, value in expected.iteritems():
@@ -942,10 +942,10 @@ def test_image_masked(measurements, module, objects, image, workspace):
         "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.0],
         "Location_CenterMassIntensity_X_MyImage": [5.0, numpy.nan],
         "Location_CenterMassIntensity_Y_MyImage": [5.0, numpy.nan],
-        "Location_CenterMassIntensity_Z_MyImage": [1.0, 1.0],
+        "Location_CenterMassIntensity_Z_MyImage": [0.0, numpy.nan],
         "Location_MaxIntensity_X_MyImage": [5.0, 5.0],
         "Location_MaxIntensity_Y_MyImage": [5.0, 0.0],
-        "Location_MaxIntensity_Z_MyImage": [1.0, 1.0]
+        "Location_MaxIntensity_Z_MyImage": [0.0, 0.0]
     }
 
     for feature, value in expected.iteritems():

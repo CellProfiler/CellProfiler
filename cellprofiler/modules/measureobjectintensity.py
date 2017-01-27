@@ -318,8 +318,16 @@ class MeasureObjectIntensity(cpm.Module):
                 if image.has_mask:
                     masked_image = img.copy()
                     masked_image[~image.mask] = 0
+                    image_mask = image.mask
                 else:
                     masked_image = img
+                    image_mask = np.ones_like(img, dtype=np.bool)
+
+                if image.dimensions == 2:
+                    img = img.reshape(1, *img.shape)
+                    masked_image = masked_image.reshape(1, *masked_image.shape)
+                    image_mask = image_mask.reshape(1, *image_mask.shape)
+
                 objects = workspace.object_set.get_objects(object_name.value)
                 nobjects = objects.count
                 integrated_intensity = np.zeros((nobjects,))
@@ -345,12 +353,16 @@ class MeasureObjectIntensity(cpm.Module):
                 max_z = np.zeros((nobjects,))
                 for labels, lindexes in objects.get_labels():
                     lindexes = lindexes[lindexes != 0]
+
+                    if image.dimensions == 2:
+                        labels = labels.reshape(1, *labels.shape)
+
                     labels, img = cpo.crop_labels_and_image(labels, img)
                     _, masked_image = cpo.crop_labels_and_image(labels, masked_image)
                     outlines = skimage.segmentation.find_boundaries(labels, mode='inner')
 
                     if image.has_mask:
-                        _, mask = cpo.crop_labels_and_image(labels, image.mask)
+                        _, mask = cpo.crop_labels_and_image(labels, image_mask)
                         masked_labels = labels.copy()
                         masked_labels[~mask] = 0
                         masked_outlines = outlines.copy()
@@ -363,63 +375,61 @@ class MeasureObjectIntensity(cpm.Module):
                     has_objects = np.any(lmask)
                     if has_objects:
                         limg = img[lmask]
+
                         llabels = labels[lmask]
-                        if image.volumetric:
-                            mesh_z, mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0], 0:masked_image.shape[1], 0:masked_image.shape[2]]
-                            mesh_x = mesh_x[lmask]
-                            mesh_y = mesh_y[lmask]
-                            mesh_z = mesh_z[lmask]
-                        else:
-                            mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0], 0:masked_image.shape[1]]
-                            mesh_x = mesh_x[lmask]
-                            mesh_y = mesh_y[lmask]
+
+                        mesh_z,\
+                            mesh_y, \
+                            mesh_x = np.mgrid[0:masked_image.shape[0], 0:masked_image.shape[1], 0:masked_image.shape[2]]
+
+                        mesh_x = mesh_x[lmask]
+                        mesh_y = mesh_y[lmask]
+                        mesh_z = mesh_z[lmask]
+
                         lcount = fix(nd.sum(np.ones(len(limg)), llabels, lindexes))
-                        integrated_intensity[lindexes - 1] = \
-                            fix(nd.sum(limg, llabels, lindexes))
-                        mean_intensity[lindexes - 1] = \
-                            integrated_intensity[lindexes - 1] / lcount
+
+                        integrated_intensity[lindexes - 1] = fix(nd.sum(limg, llabels, lindexes))
+
+                        mean_intensity[lindexes - 1] = integrated_intensity[lindexes - 1] / lcount
+
                         std_intensity[lindexes - 1] = np.sqrt(
-                                fix(nd.mean((limg - mean_intensity[llabels - 1]) ** 2,
-                                            llabels, lindexes)))
+                            fix(nd.mean((limg - mean_intensity[llabels - 1]) ** 2, llabels, lindexes))
+                        )
+
                         min_intensity[lindexes - 1] = fix(nd.minimum(limg, llabels, lindexes))
-                        max_intensity[lindexes - 1] = fix(
-                                nd.maximum(limg, llabels, lindexes))
+
+                        max_intensity[lindexes - 1] = fix(nd.maximum(limg, llabels, lindexes))
+
                         # Compute the position of the intensity maximum
                         max_position = np.array(fix(nd.maximum_position(limg, llabels, lindexes)), dtype=int)
                         max_position = np.reshape(max_position, (max_position.shape[0],))
+
                         max_x[lindexes - 1] = mesh_x[max_position]
                         max_y[lindexes - 1] = mesh_y[max_position]
+                        max_z[lindexes - 1] = mesh_z[max_position]
+
                         # The mass displacement is the distance between the center
                         # of mass of the binary image and of the intensity image. The
                         # center of mass is the average X or Y for the binary image
                         # and the sum of X or Y * intensity / integrated intensity
                         cm_x = fix(nd.mean(mesh_x, llabels, lindexes))
                         cm_y = fix(nd.mean(mesh_y, llabels, lindexes))
+                        cm_z = fix(nd.mean(mesh_z, llabels, lindexes))
 
                         i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
                         i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
+                        i_z = fix(nd.sum(mesh_z * limg, llabels, lindexes))
+
                         cmi_x[lindexes - 1] = i_x / integrated_intensity[lindexes - 1]
                         cmi_y[lindexes - 1] = i_y / integrated_intensity[lindexes - 1]
+                        cmi_z[lindexes - 1] = i_z / integrated_intensity[lindexes - 1]
+
                         diff_x = cm_x - cmi_x[lindexes - 1]
                         diff_y = cm_y - cmi_y[lindexes - 1]
-                        if image.volumetric:
-                            max_z[lindexes - 1] = mesh_z[max_position]
+                        diff_z = cm_z - cmi_z[lindexes - 1]
 
-                            cm_z = fix(nd.mean(mesh_z, llabels, lindexes))
+                        mass_displacement[lindexes - 1] = np.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z)
 
-                            i_z = fix(nd.sum(mesh_z * limg, llabels, lindexes))
-
-                            cmi_z[lindexes - 1] = i_z / integrated_intensity[lindexes - 1]
-
-                            diff_z = cm_z - cmi_z[lindexes - 1]
-
-                            mass_displacement[lindexes - 1] = np.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z)
-                        else:
-                            cmi_z = np.ones_like(cmi_x)
-
-                            max_z = np.ones_like(max_x)
-
-                            mass_displacement[lindexes - 1] = np.sqrt(diff_x * diff_x + diff_y * diff_y)
                         #
                         # Sort the intensities by label, then intensity.
                         # For each label, find the index above and below
@@ -432,22 +442,23 @@ class MeasureObjectIntensity(cpm.Module):
                         for dest, fraction in (
                                 (lower_quartile_intensity, 1.0 / 4.0),
                                 (median_intensity, 1.0 / 2.0),
-                                (upper_quartile_intensity, 3.0 / 4.0)):
+                                (upper_quartile_intensity, 3.0 / 4.0)
+                        ):
                             qindex = indices.astype(float) + areas * fraction
                             qfraction = qindex - np.floor(qindex)
                             qindex = qindex.astype(int)
                             qmask = qindex < indices + areas - 1
                             qi = qindex[qmask]
                             qf = qfraction[qmask]
-                            dest[lindexes[qmask] - 1] = (
-                                limg[order[qi]] * (1 - qf) +
-                                limg[order[qi + 1]] * qf)
+                            dest[lindexes[qmask] - 1] = (limg[order[qi]] * (1 - qf) + limg[order[qi + 1]] * qf)
+
                             #
                             # In some situations (e.g. only 3 points), there may
                             # not be an upper bound.
                             #
                             qmask = (~qmask) & (areas > 0)
                             dest[lindexes[qmask] - 1] = limg[order[qindex[qmask]]]
+
                         #
                         # Once again, for the MAD
                         #
@@ -459,9 +470,7 @@ class MeasureObjectIntensity(cpm.Module):
                         qmask = qindex < indices + areas - 1
                         qi = qindex[qmask]
                         qf = qfraction[qmask]
-                        mad_intensity[lindexes[qmask] - 1] = (
-                            madimg[order[qi]] * (1 - qf) +
-                            madimg[order[qi + 1]] * qf)
+                        mad_intensity[lindexes[qmask] - 1] = (madimg[order[qi]] * (1 - qf) + madimg[order[qi + 1]] * qf)
                         qmask = (~qmask) & (areas > 0)
                         mad_intensity[lindexes[qmask] - 1] = madimg[order[qindex[qmask]]]
 
@@ -469,54 +478,60 @@ class MeasureObjectIntensity(cpm.Module):
                     eimg = img[emask]
                     elabels = labels[emask]
                     has_edge = len(eimg) > 0
+
                     if has_edge:
-                        ecount = fix(nd.sum(
-                                np.ones(len(eimg)), elabels, lindexes))
-                        integrated_intensity_edge[lindexes - 1] = \
-                            fix(nd.sum(eimg, elabels, lindexes))
-                        mean_intensity_edge[lindexes - 1] = \
-                            integrated_intensity_edge[lindexes - 1] / ecount
-                        std_intensity_edge[lindexes - 1] = \
-                            np.sqrt(fix(nd.mean(
-                                    (eimg - mean_intensity_edge[elabels - 1]) ** 2,
-                                    elabels, lindexes)))
-                        min_intensity_edge[lindexes - 1] = fix(
-                                nd.minimum(eimg, elabels, lindexes))
-                        max_intensity_edge[lindexes - 1] = fix(
-                                nd.maximum(eimg, elabels, lindexes))
+                        ecount = fix(nd.sum(np.ones(len(eimg)), elabels, lindexes))
+
+                        integrated_intensity_edge[lindexes - 1] = fix(nd.sum(eimg, elabels, lindexes))
+
+                        mean_intensity_edge[lindexes - 1] = integrated_intensity_edge[lindexes - 1] / ecount
+
+                        std_intensity_edge[lindexes - 1] = np.sqrt(
+                            fix(nd.mean((eimg - mean_intensity_edge[elabels - 1]) ** 2, elabels, lindexes))
+                        )
+
+                        min_intensity_edge[lindexes - 1] = fix(nd.minimum(eimg, elabels, lindexes))
+
+                        max_intensity_edge[lindexes - 1] = fix(nd.maximum(eimg, elabels, lindexes))
+
                 m = workspace.measurements
-                for category, feature_name, measurement in \
-                        ((INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),
-                         (INTENSITY, MEAN_INTENSITY, mean_intensity),
-                         (INTENSITY, STD_INTENSITY, std_intensity),
-                         (INTENSITY, MIN_INTENSITY, min_intensity),
-                         (INTENSITY, MAX_INTENSITY, max_intensity),
-                         (INTENSITY, INTEGRATED_INTENSITY_EDGE, integrated_intensity_edge),
-                         (INTENSITY, MEAN_INTENSITY_EDGE, mean_intensity_edge),
-                         (INTENSITY, STD_INTENSITY_EDGE, std_intensity_edge),
-                         (INTENSITY, MIN_INTENSITY_EDGE, min_intensity_edge),
-                         (INTENSITY, MAX_INTENSITY_EDGE, max_intensity_edge),
-                         (INTENSITY, MASS_DISPLACEMENT, mass_displacement),
-                         (INTENSITY, LOWER_QUARTILE_INTENSITY, lower_quartile_intensity),
-                         (INTENSITY, MEDIAN_INTENSITY, median_intensity),
-                         (INTENSITY, MAD_INTENSITY, mad_intensity),
-                         (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
-                         (C_LOCATION, LOC_CMI_X, cmi_x),
-                         (C_LOCATION, LOC_CMI_Y, cmi_y),
-                         (C_LOCATION, LOC_CMI_Z, cmi_z),
-                         (C_LOCATION, LOC_MAX_X, max_x),
-                         (C_LOCATION, LOC_MAX_Y, max_y),
-                         (C_LOCATION, LOC_MAX_Z, max_z)):
-                    measurement_name = "%s_%s_%s" % (category, feature_name,
-                                                     image_name.value)
-                    m.add_measurement(object_name.value, measurement_name,
-                                      measurement)
+
+                for category, feature_name, measurement in (
+                        (INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),
+                        (INTENSITY, MEAN_INTENSITY, mean_intensity),
+                        (INTENSITY, STD_INTENSITY, std_intensity),
+                        (INTENSITY, MIN_INTENSITY, min_intensity),
+                        (INTENSITY, MAX_INTENSITY, max_intensity),
+                        (INTENSITY, INTEGRATED_INTENSITY_EDGE, integrated_intensity_edge),
+                        (INTENSITY, MEAN_INTENSITY_EDGE, mean_intensity_edge),
+                        (INTENSITY, STD_INTENSITY_EDGE, std_intensity_edge),
+                        (INTENSITY, MIN_INTENSITY_EDGE, min_intensity_edge),
+                        (INTENSITY, MAX_INTENSITY_EDGE, max_intensity_edge),
+                        (INTENSITY, MASS_DISPLACEMENT, mass_displacement),
+                        (INTENSITY, LOWER_QUARTILE_INTENSITY, lower_quartile_intensity),
+                        (INTENSITY, MEDIAN_INTENSITY, median_intensity),
+                        (INTENSITY, MAD_INTENSITY, mad_intensity),
+                        (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
+                        (C_LOCATION, LOC_CMI_X, cmi_x),
+                        (C_LOCATION, LOC_CMI_Y, cmi_y),
+                        (C_LOCATION, LOC_CMI_Z, cmi_z),
+                        (C_LOCATION, LOC_MAX_X, max_x),
+                        (C_LOCATION, LOC_MAX_Y, max_y),
+                        (C_LOCATION, LOC_MAX_Z, max_z)
+                ):
+                    measurement_name = "{}_{}_{}".format(category, feature_name, image_name.value)
+                    m.add_measurement(object_name.value, measurement_name, measurement)
                     if self.show_window and len(measurement) > 0:
-                        statistics.append((image_name.value, object_name.value,
-                                           feature_name,
-                                           np.round(np.mean(measurement), 3),
-                                           np.round(np.median(measurement), 3),
-                                           np.round(np.std(measurement), 3)))
+                        statistics.append(
+                            (
+                                image_name.value,
+                                object_name.value,
+                                feature_name,
+                                np.round(np.mean(measurement), 3),
+                                np.round(np.median(measurement), 3),
+                                np.round(np.std(measurement), 3)
+                            )
+                        )
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

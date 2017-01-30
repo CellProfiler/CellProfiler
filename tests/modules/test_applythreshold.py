@@ -268,7 +268,6 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.threshold_correction_factor, 1.1)
         self.assertEqual(module.threshold_range.min, .07)
         self.assertEqual(module.threshold_range.max, .99)
-        self.assertEqual(module.object_fraction, 0.02)
         self.assertEqual(module.manual_threshold, 0.1)
         self.assertEqual(module.thresholding_measurement, "Pony_Perimeter")
         self.assertEqual(module.binary_image, "Pony_yes_or_no")

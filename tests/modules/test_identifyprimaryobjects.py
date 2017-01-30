@@ -819,7 +819,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
     Discard objects outside the diameter range?:Yes
     Try to merge too small objects with nearby larger objects?:No
     Discard objects touching the border of the image?:Yes
-    Select the thresholding method:MoG Global
+    Select the thresholding method:Otsu Global
     Threshold correction factor:1.6
     Lower and upper bounds on threshold:0,1
     Approximate fraction of image covered by objects?:0.2
@@ -833,7 +833,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
     Automatically calculate size of smoothing filter?:Yes
     Automatically calculate minimum allowed distance between local maxima?:Yes
     Manual threshold:0.0
-    Select binary image:MoG Global
+    Select binary image:Otsu Global
     Retain outlines of the identified objects?:No
     Automatically calculate the threshold using the Otsu method?:Yes
     Enter Laplacian of Gaussian threshold:.5
@@ -971,7 +971,6 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertTrue(module.threshold_algorithm, centrosome.threshold.TM_OTSU)
         self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
-        self.assertAlmostEqual(float(module.object_fraction.value), .01)
         self.assertEqual(module.object_name.value, "Nuclei")
         self.assertEqual(module.image_name.value, "Do not use")
         self.assertTrue(module.exclude_size.value)
@@ -1224,7 +1223,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
         self.assertAlmostEqual(module.threshold_range.min, 0.1)
         self.assertAlmostEqual(module.threshold_range.max, 0.6)
-        self.assertEqual(module.object_fraction.value, "0.01")
         self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_SHAPE)
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_SHAPE)
         self.assertEqual(module.smoothing_filter_size, 10)
@@ -1260,7 +1258,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
         self.assertAlmostEqual(module.threshold_range.min, 0.1)
         self.assertAlmostEqual(module.threshold_range.max, 0.6)
-        self.assertEqual(module.object_fraction.value, "0.01")
         self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY)
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE)
         self.assertEqual(module.smoothing_filter_size, 10)
@@ -1665,7 +1662,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertAlmostEqual(module.threshold_correction_factor, .80)
         self.assertAlmostEqual(module.threshold_range.min, 0.01)
         self.assertAlmostEqual(module.threshold_range.max, 0.90)
-        self.assertAlmostEqual(module.object_fraction, 0.05)
         self.assertAlmostEqual(module.manual_threshold, 0.03)
         self.assertEqual(module.thresholding_measurement, "Metadata_Threshold")
         self.assertEqual(module.binary_image, "Segmentation")
@@ -1705,7 +1701,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_TRUNCATE)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_BINARY_IMAGE)
-        self.assertEqual(module.threshold_method, centrosome.threshold.TM_MOG)
+        self.assertEqual(module.threshold_method, "None")
         self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_NONE)
         module = pipeline.modules()[7]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
@@ -2208,7 +2204,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         for threshold_method in (centrosome.threshold.TM_BACKGROUND,
                                  centrosome.threshold.TM_KAPUR,
                                  centrosome.threshold.TM_MCT,
-                                 centrosome.threshold.TM_MOG,
                                  centrosome.threshold.TM_OTSU,
                                  centrosome.threshold.TM_RIDLER_CALVARD,
                                  centrosome.threshold.TM_ROBUST_BACKGROUND):

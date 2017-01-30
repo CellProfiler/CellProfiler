@@ -300,34 +300,6 @@ class Identify(cellprofiler.module.Module):
                     </dl>
                 </li>
                 <li>
-                    <i>Mixture of Gaussian ({TM_MOG}):</i>This function assumes that the pixels in the image
-                    belong to either a background class or a foreground class, using an initial guess of the
-                    fraction of the image that is covered by foreground.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; If you know that the percentage of
-                        each image that is foreground does not vary much from image to image, the {TM_MOG}
-                        method can be better, especially if the foreground percentage is not near 50%.</dd>
-                    </dl>
-                    <dl>
-                        <dd>
-                            <img src="memory:{TECH_NOTE_ICON}">&nbsp; This method is our own version of a
-                            Mixture of Gaussians algorithm (<i>O. Friman, unpublished</i>). Essentially, there
-                            are two steps:
-                            <ol>
-                                <li>First, a number of Gaussian distributions are estimated to match the
-                                distribution of pixel intensities in the image. Currently three Gaussian
-                                distributions are fitted, one corresponding to a background class, one
-                                corresponding to a foreground class, and one distribution for an intermediate
-                                class. The distributions are fitted using the Expectation-Maximization
-                                algorithm, a procedure referred to as Mixture of Gaussians modeling.</li>
-                                <li>When the three Gaussian distributions have been fitted, a decision is made
-                                whether the intermediate class more closely models the background pixels or
-                                foreground pixels, based on the estimated fraction provided by the user.</li>
-                            </ol>
-                        </dd>
-                    </dl>
-                </li>
-                <li>
                     <i>{TM_BACKGROUND}:</i> This method simply finds the mode of the histogram of the image,
                     which is assumed to be the background of the image, and chooses a threshold at twice that
                     value (which you can adjust with a Threshold Correction Factor; see below). The calculation
@@ -414,7 +386,6 @@ class Identify(cellprofiler.module.Module):
                 "TM_BACKGROUND": centrosome.threshold.TM_BACKGROUND,
                 "TM_KAPUR": centrosome.threshold.TM_KAPUR,
                 "TM_MCT": centrosome.threshold.TM_MCT,
-                "TM_MOG": centrosome.threshold.TM_MOG,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TM_RIDLER_CALVARD": centrosome.threshold.TM_RIDLER_CALVARD,
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
@@ -504,18 +475,6 @@ class Identify(cellprofiler.module.Module):
             """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
-            })
-        )
-
-        self.object_fraction = cellprofiler.setting.CustomChoice(
-            "Approximate fraction of image covered by objects?",
-            ["0.01", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "0.99"],
-            doc="""
-            <i>(Used only when applying the {TM_MOG} thresholding method)</i><br>
-            Enter an estimate of how much of the image is covered with objects, which is used to estimate the
-            distribution of pixel intensities.
-            """.format(**{
-                "TM_MOG": centrosome.threshold.TM_MOG
             })
         )
 
@@ -741,7 +700,6 @@ class Identify(cellprofiler.module.Module):
                 self.threshold_smoothing_scale,    # 4
                 self.threshold_correction_factor,  # 5
                 self.threshold_range,              # 6
-                self.object_fraction,              # 7
                 self.manual_threshold,             # 8
                 self.thresholding_measurement,     # 9
                 self.binary_image,                 # 10
@@ -767,7 +725,6 @@ class Identify(cellprofiler.module.Module):
                 self.two_class_otsu,
                 self.use_weighted_variance,
                 self.assign_middle_to_foreground,
-                self.object_fraction,
                 self.rb_custom_choice,
                 self.lower_outlier_fraction,
                 self.upper_outlier_fraction,
@@ -846,7 +803,12 @@ class Identify(cellprofiler.module.Module):
             if setting_values[1] == TS_PER_OBJECT:
                 setting_values[1] = "None"
 
-            new_setting_values = setting_values[:11] + setting_values[12:]
+            if setting_values[2] == centrosome.threshold.TM_MOG:
+                setting_values[2] = "None"
+
+            new_setting_values = setting_values[:7]
+            new_setting_values += setting_values[8:11]
+            new_setting_values += setting_values[12:]
 
             setting_values = new_setting_values
 
@@ -873,8 +835,6 @@ class Identify(cellprofiler.module.Module):
                 vv += [self.two_class_otsu, self.use_weighted_variance]
                 if self.two_class_otsu == O_THREE_CLASS:
                     vv.append(self.assign_middle_to_foreground)
-            elif self.threshold_method == centrosome.threshold.TM_MOG:
-                vv += [self.object_fraction]
             elif self.threshold_method == centrosome.threshold.TM_ROBUST_BACKGROUND:
                 vv += [self.rb_custom_choice]
                 if self.rb_custom_choice == RB_CUSTOM:
@@ -1012,16 +972,6 @@ class Identify(cellprofiler.module.Module):
                         self.two_class_otsu.value == O_TWO_CLASS
                     kwparams['assign_middle_to_foreground'] = \
                         self.assign_middle_to_foreground.value == O_FOREGROUND
-                elif self.get_threshold_algorithm() == centrosome.threshold.TM_MOG:
-                    #
-                    # Mixture of gaussian parameters
-                    #
-                    object_fraction = self.object_fraction.value
-                    if object_fraction.endswith("%"):
-                        object_fraction = float(object_fraction[:-1]) / 100.0
-                    else:
-                        object_fraction = float(object_fraction)
-                    kwparams['object_fraction'] = object_fraction
                 elif self.get_threshold_algorithm() == centrosome.threshold.TM_ROBUST_BACKGROUND and \
                                 self.rb_custom_choice == RB_CUSTOM:
                     kwparams['lower_outlier_fraction'] = \
@@ -1109,17 +1059,7 @@ class Identify(cellprofiler.module.Module):
             # derived class does not have thresholding settings
             return
         if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL):
-            if self.get_threshold_algorithm() == centrosome.threshold.TM_MOG:
-                try:
-                    if self.object_fraction.value.endswith("%"):
-                        float(self.object_fraction.value[:-1])
-                    else:
-                        float(self.object_fraction.value)
-                except ValueError:
-                    raise cellprofiler.setting.ValidationError("%s is not a floating point value" %
-                                                               self.object_fraction.value,
-                                                               self.object_fraction)
-            elif self.get_threshold_algorithm() == centrosome.threshold.TM_ROBUST_BACKGROUND and \
+            if self.get_threshold_algorithm() == centrosome.threshold.TM_ROBUST_BACKGROUND and \
                             self.rb_custom_choice == RB_CUSTOM:
                 if self.lower_outlier_fraction.value + \
                         self.upper_outlier_fraction.value >= 1:

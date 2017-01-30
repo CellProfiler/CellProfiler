@@ -114,8 +114,6 @@ class ApplyThreshold(identify.Identify):
 
         self.create_threshold_settings(threshold_methods)
 
-        self.threshold_smoothing_choice.value = identify.TSM_NONE
-
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
         if self.binary.value == GRAYSCALE:

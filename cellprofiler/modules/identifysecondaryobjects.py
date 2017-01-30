@@ -245,8 +245,6 @@ class IdentifySecondaryObjects(cpmi.Identify):
             only the final display.""" % globals())
 
         self.create_threshold_settings()
-        # default smoothing choice is different for idprimary and idsecondary
-        self.threshold_smoothing_choice.value = cpmi.TSM_NONE
 
         self.distance_to_dilate = cps.Integer(
                 "Number of pixels by which to expand the primary objects", 10, minval=1)

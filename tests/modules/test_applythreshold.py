@@ -86,7 +86,6 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.low_or_high, cellprofiler.modules.applythreshold.TH_BELOW_THRESHOLD)
         self.assertEqual(module.threshold_scope, centrosome.threshold.TM_MANUAL)
         self.assertAlmostEqual(module.manual_threshold.value, .1)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_NONE)
 
     def test_01_02_load_v2(self):
         '''Load a variable_revision_number = 2 pipeline'''
@@ -263,8 +262,6 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.dilation, 2)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_AUTOMATIC)
-        self.assertEqual(module.threshold_smoothing_scale, 1.5)
         self.assertEqual(module.threshold_correction_factor, 1.1)
         self.assertEqual(module.threshold_range.min, .07)
         self.assertEqual(module.threshold_range.max, .99)

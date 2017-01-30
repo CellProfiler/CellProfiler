@@ -660,35 +660,13 @@ class Identify(cellprofiler.module.Module):
             })
         )
 
-        self.adaptive_window_method = cellprofiler.setting.Choice(
-            "Method to calculate adaptive window size",
-            [FI_IMAGE_SIZE, FI_CUSTOM],
-            doc="""
-            <i>(Used only if an adaptive thresholding method is used)</i><br>
-            The adaptive method breaks the image into blocks, computing the threshold for each block. There are
-            two ways to compute the block size:
-            <ul>
-                <li><i>{FI_IMAGE_SIZE}:</i> The block size is one-tenth of the image dimensions, or 50 &times;
-                50 pixels, whichever is bigger.</li>
-                <li><i>{FI_CUSTOM}:</i> The block size is specified by the user.</li>
-            </ul>
-            """.format(**{
-                "FI_CUSTOM": FI_CUSTOM,
-                "FI_IMAGE_SIZE": FI_IMAGE_SIZE
-            })
-        )
-
         self.adaptive_window_size = cellprofiler.setting.Integer(
             "Size of adaptive window",
-            10,
+            50,
             doc="""
-            <i>(Used only if an adaptive thresholding method with a {FI_CUSTOM} window size are
-            selected)</i><br>
             Enter the window for the adaptive method. For example, you may want to use a multiple of the
             largest expected object size.
-            """.format(**{
-                "FI_CUSTOM": FI_CUSTOM
-            })
+            """
         )
 
     def get_threshold_settings(self):
@@ -706,7 +684,6 @@ class Identify(cellprofiler.module.Module):
                 self.two_class_otsu,               # 12
                 self.use_weighted_variance,        # 13
                 self.assign_middle_to_foreground,  # 14
-                self.adaptive_window_method,       # 15
                 self.adaptive_window_size,         # 16
                 self.rb_custom_choice,             # 17
                 self.lower_outlier_fraction,       # 18
@@ -731,7 +708,6 @@ class Identify(cellprofiler.module.Module):
                 self.averaging_method,
                 self.variance_method,
                 self.number_of_deviations,
-                self.adaptive_window_method,
                 self.adaptive_window_size,
                 self.threshold_correction_factor,
                 self.threshold_range,
@@ -808,7 +784,8 @@ class Identify(cellprofiler.module.Module):
 
             new_setting_values = setting_values[:7]
             new_setting_values += setting_values[8:11]
-            new_setting_values += setting_values[12:]
+            new_setting_values += setting_values[12:15]
+            new_setting_values += setting_values[16:]
 
             setting_values = new_setting_values
 
@@ -851,9 +828,7 @@ class Identify(cellprofiler.module.Module):
         if not self.threshold_scope in (centrosome.threshold.TM_MANUAL, centrosome.threshold.TM_BINARY_IMAGE):
             vv += [self.threshold_correction_factor, self.threshold_range]
         if self.threshold_scope == centrosome.threshold.TM_ADAPTIVE:
-            vv += [self.adaptive_window_method]
-            if self.adaptive_window_method == FI_CUSTOM:
-                vv += [self.adaptive_window_size]
+            vv += [self.adaptive_window_size]
 
         return vv
 
@@ -943,14 +918,7 @@ class Identify(cellprofiler.module.Module):
                 img = image.pixel_data
                 labels = None
                 if self.threshold_scope == TS_ADAPTIVE:
-                    if self.adaptive_window_method == FI_IMAGE_SIZE:
-                        # The original behavior
-                        image_size = numpy.array(img.shape[:2], dtype=int)
-                        block_size = image_size / 10
-                        block_size[block_size < 50] = 50
-                    elif self.adaptive_window_method == FI_CUSTOM:
-                        block_size = self.adaptive_window_size.value * \
-                                     numpy.array([1, 1])
+                    block_size = self.adaptive_window_size.value * numpy.array([1, 1])
                 else:
                     block_size = None
                 kwparams = {}

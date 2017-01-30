@@ -274,7 +274,6 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
-        self.assertEqual(module.adaptive_window_method, cellprofiler.modules.identify.FI_IMAGE_SIZE)
         self.assertEqual(module.adaptive_window_size, 13)
 
     def test_02_01_grayscale_low_threshold(self):

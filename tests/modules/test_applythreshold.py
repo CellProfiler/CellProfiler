@@ -272,7 +272,6 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.manual_threshold, 0.1)
         self.assertEqual(module.thresholding_measurement, "Pony_Perimeter")
         self.assertEqual(module.binary_image, "Pony_yes_or_no")
-        self.assertEqual(module.masking_objects, "PonyMask")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
@@ -459,27 +458,6 @@ class TestApplyThreshold(unittest.TestCase):
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
         module.threshold_range.max = .1
-        module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output.pixel_data == expected))
-
-    def test_04_06_per_object(self):
-        '''Test that per-object thresholding works'''
-        numpy.random.seed(0)
-        image = numpy.random.uniform(size=(20, 20)) * .5
-        labels = numpy.ones((20, 20), int)
-        labels[10:, :] *= 2
-        image[labels == 2] *= 2
-        expected = image > centrosome.threshold.get_otsu_threshold(image[labels == 1])
-        expected[labels == 2] = image[labels == 2] > centrosome.threshold.get_otsu_threshold(image[labels == 2])
-        workspace, module = self.make_workspace(image)
-        objects = cellprofiler.object.Objects()
-        objects.segmented = labels
-        workspace.object_set.add_objects(objects, "HelloKitty")
-        module.binary.value = cellprofiler.modules.applythreshold.BINARY
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_PER_OBJECT
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
-        module.masking_objects.value = "HelloKitty"
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(numpy.all(output.pixel_data == expected))

@@ -375,7 +375,6 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.manual_threshold, .3)
         self.assertEqual(module.thresholding_measurement, "Count_Cookies")
         self.assertEqual(module.binary_image, "CookieMask")
-        self.assertEqual(module.masking_objects, "CookieMonsters")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)

@@ -49,7 +49,6 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
         module.binary_image.value = BINARY_IMAGE_NAME
-        module.masking_objects.value = MASKING_OBJECTS_NAME
 
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
@@ -1670,7 +1669,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertAlmostEqual(module.manual_threshold, 0.03)
         self.assertEqual(module.thresholding_measurement, "Metadata_Threshold")
         self.assertEqual(module.binary_image, "Segmentation")
-        self.assertEqual(module.masking_objects, "Wells")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
@@ -1725,7 +1723,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_RIDLER_CALVARD)
         module = pipeline.modules()[10]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_PER_OBJECT)
+        self.assertEqual(module.threshold_scope, "None")
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_ROBUST_BACKGROUND)
         self.assertEqual(module.rb_custom_choice, cellprofiler.modules.identify.RB_DEFAULT)
         self.assertEqual(module.lower_outlier_fraction, .05)
@@ -2196,84 +2194,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold_method.value = centrosome.threshold.TM_OTSU
         threshold, global_threshold = x.get_threshold(
                 cellprofiler.image.Image(image), numpy.ones((525, 525), bool), workspace)
-
-    def test_08_01_per_object_otsu(self):
-        """Test get_threshold using Otsu per-object"""
-
-        image = numpy.ones((20, 20)) * .08
-        draw_circle(image, (5, 5), 2, .1)
-        draw_circle(image, (15, 15), 3, .1)
-        draw_circle(image, (15, 15), 2, .2)
-        labels = numpy.zeros((20, 20), int)
-        draw_circle(labels, (5, 5), 3, 1)
-        draw_circle(labels, (15, 15), 3, 2)
-        workspace, x = self.make_workspace(image, labels=labels)
-        x.threshold_scope.value = cellprofiler.modules.identify.TS_PER_OBJECT
-        x.threshold_method.value = centrosome.threshold.TM_OTSU
-        threshold, global_threshold = x.get_threshold(cellprofiler.image.Image(image),
-                                                      numpy.ones((20, 20), bool),
-                                                      workspace)
-        t1 = threshold[5, 5]
-        t2 = threshold[15, 15]
-        self.assertTrue(t1 < .1)
-        self.assertTrue(t2 > .1)
-        self.assertTrue(t2 < .2)
-        self.assertTrue(numpy.all(threshold[labels == 1] == threshold[5, 5]))
-        self.assertTrue(numpy.all(threshold[labels == 2] == threshold[15, 15]))
-
-    def test_08_02_per_object_otsu_run(self):
-        """Test IdentifyPrimAutomatic per object through the Run function"""
-
-        image = numpy.ones((20, 20)) * 0.06
-        draw_circle(image, (5, 5), 5, .05)
-        draw_circle(image, (5, 5), 2, .15)
-        draw_circle(image, (15, 15), 5, .05)
-        draw_circle(image, (15, 15), 2, .15)
-        image = add_noise(image, .01)
-        labels = numpy.zeros((20, 20), int)
-        draw_circle(labels, (5, 5), 5, 1)
-        draw_circle(labels, (15, 15), 5, 2)
-
-        expected_labels = numpy.zeros((20, 20), int)
-        draw_circle(expected_labels, (5, 5), 2, 1)
-        draw_circle(expected_labels, (15, 15), 2, 2)
-
-        workspace, x = self.make_workspace(image, labels=labels)
-        x.exclude_size.value = False
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-        x.threshold_scope.value = cellprofiler.modules.identify.TS_PER_OBJECT
-        x.threshold_method.value = centrosome.threshold.TM_OTSU
-        x.threshold_correction_factor.value = 1.05
-        x.run(workspace)
-        labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
-        # Do a little indexing trick so we can ignore which object got
-        # which label
-        self.assertNotEqual(labels[5, 5], labels[15, 15])
-        indexes = numpy.array([0, labels[5, 5], labels[15, 15]])
-
-        self.assertTrue(numpy.all(indexes[labels] == expected_labels))
-
-    def test_08_03_per_objects_image_mask(self):
-        image = numpy.ones((20, 20)) * 0.06
-        draw_circle(image, (5, 5), 5, .05)
-        draw_circle(image, (5, 5), 2, .15)
-        image = add_noise(image, .01)
-        mask = numpy.zeros((20, 20), bool)
-        draw_circle(mask, (5, 5), 5, 1)
-
-        expected_labels = numpy.zeros((20, 20), int)
-        draw_circle(expected_labels, (5, 5), 2, 1)
-
-        workspace, x = self.make_workspace(image, mask=mask)
-        x.masking_objects.value = cellprofiler.modules.identify.O_FROM_IMAGE
-        x.exclude_size.value = False
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-        x.threshold_scope.value = cellprofiler.modules.identify.TS_PER_OBJECT
-        x.threshold_method.value = centrosome.threshold.TM_OTSU
-        x.threshold_correction_factor.value = 1.05
-        x.run(workspace)
-        labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
-        self.assertTrue(numpy.all(labels == expected_labels))
 
     def test_09_01_small_images(self):
         """Test mixture of gaussians thresholding with few pixels

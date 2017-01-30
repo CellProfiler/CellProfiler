@@ -119,8 +119,7 @@ TS_BINARY_IMAGE = "Binary image"
 '''Threshold scope = measurement - use a measurement value as the threshold'''
 TS_MEASUREMENT = "Measurement"
 
-TS_ALL = [TS_AUTOMATIC, TS_GLOBAL, TS_ADAPTIVE, TS_PER_OBJECT, TS_MANUAL,
-          TS_BINARY_IMAGE, TS_MEASUREMENT]
+TS_ALL = [TS_AUTOMATIC, TS_GLOBAL, TS_ADAPTIVE, TS_MANUAL, TS_BINARY_IMAGE, TS_MEASUREMENT]
 
 '''The legacy choice of object in per-object measurements
 
@@ -145,7 +144,7 @@ TECH_NOTE_ICON = "gear.png"
 
 
 class Identify(cellprofiler.module.Module):
-    threshold_setting_version = 2
+    threshold_setting_version = 3
 
     def create_threshold_settings(self, methods=centrosome.threshold.TM_METHODS):
         self.threshold_setting_version = cellprofiler.setting.Integer(
@@ -200,17 +199,6 @@ class Identify(cellprofiler.module.Module):
                     </dl>
                 </li>
                 <li>
-                    <i>{TS_PER_OBJECT}:</i> Use objects from a prior module such as
-                    <b>IdentifyPrimaryObjects</b> to define the region of interest to be thresholded. Calculate
-                    a separate threshold for each object and then apply that threshold to pixels within the
-                    object. The pixels outside the objects are classified as background.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This method can be useful for
-                        identifying sub-cellular particles or single-molecule probes if the background
-                        intensity varies from cell to cell (e.g., autofluorescence or other mechanisms).</dd>
-                    </dl>
-                </li>
-                <li>
                     <i>{TS_MANUAL}:</i> Enter a single value between zero and one that applies to all cycles
                     and is independent of the input image.
                     <dl>
@@ -260,7 +248,6 @@ class Identify(cellprofiler.module.Module):
                 "TS_GLOBAL": TS_GLOBAL,
                 "TS_MANUAL": TS_MANUAL,
                 "TS_MEASUREMENT": TS_MEASUREMENT,
-                "TS_PER_OBJECT": TS_PER_OBJECT,
             })
         )
 
@@ -561,20 +548,6 @@ class Identify(cellprofiler.module.Module):
             """
         )
 
-        self.masking_objects = MaskObjectNameSubscriber(
-            "Masking objects",
-            cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only if {TS_PER_OBJECT} is selected for the thresholding strategy)</i><br>
-            A threshold will be calculated for each object and applied to the pixels inside that object. Pixels
-            outside of any object will be assigned to the background. You can either select a prior object or
-            if you select <i>{O_FROM_IMAGE},</i> the input image's mask will be used.
-            """.format(**{
-                "O_FROM_IMAGE": O_FROM_IMAGE,
-                "TS_PER_OBJECT": TS_PER_OBJECT
-            })
-        )
-
         self.two_class_otsu = cellprofiler.setting.Choice(
             "Two-class or three-class thresholding?",
             [O_TWO_CLASS, O_THREE_CLASS],
@@ -761,28 +734,28 @@ class Identify(cellprofiler.module.Module):
 
     def get_threshold_settings(self):
         '''Return the threshold settings to be saved in the pipeline'''
-        return [self.threshold_setting_version,
-                self.threshold_scope, self.threshold_method,
-                self.threshold_smoothing_choice,
-                self.threshold_smoothing_scale,
-                self.threshold_correction_factor,
-                self.threshold_range,
-                self.object_fraction,
-                self.manual_threshold,
-                self.thresholding_measurement,
-                self.binary_image,
-                self.masking_objects,
-                self.two_class_otsu,
-                self.use_weighted_variance,
-                self.assign_middle_to_foreground,
-                self.adaptive_window_method,
-                self.adaptive_window_size,
-                self.rb_custom_choice,
-                self.lower_outlier_fraction,
-                self.upper_outlier_fraction,
-                self.averaging_method,
-                self.variance_method,
-                self.number_of_deviations]
+        return [self.threshold_setting_version,    # 0
+                self.threshold_scope,              # 1
+                self.threshold_method,             # 2
+                self.threshold_smoothing_choice,   # 3
+                self.threshold_smoothing_scale,    # 4
+                self.threshold_correction_factor,  # 5
+                self.threshold_range,              # 6
+                self.object_fraction,              # 7
+                self.manual_threshold,             # 8
+                self.thresholding_measurement,     # 9
+                self.binary_image,                 # 10
+                self.two_class_otsu,               # 12
+                self.use_weighted_variance,        # 13
+                self.assign_middle_to_foreground,  # 14
+                self.adaptive_window_method,       # 15
+                self.adaptive_window_size,         # 16
+                self.rb_custom_choice,             # 17
+                self.lower_outlier_fraction,       # 18
+                self.upper_outlier_fraction,       # 19
+                self.averaging_method,             # 20
+                self.variance_method,              # 21
+                self.number_of_deviations]         # 22
 
     def get_threshold_help_settings(self):
         '''Return the threshold settings to be displayed in help'''
@@ -868,6 +841,17 @@ class Identify(cellprofiler.module.Module):
                 RB_SD,  # variance method
                 2]  # of standard deviations
             version = 2
+
+        if version == 2:
+            if setting_values[1] == TS_PER_OBJECT:
+                setting_values[1] = "None"
+
+            new_setting_values = setting_values[:11] + setting_values[12:]
+
+            setting_values = new_setting_values
+
+            version = 3
+
         if version > self.threshold_setting_version:
             raise ValueError("Unsupported pipeline version: threshold setting version = %d" % version)
         return setting_values
@@ -883,10 +867,8 @@ class Identify(cellprofiler.module.Module):
             vv += [self.thresholding_measurement]
         elif self.threshold_scope == TS_BINARY_IMAGE:
             vv += [self.binary_image]
-        elif self.threshold_scope in (TS_GLOBAL, TS_ADAPTIVE, TS_PER_OBJECT):
+        elif self.threshold_scope in (TS_GLOBAL, TS_ADAPTIVE):
             vv += [self.threshold_method]
-            if self.threshold_scope == TS_PER_OBJECT:
-                vv += [self.masking_objects]
             if self.threshold_method == centrosome.threshold.TM_OTSU:
                 vv += [self.two_class_otsu, self.use_weighted_variance]
                 if self.two_class_otsu == O_THREE_CLASS:
@@ -999,32 +981,7 @@ class Identify(cellprofiler.module.Module):
                 local_threshold = global_threshold = value
             else:
                 img = image.pixel_data
-                if self.threshold_scope == TS_PER_OBJECT:
-                    if self.masking_objects == O_FROM_IMAGE:
-                        masking_objects = image.masking_objects
-                    else:
-                        masking_objects = workspace.object_set.get_objects(
-                                self.masking_objects.value)
-                    if masking_objects is not None:
-                        label_planes = masking_objects.get_labels()
-                        if len(label_planes) == 1:
-                            labels = label_planes[0][0]
-                        else:
-                            # For overlaps, we arbitrarily assign a pixel to
-                            # the first label it appears in. Alternate would be
-                            # to average, seems like it's too fine a point
-                            # to deal with it. A third possibility would be to
-                            # treat overlaps as distinct entities since the overlapping
-                            # areas will likely be different than either object.
-                            labels = numpy.zeros(label_planes[0][0].shape,
-                                                 label_planes[0][0].dtype)
-                            for label_plane, indices in label_planes:
-                                labels[labels == 0] = label_plane[labels == 0]
-                    else:
-                        # use the image mask as the masking objects
-                        labels = image.mask.astype(int)
-                else:
-                    labels = None
+                labels = None
                 if self.threshold_scope == TS_ADAPTIVE:
                     if self.adaptive_window_method == FI_IMAGE_SIZE:
                         # The original behavior
@@ -1151,7 +1108,7 @@ class Identify(cellprofiler.module.Module):
         if not hasattr(self, "threshold_scope"):
             # derived class does not have thresholding settings
             return
-        if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL, TS_PER_OBJECT):
+        if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL):
             if self.get_threshold_algorithm() == centrosome.threshold.TM_MOG:
                 try:
                     if self.object_fraction.value.endswith("%"):
@@ -1175,17 +1132,10 @@ class Identify(cellprofiler.module.Module):
                             self.upper_outlier_fraction)
 
     def get_threshold_modifier(self):
-        """The threshold algorithm modifier
-
-        TM_GLOBAL                       = "Global"
-        TM_ADAPTIVE                     = "Adaptive"
-        TM_PER_OBJECT                   = "PerObject"
-        """
-        if self.threshold_scope.value in (TS_AUTOMATIC,
-                                          TS_GLOBAL, TS_BINARY_IMAGE, TS_MANUAL, TS_MEASUREMENT):
+        """The threshold algorithm modifier"""
+        if self.threshold_scope.value in (TS_AUTOMATIC, TS_GLOBAL, TS_BINARY_IMAGE, TS_MANUAL, TS_MEASUREMENT):
             return centrosome.threshold.TM_GLOBAL
-        elif self.threshold_scope.value == TS_PER_OBJECT:
-            return centrosome.threshold.TM_PER_OBJECT
+
         return centrosome.threshold.TM_ADAPTIVE
 
     threshold_modifier = property(get_threshold_modifier)

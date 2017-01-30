@@ -1,25 +1,19 @@
-"""<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero
+"""
+<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero
 <hr>
-<b>ApplyThreshold</b> produces either a grayscale or binary image
-based on a threshold which can be pre-selected or calculated automatically using one of many methods.
+<b>ApplyThreshold</b> produces either a grayscale or binary image based on a threshold which can be
+pre-selected or calculated automatically using one of many methods.
 """
 
-from centrosome.cpmorphology import strel_disk
-from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
-from centrosome.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
-from scipy.ndimage.morphology import binary_dilation
+import centrosome.cpmorphology
+import centrosome.threshold
+import scipy.ndimage.morphology
 
-import cellprofiler.setting as cps
-from cellprofiler import image
-from cellprofiler.module import Module
-from cellprofiler.modules.identify import get_threshold_measurement_columns
-from cellprofiler.setting import YES, NO
-from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
-from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
-from identify import FI_IMAGE_SIZE, TSM_NONE
-from identify import Identify, O_BACKGROUND, O_ENTROPY
-from identify import O_FOREGROUND, O_THREE_CLASS
-from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.setting
+import identify
 
 RETAIN = "Retain"
 SHIFT = "Shift"
@@ -33,70 +27,94 @@ TH_ABOVE_THRESHOLD = "Above threshold"
 N_SETTINGS = 6
 
 
-class ApplyThreshold(Identify):
+class ApplyThreshold(identify.Identify):
     module_name = "ApplyThreshold"
     variable_revision_number = 7
     category = "Image Processing"
 
     def create_settings(self):
-        threshold_methods = [method for method in TM_METHODS
-                             if method != TM_BINARY_IMAGE]
+        threshold_methods = [
+            method for method in centrosome.threshold.TM_METHODS if method != centrosome.threshold.TM_BINARY_IMAGE
+        ]
 
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", doc='''
-            Choose the image to be thresholded.''')
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+            "Select the input image",
+            doc="Choose the image to be thresholded."
+        )
 
-        self.thresholded_image_name = cps.ImageNameProvider(
-                "Name the output image",
-                "ThreshBlue", doc='''
-            Enter a name for the thresholded image.''')
+        self.thresholded_image_name = cellprofiler.setting.ImageNameProvider(
+            "Name the output image",
+            "ThreshBlue",
+            doc="Enter a name for the thresholded image."
+        )
 
-        self.binary = cps.Choice(
-                "Select the output image type", [GRAYSCALE, BINARY], doc='''
+        self.binary = cellprofiler.setting.Choice(
+            "Select the output image type",
+            [GRAYSCALE, BINARY],
+            doc="""
             Two types of output images can be produced:<br>
             <ul>
-            <li><i>%(GRAYSCALE)s:</i> The pixels that are retained after some pixels
-            are set to zero or shifted (based on your selections for thresholding
-            options) will have their original
-            intensity values.</li>
-            <li><i>%(BINARY)s:</i> The pixels that are retained after some pixels are
-            set to zero (based on your selections for thresholding options) will be
-            white and all other pixels will be black (zeroes).</li>
-            </ul>''' % globals())
+                <li><i>{GRAYSCALE}:</i> The pixels that are retained after some pixels are set to zero or
+                shifted (based on your selections for thresholding options) will have their original intensity
+                values.</li>
+                <li><i>{BINARY}:</i> The pixels that are retained after some pixels are set to zero (based on
+                your selections for thresholding options) will be white and all other pixels will be black
+                (zeroes).</li>
+            </ul>
+            """.format(**{
+                "GRAYSCALE": GRAYSCALE,
+                "BINARY": BINARY
+            })
+        )
 
         # if not binary:
-        self.low_or_high = cps.Choice(
-                "Set pixels below or above the threshold to zero?",
-                [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD], doc="""
-            <i>(Used only when "%(GRAYSCALE)s" thresholding is selected)</i><br>
+        self.low_or_high = cellprofiler.setting.Choice(
+            "Set pixels below or above the threshold to zero?",
+            [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD],
+            doc="""
+            <i>(Used only when "{GRAYSCALE}" thresholding is selected)</i><br>
             This option adjusts how pixels above or below the threshold are handled:
             <ul>
-            <li><i>%(TH_BELOW_THRESHOLD)s:</i> Set the dim pixels below
-            the threshold to zero.</li>
-            <li><i>%(TH_ABOVE_THRESHOLD)s:</i> Set the bright pixels above the
-            threshold to zero.</li>
+                <li><i>{TH_BELOW_THRESHOLD}:</i> Set the dim pixels below the threshold to zero.</li>
+                <li><i>{TH_ABOVE_THRESHOLD}:</i> Set the bright pixels above the threshold to zero.</li>
             </ul>
-            """ % globals())
+            """.format(**{
+                "GRAYSCALE": GRAYSCALE,
+                "TH_BELOW_THRESHOLD": TH_BELOW_THRESHOLD,
+                "TH_ABOVE_THRESHOLD": TH_ABOVE_THRESHOLD
+            })
+        )
 
         # if not binary and below threshold
-
-        self.shift = cps.Binary(
-                "Subtract the threshold value from the remaining pixel intensities?", False, doc='''
-            <i>(Used only if the output image is %(GRAYSCALE)s and pixels below a given intensity are to be set to zero)</i><br>
-            Select <i>%(YES)s</i> to shift the value of the dim pixels by the threshold value.''' % globals())
+        self.shift = cellprofiler.setting.Binary(
+            "Subtract the threshold value from the remaining pixel intensities?",
+            False,
+            doc='''
+            <i>(Used only if the output image is {GRAYSCALE} and pixels below a given intensity are to be set
+            to zero)</i><br>
+            Select <i>{YES}</i> to shift the value of the dim pixels by the threshold value.
+            '''.format(**{
+                "GRAYSCALE": GRAYSCALE,
+                "YES": cellprofiler.setting.YES
+            })
+        )
 
         # if not binary and above threshold
-
-        self.dilation = cps.Float(
-                "Number of pixels by which to expand the thresholding around those excluded bright pixels",
-                0.0, doc='''
-            <i>(Used only if the output image is grayscale and pixels above a given intensity are to be set to zero)</i><br>
-            This setting is useful when attempting to exclude bright artifactual objects:
-            first, set the threshold to exclude these bright objects; it may also be desirable to expand the
-            thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.''')
+        self.dilation = cellprofiler.setting.Float(
+            "Number of pixels by which to expand the thresholding around those excluded bright pixels",
+            0.0,
+            doc="""
+            <i>(Used only if the output image is grayscale and pixels above a given intensity are to be set to
+            zero)</i><br>
+            This setting is useful when attempting to exclude bright artifactual objects: first, set the
+            threshold to exclude these bright objects; it may also be desirable to expand the thresholded
+            region around those bright objects by a certain distance so as to avoid a "halo" effect.
+            """
+        )
 
         self.create_threshold_settings(threshold_methods)
-        self.threshold_smoothing_choice.value = TSM_NONE
+
+        self.threshold_smoothing_choice.value = identify.TSM_NONE
 
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
@@ -143,20 +161,20 @@ class ApplyThreshold(Identify):
                 pixels[input.mask & ~ binary_image] = 0
                 if self.shift.value:
                     pixels[input.mask & binary_image] -= \
-                        local_thresh if self.threshold_modifier == TM_GLOBAL \
+                        local_thresh if self.threshold_modifier == centrosome.threshold.TM_GLOBAL \
                             else local_thresh[input.mask & binary_image]
             elif self.low_or_high == TH_ABOVE_THRESHOLD:
                 undilated = input.mask & binary_image
-                dilated = binary_dilation(undilated,
-                                          strel_disk(self.dilation.value),
-                                          mask=input.mask)
+                dilated = scipy.ndimage.morphology.binary_dilation(undilated,
+                                                                   centrosome.cpmorphology.strel_disk(self.dilation.value),
+                                                                   mask=input.mask)
                 pixels[dilated] = 0
             else:
                 raise NotImplementedError(
                         """Threshold setting, "%s" is not "%s" or "%s".""" %
                         (self.low_or_high.value, TH_BELOW_THRESHOLD,
                          TH_ABOVE_THRESHOLD))
-        output = image.Image(pixels, parent_image=input)
+        output = cellprofiler.image.Image(pixels, parent_image=input)
         workspace.image_set.add(self.thresholded_image_name.value, output)
         if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data
@@ -192,7 +210,7 @@ class ApplyThreshold(Identify):
         return self.thresholded_image_name.value
 
     def get_measurement_columns(self, pipeline):
-        return get_threshold_measurement_columns(self.thresholded_image_name.value)
+        return cellprofiler.modules.identify.get_threshold_measurement_columns(self.thresholded_image_name.value)
 
     def get_categories(self, pipeline, object_name):
         return self.get_threshold_categories(pipeline, object_name)
@@ -220,45 +238,45 @@ class ApplyThreshold(Identify):
                               setting_values[3],  # Shift
                               setting_values[4],  # HighThreshold
                               setting_values[5],  # DilationValue
-                              TM_MANUAL,  # Manual thresholding
+                              centrosome.threshold.TM_MANUAL,  # Manual thresholding
                               setting_values[6],  # BinaryChoice
                               "0,1",  # Threshold range
                               "1",  # Threshold correction factor
                               ".2",  # Object fraction
-                              cps.NONE  # Enclosing objects name
+                              cellprofiler.setting.NONE  # Enclosing objects name
                               ]
             setting_values[2] = (BINARY if float(setting_values[10]) > 0
                                  else GRAYSCALE)  # binary flag
-            setting_values[3] = (cps.YES if float(setting_values[5]) > 0
-                                 else cps.NO)  # low threshold set
-            setting_values[4] = (cps.YES if float(setting_values[7]) > 0
-                                 else cps.NO)  # high threshold set
+            setting_values[3] = (cellprofiler.setting.YES if float(setting_values[5]) > 0
+                                 else cellprofiler.setting.NO)  # low threshold set
+            setting_values[4] = (cellprofiler.setting.YES if float(setting_values[7]) > 0
+                                 else cellprofiler.setting.NO)  # high threshold set
             variable_revision_number = 2
             from_matlab = False
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = (setting_values[:9] +
-                              [TM_MANUAL, setting_values[9], "O,1", "1",
-                               ".2", cps.NONE])
+                              [centrosome.threshold.TM_MANUAL, setting_values[9], "O,1", "1",
+                               ".2", cellprofiler.setting.NONE])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
             # Added Otsu options
             setting_values = list(setting_values)
-            setting_values += [O_TWO_CLASS, O_WEIGHTED_VARIANCE,
-                               O_FOREGROUND]
+            setting_values += [identify.O_TWO_CLASS, identify.O_WEIGHTED_VARIANCE,
+                               identify.O_FOREGROUND]
             variable_revision_number = 3
 
         if (not from_matlab) and variable_revision_number == 3:
             #
             # Only low or high, not both + removed manual threshold settings
             #
-            if setting_values[3] == cps.YES:
+            if setting_values[3] == cellprofiler.setting.YES:
                 th = TH_BELOW_THRESHOLD
             else:
                 th = TH_ABOVE_THRESHOLD
             if setting_values[2] == GRAYSCALE:
                 # Grayscale used to have just manual thresholding
                 setting_values = list(setting_values)
-                setting_values[9] = TM_MANUAL
+                setting_values[9] = centrosome.threshold.TM_MANUAL
                 if th == TH_BELOW_THRESHOLD:
                     # Set to old low threshold
                     setting_values[10] = setting_values[5]
@@ -274,12 +292,12 @@ class ApplyThreshold(Identify):
 
         if (not from_matlab) and variable_revision_number == 4:
             # Added measurements to threshold methods
-            setting_values = setting_values + [cps.NONE]
+            setting_values = setting_values + [cellprofiler.setting.NONE]
             variable_revision_number = 5
 
         if (not from_matlab) and variable_revision_number == 5:
             # Added adaptive thresholding settings
-            setting_values += [FI_IMAGE_SIZE, "10"]
+            setting_values += [identify.FI_IMAGE_SIZE, "10"]
             variable_revision_number = 6
 
         if (not from_matlab) and variable_revision_number == 6:
@@ -293,11 +311,11 @@ class ApplyThreshold(Identify):
             setting_values = [
                                  image_name, thresholded_image_name, binary, low_or_high,
                                  shift, dilation] + self.upgrade_legacy_threshold_settings(
-                    threshold_method, TSM_NONE, threshold_correction_factor,
+                    threshold_method, identify.TSM_NONE, threshold_correction_factor,
                     threshold_range, object_fraction, manual_threshold,
-                    thresholding_measurement, cps.NONE, two_class_otsu,
+                    thresholding_measurement, cellprofiler.setting.NONE, two_class_otsu,
                     use_weighted_variance, assign_middle_to_foreground,
-                    FI_IMAGE_SIZE, "10", masking_objects=enclosing_objects_name)
+                    identify.FI_IMAGE_SIZE, "10", masking_objects=enclosing_objects_name)
             variable_revision_number = 7
         #
         # Upgrade the threshold settings

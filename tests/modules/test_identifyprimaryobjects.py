@@ -303,7 +303,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.threshold_range.max = 1
         x.threshold_correction_factor.value = .95
         x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        x.threshold_method.value = cellprofiler.modules.identify.TM_MCT
+        x.threshold_method.value = centrosome.threshold.TM_MCT
         x.exclude_size.value = False
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         img = two_cell_image()
@@ -948,7 +948,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_FINAL_THRESHOLD % OBJECTS_NAME]
         workspace, module = self.make_workspace(image)
         module.threshold_scope.value = cellprofiler.modules.identify.TS_AUTOMATIC
-        module.threshold_method.value = cellprofiler.modules.identify.TM_OTSU
+        module.threshold_method.value = centrosome.threshold.TM_OTSU
         module.threshold_smoothing_choice.value = cellprofiler.modules.identify.TSM_MANUAL
         module.threshold_smoothing_scale.value = 100
         module.threshold_correction_factor.value = .1
@@ -1660,7 +1660,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.maximum_object_count, 499)
         #
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE)
-        self.assertEqual(module.threshold_method, cellprofiler.modules.identify.TM_OTSU)
+        self.assertEqual(module.threshold_method, centrosome.threshold.TM_OTSU)
         self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_AUTOMATIC)
         self.assertEqual(module.threshold_smoothing_scale, 2.0)
         self.assertAlmostEqual(module.threshold_correction_factor, .80)
@@ -1695,7 +1695,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertFalse(module.wants_automatic_log_diameter)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_AUTOMATIC)
-        self.assertEqual(module.threshold_method, cellprofiler.modules.identify.TM_MCT)
+        self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_MANUAL)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
@@ -1707,7 +1707,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_TRUNCATE)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_BINARY_IMAGE)
-        self.assertEqual(module.threshold_method, cellprofiler.modules.identify.TM_MOG)
+        self.assertEqual(module.threshold_method, centrosome.threshold.TM_MOG)
         self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_NONE)
         module = pipeline.modules()[7]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))

@@ -720,6 +720,10 @@ class Identify(cellprofiler.module.Module):
         threshold settings version and upgrade as appropriate
         '''
         version = int(setting_values[0])
+
+        if version > self.threshold_setting_version:
+            raise ValueError("Unsupported pipeline version: threshold setting version = %d" % version)
+
         if version == 1:
             # Added robust background settings
             #
@@ -748,8 +752,8 @@ class Identify(cellprofiler.module.Module):
 
             version = 3
 
-        if version > self.threshold_setting_version:
-            raise ValueError("Unsupported pipeline version: threshold setting version = %d" % version)
+        setting_values[0] = version
+
         return setting_values
 
     def get_threshold_visible_settings(self):

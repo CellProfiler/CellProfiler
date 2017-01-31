@@ -196,7 +196,7 @@ OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
 '''The number of settings, exclusive of threshold settings in V10'''
-N_SETTINGS_V10 = 22
+N_SETTINGS_V11 = 22
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -234,7 +234,7 @@ SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
 
 
 class IdentifyPrimaryObjects(identify.Identify):
-    variable_revision_number = 10
+    variable_revision_number = 11
     category = "Object Processing"
     module_name = "IdentifyPrimaryObjects"
 
@@ -851,10 +851,11 @@ class IdentifyPrimaryObjects(identify.Identify):
                 setting_values[OFF_FILL_HOLES_V10] = FH_NEVER
             elif setting_values[OFF_FILL_HOLES_V10] == cellprofiler.setting.YES:
                 setting_values[OFF_FILL_HOLES_V10] = FH_THRESHOLDING
+            variable_revision_number = 11
 
         # upgrade threshold settings
         setting_values = \
-            setting_values[:N_SETTINGS_V10] + self.upgrade_threshold_settings(setting_values[N_SETTINGS_V10:])
+            setting_values[:N_SETTINGS_V11] + self.upgrade_threshold_settings(setting_values[N_SETTINGS_V11:])
 
         return setting_values, variable_revision_number, from_matlab
 

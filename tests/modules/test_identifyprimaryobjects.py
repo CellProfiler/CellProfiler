@@ -859,7 +859,6 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             for unclump_method in (
                     cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
                     cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
-                    cellprofiler.modules.identifyprimaryobjects.UN_LOG
             ):
                 x.unclump_method.value = unclump_method
                 for watershed_method in (
@@ -1221,13 +1220,9 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertTrue(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
         self.assertEqual(module.binary_image, "MyBinaryImage")
-        self.assertTrue(module.wants_automatic_log_threshold)
-        self.assertAlmostEqual(module.manual_log_threshold.value, 0.5)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
-        self.assertTrue(module.wants_automatic_log_diameter)
-        self.assertEqual(module.log_diameter, 5)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_TRUNCATE)
         self.assertEqual(module.maximum_object_count, 305)
 
@@ -1256,13 +1251,9 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertFalse(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
         self.assertEqual(module.binary_image, "MyBinaryImage")
-        self.assertFalse(module.wants_automatic_log_threshold)
-        self.assertAlmostEqual(module.manual_log_threshold.value, 0.5)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
-        self.assertFalse(module.wants_automatic_log_diameter)
-        self.assertEqual(module.log_diameter, 5)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
         self.assertEqual(module.maximum_object_count, 305)
 
@@ -1635,10 +1626,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertFalse(module.should_save_outlines)
         self.assertEqual(module.save_outlines, "CellOutlines")
         self.assertEqual(module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING)
-        self.assertTrue(module.wants_automatic_log_threshold)
-        self.assertEqual(module.manual_log_threshold, .2)
-        self.assertTrue(module.wants_automatic_log_diameter)
-        self.assertEqual(module.log_diameter, 3)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE)
         self.assertEqual(module.maximum_object_count, 499)
         #
@@ -1662,15 +1649,13 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertFalse(module.exclude_size)
         self.assertTrue(module.merge_objects)
         self.assertFalse(module.exclude_border_objects)
-        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_LOG)
+        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY)
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_NONE)
         self.assertFalse(module.automatic_smoothing)
         self.assertFalse(module.automatic_suppression)
         self.assertFalse(module.low_res_maxima)
         self.assertTrue(module.should_save_outlines)
         self.assertEqual(module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_NEVER)
-        self.assertFalse(module.wants_automatic_log_threshold)
-        self.assertFalse(module.wants_automatic_log_diameter)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_AUTOMATIC)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)

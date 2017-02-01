@@ -219,8 +219,6 @@ EXCLUDE_SIZE_SETTING_TEXT = "Discard objects outside the diameter range?"
 AUTOMATIC_SMOOTHING_SETTING_TEXT = "Automatically calculate size of smoothing filter for declumping?"
 SMOOTHING_FILTER_SIZE_SETTING_TEXT = "Size of smoothing filter"
 AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT = "Automatically calculate minimum allowed distance between local maxima?"
-WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT = \
-    "Automatically calculate the size of objects for the Laplacian of Gaussian filter?"
 
 # Icons for use in the help
 INTENSITY_DECLUMPING_ICON = "IdentifyPrimaryObjects_IntensityDeclumping.png"
@@ -264,8 +262,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                     <ul>
                         <li><i>{AUTOMATIC_SMOOTHING_SETTING_TEXT}</i></li>
                         <li><i>{AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT}</i></li>
-                        <li><i>{WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT}</i> (shown only if Laplacian of
-                        Gaussian is selected as the declumping method)</li>
                     </ul>
                 </li>
                 <li>For non-round objects, the diameter here is actually the "equivalent diameter", i.e., the
@@ -277,8 +273,7 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
                 "HELP_ON_MEASURING_DISTANCES": cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES,
                 "AUTOMATIC_SMOOTHING_SETTING_TEXT": AUTOMATIC_SMOOTHING_SETTING_TEXT,
-                "AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
-                "WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT": WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT
+                "AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT
             })
         )
 

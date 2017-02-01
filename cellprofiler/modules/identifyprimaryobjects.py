@@ -858,9 +858,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%" % (100.0 * float(object_area) /
                                                 float(total_area))])
-                if self.threshold_scope != identify.TS_BINARY_IMAGE:
-                    statistics.append(["Thresholding filter size",
-                                       "%.1f" % workspace.display_data.threshold_sigma])
                 if self.unclump_method != UN_NONE:
                     statistics.append(["Declumping smoothing filter size",
                                        "%.1f" % (self.calc_smoothing_filter_size())])

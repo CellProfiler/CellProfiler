@@ -1076,7 +1076,7 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def gridshow(self, x, y, image, cmap='gray'):
+    def gridshow(self, x, y, image, cmap='gray', title=None):
         gx, gy = self.__gridspec.get_geometry()
 
         gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
@@ -1098,6 +1098,9 @@ class Figure(wx.Frame):
 
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
+
+            if position == 1 and title is not None:
+                ax.set_title(title)
 
             if position / 3 != 2:
                 ax.set_xticklabels([])
@@ -1327,7 +1330,7 @@ class Figure(wx.Frame):
                 hist_fig.figure.canvas.draw()
             return subplot
         else:
-            self.gridshow(x, y, image, colormap)
+            self.gridshow(x, y, image, colormap, title)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):

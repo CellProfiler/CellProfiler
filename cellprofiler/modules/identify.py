@@ -113,7 +113,7 @@ TS_BINARY_IMAGE = "Binary image"
 '''Threshold scope = measurement - use a measurement value as the threshold'''
 TS_MEASUREMENT = "Measurement"
 
-TS_ALL = [TS_AUTOMATIC, TS_GLOBAL, TS_ADAPTIVE, TS_MANUAL, TS_BINARY_IMAGE, TS_MEASUREMENT]
+TS_ALL = [TS_AUTOMATIC, TS_GLOBAL, TS_ADAPTIVE, TS_MANUAL, TS_MEASUREMENT]
 
 '''The legacy choice of object in per-object measurements
 
@@ -204,22 +204,6 @@ class Identify(cellprofiler.module.Module):
                     </dl>
                 </li>
                 <li>
-                    <i>{TS_BINARY_IMAGE}:</i> Use a binary image to classify pixels as foreground or
-                    background. Pixel values other than zero will be foreground and pixel values that are zero
-                    will be background. This method can be used to import a ground-truth segmentation created
-                    by CellProfiler or another program.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; The most typical approach to
-                        produce a binary image is to use the <b>ApplyThreshold</b> module (image as input,
-                        image as output) or the <b>ConvertObjectsToImage</b> module (objects as input, image as
-                        output); both have options to produce a binary image. It can also be used to create
-                        objects from an image mask produced by other CellProfiler modules, such as
-                        <b>Morph</b>. Note that even though no algorithm is actually used to find the threshold
-                        in this case, the final threshold value is reported as the <i>{TM_OTSU}</i> threshold
-                        calculated for the foreground region.</dd>
-                    </dl>
-                </li>
-                <li>
                     <i>{TS_MEASUREMENT}:</i> Use a prior image measurement as the threshold. The measurement
                     should have values between zero and one. This strategy can be used to apply a
                     pre-calculated threshold imported as per-image metadata via the <b>Metadata</b> module.
@@ -238,7 +222,6 @@ class Identify(cellprofiler.module.Module):
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TS_ADAPTIVE": TS_ADAPTIVE,
                 "TS_AUTOMATIC": TS_AUTOMATIC,
-                "TS_BINARY_IMAGE": TS_BINARY_IMAGE,
                 "TS_GLOBAL": TS_GLOBAL,
                 "TS_MANUAL": TS_MANUAL,
                 "TS_MEASUREMENT": TS_MEASUREMENT,
@@ -452,15 +435,6 @@ class Identify(cellprofiler.module.Module):
             """
         )
 
-        self.binary_image = cellprofiler.setting.ImageNameSubscriber(
-            "Select binary image",
-            cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only if Binary image selected for thresholding method)</i><br>
-            Select the binary image to be used for thresholding.
-            """
-        )
-
         self.two_class_otsu = cellprofiler.setting.Choice(
             "Two-class or three-class thresholding?",
             [O_TWO_CLASS, O_THREE_CLASS],
@@ -632,7 +606,6 @@ class Identify(cellprofiler.module.Module):
                 self.threshold_range,
                 self.manual_threshold,
                 self.thresholding_measurement,
-                self.binary_image,
                 self.two_class_otsu,
                 self.use_weighted_variance,
                 self.assign_middle_to_foreground,
@@ -648,7 +621,6 @@ class Identify(cellprofiler.module.Module):
         '''Return the threshold settings to be displayed in help'''
         return [self.threshold_scope,
                 self.threshold_method,
-                self.binary_image,
                 self.manual_threshold,
                 self.thresholding_measurement,
                 self.two_class_otsu,
@@ -730,7 +702,7 @@ class Identify(cellprofiler.module.Module):
             version = 2
 
         if version == 2:
-            if setting_values[1] == TS_PER_OBJECT:
+            if setting_values[1] in [TS_BINARY_IMAGE, TS_PER_OBJECT]:
                 setting_values[1] = "None"
 
             if setting_values[2] == centrosome.threshold.TM_MOG:
@@ -738,7 +710,7 @@ class Identify(cellprofiler.module.Module):
 
             new_setting_values = setting_values[:3]
             new_setting_values += setting_values[5:7]
-            new_setting_values += setting_values[8:11]
+            new_setting_values += setting_values[8:10]
             new_setting_values += setting_values[12:15]
             new_setting_values += setting_values[16:]
 
@@ -759,8 +731,6 @@ class Identify(cellprofiler.module.Module):
             vv += [self.manual_threshold]
         elif self.threshold_scope == TS_MEASUREMENT:
             vv += [self.thresholding_measurement]
-        elif self.threshold_scope == TS_BINARY_IMAGE:
-            vv += [self.binary_image]
         elif self.threshold_scope in (TS_GLOBAL, TS_ADAPTIVE):
             vv += [self.threshold_method]
             if self.threshold_method == centrosome.threshold.TM_OTSU:
@@ -795,33 +765,21 @@ class Identify(cellprofiler.module.Module):
         #
         # Retrieve the relevant image and mask
         #
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+
         img = image.pixel_data
+
         mask = image.mask
-        if self.threshold_scope == TS_BINARY_IMAGE:
-            binary_image = workspace.image_set.get_image(
-                    self.binary_image.value, must_be_binary=True).pixel_data
-            self.add_fg_bg_measurements(
-                    workspace.measurements, img, mask, binary_image)
-            if wants_local_threshold:
-                return binary_image, None
-            return binary_image
-        local_threshold, global_threshold = self.get_threshold(
-                image, mask, workspace)
 
-        blurred_image = img
+        local_threshold, global_threshold = self.get_threshold(image, mask, workspace)
 
-        sigma = 0
+        binary_image = (img >= local_threshold) & mask
 
-        if hasattr(workspace, "display_data"):
-            workspace.display_data.threshold_sigma = sigma
+        self.add_fg_bg_measurements(workspace.measurements, img, mask, binary_image)
 
-        binary_image = (blurred_image >= local_threshold) & mask
-        self.add_fg_bg_measurements(
-                workspace.measurements, img, mask, binary_image)
         if wants_local_threshold:
             return binary_image, local_threshold
+
         return binary_image
 
     def get_threshold(self, image, mask, workspace):
@@ -976,7 +934,7 @@ class Identify(cellprofiler.module.Module):
 
     def get_threshold_modifier(self):
         """The threshold algorithm modifier"""
-        if self.threshold_scope.value in (TS_AUTOMATIC, TS_GLOBAL, TS_BINARY_IMAGE, TS_MANUAL, TS_MEASUREMENT):
+        if self.threshold_scope.value in (TS_AUTOMATIC, TS_GLOBAL, TS_MANUAL, TS_MEASUREMENT):
             return centrosome.threshold.TM_GLOBAL
 
         return centrosome.threshold.TM_ADAPTIVE
@@ -1013,8 +971,6 @@ class Identify(cellprofiler.module.Module):
         category - must be "Threshold" to get anything back
         '''
         if object_name == cellprofiler.measurement.IMAGE and category == C_THRESHOLD:
-            if self.threshold_scope == TS_BINARY_IMAGE:
-                return [FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE]
             return [FTR_ORIG_THRESHOLD, FTR_FINAL_THRESHOLD,
                     FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE]
         return []

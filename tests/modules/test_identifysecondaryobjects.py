@@ -185,7 +185,6 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertAlmostEqual(module.regularization_factor.value, 0.08)
         self.assertEqual(module.outlines_name, "CellOutlines")
         self.assertAlmostEqual(module.manual_threshold.value, 0.01)
-        self.assertEqual(module.binary_image, "MyMask")
         self.assertFalse(module.use_outlines)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
@@ -251,7 +250,6 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertAlmostEqual(module.regularization_factor.value, 0.05)
         self.assertEqual(module.outlines_name, "MyOutline")
         self.assertAlmostEqual(module.manual_threshold.value, 0)
-        self.assertEqual(module.binary_image, "MyMask")
         self.assertFalse(module.use_outlines)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
@@ -368,7 +366,6 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.threshold_range.max, .95)
         self.assertEqual(module.manual_threshold, .3)
         self.assertEqual(module.thresholding_measurement, "Count_Cookies")
-        self.assertEqual(module.binary_image, "CookieMask")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
@@ -1465,45 +1462,12 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(len(numpy.unique(object_out.unedited_segmented)), 3)
         self.assertEqual(len(numpy.unique(object_out.unedited_segmented[i - 1:, j - 1:j + 2])), 1)
 
-    def test_09_01_binary_threshold(self):
-        '''Test segmentation using a binary image for thresholding'''
-        numpy.random.seed(91)
-        image = numpy.random.uniform(size=(20, 10))
-        labels = numpy.zeros((20, 10), int)
-        labels[5, 5] = 1
-        labels[15, 5] = 2
-        threshold = numpy.zeros((20, 10), bool)
-        threshold[4:7, 4:7] = True
-        threshold[14:17, 4:7] = True
-        expected = numpy.zeros((20, 10), int)
-        expected[4:7, 4:7] = 1
-        expected[14:17, 4:7] = 2
-
-        workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects))
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_BINARY_IMAGE
-        module.binary_image.value = "threshold"
-        image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cellprofiler.image.ImageSet))
-        image_set.add("threshold", cellprofiler.image.Image(threshold, convert=False))
-
-        module.run(workspace)
-        object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
-        labels_out = object_out.segmented
-        indexes = workspace.measurements.get_current_measurement(
-                OUTPUT_OBJECTS_NAME, "Parent_" + INPUT_OBJECTS_NAME)
-        self.assertEqual(len(indexes), 2)
-        indexes = numpy.hstack(([0], indexes))
-        self.assertTrue(numpy.all(indexes[labels_out] == expected))
-
     def test_10_01_holes_no_holes(self):
-        numpy.random.seed(92)
         for wants_fill_holes in (True, False):
             for method in (cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_B,
                            cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION,
                            cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G,
                            cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I):
-                image = numpy.random.uniform(size=(20, 10))
                 labels = numpy.zeros((20, 10), int)
                 labels[5, 5] = 1
                 labels[15, 5] = 2
@@ -1516,16 +1480,15 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                 expected[14:17, 4:7] = 2
                 if not wants_fill_holes:
                     expected[2, 5] = 0
-                workspace, module = self.make_workspace(image, labels)
+                workspace, module = self.make_workspace(threshold * 0.5, labels)
                 self.assertTrue(isinstance(module, cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects))
-                module.threshold_scope.value = centrosome.threshold.TM_BINARY_IMAGE
-                module.binary_image.value = "threshold"
+                module.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+                module.manual_threshold.value = 0.5
                 module.method.value = method
                 module.fill_holes.value = wants_fill_holes
                 module.distance_to_dilate.value = 10000
                 image_set = workspace.image_set
                 self.assertTrue(isinstance(image_set, cellprofiler.image.ImageSet))
-                image_set.add("threshold", cellprofiler.image.Image(threshold, convert=False))
 
                 module.run(workspace)
                 object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)

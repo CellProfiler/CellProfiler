@@ -20,7 +20,6 @@ import tests.modules
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
-BINARY_IMAGE_NAME = "binary_image"
 MASKING_OBJECTS_NAME = "masking_objects"
 MEASUREMENT_NAME = "my_measurement"
 
@@ -32,8 +31,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
 
     def make_workspace(self, image,
                        mask=None,
-                       labels=None,
-                       binary_image=None):
+                       labels=None):
         '''Make a workspace and IdentifyPrimaryObjects module
 
         image - the intensity image for thresholding
@@ -41,22 +39,17 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         mask - if present, the "don't analyze" mask of the intensity image
 
         labels - if thresholding per-object, the labels matrix needed
-
-        binary_image - if thresholding using a binary image, the image
         '''
         module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         module.module_num = 1
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
-        module.binary_image.value = BINARY_IMAGE_NAME
 
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         cpimage = cellprofiler.image.Image(image, mask=mask)
         m.add(IMAGE_NAME, cpimage)
-        if binary_image is not None:
-            m.add(BINARY_IMAGE_NAME, cellprofiler.image.Image(binary_image))
         object_set = cellprofiler.object.ObjectSet()
         if labels is not None:
             o = cellprofiler.object.Objects()
@@ -1211,7 +1204,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertTrue(module.automatic_smoothing)
         self.assertTrue(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
-        self.assertEqual(module.binary_image, "MyBinaryImage")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
@@ -1237,7 +1229,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertFalse(module.automatic_smoothing)
         self.assertFalse(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
-        self.assertEqual(module.binary_image, "MyBinaryImage")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
@@ -1616,7 +1607,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertAlmostEqual(module.threshold_range.max, 0.90)
         self.assertAlmostEqual(module.manual_threshold, 0.03)
         self.assertEqual(module.thresholding_measurement, "Metadata_Threshold")
-        self.assertEqual(module.binary_image, "Segmentation")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
@@ -1643,7 +1633,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_NONE)
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE)
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_BINARY_IMAGE)
         self.assertEqual(module.threshold_method, "None")
         module = pipeline.modules()[7]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
@@ -2250,22 +2239,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                                                      workspace)
         self.assertTrue(threshold == .5)
         self.assertTrue(threshold == .5)
-
-    def test_15_01_test_binary_background(self):
-        img = numpy.zeros((200, 200), numpy.float32)
-        thresh = numpy.zeros((200, 200), bool)
-        draw_circle(thresh, (100, 100), 50, True)
-        draw_circle(thresh, (25, 25), 20, True)
-        workspace, x = self.make_workspace(img, binary_image=thresh)
-        x.exclude_size.value = False
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-        x.threshold_scope.value = cellprofiler.modules.identify.TS_BINARY_IMAGE
-        x.run(workspace)
-        count_ftr = cellprofiler.modules.identify.C_COUNT + "_" + OBJECTS_NAME
-        m = workspace.measurements
-        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, count_ftr))
-        count = m.get_current_measurement(cellprofiler.measurement.IMAGE, count_ftr)
-        self.assertEqual(count, 2)
 
     def test_16_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''

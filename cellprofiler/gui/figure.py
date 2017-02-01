@@ -1076,7 +1076,7 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def gridshow(self, x, y, image, cmap='gray', title=None):
+    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False):
         gx, gy = self.__gridspec.get_geometry()
 
         gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
@@ -1093,8 +1093,12 @@ class Figure(wx.Frame):
 
         vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
 
+        cmap = colormap
+
         if isinstance(cmap, matplotlib.cm.ScalarMappable):
             cmap = cmap.cmap
+
+        axes = []
 
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
@@ -1115,6 +1119,15 @@ class Figure(wx.Frame):
             )
 
             self.figure.add_subplot(ax)
+
+            axes += [ax]
+
+        if colorbar:
+            colormap.set_array(image)
+
+            colormap.autoscale()
+
+            self.figure.colorbar(colormap, ax=axes)
 
         matplotlib.pyplot.show()
 
@@ -1330,7 +1343,7 @@ class Figure(wx.Frame):
                 hist_fig.figure.canvas.draw()
             return subplot
         else:
-            self.gridshow(x, y, image, colormap, title)
+            self.gridshow(x, y, image, title, colormap, colorbar)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):

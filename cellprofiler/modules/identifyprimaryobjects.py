@@ -196,7 +196,7 @@ OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
 '''The number of settings, exclusive of threshold settings'''
-N_SETTINGS = 14
+N_SETTINGS = 13
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -306,24 +306,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 "NO": cellprofiler.setting.NO,
                 "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON
-            })
-        )
-
-        self.merge_objects = cellprofiler.setting.Binary(
-            "Try to merge too small objects with nearby larger objects?",
-            False,
-            doc="""
-            Select <i>{YES}</i> to cause objects that are smaller than the specified minimum diameter to be
-            merged, if possible, with other surrounding objects.
-            <p>This is helpful in cases when an object was incorrectly split into two objects, one of which is
-            actually just a tiny piece of the larger object. However, this could be problematic if the other
-            settings in the module are set poorly, producing many tiny objects; the module will take a very
-            long time trying to merge the tiny objects back together again; you may not notice that this is the
-            case, since it may successfully piece together the objects again. It is therefore a good idea to
-            run the module first without merging objects to make sure the settings are reasonably
-            effective.</p>
-            """.format(**{
-                "YES": cellprofiler.setting.YES
             })
         )
 
@@ -585,7 +567,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.object_name,                    # 1
                    self.size_range,                     # 2
                    self.exclude_size,                   # 3
-                   self.merge_objects,                  # 4
                    self.exclude_border_objects,         # 5
                    self.unclump_method,                 # 6
                    self.watershed_method,               # 7
@@ -758,7 +739,9 @@ class IdentifyPrimaryObjects(identify.Identify):
             if setting_values[6] == UN_LOG:
                 setting_values[6] = UN_INTENSITY
 
-            new_setting_values = setting_values[:11]
+            new_setting_values = setting_values[:4]
+
+            new_setting_values += setting_values[5:11]
 
             new_setting_values += setting_values[12:15]
 
@@ -779,7 +762,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                 self.object_name,
                 self.size_range,
                 self.exclude_size,
-                self.merge_objects,
                 self.exclude_border_objects
                 ] + self.get_threshold_help_settings() + [
                    self.unclump_method,

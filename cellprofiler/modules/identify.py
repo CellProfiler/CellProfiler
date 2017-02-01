@@ -625,24 +625,24 @@ class Identify(cellprofiler.module.Module):
 
     def get_threshold_settings(self):
         '''Return the threshold settings to be saved in the pipeline'''
-        return [self.threshold_setting_version,    # 0
-                self.threshold_scope,              # 1
-                self.threshold_method,             # 2
-                self.threshold_correction_factor,  # 5
-                self.threshold_range,              # 6
-                self.manual_threshold,             # 8
-                self.thresholding_measurement,     # 9
-                self.binary_image,                 # 10
-                self.two_class_otsu,               # 12
-                self.use_weighted_variance,        # 13
-                self.assign_middle_to_foreground,  # 14
-                self.adaptive_window_size,         # 16
-                self.rb_custom_choice,             # 17
-                self.lower_outlier_fraction,       # 18
-                self.upper_outlier_fraction,       # 19
-                self.averaging_method,             # 20
-                self.variance_method,              # 21
-                self.number_of_deviations]         # 22
+        return [self.threshold_setting_version,
+                self.threshold_scope,
+                self.threshold_method,
+                self.threshold_correction_factor,
+                self.threshold_range,
+                self.manual_threshold,
+                self.thresholding_measurement,
+                self.binary_image,
+                self.two_class_otsu,
+                self.use_weighted_variance,
+                self.assign_middle_to_foreground,
+                self.adaptive_window_size,
+                self.rb_custom_choice,
+                self.lower_outlier_fraction,
+                self.upper_outlier_fraction,
+                self.averaging_method,
+                self.variance_method,
+                self.number_of_deviations]
 
     def get_threshold_help_settings(self):
         '''Return the threshold settings to be displayed in help'''

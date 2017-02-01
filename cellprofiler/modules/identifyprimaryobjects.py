@@ -476,7 +476,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         )
 
         self.automatic_suppression = cellprofiler.setting.Binary(
-            AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
+             AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
             True,
             doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
@@ -552,19 +552,19 @@ class IdentifyPrimaryObjects(identify.Identify):
 
     def settings(self):
         return [
-                   self.image_name,                     # 0
-                   self.object_name,                    # 1
-                   self.size_range,                     # 2
-                   self.exclude_size,                   # 3
-                   self.exclude_border_objects,         # 5
-                   self.unclump_method,                 # 6
-                   self.watershed_method,               # 7
-                   self.smoothing_filter_size,          # 8
-                   self.maxima_suppression_size,        # 9
-                   self.low_res_maxima,                 # 10
-                   self.fill_holes,                     # 12
-                   self.automatic_smoothing,            # 13
-                   self.automatic_suppression           # 14
+                   self.image_name,
+                   self.object_name,
+                   self.size_range,
+                   self.exclude_size,
+                   self.exclude_border_objects,
+                   self.unclump_method,
+                   self.watershed_method,
+                   self.smoothing_filter_size,
+                   self.maxima_suppression_size,
+                   self.low_res_maxima,
+                   self.fill_holes,
+                   self.automatic_smoothing,
+                   self.automatic_suppression
                ] + self.get_threshold_settings()
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):

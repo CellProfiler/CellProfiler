@@ -602,7 +602,7 @@ class MeasureObjectNeighbors(cpm.Module):
             figure.subplot_imshow(0, 1, neighbor_count_image,
                                   "%s colored by # of neighbors" %
                                   self.object_name.value,
-                                  # colormap=neighbor_cm,
+                                  colormap=neighbor_cm,
                                   colorbar=True, vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
                                   normalize=False,
@@ -612,7 +612,7 @@ class MeasureObjectNeighbors(cpm.Module):
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
                                       self.object_name.value,
-                                      # colormap=percent_touching_cm,
+                                      colormap=percent_touching_cm,
                                       colorbar=True, vmin=0,
                                       vmax=max(percent_touching_image.max(), 1),
                                       normalize=False,
@@ -623,7 +623,7 @@ class MeasureObjectNeighbors(cpm.Module):
             figure.subplot_imshow(0, 1, neighbor_count_image,
                                   "%s colored by # of neighbors" %
                                   self.object_name.value,
-                                  # colormap=neighbor_cm,
+                                  colormap=neighbor_cm,
                                   vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
                                   # sharexy=figure.subplot(0, 0),
@@ -632,7 +632,7 @@ class MeasureObjectNeighbors(cpm.Module):
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
                                       self.object_name.value,
-                                      # colormap=percent_touching_cm,
+                                      colormap=percent_touching_cm,
                                       vmin=0,
                                       vmax=max(neighbor_count_image.max(), 1),
                                       # sharexy=figure.subplot(0, 0),

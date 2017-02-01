@@ -1093,6 +1093,9 @@ class Figure(wx.Frame):
 
         vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
 
+        if isinstance(cmap, matplotlib.cm.ScalarMappable):
+            cmap = cmap.cmap
+
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
 

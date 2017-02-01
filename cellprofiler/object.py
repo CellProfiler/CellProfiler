@@ -40,6 +40,25 @@ class Objects(object):
         self.__parent_image = None
 
     @property
+    def dimensions(self):
+        if self.__parent_image:
+            return self.__parent_image.dimensions
+
+        shape = self.shape
+
+        return len(shape)
+
+    @property
+    def volumetric(self):
+        return self.dimensions is 3
+
+    @property
+    def masked(self):
+        mask = self.parent_image.mask
+
+        return numpy.logical_and(self.segmented, mask)
+
+    @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
@@ -843,14 +862,33 @@ def crop_labels_and_image(labels, image):
 
     Assumes that points outside of the common boundary should be masked.
     '''
-    min_height = min(labels.shape[0], image.shape[0])
-    min_width = min(labels.shape[1], image.shape[1])
-    if image.ndim == 2:
-        return (labels[:min_height, :min_width],
-                image[:min_height, :min_width])
-    else:
-        return (labels[:min_height, :min_width],
-                image[:min_height, :min_width, :])
+    min_dim1 = min(labels.shape[0], image.shape[0])
+    min_dim2 = min(labels.shape[1], image.shape[1])
+
+    if labels.ndim == 3:  # volume
+        min_dim3 = min(labels.shape[2], image.shape[2])
+
+        if image.ndim == 4:  # multichannel volume
+            return (
+                labels[:min_dim1, :min_dim2, :min_dim3],
+                image[:min_dim1, :min_dim2, :min_dim3, :],
+            )
+
+        return (
+            labels[:min_dim1, :min_dim2, :min_dim3],
+            image[:min_dim1, :min_dim2, :min_dim3],
+        )
+
+    if image.ndim == 3:  # multichannel image
+        return (
+            labels[:min_dim1, :min_dim2],
+            image[:min_dim1, :min_dim2, :]
+        )
+
+    return (
+        labels[:min_dim1, :min_dim2],
+        image[:min_dim1, :min_dim2]
+    )
 
 
 def size_similarly(labels, secondary):

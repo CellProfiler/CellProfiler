@@ -34,6 +34,7 @@ import sys
 import urllib
 import zlib
 
+import cellprofiler
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
@@ -266,8 +267,6 @@ class CreateBatchFiles(cpm.Module):
 
         if outf is not None, it is used as a file object destination.
         '''
-        from cellprofiler.utilities.version import version_number
-
         if outf is None:
             if self.wants_default_output_directory.value:
                 path = cpprefs.get_default_output_directory()
@@ -294,7 +293,7 @@ class CreateBatchFiles(cpm.Module):
                                              workspace.frame)
             pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
             bizarro_self = pipeline.module(self.module_num)
-            bizarro_self.revision.value = version_number
+            bizarro_self.revision.value = int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
             if self.wants_default_output_directory:
                 bizarro_self.custom_output_directory.value = \
                     self.alter_path(cpprefs.get_default_output_directory())
@@ -455,10 +454,8 @@ class CreateBatchFiles(cpm.Module):
                               setting_values[5:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
-            from cellprofiler.utilities.version import version_number
-
             setting_values = (setting_values[:6] +
-                              [version_number] +
+                              [int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))] +
                               setting_values[6:])
             variable_revision_number = 3
         if (not from_matlab) and variable_revision_number == 3:

@@ -6,12 +6,16 @@ Thresholding
 
 """
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
 import numpy
 import skimage.exposure
 import skimage.filters
+import skimage.filters.rank
+import skimage.morphology
+import skimage.util
+
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
 
 
 class Thresholding(cellprofiler.module.ImageProcessing):
@@ -22,10 +26,24 @@ class Thresholding(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Thresholding, self).create_settings()
 
-        self.operation = cellprofiler.setting.Choice(
+        self.local = cellprofiler.setting.Binary(
+            u"Local",
+            False
+        )
+
+        self.local_operation = cellprofiler.setting.Choice(
             u"Operation",
             [
                 u"Adaptive",
+                u"Otsu’s method",
+                u"Percentile"
+            ],
+            u"Adaptive"
+        )
+
+        self.global_operation = cellprofiler.setting.Choice(
+            u"Operation",
+            [
                 u"Iterative selection thresholding",
                 u"Manual",
                 u"Minimum cross entropy thresholding",
@@ -37,7 +55,7 @@ class Thresholding(cellprofiler.module.ImageProcessing):
 
         self.block_size = cellprofiler.setting.OddInteger(
             u"Block size",
-            value=3
+            value=99
         )
 
         self.adaptive_method = cellprofiler.setting.Choice(
@@ -47,7 +65,7 @@ class Thresholding(cellprofiler.module.ImageProcessing):
                 u"Mean",
                 u"Median"
             ],
-            u"Gaussian"
+            u"Mean"
         )
 
         self.sigma = cellprofiler.setting.Float(
@@ -61,18 +79,23 @@ class Thresholding(cellprofiler.module.ImageProcessing):
             value=0.0
         )
 
+        self.radius = cellprofiler.setting.Integer(
+            u"Radius",
+            8
+        )
+
         self.bins = cellprofiler.setting.Integer(
             u"Bins",
             value=256
         )
 
-        self.lower = cellprofiler.setting.Float(
-            u"Lower",
+        self.minimum = cellprofiler.setting.Float(
+            u"Minimum",
             value=0.0
         )
 
-        self.upper = cellprofiler.setting.Float(
-            u"Upper",
+        self.maximum = cellprofiler.setting.Float(
+            u"Maximum",
             value=1.0
         )
 
@@ -83,11 +106,13 @@ class Thresholding(cellprofiler.module.ImageProcessing):
             self.adaptive_method,
             self.bins,
             self.block_size,
-            self.lower,
+            self.global_operation,
+            self.local_operation,
+            self.maximum,
+            self.minimum,
             self.offset,
-            self.operation,
+            self.radius,
             self.sigma,
-            self.upper,
             self.x_name,
             self.y_name
         ]
@@ -96,38 +121,55 @@ class Thresholding(cellprofiler.module.ImageProcessing):
         __settings__ = super(Thresholding, self).visible_settings()
 
         settings = __settings__ + [
-            self.operation
+            self.local
         ]
 
-        if self.operation.value == u"Adaptive":
+        if self.local.value:
             settings = settings + [
-                self.adaptive_method
+                self.local_operation
             ]
 
-            if self.adaptive_method == u"Gaussian":
+            if self.local_operation.value == u"Adaptive":
                 settings = settings + [
-                    self.sigma
+                    self.adaptive_method
                 ]
 
+                if self.adaptive_method == u"Gaussian":
+                    settings = settings + [
+                        self.sigma
+                    ]
+
+                settings = settings + [
+                    self.block_size,
+                    self.offset
+                ]
+            elif self.local_operation.value == u"Otsu’s method":
+                settings = settings + [
+                    self.radius
+                ]
+            elif self.local_operation.value == u"Percentile":
+                settings = settings + [
+                    self.radius
+                ]
+        else:
             settings = settings + [
-                self.block_size,
-                self.offset
+                self.global_operation
             ]
 
-        if self.operation.value in [
-            u"Iterative selection thresholding",
-            u"Otsu’s method",
-            u"Yen’s method"
-        ]:
-            settings = settings + [
-                self.bins
-            ]
+            if self.global_operation.value in [
+                u"Iterative selection thresholding",
+                u"Otsu’s method",
+                u"Yen’s method"
+            ]:
+                settings = settings + [
+                    self.bins
+                ]
 
-        if self.operation.value == u"Manual":
-            settings = settings + [
-                self.lower,
-                self.upper
-            ]
+            if self.global_operation.value == u"Manual":
+                settings = settings + [
+                    self.minimum,
+                    self.maximum
+                ]
 
         return settings
 
@@ -142,54 +184,90 @@ class Thresholding(cellprofiler.module.ImageProcessing):
 
         x_data = x.pixel_data
 
-        x_data = skimage.img_as_uint(x_data)
+        x_data = skimage.img_as_ubyte(x_data)
 
-        y_data = numpy.zeros_like(x_data)
+        if self.local.value:
+            if self.local_operation.value == u"Adaptive":
+                if x.volumetric:
+                    y_data = numpy.zeros_like(x_data, dtype=numpy.bool)
 
-        if self.operation.value == u"Adaptive":
-            y_data = skimage.filters.threshold_adaptive(
-                image=x_data,
-                block_size=self.block_size.value,
-                method=self.adaptive_method.value.lower(),
-                offset=self.offset.value,
-                param=self.sigma.value
-            )
-        elif self.operation.value == u"Iterative selection thresholding":
-            y_data = skimage.filters.threshold_isodata(
-                image=x_data,
-                nbins=self.bins.value
-            )
+                    for index, data in enumerate(x_data):
+                        y_data[index] = skimage.filters.threshold_adaptive(
+                            image=data,
+                            block_size=self.block_size.value,
+                            method=self.adaptive_method.value.lower(),
+                            offset=self.offset.value,
+                            param=self.sigma.value
+                        )
+                else:
+                    y_data = skimage.filters.threshold_adaptive(
+                        image=x_data,
+                        block_size=self.block_size.value,
+                        method=self.adaptive_method.value.lower(),
+                        offset=self.offset.value,
+                        param=self.sigma.value
+                    )
+            elif self.local_operation.value == u"Otsu’s method":
+                disk = skimage.morphology.disk(self.radius.value)
 
-            y_data = x_data >= y_data
-        elif self.operation.value == u"Manual":
-            x_data = skimage.exposure.rescale_intensity(x_data)
+                if x.volumetric:
+                    y_data = numpy.zeros_like(x_data)
 
-            x_data = skimage.img_as_float(x_data)
+                    for index, data in enumerate(x_data):
+                        y_data[index] = skimage.filters.rank.otsu(data, disk)
+                else:
+                    y_data = skimage.filters.rank.otsu(x_data, disk)
 
-            y_data = numpy.zeros_like(x_data, numpy.bool)
+                y_data = x_data >= y_data
+            elif self.local_operation.value == u"Percentile":
+                disk = skimage.morphology.disk(self.radius.value)
 
-            y_data[x_data > self.lower.value] = True
-            y_data[x_data < self.upper.value] = False
-        elif self.operation.value == u"Minimum cross entropy thresholding":
-            y_data = skimage.filters.threshold_li(
-                image=x_data
-            )
+                if x.volumetric:
+                    y_data = numpy.zeros_like(x_data)
 
-            y_data = x_data >= y_data
-        elif self.operation.value == u"Otsu’s method":
-            y_data = skimage.filters.threshold_otsu(
-                image=x_data,
-                nbins=self.bins.value
-            )
+                    for index, data in enumerate(x_data):
+                        y_data[index] = skimage.filters.rank.percentile(data, disk)
+                else:
+                    y_data = skimage.filters.rank.percentile(x_data, disk)
 
-            y_data = x_data >= y_data
-        elif self.operation.value == u"Yen’s method":
-            y_data = skimage.filters.threshold_yen(
-                image=x_data,
-                nbins=self.bins.value
-            )
+                y_data = x_data >= y_data
+        else:
+            if self.global_operation.value == u"Iterative selection thresholding":
+                y_data = skimage.filters.threshold_isodata(
+                    image=x_data,
+                    nbins=self.bins.value
+                )
 
-            y_data = x_data >= y_data
+                y_data = x_data >= y_data
+            elif self.global_operation.value == u"Manual":
+                x_data = skimage.img_as_float(x_data)
+
+                x_data = skimage.exposure.rescale_intensity(x_data)
+
+                y_data = numpy.zeros_like(x_data, numpy.bool)
+
+                y_data[x_data > self.minimum.value] = True
+                y_data[x_data < self.maximum.value] = False
+            elif self.global_operation.value == u"Minimum cross entropy thresholding":
+                y_data = skimage.filters.threshold_li(
+                    image=x_data
+                )
+
+                y_data = x_data >= y_data
+            elif self.global_operation.value == u"Otsu’s method":
+                y_data = skimage.filters.threshold_otsu(
+                    image=x_data,
+                    nbins=self.bins.value
+                )
+
+                y_data = x_data >= y_data
+            elif self.global_operation.value == u"Yen’s method":
+                y_data = skimage.filters.threshold_yen(
+                    image=x_data,
+                    nbins=self.bins.value
+                )
+
+                y_data = x_data >= y_data
 
         y = cellprofiler.image.Image(
             image=y_data,

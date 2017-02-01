@@ -20,6 +20,7 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
+import matplotlib.colors
 import matplotlib.gridspec
 import matplotlib.patches
 import matplotlib.pyplot
@@ -1076,11 +1077,21 @@ class Figure(wx.Frame):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
     def gridshow(self, x, y, image, cmap='gray'):
-        gx = self.__gridspec.get_geometry()[0]
+        gx, gy = self.__gridspec.get_geometry()
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=self.__gridspec[gx * x + y], wspace=0.1, hspace=0.1)
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
+            3,
+            3,
+            subplot_spec=self.__gridspec[gy * y + x],
+            wspace=0.1,
+            hspace=0.1
+        )
 
         z = image.shape[0]
+
+        vmin = min(image[position * (z - 1) / 8].min() for position in range(9))
+
+        vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
 
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
@@ -1091,7 +1102,11 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
-            ax.imshow(image[position * (z-1) / 8], cmap=cmap)
+            ax.imshow(
+                image[position * (z - 1) / 8],
+                cmap=cmap,
+                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+            )
 
             self.figure.add_subplot(ax)
 

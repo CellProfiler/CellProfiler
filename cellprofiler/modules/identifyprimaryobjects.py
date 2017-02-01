@@ -196,7 +196,7 @@ OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
 '''The number of settings, exclusive of threshold settings'''
-N_SETTINGS = 18
+N_SETTINGS = 16
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -557,18 +557,6 @@ class IdentifyPrimaryObjects(identify.Identify):
             })
         )
 
-        self.should_save_outlines = cellprofiler.setting.Binary(
-            'Retain outlines of the identified objects?',
-            False,
-            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
-        )
-
-        self.save_outlines = cellprofiler.setting.OutlineNameProvider(
-            'Name the outline image',
-            "PrimaryOutlines",
-            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
-        )
-
         self.fill_holes = cellprofiler.setting.Choice(
             'Fill holes in identified objects?',
             FH_ALL,
@@ -637,11 +625,9 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.smoothing_filter_size,          # 8
                    self.maxima_suppression_size,        # 9
                    self.low_res_maxima,                 # 10
-                   self.save_outlines,                  # 11
                    self.fill_holes,                     # 12
                    self.automatic_smoothing,            # 13
                    self.automatic_suppression,          # 14
-                   self.should_save_outlines,           # 15
                    self.limit_choice,                   # 20
                    self.maximum_object_count            # 21
                ] + self.get_threshold_settings()
@@ -807,7 +793,13 @@ class IdentifyPrimaryObjects(identify.Identify):
             if setting_values[6] == UN_LOG:
                 setting_values[6] = UN_INTENSITY
 
-            setting_values = setting_values[:16] + setting_values[20:]
+            new_setting_values = setting_values[:11]
+
+            new_setting_values += setting_values[12:15]
+
+            new_setting_values += setting_values[20:]
+
+            setting_values = new_setting_values
 
             variable_revision_number = 12
 
@@ -832,8 +824,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.automatic_suppression,
                    self.maxima_suppression_size,
                    self.low_res_maxima,
-                   self.should_save_outlines,
-                   self.save_outlines,
                    self.fill_holes,
                    self.limit_choice,
                    self.maximum_object_count]
@@ -851,9 +841,6 @@ class IdentifyPrimaryObjects(identify.Identify):
             if not self.automatic_suppression.value:
                 vv += [self.maxima_suppression_size]
             vv += [self.low_res_maxima]
-        vv += [self.should_save_outlines]
-        if self.should_save_outlines.value:
-            vv += [self.save_outlines]
         vv += [self.fill_holes, self.limit_choice]
         if self.limit_choice != LIMIT_NONE:
             vv += [self.maximum_object_count]
@@ -980,10 +967,6 @@ class IdentifyPrimaryObjects(identify.Identify):
         identify.add_object_location_measurements(workspace.measurements,
                                                   self.object_name.value,
                                                   labeled_image)
-        if self.should_save_outlines.value:
-            out_img = cellprofiler.image.Image(outline_image.astype(bool),
-                                               parent_image=image)
-            workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):
         '''Limit the object count according to the rules

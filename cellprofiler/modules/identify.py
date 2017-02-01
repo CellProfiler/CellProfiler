@@ -1,16 +1,10 @@
-import centrosome.outline
-import centrosome.smooth
 import centrosome.threshold
 import numpy
 import scipy.ndimage
-import scipy.sparse
-import scipy.stats
 
 import cellprofiler.gui.help
-import cellprofiler.icons
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.object
 import cellprofiler.setting
 
 O_TWO_CLASS = 'Two classes'

@@ -2,21 +2,15 @@ import math
 import re
 
 import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.otsu
 import centrosome.outline
 import centrosome.propagate
 import centrosome.threshold
 import numpy
 import scipy.ndimage
 import scipy.sparse
-import scipy.stats
 import skimage.morphology.watershed
 
 import cellprofiler.gui.help
-import cellprofiler.icons
-import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 import identify

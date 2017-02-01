@@ -803,11 +803,12 @@ class IdentifyPrimaryObjects(identify.Identify):
 
         labeled_image, object_count = scipy.ndimage.label(binary_image,
                                                           numpy.ones((3, 3), bool))
-        labeled_image, \
-            object_count, \
-            maxima_suppression_size, \
-            log_threshold, \
-            log_filter_diameter = self.separate_neighboring_objects(workspace, labeled_image, object_count)
+        labeled_image, object_count, maxima_suppression_size = self.separate_neighboring_objects(
+            workspace,
+            labeled_image,
+            object_count
+        )
+
         unedited_labels = labeled_image.copy()
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
@@ -936,15 +937,13 @@ class IdentifyPrimaryObjects(identify.Identify):
         LoG threshold and filter diameter
         """
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
-            return labeled_image, object_count, 7, 0.5, 5
+            return labeled_image, object_count, 7
 
         cpimage = workspace.image_set.get_image(
                 self.image_name.value, must_be_grayscale=True)
         image = cpimage.pixel_data
         mask = cpimage.mask
 
-        reported_log_filter_diameter = 5
-        reported_log_threshold = 0.5
         blurred_image = self.smooth_image(image, mask)
         if self.low_res_maxima.value and self.size_range.min > 10:
             image_resize_factor = 10.0 / float(self.size_range.min)
@@ -1042,11 +1041,7 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             watershed_boundaries = -watershed_boundaries
 
-        return watershed_boundaries, \
-            object_count, \
-            reported_maxima_suppression_size, \
-            reported_log_threshold, \
-            reported_log_filter_diameter
+        return watershed_boundaries, object_count, reported_maxima_suppression_size
 
     def get_maxima(self, image, labeled_image, maxima_mask, image_resize_factor):
         if image_resize_factor < 1.0:

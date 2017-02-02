@@ -140,7 +140,15 @@ TECH_NOTE_ICON = "gear.png"
 class Identify(cellprofiler.module.Module):
     threshold_setting_version = 3
 
-    def create_threshold_settings(self, methods=centrosome.threshold.TM_METHODS):
+    def create_threshold_settings(
+            self,
+            methods=[centrosome.threshold.TM_BACKGROUND,
+                     centrosome.threshold.TM_KAPUR,
+                     centrosome.threshold.TM_MCT,
+                     centrosome.threshold.TM_OTSU,
+                     centrosome.threshold.TM_RIDLER_CALVARD,
+                     centrosome.threshold.TM_ROBUST_BACKGROUND]
+    ):
         self.threshold_setting_version = cellprofiler.setting.Integer(
             "Threshold setting version",
             value=self.threshold_setting_version
@@ -224,7 +232,7 @@ class Identify(cellprofiler.module.Module):
                 "TS_AUTOMATIC": TS_AUTOMATIC,
                 "TS_GLOBAL": TS_GLOBAL,
                 "TS_MANUAL": TS_MANUAL,
-                "TS_MEASUREMENT": TS_MEASUREMENT,
+                "TS_MEASUREMENT": TS_MEASUREMENT
             })
         )
 

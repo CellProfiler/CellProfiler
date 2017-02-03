@@ -190,7 +190,7 @@ OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
 '''The number of settings, exclusive of threshold settings'''
-N_SETTINGS = 13
+N_SETTINGS = 15
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -550,6 +550,39 @@ class IdentifyPrimaryObjects(identify.Identify):
             })
         )
 
+        self.limit_choice = cellprofiler.setting.Choice(
+            "Handling of objects if excessive number of objects identified",
+            [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE],
+            doc="""
+            This setting deals with images that are segmented into an unreasonable number of objects. This
+            might happen if the module calculates a low threshold or if the image has unusual artifacts.
+            <b>IdentifyPrimaryObjects</b> can handle this condition in one of three ways:
+            <ul>
+                <li><i>{LIMIT_NONE}</i>: Don't check for large numbers of objects.</li>
+                <li><i>{LIMIT_TRUNCATE}</i>: Limit the number of objects. Arbitrarily erase objects to limit
+                the number to the maximum allowed.</li>
+                <li><i>{LIMIT_ERASE}</i>: Erase all objects if the number of objects exceeds the maximum. This
+                results in an image with no primary objects. This option is a good choice if a large number of
+                objects indicates that the image should not be processed.</li>
+            </ul>
+            """.format(**{
+                "LIMIT_NONE": LIMIT_NONE,
+                "LIMIT_TRUNCATE": LIMIT_TRUNCATE,
+                "LIMIT_ERASE": LIMIT_ERASE
+            })
+        )
+
+        self.maximum_object_count = cellprofiler.setting.Integer(
+            "Maximum number of objects",
+            value=500,
+            minval=2,
+            doc="""
+            <i>(Used only when handling images with large numbers of objects by truncating)</i><br>
+            This setting limits the number of objects in the image. See the documentation for the previous
+            setting for details.
+            """
+        )
+
     def settings(self):
         return [
                    self.image_name,
@@ -564,7 +597,9 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.low_res_maxima,
                    self.fill_holes,
                    self.automatic_smoothing,
-                   self.automatic_suppression
+                   self.automatic_suppression,
+                   self.limit_choice,
+                   self.maximum_object_count
                ] + self.get_threshold_settings()
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
@@ -734,7 +769,7 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             new_setting_values += setting_values[12:15]
 
-            new_setting_values += setting_values[22:]
+            new_setting_values += setting_values[20:]
 
             setting_values = new_setting_values
 
@@ -760,7 +795,9 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.automatic_suppression,
                    self.maxima_suppression_size,
                    self.low_res_maxima,
-                   self.fill_holes]
+                   self.fill_holes,
+                   self.limit_choice,
+                   self.maximum_object_count]
 
     def visible_settings(self):
         vv = [self.image_name, self.object_name, self.size_range,
@@ -775,7 +812,9 @@ class IdentifyPrimaryObjects(identify.Identify):
             if not self.automatic_suppression.value:
                 vv += [self.maxima_suppression_size]
             vv += [self.low_res_maxima]
-        vv += [self.fill_holes]
+        vv += [self.fill_holes, self.limit_choice]
+        if self.limit_choice != LIMIT_NONE:
+            vv += [self.maximum_object_count]
         return vv
 
     def run(self, workspace):
@@ -829,6 +868,18 @@ class IdentifyPrimaryObjects(identify.Identify):
 
         # Relabel the image
         labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
+        new_labeled_image, new_object_count = self.limit_object_count(
+                labeled_image, object_count)
+        if new_object_count < object_count:
+            # Add the labels that were filtered out into the border
+            # image.
+            border_excluded_mask = ((border_excluded_labeled_image > 0) |
+                                    ((labeled_image > 0) &
+                                     (new_labeled_image == 0)))
+            border_excluded_labeled_image = scipy.ndimage.label(border_excluded_mask,
+                                                                numpy.ones((3, 3), bool))[0]
+            object_count = new_object_count
+            labeled_image = new_labeled_image
 
         # Make an outline image
         outline_image = centrosome.outline.outline(labeled_image)
@@ -886,6 +937,45 @@ class IdentifyPrimaryObjects(identify.Identify):
         identify.add_object_location_measurements(workspace.measurements,
                                                   self.object_name.value,
                                                   labeled_image)
+
+    def limit_object_count(self, labeled_image, object_count):
+        '''Limit the object count according to the rules
+
+        labeled_image - image to be limited
+        object_count - check to see if this exceeds the maximum
+
+        returns a new labeled_image and object count
+        '''
+        if object_count > self.maximum_object_count.value:
+            if self.limit_choice == LIMIT_ERASE:
+                labeled_image = numpy.zeros(labeled_image.shape, int)
+                object_count = 0
+            elif self.limit_choice == LIMIT_TRUNCATE:
+                #
+                # Pick arbitrary objects, doing so in a repeatable,
+                # but pseudorandom manner.
+                #
+                r = numpy.random.RandomState()
+                r.seed(abs(numpy.sum(labeled_image)) % (2 ** 16))
+                #
+                # Pick an arbitrary ordering of the label numbers
+                #
+                index = r.permutation(object_count) + 1
+                #
+                # Pick only maximum_object_count of them
+                #
+                index = index[:self.maximum_object_count.value]
+                #
+                # Make a vector that maps old object numbers to new
+                #
+                mapping = numpy.zeros(object_count + 1, int)
+                mapping[index] = numpy.arange(1, len(index) + 1)
+                #
+                # Relabel
+                #
+                labeled_image = mapping[labeled_image]
+                object_count = len(index)
+        return labeled_image, object_count
 
     def smooth_image(self, image, mask):
         """Apply the smoothing filter to the image"""

@@ -552,22 +552,19 @@ class IdentifyPrimaryObjects(identify.Identify):
 
         self.limit_choice = cellprofiler.setting.Choice(
             "Handling of objects if excessive number of objects identified",
-            [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE],
+            [LIMIT_NONE, LIMIT_ERASE],
             doc="""
             This setting deals with images that are segmented into an unreasonable number of objects. This
             might happen if the module calculates a low threshold or if the image has unusual artifacts.
             <b>IdentifyPrimaryObjects</b> can handle this condition in one of three ways:
             <ul>
                 <li><i>{LIMIT_NONE}</i>: Don't check for large numbers of objects.</li>
-                <li><i>{LIMIT_TRUNCATE}</i>: Limit the number of objects. Arbitrarily erase objects to limit
-                the number to the maximum allowed.</li>
                 <li><i>{LIMIT_ERASE}</i>: Erase all objects if the number of objects exceeds the maximum. This
                 results in an image with no primary objects. This option is a good choice if a large number of
                 objects indicates that the image should not be processed.</li>
             </ul>
             """.format(**{
                 "LIMIT_NONE": LIMIT_NONE,
-                "LIMIT_TRUNCATE": LIMIT_TRUNCATE,
                 "LIMIT_ERASE": LIMIT_ERASE
             })
         )
@@ -577,7 +574,7 @@ class IdentifyPrimaryObjects(identify.Identify):
             value=500,
             minval=2,
             doc="""
-            <i>(Used only when handling images with large numbers of objects by truncating)</i><br>
+            <i>(Used only when handling images with large numbers of objects by erasing)</i><br>
             This setting limits the number of objects in the image. See the documentation for the previous
             setting for details.
             """
@@ -763,6 +760,9 @@ class IdentifyPrimaryObjects(identify.Identify):
             if setting_values[6] == UN_LOG:
                 setting_values[6] = UN_INTENSITY
 
+            if setting_values[20] == LIMIT_TRUNCATE:
+                setting_values[20] = "None"
+
             new_setting_values = setting_values[:4]
 
             new_setting_values += setting_values[5:11]
@@ -947,34 +947,9 @@ class IdentifyPrimaryObjects(identify.Identify):
         returns a new labeled_image and object count
         '''
         if object_count > self.maximum_object_count.value:
-            if self.limit_choice == LIMIT_ERASE:
-                labeled_image = numpy.zeros(labeled_image.shape, int)
-                object_count = 0
-            elif self.limit_choice == LIMIT_TRUNCATE:
-                #
-                # Pick arbitrary objects, doing so in a repeatable,
-                # but pseudorandom manner.
-                #
-                r = numpy.random.RandomState()
-                r.seed(abs(numpy.sum(labeled_image)) % (2 ** 16))
-                #
-                # Pick an arbitrary ordering of the label numbers
-                #
-                index = r.permutation(object_count) + 1
-                #
-                # Pick only maximum_object_count of them
-                #
-                index = index[:self.maximum_object_count.value]
-                #
-                # Make a vector that maps old object numbers to new
-                #
-                mapping = numpy.zeros(object_count + 1, int)
-                mapping[index] = numpy.arange(1, len(index) + 1)
-                #
-                # Relabel
-                #
-                labeled_image = mapping[labeled_image]
-                object_count = len(index)
+            labeled_image = numpy.zeros(labeled_image.shape, int)
+            object_count = 0
+
         return labeled_image, object_count
 
     def smooth_image(self, image, mask):

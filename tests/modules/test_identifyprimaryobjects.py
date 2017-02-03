@@ -1220,7 +1220,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
-        self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_TRUNCATE)
+        self.assertEqual(module.limit_choice, "None")
         self.assertEqual(module.maximum_object_count, 305)
 
         module = pipeline.modules()[2]
@@ -1656,7 +1656,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_NONE)
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE)
-        self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_TRUNCATE)
+        self.assertEqual(module.limit_choice, "None")
         self.assertEqual(module.threshold_method, "None")
         self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_NONE)
         module = pipeline.modules()[7]
@@ -2473,44 +2473,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         my_objects = object_set.get_objects("my_object")
         self.assertTrue(my_objects.segmented[3, 3] != 0)
         self.assertTrue(numpy.all(my_objects.segmented[mask] == expected[mask]))
-
-    def test_18_01_truncate_objects(self):
-        '''Set up a limit on the # of objects and exceed it'''
-        for maximum_object_count in range(2, 5):
-            pixels = numpy.zeros((20, 21))
-            pixels[2:8, 2:8] = .5
-            pixels[12:18, 2:8] = .5
-            pixels[2:8, 12:18] = .5
-            pixels[12:18, 12:18] = .5
-            image = cellprofiler.image.Image(pixels)
-            image_set_list = cellprofiler.image.ImageSetList()
-            image_set = image_set_list.get_image_set(0)
-            image_set.add("my_image", image)
-            object_set = cellprofiler.object.ObjectSet()
-
-            x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
-            x.object_name.value = "my_object"
-            x.image_name.value = "my_image"
-            x.exclude_size.value = False
-            x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-            x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-            x.threshold_scope.value = centrosome.threshold.TM_MANUAL
-            x.manual_threshold.value = .25
-            x.threshold_correction_factor.value = 1
-            x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_TRUNCATE
-            x.maximum_object_count.value = maximum_object_count
-            x.module_num = 1
-            pipeline = cellprofiler.pipeline.Pipeline()
-            pipeline.add_module(x)
-            measurements = cellprofiler.measurement.Measurements()
-            workspace = cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements,
-                                                         image_set_list)
-            x.run(workspace)
-            self.assertEqual(measurements.get_current_image_measurement(
-                    "Count_my_object"), maximum_object_count)
-            my_objects = object_set.get_objects("my_object")
-            self.assertEqual(numpy.max(my_objects.segmented), maximum_object_count)
-            self.assertEqual(numpy.max(my_objects.unedited_segmented), 4)
 
     def test_18_02_erase_objects(self):
         '''Set up a limit on the # of objects and exceed it - erasing objects'''

@@ -465,7 +465,7 @@ class TestApplyThreshold(unittest.TestCase):
         image = numpy.random.uniform(size=(20, 20))
         workspace, module = self.make_workspace(image)
         module.binary.value = cellprofiler.modules.applythreshold.BINARY
-        module.threshold_method.value = centrosome.threshold.TM_MANUAL
+        module.threshold_scope.value = centrosome.threshold.TM_MANUAL
         module.manual_threshold.value = .5
         module.run(workspace)
 

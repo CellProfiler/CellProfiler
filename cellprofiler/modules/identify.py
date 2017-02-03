@@ -113,7 +113,7 @@ TS_BINARY_IMAGE = "Binary image"
 '''Threshold scope = measurement - use a measurement value as the threshold'''
 TS_MEASUREMENT = "Measurement"
 
-TS_ALL = [TS_AUTOMATIC, TS_GLOBAL, TS_ADAPTIVE, TS_MANUAL, TS_MEASUREMENT]
+TS_ALL = [TS_GLOBAL, TS_ADAPTIVE, TS_MANUAL, TS_MEASUREMENT]
 
 '''The legacy choice of object in per-object measurements
 
@@ -157,6 +157,7 @@ class Identify(cellprofiler.module.Module):
         self.threshold_scope = cellprofiler.setting.Choice(
             "Threshold strategy",
             TS_ALL,
+            value=TS_GLOBAL,
             doc="""
             The thresholding strategy determines the type of input that is used to calculate the threshold. The
             image thresholds can be based on:
@@ -170,16 +171,6 @@ class Identify(cellprofiler.module.Module):
             sub-regions such as user-defined masks or objects supplied by a prior module.<br>
             The choices for the threshold strategy are:<br>
             <ul>
-                <li>
-                    <i>{TS_AUTOMATIC}:</i> Use the default settings for thresholding. This strategy calculates
-                    the threshold using the {TM_MCT} method on the whole image (see below for details on this
-                    method) and applies the threshold to the image, smoothed with a Gaussian with sigma of 1.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This approach is fairly robust, but
-                        does not allow you to select the threshold algorithm and does not allow you to apply
-                        additional corrections to the threshold.</dd>
-                    </dl>
-                </li>
                 <li>
                     <i>{TS_GLOBAL}:</i> Calculate a single threshold value based on the unmasked pixels of the
                     input image and use that value to classify pixels above the threshold as foreground and
@@ -229,7 +220,6 @@ class Identify(cellprofiler.module.Module):
                 "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TS_ADAPTIVE": TS_ADAPTIVE,
-                "TS_AUTOMATIC": TS_AUTOMATIC,
                 "TS_GLOBAL": TS_GLOBAL,
                 "TS_MANUAL": TS_MANUAL,
                 "TS_MEASUREMENT": TS_MEASUREMENT
@@ -239,6 +229,7 @@ class Identify(cellprofiler.module.Module):
         self.threshold_method = cellprofiler.setting.Choice(
             "Thresholding method",
             methods,
+            value=centrosome.threshold.TM_MCT,
             doc="""
             The intensity threshold affects the decision of whether each pixel will be considered foreground
             (region(s) of interest) or background. A higher threshold value will result in only the brightest
@@ -380,8 +371,8 @@ class Identify(cellprofiler.module.Module):
         self.threshold_smoothing_choice = cellprofiler.setting.Choice(
             "Select the smoothing method for thresholding",
             [TSM_AUTOMATIC, TSM_MANUAL, TSM_NONE],
+            value=TSM_AUTOMATIC,
             doc="""
-            <i>(Only used for strategies other than {TS_AUTOMATIC} and {TS_BINARY_IMAGE})</i><br>
             The input image can be optionally smoothed before being thresholded. Smoothing can improve the
             uniformity of the resulting objects, by removing holes and jagged edges caused by noise in the
             acquired image. Smoothing is most likely <i>not</i> appropriate if the input image is binary, if it
@@ -394,8 +385,6 @@ class Identify(cellprofiler.module.Module):
                 <li><i>{TSM_NONE}</i>: Do not apply any smoothing prior to thresholding.</li>
             </ul>
             """.format(**{
-                "TS_AUTOMATIC": TS_AUTOMATIC,
-                "TS_BINARY_IMAGE": TS_BINARY_IMAGE,
                 "TSM_AUTOMATIC": TSM_AUTOMATIC,
                 "TSM_MANUAL": TSM_MANUAL,
                 "TSM_NONE": TSM_NONE
@@ -757,6 +746,13 @@ class Identify(cellprofiler.module.Module):
             if setting_values[1] in [TS_BINARY_IMAGE, TS_PER_OBJECT]:
                 setting_values[1] = "None"
 
+            if setting_values[1] == TS_AUTOMATIC:
+                setting_values[1] = TS_GLOBAL
+                setting_values[2] = centrosome.threshold.TM_MCT
+                setting_values[3] = TSM_AUTOMATIC
+                setting_values[5] = "1"
+                setting_values[6] = "(0.0, 1.0)"
+
             if setting_values[2] == centrosome.threshold.TM_MOG:
                 setting_values[2] = "None"
 
@@ -776,8 +772,6 @@ class Identify(cellprofiler.module.Module):
     def get_threshold_visible_settings(self):
         '''Return visible settings related to thresholding'''
         vv = [self.threshold_scope]
-        if self.threshold_scope == TS_AUTOMATIC:
-            return vv
         if self.threshold_scope == TS_MANUAL:
             vv += [self.manual_threshold]
         elif self.threshold_scope == TS_MEASUREMENT:
@@ -800,7 +794,7 @@ class Identify(cellprofiler.module.Module):
             vv += [self.threshold_smoothing_choice]
             if self.threshold_smoothing_choice == TSM_MANUAL:
                 vv += [self.threshold_smoothing_scale]
-        if not self.threshold_scope in (centrosome.threshold.TM_MANUAL, centrosome.threshold.TM_BINARY_IMAGE):
+        if self.threshold_scope != centrosome.threshold.TM_MANUAL:
             vv += [self.threshold_correction_factor, self.threshold_range]
         if self.threshold_scope == centrosome.threshold.TM_ADAPTIVE:
             vv += [self.adaptive_window_size]
@@ -891,15 +885,14 @@ class Identify(cellprofiler.module.Module):
                 else:
                     block_size = None
                 kwparams = {}
-                if self.threshold_scope != TS_AUTOMATIC:
-                    #
-                    # General manual parameters
-                    #
-                    kwparams['threshold_range_min'] = self.threshold_range.min
-                    kwparams['threshold_range_max'] = self.threshold_range.max
-                    kwparams['threshold_correction_factor'] = \
-                        self.threshold_correction_factor.value
-                if self.get_threshold_algorithm() == centrosome.threshold.TM_OTSU:
+
+                kwparams['threshold_range_min'] = self.threshold_range.min
+
+                kwparams['threshold_range_max'] = self.threshold_range.max
+
+                kwparams['threshold_correction_factor'] = self.threshold_correction_factor.value
+
+                if self.threshold_method.value == centrosome.threshold.TM_OTSU:
                     #
                     # Otsu-specific parameters
                     #
@@ -909,7 +902,7 @@ class Identify(cellprofiler.module.Module):
                         self.two_class_otsu.value == O_TWO_CLASS
                     kwparams['assign_middle_to_foreground'] = \
                         self.assign_middle_to_foreground.value == O_FOREGROUND
-                elif self.get_threshold_algorithm() == centrosome.threshold.TM_ROBUST_BACKGROUND and \
+                elif self.threshold_method.value == centrosome.threshold.TM_ROBUST_BACKGROUND and \
                                 self.rb_custom_choice == RB_CUSTOM:
                     kwparams['lower_outlier_fraction'] = \
                         self.lower_outlier_fraction.value
@@ -927,7 +920,7 @@ class Identify(cellprofiler.module.Module):
                         RB_MAD: centrosome.threshold.mad}.get(self.variance_method.value, numpy.std)
 
                 local_threshold, global_threshold = centrosome.threshold.get_threshold(
-                        self.threshold_algorithm,
+                        self.threshold_method.value,
                         self.threshold_modifier,
                         img,
                         mask=mask,
@@ -996,7 +989,7 @@ class Identify(cellprofiler.module.Module):
             # derived class does not have thresholding settings
             return
         if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL):
-            if self.get_threshold_algorithm() == centrosome.threshold.TM_ROBUST_BACKGROUND and \
+            if self.get_threshold_method() == centrosome.threshold.TM_ROBUST_BACKGROUND and \
                             self.rb_custom_choice == RB_CUSTOM:
                 if self.lower_outlier_fraction.value + \
                         self.upper_outlier_fraction.value >= 1:
@@ -1010,20 +1003,12 @@ class Identify(cellprofiler.module.Module):
 
     def get_threshold_modifier(self):
         """The threshold algorithm modifier"""
-        if self.threshold_scope.value in (TS_AUTOMATIC, TS_GLOBAL, TS_MANUAL, TS_MEASUREMENT):
+        if self.threshold_scope.value in (TS_GLOBAL, TS_MANUAL, TS_MEASUREMENT):
             return centrosome.threshold.TM_GLOBAL
 
         return centrosome.threshold.TM_ADAPTIVE
 
     threshold_modifier = property(get_threshold_modifier)
-
-    def get_threshold_algorithm(self):
-        """The thresholding algorithm, for instance TM_OTSU"""
-        if self.threshold_scope == TS_AUTOMATIC:
-            return centrosome.threshold.TM_MCT
-        return self.threshold_method.value
-
-    threshold_algorithm = property(get_threshold_algorithm)
 
     def get_threshold_measurement_columns(self, pipeline):
         '''Return the measurement columns for the threshold measurements'''

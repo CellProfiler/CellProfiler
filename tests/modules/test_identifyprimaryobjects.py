@@ -923,33 +923,6 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             self.assertTrue(numpy.all(output.segmented[expected == 0] == 0))
             self.assertEqual(len(numpy.unique(output.segmented[expected == 1])), 1)
 
-    def test_02_14_automatic(self):
-        # Regression test of issue 1071 - automatic should yield same
-        # threshold regardless of manual parameters
-        #
-        r = numpy.random.RandomState()
-        r.seed(214)
-        image = r.uniform(size=(20, 20))
-        workspace, module = self.make_workspace(image)
-        assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_AUTOMATIC
-        module.run(workspace)
-        m = workspace.measurements
-        orig_threshold =\
-            m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_FINAL_THRESHOLD % OBJECTS_NAME]
-        workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_AUTOMATIC
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
-        module.threshold_smoothing_choice.value = cellprofiler.modules.identify.TSM_MANUAL
-        module.threshold_smoothing_scale.value = 100
-        module.threshold_correction_factor.value = .1
-        module.threshold_range.min = .8
-        module.threshold_range.max = .81
-        module.run(workspace)
-        m = workspace.measurements
-        threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_FINAL_THRESHOLD % OBJECTS_NAME]
-        self.assertEqual(threshold, orig_threshold)
-
     def test_04_01_load_matlab_12(self):
         """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline
 
@@ -961,7 +934,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.module(1)
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertTrue(module.threshold_algorithm, centrosome.threshold.TM_OTSU)
+        self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
         self.assertEqual(module.object_name.value, "Nuclei")
         self.assertEqual(module.image_name.value, "Do not use")
@@ -1014,7 +987,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.module(1)
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.threshold_algorithm, centrosome.threshold.TM_OTSU)
+        self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertEqual(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
         self.assertTrue(module.image_name == 'None')
 
@@ -1049,7 +1022,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertTrue(module.threshold_algorithm, centrosome.threshold.TM_OTSU)
+        self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance.value,
@@ -1089,7 +1062,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertTrue(module.threshold_algorithm, centrosome.threshold.TM_OTSU)
+        self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance.value,
@@ -1204,7 +1177,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.size_range.max, 42)
         self.assertTrue(module.exclude_size)
         self.assertTrue(module.exclude_border_objects)
-        self.assertEqual(module.threshold_algorithm, centrosome.threshold.TM_ROBUST_BACKGROUND)
+        self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_ROBUST_BACKGROUND)
         self.assertEqual(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
         self.assertAlmostEqual(module.threshold_range.min, 0.1)
@@ -1231,7 +1204,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.size_range.max, 42)
         self.assertFalse(module.exclude_size)
         self.assertFalse(module.exclude_border_objects)
-        self.assertEqual(module.threshold_algorithm, centrosome.threshold.TM_OTSU)
+        self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertEqual(module.threshold_modifier, centrosome.threshold.TM_ADAPTIVE)
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
         self.assertAlmostEqual(module.threshold_range.min, 0.1)
@@ -1646,9 +1619,9 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertFalse(module.low_res_maxima)
         self.assertEqual(module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_NEVER)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_AUTOMATIC)
+        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_MANUAL)
+        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_AUTOMATIC)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)

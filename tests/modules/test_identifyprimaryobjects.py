@@ -1594,8 +1594,8 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         #
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_OTSU)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_AUTOMATIC)
-        self.assertEqual(module.threshold_smoothing_scale, 2.0)
+        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_MANUAL)
+        self.assertEqual(module.threshold_smoothing_scale, 1.3488)
         self.assertAlmostEqual(module.threshold_correction_factor, .80)
         self.assertAlmostEqual(module.threshold_range.min, 0.01)
         self.assertAlmostEqual(module.threshold_range.max, 0.90)
@@ -1621,7 +1621,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_AUTOMATIC)
+        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_MANUAL)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
@@ -2582,7 +2582,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_MCT
         module.threshold_range.min = .225
-        module.threshold_smoothing_choice.value = cellprofiler.modules.identify.TSM_AUTOMATIC
+        module.threshold_smoothing_choice.value = cellprofiler.modules.identify.TSM_MANUAL
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         numpy.testing.assert_array_equal(expected, labels)

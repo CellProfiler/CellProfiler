@@ -83,8 +83,6 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertEqual(module.threshold_scope, centrosome.threshold.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.use_weighted_variance.value,
-                         cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertFalse(module.wants_discard_edge)
         self.assertFalse(module.wants_discard_primary)
 
@@ -187,7 +185,6 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertAlmostEqual(module.manual_threshold.value, 0.01)
         self.assertFalse(module.use_outlines)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
         self.assertTrue(module.wants_discard_edge)
         self.assertTrue(module.wants_discard_primary)
@@ -252,7 +249,6 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertAlmostEqual(module.manual_threshold.value, 0)
         self.assertFalse(module.use_outlines)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
         self.assertFalse(module.wants_discard_edge)
         self.assertFalse(module.wants_discard_primary)
@@ -368,7 +364,6 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.manual_threshold, .3)
         self.assertEqual(module.thresholding_measurement, "Count_Cookies")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size, 9)
 

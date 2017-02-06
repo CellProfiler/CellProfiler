@@ -457,11 +457,6 @@ class Identify(cellprofiler.module.Module):
             })
         )
 
-        self.use_weighted_variance = cellprofiler.setting.Choice(
-            "Minimize the weighted variance or the entropy?",
-            [O_WEIGHTED_VARIANCE, O_ENTROPY]
-        )
-
         self.assign_middle_to_foreground = cellprofiler.setting.Choice(
             "Assign pixels in the middle intensity class to the foreground or the background?",
             [O_FOREGROUND, O_BACKGROUND],
@@ -595,7 +590,6 @@ class Identify(cellprofiler.module.Module):
                 self.manual_threshold,
                 self.thresholding_measurement,
                 self.two_class_otsu,
-                self.use_weighted_variance,
                 self.assign_middle_to_foreground,
                 self.adaptive_window_size,
                 self.rb_custom_choice,
@@ -612,7 +606,6 @@ class Identify(cellprofiler.module.Module):
                 self.manual_threshold,
                 self.thresholding_measurement,
                 self.two_class_otsu,
-                self.use_weighted_variance,
                 self.assign_middle_to_foreground,
                 self.rb_custom_choice,
                 self.lower_outlier_fraction,
@@ -720,7 +713,8 @@ class Identify(cellprofiler.module.Module):
             new_setting_values = setting_values[:3]
             new_setting_values += setting_values[4:7]
             new_setting_values += setting_values[8:10]
-            new_setting_values += setting_values[12:15]
+            new_setting_values += setting_values[12:13]
+            new_setting_values += setting_values[14:15]
             new_setting_values += setting_values[16:]
 
             setting_values = new_setting_values
@@ -741,7 +735,7 @@ class Identify(cellprofiler.module.Module):
         elif self.threshold_scope in (TS_GLOBAL, TS_ADAPTIVE):
             vv += [self.threshold_method]
             if self.threshold_method == centrosome.threshold.TM_OTSU:
-                vv += [self.two_class_otsu, self.use_weighted_variance]
+                vv += [self.two_class_otsu]
                 if self.two_class_otsu == O_THREE_CLASS:
                     vv.append(self.assign_middle_to_foreground)
             elif self.threshold_method == centrosome.threshold.TM_ROBUST_BACKGROUND:
@@ -853,8 +847,6 @@ class Identify(cellprofiler.module.Module):
                     #
                     # Otsu-specific parameters
                     #
-                    kwparams['use_weighted_variance'] = \
-                        self.use_weighted_variance.value == O_WEIGHTED_VARIANCE
                     kwparams['two_class_otsu'] = \
                         self.two_class_otsu.value == O_TWO_CLASS
                     kwparams['assign_middle_to_foreground'] = \

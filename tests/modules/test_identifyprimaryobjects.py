@@ -1025,8 +1025,6 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.use_weighted_variance.value,
-                         cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground.value,
                          cellprofiler.modules.identify.O_FOREGROUND)
 
@@ -1065,8 +1063,6 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
         self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.use_weighted_variance.value,
-                         cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground.value,
                          cellprofiler.modules.identify.O_FOREGROUND)
 
@@ -1191,7 +1187,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertTrue(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
         self.assertEqual(module.limit_choice, "None")
         self.assertEqual(module.maximum_object_count, 305)
@@ -1218,7 +1213,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertFalse(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
         self.assertEqual(module.maximum_object_count, 305)
@@ -1601,7 +1595,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertAlmostEqual(module.manual_threshold, 0.03)
         self.assertEqual(module.thresholding_measurement, "Metadata_Threshold")
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size, 12)
         #
@@ -1621,7 +1614,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.use_weighted_variance, cellprofiler.modules.identify.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
         module = pipeline.modules()[6]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
@@ -2030,31 +2022,29 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
     def test_06_02_regression_adaptive_mask(self):
         """Regression test - mask all but one pixel / adaptive"""
-        for o_alg in (cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_ENTROPY):
-            x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
-            x.use_weighted_variance.value = o_alg
-            x.object_name.value = "my_object"
-            x.image_name.value = "my_image"
-            x.exclude_size.value = False
-            x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-            x.threshold_method.value = centrosome.threshold.TM_OTSU
-            numpy.random.seed(62)
-            img = numpy.random.uniform(size=(100, 100))
-            mask = numpy.zeros(img.shape, bool)
-            mask[-1, -1] = True
-            image = cellprofiler.image.Image(img, mask)
-            image_set_list = cellprofiler.image.ImageSetList()
-            image_set = image_set_list.get_image_set(0)
-            image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
-            object_set = cellprofiler.object.ObjectSet()
-            measurements = cellprofiler.measurement.Measurements()
-            pipeline = cellprofiler.pipeline.Pipeline()
-            x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
-            self.assertEqual(len(object_set.object_names), 1)
-            self.assertTrue("my_object" in object_set.object_names)
-            objects = object_set.get_objects("my_object")
-            segmented = objects.segmented
-            self.assertTrue(numpy.all(segmented == 0))
+        x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.object_name.value = "my_object"
+        x.image_name.value = "my_image"
+        x.exclude_size.value = False
+        x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
+        x.threshold_method.value = centrosome.threshold.TM_OTSU
+        numpy.random.seed(62)
+        img = numpy.random.uniform(size=(100, 100))
+        mask = numpy.zeros(img.shape, bool)
+        mask[-1, -1] = True
+        image = cellprofiler.image.Image(img, mask)
+        image_set_list = cellprofiler.image.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        object_set = cellprofiler.object.ObjectSet()
+        measurements = cellprofiler.measurement.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        self.assertEqual(len(object_set.object_names), 1)
+        self.assertTrue("my_object" in object_set.object_names)
+        objects = object_set.get_objects("my_object")
+        segmented = objects.segmented
+        self.assertTrue(numpy.all(segmented == 0))
 
     def test_07_01_adaptive_otsu_small(self):
         """Test the function, get_threshold, using Otsu adaptive / small

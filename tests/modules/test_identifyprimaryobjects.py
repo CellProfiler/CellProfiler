@@ -424,6 +424,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         but has an hourglass shape, then segment it using shape/shape
         """
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -476,6 +477,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         set the intensities so that one maximum gets the middle portion
         """
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -529,6 +531,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         It should be segmented into a single object.
         """
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -584,6 +587,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         It should be segmented into a single object.
         """
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -638,6 +642,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         It should be segmented into a single object.
         """
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -695,6 +700,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         transform.
         """
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -746,6 +752,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
     def test_02_11_propagate(self):
         """Test the propagate unclump method"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -1190,6 +1197,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
         self.assertEqual(module.limit_choice, "None")
         self.assertEqual(module.maximum_object_count, 305)
+        self.assertTrue(module.use_advanced.value)
 
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
@@ -1216,6 +1224,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
         self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
         self.assertEqual(module.maximum_object_count, 305)
+        self.assertTrue(module.use_advanced.value)
 
     # Missing tests for versions 6-9 (!)
 
@@ -1615,6 +1624,8 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
         self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
+        self.assertTrue(module.use_advanced.value)
+
         module = pipeline.modules()[6]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_NONE)
@@ -1622,6 +1633,8 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.limit_choice, "None")
         self.assertEqual(module.threshold_method, "None")
         self.assertEqual(module.threshold_smoothing_scale, 0)
+        self.assertTrue(module.use_advanced.value)
+
         module = pipeline.modules()[7]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_SHAPE)
@@ -1634,14 +1647,20 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.variance_method.value, cellprofiler.modules.identify.RB_SD)
         self.assertEqual(module.number_of_deviations.value, 0)
         self.assertEqual(module.threshold_correction_factor.value, 1.6)
+        self.assertTrue(module.use_advanced.value)
+
         module = pipeline.modules()[8]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_MANUAL)
         self.assertEqual(module.threshold_method, "None")
+        self.assertTrue(module.use_advanced.value)
+
         module = pipeline.modules()[9]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_MEASUREMENT)
         self.assertEqual(module.threshold_method, "None")
+        self.assertTrue(module.use_advanced.value)
+
         module = pipeline.modules()[10]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_scope, "None")
@@ -1651,6 +1670,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.averaging_method, cellprofiler.modules.identify.RB_MEAN)
         self.assertEqual(module.variance_method, cellprofiler.modules.identify.RB_SD)
         self.assertEqual(module.number_of_deviations, 2)
+        self.assertTrue(module.use_advanced.value)
 
     def test_04_10_01_load_new_robust_background(self):
         #
@@ -1827,6 +1847,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             self.assertEqual(module.number_of_deviations, 2.5)
             self.assertEqual(module.averaging_method, averaging_method)
             self.assertEqual(module.variance_method, variance_method)
+            self.assertTrue(module.use_advanced.value)
 
     def test_05_01_discard_large(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -2349,6 +2370,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         object_set = cellprofiler.object.ObjectSet()
 
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = True
@@ -2386,6 +2408,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         object_set = cellprofiler.object.ObjectSet()
 
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
@@ -2556,6 +2579,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         for ts in cellprofiler.modules.identify.TS_MANUAL, cellprofiler.modules.identify.TS_MEASUREMENT:
             workspace, module = self.make_workspace(image)
             assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
+            module.use_advanced.value = True
             module.exclude_size.value = False
             module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
             module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE

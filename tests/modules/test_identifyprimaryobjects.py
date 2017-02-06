@@ -1627,7 +1627,13 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_SHAPE)
         self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_SHAPE)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
-        self.assertEqual(module.threshold_method, centrosome.threshold.TM_BACKGROUND)
+        self.assertEqual(module.threshold_method, centrosome.threshold.TM_ROBUST_BACKGROUND)
+        self.assertEqual(module.lower_outlier_fraction.value, 0.02)
+        self.assertEqual(module.upper_outlier_fraction.value, 0.02)
+        self.assertEqual(module.averaging_method.value, cellprofiler.modules.identify.RB_MODE)
+        self.assertEqual(module.variance_method.value, cellprofiler.modules.identify.RB_SD)
+        self.assertEqual(module.number_of_deviations.value, 0)
+        self.assertEqual(module.threshold_correction_factor.value, 1.6)
         module = pipeline.modules()[8]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_MANUAL)
@@ -2117,8 +2123,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         ii, jj = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
         ii, jj = ii.flatten(), jj.flatten()
 
-        for threshold_method in (centrosome.threshold.TM_BACKGROUND,
-                                 centrosome.threshold.TM_MCT,
+        for threshold_method in (centrosome.threshold.TM_MCT,
                                  centrosome.threshold.TM_OTSU,
                                  centrosome.threshold.TM_ROBUST_BACKGROUND):
             for i in range(11):
@@ -2135,52 +2140,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 image[mask] = v
                 l1, g1 = x.get_threshold(cellprofiler.image.Image(image), mask, workspace)
                 self.assertAlmostEqual(l1, l)
-
-    # def test_09_02_mog_fly(self):
-    #     """Test mixture of gaussians thresholding on the fly image"""
-    #     image = fly_image()
-    #     workspace, x = self.make_workspace(image)
-    #     x.threshold_method.value = T.TM_MOG
-    #     x.threshold_scope.value = I.TS_GLOBAL
-    #     x.object_fraction.value = '0.10'
-    #     local_threshold,threshold = x.get_threshold(
-    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
-    #     self.assertTrue(threshold > 0.040)
-    #     self.assertTrue(threshold < 0.050)
-    #     x.object_fraction.value = '0.50'
-    #     local_threshold,threshold = x.get_threshold(
-    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
-    #     self.assertTrue(threshold > 0.0085)
-    #     self.assertTrue(threshold < 0.0090)
-
-    # def test_10_02_test_background_fly(self):
-    #     image = fly_image()
-    #     workspace, x = self.make_workspace(image)
-    #     x.threshold_method.value = T.TM_BACKGROUND
-    #     x.threshold_scope.value = I.TS_GLOBAL
-    #     local_threshold,threshold = x.get_threshold(
-    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
-    #     self.assertTrue(threshold > 0.020)
-    #     self.assertTrue(threshold < 0.025)
-
-    def test_10_03_test_background_mog(self):
-        '''Test the background method with a mixture of gaussian distributions'''
-        numpy.random.seed(103)
-        image = numpy.random.normal(.2, .01, size=10000)
-        ind = numpy.random.permutation(int(image.shape[0]))[:image.shape[0] / 5]
-        image[ind] = numpy.random.normal(.5, .2, size=len(ind))
-        image[image < 0] = 0
-        image[image > 1] = 1
-        image[0] = 0
-        image[1] = 1
-        image.shape = (100, 100)
-        workspace, x = self.make_workspace(image)
-        x.threshold_method.value = centrosome.threshold.TM_BACKGROUND
-        x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        local_threshold, threshold = x.get_threshold(
-                cellprofiler.image.Image(image), numpy.ones(image.shape, bool), workspace)
-        self.assertTrue(threshold > .18 * 2)
-        self.assertTrue(threshold < .22 * 2)
 
     # def test_11_01_test_robust_background_fly(self):
     #     image = fly_image()

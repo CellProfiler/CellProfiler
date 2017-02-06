@@ -34,7 +34,6 @@ class ApplyThreshold(identify.Identify):
 
     def create_settings(self):
         threshold_methods = [
-            centrosome.threshold.TM_BACKGROUND,
             centrosome.threshold.TM_MCT,
             centrosome.threshold.TM_OTSU,
             centrosome.threshold.TM_ROBUST_BACKGROUND

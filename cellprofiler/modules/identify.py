@@ -142,8 +142,7 @@ class Identify(cellprofiler.module.Module):
 
     def create_threshold_settings(
             self,
-            methods=[centrosome.threshold.TM_BACKGROUND,
-                     centrosome.threshold.TM_MCT,
+            methods=[centrosome.threshold.TM_MCT,
                      centrosome.threshold.TM_OTSU,
                      centrosome.threshold.TM_ROBUST_BACKGROUND]
     ):
@@ -272,27 +271,15 @@ class Identify(cellprofiler.module.Module):
                     </dl>
                 </li>
                 <li>
-                    <i>{TM_BACKGROUND}:</i> This method simply finds the mode of the histogram of the image,
-                    which is assumed to be the background of the image, and chooses a threshold at twice that
-                    value (which you can adjust with a Threshold Correction Factor; see below). The calculation
-                    includes those pixels between 2% and 98% of the intensity range.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This thresholding method is
-                        appropriate for images in which most of the image is background. It can also be helpful
-                        if your images vary in overall brightness, but the objects of interest are consistently
-                        <i>N</i> times brighter than the background level of the image.</dd>
-                    </dl>
-                </li>
-                <li>
-                    <i>{TM_ROBUST_BACKGROUND}:</i> Much like the {TM_BACKGROUND}: method, this method is also
-                    simple and assumes that the background distribution approximates a Gaussian by trimming the
-                    brightest and dimmest 5% of pixel intensities. It then calculates the mean and standard
-                    deviation of the remaining pixels and calculates the threshold as the mean + 2 times the
-                    standard deviation.
+                    <i>{TM_ROBUST_BACKGROUND}:</i> This method assumes that the background distribution approximates a
+                    Gaussian by trimming the brightest and dimmest 5% of pixel intensities. It then calculates the mean
+                    and standard deviation of the remaining pixels and calculates the threshold as the mean + 2 times
+                    the standard deviation.
                     <dl>
                         <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This thresholding method can be
-                        helpful if the majority of the image is background, and the results are often
-                        comparable or better than the <i>{TM_BACKGROUND}</i> method.</dd>
+                        helpful if the majority of the image is background. It can also be helpful
+                        if your images vary in overall brightness, but the objects of interest are consistently
+                        <i>N</i> times brighter than the background level of the image.</dd>
                     </dl>
                 </li>
                 <li>
@@ -332,7 +319,6 @@ class Identify(cellprofiler.module.Module):
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
-                "TM_BACKGROUND": centrosome.threshold.TM_BACKGROUND,
                 "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
@@ -681,6 +667,24 @@ class Identify(cellprofiler.module.Module):
 
             if setting_values[2] in removed_threshold_methods:
                 setting_values[2] = "None"
+
+            if setting_values[2] == centrosome.threshold.TM_BACKGROUND:
+                setting_values[2] = centrosome.threshold.TM_ROBUST_BACKGROUND
+                setting_values[17] = RB_CUSTOM
+                setting_values[18] = "0.02"
+                setting_values[19] = "0.02"
+                setting_values[20] = RB_MODE
+                setting_values[21] = RB_SD
+                setting_values[22] = "0"
+
+                correction_factor = float(setting_values[5])
+
+                if correction_factor == 0:
+                    correction_factor = 2
+                else:
+                    correction_factor *= 2
+
+                setting_values[5] = str(correction_factor)
 
             if setting_values[3] == TSM_NONE:
                 setting_values[4] = "0"

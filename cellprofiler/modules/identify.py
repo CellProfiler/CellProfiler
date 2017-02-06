@@ -1,3 +1,4 @@
+import centrosome.smooth
 import centrosome.threshold
 import numpy
 import scipy.ndimage

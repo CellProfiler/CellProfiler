@@ -467,26 +467,6 @@ class Identify(cellprofiler.module.Module):
             """
         )
 
-        self.rb_custom_choice = cellprofiler.setting.Choice(
-            "Use default parameters?",
-            [RB_DEFAULT, RB_CUSTOM],
-            doc="""
-            <i>(Used only with the {TM_ROBUST_BACKGROUND} method)</i><br>
-            This setting determines whether the {TM_ROBUST_BACKGROUND} method uses its default parameters or
-            lets the user customize them.
-            <ul>
-                <li><i>{RB_DEFAULT}:</i> Use the default parameters, discarding the 5% highest and lowest
-                intensity pixels and calculating the threshold as the mean plus two standard deviations of the
-                remaining pixels.</li>
-                <li><i>{RB_CUSTOM}:</i> Choose this option to fully customize the method.</li>
-            </ul>
-            """.format(**{
-                "RB_CUSTOM": RB_CUSTOM,
-                "RB_DEFAULT": RB_DEFAULT,
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
-            })
-        )
-
         self.lower_outlier_fraction = cellprofiler.setting.Float(
             "Lower outlier fraction",
             0.05,
@@ -592,7 +572,6 @@ class Identify(cellprofiler.module.Module):
                 self.two_class_otsu,
                 self.assign_middle_to_foreground,
                 self.adaptive_window_size,
-                self.rb_custom_choice,
                 self.lower_outlier_fraction,
                 self.upper_outlier_fraction,
                 self.averaging_method,
@@ -607,7 +586,6 @@ class Identify(cellprofiler.module.Module):
                 self.thresholding_measurement,
                 self.two_class_otsu,
                 self.assign_middle_to_foreground,
-                self.rb_custom_choice,
                 self.lower_outlier_fraction,
                 self.upper_outlier_fraction,
                 self.averaging_method,
@@ -710,12 +688,20 @@ class Identify(cellprofiler.module.Module):
             if setting_values[3] == TSM_AUTOMATIC:
                 setting_values[4] = "1.3488"
 
+            if setting_values[17] == RB_DEFAULT:
+                setting_values[18] = "0.05"
+                setting_values[19] = "0.05"
+                setting_values[20] = RB_MEAN
+                setting_values[21] = RB_SD
+                setting_values[22] = "2"
+
             new_setting_values = setting_values[:3]
             new_setting_values += setting_values[4:7]
             new_setting_values += setting_values[8:10]
             new_setting_values += setting_values[12:13]
             new_setting_values += setting_values[14:15]
-            new_setting_values += setting_values[16:]
+            new_setting_values += setting_values[16:17]
+            new_setting_values += setting_values[18:]
 
             setting_values = new_setting_values
 
@@ -739,13 +725,11 @@ class Identify(cellprofiler.module.Module):
                 if self.two_class_otsu == O_THREE_CLASS:
                     vv.append(self.assign_middle_to_foreground)
             elif self.threshold_method == centrosome.threshold.TM_ROBUST_BACKGROUND:
-                vv += [self.rb_custom_choice]
-                if self.rb_custom_choice == RB_CUSTOM:
-                    vv += [self.lower_outlier_fraction,
-                           self.upper_outlier_fraction,
-                           self.averaging_method,
-                           self.variance_method,
-                           self.number_of_deviations]
+                vv += [self.lower_outlier_fraction,
+                       self.upper_outlier_fraction,
+                       self.averaging_method,
+                       self.variance_method,
+                       self.number_of_deviations]
         if self.threshold_scope not in (TS_MEASUREMENT, TS_MANUAL):
             vv += [self.threshold_smoothing_scale]
         if self.threshold_scope != centrosome.threshold.TM_MANUAL:
@@ -851,8 +835,7 @@ class Identify(cellprofiler.module.Module):
                         self.two_class_otsu.value == O_TWO_CLASS
                     kwparams['assign_middle_to_foreground'] = \
                         self.assign_middle_to_foreground.value == O_FOREGROUND
-                elif self.threshold_method.value == centrosome.threshold.TM_ROBUST_BACKGROUND and \
-                                self.rb_custom_choice == RB_CUSTOM:
+                elif self.threshold_method.value == centrosome.threshold.TM_ROBUST_BACKGROUND:
                     kwparams['lower_outlier_fraction'] = \
                         self.lower_outlier_fraction.value
                     kwparams['upper_outlier_fraction'] = \
@@ -938,8 +921,7 @@ class Identify(cellprofiler.module.Module):
             # derived class does not have thresholding settings
             return
         if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL):
-            if self.get_threshold_method() == centrosome.threshold.TM_ROBUST_BACKGROUND and \
-                            self.rb_custom_choice == RB_CUSTOM:
+            if self.get_threshold_method() == centrosome.threshold.TM_ROBUST_BACKGROUND:
                 if self.lower_outlier_fraction.value + \
                         self.upper_outlier_fraction.value >= 1:
                     raise cellprofiler.setting.ValidationError(

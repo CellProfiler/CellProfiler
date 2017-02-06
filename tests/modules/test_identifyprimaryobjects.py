@@ -1640,7 +1640,6 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_scope, "None")
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_ROBUST_BACKGROUND)
-        self.assertEqual(module.rb_custom_choice, cellprofiler.modules.identify.RB_DEFAULT)
         self.assertEqual(module.lower_outlier_fraction, .05)
         self.assertEqual(module.upper_outlier_fraction, .05)
         self.assertEqual(module.averaging_method, cellprofiler.modules.identify.RB_MEAN)

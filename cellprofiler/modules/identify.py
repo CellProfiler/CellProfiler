@@ -163,10 +163,8 @@ class Identify(cellprofiler.module.Module):
                 <li>The pixel intensities of the input image (this is the most common).</li>
                 <li>A single value manually provided by the user.</li>
                 <li>A single value produced by a prior module measurement.</li>
-                <li>A binary image (called a <i>mask</i>) where some of the pixel intensity values are set to
-                0, and others are set to 1.</li>
             </ul>These options allow you to calculate a threshold based on the whole image or based on image
-            sub-regions such as user-defined masks or objects supplied by a prior module.<br>
+            sub-regions.<br>
             The choices for the threshold strategy are:<br>
             <ul>
                 <li>

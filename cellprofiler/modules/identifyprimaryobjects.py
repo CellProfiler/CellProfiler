@@ -476,7 +476,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         )
 
         self.automatic_suppression = cellprofiler.setting.Binary(
-             AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
+            AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
             True,
             doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>

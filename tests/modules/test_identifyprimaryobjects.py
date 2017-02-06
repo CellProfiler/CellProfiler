@@ -1645,7 +1645,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         module = pipeline.modules()[9]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_MEASUREMENT)
-        self.assertEqual(module.threshold_method, centrosome.threshold.TM_RIDLER_CALVARD)
+        self.assertEqual(module.threshold_method, "None")
         module = pipeline.modules()[10]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_scope, "None")
@@ -2133,7 +2133,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         for threshold_method in (centrosome.threshold.TM_BACKGROUND,
                                  centrosome.threshold.TM_MCT,
                                  centrosome.threshold.TM_OTSU,
-                                 centrosome.threshold.TM_RIDLER_CALVARD,
                                  centrosome.threshold.TM_ROBUST_BACKGROUND):
             for i in range(11):
                 mask = numpy.zeros(image.shape, bool)
@@ -2205,16 +2204,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
     #         cpi.Image(image), np.ones(image.shape,bool), workspace)
     #     self.assertTrue(threshold > 0.09)
     #     self.assertTrue(threshold < 0.095)
-
-    # def test_12_01_test_ridler_calvard_background_fly(self):
-    #     image = fly_image()
-    #     workspace, x = self.make_workspace(image)
-    #     x.threshold_scope.value = I.TS_GLOBAL
-    #     x.threshold_method.value = T.TM_RIDLER_CALVARD
-    #     local_threshold,threshold = x.get_threshold(
-    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
-    #     self.assertTrue(threshold > 0.015)
-    #     self.assertTrue(threshold < 0.020)
 
     def test_14_01_test_manual_background(self):
         """Test manual background"""

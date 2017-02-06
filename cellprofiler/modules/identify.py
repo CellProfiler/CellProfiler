@@ -145,7 +145,6 @@ class Identify(cellprofiler.module.Module):
             methods=[centrosome.threshold.TM_BACKGROUND,
                      centrosome.threshold.TM_MCT,
                      centrosome.threshold.TM_OTSU,
-                     centrosome.threshold.TM_RIDLER_CALVARD,
                      centrosome.threshold.TM_ROBUST_BACKGROUND]
     ):
         self.threshold_setting_version = cellprofiler.setting.Integer(
@@ -299,20 +298,6 @@ class Identify(cellprofiler.module.Module):
                     </dl>
                 </li>
                 <li>
-                    <i>{TM_RIDLER_CALVARD}:</i> This method is simple and its results are often very similar to
-                    <i>{TM_OTSU}</i>. <i>{TM_RIDLER_CALVARD}</i> chooses an initial threshold and then
-                    iteratively calculates the next one by taking the mean of the average intensities of the
-                    background and foreground pixels determined by the first threshold. The algorithm then
-                    repeats this process until the threshold converges to a single value.
-                    <dl>
-                        <dd></dd>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; This is an implementation of the method
-                        described in Ridler and Calvard, 1978. According to Sezgin and Sankur 2004, Otsu's
-                        overall quality on testing 40 nondestructive testing images is slightly better than
-                        Ridler's (average error: Otsu, 0.318; Ridler, 0.401).</dd>
-                    </dl>
-                </li>
-                <li>
                     <i>Maximum correlation thresholding ({TM_MCT}):</i> This method computes the maximum
                     correlation between the binary mask created by thresholding and the thresholded image and
                     is somewhat similar mathematically to <i>{TM_OTSU}</i>.
@@ -352,7 +337,6 @@ class Identify(cellprofiler.module.Module):
                 "TM_BACKGROUND": centrosome.threshold.TM_BACKGROUND,
                 "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
-                "TM_RIDLER_CALVARD": centrosome.threshold.TM_RIDLER_CALVARD,
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
         )
@@ -744,7 +728,13 @@ class Identify(cellprofiler.module.Module):
                 setting_values[3] = TSM_MANUAL
                 setting_values[4] = "1.3488"
 
-            if setting_values[2] in [centrosome.threshold.TM_KAPUR, centrosome.threshold.TM_MOG]:
+            removed_threshold_methods = [
+                centrosome.threshold.TM_KAPUR,
+                centrosome.threshold.TM_MOG,
+                centrosome.threshold.TM_RIDLER_CALVARD
+            ]
+
+            if setting_values[2] in removed_threshold_methods:
                 setting_values[2] = "None"
 
             new_setting_values = setting_values[:7]

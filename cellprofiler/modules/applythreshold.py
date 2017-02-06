@@ -37,7 +37,6 @@ class ApplyThreshold(identify.Identify):
             centrosome.threshold.TM_BACKGROUND,
             centrosome.threshold.TM_MCT,
             centrosome.threshold.TM_OTSU,
-            centrosome.threshold.TM_RIDLER_CALVARD,
             centrosome.threshold.TM_ROBUST_BACKGROUND
         ]
 

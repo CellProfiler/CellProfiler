@@ -34,7 +34,11 @@ class ApplyThreshold(identify.Identify):
 
     def create_settings(self):
         threshold_methods = [
-            method for method in centrosome.threshold.TM_METHODS if method != centrosome.threshold.TM_BINARY_IMAGE
+            centrosome.threshold.TM_BACKGROUND,
+            centrosome.threshold.TM_MCT,
+            centrosome.threshold.TM_OTSU,
+            centrosome.threshold.TM_RIDLER_CALVARD,
+            centrosome.threshold.TM_ROBUST_BACKGROUND
         ]
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(

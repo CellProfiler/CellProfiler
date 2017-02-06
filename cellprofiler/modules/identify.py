@@ -143,7 +143,6 @@ class Identify(cellprofiler.module.Module):
     def create_threshold_settings(
             self,
             methods=[centrosome.threshold.TM_BACKGROUND,
-                     centrosome.threshold.TM_KAPUR,
                      centrosome.threshold.TM_MCT,
                      centrosome.threshold.TM_OTSU,
                      centrosome.threshold.TM_RIDLER_CALVARD,
@@ -314,15 +313,6 @@ class Identify(cellprofiler.module.Module):
                     </dl>
                 </li>
                 <li>
-                    <i>{TM_KAPUR}:</i> This method computes the threshold of an image by searching for the
-                    threshold that maximizes the sum of entropies of the foreground and background pixel
-                    values, when treated as separate distributions.
-                    <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; This is an implementation of the method
-                        described in Kapur <i>et al</i>, 1985.</dd>
-                    </dl>
-                </li>
-                <li>
                     <i>Maximum correlation thresholding ({TM_MCT}):</i> This method computes the maximum
                     correlation between the binary mask created by thresholding and the thresholded image and
                     is somewhat similar mathematically to <i>{TM_OTSU}</i>.
@@ -360,7 +350,6 @@ class Identify(cellprofiler.module.Module):
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
                 "TM_BACKGROUND": centrosome.threshold.TM_BACKGROUND,
-                "TM_KAPUR": centrosome.threshold.TM_KAPUR,
                 "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TM_RIDLER_CALVARD": centrosome.threshold.TM_RIDLER_CALVARD,
@@ -755,7 +744,7 @@ class Identify(cellprofiler.module.Module):
                 setting_values[3] = TSM_MANUAL
                 setting_values[4] = "1.3488"
 
-            if setting_values[2] == centrosome.threshold.TM_MOG:
+            if setting_values[2] in [centrosome.threshold.TM_KAPUR, centrosome.threshold.TM_MOG]:
                 setting_values[2] = "None"
 
             new_setting_values = setting_values[:7]

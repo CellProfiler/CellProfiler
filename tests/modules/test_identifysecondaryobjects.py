@@ -46,7 +46,6 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         self.assertEqual(module.threshold_range.max, 1)
         self.assertEqual(module.distance_to_dilate.value, 10)
         self.assertEqual(module.regularization_factor.value, 0.05)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_NONE)
 
     def test_01_02_load_v2(self):
         data = ('eJztWt1u2zYUlh0nSFZ0a9OLDugNL5suNiQ3xtJgSO3G/fEWu0bjtS'
@@ -362,7 +361,6 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertTrue(module.fill_holes)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_MANUAL)
         self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
         self.assertEqual(module.threshold_correction_factor, 1)
         self.assertEqual(module.threshold_range.min, 0.0)

@@ -84,7 +84,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.thresholded_image_name.value, "ThreshBlue")
         self.assertEqual(module.threshold_scope, centrosome.threshold.TM_MANUAL)
         self.assertAlmostEqual(module.manual_threshold.value, .1)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_NONE)
+        self.assertEqual(module.threshold_smoothing_scale, 0)
 
     def test_01_02_load_v2(self):
         '''Load a variable_revision_number = 2 pipeline'''
@@ -255,7 +255,6 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.thresholded_image_name, "GrayscalePony")
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_MANUAL)
         self.assertEqual(module.threshold_smoothing_scale, 1.3488)
         self.assertEqual(module.threshold_correction_factor, 1.1)
         self.assertEqual(module.threshold_range.min, .07)
@@ -329,8 +328,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
     Threshold setting version:3
     Threshold strategy:Global
     Thresholding method:MCT
-    Select the smoothing method for thresholding:No smoothing
-    Threshold smoothing scale:1.3488
+    Threshold smoothing scale:0
     Threshold correction factor:1.0
     Lower and upper bounds on threshold:0.0,1.0
     Manual threshold:0.0
@@ -356,8 +354,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
         self.assertEqual(module.thresholded_image_name, "ThreshBlue")
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
-        self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.identify.TSM_NONE)
-        self.assertEqual(module.threshold_smoothing_scale, 1.3488)
+        self.assertEqual(module.threshold_smoothing_scale, 0)
         self.assertEqual(module.threshold_correction_factor, 1.0)
         self.assertEqual(module.threshold_range.min, 0.0)
         self.assertEqual(module.threshold_range.max, 1.0)

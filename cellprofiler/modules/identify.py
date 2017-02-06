@@ -339,39 +339,21 @@ class Identify(cellprofiler.module.Module):
             })
         )
 
-        self.threshold_smoothing_choice = cellprofiler.setting.Choice(
-            "Select the smoothing method for thresholding",
-            [TSM_MANUAL, TSM_NONE],
-            value=TSM_MANUAL,
-            doc="""
-            The input image can be optionally smoothed before being thresholded. Smoothing can improve the
-            uniformity of the resulting objects, by removing holes and jagged edges caused by noise in the
-            acquired image. Smoothing is most likely <i>not</i> appropriate if the input image is binary, if it
-            has already been smoothed or if it is an output of the <i>ClassifyPixels</i> module.<br>
-            The choices are:
-            <ul>
-                <li><i>{TSM_MANUAL}</i>: Smooth the image with a Gaussian with user-controlled scale.</li>
-                <li><i>{TSM_NONE}</i>: Do not apply any smoothing prior to thresholding.</li>
-            </ul>
-            """.format(**{
-                "TSM_MANUAL": TSM_MANUAL,
-                "TSM_NONE": TSM_NONE
-            })
-        )
-
         self.threshold_smoothing_scale = cellprofiler.setting.Float(
             "Threshold smoothing scale",
             1.3488,
             minval=0,
             doc="""
-            <i>(Only used if smoothing for threshold is {TSM_MANUAL})</i><br>
-            This setting controls the scale used to smooth the input image before the threshold is applied. The
-            scale should be approximately the size of the artifacts to be eliminated by smoothing. A Gaussian
+            This setting controls the scale used to smooth the input image before the threshold is applied.<br>
+            The input image can be optionally smoothed before being thresholded. Smoothing can improve the
+            uniformity of the resulting objects, by removing holes and jagged edges caused by noise in the
+            acquired image. Smoothing is most likely <i>not</i> appropriate if the input image is binary, if it
+            has already been smoothed or if it is an output of the <i>ClassifyPixels</i> module.<br>
+            The scale should be approximately the size of the artifacts to be eliminated by smoothing. A Gaussian
             is used with a sigma adjusted so that 1/2 of the Gaussian's distribution falls within the diameter
-            given by the scale (sigma = scale / 0.674)
-            """.format(**{
-                "TSM_MANUAL": TSM_MANUAL
-            })
+            given by the scale (sigma = scale / 0.674)<br>
+            Use a value of 0 for no smoothing.
+            """
         )
 
         self.threshold_correction_factor = cellprofiler.setting.Float(
@@ -607,7 +589,6 @@ class Identify(cellprofiler.module.Module):
         return [self.threshold_setting_version,
                 self.threshold_scope,
                 self.threshold_method,
-                self.threshold_smoothing_choice,
                 self.threshold_smoothing_scale,
                 self.threshold_correction_factor,
                 self.threshold_range,
@@ -642,7 +623,6 @@ class Identify(cellprofiler.module.Module):
                 self.adaptive_window_size,
                 self.threshold_correction_factor,
                 self.threshold_range,
-                self.threshold_smoothing_choice,
                 self.threshold_smoothing_scale]
 
     def upgrade_legacy_threshold_settings(
@@ -722,10 +702,6 @@ class Identify(cellprofiler.module.Module):
                 setting_values[5] = "1"
                 setting_values[6] = "(0.0, 1.0)"
 
-            if setting_values[3] == TSM_AUTOMATIC:
-                setting_values[3] = TSM_MANUAL
-                setting_values[4] = "1.3488"
-
             removed_threshold_methods = [
                 centrosome.threshold.TM_KAPUR,
                 centrosome.threshold.TM_MOG,
@@ -735,7 +711,14 @@ class Identify(cellprofiler.module.Module):
             if setting_values[2] in removed_threshold_methods:
                 setting_values[2] = "None"
 
-            new_setting_values = setting_values[:7]
+            if setting_values[3] == TSM_NONE:
+                setting_values[4] = "0"
+
+            if setting_values[3] == TSM_AUTOMATIC:
+                setting_values[4] = "1.3488"
+
+            new_setting_values = setting_values[:3]
+            new_setting_values += setting_values[4:7]
             new_setting_values += setting_values[8:10]
             new_setting_values += setting_values[12:15]
             new_setting_values += setting_values[16:]
@@ -770,9 +753,7 @@ class Identify(cellprofiler.module.Module):
                            self.variance_method,
                            self.number_of_deviations]
         if self.threshold_scope not in (TS_MEASUREMENT, TS_MANUAL):
-            vv += [self.threshold_smoothing_choice]
-            if self.threshold_smoothing_choice == TSM_MANUAL:
-                vv += [self.threshold_smoothing_scale]
+            vv += [self.threshold_smoothing_scale]
         if self.threshold_scope != centrosome.threshold.TM_MANUAL:
             vv += [self.threshold_correction_factor, self.threshold_range]
         if self.threshold_scope == centrosome.threshold.TM_ADAPTIVE:
@@ -801,7 +782,7 @@ class Identify(cellprofiler.module.Module):
 
         local_threshold, global_threshold = self.get_threshold(image, mask, workspace)
 
-        if self.threshold_smoothing_choice == TSM_NONE or self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
+        if self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
             blurred_image = img
             sigma = 0
         else:

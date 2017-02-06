@@ -53,7 +53,7 @@ class ApplyThreshold(identify.Identify):
 
         self.create_threshold_settings(threshold_methods)
 
-        self.threshold_smoothing_choice.value = identify.TSM_NONE
+        self.threshold_smoothing_scale.value = 0
 
     def visible_settings(self):
         return [

@@ -1,7 +1,7 @@
 """
 <b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero
 <hr>
-<b>ApplyThreshold</b> produces either a grayscale image based on a threshold which can be
+<b>ApplyThreshold</b> produces a grayscale image based on a threshold which can be
 pre-selected or calculated automatically using one of many methods.
 """
 
@@ -33,12 +33,6 @@ class ApplyThreshold(identify.Identify):
     category = "Image Processing"
 
     def create_settings(self):
-        threshold_methods = [
-            centrosome.threshold.TM_MCT,
-            centrosome.threshold.TM_OTSU,
-            centrosome.threshold.TM_ROBUST_BACKGROUND
-        ]
-
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
             "Select the input image",
             doc="Choose the image to be thresholded."
@@ -50,7 +44,7 @@ class ApplyThreshold(identify.Identify):
             doc="Enter a name for the thresholded image."
         )
 
-        self.create_threshold_settings(threshold_methods)
+        self.create_threshold_settings()
 
         self.threshold_smoothing_scale.value = 0
 

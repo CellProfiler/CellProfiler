@@ -141,12 +141,7 @@ TECH_NOTE_ICON = "gear.png"
 class Identify(cellprofiler.module.Module):
     threshold_setting_version = 3
 
-    def create_threshold_settings(
-            self,
-            methods=[centrosome.threshold.TM_MCT,
-                     centrosome.threshold.TM_OTSU,
-                     centrosome.threshold.TM_ROBUST_BACKGROUND]
-    ):
+    def create_threshold_settings(self):
         self.threshold_setting_version = cellprofiler.setting.Integer(
             "Threshold setting version",
             value=self.threshold_setting_version
@@ -224,7 +219,11 @@ class Identify(cellprofiler.module.Module):
 
         self.threshold_method = cellprofiler.setting.Choice(
             "Thresholding method",
-            methods,
+            [
+                centrosome.threshold.TM_MCT,
+                centrosome.threshold.TM_OTSU,
+                centrosome.threshold.TM_ROBUST_BACKGROUND
+            ],
             value=centrosome.threshold.TM_MCT,
             doc="""
             The intensity threshold affects the decision of whether each pixel will be considered foreground

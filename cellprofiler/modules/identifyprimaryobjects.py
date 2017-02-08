@@ -2,21 +2,15 @@ import math
 import re
 
 import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.otsu
 import centrosome.outline
 import centrosome.propagate
 import centrosome.threshold
 import numpy
 import scipy.ndimage
 import scipy.sparse
-import scipy.stats
 import skimage.morphology.watershed
 
 import cellprofiler.gui.help
-import cellprofiler.icons
-import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 import identify
@@ -195,8 +189,8 @@ OFF_ADAPTIVE_WINDOW_METHOD_V9 = 32
 OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
-'''The number of settings, exclusive of threshold settings in V10'''
-N_SETTINGS_V10 = 22
+'''The number of settings, exclusive of threshold settings'''
+N_SETTINGS = 15
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -225,8 +219,6 @@ EXCLUDE_SIZE_SETTING_TEXT = "Discard objects outside the diameter range?"
 AUTOMATIC_SMOOTHING_SETTING_TEXT = "Automatically calculate size of smoothing filter for declumping?"
 SMOOTHING_FILTER_SIZE_SETTING_TEXT = "Size of smoothing filter"
 AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT = "Automatically calculate minimum allowed distance between local maxima?"
-WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT = \
-    "Automatically calculate the size of objects for the Laplacian of Gaussian filter?"
 
 # Icons for use in the help
 INTENSITY_DECLUMPING_ICON = "IdentifyPrimaryObjects_IntensityDeclumping.png"
@@ -234,7 +226,7 @@ SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
 
 
 class IdentifyPrimaryObjects(identify.Identify):
-    variable_revision_number = 10
+    variable_revision_number = 12
     category = "Object Processing"
     module_name = "IdentifyPrimaryObjects"
 
@@ -270,8 +262,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                     <ul>
                         <li><i>{AUTOMATIC_SMOOTHING_SETTING_TEXT}</i></li>
                         <li><i>{AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT}</i></li>
-                        <li><i>{WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT}</i> (shown only if Laplacian of
-                        Gaussian is selected as the declumping method)</li>
                     </ul>
                 </li>
                 <li>For non-round objects, the diameter here is actually the "equivalent diameter", i.e., the
@@ -283,8 +273,7 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
                 "HELP_ON_MEASURING_DISTANCES": cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES,
                 "AUTOMATIC_SMOOTHING_SETTING_TEXT": AUTOMATIC_SMOOTHING_SETTING_TEXT,
-                "AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
-                "WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT": WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT
+                "AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT
             })
         )
 
@@ -306,24 +295,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 "NO": cellprofiler.setting.NO,
                 "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON
-            })
-        )
-
-        self.merge_objects = cellprofiler.setting.Binary(
-            "Try to merge too small objects with nearby larger objects?",
-            False,
-            doc="""
-            Select <i>{YES}</i> to cause objects that are smaller than the specified minimum diameter to be
-            merged, if possible, with other surrounding objects.
-            <p>This is helpful in cases when an object was incorrectly split into two objects, one of which is
-            actually just a tiny piece of the larger object. However, this could be problematic if the other
-            settings in the module are set poorly, producing many tiny objects; the module will take a very
-            long time trying to merge the tiny objects back together again; you may not notice that this is the
-            case, since it may successfully piece together the objects again. It is therefore a good idea to
-            run the module first without merging objects to make sure the settings are reasonably
-            effective.</p>
-            """.format(**{
-                "YES": cellprofiler.setting.YES
             })
         )
 
@@ -353,7 +324,7 @@ class IdentifyPrimaryObjects(identify.Identify):
 
         self.unclump_method = cellprofiler.setting.Choice(
             'Method to distinguish clumped objects',
-            [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE],
+            [UN_INTENSITY, UN_SHAPE, UN_NONE],
             doc="""
             This setting allows you to choose the method that is used to segment objects, i.e., "declump" a
             large, merged object into individual objects of interest. To decide between these methods, you can
@@ -410,16 +381,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                         below a certain threshold, so it indicates the <i>{UN_SHAPE}</i> of the object.</dd>
                     </dl>
                 </li>
-                <li>
-                    <i>{UN_LOG}:</i> For objects that have an increasing intensity gradient toward their
-                    center, this option performs a Laplacian of Gaussian (or Mexican hat) transform on the
-                    image, which accentuates pixels that are local maxima of a desired size. It thresholds the
-                    result and finds pixels that are both local maxima and above threshold. These pixels are
-                    used as the seeds for objects in the watershed. Note that this method can occasionally
-                    result in strange artifacts; diagonal invaginations that do not seem to match any intensity
-                    dip in the input image. More information can be found <a href=
-                    "https://github.com/CellProfiler/CellProfiler/issues/1156">here</a>
-                </li>
                 <li><i>{UN_NONE}:</i> If objects are well separated and bright relative to the background, it
                 may be unnecessary to attempt to separate clumped objects. Using the very fast <i>{UN_NONE}</i>
                 option, a simple threshold will be used to identify objects. This will override any declumping
@@ -432,7 +393,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "INTENSITY_DECLUMPING_ICON": INTENSITY_DECLUMPING_ICON,
                 "TECH_NOTE_ICON": cellprofiler.gui.help.TECH_NOTE_ICON,
                 "SHAPE_DECLUMPING_ICON": SHAPE_DECLUMPING_ICON,
-                "UN_LOG": UN_LOG,
                 "UN_NONE": UN_NONE
             })
         )
@@ -568,18 +528,6 @@ class IdentifyPrimaryObjects(identify.Identify):
             })
         )
 
-        self.should_save_outlines = cellprofiler.setting.Binary(
-            'Retain outlines of the identified objects?',
-            False,
-            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
-        )
-
-        self.save_outlines = cellprofiler.setting.OutlineNameProvider(
-            'Name the outline image',
-            "PrimaryOutlines",
-            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
-        )
-
         self.fill_holes = cellprofiler.setting.Choice(
             'Fill holes in identified objects?',
             FH_ALL,
@@ -602,59 +550,21 @@ class IdentifyPrimaryObjects(identify.Identify):
             })
         )
 
-        self.wants_automatic_log_threshold = cellprofiler.setting.Binary(
-            'Automatically calculate the threshold using the Otsu method?',
-            True
-        )
-
-        self.manual_log_threshold = cellprofiler.setting.Float('Enter Laplacian of Gaussian threshold', .5, 0, 1)
-
-        self.wants_automatic_log_diameter = cellprofiler.setting.Binary(
-            WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT,
-            True,
-            doc="""
-            <i>(Used only when applying the LoG thresholding method)</i><br>
-            <p>Select <i>{YES}</i> to use the filtering diameter range above when constructing the LoG
-            filter.</p>
-            <p>Select <i>{NO}</i> in order to manually specify the size. You may want to specify a custom size
-            if you want to filter using loose criteria, but have objects that are generally of similar
-            sizes.</p>
-            """.format(**{
-                "YES": cellprofiler.setting.YES,
-                "NO": cellprofiler.setting.NO
-            })
-        )
-
-        self.log_diameter = cellprofiler.setting.Float(
-            'Enter LoG filter diameter',
-            5,
-            minval=1,
-            maxval=100,
-            doc="""
-            <i>(Used only when applying the LoG thresholding method)</i><br>
-            The size to use when calculating the LoG filter. The filter enhances the local maxima of objects
-            whose diameters are roughly the entered number or smaller.
-            """
-        )
-
         self.limit_choice = cellprofiler.setting.Choice(
             "Handling of objects if excessive number of objects identified",
-            [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE],
+            [LIMIT_NONE, LIMIT_ERASE],
             doc="""
             This setting deals with images that are segmented into an unreasonable number of objects. This
             might happen if the module calculates a low threshold or if the image has unusual artifacts.
             <b>IdentifyPrimaryObjects</b> can handle this condition in one of three ways:
             <ul>
                 <li><i>{LIMIT_NONE}</i>: Don't check for large numbers of objects.</li>
-                <li><i>{LIMIT_TRUNCATE}</i>: Limit the number of objects. Arbitrarily erase objects to limit
-                the number to the maximum allowed.</li>
                 <li><i>{LIMIT_ERASE}</i>: Erase all objects if the number of objects exceeds the maximum. This
                 results in an image with no primary objects. This option is a good choice if a large number of
                 objects indicates that the image should not be processed.</li>
             </ul>
             """.format(**{
                 "LIMIT_NONE": LIMIT_NONE,
-                "LIMIT_TRUNCATE": LIMIT_TRUNCATE,
                 "LIMIT_ERASE": LIMIT_ERASE
             })
         )
@@ -664,7 +574,7 @@ class IdentifyPrimaryObjects(identify.Identify):
             value=500,
             minval=2,
             doc="""
-            <i>(Used only when handling images with large numbers of objects by truncating)</i><br>
+            <i>(Used only when handling images with large numbers of objects by erasing)</i><br>
             This setting limits the number of objects in the image. See the documentation for the previous
             setting for details.
             """
@@ -676,22 +586,15 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.object_name,
                    self.size_range,
                    self.exclude_size,
-                   self.merge_objects,
                    self.exclude_border_objects,
                    self.unclump_method,
                    self.watershed_method,
                    self.smoothing_filter_size,
                    self.maxima_suppression_size,
                    self.low_res_maxima,
-                   self.save_outlines,
                    self.fill_holes,
                    self.automatic_smoothing,
                    self.automatic_suppression,
-                   self.should_save_outlines,
-                   self.wants_automatic_log_threshold,
-                   self.manual_log_threshold,
-                   self.wants_automatic_log_diameter,
-                   self.log_diameter,
                    self.limit_choice,
                    self.maximum_object_count
                ] + self.get_threshold_settings()
@@ -851,10 +754,30 @@ class IdentifyPrimaryObjects(identify.Identify):
                 setting_values[OFF_FILL_HOLES_V10] = FH_NEVER
             elif setting_values[OFF_FILL_HOLES_V10] == cellprofiler.setting.YES:
                 setting_values[OFF_FILL_HOLES_V10] = FH_THRESHOLDING
+            variable_revision_number = 11
+
+        if variable_revision_number == 11:
+            if setting_values[6] == UN_LOG:
+                setting_values[6] = UN_INTENSITY
+
+            if setting_values[20] == LIMIT_TRUNCATE:
+                setting_values[20] = "None"
+
+            new_setting_values = setting_values[:4]
+
+            new_setting_values += setting_values[5:11]
+
+            new_setting_values += setting_values[12:15]
+
+            new_setting_values += setting_values[20:]
+
+            setting_values = new_setting_values
+
+            variable_revision_number = 12
 
         # upgrade threshold settings
         setting_values = \
-            setting_values[:N_SETTINGS_V10] + self.upgrade_threshold_settings(setting_values[N_SETTINGS_V10:])
+            setting_values[:N_SETTINGS] + self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
 
         return setting_values, variable_revision_number, from_matlab
 
@@ -863,13 +786,8 @@ class IdentifyPrimaryObjects(identify.Identify):
                 self.object_name,
                 self.size_range,
                 self.exclude_size,
-                self.merge_objects,
                 self.exclude_border_objects
                 ] + self.get_threshold_help_settings() + [
-                   self.wants_automatic_log_diameter,
-                   self.log_diameter,
-                   self.wants_automatic_log_threshold,
-                   self.manual_log_threshold,
                    self.unclump_method,
                    self.watershed_method,
                    self.automatic_smoothing,
@@ -877,8 +795,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.automatic_suppression,
                    self.maxima_suppression_size,
                    self.low_res_maxima,
-                   self.should_save_outlines,
-                   self.save_outlines,
                    self.fill_holes,
                    self.limit_choice,
                    self.maximum_object_count]
@@ -889,13 +805,6 @@ class IdentifyPrimaryObjects(identify.Identify):
               ] + self.get_threshold_visible_settings()
         vv += [self.unclump_method]
         if self.unclump_method != UN_NONE:
-            if self.unclump_method == UN_LOG:
-                vv += [self.wants_automatic_log_threshold]
-                if not self.wants_automatic_log_threshold.value:
-                    vv += [self.manual_log_threshold]
-                vv += [self.wants_automatic_log_diameter]
-                if not self.wants_automatic_log_diameter.value:
-                    vv += [self.log_diameter]
             vv += [self.watershed_method, self.automatic_smoothing]
             if not self.automatic_smoothing.value:
                 vv += [self.smoothing_filter_size]
@@ -903,9 +812,6 @@ class IdentifyPrimaryObjects(identify.Identify):
             if not self.automatic_suppression.value:
                 vv += [self.maxima_suppression_size]
             vv += [self.low_res_maxima]
-        vv += [self.should_save_outlines]
-        if self.should_save_outlines.value:
-            vv += [self.save_outlines]
         vv += [self.fill_holes, self.limit_choice]
         if self.limit_choice != LIMIT_NONE:
             vv += [self.maximum_object_count]
@@ -936,11 +842,12 @@ class IdentifyPrimaryObjects(identify.Identify):
 
         labeled_image, object_count = scipy.ndimage.label(binary_image,
                                                           numpy.ones((3, 3), bool))
-        labeled_image, \
-            object_count, \
-            maxima_suppression_size, \
-            log_threshold, \
-            log_filter_diameter = self.separate_neighboring_objects(workspace, labeled_image, object_count)
+        labeled_image, object_count, maxima_suppression_size = self.separate_neighboring_objects(
+            workspace,
+            labeled_image,
+            object_count
+        )
+
         unedited_labels = labeled_image.copy()
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
@@ -1003,15 +910,8 @@ class IdentifyPrimaryObjects(identify.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%" % (100.0 * float(object_area) /
                                                 float(total_area))])
-                if self.threshold_scope != identify.TS_BINARY_IMAGE:
-                    statistics.append(["Thresholding filter size",
-                                       "%.1f" % workspace.display_data.threshold_sigma])
+                statistics.append(["Thresholding filter size", "%.1f" % workspace.display_data.threshold_sigma])
                 if self.unclump_method != UN_NONE:
-                    if self.unclump_method == UN_LOG:
-                        statistics.append(["LoG threshold",
-                                           "%.1f" % log_threshold])
-                        statistics.append(["LoG filter diameter",
-                                           "%.1f" % log_filter_diameter])
                     statistics.append(["Declumping smoothing filter size",
                                        "%.1f" % (self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
@@ -1037,10 +937,6 @@ class IdentifyPrimaryObjects(identify.Identify):
         identify.add_object_location_measurements(workspace.measurements,
                                                   self.object_name.value,
                                                   labeled_image)
-        if self.should_save_outlines.value:
-            out_img = cellprofiler.image.Image(outline_image.astype(bool),
-                                               parent_image=image)
-            workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):
         '''Limit the object count according to the rules
@@ -1051,34 +947,9 @@ class IdentifyPrimaryObjects(identify.Identify):
         returns a new labeled_image and object count
         '''
         if object_count > self.maximum_object_count.value:
-            if self.limit_choice == LIMIT_ERASE:
-                labeled_image = numpy.zeros(labeled_image.shape, int)
-                object_count = 0
-            elif self.limit_choice == LIMIT_TRUNCATE:
-                #
-                # Pick arbitrary objects, doing so in a repeatable,
-                # but pseudorandom manner.
-                #
-                r = numpy.random.RandomState()
-                r.seed(abs(numpy.sum(labeled_image)) % (2 ** 16))
-                #
-                # Pick an arbitrary ordering of the label numbers
-                #
-                index = r.permutation(object_count) + 1
-                #
-                # Pick only maximum_object_count of them
-                #
-                index = index[:self.maximum_object_count.value]
-                #
-                # Make a vector that maps old object numbers to new
-                #
-                mapping = numpy.zeros(object_count + 1, int)
-                mapping[index] = numpy.arange(1, len(index) + 1)
-                #
-                # Relabel
-                #
-                labeled_image = mapping[labeled_image]
-                object_count = len(index)
+            labeled_image = numpy.zeros(labeled_image.shape, int)
+            object_count = 0
+
         return labeled_image, object_count
 
     def smooth_image(self, image, mask):
@@ -1132,15 +1003,13 @@ class IdentifyPrimaryObjects(identify.Identify):
         LoG threshold and filter diameter
         """
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
-            return labeled_image, object_count, 7, 0.5, 5
+            return labeled_image, object_count, 7
 
         cpimage = workspace.image_set.get_image(
                 self.image_name.value, must_be_grayscale=True)
         image = cpimage.pixel_data
         mask = cpimage.mask
 
-        reported_log_filter_diameter = 5
-        reported_log_threshold = 0.5
         blurred_image = self.smooth_image(image, mask)
         if self.low_res_maxima.value and self.size_range.min > 10:
             image_resize_factor = 10.0 / float(self.size_range.min)
@@ -1160,50 +1029,7 @@ class IdentifyPrimaryObjects(identify.Identify):
             reported_maxima_suppression_size = maxima_suppression_size
         maxima_mask = centrosome.cpmorphology.strel_disk(max(1, maxima_suppression_size - .5))
         distance_transformed_image = None
-        if self.unclump_method == UN_LOG:
-            if self.wants_automatic_log_diameter.value:
-                diameter = (min(self.size_range.max, self.size_range.min ** 2) +
-                            self.size_range.min * 5) / 6
-            else:
-                diameter = self.log_diameter.value
-            reported_log_filter_diameter = diameter
-            sigma = float(diameter) / 2.35
-            #
-            # Shrink the image to save processing time
-            #
-            if image_resize_factor < 1.0:
-                shrunken = True
-                shrunken_shape = (numpy.array(image.shape) * image_resize_factor + 1).astype(int)
-                i_j = numpy.mgrid[0:shrunken_shape[0], 0:shrunken_shape[1]].astype(float) / image_resize_factor
-                simage = scipy.ndimage.map_coordinates(image, i_j)
-                smask = scipy.ndimage.map_coordinates(mask.astype(float), i_j) > .99
-                diameter = diameter * image_resize_factor + 1
-                sigma = sigma * image_resize_factor
-            else:
-                shrunken = False
-                simage = image
-                smask = mask
-            normalized_image = 1 - centrosome.filter.stretch(simage, smask)
-
-            window = max(3, int(diameter * 3 / 2))
-            log_image = centrosome.filter.laplacian_of_gaussian(normalized_image, smask,
-                                                                window, sigma)
-            if shrunken:
-                i_j = (numpy.mgrid[0:image.shape[0],
-                       0:image.shape[1]].astype(float) *
-                       image_resize_factor)
-                log_image = scipy.ndimage.map_coordinates(log_image, i_j)
-            log_image = centrosome.filter.stretch(log_image, mask)
-            if self.wants_automatic_log_threshold.value:
-                log_threshold = centrosome.otsu.otsu(log_image[mask], 0, 1, 256)
-            else:
-                log_threshold = self.manual_log_threshold.value
-            reported_log_threshold = log_threshold
-            log_image[log_image < log_threshold] = log_threshold
-            log_image -= log_threshold
-            maxima_image = self.get_maxima(log_image, labeled_image,
-                                           maxima_mask, image_resize_factor)
-        elif self.unclump_method == UN_INTENSITY:
+        if self.unclump_method == UN_INTENSITY:
             # Remove dim maxima
             maxima_image = self.get_maxima(blurred_image,
                                            labeled_image,
@@ -1281,11 +1107,7 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             watershed_boundaries = -watershed_boundaries
 
-        return watershed_boundaries, \
-            object_count, \
-            reported_maxima_suppression_size, \
-            reported_log_threshold, \
-            reported_log_filter_diameter
+        return watershed_boundaries, object_count, reported_maxima_suppression_size
 
     def get_maxima(self, image, labeled_image, maxima_mask, image_resize_factor):
         if image_resize_factor < 1.0:

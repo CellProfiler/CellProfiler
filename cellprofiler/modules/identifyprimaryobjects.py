@@ -857,7 +857,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name)
         workspace.display_data.statistics = []
-        binary_image = self.threshold_image(image_name, workspace)
+        binary_image = self.threshold_image(image_name, workspace, automatic=self.basic)
 
         #
         # Fill background holes inside foreground objects

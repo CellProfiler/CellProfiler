@@ -192,6 +192,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
 
     def test_02_01_test_one_object(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
@@ -243,6 +244,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
 
     def test_02_02_test_two_objects(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
@@ -289,6 +291,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
 
     def test_02_03_test_threshold_range(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min = .7
@@ -334,6 +337,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
 
     def test_02_04_fill_holes(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
@@ -390,6 +394,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
     def test_02_05_01_fill_holes_within_holes(self):
         'Regression test of img-1431'
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.size_range.min = 1
@@ -903,6 +908,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
         for distance in (0, 1):
             x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+            x.use_advanced.value = True
             x.image_name.value = "my_image"
             x.object_name.value = "my_object"
             x.exclude_size.value = False
@@ -1851,6 +1857,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
     def test_05_01_discard_large(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = True
@@ -1885,6 +1892,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
     def test_05_02_keep_large(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
@@ -1915,6 +1923,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
     def test_05_03_discard_small(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = True
@@ -2019,6 +2028,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
     def test_06_01_regression_diagonal(self):
         """Regression test - was using one-connected instead of 3-connected structuring element"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
@@ -2280,6 +2290,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], bool)
         workspace, x = self.make_workspace(pixels)
+        x.use_advanced.value = True
         x.exclude_size.value = True
         x.size_range.min = 6
         x.size_range.max = 50
@@ -2447,6 +2458,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         object_set = cellprofiler.object.ObjectSet()
 
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
@@ -2485,6 +2497,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         measurements.add_image_measurement("MeanIntensity_MyImage", numpy.mean(pixels))
 
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x.use_advanced.value = True
         x.object_name.value = "MyObject"
         x.image_name.value = "MyImage"
         x.exclude_size.value = False
@@ -2521,6 +2534,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                                 [0, 0, 0, 0, 0, 0, 0]])
         workspace, module = self.make_workspace(image)
         assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
+        module.use_advanced.value = True
         module.exclude_size.value = False
         module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
         module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
@@ -2550,6 +2564,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                                 [0, 0, 0, 0, 0, 0, 0]])
         workspace, module = self.make_workspace(image)
         assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
+        module.use_advanced.value = True
         module.exclude_size.value = False
         module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
         module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE

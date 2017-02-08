@@ -15,8 +15,6 @@ import cellprofiler.modules.identify
 import cellprofiler.setting
 import identify
 
-RETAIN = "Retain"
-SHIFT = "Shift"
 GRAYSCALE = "Grayscale"
 BINARY = "Binary (black and white)"
 

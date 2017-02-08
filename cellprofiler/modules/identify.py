@@ -307,11 +307,6 @@ class Identify(cellprofiler.module.Module):
                 of biological data" <i>Journal of Neuroscience Methods</i> 193, 380-384. (<a href=
                 "http://dx.doi.org/10.1016/j.jneumeth.2010.08.031">link</a>)
                 </li>
-                <li>Ridler T, Calvard S (1978) "Picture thresholding using an iterative selection method",
-                <i>IEEE Transactions on Systems, Man and Cybernetics</i>, 8(8), 630-632.</li>
-                <li>Kapur JN, Sahoo PK, Wong AKC (1985) "A new method of gray level picture thresholding using
-                the entropy of the histogram." <i>Computer Vision, Graphics and Image Processing</i>, 29,
-                273-285.</li>
             </ul>
             <p></p>
             """.format(**{
@@ -1125,25 +1120,3 @@ def get_threshold_measurement_columns(image_name):
             (cellprofiler.measurement.IMAGE, FF_ORIG_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
             (cellprofiler.measurement.IMAGE, FF_WEIGHTED_VARIANCE % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
             (cellprofiler.measurement.IMAGE, FF_SUM_OF_ENTROPIES % image_name, cellprofiler.measurement.COLTYPE_FLOAT)]
-
-
-def draw_outline(img, outline, color):
-    '''Draw the given outline on the given image in the given color'''
-    red = float(color.Red()) / 255.0
-    green = float(color.Green()) / 255.0
-    blue = float(color.Blue()) / 255.0
-    img[outline != 0, 0] = red
-    img[outline != 0, 1] = green
-    img[outline != 0, 2] = blue
-
-
-class MaskObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
-    '''This class allows the legacy "From Image" choice'''
-
-    def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
-
-    def test_valid(self, pipeline):
-        if self.value == O_FROM_IMAGE:
-            return
-        super(self.__class__, self).test_valid(pipeline)

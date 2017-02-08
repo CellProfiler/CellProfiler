@@ -920,7 +920,7 @@ class Identify(cellprofiler.module.Module):
             # derived class does not have thresholding settings
             return
         if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL):
-            if self.get_threshold_method() == centrosome.threshold.TM_ROBUST_BACKGROUND:
+            if self.threshold_method.value == centrosome.threshold.TM_ROBUST_BACKGROUND:
                 if self.lower_outlier_fraction.value + \
                         self.upper_outlier_fraction.value >= 1:
                     raise cellprofiler.setting.ValidationError(

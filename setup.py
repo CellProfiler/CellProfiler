@@ -433,7 +433,7 @@ setuptools.setup(
         "libtiff",
         "matplotlib",
         "MySQL-python",
-        "numpy",
+        "numpy<1.12.0",
         "prokaryote",
         "pytest",
         "python-bioformats",

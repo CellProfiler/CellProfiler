@@ -584,7 +584,71 @@ class IdentifyPrimaryObjects(identify.Identify):
         self.use_advanced = cellprofiler.setting.Binary(
             "Use advanced settings?",
             value=False,
-            doc="Select {YES} to use advanced module settings.".format(**{
+            doc="""
+            Select {YES} to use advanced module settings.<br>
+            If {NO} is selected, the following settings are used:
+            <ul>
+                <li>
+                    <i>{THRESHOLD_SCOPE_TEXT}</i>: {THRESHOLD_SCOPE_VALUE}
+                </li>
+                <li>
+                    <i>{THRESHOLD_METHOD_TEXT}</i>: {THRESHOLD_METHOD_VALUE}
+                </li>
+                <li>
+                    <i>{THRESHOLD_SMOOTHING_SCALE_TEXT}</i>: {THRESHOLD_SMOOTHING_SCALE_VALUE} (sigma = 1)
+                </li>
+                <li>
+                    <i>{THRESHOLD_CORRECTION_FACTOR_TEXT}</i>: {THRESHOLD_CORRECTION_FACTOR_VALUE}
+                </li>
+                <li>
+                    <i>{THRESHOLD_RANGE_TEXT}</i>: minimum {THRESHOLD_RANGE_MIN}, maximum {THRESHOLD_RANGE_MAX}
+                </li>
+                <li>
+                    <i>{UNCLUMP_METHOD_TEXT}</i>: {UNCLUMP_METHOD_VALUE}
+                </li>
+                <li>
+                    <i>{WATERSHED_METHOD_TEXT}</i>: {WATERSHED_METHOD_VALUE}
+                </li>
+                <li>
+                    <i>{AUTOMATIC_SMOOTHING_TEXT}</i>: {YES}
+                </li>
+                <li>
+                    <i>{AUTOMATIC_SUPPRESSION_TEXT}</i>: {YES}
+                </li>
+                <li>
+                    <i>{LOW_RES_MAXIMA_TEXT}</i>: {YES}
+                </li>
+                <li>
+                    <i>{FILL_HOLES_TEXT}</i>: {FILL_HOLES_VALUE}
+                </li>
+                <li>
+                    <i>{LIMIT_CHOICE_TEXT}</i>: {LIMIT_CHOICE_VALUE}
+                </li>
+            </ul>
+            """.format(**{
+                "AUTOMATIC_SMOOTHING_TEXT": self.automatic_smoothing.get_text(),
+                "AUTOMATIC_SUPPRESSION_TEXT": self.automatic_suppression.get_text(),
+                "FILL_HOLES_TEXT": self.fill_holes.get_text(),
+                "FILL_HOLES_VALUE": FH_THRESHOLDING,
+                "LIMIT_CHOICE_TEXT": self.limit_choice.get_text(),
+                "LIMIT_CHOICE_VALUE": LIMIT_NONE,
+                "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
+                "NO": cellprofiler.setting.NO,
+                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold_correction_factor.get_text(),
+                "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
+                "THRESHOLD_METHOD_TEXT": self.threshold_method.get_text(),
+                "THRESHOLD_METHOD_VALUE": centrosome.threshold.TM_MCT,
+                "THRESHOLD_RANGE_MAX": 1.0,
+                "THRESHOLD_RANGE_MIN": 0.0,
+                "THRESHOLD_RANGE_TEXT": self.threshold_range.get_text(),
+                "THRESHOLD_SCOPE_TEXT": self.threshold_scope.get_text(),
+                "THRESHOLD_SCOPE_VALUE": identify.TS_GLOBAL,
+                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.threshold_smoothing_scale.get_text(),
+                "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
+                "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
+                "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
+                "WATERSHED_METHOD_TEXT": self.watershed_method.get_text(),
+                "WATERSHED_METHOD_VALUE": WA_INTENSITY,
                 "YES": cellprofiler.setting.YES
             })
         )

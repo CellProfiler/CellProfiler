@@ -580,7 +580,6 @@ class IdentifyPrimaryObjects(identify.Identify):
             """
         )
 
-        # TODO: Document defaults
         self.use_advanced = cellprofiler.setting.Binary(
             "Use advanced settings?",
             value=False,

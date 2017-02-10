@@ -190,7 +190,7 @@ OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
 '''The number of settings, exclusive of threshold settings'''
-N_SETTINGS = 15
+N_SETTINGS = 16
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -226,7 +226,7 @@ SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
 
 
 class IdentifyPrimaryObjects(identify.Identify):
-    variable_revision_number = 12
+    variable_revision_number = 13
     category = "Object Processing"
     module_name = "IdentifyPrimaryObjects"
 
@@ -580,24 +580,97 @@ class IdentifyPrimaryObjects(identify.Identify):
             """
         )
 
+        self.use_advanced = cellprofiler.setting.Binary(
+            "Use advanced settings?",
+            value=False,
+            doc="""
+            Select {YES} to use advanced module settings.<br>
+            If {NO} is selected, the following settings are used:
+            <ul>
+                <li>
+                    <i>{THRESHOLD_SCOPE_TEXT}</i>: {THRESHOLD_SCOPE_VALUE}
+                </li>
+                <li>
+                    <i>{THRESHOLD_METHOD_TEXT}</i>: {THRESHOLD_METHOD_VALUE}
+                </li>
+                <li>
+                    <i>{THRESHOLD_SMOOTHING_SCALE_TEXT}</i>: {THRESHOLD_SMOOTHING_SCALE_VALUE} (sigma = 1)
+                </li>
+                <li>
+                    <i>{THRESHOLD_CORRECTION_FACTOR_TEXT}</i>: {THRESHOLD_CORRECTION_FACTOR_VALUE}
+                </li>
+                <li>
+                    <i>{THRESHOLD_RANGE_TEXT}</i>: minimum {THRESHOLD_RANGE_MIN}, maximum {THRESHOLD_RANGE_MAX}
+                </li>
+                <li>
+                    <i>{UNCLUMP_METHOD_TEXT}</i>: {UNCLUMP_METHOD_VALUE}
+                </li>
+                <li>
+                    <i>{WATERSHED_METHOD_TEXT}</i>: {WATERSHED_METHOD_VALUE}
+                </li>
+                <li>
+                    <i>{AUTOMATIC_SMOOTHING_TEXT}</i>: {YES}
+                </li>
+                <li>
+                    <i>{AUTOMATIC_SUPPRESSION_TEXT}</i>: {YES}
+                </li>
+                <li>
+                    <i>{LOW_RES_MAXIMA_TEXT}</i>: {YES}
+                </li>
+                <li>
+                    <i>{FILL_HOLES_TEXT}</i>: {FILL_HOLES_VALUE}
+                </li>
+                <li>
+                    <i>{LIMIT_CHOICE_TEXT}</i>: {LIMIT_CHOICE_VALUE}
+                </li>
+            </ul>
+            """.format(**{
+                "AUTOMATIC_SMOOTHING_TEXT": self.automatic_smoothing.get_text(),
+                "AUTOMATIC_SUPPRESSION_TEXT": self.automatic_suppression.get_text(),
+                "FILL_HOLES_TEXT": self.fill_holes.get_text(),
+                "FILL_HOLES_VALUE": FH_THRESHOLDING,
+                "LIMIT_CHOICE_TEXT": self.limit_choice.get_text(),
+                "LIMIT_CHOICE_VALUE": LIMIT_NONE,
+                "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
+                "NO": cellprofiler.setting.NO,
+                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold_correction_factor.get_text(),
+                "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
+                "THRESHOLD_METHOD_TEXT": self.threshold_method.get_text(),
+                "THRESHOLD_METHOD_VALUE": centrosome.threshold.TM_MCT,
+                "THRESHOLD_RANGE_MAX": 1.0,
+                "THRESHOLD_RANGE_MIN": 0.0,
+                "THRESHOLD_RANGE_TEXT": self.threshold_range.get_text(),
+                "THRESHOLD_SCOPE_TEXT": self.threshold_scope.get_text(),
+                "THRESHOLD_SCOPE_VALUE": identify.TS_GLOBAL,
+                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.threshold_smoothing_scale.get_text(),
+                "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
+                "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
+                "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
+                "WATERSHED_METHOD_TEXT": self.watershed_method.get_text(),
+                "WATERSHED_METHOD_VALUE": WA_INTENSITY,
+                "YES": cellprofiler.setting.YES
+            })
+        )
+
     def settings(self):
         return [
-                   self.image_name,
-                   self.object_name,
-                   self.size_range,
-                   self.exclude_size,
-                   self.exclude_border_objects,
-                   self.unclump_method,
-                   self.watershed_method,
-                   self.smoothing_filter_size,
-                   self.maxima_suppression_size,
-                   self.low_res_maxima,
-                   self.fill_holes,
-                   self.automatic_smoothing,
-                   self.automatic_suppression,
-                   self.limit_choice,
-                   self.maximum_object_count
-               ] + self.get_threshold_settings()
+            self.image_name,
+            self.object_name,
+            self.size_range,
+            self.exclude_size,
+            self.exclude_border_objects,
+            self.unclump_method,
+            self.watershed_method,
+            self.smoothing_filter_size,
+            self.maxima_suppression_size,
+            self.low_res_maxima,
+            self.fill_holes,
+            self.automatic_smoothing,
+            self.automatic_suppression,
+            self.limit_choice,
+            self.maximum_object_count,
+            self.use_advanced
+        ] + self.get_threshold_settings()
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         """Upgrade the strings in setting_values dependent on saved revision
@@ -775,6 +848,15 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             variable_revision_number = 12
 
+        if variable_revision_number == 12:
+            new_setting_values = setting_values[:N_SETTINGS - 1]
+            new_setting_values += [cellprofiler.setting.YES]
+            new_setting_values += setting_values[N_SETTINGS - 1:]
+
+            setting_values = new_setting_values
+
+            variable_revision_number = 13
+
         # upgrade threshold settings
         setting_values = \
             setting_values[:N_SETTINGS] + self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
@@ -782,7 +864,8 @@ class IdentifyPrimaryObjects(identify.Identify):
         return setting_values, variable_revision_number, from_matlab
 
     def help_settings(self):
-        return [self.image_name,
+        return [self.use_advanced,
+                self.image_name,
                 self.object_name,
                 self.size_range,
                 self.exclude_size,
@@ -800,36 +883,44 @@ class IdentifyPrimaryObjects(identify.Identify):
                    self.maximum_object_count]
 
     def visible_settings(self):
-        vv = [self.image_name, self.object_name, self.size_range,
-              self.exclude_size, self.exclude_border_objects
-              ] + self.get_threshold_visible_settings()
-        vv += [self.unclump_method]
-        if self.unclump_method != UN_NONE:
-            vv += [self.watershed_method, self.automatic_smoothing]
-            if not self.automatic_smoothing.value:
-                vv += [self.smoothing_filter_size]
-            vv += [self.automatic_suppression]
-            if not self.automatic_suppression.value:
-                vv += [self.maxima_suppression_size]
-            vv += [self.low_res_maxima]
-        vv += [self.fill_holes, self.limit_choice]
-        if self.limit_choice != LIMIT_NONE:
-            vv += [self.maximum_object_count]
+        vv = [
+            self.use_advanced,
+            self.image_name,
+            self.object_name,
+            self.size_range,
+            self.exclude_size,
+            self.exclude_border_objects
+        ]
+
+        if self.use_advanced.value:
+            vv += self.get_threshold_visible_settings()
+            vv += [self.unclump_method]
+            if self.unclump_method != UN_NONE:
+                vv += [self.watershed_method, self.automatic_smoothing]
+                if not self.automatic_smoothing.value:
+                    vv += [self.smoothing_filter_size]
+                vv += [self.automatic_suppression]
+                if not self.automatic_suppression.value:
+                    vv += [self.maxima_suppression_size]
+                vv += [self.low_res_maxima]
+            vv += [self.fill_holes, self.limit_choice]
+            if self.limit_choice != LIMIT_NONE:
+                vv += [self.maximum_object_count]
         return vv
 
-    def run(self, workspace):
-        """Run the module
+    @property
+    def advanced(self):
+        return self.use_advanced.value
 
-        pipeline     - instance of CellProfiler.Pipeline for this run
-        workspace    - contains
-            image_set    - the images in the image set being processed
-            object_set   - the objects (labeled masks) in this image set
-            measurements - the measurements for this run
-        """
+    @property
+    def basic(self):
+        return not self.advanced
+
+    def run(self, workspace):
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name)
         workspace.display_data.statistics = []
-        binary_image = self.threshold_image(image_name, workspace)
+        binary_image = self.threshold_image(image_name, workspace, automatic=self.basic)
 
         #
         # Fill background holes inside foreground objects
@@ -837,11 +928,11 @@ class IdentifyPrimaryObjects(identify.Identify):
         def size_fn(size, is_foreground):
             return size < self.size_range.max * self.size_range.max
 
-        if self.fill_holes.value == FH_THRESHOLDING:
+        if self.basic or self.fill_holes.value == FH_THRESHOLDING:
             binary_image = centrosome.cpmorphology.fill_labeled_holes(binary_image, size_fn=size_fn)
 
-        labeled_image, object_count = scipy.ndimage.label(binary_image,
-                                                          numpy.ones((3, 3), bool))
+        labeled_image, object_count = scipy.ndimage.label(binary_image, numpy.ones((3, 3), bool))
+
         labeled_image, object_count, maxima_suppression_size = self.separate_neighboring_objects(
             workspace,
             labeled_image,
@@ -849,6 +940,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         )
 
         unedited_labels = labeled_image.copy()
+
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
         labeled_image = self.filter_on_border(image, labeled_image)
@@ -856,30 +948,29 @@ class IdentifyPrimaryObjects(identify.Identify):
 
         # Filter out small and large objects
         size_excluded_labeled_image = labeled_image.copy()
-        labeled_image, small_removed_labels = \
-            self.filter_on_size(labeled_image, object_count)
+        labeled_image, small_removed_labels = self.filter_on_size(labeled_image, object_count)
         size_excluded_labeled_image[labeled_image > 0] = 0
 
         #
         # Fill holes again after watershed
         #
-        if self.fill_holes != FH_NEVER:
+        if self.basic or self.fill_holes != FH_NEVER:
             labeled_image = centrosome.cpmorphology.fill_labeled_holes(labeled_image)
 
         # Relabel the image
         labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
-        new_labeled_image, new_object_count = self.limit_object_count(
-                labeled_image, object_count)
-        if new_object_count < object_count:
-            # Add the labels that were filtered out into the border
-            # image.
-            border_excluded_mask = ((border_excluded_labeled_image > 0) |
-                                    ((labeled_image > 0) &
-                                     (new_labeled_image == 0)))
-            border_excluded_labeled_image = scipy.ndimage.label(border_excluded_mask,
-                                                                numpy.ones((3, 3), bool))[0]
-            object_count = new_object_count
-            labeled_image = new_labeled_image
+
+        if self.advanced:
+            new_labeled_image, new_object_count = self.limit_object_count(labeled_image, object_count)
+            if new_object_count < object_count:
+                # Add the labels that were filtered out into the border
+                # image.
+                border_excluded_mask = (border_excluded_labeled_image > 0) | (
+                    (labeled_image > 0) & (new_labeled_image == 0)
+                )
+                border_excluded_labeled_image = scipy.ndimage.label(border_excluded_mask, numpy.ones((3, 3), bool))[0]
+                object_count = new_object_count
+                labeled_image = new_labeled_image
 
         # Make an outline image
         outline_image = centrosome.outline.outline(labeled_image)
@@ -911,7 +1002,7 @@ class IdentifyPrimaryObjects(identify.Identify):
                                    "%.1f %%" % (100.0 * float(object_area) /
                                                 float(total_area))])
                 statistics.append(["Thresholding filter size", "%.1f" % workspace.display_data.threshold_sigma])
-                if self.unclump_method != UN_NONE:
+                if self.basic or self.unclump_method != UN_NONE:
                     statistics.append(["Declumping smoothing filter size",
                                        "%.1f" % (self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
@@ -1002,7 +1093,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         returns revised labeled_image, object count, maxima_suppression_size,
         LoG threshold and filter diameter
         """
-        if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
+        if self.advanced and (self.unclump_method == UN_NONE or self.watershed_method == WA_NONE):
             return labeled_image, object_count, 7
 
         cpimage = workspace.image_set.get_image(
@@ -1011,9 +1102,9 @@ class IdentifyPrimaryObjects(identify.Identify):
         mask = cpimage.mask
 
         blurred_image = self.smooth_image(image, mask)
-        if self.low_res_maxima.value and self.size_range.min > 10:
+        if self.size_range.min > 10 and (self.basic or self.low_res_maxima.value):
             image_resize_factor = 10.0 / float(self.size_range.min)
-            if self.automatic_suppression.value:
+            if self.basic or self.automatic_suppression.value:
                 maxima_suppression_size = 7
             else:
                 maxima_suppression_size = (self.maxima_suppression_size.value *
@@ -1022,14 +1113,14 @@ class IdentifyPrimaryObjects(identify.Identify):
                 maxima_suppression_size / image_resize_factor
         else:
             image_resize_factor = 1.0
-            if self.automatic_suppression.value:
+            if self.basic or self.automatic_suppression.value:
                 maxima_suppression_size = self.size_range.min / 1.5
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
             reported_maxima_suppression_size = maxima_suppression_size
         maxima_mask = centrosome.cpmorphology.strel_disk(max(1, maxima_suppression_size - .5))
         distance_transformed_image = None
-        if self.unclump_method == UN_INTENSITY:
+        if self.basic or self.unclump_method == UN_INTENSITY:
             # Remove dim maxima
             maxima_image = self.get_maxima(blurred_image,
                                            labeled_image,
@@ -1057,7 +1148,7 @@ class IdentifyPrimaryObjects(identify.Identify):
             raise ValueError("Unsupported local maxima method: %s" % self.unclump_method.value)
 
         # Create the image for watershed
-        if self.watershed_method == WA_INTENSITY:
+        if self.basic or self.watershed_method == WA_INTENSITY:
             # use the reverse of the image to get valleys at peaks
             watershed_image = 1 - image
         elif self.watershed_method == WA_SHAPE:
@@ -1081,7 +1172,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         #
         labeled_maxima, object_count = \
             scipy.ndimage.label(maxima_image, numpy.ones((3, 3), bool))
-        if self.watershed_method == WA_PROPAGATE:
+        if self.advanced and self.watershed_method == WA_PROPAGATE:
             watershed_boundaries, distance = \
                 centrosome.propagate.propagate(numpy.zeros(labeled_maxima.shape),
                                                labeled_maxima,

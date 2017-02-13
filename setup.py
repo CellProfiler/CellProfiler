@@ -334,7 +334,6 @@ setuptools.setup(
         },
         include_package_data=True,
         install_requires=[
-            "cellh5",
             "centrosome>=1.0.4",
             "h5py",
             "inflect",

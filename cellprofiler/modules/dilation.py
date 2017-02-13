@@ -6,10 +6,12 @@
 
 """
 
+import numpy
+import skimage.morphology
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.morphology
 
 
 class Dilation(cellprofiler.module.ImageProcessing):
@@ -39,6 +41,11 @@ class Dilation(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        self.function = skimage.morphology.dilation
+        x = workspace.image_set.get_image(self.x_name.value)
+
+        if x.pixel_data.dtype == numpy.bool:
+            self.function = skimage.morphology.binary_dilation
+        else:
+            self.function = skimage.morphology.dilation
 
         super(Dilation, self).run(workspace)

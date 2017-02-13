@@ -343,7 +343,7 @@ setuptools.setup(
             "mahotas",
             "matplotlib<2.0.0",
             "MySQL-python",
-            "numpy<1.12.0",
+            "numpy",
             "prokaryote>=1.0.11",
             "pyamg==3.1.1",
             "pytest",

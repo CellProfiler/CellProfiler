@@ -6,10 +6,12 @@
 
 """
 
+import numpy
+import skimage.morphology
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.morphology
 
 
 class Erosion(cellprofiler.module.ImageProcessing):
@@ -39,6 +41,11 @@ class Erosion(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        self.function = skimage.morphology.erosion
+        x = workspace.image_set.get_image(self.x_name.value)
+
+        if x.pixel_data.dtype == numpy.bool:
+            self.function = skimage.morphology.binary_erosion
+        else:
+            self.function = skimage.morphology.erosion
 
         super(Erosion, self).run(workspace)

@@ -2180,7 +2180,7 @@ class TrackObjects(cpm.Module):
                 new_object_count[my_image_index] -= 1
             logger.debug("Mitosis: %d:%d to %d:%d and %d, score=%f" %
                          (parent_image_number, parent_object_number,
-                          image_numbers[F[mlidx, IIDX]],
+                          image_numbers[int(F[int(mlidx), int(IIDX)])],
                           F[mlidx, ONIDX],
                           F[mridx, ONIDX],
                           score))

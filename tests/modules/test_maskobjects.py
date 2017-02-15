@@ -32,59 +32,6 @@ OUTPUT_OUTLINES = 'outputoutlines'
 
 
 class TestMaskObjects(unittest.TestCase):
-    def test_01_01_load_matlab_exclude(self):
-        '''Load a pipeline with an Exclude module'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1NwS01SMDBUMLCwMjGzAjKMDAwNFEgGDIyevvwMDAwKzAwM'
-                'FXOeRtzNu2UgYiYSsTss1N10pfjUWadjc2I32b/d9FtT9hLbirVab1cZdXrb'
-                'Su72msNXtpf9RvcX2W8Z3YqND5YVFzC1nj1hZXXs/vNiP7+apHwmhh5bBq3G'
-                'GN4qQZ5oyyvcG/W+CB+xXCa7nscrQV3mv+wX4xdJN9Re8AjJVyZcWfTRam/C'
-                '8r+rL8bHz3gsfKXh7o8nC0z/5EnvjPusxNRWv72Af6LwH+bGk2K+1m7Xbxzu'
-                'afsxIV5Odu3pHVvepV24H3a8UMOjUKDI2kzvmXzDxz9BTne2JX3efqiuq+rP'
-                'zUT+W3deOOXF810L/bDGy8Ypf9eOz3YcpVLW11T+RHXYFwkuKvwvaiPa6f6C'
-                '974ax/Pm6x8Xp+61+77m8/trMn81vCsW1ju0VGhe35+/R2t+yaP0mf66l69s'
-                'tz+w38hxl82NKR+c1icemtg9J/NTZuyjyP6PVySke9LPnhZ/uOOBoaiNtrCN'
-                '9oPsDe6pB18+OWi4qHlvkDl/n2D7jFfHdTPjg37Gz3mg2cR2ui345t+ATdEv'
-                'trpdfs5yecWaF59qUthS73ywnWJ/ftHT+Vr1Xz7ElvU+k/6/pHbJSdv7Fkpr'
-                'eD3f2Ww6c9r/arGezweRhqmC5fF1J35KTVnnY3GzP/PxRyPVdSaN2ozF97ds'
-                'epCym1/EpnKvvufvurlFLrZnfgffmDzNfdp8kT39KnELk189yH7zY4LEDm7r'
-                'xZcPG/2wXm01I+W89fzNDxKa3/bUqX70eT39z7y3z3POr/lz6eHbHRve35yw'
-                'QOL8ntd737Tr9Z/6X1lv7vs6fN79qd1Ppv/Z86J4h0DltGv/9pzn/PTr2Kv7'
-                '7/sflapm35UVWdh3+s/qn59Vapdv+mae8tkwcJ7NxCsrbxvaKa94+CKrraZb'
-                'zFzU/9LfJxbybe90g/98fuat/Vz2+aoj6iVme2p3PD1h9OFu+JzNp1w3P6+f'
-                'enra/f1c5fXqIgee/N2RF/v/zILgftmQyz++RjwSrLrrOOVxd93po3d/3EwV'
-                'q1n1ex+70PwL/NVmH2WnWO9bVKF3NGB9Xn64lsN7G6m7zS/XRN+7oSF28O2f'
-                'gIetsUr299785akz322++3Dhwc3GqXF2jOXn+2/tN/rPr2W2VQgAxRjE4w==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 5)
-
-        module = pipeline.modules()[-2]
-        self.assertTrue(isinstance(module, M.MaskObjects))
-        self.assertEqual(module.object_name.value, "Nuclei")
-        self.assertEqual(module.mask_choice.value, M.MC_OBJECTS)
-        self.assertEqual(module.masking_objects.value, "Cells")
-        self.assertEqual(module.remaining_objects.value, "FilteredNuclei")
-        self.assertEqual(module.retain_or_renumber.value, M.R_RENUMBER)
-        self.assertEqual(module.overlap_choice.value, M.P_MASK)
-        self.assertTrue(module.wants_outlines)
-        self.assertEqual(module.outlines_name.value, "FNOutlines")
-
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MaskObjects))
-        self.assertEqual(module.object_name.value, "Nuclei")
-        self.assertEqual(module.mask_choice.value, M.MC_OBJECTS)
-        self.assertEqual(module.masking_objects.value, "Cells")
-        self.assertEqual(module.remaining_objects.value, "FilteredFoo")
-        self.assertEqual(module.retain_or_renumber.value, M.R_RETAIN)
-        self.assertEqual(module.overlap_choice.value, M.P_REMOVE)
-        self.assertFalse(module.wants_outlines)
-
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

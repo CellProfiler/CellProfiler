@@ -280,7 +280,7 @@ badmodules = []
 datatools = []
 pure_datatools = {}
 
-do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
+do_not_override = ['set_settings', 'create_from_handles', 'test_valid', 'module_class']
 should_override = ['create_settings', 'settings', 'run']
 
 

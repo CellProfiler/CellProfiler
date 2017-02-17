@@ -665,8 +665,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
         x.global_operation.value = centrosome.threshold.TM_OTSU
         threshold, global_threshold = x.get_threshold(
-            image,
-            numpy.ones_like(image, bool),
+            cellprofiler.image.Image(image, mask=numpy.ones_like(image, bool)),
             workspace
         )
         self.assertTrue(threshold[0, 0] != threshold[0, 109])
@@ -694,8 +693,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
         x.global_operation.value = centrosome.threshold.TM_OTSU
         threshold, global_threshold = x.get_threshold(
-            image,
-            numpy.ones_like(image, bool),
+            cellprofiler.image.Image(image, mask=numpy.ones_like(image, bool)),
             workspace
         )
         self.assertTrue(threshold[0, 0] != threshold[0, 109])
@@ -723,11 +721,17 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
                 workspace, x = self.make_workspace(image, mask)
                 x.global_operation.value = threshold_method
                 x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-                l, g = x.get_threshold(image, mask, workspace)
+                l, g = x.get_threshold(
+                    cellprofiler.image.Image(image, mask=mask),
+                    workspace
+                )
                 v = image[mask]
                 image = r.uniform(size=(9, 11))
                 image[mask] = v
-                l1, g1 = x.get_threshold(image, mask, workspace)
+                l1, g1 = x.get_threshold(
+                    cellprofiler.image.Image(image, mask=mask),
+                    workspace
+                )
                 self.assertAlmostEqual(l1, l)
 
     def test_08_01_test_manual_background(self):
@@ -738,8 +742,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         x.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         x.manual_threshold.value = .5
         local_threshold, threshold = x.get_threshold(
-            numpy.zeros((10, 10)),
-            numpy.ones((10, 10), bool),
+            cellprofiler.image.Image(numpy.zeros((10, 10)), mask=numpy.ones((10, 10), bool)),
             workspace
         )
         self.assertTrue(threshold == .5)

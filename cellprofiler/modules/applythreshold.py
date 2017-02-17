@@ -640,7 +640,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
     def run(self, workspace):
         input = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
 
-        local_threshold, global_threshold = self.get_threshold(input.pixel_data, input.mask, workspace)
+        local_threshold, global_threshold = self.get_threshold(input, workspace)
 
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
@@ -649,13 +649,12 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             global_threshold
         )
 
-        binary_image, _ = self.apply_threshold(input.pixel_data, input.mask, local_threshold)
+        binary_image, _ = self.apply_threshold(input, local_threshold)
 
         self.add_fg_bg_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            input.pixel_data,
-            input.mask,
+            input,
             binary_image
         )
 
@@ -673,9 +672,13 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split('_')[1], str(value))]
 
-    def apply_threshold(self, image, mask, threshold, automatic=False):
+    def apply_threshold(self, image, threshold, automatic=False):
+        data = image.pixel_data
+
+        mask = image.mask
+
         if not automatic and self.threshold_operation in [TM_MEASUREMENT, TM_MANUAL]:
-            return (image >= threshold) & mask, 0
+            return (data >= threshold) & mask, 0
 
         if automatic:
             sigma = 1
@@ -687,19 +690,23 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             sigma = self.threshold_smoothing_scale.value / 0.6744 / 2.0
 
         blurred_image = centrosome.smooth.smooth_with_function_and_mask(
-            image,
+            data,
             lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0),
             mask
         )
 
         return (blurred_image >= threshold) & mask, sigma
 
-    def get_threshold(self, img, mask, workspace, automatic=False):
+    def get_threshold(self, image, workspace, automatic=False):
+        data = image.pixel_data
+
+        mask = image.mask
+
         if automatic:
             local_threshold, global_threshold = centrosome.threshold.get_threshold(
                 centrosome.threshold.TM_MCT,
                 TS_GLOBAL,
-                img,
+                data,
                 mask=mask,
                 labels=None,
                 adaptive_window_size=None,
@@ -757,7 +764,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             local_threshold, global_threshold = centrosome.threshold.get_threshold(
                 self.global_operation.value,
                 self.threshold_scope.value,
-                img,
+                data,
                 mask=mask,
                 labels=labels,
                 adaptive_window_size=block_size,
@@ -791,8 +798,12 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
         measurements.add_measurement(cellprofiler.measurement.IMAGE, FF_ORIG_THRESHOLD % objname, global_threshold)
 
-    def add_fg_bg_measurements(self, objname, measurements, image, mask, binary_image):
-        wv = centrosome.threshold.weighted_variance(image, mask, binary_image)
+    def add_fg_bg_measurements(self, objname, measurements, image, binary_image):
+        data = image.pixel_data
+
+        mask = image.mask
+
+        wv = centrosome.threshold.weighted_variance(data, mask, binary_image)
 
         measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
@@ -800,7 +811,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             numpy.array([wv], dtype=float)
         )
 
-        entropies = centrosome.threshold.sum_of_entropies(image, mask, binary_image)
+        entropies = centrosome.threshold.sum_of_entropies(data, mask, binary_image)
 
         measurements.add_measurement(
             cellprofiler.measurement.IMAGE,

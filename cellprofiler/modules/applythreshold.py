@@ -260,8 +260,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             "Thresholding method",
             [
                 centrosome.threshold.TM_MCT,
-                centrosome.threshold.TM_OTSU,
-                centrosome.threshold.TM_ROBUST_BACKGROUND
+                centrosome.threshold.TM_OTSU
             ],
             value=centrosome.threshold.TM_MCT,
             doc="""
@@ -311,18 +310,6 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                     </dl>
                 </li>
                 <li>
-                    <i>{TM_ROBUST_BACKGROUND}:</i> This method assumes that the background distribution approximates a
-                    Gaussian by trimming the brightest and dimmest 5% of pixel intensities. It then calculates the mean
-                    and standard deviation of the remaining pixels and calculates the threshold as the mean + 2 times
-                    the standard deviation.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This thresholding method can be
-                        helpful if the majority of the image is background. It can also be helpful
-                        if your images vary in overall brightness, but the objects of interest are consistently
-                        <i>N</i> times brighter than the background level of the image.</dd>
-                    </dl>
-                </li>
-                <li>
                     <i>Maximum correlation thresholding ({TM_MCT}):</i> This method computes the maximum
                     correlation between the binary mask created by thresholding and the thresholded image and
                     is somewhat similar mathematically to <i>{TM_OTSU}</i>.
@@ -356,7 +343,6 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
                 "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
                 "TS_ADAPTIVE": TS_ADAPTIVE
             })
         )
@@ -891,6 +877,9 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             if setting_values[2] in [TM_MANUAL, TM_MEASUREMENT]:
                 setting_values[3] = setting_values[2]
 
+                setting_values[2] = TS_GLOBAL
+
+            if setting_values[2] == TS_ADAPTIVE and setting_values[3] == centrosome.threshold.TM_ROBUST_BACKGROUND:
                 setting_values[2] = TS_GLOBAL
 
             if setting_values[2] == TS_ADAPTIVE:

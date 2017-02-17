@@ -9,6 +9,7 @@ import centrosome.cpmorphology
 import centrosome.threshold
 import numpy
 import scipy.ndimage.morphology
+import skimage.filters
 
 import cellprofiler.gui.help
 import cellprofiler.image
@@ -34,6 +35,7 @@ TS_GLOBAL = "Global"
 TS_ADAPTIVE = "Adaptive"
 TM_MANUAL = "Manual"
 TM_MEASUREMENT = "Measurement"
+TM_LI = "Minimum cross entropy"
 
 TS_ALL = [TS_GLOBAL, TS_ADAPTIVE]
 
@@ -129,11 +131,11 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             [
                 TM_MANUAL,
                 TM_MEASUREMENT,
-                centrosome.threshold.TM_MCT,
+                TM_LI,
                 centrosome.threshold.TM_OTSU,
                 centrosome.threshold.TM_ROBUST_BACKGROUND
             ],
-            value=centrosome.threshold.TM_MCT,
+            value=TM_LI,
             doc="""
              <i>(Used only if {TS_GLOBAL} is selected for thresholding scope)</i><br>
             The intensity threshold affects the decision of whether each pixel will be considered foreground
@@ -193,18 +195,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                     </dl>
                 </li>
                 <li>
-                    <i>Maximum correlation thresholding ({TM_MCT}):</i> This method computes the maximum
-                    correlation between the binary mask created by thresholding and the thresholded image and
-                    is somewhat similar mathematically to <i>{TM_OTSU}</i>.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; The authors of this method claim
-                        superior results when thresholding images of neurites and other images that have sparse
-                        foreground densities.</dd>
-                    </dl>
-                    <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; This is an implementation of the method
-                        described in Padmanabhan <i>et al</i>, 2010.</dd>
-                    </dl>
+                    <i>{TM_LI}:</i>
                 </li>
                 <li>
                     <i>{TM_MANUAL}:</i> Enter a single value between zero and one that applies to all cycles
@@ -236,10 +227,6 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165. (<a href=
                 "http://dx.doi.org/10.1117/1.1631315">link</a>)
                 </li>
-                <li>Padmanabhan K, Eddy WF, Crowley JC (2010) "A novel algorithm for optimal image thresholding
-                of biological data" <i>Journal of Neuroscience Methods</i> 193, 380-384. (<a href=
-                "http://dx.doi.org/10.1016/j.jneumeth.2010.08.031">link</a>)
-                </li>
             </ul>
             <p></p>
             """.format(**{
@@ -247,7 +234,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
-                "TM_MCT": centrosome.threshold.TM_MCT,
+                "TM_LI": TM_LI,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
                 "TM_MANUAL": TM_MANUAL,
@@ -698,22 +685,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         return (blurred_image >= threshold) & mask, sigma
 
     def get_threshold(self, image, workspace, automatic=False):
-        data = image.pixel_data
-
-        mask = image.mask
-
-        if automatic:
-            local_threshold, global_threshold = centrosome.threshold.get_threshold(
-                centrosome.threshold.TM_MCT,
-                TS_GLOBAL,
-                data,
-                mask=mask,
-                labels=None,
-                adaptive_window_size=None,
-                threshold_range_min=0.0,
-                threshold_range_max=1.0,
-                threshold_correction_factor=1.0
-            )
+        if automatic or self.threshold_operation == TM_LI:
+            local_threshold, global_threshold = self._threshold_li(image, automatic)
         elif self.threshold_operation == centrosome.threshold.TM_MANUAL:
             local_threshold = global_threshold = self.manual_threshold.value
         elif self.threshold_operation == centrosome.threshold.TM_MEASUREMENT:
@@ -764,14 +737,33 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             local_threshold, global_threshold = centrosome.threshold.get_threshold(
                 self.global_operation.value,
                 self.threshold_scope.value,
-                data,
-                mask=mask,
+                image.pixel_data,
+                mask=image.mask,
                 labels=labels,
                 adaptive_window_size=block_size,
                 **kwparams
             )
 
         return local_threshold, global_threshold
+
+    def _threshold_li(self, image, automatic=False):
+        data = image.pixel_data
+
+        mask = image.mask
+
+        if len(data[mask]) == 0:
+            t_global = 0.0
+        elif numpy.all(data[mask] == data[mask][0]):
+            t_global = data[mask][0]
+        else:
+            t_global = skimage.filters.threshold_li(data[mask])
+
+        if automatic:
+            return t_global, t_global
+
+        t_local = t_global * self.threshold_correction_factor.value
+
+        return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
 
     def display(self, workspace, figure):
         figure.set_subplots((3, 1))
@@ -873,6 +865,9 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             if setting_values[2] == TS_ADAPTIVE and \
                     setting_values[3] in [centrosome.threshold.TM_MCT, centrosome.threshold.TM_ROBUST_BACKGROUND]:
                 setting_values[2] = TS_GLOBAL
+
+            if setting_values[3] == centrosome.threshold.TM_MCT:
+                setting_values[3] = TM_LI
 
             if setting_values[2] == TS_ADAPTIVE:
                 setting_values += [setting_values[3]]

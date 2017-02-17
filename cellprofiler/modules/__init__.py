@@ -97,9 +97,9 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'reassignobjectnumbers': 'ReassignObjectNumbers',
                         'removeholes': 'RemoveHoles',
                         'removeobjects': 'RemoveObjects',
-                        'renameorrenumberfiles': 'RenameOrRenumberFiles',
                         'rescaleintensity': 'RescaleIntensity',
                         'resize': 'Resize',
+                        'save': 'Save',
                         'saveimages': 'SaveImages',
                         'smooth': 'Smooth',
                         'straightenworms': 'StraightenWorms',
@@ -196,9 +196,9 @@ builtin_modules = ['align',
                    'reassignobjectnumbers',
                    'removeholes',
                    'removeobjects',
-                   'renameorrenumberfiles',
                    'rescaleintensity',
                    'resize',
+                   'save',
                    'saveimages',
                    'smooth',
                    'straightenworms',
@@ -308,7 +308,7 @@ def find_cpmodule(m):
     for v, val in m.__dict__.iteritems():
         if isinstance(val, type) and issubclass(val, cpm.Module):
             return val
-    raise "Could not find cpm.CPModule class in %s" % m.__file__
+    raise ValueError("Could not find cellprofiler.module.Module class in %s" % m.__file__)
 
 
 def fill_modules():

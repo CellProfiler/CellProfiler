@@ -965,6 +965,15 @@ class ImageProcessing(Module):
 class ImageSegmentation(Module):
     category = "Image Segmentation"
 
+    def add_measurements(self, measurements, labels):
+        n_objects = len(np.unique(labels)[1:]) if 0 in labels else len(np.unique(labels))
+
+        measurements.add_measurement(
+            "Image",
+            "Count_{}".format(self.y_name.value),
+            np.array([n_objects], dtype=np.float)
+        )
+
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
             "Input"

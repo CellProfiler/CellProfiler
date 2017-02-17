@@ -453,7 +453,7 @@ class IdentifyDeadWorms(cpm.Module):
             angle_distance += np.pi / self.angle_count.value
         else:
             space_distance = self.space_distance.value
-            angle_distance = self.angular_distance.value * 180 / np.pi
+            angle_distance = self.angular_distance.value * np.pi / 180
         #
         # Sort by i and break the sorted vector into chunks where
         # consecutive locations are separated by more than space_distance

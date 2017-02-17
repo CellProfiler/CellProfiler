@@ -23,6 +23,7 @@ import cellprofiler.modules.loadimages
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.setting
 import cellprofiler.workspace
 import cpframe
 import cStringIO
@@ -2276,7 +2277,7 @@ class PipelineController(object):
         if ok:
             try:
                 self.__pipeline.test_valid()
-            except cellprofiler.settings.ValidationError, v:
+            except cellprofiler.setting.ValidationError, v:
                 ok = False
                 reason = v.message
         if not ok:

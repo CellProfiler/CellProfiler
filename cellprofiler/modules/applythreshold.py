@@ -259,10 +259,9 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         self.local_operation = cellprofiler.setting.Choice(
             "Thresholding method",
             [
-                centrosome.threshold.TM_MCT,
                 centrosome.threshold.TM_OTSU
             ],
-            value=centrosome.threshold.TM_MCT,
+            value=centrosome.threshold.TM_OTSU,
             doc="""
              <i>(Used only if {TS_ADAPTIVE} is selected for thresholding scope)</i><br>
             The intensity threshold affects the decision of whether each pixel will be considered foreground
@@ -309,30 +308,12 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                         background). See the help below for more details.</dd>
                     </dl>
                 </li>
-                <li>
-                    <i>Maximum correlation thresholding ({TM_MCT}):</i> This method computes the maximum
-                    correlation between the binary mask created by thresholding and the thresholded image and
-                    is somewhat similar mathematically to <i>{TM_OTSU}</i>.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; The authors of this method claim
-                        superior results when thresholding images of neurites and other images that have sparse
-                        foreground densities.</dd>
-                    </dl>
-                    <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; This is an implementation of the method
-                        described in Padmanabhan <i>et al</i>, 2010.</dd>
-                    </dl>
-                </li>
             </ul>
             <p><b>References</b></p>
             <ul>
                 <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative
                 performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165. (<a href=
                 "http://dx.doi.org/10.1117/1.1631315">link</a>)
-                </li>
-                <li>Padmanabhan K, Eddy WF, Crowley JC (2010) "A novel algorithm for optimal image thresholding
-                of biological data" <i>Journal of Neuroscience Methods</i> 193, 380-384. (<a href=
-                "http://dx.doi.org/10.1016/j.jneumeth.2010.08.031">link</a>)
                 </li>
             </ul>
             <p></p>
@@ -341,7 +322,6 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
-                "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TS_ADAPTIVE": TS_ADAPTIVE
             })
@@ -879,13 +859,14 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
                 setting_values[2] = TS_GLOBAL
 
-            if setting_values[2] == TS_ADAPTIVE and setting_values[3] == centrosome.threshold.TM_ROBUST_BACKGROUND:
+            if setting_values[2] == TS_ADAPTIVE and \
+                    setting_values[3] in [centrosome.threshold.TM_MCT, centrosome.threshold.TM_ROBUST_BACKGROUND]:
                 setting_values[2] = TS_GLOBAL
 
             if setting_values[2] == TS_ADAPTIVE:
                 setting_values += [setting_values[3]]
             else:
-                setting_values += [centrosome.threshold.TM_MCT]
+                setting_values += [centrosome.threshold.TM_OTSU]
 
         return setting_values, variable_revision_number, False
 

@@ -126,8 +126,8 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
         self.assertEqual(module.x_name.value, "RainbowPony")
         self.assertEqual(module.y_name.value, "GrayscalePony")
-        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_ADAPTIVE)
-        self.assertEqual(module.local_operation.value, centrosome.threshold.TM_MCT)
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
         self.assertEqual(module.threshold_correction_factor.value, 1.1)
         self.assertEqual(module.threshold_range.min, .07)
@@ -240,7 +240,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
 Version:3
 DateRevision:300
 GitHash:
-ModuleCount:7
+ModuleCount:8
 HasImagePlaneDetails:False
 
 Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
@@ -347,6 +347,25 @@ ApplyThreshold:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:9|
     Averaging method:Mean
     Variance method:Standard deviation
     # of deviations:2.0
+
+ApplyThreshold:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:DNA
+    Name the output image:ApplyThreshold
+    Threshold strategy:Adaptive
+    Thresholding method:MCT
+    Threshold smoothing scale:0.0
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold:0.0,1.0
+    Manual threshold:0.4
+    Select the measurement to threshold with:None
+    Two-class or three-class thresholding?:Two classes
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Size of adaptive window:50
+    Lower outlier fraction:0.05
+    Upper outlier fraction:0.05
+    Averaging method:Mean
+    Variance method:Standard deviation
+    # of deviations:2.0
         """
 
         fd = StringIO.StringIO(data)
@@ -375,6 +394,10 @@ ApplyThreshold:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:9|
         module = pipeline.modules()[6]
         self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_GLOBAL)
         self.assertEqual(module.global_operation.value, centrosome.threshold.TM_ROBUST_BACKGROUND)
+
+        module = pipeline.modules()[7]
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, centrosome.threshold.TM_MCT)
 
     def test_01_10_load_v10(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org

@@ -637,7 +637,7 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "NO": cellprofiler.setting.NO,
                 "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold_correction_factor.get_text(),
                 "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
-                "THRESHOLD_METHOD_TEXT": self.threshold_method.get_text(),
+                "THRESHOLD_METHOD_TEXT": self.global_operation.get_text(),
                 "THRESHOLD_METHOD_VALUE": centrosome.threshold.TM_MCT,
                 "THRESHOLD_RANGE_MAX": 1.0,
                 "THRESHOLD_RANGE_MIN": 0.0,

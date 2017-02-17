@@ -172,11 +172,23 @@ class Identify(cellprofiler.module.Module):
         return self.apply_threshold.help_settings()[2:]
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        upgrade_settings = self.apply_threshold.upgrade_threshold_settings(setting_values)
+        threshold_settings_version = int(setting_values[0])
 
-        upgrade_settings[0] = str(self.apply_threshold.variable_revision_number)
+        if threshold_settings_version < 4:
+            setting_values = self.apply_threshold.upgrade_threshold_settings(setting_values)
 
-        return upgrade_settings, self.apply_threshold.variable_revision_number, False
+            threshold_settings_version = 9
+
+        upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+            ["None", "None"] + setting_values[1:],
+            threshold_settings_version,
+            "ApplyThreshold",
+            False
+        )
+
+        upgrade_settings = [str(threshold_settings_version)] + upgrade_settings[2:]
+
+        return upgrade_settings, 0, False
 
     def visible_settings(self):
         return self.apply_threshold.visible_settings()[2:]

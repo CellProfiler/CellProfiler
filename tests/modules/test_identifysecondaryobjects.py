@@ -8,6 +8,7 @@ import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.modules.applythreshold
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifysecondaryobjects
 import cellprofiler.object
@@ -125,7 +126,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.new_primary_outlines_name, "FilteredChocolateChipOutlines")
         self.assertTrue(module.fill_holes)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
-        self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
+        self.assertEqual(module.global_operation.value, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
         self.assertEqual(module.threshold_correction_factor, 1)
         self.assertEqual(module.threshold_range.min, 0.0)
@@ -195,7 +196,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels[3:6, 3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .25
         module.run(workspace)
         m = workspace.measurements
@@ -227,7 +229,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
         module.regularization_factor.value = 0  # propagate by image
-        module.threshold_scope.value = centrosome.threshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .2
         module.run(workspace)
         m = workspace.measurements
@@ -270,7 +273,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
         module.regularization_factor.value = 1000  # propagate by distance
-        module.threshold_scope.value = centrosome.threshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .2
         module.module_num = 1
         p.add_module(module)
@@ -299,7 +303,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -371,7 +375,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.module_num = 1
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -421,7 +425,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.objects_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
-        module.threshold_scope.value = centrosome.threshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .2
         module.module_num = 1
         p.add_module(module)
@@ -449,7 +454,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -524,7 +529,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.module_num = 1
         p.add_module(module)
         module.run(workspace)
@@ -566,7 +571,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.objects_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-        module.threshold_scope.value = centrosome.threshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .01
         module.module_num = 1
         p.add_module(module)
@@ -594,7 +600,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -765,7 +771,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.outlines_name.value = "my_outlines"
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.module_num = 1
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -817,7 +823,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.new_primary_outlines_name.value = "newprimaryoutlines"
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.module_num = 1
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -1043,7 +1049,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(numpy.all(object_out.segmented == 0))
@@ -1102,7 +1108,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.wants_discard_primary.value = True
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.threshold_method.value = centrosome.threshold.TM_OTSU
+        module.global_operation.value = centrosome.threshold.TM_OTSU
         module.module_num = 1
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -1161,7 +1167,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.objects_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.threshold_scope.value = centrosome.threshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .5
         module.module_num = 1
         p.add_module(module)
@@ -1215,7 +1222,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.objects_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.threshold_scope.value = centrosome.threshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .5
         module.module_num = 1
         p.add_module(module)
@@ -1247,7 +1255,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                     expected[2, 5] = 0
                 workspace, module = self.make_workspace(threshold * 0.5, labels)
                 self.assertTrue(isinstance(module, cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects))
-                module.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+                module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+                module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
                 module.manual_threshold.value = 0.5
                 module.method.value = method
                 module.fill_holes.value = wants_fill_holes
@@ -1283,7 +1292,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels[3:6, 3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
         module.manual_threshold.value = .25
         module.run(workspace)
         m = workspace.measurements
@@ -1312,7 +1322,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             workspace, module = self.make_workspace(img, labels)
             self.assertTrue(isinstance(module, cellprofiler.modules.identifysecondaryobjects.IdentifySecondary))
             module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-            module.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+            module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+            module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
             module.wants_discard_edge.value = True
             module.wants_discard_primary.value = False
             module.manual_threshold.value = .25

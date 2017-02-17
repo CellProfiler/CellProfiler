@@ -32,10 +32,10 @@ RB_MAD = "Median absolute deviation"
 
 TS_GLOBAL = "Global"
 TS_ADAPTIVE = "Adaptive"
-TS_MANUAL = "Manual"
-TS_MEASUREMENT = "Measurement"
+TM_MANUAL = "Manual"
+TM_MEASUREMENT = "Measurement"
 
-TS_ALL = [TS_GLOBAL, TS_ADAPTIVE, TS_MANUAL, TS_MEASUREMENT]
+TS_ALL = [TS_GLOBAL, TS_ADAPTIVE]
 
 C_LOCATION = "Location"
 C_NUMBER = "Number"
@@ -82,7 +82,7 @@ TECH_NOTE_ICON = "gear.png"
 class ApplyThreshold(cellprofiler.module.ImageProcessing):
     module_name = "ApplyThreshold"
 
-    variable_revision_number = 9
+    variable_revision_number = 10
 
     def create_settings(self):
         super(ApplyThreshold, self).create_settings()
@@ -92,14 +92,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             TS_ALL,
             value=TS_GLOBAL,
             doc="""
-            The thresholding strategy determines the type of input that is used to calculate the threshold. The
-            image thresholds can be based on:
-            <ul>
-                <li>The pixel intensities of the input image (this is the most common).</li>
-                <li>A single value manually provided by the user.</li>
-                <li>A single value produced by a prior module measurement.</li>
-            </ul>These options allow you to calculate a threshold based on the whole image or based on image
-            sub-regions.<br>
+            The thresholding strategy determines the type of input that is used to calculate the threshold. These
+            options allow you to calculate a threshold based on the whole image or based on image sub-regions.<br>
             The choices for the threshold strategy are:<br>
             <ul>
                 <li>
@@ -122,8 +116,98 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                         preferable.</dd>
                     </dl>
                 </li>
+            </ul>
+            """.format(**{
+                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
+                "TS_ADAPTIVE": TS_ADAPTIVE,
+                "TS_GLOBAL": TS_GLOBAL
+            })
+        )
+
+        self.global_operation = cellprofiler.setting.Choice(
+            "Thresholding method",
+            [
+                TM_MANUAL,
+                TM_MEASUREMENT,
+                centrosome.threshold.TM_MCT,
+                centrosome.threshold.TM_OTSU,
+                centrosome.threshold.TM_ROBUST_BACKGROUND
+            ],
+            value=centrosome.threshold.TM_MCT,
+            doc="""
+             <i>(Used only if {TS_GLOBAL} is selected for thresholding scope)</i><br>
+            The intensity threshold affects the decision of whether each pixel will be considered foreground
+            (region(s) of interest) or background. A higher threshold value will result in only the brightest
+            regions being identified, whereas a lower threshold value will include dim regions. You can have
+            the threshold automatically calculated from a choice of several methods, or you can enter a number
+            manually between 0 and 1 for the threshold.
+            <p>Both the automatic and manual options have advantages and disadvantages.</p>
+            <dl>
+                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; An automatically-calculated threshold
+                adapts to changes in lighting/staining conditions between images and is usually more
+                robust/accurate. In the vast majority of cases, an automatic method is sufficient to achieve
+                the desired thresholding, once the proper method is selected.</dd>
+                <dd>In contrast, an advantage of a manually-entered number is that it treats every image
+                identically, so use this option when you have a good sense for what the threshold should be
+                across all images. To help determine the choice of threshold manually, you can inspect the
+                pixel intensities in an image of your choice. {HELP_ON_PIXEL_INTENSITIES}.</dd>
+                <dd><img src="memory:{PROTIP_AVOID_ICON}">&nbsp; The manual method is not robust with regard to
+                slight changes in lighting/staining conditions between images.</dd>
+                <dd>The automatic methods may ocasionally produce a poor threshold for unusual or artifactual
+                images. It also takes a small amount of time to calculate, which can add to processing time for
+                analysis runs on a large number of images.</dd>
+            </dl>
+            <p></p>
+            <p>The threshold that is used for each image is recorded as a per-image measurement, so if you are
+            surprised by unusual measurements from one of your images, you might check whether the
+            automatically calculated threshold was unusually high or low compared to the other images. See the
+            <b>FlagImage</b> module if you would like to flag an image based on the threshold value.</p>
+            <p>There are a number of methods for finding thresholds automatically:</p>
+            <ul>
                 <li>
-                    <i>{TS_MANUAL}:</i> Enter a single value between zero and one that applies to all cycles
+                    <i>{TM_OTSU}:</i> This approach calculates the threshold separating the two classes of
+                    pixels (foreground and background) by minimizing the variance within the each class.
+                    <dl>
+                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This method is a good initial
+                        approach if you do not know much about the image characteristics of all the images in
+                        your experiment, especially if the percentage of the image covered by foreground varies
+                        substantially from image to image.</dd>
+                    </dl>
+                    <dl>
+                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; Our implementation of Otsu's method
+                        allows for assigning the threshold value based on splitting the image into either two
+                        classes (foreground and background) or three classes (foreground, mid-level, and
+                        background). See the help below for more details.</dd>
+                    </dl>
+                </li>
+                <li>
+                    <i>{TM_ROBUST_BACKGROUND}:</i> This method assumes that the background distribution approximates a
+                    Gaussian by trimming the brightest and dimmest 5% of pixel intensities. It then calculates the mean
+                    and standard deviation of the remaining pixels and calculates the threshold as the mean + 2 times
+                    the standard deviation.
+                    <dl>
+                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This thresholding method can be
+                        helpful if the majority of the image is background. It can also be helpful
+                        if your images vary in overall brightness, but the objects of interest are consistently
+                        <i>N</i> times brighter than the background level of the image.</dd>
+                    </dl>
+                </li>
+                <li>
+                    <i>Maximum correlation thresholding ({TM_MCT}):</i> This method computes the maximum
+                    correlation between the binary mask created by thresholding and the thresholded image and
+                    is somewhat similar mathematically to <i>{TM_OTSU}</i>.
+                    <dl>
+                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; The authors of this method claim
+                        superior results when thresholding images of neurites and other images that have sparse
+                        foreground densities.</dd>
+                    </dl>
+                    <dl>
+                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; This is an implementation of the method
+                        described in Padmanabhan <i>et al</i>, 2010.</dd>
+                    </dl>
+                </li>
+                <li>
+                    <i>{TM_MANUAL}:</i> Enter a single value between zero and one that applies to all cycles
                     and is independent of the input image.
                     <dl>
                         <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This approach is useful if the
@@ -134,7 +218,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                     </dl>
                 </li>
                 <li>
-                    <i>{TS_MEASUREMENT}:</i> Use a prior image measurement as the threshold. The measurement
+                    <i>{TM_MEASUREMENT}:</i> Use a prior image measurement as the threshold. The measurement
                     should have values between zero and one. This strategy can be used to apply a
                     pre-calculated threshold imported as per-image metadata via the <b>Metadata</b> module.
                     <dl>
@@ -146,18 +230,33 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                     </dl>
                 </li>
             </ul>
+            <p><b>References</b></p>
+            <ul>
+                <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative
+                performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165. (<a href=
+                "http://dx.doi.org/10.1117/1.1631315">link</a>)
+                </li>
+                <li>Padmanabhan K, Eddy WF, Crowley JC (2010) "A novel algorithm for optimal image thresholding
+                of biological data" <i>Journal of Neuroscience Methods</i> 193, 380-384. (<a href=
+                "http://dx.doi.org/10.1016/j.jneumeth.2010.08.031">link</a>)
+                </li>
+            </ul>
+            <p></p>
             """.format(**{
+                "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
+                "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
+                "TECH_NOTE_ICON": TECH_NOTE_ICON,
                 "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
-                "TS_ADAPTIVE": TS_ADAPTIVE,
-                "TS_GLOBAL": TS_GLOBAL,
-                "TS_MANUAL": TS_MANUAL,
-                "TS_MEASUREMENT": TS_MEASUREMENT
+                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
+                "TM_MANUAL": TM_MANUAL,
+                "TM_MEASUREMENT": TM_MEASUREMENT,
+                "TS_GLOBAL": TS_GLOBAL
             })
         )
 
-        self.threshold_method = cellprofiler.setting.Choice(
+        self.local_operation = cellprofiler.setting.Choice(
             "Thresholding method",
             [
                 centrosome.threshold.TM_MCT,
@@ -166,6 +265,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             ],
             value=centrosome.threshold.TM_MCT,
             doc="""
+             <i>(Used only if {TS_ADAPTIVE} is selected for thresholding scope)</i><br>
             The intensity threshold affects the decision of whether each pixel will be considered foreground
             (region(s) of interest) or background. A higher threshold value will result in only the brightest
             regions being identified, whereas a lower threshold value will include dim regions. You can have
@@ -256,7 +356,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
                 "TM_MCT": centrosome.threshold.TM_MCT,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
+                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
+                "TS_ADAPTIVE": TS_ADAPTIVE
             })
         )
 
@@ -480,36 +581,45 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             """
         )
 
+    @property
+    def threshold_operation(self):
+        if self.threshold_scope.value == TS_GLOBAL:
+            return self.global_operation.value
+
+        return self.local_operation.value
+
     def visible_settings(self):
         visible_settings = super(ApplyThreshold, self).visible_settings()
 
         visible_settings += [self.threshold_scope]
 
-        if self.threshold_scope == TS_MANUAL:
+        if self.threshold_scope.value == TS_GLOBAL:
+            visible_settings += [self.global_operation]
+        else:
+            visible_settings += [self.local_operation]
+
+        if self.threshold_operation == TM_MANUAL:
             visible_settings += [self.manual_threshold]
-        elif self.threshold_scope == TS_MEASUREMENT:
+        elif self.threshold_operation == TM_MEASUREMENT:
             visible_settings += [self.thresholding_measurement]
-        elif self.threshold_scope in [TS_GLOBAL, TS_ADAPTIVE]:
-            visible_settings += [self.threshold_method]
+        elif self.threshold_operation == centrosome.threshold.TM_OTSU:
+            visible_settings += [self.two_class_otsu]
 
-            if self.threshold_method == centrosome.threshold.TM_OTSU:
-                visible_settings += [self.two_class_otsu]
+            if self.two_class_otsu == O_THREE_CLASS:
+                visible_settings += [self.assign_middle_to_foreground]
+        elif self.threshold_operation == centrosome.threshold.TM_ROBUST_BACKGROUND:
+            visible_settings += [
+                self.lower_outlier_fraction,
+                self.upper_outlier_fraction,
+                self.averaging_method,
+                self.variance_method,
+                self.number_of_deviations
+            ]
 
-                if self.two_class_otsu == O_THREE_CLASS:
-                    visible_settings += [self.assign_middle_to_foreground]
-            elif self.threshold_method == centrosome.threshold.TM_ROBUST_BACKGROUND:
-                visible_settings += [
-                    self.lower_outlier_fraction,
-                    self.upper_outlier_fraction,
-                    self.averaging_method,
-                    self.variance_method,
-                    self.number_of_deviations
-                ]
-
-        if self.threshold_scope not in [TS_MEASUREMENT, TS_MANUAL]:
+        if self.threshold_operation not in [TM_MEASUREMENT, TM_MANUAL]:
             visible_settings += [self.threshold_smoothing_scale]
 
-        if self.threshold_scope != centrosome.threshold.TM_MANUAL:
+        if self.threshold_operation != centrosome.threshold.TM_MANUAL:
             visible_settings += [self.threshold_correction_factor, self.threshold_range]
 
         if self.threshold_scope == centrosome.threshold.TM_ADAPTIVE:
@@ -522,7 +632,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
         return settings + [
             self.threshold_scope,
-            self.threshold_method,
+            self.global_operation,
             self.threshold_smoothing_scale,
             self.threshold_correction_factor,
             self.threshold_range,
@@ -535,7 +645,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             self.upper_outlier_fraction,
             self.averaging_method,
             self.variance_method,
-            self.number_of_deviations
+            self.number_of_deviations,
+            self.local_operation
         ]
 
     def help_settings(self):
@@ -543,7 +654,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             self.x_name,
             self.y_name,
             self.threshold_scope,
-            self.threshold_method,
+            self.global_operation,
+            self.local_operation,
             self.manual_threshold,
             self.thresholding_measurement,
             self.two_class_otsu,
@@ -595,16 +707,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split('_')[1], str(value))]
 
-    @property
-    def threshold_modifier(self):
-        """The threshold algorithm modifier"""
-        if self.threshold_scope.value in (TS_GLOBAL, TS_MANUAL, TS_MEASUREMENT):
-            return centrosome.threshold.TM_GLOBAL
-
-        return centrosome.threshold.TM_ADAPTIVE
-
     def apply_threshold(self, image, mask, threshold, automatic=False):
-        if not automatic and self.threshold_scope in [TS_MEASUREMENT, TS_MANUAL]:
+        if not automatic and self.threshold_operation in [TM_MEASUREMENT, TM_MANUAL]:
             return (image >= threshold) & mask, 0
 
         if automatic:
@@ -637,9 +741,9 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 threshold_range_max=1.0,
                 threshold_correction_factor=1.0
             )
-        elif self.threshold_scope == centrosome.threshold.TM_MANUAL:
+        elif self.threshold_operation == centrosome.threshold.TM_MANUAL:
             local_threshold = global_threshold = self.manual_threshold.value
-        elif self.threshold_scope == centrosome.threshold.TM_MEASUREMENT:
+        elif self.threshold_operation == centrosome.threshold.TM_MEASUREMENT:
             m = workspace.measurements
 
             # Thresholds are stored as single element arrays.  Cast to float to extract the value.
@@ -685,8 +789,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             }.get(self.variance_method.value, numpy.std)
 
             local_threshold, global_threshold = centrosome.threshold.get_threshold(
-                self.threshold_method.value,
-                self.threshold_modifier,
+                self.global_operation.value,
+                self.threshold_scope.value,
                 img,
                 mask=mask,
                 labels=labels,
@@ -783,6 +887,17 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
             variable_revision_number = 9
 
+        if variable_revision_number == 9:
+            if setting_values[2] in [TM_MANUAL, TM_MEASUREMENT]:
+                setting_values[3] = setting_values[2]
+
+                setting_values[2] = TS_GLOBAL
+
+            if setting_values[2] == TS_ADAPTIVE:
+                setting_values += [setting_values[3]]
+            else:
+                setting_values += [centrosome.threshold.TM_MCT]
+
         return setting_values, variable_revision_number, False
 
     def upgrade_threshold_settings(self, setting_values):
@@ -870,7 +985,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
     def validate_module(self, pipeline):
         if self.threshold_scope in [TS_ADAPTIVE, TS_GLOBAL] and \
-                self.threshold_method.value == centrosome.threshold.TM_ROBUST_BACKGROUND and \
+                self.global_operation.value == centrosome.threshold.TM_ROBUST_BACKGROUND and \
                 self.lower_outlier_fraction.value + self.upper_outlier_fraction.value >= 1:
             raise cellprofiler.setting.ValidationError(
                 """

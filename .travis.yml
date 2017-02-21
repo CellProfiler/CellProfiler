@@ -1,3 +1,6 @@
+addons:
+  apt:
+    - python-wxgtk2.8
 services:
   - mysql
 env:
@@ -18,12 +21,8 @@ sudo: false
 virtualenv:
   system_site_packages: true
 install:
-  - pip install --upgrade pip
-  - pip install --upgrade wheel
-  - pip install --upgrade numpy
-  - pip install --upgrade pytest
-  - pip install --upgrade cython
-  - pip install --no-deps pyzmq==13.1.0
+  - pip install --upgrade pip wheel
+  - pip install --upgrade cython numpy
   - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
   - pip install --requirement requirements.txt
   - pip freeze

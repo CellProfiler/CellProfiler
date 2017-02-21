@@ -24,5 +24,6 @@ sudo: false
 virtualenv:
   system_site_packages: true
 install:
-  - "pip install --only-binary :all: cython h5py matplotlib numpy pyzmq scipy"
-  - "pip install --process-dependency-links --editable ."
+  - pip install --upgrade pip
+  - pip install cython h5py matplotlib numpy pyzmq scipy
+  - pip install --process-dependency-links --editable .

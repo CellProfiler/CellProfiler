@@ -246,8 +246,7 @@ class IdentifyObjectsInGrid(cpm.Module):
         mask = ((i >= 0) & (j >= 0) &
                 (i < gridding.spot_table.shape[0]) &
                 (j < gridding.spot_table.shape[1]))
-        labels = np.zeros((gridding.image_height,
-                           gridding.image_width), int)
+        labels = np.zeros((int(gridding.image_height), int(gridding.image_width)), int)
         labels[mask] = gridding.spot_table[i[mask], j[mask]]
         return labels
 

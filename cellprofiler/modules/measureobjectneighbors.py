@@ -1,4 +1,4 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each 
+'''<b>Measure Object Neighbors</b> calculates how many neighbors each
 object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
@@ -54,6 +54,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.setting import YES, NO
+import skimage.morphology
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND = 'Expand until adjacent'
@@ -203,6 +204,7 @@ class MeasureObjectNeighbors(cpm.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
+        dimensions = len(objects.shape)
         assert isinstance(objects, cpo.Objects)
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
@@ -257,12 +259,16 @@ class MeasureObjectNeighbors(cpm.Module):
         if self.distance_method == D_EXPAND:
             # Find the i,j coordinates of the nearest foreground point
             # to every background point
-            i, j = scind.distance_transform_edt(labels == 0,
-                                                return_distances=False,
-                                                return_indices=True)
-            # Assign each background pixel to the label of its nearest
-            # foreground pixel. Assign label to label for foreground.
-            labels = labels[i, j]
+            if dimensions is 2:
+                i, j = scind.distance_transform_edt(labels == 0,
+                                                    return_distances=False,
+                                                    return_indices=True)
+                # Assign each background pixel to the label of its nearest
+                # foreground pixel. Assign label to label for foreground.
+                labels = labels[i, j]
+            else:
+                k, i, j = scind.distance_transform_edt(labels == 0, return_distances=False, return_indices=True)
+                labels = labels[k, i, j]
             expanded_labels = labels  # for display
             distance = 1  # dilate once to make touching edges overlap
             scale = S_EXPANDED
@@ -327,25 +333,43 @@ class MeasureObjectNeighbors(cpm.Module):
                 angle = np.arccos(dot) * 180. / np.pi
 
             # Make the structuring element for dilation
-            strel = strel_disk(distance)
+            if dimensions is 2:
+                strel = strel_disk(distance)
+            else:
+                strel = skimage.morphology.ball(distance)
             #
             # A little bigger one to enter into the border with a structure
             # that mimics the one used to create the outline
             #
-            strel_touching = strel_disk(distance + .5)
+            if dimensions is 2:
+                strel_touching = strel_disk(distance + .5)
+            else:
+                strel_touching = skimage.morphology.ball(distance + 0.5)
             #
             # Get the extents for each object and calculate the patch
             # that excises the part of the image that is "distance"
             # away
-            i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
-            min_i, max_i, min_i_pos, max_i_pos = \
-                scind.extrema(i, labels, object_indexes)
-            min_j, max_j, min_j_pos, max_j_pos = \
-                scind.extrema(j, labels, object_indexes)
-            min_i = np.maximum(fix(min_i) - distance, 0).astype(int)
-            max_i = np.minimum(fix(max_i) + distance + 1, labels.shape[0]).astype(int)
-            min_j = np.maximum(fix(min_j) - distance, 0).astype(int)
-            max_j = np.minimum(fix(max_j) + distance + 1, labels.shape[1]).astype(int)
+            if dimensions is 2:
+                i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                min_i, max_i, min_i_pos, max_i_pos = \
+                    scind.extrema(i, labels, object_indexes)
+                min_j, max_j, min_j_pos, max_j_pos = \
+                    scind.extrema(j, labels, object_indexes)
+                min_i = np.maximum(fix(min_i) - distance, 0).astype(int)
+                max_i = np.minimum(fix(max_i) + distance + 1, labels.shape[0]).astype(int)
+                min_j = np.maximum(fix(min_j) - distance, 0).astype(int)
+                max_j = np.minimum(fix(max_j) + distance + 1, labels.shape[1]).astype(int)
+            else:
+                k, i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1], 0:labels.shape[2]]
+                min_k, max_k, min_k_pos, max_k_pos = scind.extrema(k, labels, object_indexes)
+                min_i, max_i, min_i_pos, max_i_pos = scind.extrema(i, labels, object_indexes)
+                min_j, max_j, min_j_pos, max_j_pos = scind.extrema(j, labels, object_indexes)
+                min_k = np.maximum(fix(min_k) - distance, 0).astype(int)
+                max_k = np.minimum(fix(max_k) + distance + 1, labels.shape[0]).astype(int)
+                min_i = np.maximum(fix(min_i) - distance, 0).astype(int)
+                max_i = np.minimum(fix(max_i) + distance + 1, labels.shape[1]).astype(int)
+                min_j = np.maximum(fix(min_j) - distance, 0).astype(int)
+                max_j = np.minimum(fix(max_j) + distance + 1, labels.shape[2]).astype(int)
             #
             # Loop over all objects
             # Calculate which ones overlap "index"
@@ -359,10 +383,15 @@ class MeasureObjectNeighbors(cpm.Module):
                     #
                     continue
                 index = object_number - 1
-                patch = labels[min_i[index]:max_i[index],
-                        min_j[index]:max_j[index]]
-                npatch = neighbor_labels[min_i[index]:max_i[index],
-                         min_j[index]:max_j[index]]
+                if dimensions is 2:
+                    patch = labels[min_i[index]:max_i[index],
+                            min_j[index]:max_j[index]]
+                    npatch = neighbor_labels[min_i[index]:max_i[index],
+                             min_j[index]:max_j[index]]
+                else:
+                    patch = labels[min_k[index]:max_k[index], min_i[index]:max_i[index], min_j[index]:max_j[index]]
+                    npatch = neighbor_labels[min_k[index]:max_k[index], min_i[index]:max_i[index], min_j[index]:max_j[index]]
+
                 #
                 # Find the neighbors
                 #
@@ -384,9 +413,13 @@ class MeasureObjectNeighbors(cpm.Module):
                     # structuring element to expand the overlapping edge
                     # into the perimeter.
                     #
-                    outline_patch = perimeter_outlines[
-                                    min_i[index]:max_i[index],
-                                    min_j[index]:max_j[index]] == object_number
+                    if dimensions is 2:
+                        outline_patch = perimeter_outlines[
+                                        min_i[index]:max_i[index],
+                                        min_j[index]:max_j[index]] == object_number
+                    else:
+                        outline_patch = perimeter_outlines[min_k[index]:max_k[index], min_i[index]:max_i[index], min_j[index]:max_j[index]] == object_number
+
                     extended = scind.binary_dilation(
                             (patch != 0) & (patch != object_number), strel_touching)
                     overlap = np.sum(outline_patch & extended)
@@ -541,11 +574,14 @@ class MeasureObjectNeighbors(cpm.Module):
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.expanded_labels = expanded_labels
             workspace.display_data.object_mask = object_mask
+            workspace.display_data.dimensions = dimensions
 
     def display(self, workspace, figure):
-        figure.set_subplots((2, 2))
+        dimensions = workspace.display_data.dimensions
+        figure.set_subplots((2, 2), dimensions=dimensions)
         figure.subplot_imshow_labels(0, 0, workspace.display_data.orig_labels,
-                                     "Original: %s" % self.object_name.value)
+                                     "Original: %s" % self.object_name.value,
+                                     dimensions=dimensions)
 
         object_mask = workspace.display_data.object_mask
         expanded_labels = workspace.display_data.expanded_labels
@@ -570,7 +606,8 @@ class MeasureObjectNeighbors(cpm.Module):
                                   colorbar=True, vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
                                   normalize=False,
-                                  sharexy=figure.subplot(0, 0))
+                                  # sharexy=figure.subplot(0, 0),
+                                  dimensions=dimensions)
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
@@ -579,7 +616,8 @@ class MeasureObjectNeighbors(cpm.Module):
                                       colorbar=True, vmin=0,
                                       vmax=max(percent_touching_image.max(), 1),
                                       normalize=False,
-                                      sharexy=figure.subplot(0, 0))
+                                      # sharexy=figure.subplot(0, 0),
+                                      dimensions=dimensions)
         else:
             # No objects - colorbar blows up.
             figure.subplot_imshow(0, 1, neighbor_count_image,
@@ -588,7 +626,8 @@ class MeasureObjectNeighbors(cpm.Module):
                                   colormap=neighbor_cm,
                                   vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
-                                  sharexy=figure.subplot(0, 0))
+                                  # sharexy=figure.subplot(0, 0),
+                                  dimensions=dimensions)
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
@@ -596,13 +635,15 @@ class MeasureObjectNeighbors(cpm.Module):
                                       colormap=percent_touching_cm,
                                       vmin=0,
                                       vmax=max(neighbor_count_image.max(), 1),
-                                      sharexy=figure.subplot(0, 0))
+                                      # sharexy=figure.subplot(0, 0),
+                                      dimensions=dimensions)
 
         if self.distance_method == D_EXPAND:
             figure.subplot_imshow_labels(1, 0, expanded_labels,
                                          "Expanded %s" %
                                          self.object_name.value,
-                                         sharexy=figure.subplot(0, 0))
+                                         # sharexy=figure.subplot(0, 0),
+                                         dimensions=dimensions)
 
     @property
     def all_features(self):

@@ -1076,7 +1076,7 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def gridshow(self, x, y, image, cmap='gray'):
+    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False):
         gx, gy = self.__gridspec.get_geometry()
 
         gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
@@ -1093,8 +1093,18 @@ class Figure(wx.Frame):
 
         vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
 
+        cmap = colormap
+
+        if isinstance(cmap, matplotlib.cm.ScalarMappable):
+            cmap = cmap.cmap
+
+        axes = []
+
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
+
+            if position == 1 and title is not None:
+                ax.set_title(title)
 
             if position / 3 != 2:
                 ax.set_xticklabels([])
@@ -1109,6 +1119,15 @@ class Figure(wx.Frame):
             )
 
             self.figure.add_subplot(ax)
+
+            axes += [ax]
+
+        if colorbar:
+            colormap.set_array(image)
+
+            colormap.autoscale()
+
+            self.figure.colorbar(colormap, ax=axes)
 
         matplotlib.pyplot.show()
 
@@ -1324,7 +1343,7 @@ class Figure(wx.Frame):
                 hist_fig.figure.canvas.draw()
             return subplot
         else:
-            self.gridshow(x, y, image, colormap)
+            self.gridshow(x, y, image, title, colormap, colorbar)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
@@ -1353,7 +1372,7 @@ class Figure(wx.Frame):
     @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
                               renumber=True, sharex=None, sharey=None,
-                              use_imshow=False):
+                              use_imshow=False, dimensions=2):
         """Show a labels matrix using the default color map
 
         x,y - the subplot's coordinates
@@ -1365,26 +1384,30 @@ class Figure(wx.Frame):
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
         """
-        if renumber:
-            labels = tools.renumber_labels_for_display(labels)
-
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-        cm.set_bad((0, 0, 0))
-        labels = numpy.ma.array(labels, mask=labels == 0)
-        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+        if dimensions is 2:
+            if renumber:
+                labels = tools.renumber_labels_for_display(labels)
+            cm.set_bad((0, 0, 0))
+            labels = numpy.ma.array(labels, mask=labels == 0)
+            mappable = matplotlib.cm.ScalarMappable(cmap=cm)
 
-        if all([c0x == 0 for c0x in cm(0)[:3]]):
-            # Set the lower limit to 0 if the color for index 0 is already black.
-            mappable.set_clim(0, labels.max())
-            cm = None
-        elif numpy.any(labels != 0):
-            mappable.set_clim(1, labels.max())
-            cm = None
-        image = mappable.to_rgba(labels)[:, :, :3]
+            if all([c0x == 0 for c0x in cm(0)[:3]]):
+                # Set the lower limit to 0 if the color for index 0 is already black.
+                mappable.set_clim(0, labels.max())
+                cm = None
+            elif numpy.any(labels != 0):
+                mappable.set_clim(1, labels.max())
+                cm = None
+            image = mappable.to_rgba(labels)[:, :, :3]
+        else:
+            import skimage.color
+
+            image = skimage.color.label2rgb(labels, bg_label=0)
         return self.subplot_imshow(x, y, image, title, clear, colormap=cm,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
-                                   use_imshow=use_imshow)
+                                   use_imshow=use_imshow, dimensions=dimensions)
 
     @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape=None, title=None,

@@ -157,7 +157,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         i = np.round((i - i0).astype(float) / di).astype(int)
         j = np.round((j - j0).astype(float) / dj).astype(int)
         mask = ((i >= 0) & (j >= 0) & (i < ni) & (j < nj))
-        grid = np.zeros((gridding.image_height, gridding.image_width), int)
+        grid = np.zeros((int(gridding.image_height), int(gridding.image_width)), int)
         g = grid[:i.shape[0], :i.shape[1]]
         g[mask[:g.shape[0], :g.shape[1]]] = gridding.spot_table[i[mask], j[mask]]
         return grid

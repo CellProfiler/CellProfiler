@@ -11,7 +11,6 @@ addons:
       - python-imaging
       - python-matplotlib
       - python-mysqldb
-      - python-numpy
       - python-pip
       - python-scipy
       - python-tk
@@ -37,11 +36,13 @@ virtualenv:
 install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
+  - pip install --upgrade numpy
   - pip install --upgrade pytest
   - pip install --upgrade cython
   - pip install joblib
   - pip install scikit-learn
   - pip install --no-deps pyzmq==13.1.0
+  - pip install --upgrade scipy
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
   - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
   - pip freeze

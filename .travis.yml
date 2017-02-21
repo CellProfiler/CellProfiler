@@ -24,6 +24,6 @@ virtualenv:
 install:
   - pip install --upgrade pip wheel
   - pip install --upgrade cython numpy
-  - pip install --editable --process-dependency-links .
+  - pip install --editable . --process-dependency-links
 script:
   - python setup.py test -a -x

@@ -845,7 +845,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
 
-        module.threshold_range.maximum = 0.0
+        module.threshold_range.maximum = 0.0  # expected to be ignored
 
         t_local, t_global = module.get_threshold(image, workspace, automatic=True)
 
@@ -872,8 +872,6 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
 
-        module.threshold_range.maximum = 0.0
-
         t_local, t_global = module.get_threshold(image, workspace)
 
         expected = skimage.filters.threshold_li(data)
@@ -881,3 +879,151 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         numpy.testing.assert_almost_equal(t_local, expected)
 
         numpy.testing.assert_almost_equal(t_global, expected)
+
+    def test_10_01_threshold_robust_background_mean_sd_volume(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        workspace, module = self.make_workspace(data, dimensions=3)
+
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+
+        module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
+
+        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MEAN
+
+        module.variance_method.value = cellprofiler.modules.applythreshold.RB_SD
+
+        t_local, t_global = module.get_threshold(image, workspace)
+
+        t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
+            centrosome.threshold.TM_ROBUST_BACKGROUND,
+            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            data,
+            threshold_range_min=0.0,
+            threshold_range_max=1.0,
+            threshold_correction_factor=1.0,
+            lower_outlier_fraction=0.05,
+            upper_outlier_fraction=0.05,
+            deviations_above_average=2,
+            average_fn=numpy.mean,
+            variance_vn=numpy.std
+        )
+
+        numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+        numpy.testing.assert_almost_equal(t_global, t_global_expected)
+
+    def test_10_02_threshold_robust_background_median_sd_volume(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        workspace, module = self.make_workspace(data, dimensions=3)
+
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+
+        module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
+
+        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MEDIAN
+
+        module.variance_method.value = cellprofiler.modules.applythreshold.RB_SD
+
+        t_local, t_global = module.get_threshold(image, workspace)
+
+        t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
+            centrosome.threshold.TM_ROBUST_BACKGROUND,
+            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            data,
+            threshold_range_min=0.0,
+            threshold_range_max=1.0,
+            threshold_correction_factor=1.0,
+            lower_outlier_fraction=0.05,
+            upper_outlier_fraction=0.05,
+            deviations_above_average=2,
+            average_fn=numpy.median,
+            variance_vn=numpy.std
+        )
+
+        numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+        numpy.testing.assert_almost_equal(t_global, t_global_expected)
+
+    def test_10_03_threshold_robust_background_mode_sd_volume(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        workspace, module = self.make_workspace(data, dimensions=3)
+
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+
+        module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
+
+        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MODE
+
+        module.variance_method.value = cellprofiler.modules.applythreshold.RB_SD
+
+        t_local, t_global = module.get_threshold(image, workspace)
+
+        t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
+            centrosome.threshold.TM_ROBUST_BACKGROUND,
+            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            data,
+            threshold_range_min=0.0,
+            threshold_range_max=1.0,
+            threshold_correction_factor=1.0,
+            lower_outlier_fraction=0.05,
+            upper_outlier_fraction=0.05,
+            deviations_above_average=2,
+            average_fn=centrosome.threshold.binned_mode,
+            variance_vn=numpy.std
+        )
+
+        numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+        numpy.testing.assert_almost_equal(t_global, t_global_expected)
+
+    def test_10_04_threshold_robust_background_mean_mad_volume(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        workspace, module = self.make_workspace(data, dimensions=3)
+
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+
+        module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
+
+        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MEAN
+
+        module.variance_method.value = cellprofiler.modules.applythreshold.RB_MAD
+
+        t_local, t_global = module.get_threshold(image, workspace)
+
+        t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
+            centrosome.threshold.TM_ROBUST_BACKGROUND,
+            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            data,
+            threshold_range_min=0.0,
+            threshold_range_max=1.0,
+            threshold_correction_factor=1.0,
+            lower_outlier_fraction=0.05,
+            upper_outlier_fraction=0.05,
+            deviations_above_average=2,
+            average_fn=numpy.mean,
+            variance_vn=centrosome.threshold.mad
+        )
+
+        numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+        numpy.testing.assert_almost_equal(t_global, t_global_expected)

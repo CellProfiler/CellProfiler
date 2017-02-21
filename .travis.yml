@@ -2,8 +2,6 @@ addons:
   apt:
     packages:
       - python-wxgtk2.8
-env:
-  - CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_PASSWORD="None" CP_MYSQL_TEST_USER="travis" LC_ALL="en_US.UTF-8"
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
@@ -11,18 +9,20 @@ before_script:
 cache:
   directories:
     - $HOME/.cache/pip
+env:
+  - CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_PASSWORD="None" CP_MYSQL_TEST_USER="travis" LC_ALL="en_US.UTF-8"
 language: python
 notifications:
   email: false
 python:
   - 2.7
-sudo: false
-services:
-  - mysql
 script:
   - python setup.py test -a -x
+services:
+  - mysql
+sudo: false
 virtualenv:
   system_site_packages: true
 install:
-  - pip install cython h5py matplotlib numpy pyzmq scipy
-  - pip install --process-dependency-links --editable .
+  - "pip install --only-binary :all: cython h5py matplotlib numpy pyzmq scipy"
+  - "pip install --process-dependency-links --editable ."

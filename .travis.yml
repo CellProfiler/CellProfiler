@@ -5,10 +5,7 @@ addons:
 services:
   - mysql
 env:
-  - CP_MYSQL_TEST_HOST="127.0.0.1"
-  - CP_MYSQL_TEST_PASSWORD="None"
-  - CP_MYSQL_TEST_USER="travis"
-  - LC_ALL="en_US.UTF-8"
+  - CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_PASSWORD="None" CP_MYSQL_TEST_USER="travis" LC_ALL="en_US.UTF-8"
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start

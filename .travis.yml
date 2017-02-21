@@ -5,7 +5,10 @@ addons:
 services:
   - mysql
 env:
-  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
+  - CP_MYSQL_TEST_HOST="127.0.0.1"
+  - CP_MYSQL_TEST_PASSWORD="None"
+  - CP_MYSQL_TEST_USER="travis"
+  - LC_ALL="en_US.UTF-8"
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
@@ -22,8 +25,10 @@ sudo: false
 virtualenv:
   system_site_packages: true
 install:
-  - pip install --upgrade pip wheel
-  - pip install --upgrade cython numpy
-  - pip install --editable . --process-dependency-links
+  - pip install --upgrade pip
+  - pip install --upgrade wheel
+  - pip install --upgrade cython
+  - pip install --upgrade numpy
+  - pip install --editable . --process-dependency-links --use-wheel
 script:
   - python setup.py test -a -x

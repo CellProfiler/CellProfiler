@@ -2,8 +2,6 @@ addons:
   apt:
     packages:
       - python-wxgtk2.8
-services:
-  - mysql
 env:
   - CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_PASSWORD="None" CP_MYSQL_TEST_USER="travis" LC_ALL="en_US.UTF-8"
 before_script:
@@ -19,13 +17,12 @@ notifications:
 python:
   - 2.7
 sudo: false
+services:
+  - mysql
+script:
+  - python setup.py test -a -x
 virtualenv:
   system_site_packages: true
 install:
-  - pip install --upgrade pip
-  - pip install --upgrade wheel
-  - pip install --upgrade cython
-  - pip install --upgrade numpy
-  - pip install --editable . --process-dependency-links --use-wheel
-script:
-  - python setup.py test -a -x
+  - pip install cython matplotlib numpy scipy matplotlib h5py pyzmq
+  - pip install --process-dependency-links --editable .

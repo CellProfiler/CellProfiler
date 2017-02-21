@@ -1,6 +1,7 @@
 addons:
   apt:
-    - python-wxgtk2.8
+    packages:
+      - python-wxgtk2.8
 services:
   - mysql
 env:
@@ -23,8 +24,6 @@ virtualenv:
 install:
   - pip install --upgrade pip wheel
   - pip install --upgrade cython numpy
-  - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
-  - pip install --requirement requirements.txt
-  - pip freeze
+  - pip install --editable --process-dependency-links .
 script:
   - python setup.py test -a -x

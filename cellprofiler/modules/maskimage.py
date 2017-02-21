@@ -127,7 +127,7 @@ class MaskImage(cpm.Module):
             if self.invert_mask.value:
                 mask = mask == 0
         orig_image = image_set.get_image(self.image_name.value)
-        if (image.multichannel and mask.shape != orig_image.pixel_data.shape[:-1]) or mask.shape != orig_image.pixel_data.shape:
+        if (orig_image.multichannel and mask.shape != orig_image.pixel_data.shape[:-1]) or mask.shape != orig_image.pixel_data.shape:
             tmp = np.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
             tmp[mask] = True
             mask = tmp

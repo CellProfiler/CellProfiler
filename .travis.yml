@@ -13,7 +13,6 @@ addons:
       - python-matplotlib
       - python-mysqldb
       - python-networkx
-      - python-numpy
       - python-pandas
       - python-pip
       - python-scipy
@@ -40,6 +39,7 @@ virtualenv:
 install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
+  - pip install --upgrade numpy
   - pip install --upgrade pytest
   - pip install --upgrade cython
   - pip install joblib

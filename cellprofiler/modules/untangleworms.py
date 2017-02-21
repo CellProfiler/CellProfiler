@@ -1790,12 +1790,13 @@ class UntangleWorms(cpm.Module):
             # Find all segments from the end branch
             #
             direction = graph.incidence_directions[end_branch_area, last_segment]
-            last_coord = graph.segments[last_segment][direction][-1]
+
+            last_coord = graph.segments[last_segment][int(direction)][-1]
             for j in graph.incident_segments[end_branch_area]:
                 if j in unfinished_segment:
                     continue  # segment already in the path
                 direction = not graph.incidence_directions[end_branch_area, j]
-                first_coord = graph.segments[j][direction][0]
+                first_coord = graph.segments[j][int(direction)][0]
                 gap_length = np.sqrt(np.sum((last_coord - first_coord) ** 2))
                 next_length = current_length + gap_length + graph.segment_lengths[j]
                 if next_length > max_length:

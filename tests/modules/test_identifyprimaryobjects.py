@@ -814,41 +814,45 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
     def test_02_12_fly(self):
         '''Run identify on the fly image'''
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9722
+Version:3
+DateRevision:300
+GitHash:
+ModuleCount:1
+HasImagePlaneDetails:False
 
-IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
+IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:13|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:CropBlue
     Name the primary objects to be identified:Nuclei
     Typical diameter of objects, in pixel units (Min,Max):15,40
     Discard objects outside the diameter range?:Yes
-    Try to merge too small objects with nearby larger objects?:No
     Discard objects touching the border of the image?:Yes
-    Select the thresholding method:Otsu Global
-    Threshold correction factor:1.6
-    Lower and upper bounds on threshold:0,1
-    Approximate fraction of image covered by objects?:0.2
     Method to distinguish clumped objects:Intensity
     Method to draw dividing lines between clumped objects:Intensity
     Size of smoothing filter:10
     Suppress local maxima that are closer than this minimum allowed distance:5
     Speed up by using lower-resolution image to find local maxima?:Yes
-    Name the outline image:None
-    Fill holes in identified objects?:Yes
-    Automatically calculate size of smoothing filter?:Yes
+    Fill holes in identified objects?:After both thresholding and declumping
+    Automatically calculate size of smoothing filter for declumping?:Yes
     Automatically calculate minimum allowed distance between local maxima?:Yes
-    Manual threshold:0.0
-    Select binary image:Otsu Global
-    Retain outlines of the identified objects?:No
-    Automatically calculate the threshold using the Otsu method?:Yes
-    Enter Laplacian of Gaussian threshold:.5
-    Two-class or three-class thresholding?:Two classes
-    Minimize the weighted variance or the entropy?:Weighted variance
-    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
-    Enter LoG filter diameter:5
     Handling of objects if excessive number of objects identified:Continue
     Maximum number of objects:500
+    Use advanced settings?:Yes
+    Threshold setting version:3
+    Threshold strategy:Global
+    Thresholding method:Otsu
+    Threshold smoothing scale:1.3488
+    Threshold correction factor:1.6
+    Lower and upper bounds on threshold:0,1
+    Manual threshold:0.0
+    Select the measurement to threshold with:None
+    Two-class or three-class thresholding?:Two classes
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Size of adaptive window:10
+    Lower outlier fraction:0.05
+    Upper outlier fraction:0.05
+    Averaging method:Mean
+    Variance method:Standard deviation
+    # of deviations:2
 """
         pipeline = cellprofiler.pipeline.Pipeline()
 
@@ -935,304 +939,6 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             self.assertEqual(output.count, 4)
             self.assertTrue(numpy.all(output.segmented[expected == 0] == 0))
             self.assertEqual(len(numpy.unique(output.segmented[expected == 1])), 1)
-
-    def test_04_01_load_matlab_12(self):
-        """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline
-
-
-        """
-        old_r12_file = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBXZWQgRGVjIDMxIDExOjQxOjUxIDIwMDggICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAuAEAAHicxVRdT8IwFO3GWEQNEYmJvu3RB2K2xAcfNTFRHgQihujjBoXUbC3ZWgM++TP8Of4Uf4ot7LMSNqfgTZpx7u45p/eytg4AMGsA6Py5w5cKllENsZJaAvchpQhPgirQwHGY/+BrYPvIdlw4sF0GAxBHlG/jMXmYT+NXd2TEXNixvXQxjw7zHOgH3XFEDF/30Ay6ffQKQTaisnv4ggJEcMgP9eVs7Euo5Fvn61NL5qCsmEMzlRf1lyCp11bU76bqD0J8TQxMqMECmOhc5Ojoko6+mNPQhagYvyrxBbbM1rkZ+ps5/EqGXwFPfHZFeGqGp4IO+Z1f3rz3pD4F7tKAGTcucWw3nneev5LRUYBVck5myyrE0zI8DZhnplWk35rUr8BtTCEOEJ2H+f/WuWKUeDZFww3obOo7Knpu/0pn2+fvTVl/zzVS+bJ9Is+ewIlP2DTRuc3RaUg6AhPnGQ7pQshAeASnqX1t+5m3/0Np/wITRl2E4bcGhN4MrP8f0vdQEf8jyV/g9ghiisbzno+89BmSvx89x1/lv5oreGXvzyJ++yV4Gme+nyx5jz+c7+ma+iii/BfqTY0Q'
-        pipeline = tests.modules.load_pipeline(self, old_r12_file)
-        pipeline.add_listener(self.load_error_handler)
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.module(1)
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
-        self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
-        self.assertEqual(module.object_name.value, "Nuclei")
-        self.assertEqual(module.image_name.value, "Do not use")
-        self.assertTrue(module.exclude_size.value)
-        self.assertEqual(module.fill_holes.value, cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING)
-        self.assertTrue(module.exclude_border_objects.value)
-        self.assertTrue(module.automatic_smoothing.value)
-        self.assertTrue(module.automatic_suppression.value)
-        self.assertTrue(module.image_name == cellprofiler.setting.DO_NOT_USE)
-        self.assertAlmostEqual(module.threshold_range.min, 0)
-        self.assertAlmostEqual(module.threshold_range.max, 1)
-        self.assertAlmostEqual(module.threshold_correction_factor.value, 1)
-        self.assertEqual(module.watershed_method.value, "Intensity")
-        self.assertEqual(module.unclump_method.value, "Intensity")
-        self.assertAlmostEqual(module.maxima_suppression_size.value, 5)
-
-    def test_04_001_load_matlab_regression(self):
-        '''A regression test on a pipeline that misloaded the outlines variable'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUX'
-                'AuSk0sSU1RyM+zUvDNz1PwKs1TMLBQMDS1MjayMjJTMDIwsFQgGTAw'
-                'evryMzAwbGNiYKiY8zbCMf+ygUjZpWVaOVrJzJ3O/JZFEsqiMhabMj'
-                'mUNi5Luqyiopf3SqxZOrwzeOsfqTo29zqpwtlL+m5KXed9zRexac3z'
-                'Pd9/7j1/Xt8viqHhpjCD1MkbPrs4p531SnV+EbPPpedhgkjkAr55Sz'
-                '/vn1zH68zzmyXWWWgxxxPd2eXNintn+X9yFy8REL7SmhxomXm34o57'
-                '4hNe48NfCvnPC+w8Yi+gsc3nrfCsRxyXFbb6f3x6syb21JLSaM/63d'
-                'sfHZxQsUL1r8eM+BfNU+v+st3jY/nbvCV+oWT1xzy22rR+xc/7i+aY'
-                'q1r4crafjutwT+e8qvVtWsr5p8ZMze8zZfw6a/cmxLM/X24bnnq3bY'
-                've9N0b/QXCHq9Xvbm9qFo/jYW9hrv8aPxxy7q3DFstvqlW68UfmOnb'
-                'biZ3+KLS0tACOS+LGLvlZQ4zZd1fHgy4eT6KcTmbnbrLq2MPfQM9Ht'
-                'y56yqTxnicJXbV9PORcm9m/V/1U/vwzckFO95s1Nh2X/hWu8rxlbfW'
-                'G9X1MPUxWll/cr6n/nxH8IfkyxZxmrdO/nw5x2Ju7JPjzEBn5x0IEE'
-                'g0E/9z8hi/akW/qo3e44SG5RUCzpvWtE5sCN9av+ury/H+yzMuPmHt'
-                'r+W1f7LH8mZTf2ndiwe9Thb9NR4TGjbn7v0d/l77avGCV+15dSvuJZ'
-                'f85Ig75PUtMVrO6Hfn1n9yutcac1/fWpTR4yTlv+r4Sbe5u9x+359w'
-                'XqyhLOjxhZRmi/xd6RdTlz2Re1VXv+ZRzK7S2/vMVfasSa1YlqDeH/'
-                'qzNP7x5aM/5c/fPVJ8//imqiKOrj2FkTb/kxwFC2cfe1savu7/rtJP'
-                'yq3M4TtWrDzyOeTQw03WDoyHD1fqH0n+2Lfo0XVlzv7TL8sz/jnpnl'
-                'afyW88ka9/zdp9/max52+Z//9VH5gW7l+6b8veb+e/Fd2NT9hcW7/P'
-                'zT67fOl/9tZZsgEA6Ux4DA==')
-        pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-
-    def test_04_02_load_v1(self):
-        file = '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BQAAAAgAAAABAAAAFgAAAAEAAAAAAAAADgAAAEAAAAAGAAAACAAAAAQAAAAAAAAABQAAAAgAAAABAAAACgAAAAEAAAAAAAAAEAAAAAoAAABpbWFnZWdyb3VwAAAAAAAADgAAAEgAAAAGAAAACAAAAAQAAAAAAAAABQAAAAgAAAABAAAAEQAAAAEAAAAAAAAAEAAAABEAAABvYmplY3Rncm91cCBpbmRlcAAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAABIAAAABgAAAAgAAAAEAAAAAAAAAAUAAAAIAAAAAQAAABIAAAABAAAAAAAAABAAAAASAAAAb3V0bGluZWdyb3VwIGluZGVwAAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAQAAAAAYAAAAIAAAABAAAAAAAAAAFAAAACAAAAAEAAAAKAAAAAQAAAAAAAAAQAAAACgAAAGltYWdlZ3JvdXAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAACgAAAABgAAAAgAAAABAAAAAAAAAAUAAAAIAAAAAQAAAAEAAAABAAAAAAAAAA4AAABwAAAABgAAAAgAAAAEAAAAAAAAAAUAAAAIAAAAAQAAAEAAAAABAAAAAAAAABAAAABAAAAAY2VsbHByb2ZpbGVyLm1vZHVsZXMuaWRlbnRpZnlwcmltYXV0b21hdGljLklkZW50aWZ5UHJpbUF1dG9tYXRpYw4AAAAwAAAABgAAAAgAAAAJAAAAAAAAAAUAAAAIAAAAAQAAAAEAAAABAAAAAAAAAAIAAQAWAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAAAAAABAAAAAAAAAAkAAAAIAAAAAAAAAAAA8D8OAAAAMAAAAAYAAAAIAAAACQAAAAAAAAAFAAAACAAAAAEAAAABAAAAAQAAAAAAAAACAAEAAQAAAA4AAAAwAAAABgAAAAgAAAALAAAAAAAAAAUAAAAIAAAAAQAAAAEAAAABAAAAAAAAAAQAAgAAAAAADgAAAFgAAAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAABAAAAAQAAAAEAAAAAAAAADgAAACgAAAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAAAAAAAAQAAAAEAAAAAAAAA'
-        pipeline = tests.modules.load_pipeline(self, file)
-        pipeline.add_listener(self.load_error_handler)
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.module(1)
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_OTSU)
-        self.assertEqual(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
-        self.assertTrue(module.image_name == 'None')
-
-    def test_04_03_load_v3(self):
-        data = ('eJztWVtP2zAUTktBMMbG9rJJaJIfYWurpIAGaAI6uku3tlTQcRFim9'
-                'u6rSfXrhKH0U1Ie9zP2k/aT1gc0jY1l4T0IpgaFKXn5HznO+f4Ehtn'
-                'k4VM8jVYjqsgmyzEKpggkCeQV5heXwOUR8GWjiBHZcDoGsgyCj6YFK'
-                'grQEusLS6taQmQUNVVJdgVSmcfWI+DZ4oyYT0nrTvsvBp35JDrFvIu'
-                '4hzTqjGuRJSnjv6Pde9BHcMiQXuQmMjoULT0aVphhWaj/SrLyiZBOV'
-                'h3G1tXzqwXkW5sV1pA53UenyKyi38gKYWW2Q46wQZm1ME7/mVtm5dx'
-                'iVfUoTHTqUNIqoOoy5xLL+zfKx37yCV1e+Syn3VkTMv4BJdNSACuw2'
-                'o7CuFP9fA31uVvTEnlkjZu0wM3K8Uh7gI65bE3p7DEQR3yUk34WfHw'
-                'MyH5EXLOLBGE/cUf6sKHlEUnby/ecYlXyJoaXVJ7wKczmU/ZgHU/tF'
-                'rNDy7chQsrOeaP7yqcV397IuUp5BSqQJNwkBadDaSwjkqc6c2+5T0h'
-                '4VpXCzflPP3002kpfiFvc8ME7wgrQtL2M6j2knFaXO2JL8j8oMZV+4'
-                'pqzg9X/bz6+aTkT8hbNUgpIgk/eUS68BERizbIeWlKilfIacoRNTBv'
-                'uvK+6byiKf76W7/45brlGEVBxrmmnvP98sB9lOIW8uf5jfwrsXBA6/'
-                'EXC1+EtI8I2WHf14+SsfzxQkuzxYhZp+tHamz1+KcWTZydG+9iC2kr'
-                'FwLX/aWDq3ngVqT4hSxiOERQdwJbOluICZW14OE1R5dwdCnY7Ghu4z'
-                'x2T8pPyCkGKOPANFDHT1D+Yec74uvmUy/5LvSTz8980k8+P+uU/6v9'
-                'lgc6/meU7vEv5EJNRwiUCDQMe83fC3+QdcU+wtWa2EaeiA0TLSGXv2'
-                'HOg2+Zjqo6M2m54+fg/s32XcOM196kiYAbvfMHaTdW/Gat2O0AgLV3'
-                'RI0+1GGEG+FGuN5xmy6c3/+7dOaT8+F8l/Id4W4Hzus78ljp7ndCZi'
-                'YnmKILH5K7lPcIN9z5a9DroRFuhBsGbjJ09f5C3v8K+6/K9ePiudI9'
-                'LoRcQoQ0dCbO7/R43T5kMuKEwfL5KU88Y/1Muw587PMmD55NiWfzKh'
-                '5cRpTjSrOhW2wmZ3XIcSmedrR5S5tsaeU6Tl3C665H2Pp7OHd9/eW6'
-                'd9rj70YQvvDYRb5pD1zEqaDA/VZu1t7z19i3cgtq/w8+vUjz')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_listener(self.load_error_handler)
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
-        self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
-        self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground.value,
-                         cellprofiler.modules.identify.O_FOREGROUND)
-
-    def test_04_04_load_v4(self):
-        data = ('eJztWd1u0zAUdrtu2piGBjdwM+RLhLYo2VYxekPLyqCo7SZWhrjDTd3WyLWr'
-                'xJlWnoBLHolLHodHIO6SNvG6JUvaiaGkitLj+Dvf+bFP7KRRadUrb2BR02Gj'
-                '0trpEorhCUWiy61BCTKxDQ8tjATuQM5K8Mgi8IND4e4+NIolQy/t7cFdXX8F'
-                'kh25WuOhe/n5DIAV97rqnnnv1rIn5wKnlE+xEIT17GVQAE+99l/ueYYsgtoU'
-                'nyHqYHtK4bfXWJe3RsPJrQbvOBQ30SDY2T2azqCNLfu46wO92yfkAtNT8h0r'
-                'LvjdPuJzYhPOPLynX22d8HKh8Mo4/N6YxiGnxEHGZSvQLvu/B9P+hRlxexTo'
-                'v+nJhHXIOek4iEIyQL2JFVKfHqFvKaRvCVSblTGuHIHbVOyQZwtfiJ23F8gU'
-                'cICE2Zd6DiL0rCh6pNx0TIpJPPtzIXwO7Hl+R/EuK7xSNvTtfT0Fvlavf2ok'
-                'jPsXN2txcPkQLg+aPB7fdbio8fZE8VPKVdxFDhWwJgcbrBILm4Jbo7n5vaLg'
-                '/MPHrXnXOON0XbFfysfCduA7ytuITvQsKl8qztD0VHxJ6oOu6eNj2/D+BOK3'
-                'KL8LIVxB2mDEmVerIGy/lA/7iDFMd+Pke03BS7nGBGY2EaMUfseti/PiV+ua'
-                'EROnznNDj4dT89XkDCex82VMO5PyzWs8+nzlCNwDEM6nlKscMi6gY3sLhzT1'
-                '667rZcYX5tNn1ON58sUZ5/Pki7M++L/yV1zo+mEDhOe/lFt9C2NoUmTb47V2'
-                'Gv4kz/PPmPT6cvt2LjcqzMQBfYuKw6w6eMQt3LO4wzrp+f+1caY+14oe7uCW'
-                '+7m7zMd48ycTMkzPn2Rc8vY3dycwNgC6e1I8nEMcMlyGy3D3D1cO4OK+P5rW'
-                'r8vycZ/8zXDJniOPQXgcSJk7ghKGrzxI7pPfGe5u68mi10MZLsNluPS41dz1'
-                '+yf1/YXs/zXAM2vevwDheS9lE1M6tLj87mlpg/HHOVujHHUuv45pdfdvLfCh'
-                'TPIMI3jKCk/5Oh7SwUyQ7mhouWyO4AMkiKnVvNYTt7Xit6pxXJvBG4xH3v1t'
-                'bt0cfzXu03z8eZ2Eb6lwlW89AlfwIihxP8Dt8v38hv6+b0n7/wXQ1Cms')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(
-                StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertTrue(module.threshold_method.value, centrosome.threshold.TM_OTSU)
-        self.assertTrue(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
-        self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground.value,
-                         cellprofiler.modules.identify.O_FOREGROUND)
-
-    def test_04_05_load_v5(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9008
-
-LoadImages:[module_num:1|svn_version:\'8947\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-    What type of files are you loading?:individual images
-    How do you want to load these files?:Text-Exact match
-    How many images are there in each group?:3
-    Type the text that the excluded images have in common:Do not use
-    Analyze all subfolders within the selected folder?:No
-    Image location:Default Image Folder
-    Enter the full path to the images:
-    Do you want to check image sets for missing or duplicate files?:Yes
-    Do you want to group image sets by metadata?:No
-    Do you want to exclude certain files?:No
-    What metadata fields do you want to group by?:
-    Type the text that these images have in common (case-sensitive):
-    What do you want to call this image in CellProfiler?:DNA
-    What is the position of this image in each group?:1
-    Do you want to extract metadata from the file name, the subfolder path or both?:None
-    Type the regular expression that finds metadata in the file name\x3A:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
-    Type the regular expression that finds metadata in the subfolder path\x3A:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
-
-IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
-    Select the input image:DNA
-    Name the identified primary objects:MyObjects
-    Typical diameter of objects, in pixel units (Min,Max)\x3A:12,42
-    Discard objects outside the diameter range?:Yes
-    Try to merge too small objects with nearby larger objects?:No
-    Discard objects touching the border of the image?:Yes
-    Select the thresholding method:RobustBackground Global
-    Threshold correction factor:1.2
-    Lower and upper bounds on threshold\x3A:0.1,0.6
-    Approximate fraction of image covered by objects?:0.01
-    Method to distinguish clumped objects:Shape
-    Method to draw dividing lines between clumped objects:Distance
-    Size of smoothing filter\x3A:10
-    Suppress local maxima within this distance\x3A:7
-    Speed up by using lower-resolution image to find local maxima?:Yes
-    Name the outline image:MyOutlines
-    Fill holes in identified objects?:Yes
-    Automatically calculate size of smoothing filter?:Yes
-    Automatically calculate minimum size of local maxima?:Yes
-    Enter manual threshold\x3A:0.0
-    Select binary image\x3A:MyBinaryImage
-    Save outlines of the identified objects?:No
-    Calculate the Laplacian of Gaussian threshold automatically?:Yes
-    Enter Laplacian of Gaussian threshold\x3A:0.5
-    Two-class or three-class thresholding?:Two classes
-    Minimize the weighted variance or the entropy?:Weighted variance
-    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
-    Enter LoG filter diameter\x3A :5
-    How do you want to handle images with large numbers of objects?:Truncate
-    Maximum # of objects\x3A:305
-
-IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
-    Select the input image:DNA
-    Name the identified primary objects:MyObjects
-    Typical diameter of objects, in pixel units (Min,Max)\x3A:12,42
-    Discard objects outside the diameter range?:No
-    Try to merge too small objects with nearby larger objects?:Yes
-    Discard objects touching the border of the image?:No
-    Select the thresholding method:Otsu Adaptive
-    Threshold correction factor:1.2
-    Lower and upper bounds on threshold\x3A:0.1,0.6
-    Approximate fraction of image covered by objects?:0.01
-    Method to distinguish clumped objects:Intensity
-    Method to draw dividing lines between clumped objects:Propagate
-    Size of smoothing filter\x3A:10
-    Suppress local maxima within this distance\x3A:7
-    Speed up by using lower-resolution image to find local maxima?:No
-    Name the outline image:MyOutlines
-    Fill holes in identified objects?:No
-    Automatically calculate size of smoothing filter?:No
-    Automatically calculate minimum size of local maxima?:No
-    Enter manual threshold\x3A:0.0
-    Select binary image\x3A:MyBinaryImage
-    Save outlines of the identified objects?:Yes
-    Calculate the Laplacian of Gaussian threshold automatically?:No
-    Enter Laplacian of Gaussian threshold\x3A:0.5
-    Two-class or three-class thresholding?:Three classes
-    Minimize the weighted variance or the entropy?:Entropy
-    Assign pixels in the middle intensity class to the foreground or the background?:Background
-    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
-    Enter LoG filter diameter\x3A :5
-    How do you want to handle images with large numbers of objects?:Erase
-    Maximum # of objects\x3A:305
-"""
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.object_name, "MyObjects")
-        self.assertEqual(module.size_range.min, 12)
-        self.assertEqual(module.size_range.max, 42)
-        self.assertTrue(module.exclude_size)
-        self.assertTrue(module.exclude_border_objects)
-        self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_ROBUST_BACKGROUND)
-        self.assertEqual(module.threshold_modifier, centrosome.threshold.TM_GLOBAL)
-        self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
-        self.assertAlmostEqual(module.threshold_range.min, 0.1)
-        self.assertAlmostEqual(module.threshold_range.max, 0.6)
-        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_SHAPE)
-        self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_SHAPE)
-        self.assertEqual(module.smoothing_filter_size, 10)
-        self.assertEqual(module.maxima_suppression_size, 7)
-        self.assertEqual(module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING)
-        self.assertTrue(module.automatic_smoothing)
-        self.assertTrue(module.automatic_suppression)
-        self.assertEqual(module.manual_threshold, 0)
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
-        self.assertEqual(module.limit_choice, "None")
-        self.assertEqual(module.maximum_object_count, 305)
-        self.assertTrue(module.use_advanced.value)
-
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.object_name, "MyObjects")
-        self.assertEqual(module.size_range.min, 12)
-        self.assertEqual(module.size_range.max, 42)
-        self.assertFalse(module.exclude_size)
-        self.assertFalse(module.exclude_border_objects)
-        self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_OTSU)
-        self.assertEqual(module.threshold_modifier, centrosome.threshold.TM_ADAPTIVE)
-        self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
-        self.assertAlmostEqual(module.threshold_range.min, 0.1)
-        self.assertAlmostEqual(module.threshold_range.max, 0.6)
-        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY)
-        self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE)
-        self.assertEqual(module.smoothing_filter_size, 10)
-        self.assertEqual(module.maxima_suppression_size, 7)
-        self.assertEqual(module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_NEVER)
-        self.assertFalse(module.automatic_smoothing)
-        self.assertFalse(module.automatic_suppression)
-        self.assertEqual(module.manual_threshold, 0)
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
-        self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
-        self.assertEqual(module.maximum_object_count, 305)
-        self.assertTrue(module.use_advanced.value)
-
-    # Missing tests for versions 6-9 (!)
 
     def test_04_10_load_v10(self):
         # Sorry about this overly-long pipeline, it seemed like we need to
@@ -2082,96 +1788,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         segmented = objects.segmented
         self.assertTrue(numpy.all(segmented == 0))
 
-    def test_07_01_adaptive_otsu_small(self):
-        """Test the function, get_threshold, using Otsu adaptive / small
-
-        Use a small image (125 x 125) to break the image into four
-        pieces, check that the threshold is different in each block
-        and that there are four blocks broken at the 75 boundary
-        """
-        numpy.random.seed(0)
-        image = numpy.zeros((120, 110))
-        for i0, i1 in ((0, 60), (60, 120)):
-            for j0, j1 in ((0, 55), (55, 110)):
-                dmin = float(i0 * 2 + j0) / 500.0
-                dmult = 1.0 - dmin
-                # use the sine here to get a bimodal distribution of values
-                r = numpy.random.uniform(0, numpy.pi * 2, (60, 55))
-                rsin = (numpy.sin(r) + 1) / 2
-                image[i0:i1, j0:j1] = dmin + rsin * dmult
-        workspace, x = self.make_workspace(image)
-        assert isinstance(x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
-        x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-        x.threshold_method.value = centrosome.threshold.TM_OTSU
-        threshold, global_threshold = x.get_threshold(
-                cellprofiler.image.Image(image), numpy.ones((120, 110), bool), workspace)
-        self.assertTrue(threshold[0, 0] != threshold[0, 109])
-        self.assertTrue(threshold[0, 0] != threshold[119, 0])
-        self.assertTrue(threshold[0, 0] != threshold[119, 109])
-
-    def test_07_02_adaptive_otsu_big(self):
-        """Test the function, get_threshold, using Otsu adaptive / big
-
-        Use a large image (525 x 525) to break the image into 100
-        pieces, check that the threshold is different in each block
-        and that boundaries occur where expected
-        """
-        numpy.random.seed(0)
-        image = numpy.zeros((525, 525))
-        blocks = []
-        for i in range(10):
-            for j in range(10):
-                # the following makes a pattern of thresholds where
-                # each square has a different threshold from its 8-connected
-                # neighbors
-                dmin = float((i % 2) * 2 + (j % 2)) / 8.0
-                dmult = 1.0 - dmin
-
-                def b(x):
-                    return int(float(x) * 52.5)
-
-                dim = ((b(i), b(i + 1)), (b(j), b(j + 1)))
-                blocks.append(dim)
-                ((i0, i1), (j0, j1)) = dim
-                # use the sine here to get a bimodal distribution of values
-                r = numpy.random.uniform(0, numpy.pi * 2, (i1 - i0, j1 - j0))
-                rsin = (numpy.sin(r) + 1) / 2
-                image[i0:i1, j0:j1] = dmin + rsin * dmult
-        workspace, x = self.make_workspace(image)
-        assert isinstance(x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
-        x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-        x.threshold_method.value = centrosome.threshold.TM_OTSU
-        threshold, global_threshold = x.get_threshold(
-                cellprofiler.image.Image(image), numpy.ones((525, 525), bool), workspace)
-
-    def test_09_01_small_images(self):
-        """Test mixture of gaussians thresholding with few pixels
-
-        Run MOG to see if it blows up, given 0-10 pixels"""
-        r = numpy.random.RandomState()
-        r.seed(91)
-        image = r.uniform(size=(9, 11))
-        ii, jj = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
-        ii, jj = ii.flatten(), jj.flatten()
-
-        for threshold_method in (centrosome.threshold.TM_MCT,
-                                 centrosome.threshold.TM_OTSU,
-                                 centrosome.threshold.TM_ROBUST_BACKGROUND):
-            for i in range(11):
-                mask = numpy.zeros(image.shape, bool)
-                if i:
-                    p = r.permutation(numpy.prod(image.shape))[:i]
-                    mask[ii[p], jj[p]] = True
-                workspace, x = self.make_workspace(image, mask)
-                x.threshold_method.value = threshold_method
-                x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-                l, g = x.get_threshold(cellprofiler.image.Image(image), mask, workspace)
-                v = image[mask]
-                image = r.uniform(size=(9, 11))
-                image[mask] = v
-                l1, g1 = x.get_threshold(cellprofiler.image.Image(image), mask, workspace)
-                self.assertAlmostEqual(l1, l)
-
     # def test_11_01_test_robust_background_fly(self):
     #     image = fly_image()
     #     workspace, x = self.make_workspace(image)
@@ -2181,18 +1797,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
     #         cpi.Image(image), np.ones(image.shape,bool), workspace)
     #     self.assertTrue(threshold > 0.09)
     #     self.assertTrue(threshold < 0.095)
-
-    def test_14_01_test_manual_background(self):
-        """Test manual background"""
-        workspace, x = self.make_workspace(numpy.zeros((10, 10)))
-        x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
-        x.threshold_scope.value = centrosome.threshold.TM_MANUAL
-        x.manual_threshold.value = .5
-        local_threshold, threshold = x.get_threshold(cellprofiler.image.Image(numpy.zeros((10, 10))),
-                                                     numpy.ones((10, 10), bool),
-                                                     workspace)
-        self.assertTrue(threshold == .5)
-        self.assertTrue(threshold == .5)
 
     def test_16_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''

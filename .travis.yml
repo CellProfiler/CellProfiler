@@ -1,18 +1,5 @@
 services:
   - mysql
-addons:
-  apt:
-    packages:
-      - libhdf5-serial-dev
-      - libwxgtk2.8-dev
-      - libgtk2.0-dev
-      - python-dateutil
-      - python-lxml
-      - python-mysqldb
-      - python-networkx
-      - python-pandas
-      - python-tk
-      - python-wxgtk2.8
 env:
   - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
 before_script:
@@ -20,7 +7,6 @@ before_script:
   - sh -e /etc/init.d/xvfb start
   - sleep 3
 cache:
-  apt: true
   directories:
     - $HOME/.cache/pip
 language: python
@@ -39,7 +25,7 @@ install:
   - pip install --upgrade cython
   - pip install --no-deps pyzmq==13.1.0
   - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
-  - pip freeze
   - pip install --requirement requirements.txt
+  - pip freeze
 script:
   - python setup.py test -a -x

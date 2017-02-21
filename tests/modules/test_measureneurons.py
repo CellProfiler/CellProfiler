@@ -48,38 +48,6 @@ class TestMeasureNeurons(unittest.TestCase):
                     traceback.print_exc()
             os.rmdir(self.temp_dir)
 
-    def test_01_01_load_matlab(self):
-        '''Load a Matlab version of MeasureNeurons'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggH0l6JeQoGZgqGplbGFlZGlgpGBoYGCiQDBkZPX34GBoYyJgaG'
-                'ijlPw2PzLxuIlP4y7G1ctYmrc/vTie2GUY0X5MJXcihtXLPossq9AuHtEqpl'
-                'U28Enza273L/x/S/Y4Za7+My30dlb1mmrXlh9X1edU1OvDovw4FK7obmF5US'
-                'X7lmbK/KkQ4S/8Zg2HbSYk2zVIVc//+uX7w8BjJVL9iqZFoTLk4q7O558TVn'
-                'U0WpZ+w7Relfm4qv5LzjDxSI65104EepvP9E8wP3BU9sO/JWeNdRxWUqff0f'
-                'r150jTs1ZU/vinpLr1IDEdlVgfmejw/9Z1ryb6voLlPV/2l31l+csrfGvJXP'
-                'uPbEnPVMy+c2B599EOJ4/l2TUuFWnxhenhX8pY+q7u4rnf+z5Hl5+J1Kv5jY'
-                'SPHE8lvL8132udnEpdT2i8gkfl/hqWFc2RE0Z9PnHzJvz9Z+WJFSoHVg2f9t'
-                'cpUW/aIyifEbJ8x+b2vVco8p/fovCUkZ5pJvR5xjl3/LVD+8+I1NnHhP8Guf'
-                '32vu3jz+r2LJA47bSjwTBTbPPKJeWXfiYPWqB5zSwuL3k6Y7nz9iJ6Oft/b3'
-                'g+XR8iUVJZbdeextsrxyr/ZZ3nboL7Up+XCMcU4r35cJLZsz917uPf84/ouM'
-                'yNOFu+23nXW+2rynKTqy3bfU49Hsr1/vzyySvXD1ff5GCfYp/mX9m1/dW3I4'
-                '/0Si5gWzwpJXq1qS3UzFfL8t+L7qf7NIul/21X+3p+WlFv4X38evet+59tnc'
-                '7ckTrjremGLML7yl5EHKHefH73atuJZ+t/jXRKfrk+yWdJ15PrNJOee0a8vD'
-                'i2vkE+L/tWkcWr3wAedvoYMT2E+42SxQidmXzlf0ZYXLtcLVmy7+d75Z81X9'
-                '2KX/ZXExut8qqz89frLd8vxv4SnR38Wz/0zepv3f3ukznzkA9yxhQQ==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MeasureNeurons))
-        self.assertEqual(module.seed_objects_name, "Soma")
-        self.assertEqual(module.image_name, "DNA")
-
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -51,5 +51,6 @@ install:
   - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
   - pip freeze
   - pip install --requirement requirements.txt
+  - pip install --upgrade scipy
 script:
   - python setup.py test -a -x

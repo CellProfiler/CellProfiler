@@ -854,20 +854,21 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             RB_MAD: centrosome.threshold.mad
         }.get(self.variance_method.value, numpy.std)
 
-        return centrosome.threshold.get_threshold(
-            centrosome.threshold.TM_ROBUST_BACKGROUND,
-            self.threshold_scope.value,
+        threshold = centrosome.threshold.get_robust_background_threshold(
             image.pixel_data,
             mask=image.mask,
-            threshold_range_min=self.threshold_range.min,
-            threshold_range_max=self.threshold_range.max,
-            threshold_correction_factor=self.threshold_correction_factor.value,
             lower_outlier_fraction=self.lower_outlier_fraction.value,
             upper_outlier_fraction=self.upper_outlier_fraction.value,
             deviations_above_average=self.number_of_deviations.value,
             average_fn=average_fn,
-            variance_vn=variance_fn
+            variance_fn=variance_fn
         )
+
+        threshold *= self.threshold_correction_factor.value
+
+        threshold = min(max(threshold, self.threshold_range.min), self.threshold_range.max)
+
+        return threshold, threshold
 
     def display(self, workspace, figure):
         figure.set_subplots((3, 1))

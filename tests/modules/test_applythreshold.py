@@ -893,7 +893,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
             upper_outlier_fraction=0.05,
             deviations_above_average=2,
             average_fn=numpy.mean,
-            variance_vn=numpy.std
+            variance_fn=numpy.std
         )
 
         numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -930,7 +930,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
             upper_outlier_fraction=0.05,
             deviations_above_average=2,
             average_fn=numpy.median,
-            variance_vn=numpy.std
+            variance_fn=numpy.std
         )
 
         numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -967,7 +967,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
             upper_outlier_fraction=0.05,
             deviations_above_average=2,
             average_fn=centrosome.threshold.binned_mode,
-            variance_vn=numpy.std
+            variance_fn=numpy.std
         )
 
         numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -1004,7 +1004,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
             upper_outlier_fraction=0.05,
             deviations_above_average=2,
             average_fn=numpy.mean,
-            variance_vn=centrosome.threshold.mad
+            variance_fn=centrosome.threshold.mad
         )
 
         numpy.testing.assert_almost_equal(t_local, t_local_expected)

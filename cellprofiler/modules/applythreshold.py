@@ -710,7 +710,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
         return self._threshold_otsu3(image)
 
-    def _threshold_li(self, image, automatic=False):
+    def _global_threshold(self, image, threshold_fn):
         data = image.pixel_data
 
         mask = image.mask
@@ -720,57 +720,59 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         elif numpy.all(data[mask] == data[mask][0]):
             t_global = data[mask][0]
         else:
-            t_global = skimage.filters.threshold_li(data[mask])
+            t_global = threshold_fn(data[mask])
+
+        return t_global
+
+    def _correct_global_threshold(self, threshold):
+        threshold *= self.threshold_correction_factor.value
+
+        return min(max(threshold, self.threshold_range.min), self.threshold_range.max)
+
+    def _correct_local_threshold(self, t_local, t_global):
+        t_local *= self.threshold_correction_factor.value
+
+        # Constrain the local threshold to be within [0.7, 1.5] * global_threshold. It's for the pretty common case
+        # where you have regions of the image with no cells whatsoever that are as large as whatever window you're
+        # using. Without a lower bound, you start having crazy threshold s that detect noise blobs. And same for
+        # very crowded areas where there is zero background in the window. You want the foreground to be all
+        # detected.
+        t_min = max(self.threshold_range.min, t_global * 0.7)
+
+        t_max = min(self.threshold_range.max, t_global * 1.5)
+
+        t_local[t_local < t_min] = t_min
+
+        t_local[t_local > t_max] = t_max
+
+        return t_local
+
+    def _threshold_li(self, image, automatic=False):
+        threshold = self._global_threshold(image, skimage.filters.threshold_li)
 
         if automatic:
-            return t_global, t_global
+            return threshold, threshold
 
-        t_local = t_global * self.threshold_correction_factor.value
+        threshold = self._correct_global_threshold(threshold)
 
-        return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
+        return threshold, threshold
 
     def _threshold_otsu(self, image):
-        data = image.pixel_data
+        t_global = self._global_threshold(image, skimage.filters.threshold_otsu)
 
-        mask = image.mask
-
-        if len(data[mask]) == 0:
-            t_global = 0.0
-        elif numpy.all(data[mask] == data[mask][0]):
-            t_global = data[mask][0]
-        else:
-            t_global = skimage.filters.threshold_otsu(data[mask])
+        t_global = self._correct_global_threshold(t_global)
 
         if self.threshold_scope.value == TS_ADAPTIVE:
             t_local = self._threshold_local_otsu(image)
 
-            t_local *= self.threshold_correction_factor.value
-
-            # Constrain the local threshold to be within [0.7, 1.5] * global_threshold. It's for the pretty common case
-            # where you have regions of the image with no cells whatsoever that are as large as whatever window you're
-            # using. Without a lower bound, you start having crazy threshold s that detect noise blobs. And same for
-            # very crowded areas where there is zero background in the window. You want the foreground to be all
-            # detected.
-            t_min = max(self.threshold_range.min, t_global * 0.7)
-
-            t_max = min(self.threshold_range.max, t_global * 1.5)
-
-            t_local[t_local < t_min] = t_min
-
-            t_local[t_local > t_max] = t_max
+            t_local = self._correct_local_threshold(t_local, t_global)
 
             return t_local, t_global
 
-        t_local = t_global * self.threshold_correction_factor.value
-
-        return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
+        return t_global, t_global
 
     def _threshold_local_otsu(self, image):
-        data = image.pixel_data
-
-        mask = image.mask
-
-        data = skimage.img_as_ubyte(data)
+        data = skimage.img_as_ubyte(image.pixel_data)
 
         selem = skimage.morphology.square(self.adaptive_window_size.value)
 
@@ -778,9 +780,9 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             t_local = numpy.zeros_like(data)
 
             for index, plane, in enumerate(data):
-                t_local[index] = skimage.filters.rank.otsu(plane, selem, mask=mask[index])
+                t_local[index] = skimage.filters.rank.otsu(plane, selem, mask=image.mask[index])
         else:
-            t_local = skimage.filters.rank.otsu(data, selem, mask=mask)
+            t_local = skimage.filters.rank.otsu(data, selem, mask=image.mask)
 
         return skimage.img_as_float(t_local)
 
@@ -795,6 +797,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             two_class_otsu=False,
             assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
         )
+
+        t_global = self._correct_global_threshold(t_global)
 
         if self.threshold_scope.value == TS_ADAPTIVE:
             if image.volumetric:
@@ -821,26 +825,11 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                     assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
                 )
 
-            t_local *= self.threshold_correction_factor.value
-
-            # Constrain the local threshold to be within [0.7, 1.5] * global_threshold. It's for the pretty common case
-            # where you have regions of the image with no cells whatsoever that are as large as whatever window you're
-            # using. Without a lower bound, you start having crazy threshold s that detect noise blobs. And same for
-            # very crowded areas where there is zero background in the window. You want the foreground to be all
-            # detected.
-            t_min = max(self.threshold_range.min, t_global * 0.7)
-
-            t_max = min(self.threshold_range.max, t_global * 1.5)
-
-            t_local[t_local < t_min] = t_min
-
-            t_local[t_local > t_max] = t_max
+            t_local = self._correct_local_threshold(t_local, t_global)
 
             return t_local, t_global
 
-        t_local = t_global * self.threshold_correction_factor.value
-
-        return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
+        return t_global, t_global
 
     def _threshold_robust_background(self, image):
         average_fn = {
@@ -864,9 +853,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             variance_fn=variance_fn
         )
 
-        threshold *= self.threshold_correction_factor.value
-
-        threshold = min(max(threshold, self.threshold_range.min), self.threshold_range.max)
+        threshold = self._correct_global_threshold(threshold)
 
         return threshold, threshold
 

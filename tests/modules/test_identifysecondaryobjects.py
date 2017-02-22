@@ -126,7 +126,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.new_primary_outlines_name, "FilteredChocolateChipOutlines")
         self.assertTrue(module.fill_holes)
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
-        self.assertEqual(module.global_operation.value, centrosome.threshold.TM_MCT)
+        self.assertEqual(module.global_operation.value, cellprofiler.modules.applythreshold.TM_LI)
         self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
         self.assertEqual(module.threshold_correction_factor, 1)
         self.assertEqual(module.threshold_range.min, 0.0)

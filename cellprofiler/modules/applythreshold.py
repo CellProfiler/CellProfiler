@@ -627,6 +627,8 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
     def run(self, workspace):
         input = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
 
+        dimensions = input.dimensions
+
         local_threshold, global_threshold = self.get_threshold(input, workspace)
 
         self.add_threshold_measurements(
@@ -645,13 +647,14 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             binary_image
         )
 
-        output = cellprofiler.image.Image(binary_image, parent_image=input)
+        output = cellprofiler.image.Image(binary_image, parent_image=input, dimensions=dimensions)
 
         workspace.image_set.add(self.y_name.value, output)
 
         if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data
             workspace.display_data.output_pixel_data = output.pixel_data
+            workspace.display_data.dimensions = dimensions
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
 
@@ -858,19 +861,33 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         return threshold, threshold
 
     def display(self, workspace, figure):
-        figure.set_subplots((3, 1))
+        dimensions = workspace.display_data.dimensions
 
-        figure.subplot_imshow_grayscale(0, 0, workspace.display_data.input_pixel_data,
-                                        title="Original image: %s" %
-                                              self.x_name.value)
+        figure.set_subplots((3, 1), dimensions=dimensions)
 
-        figure.subplot_imshow_grayscale(1, 0, workspace.display_data.output_pixel_data,
-                                        title="Thresholded image: %s" %
-                                              self.y_name.value,
-                                        sharexy=figure.subplot(0, 0))
+        figure.subplot_imshow_grayscale(
+            0,
+            0,
+            workspace.display_data.input_pixel_data,
+            title=u"Original image: {}".format(self.x_name.value),
+            dimensions=dimensions
+        )
+
+        figure.subplot_imshow_grayscale(
+            1,
+            0,
+            workspace.display_data.output_pixel_data,
+            title=u"Thresholded image: {}".format(self.y_name.value),
+            dimensions=dimensions
+        )
+
         figure.subplot_table(
-                2, 0, workspace.display_data.statistics,
-                workspace.display_data.col_labels)
+            2,
+            0,
+            workspace.display_data.statistics,
+            workspace.display_data.col_labels,
+            dimensions=dimensions
+        )
 
     def get_measurement_objects_name(self):
         return self.y_name.value

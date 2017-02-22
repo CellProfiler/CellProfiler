@@ -1573,7 +1573,9 @@ class Figure(wx.Frame):
                       col_labels=None,
                       row_labels=None,
                       n_cols=1,
-                      n_rows=1, **kwargs):
+                      n_rows=1,
+                      dimensions=2,
+                      **kwargs):
         """Put a table into a subplot
 
         x,y - subplot's column and row
@@ -1586,7 +1588,11 @@ class Figure(wx.Frame):
         **kwargs - for backwards compatibility, old argument values
         """
 
-        nx, ny = self.subplots.shape
+        if dimensions == 2:
+            nx, ny = self.subplots.shape
+        else:
+            ny, nx = self.__gridspec.get_geometry()
+
         xstart = float(x) / float(nx)
         ystart = float(y) / float(ny)
         width = float(n_cols) / float(nx)

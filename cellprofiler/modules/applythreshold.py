@@ -5,19 +5,17 @@
 pre-selected or calculated automatically using one of many methods.
 """
 
-import centrosome.cpmorphology
 import centrosome.threshold
 import numpy
-import scipy.ndimage.morphology
 import skimage.filters
+import skimage.filters.rank
+import skimage.morphology
 
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules.identify
 import cellprofiler.setting
-import identify
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"

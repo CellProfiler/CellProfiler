@@ -7,6 +7,7 @@ pre-selected or calculated automatically using one of many methods.
 
 import centrosome.threshold
 import numpy
+import scipy.ndimage
 import skimage.filters
 import skimage.filters.rank
 import skimage.morphology

@@ -813,7 +813,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                         plane,
                         t_global,
                         mask=mask[index],
-                        adaptive_window_size=3,
+                        adaptive_window_size=self.adaptive_window_size.value,
                         two_class_otsu=False,
                         assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
                     )
@@ -823,7 +823,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                     data,
                     t_global,
                     mask=mask,
-                    adaptive_window_size=3,
+                    adaptive_window_size=self.adaptive_window_size.value,
                     two_class_otsu=False,
                     assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
                 )

@@ -127,7 +127,7 @@ class MaskImage(cpm.Module):
             if self.invert_mask.value:
                 mask = mask == 0
         orig_image = image_set.get_image(self.image_name.value)
-        if tuple(mask.shape) != tuple(orig_image.pixel_data.shape[:2]):
+        if (orig_image.multichannel and mask.shape != orig_image.pixel_data.shape[:-1]) or mask.shape != orig_image.pixel_data.shape:
             tmp = np.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
             tmp[mask] = True
             mask = tmp
@@ -137,30 +137,34 @@ class MaskImage(cpm.Module):
         masked_pixels[np.logical_not(mask)] = 0
         masked_image = cpi.Image(masked_pixels, mask=mask,
                                  parent_image=orig_image,
-                                 masking_objects=objects)
+                                 masking_objects=objects,
+                                 dimensions=orig_image.dimensions)
 
         image_set.add(self.masked_image_name.value, masked_image)
 
         if self.show_window:
+            workspace.display_data.dimensions=orig_image.dimensions
             workspace.display_data.orig_image_pixel_data = orig_image.pixel_data
             workspace.display_data.masked_pixels = masked_pixels
+            workspace.display_data.multichannel = orig_image.multichannel
 
     def display(self, workspace, figure):
         orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
         masked_pixels = workspace.display_data.masked_pixels
-        figure.set_subplots((2, 1))
-        if orig_image_pixel_data.ndim == 2:
-            figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data,
-                                            "Original image: %s" % self.image_name.value)
-            figure.subplot_imshow_grayscale(1, 0, masked_pixels,
-                                            "Masked image: %s" % self.masked_image_name.value,
-                                            sharexy=figure.subplot(0, 0))
-        else:
+        figure.set_subplots((2, 1),dimensions=workspace.display_data.dimensions)
+        if workspace.display_data.multichannel:
             figure.subplot_imshow_color(0, 0, orig_image_pixel_data,
-                                        "Original image: %s" % self.image_name.value)
+                                        "Original image: %s" % self.image_name.value,dimensions=workspace.display_data.dimensions)
             figure.subplot_imshow_color(1, 0, masked_pixels,
                                         "Masked image: %s" % self.masked_image_name.value,
-                                        sharexy=figure.subplot(0, 0))
+                                        dimensions=workspace.display_data.dimensions)
+        else:
+            figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data,
+                                            "Original image: %s" % self.image_name.value,dimensions=workspace.display_data.dimensions)
+            figure.subplot_imshow_grayscale(1, 0, masked_pixels,
+                                            "Masked image: %s" % self.masked_image_name.value,
+                                            dimensions=workspace.display_data.dimensions)
+        
 
     def upgrade_settings(self, setting_values,
                          variable_revision_number,

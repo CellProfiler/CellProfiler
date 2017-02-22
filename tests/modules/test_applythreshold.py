@@ -1194,3 +1194,144 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
         numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
+
+    def test_12_01_threshold_otsu3_full_mask(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10)
+
+        mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+        workspace, module = self.make_workspace(data, mask=mask)
+
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+
+        module.global_operation.value = centrosome.threshold.TM_OTSU
+
+        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+
+        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
+
+        module.adaptive_window_size.value = 3
+
+        t_local, t_global = module.get_threshold(image, workspace)
+
+        t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
+            centrosome.threshold.TM_OTSU,
+            cellprofiler.modules.applythreshold.TS_ADAPTIVE,
+            data,
+            mask=mask,
+            adaptive_window_size=3,
+            threshold_range_min=0.0,
+            threshold_range_max=1.0,
+            threshold_correction_factor=1.0,
+            two_class_otsu=False,
+            assign_middle_to_foreground=True
+        )
+
+        numpy.testing.assert_almost_equal(t_global, t_global_expected)
+
+        numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
+
+    def test_12_02_threshold_otsu3_image(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10)
+
+        mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+        mask[1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(data, mask=mask)
+
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+
+        module.global_operation.value = centrosome.threshold.TM_OTSU
+
+        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+
+        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
+
+        module.adaptive_window_size.value = 3
+
+        t_local, t_global = module.get_threshold(image, workspace)
+
+        t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
+            centrosome.threshold.TM_OTSU,
+            cellprofiler.modules.applythreshold.TS_ADAPTIVE,
+            data,
+            mask=mask,
+            adaptive_window_size=3,
+            threshold_range_min=0.0,
+            threshold_range_max=1.0,
+            threshold_correction_factor=1.0,
+            two_class_otsu=False,
+            assign_middle_to_foreground=True
+        )
+
+        numpy.testing.assert_almost_equal(t_global, t_global_expected)
+
+        numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
+
+    def test_12_02_threshold_otsu3_volume(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+        mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(data, mask=mask, dimensions=3)
+
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+
+        module.global_operation.value = centrosome.threshold.TM_OTSU
+
+        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+
+        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
+
+        module.adaptive_window_size.value = 3
+
+        t_local, t_global = module.get_threshold(image, workspace)
+
+        t_global_expected = centrosome.threshold.get_otsu_threshold(
+            image.pixel_data,
+            image.mask,
+            two_class_otsu=False,
+            assign_middle_to_foreground=True
+        )
+
+        t_local_expected = numpy.zeros_like(data)
+
+        for index, plane in enumerate(data):
+            t_local_expected[index] = centrosome.threshold.get_adaptive_threshold(
+                centrosome.threshold.TM_OTSU,
+                plane,
+                t_global_expected,
+                mask=mask[index],
+                adaptive_window_size=3,
+                two_class_otsu=False,
+                assign_middle_to_foreground=True
+            )
+
+        t_min = t_global_expected * 0.7
+
+        t_max = min(1.0, t_global_expected * 1.5)
+
+        t_local_expected[t_local_expected < t_min] = t_min
+
+        t_local_expected[t_local_expected > t_max] = t_max
+
+        numpy.testing.assert_almost_equal(t_global, t_global_expected)
+
+        assert t_local.ndim == 3
+
+        numpy.testing.assert_array_almost_equal(t_local, t_local_expected)

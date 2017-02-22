@@ -708,22 +708,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             if self.two_class_otsu.value == O_TWO_CLASS:
                 return self._threshold_otsu(image)
 
-        kwparams = {
-            "threshold_range_min": self.threshold_range.min,
-            "threshold_range_max": self.threshold_range.max,
-            "threshold_correction_factor": self.threshold_correction_factor.value,
-            "two_class_otsu": False,
-            "assign_middle_to_foreground": self.assign_middle_to_foreground.value == O_FOREGROUND
-        }
-
-        return centrosome.threshold.get_threshold(
-            centrosome.threshold.TM_OTSU,
-            self.threshold_scope.value,
-            image.pixel_data,
-            mask=image.mask,
-            adaptive_window_size=self.adaptive_window_size.value if self.threshold_scope.value == TS_ADAPTIVE else None,
-            **kwparams
-        )
+        return self._threshold_otsu3(image)
 
     def _threshold_li(self, image, automatic=False):
         data = image.pixel_data
@@ -798,6 +783,64 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             t_local = skimage.filters.rank.otsu(data, selem, mask=mask)
 
         return skimage.img_as_float(t_local)
+
+    def _threshold_otsu3(self, image):
+        data = image.pixel_data
+
+        mask = image.mask
+
+        t_global = centrosome.threshold.get_otsu_threshold(
+            data,
+            mask,
+            two_class_otsu=False,
+            assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
+        )
+
+        if self.threshold_scope.value == TS_ADAPTIVE:
+            if image.volumetric:
+                t_local = numpy.zeros_like(data)
+
+                for index, plane in enumerate(data):
+                    t_local[index] = centrosome.threshold.get_adaptive_threshold(
+                        centrosome.threshold.TM_OTSU,
+                        plane,
+                        t_global,
+                        mask=mask[index],
+                        adaptive_window_size=3,
+                        two_class_otsu=False,
+                        assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
+                    )
+            else:
+                t_local = centrosome.threshold.get_adaptive_threshold(
+                    centrosome.threshold.TM_OTSU,
+                    data,
+                    t_global,
+                    mask=mask,
+                    adaptive_window_size=3,
+                    two_class_otsu=False,
+                    assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
+                )
+
+            t_local *= self.threshold_correction_factor.value
+
+            # Constrain the local threshold to be within [0.7, 1.5] * global_threshold. It's for the pretty common case
+            # where you have regions of the image with no cells whatsoever that are as large as whatever window you're
+            # using. Without a lower bound, you start having crazy threshold s that detect noise blobs. And same for
+            # very crowded areas where there is zero background in the window. You want the foreground to be all
+            # detected.
+            t_min = max(self.threshold_range.min, t_global * 0.7)
+
+            t_max = min(self.threshold_range.max, t_global * 1.5)
+
+            t_local[t_local < t_min] = t_min
+
+            t_local[t_local > t_max] = t_max
+
+            return t_local, t_global
+
+        t_local = t_global * self.threshold_correction_factor.value
+
+        return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
 
     def _threshold_robust_background(self, image):
         average_fn = {

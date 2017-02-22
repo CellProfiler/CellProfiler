@@ -704,16 +704,20 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         if self.threshold_operation == centrosome.threshold.TM_ROBUST_BACKGROUND:
             return self._threshold_robust_background(image)
 
+        if self.threshold_operation == centrosome.threshold.TM_OTSU:
+            if self.two_class_otsu.value == O_TWO_CLASS:
+                return self._threshold_otsu(image)
+
         kwparams = {
             "threshold_range_min": self.threshold_range.min,
             "threshold_range_max": self.threshold_range.max,
             "threshold_correction_factor": self.threshold_correction_factor.value,
-            "two_class_otsu": self.two_class_otsu.value == O_TWO_CLASS,
+            "two_class_otsu": False,
             "assign_middle_to_foreground": self.assign_middle_to_foreground.value == O_FOREGROUND
         }
 
         return centrosome.threshold.get_threshold(
-            self.global_operation.value,
+            centrosome.threshold.TM_OTSU,
             self.threshold_scope.value,
             image.pixel_data,
             mask=image.mask,
@@ -739,6 +743,61 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         t_local = t_global * self.threshold_correction_factor.value
 
         return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
+
+    def _threshold_otsu(self, image):
+        data = image.pixel_data
+
+        mask = image.mask
+
+        if len(data[mask]) == 0:
+            t_global = 0.0
+        elif numpy.all(data[mask] == data[mask][0]):
+            t_global = data[mask][0]
+        else:
+            t_global = skimage.filters.threshold_otsu(data[mask])
+
+        if self.threshold_scope.value == TS_ADAPTIVE:
+            t_local = self._threshold_local_otsu(image)
+
+            t_local *= self.threshold_correction_factor.value
+
+            # Constrain the local threshold to be within [0.7, 1.5] * global_threshold. It's for the pretty common case
+            # where you have regions of the image with no cells whatsoever that are as large as whatever window you're
+            # using. Without a lower bound, you start having crazy threshold s that detect noise blobs. And same for
+            # very crowded areas where there is zero background in the window. You want the foreground to be all
+            # detected.
+            t_min = max(self.threshold_range.min, t_global * 0.7)
+
+            t_max = min(self.threshold_range.max, t_global * 1.5)
+
+            t_local[t_local < t_min] = t_min
+
+            t_local[t_local > t_max] = t_max
+
+            return t_local, t_global
+
+        t_local = t_global * self.threshold_correction_factor.value
+
+        return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
+
+    def _threshold_local_otsu(self, image):
+        data = image.pixel_data
+
+        mask = image.mask
+
+        data = skimage.img_as_ubyte(data)
+
+        selem = skimage.morphology.square(self.adaptive_window_size.value)
+
+        if image.volumetric:
+            t_local = numpy.zeros_like(data)
+
+            for index, plane, in enumerate(data):
+                t_local[index] = skimage.filters.rank.otsu(plane, selem, mask=mask[index])
+        else:
+            t_local = skimage.filters.rank.otsu(data, selem, mask=mask)
+
+        return skimage.img_as_float(t_local)
 
     def _threshold_robust_background(self, image):
         average_fn = {

@@ -52,8 +52,8 @@ class TestResize(unittest.TestCase):
         for module in pipeline.modules()[1:]:
             self.assertTrue(isinstance(module, cellprofiler.modules.resize.Resize))
         module = pipeline.modules()[1]
-        self.assertEqual(module.image_name, 'DNA')
-        self.assertEqual(module.resized_image_name, 'ResizedDNA')
+        self.assertEqual(module.x_name, 'DNA')
+        self.assertEqual(module.y_name, 'ResizedDNA')
         self.assertEqual(module.size_method, cellprofiler.modules.resize.R_BY_FACTOR)
         self.assertAlmostEqual(module.resizing_factor.value, .25)
         self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_NEAREST_NEIGHBOR)
@@ -95,8 +95,8 @@ class TestResize(unittest.TestCase):
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertEqual(module.image_name, 'DNA')
-        self.assertEqual(module.resized_image_name, 'ResizedDNA')
+        self.assertEqual(module.x_name, 'DNA')
+        self.assertEqual(module.y_name, 'ResizedDNA')
         self.assertEqual(module.size_method, cellprofiler.modules.resize.R_BY_FACTOR)
         self.assertAlmostEqual(module.resizing_factor.value, .25)
         self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_NEAREST_NEIGHBOR)
@@ -138,8 +138,8 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.resize.Resize))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.resized_image_name, "ResizedDNA")
+        self.assertEqual(module.x_name, "DNA")
+        self.assertEqual(module.y_name, "ResizedDNA")
         self.assertEqual(module.size_method, cellprofiler.modules.resize.R_TO_SIZE)
         self.assertAlmostEqual(module.resizing_factor.value, 0.25)
         self.assertEqual(module.specific_width, 141)
@@ -157,8 +157,8 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
     def make_workspace(self, image, size_method, interpolation,
                        mask=None, cropping=None):
         module = cellprofiler.modules.resize.Resize()
-        module.image_name.value = INPUT_IMAGE_NAME
-        module.resized_image_name.value = OUTPUT_IMAGE_NAME
+        module.x_name.value = INPUT_IMAGE_NAME
+        module.y_name.value = OUTPUT_IMAGE_NAME
         module.size_method.value = size_method
         module.interpolation.value = interpolation
         module.module_num = 1

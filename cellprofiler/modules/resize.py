@@ -29,27 +29,17 @@ I_BILINEAR = 'Bilinear'
 I_BICUBIC = 'Bicubic'
 
 I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
-'''The index of the additional image count setting'''
+
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize(cellprofiler.module.Module):
-    category = "Image Processing"
+class Resize(cellprofiler.module.ImageProcessing):
     variable_revision_number = 4
+
     module_name = "Resize"
 
     def create_settings(self):
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
-            "Select the input image",
-            cellprofiler.setting.NONE,
-            doc="Select the image to be resized."
-        )
-
-        self.resized_image_name = cellprofiler.setting.ImageNameProvider(
-            "Name the output image",
-            "ResizedBlue",
-            doc="Enter the name of the resized image."
-        )
+        super(Resize, self).create_settings()
 
         self.size_method = cellprofiler.setting.Choice(
             "Resizing method",
@@ -181,9 +171,9 @@ class Resize(cellprofiler.module.Module):
         self.additional_images.append(group)
 
     def settings(self):
-        result = [
-            self.image_name,
-            self.resized_image_name,
+        settings = super(Resize, self).settings()
+
+        settings += [
             self.size_method,
             self.resizing_factor,
             self.specific_width,
@@ -195,43 +185,41 @@ class Resize(cellprofiler.module.Module):
         ]
 
         for additional in self.additional_images:
-            result += [
+            settings += [
                 additional.input_image_name,
                 additional.output_image_name
             ]
 
-        return result
+        return settings
 
     def visible_settings(self):
-        result = [
-            self.image_name,
-            self.resized_image_name,
-            self.size_method
-        ]
+        visible_settings = super(Resize, self).visible_settings()
+
+        visible_settings += [self.size_method]
 
         if self.size_method == R_BY_FACTOR:
-            result += [self.resizing_factor]
+            visible_settings += [self.resizing_factor]
         elif self.size_method == R_TO_SIZE:
-            result += [self.use_manual_or_image]
+            visible_settings += [self.use_manual_or_image]
 
             if self.use_manual_or_image == C_IMAGE:
-                result += [self.specific_image]
+                visible_settings += [self.specific_image]
             elif self.use_manual_or_image == C_MANUAL:
-                result += [
+                visible_settings += [
                     self.specific_width,
                     self.specific_height
                 ]
         else:
             raise ValueError(u"Unsupported size method: {}".format(self.size_method.value))
 
-        result += [self.interpolation]
+        visible_settings += [self.interpolation]
 
         for additional in self.additional_images:
-            result += additional.visible_settings()
+            visible_settings += additional.visible_settings()
 
-        result += [self.add_button]
+        visible_settings += [self.add_button]
 
-        return result
+        return visible_settings
 
     def prepare_settings(self, setting_values):
         try:
@@ -252,7 +240,7 @@ class Resize(cellprofiler.module.Module):
             pass
 
     def run(self, workspace):
-        self.apply_resize(workspace, self.image_name.value, self.resized_image_name.value)
+        self.apply_resize(workspace, self.x_name.value, self.y_name.value)
 
         for additional in self.additional_images:
             self.apply_resize(workspace, additional.input_image_name.value, additional.output_image_name.value)

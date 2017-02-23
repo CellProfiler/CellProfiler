@@ -16,7 +16,7 @@ from cellprofiler.knime_bridge import KnimeBridgeServer, \
 import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
 from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
-from cellprofiler.modules.identify import TS_MANUAL
+from cellprofiler.modules.applythreshold import TS_GLOBAL, TM_MANUAL
 from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
 from cellprofiler.modules.loadimages import LoadImages
 from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape
@@ -166,7 +166,8 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = TS_MANUAL
+        identify.threshold_scope.value = TS_GLOBAL
+        identify.global_operation.value = TM_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -209,7 +210,8 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = TS_MANUAL
+        identify.threshold_scope.value = TS_GLOBAL
+        identify.global_operation.value = TM_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -253,7 +255,8 @@ class TestKnimeBridge(unittest.TestCase):
         identify.use_advanced.value = True
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = TS_MANUAL
+        identify.threshold_scope.value = TS_GLOBAL
+        identify.global_operation.value = TM_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -314,7 +317,8 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = TS_MANUAL
+        identify.threshold_scope.value = TS_GLOBAL
+        identify.global_operation.value = TM_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -362,7 +366,8 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = TS_MANUAL
+        identify.threshold_scope.value = TS_GLOBAL
+        identify.global_operation.value = TM_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)

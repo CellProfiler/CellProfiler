@@ -181,139 +181,195 @@ class Resize(cellprofiler.module.Module):
         self.additional_images.append(group)
 
     def settings(self):
-        result = [self.image_name, self.resized_image_name, self.size_method,
-                  self.resizing_factor, self.specific_width,
-                  self.specific_height, self.interpolation,
-                  self.use_manual_or_image, self.specific_image,
-                  self.additional_image_count]
+        result = [
+            self.image_name,
+            self.resized_image_name,
+            self.size_method,
+            self.resizing_factor,
+            self.specific_width,
+            self.specific_height,
+            self.interpolation,
+            self.use_manual_or_image,
+            self.specific_image,
+            self.additional_image_count
+        ]
 
         for additional in self.additional_images:
-            result += [additional.input_image_name, additional.output_image_name]
+            result += [
+                additional.input_image_name,
+                additional.output_image_name
+            ]
 
         return result
 
     def visible_settings(self):
-        result = [self.image_name, self.resized_image_name, self.size_method]
+        result = [
+            self.image_name,
+            self.resized_image_name,
+            self.size_method
+        ]
+
         if self.size_method == R_BY_FACTOR:
-            result.append(self.resizing_factor)
+            result += [self.resizing_factor]
         elif self.size_method == R_TO_SIZE:
             result += [self.use_manual_or_image]
+
             if self.use_manual_or_image == C_IMAGE:
                 result += [self.specific_image]
             elif self.use_manual_or_image == C_MANUAL:
-                result += [self.specific_width, self.specific_height]
+                result += [
+                    self.specific_width,
+                    self.specific_height
+                ]
         else:
-            raise ValueError("Unsupported size method: %s" %
-                             self.size_method.value)
+            raise ValueError(u"Unsupported size method: {}".format(self.size_method.value))
+
         result += [self.interpolation]
 
         for additional in self.additional_images:
             result += additional.visible_settings()
+
         result += [self.add_button]
+
         return result
 
     def prepare_settings(self, setting_values):
-        '''Create the correct number of additional images'''
         try:
-            additional_image_setting_count = \
-                int(setting_values[S_ADDITIONAL_IMAGE_COUNT])
+            additional_image_setting_count = int(setting_values[S_ADDITIONAL_IMAGE_COUNT])
+
             if len(self.additional_images) > additional_image_setting_count:
                 del self.additional_images[additional_image_setting_count:]
             else:
-                for i in range(len(self.additional_images),
-                               additional_image_setting_count):
+                for i in range(len(self.additional_images), additional_image_setting_count):
                     self.add_image()
         except ValueError:
             logger.warning(
-                    'Additional image setting count was "%s" '
-                    'which is not an integer.',
-                    setting_values[S_ADDITIONAL_IMAGE_COUNT], exc_info=True)
+                "Additional image setting count was \"%s\" which is not an integer.",
+                setting_values[S_ADDITIONAL_IMAGE_COUNT],
+                exc_info=True
+            )
+
             pass
 
     def run(self, workspace):
         self.apply_resize(workspace, self.image_name.value, self.resized_image_name.value)
+
         for additional in self.additional_images:
             self.apply_resize(workspace, additional.input_image_name.value, additional.output_image_name.value)
 
     def apply_resize(self, workspace, input_image_name, output_image_name):
         image = workspace.image_set.get_image(input_image_name)
+
         image_pixels = image.pixel_data
+
         if self.size_method == R_BY_FACTOR:
             factor = self.resizing_factor.value
+
             shape = (numpy.array(image_pixels.shape[:2]) * factor + .5).astype(int)
         elif self.size_method == R_TO_SIZE:
             if self.use_manual_or_image == C_MANUAL:
-                shape = numpy.array([self.specific_height.value,
-                                     self.specific_width.value])
+                shape = numpy.array([self.specific_height.value, self.specific_width.value])
             elif self.use_manual_or_image == C_IMAGE:
-                shape = numpy.array(workspace.image_set.get_image(
-                        self.specific_image.value).pixel_data.shape[:2]).astype(int)
-            factor = numpy.array(shape, float) / \
-                     numpy.array(image_pixels.shape[:2], float)
+                shape = numpy.array(
+                    workspace.image_set.get_image(self.specific_image.value).pixel_data.shape[:2]
+                ).astype(int)
+
+            factor = numpy.array(shape, float) / numpy.array(image_pixels.shape[:2], float)
+
         #
         # Little bit of wierdness here. The input pixels are numbered 0 to
         # shape-1 and so are the output pixels. Therefore the affine transform
         # is the ratio of the two shapes-1
         #
-        ratio = ((numpy.array(image_pixels.shape[:2]).astype(float) - 1) /
-                 (shape.astype(float) - 1))
+        ratio = ((numpy.array(image_pixels.shape[:2]).astype(float) - 1) / (shape.astype(float) - 1))
+
         transform = numpy.array([[ratio[0], 0], [0, ratio[1]]])
+
         if self.interpolation not in I_ALL:
-            raise NotImplementedError("Unsupported interpolation method: %s" %
-                                      self.interpolation.value)
-        order = (0 if self.interpolation == I_NEAREST_NEIGHBOR
-                 else 1 if self.interpolation == I_BILINEAR
-        else 2)
+            raise NotImplementedError(u"Unsupported interpolation method: {}".format(self.interpolation.value))
+
+        order = (0 if self.interpolation == I_NEAREST_NEIGHBOR else 1 if self.interpolation == I_BILINEAR else 2)
+
         if image_pixels.ndim == 3:
-            output_pixels = numpy.zeros((shape[0], shape[1], image_pixels.shape[2]),
-                                        image_pixels.dtype)
+            output_pixels = numpy.zeros((shape[0], shape[1], image_pixels.shape[2]), image_pixels.dtype)
+
             for i in range(image_pixels.shape[2]):
-                scipy.ndimage.affine_transform(image_pixels[:, :, i], transform,
-                                               output_shape=tuple(shape),
-                                               output=output_pixels[:, :, i],
-                                               order=order)
+                scipy.ndimage.affine_transform(
+                    image_pixels[:, :, i],
+                    transform,
+                    output_shape=tuple(shape),
+                    output=output_pixels[:, :, i],
+                    order=order
+                )
         else:
-            output_pixels = scipy.ndimage.affine_transform(image_pixels, transform,
-                                                           output_shape=shape,
-                                                           order=order)
+            output_pixels = scipy.ndimage.affine_transform(
+                image_pixels,
+                transform,
+                output_shape=shape,
+                order=order
+            )
+
         # Explicitly provide a mask in order to divorce our mask from
         # any that might be supplied by the parent.
-        mask = scipy.ndimage.affine_transform(image.mask.astype(float), transform,
-                                              output_shape=shape[:2],
-                                              order=1) >= .5
+        mask = scipy.ndimage.affine_transform(
+            image.mask.astype(float),
+            transform,
+            output_shape=shape[:2],
+            order=1
+        ) >= .5
+
         if image.has_crop_mask:
             input_cropping = image.crop_mask
-            cropping_shape = (
-                numpy.array(input_cropping.shape, float) * factor + .5).astype(int)
+
+            cropping_shape = (numpy.array(input_cropping.shape, float) * factor + .5).astype(int)
+
             eps = numpy.array([.50001, .50001]) / factor
-            i = numpy.linspace(eps[0], input_cropping.shape[0] + eps[0],
-                               cropping_shape[0],
-                               endpoint=False)
-            j = numpy.linspace(eps[1], input_cropping.shape[1] + eps[1],
-                               cropping_shape[1],
-                               endpoint=False)
+
+            i = numpy.linspace(
+                eps[0],
+                input_cropping.shape[0] + eps[0],
+                cropping_shape[0],
+                endpoint=False
+            )
+
+            j = numpy.linspace(
+                eps[1],
+                input_cropping.shape[1] + eps[1],
+                cropping_shape[1],
+                endpoint=False
+            )
+
             ii, jj = numpy.mgrid[0:cropping_shape[0], 0:cropping_shape[1]]
+
             cropping = scipy.ndimage.map_coordinates(
-                    input_cropping.astype(float),
-                    coordinates=[i[ii], j[jj]],
-                    order=1, mode='nearest') >= .5
+                input_cropping.astype(float),
+                coordinates=[i[ii], j[jj]],
+                order=1,
+                mode='nearest'
+            ) >= .5
         else:
             cropping = mask
-        output_image = cellprofiler.image.Image(output_pixels, parent_image=image,
-                                                mask=mask, crop_mask=cropping)
+
+        output_image = cellprofiler.image.Image(
+            output_pixels,
+            parent_image=image,
+            mask=mask,
+            crop_mask=cropping
+        )
+
         workspace.image_set.add(output_image_name, output_image)
 
         if self.show_window:
-            if not hasattr(workspace.display_data, 'input_images'):
-                workspace.display_data.input_images = [image.pixel_data]
-                workspace.display_data.output_images = [output_image.pixel_data]
-                workspace.display_data.input_image_names = [input_image_name]
-                workspace.display_data.output_image_names = [output_image_name]
-            else:
+            if hasattr(workspace.display_data, 'input_images'):
                 workspace.display_data.input_images += [image.pixel_data]
                 workspace.display_data.output_images += [output_image.pixel_data]
                 workspace.display_data.input_image_names += [input_image_name]
                 workspace.display_data.output_image_names += [output_image_name]
+            else:
+                workspace.display_data.input_images = [image.pixel_data]
+                workspace.display_data.output_images = [output_image.pixel_data]
+                workspace.display_data.input_image_names = [input_image_name]
+                workspace.display_data.output_image_names = [output_image_name]
 
     def display(self, workspace, figure):
         '''Display the resized images
@@ -331,21 +387,39 @@ class Resize(cellprofiler.module.Module):
 
         figure.set_subplots((2, len(input_images)))
 
-        for i, (input_image_pixels, output_image_pixels, input_image_name, output_image_name) in \
-                enumerate(zip(input_images, output_images, input_image_names, output_image_names)):
+        for i, (input_image_pixels, output_image_pixels, input_image_name, output_image_name) in enumerate(
+                zip(input_images, output_images, input_image_names, output_image_names)
+        ):
             if input_image_pixels.ndim == 2:
-                figure.subplot_imshow_bw(0, i, input_image_pixels,
-                                         title=input_image_name)
-                figure.subplot_imshow_bw(1, i, output_image_pixels,
-                                         title=output_image_name)
-            else:
-                figure.subplot_imshow(0, i, input_image_pixels,
-                                      title=input_image_name)
-                figure.subplot_imshow(1, i, output_image_pixels,
-                                      title=output_image_name)
+                figure.subplot_imshow_bw(
+                    0,
+                    i,
+                    input_image_pixels,
+                    title=input_image_name
+                )
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+                figure.subplot_imshow_bw(
+                    1,
+                    i,
+                    output_image_pixels,
+                    title=output_image_name
+                )
+            else:
+                figure.subplot_imshow(
+                    0,
+                    i,
+                    input_image_pixels,
+                    title=input_image_name
+                )
+
+                figure.subplot_imshow(
+                    1,
+                    i,
+                    output_image_pixels,
+                    title=output_image_name
+                )
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:
             width, height = setting_values[3].split(',')
             size_method = R_BY_FACTOR if setting_values[2] != "1" else R_TO_SIZE

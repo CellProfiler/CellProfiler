@@ -12,7 +12,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import numpy
-import scipy.ndimage
+import skimage.transform
 
 logger = logging.getLogger(__name__)
 
@@ -250,93 +250,57 @@ class Resize(cellprofiler.module.ImageProcessing):
 
         image_pixels = image.pixel_data
 
-        if self.size_method == R_BY_FACTOR:
+        if self.size_method.value == R_BY_FACTOR:
             factor = self.resizing_factor.value
 
-            shape = (numpy.array(image_pixels.shape[:2]) * factor + .5).astype(int)
-        elif self.size_method == R_TO_SIZE:
-            if self.use_manual_or_image == C_MANUAL:
+            shape = numpy.array(image_pixels.shape).astype(numpy.float)
+
+            if image.multichannel:
+                shape = numpy.concatenate((shape[:-1] * factor, [shape[-1]]))
+            else:
+                shape *= factor
+        elif self.size_method.value == R_TO_SIZE:
+            if self.use_manual_or_image.value == C_MANUAL:
                 shape = numpy.array([self.specific_height.value, self.specific_width.value])
-            elif self.use_manual_or_image == C_IMAGE:
+            else:
                 shape = numpy.array(
                     workspace.image_set.get_image(self.specific_image.value).pixel_data.shape[:2]
                 ).astype(int)
 
-            factor = numpy.array(shape, float) / numpy.array(image_pixels.shape[:2], float)
-
-        #
-        # Little bit of wierdness here. The input pixels are numbered 0 to
-        # shape-1 and so are the output pixels. Therefore the affine transform
-        # is the ratio of the two shapes-1
-        #
-        ratio = ((numpy.array(image_pixels.shape[:2]).astype(float) - 1) / (shape.astype(float) - 1))
-
-        transform = numpy.array([[ratio[0], 0], [0, ratio[1]]])
-
-        if self.interpolation not in I_ALL:
-            raise NotImplementedError(u"Unsupported interpolation method: {}".format(self.interpolation.value))
-
-        order = (0 if self.interpolation == I_NEAREST_NEIGHBOR else 1 if self.interpolation == I_BILINEAR else 2)
-
-        if image_pixels.ndim == 3:
-            output_pixels = numpy.zeros((shape[0], shape[1], image_pixels.shape[2]), image_pixels.dtype)
-
-            for i in range(image_pixels.shape[2]):
-                scipy.ndimage.affine_transform(
-                    image_pixels[:, :, i],
-                    transform,
-                    output_shape=tuple(shape),
-                    output=output_pixels[:, :, i],
-                    order=order
-                )
+        if self.interpolation.value == I_NEAREST_NEIGHBOR:
+            order = 0
+        elif self.interpolation.value == I_BILINEAR:
+            order = 1
         else:
-            output_pixels = scipy.ndimage.affine_transform(
-                image_pixels,
-                transform,
-                output_shape=shape,
-                order=order
-            )
+            order = 2
 
-        # Explicitly provide a mask in order to divorce our mask from
-        # any that might be supplied by the parent.
-        mask = scipy.ndimage.affine_transform(
-            image.mask.astype(float),
-            transform,
-            output_shape=shape[:2],
-            order=1
-        ) >= .5
+        output_pixels = skimage.transform.resize(
+            image_pixels,
+            shape,
+            order=order,
+            mode="symmetric"
+        )
+
+        mask = skimage.transform.resize(
+            image.mask,
+            shape,
+            order=0,
+            mode="symmetric"
+        )
+
+        mask = skimage.img_as_bool(mask)
 
         if image.has_crop_mask:
-            input_cropping = image.crop_mask
-
-            cropping_shape = (numpy.array(input_cropping.shape, float) * factor + .5).astype(int)
-
-            eps = numpy.array([.50001, .50001]) / factor
-
-            i = numpy.linspace(
-                eps[0],
-                input_cropping.shape[0] + eps[0],
-                cropping_shape[0],
-                endpoint=False
+            cropping = skimage.transform.resize(
+                image.crop_mask,
+                shape,
+                order=0,
+                mode="symmetric"
             )
 
-            j = numpy.linspace(
-                eps[1],
-                input_cropping.shape[1] + eps[1],
-                cropping_shape[1],
-                endpoint=False
-            )
-
-            ii, jj = numpy.mgrid[0:cropping_shape[0], 0:cropping_shape[1]]
-
-            cropping = scipy.ndimage.map_coordinates(
-                input_cropping.astype(float),
-                coordinates=[i[ii], j[jj]],
-                order=1,
-                mode='nearest'
-            ) >= .5
+            cropping = skimage.img_as_bool(cropping)
         else:
-            cropping = mask
+            cropping = None
 
         output_image = cellprofiler.image.Image(
             output_pixels,

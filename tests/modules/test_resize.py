@@ -11,6 +11,9 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
 import numpy
+import numpy.testing
+import skimage.exposure
+import skimage.transform
 
 cellprofiler.preferences.set_headless()
 
@@ -155,7 +158,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_BICUBIC)
 
     def make_workspace(self, image, size_method, interpolation,
-                       mask=None, cropping=None):
+                       mask=None, cropping=None, dimensions=2):
         module = cellprofiler.modules.resize.Resize()
         module.x_name.value = INPUT_IMAGE_NAME
         module.y_name.value = OUTPUT_IMAGE_NAME
@@ -166,7 +169,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         pipeline.add_module(module)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image = cellprofiler.image.Image(image, mask, cropping)
+        image = cellprofiler.image.Image(image, mask, cropping, dimensions=dimensions)
         image_set.add(INPUT_IMAGE_NAME, image)
         workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
                                                      cellprofiler.object.ObjectSet(),
@@ -179,136 +182,174 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image = numpy.zeros((10, 10, 3))
         image[:, :, 0] = i
         image[:, :, 1] = j
-        i, j = (numpy.mgrid[0:30, 0:30].astype(float) * 9.0 / 29.0 + .5).astype(int)
+        image = skimage.exposure.rescale_intensity(1.0 * image)
+        i, j = (numpy.mgrid[0:30, 0:30].astype(float) * 1.0 / 3.0).astype(int)
         expected = numpy.zeros((30, 30, 3))
         expected[:, :, 0] = i
         expected[:, :, 1] = j
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_BY_FACTOR,
-                                                cellprofiler.modules.resize.I_NEAREST_NEIGHBOR)
+        expected = skimage.exposure.rescale_intensity(1.0 * expected)
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+        )
         module.resizing_factor.value = 3.0
         module.run(workspace)
         result_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         result = result_image.pixel_data
-        self.assertTrue(numpy.all(numpy.abs(result - expected) <=
-                                  numpy.finfo(float).eps))
-        self.assertTrue(result_image.parent_image is
-                        workspace.image_set.get_image(INPUT_IMAGE_NAME))
+        numpy.testing.assert_array_almost_equal(result, expected)
+        assert result_image.parent_image is workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     def test_02_02_rescale_triple_bw(self):
-        i, j = numpy.mgrid[0:10, 0:10]
-        image = i.astype(float)
-        i, j = (numpy.mgrid[0:30, 0:30].astype(float) * 9.0 / 29.0 + .5).astype(int)
-        expected = i
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_BY_FACTOR,
-                                                cellprofiler.modules.resize.I_NEAREST_NEIGHBOR)
+        i, j = numpy.mgrid[0:10, 0:10].astype(float)
+        image = skimage.exposure.rescale_intensity(1.0 * i)
+        i, j = (numpy.mgrid[0:30, 0:30].astype(float) * 1.0 / 3.0).astype(int)
+        expected = skimage.exposure.rescale_intensity(1.0 * i)
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+        )
         module.resizing_factor.value = 3.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(numpy.abs(result - expected) <=
-                                  numpy.finfo(float).eps))
+        numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_02_03_third(self):
         i, j = numpy.mgrid[0:30, 0:30]
-        image = i.astype(float)
-        expected = (numpy.mgrid[0:10, 0:10][0].astype(float) * 29.0 / 9.0 + .5).astype(int)
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_BY_FACTOR,
-                                                cellprofiler.modules.resize.I_NEAREST_NEIGHBOR)
+        image = skimage.exposure.rescale_intensity(1.0 * i)
+        expected = skimage.transform.resize(
+            image,
+            (10, 10),
+            order=0,
+            mode="symmetric"
+        )
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+        )
         module.resizing_factor.value = 1.0 / 3.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(numpy.abs(result - expected) <=
-                                  numpy.finfo(float).eps))
+        numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_03_01_bilinear(self):
         i, j = numpy.mgrid[0:10, 0:10]
-        image = i.astype(numpy.float32)
-        expected = numpy.mgrid[0:30, 0:30][0].astype(numpy.float32) * 9.0 / 29.0
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_BY_FACTOR,
-                                                cellprofiler.modules.resize.I_BILINEAR)
+        image = skimage.exposure.rescale_intensity(1.0 * i)
+        expected = skimage.transform.resize(
+            image,
+            (30, 30),
+            order=1,
+            mode="symmetric"
+        )
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.resizing_factor.value = 3.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(numpy.abs(result - expected) <=
-                                  numpy.sqrt(numpy.finfo(float).eps)))
+        numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_03_02_bicubic(self):
-        '''Test bicubic interpolation'''
         i, j = numpy.mgrid[0:10, 0:10]
-        image = i.astype(float) ** 2
-        # Bicubic here should be betweeen nearest neighbor and bilinear
-        i, j = numpy.mgrid[0:19, 0:19]
-        low_bound = (i / 2) ** 2
-        upper_bound = (i.astype(float) / 2) ** 2
-        odd_mask = i % 2 == 1
-        upper_bound[odd_mask] = (upper_bound[numpy.maximum(i - 1, 0), j] +
-                                 upper_bound[numpy.minimum(i + 1, 18), j])[odd_mask] / 2
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_BY_FACTOR,
-                                                cellprofiler.modules.resize.I_BICUBIC)
-        module.resizing_factor.value = 19.0 / 10.0
+        image = skimage.exposure.rescale_intensity(1.0 * i)
+        expected = skimage.transform.resize(
+            image,
+            (30, 30),
+            order=2,
+            mode="symmetric"
+        )
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_BICUBIC
+        )
+        module.resizing_factor.value = 3.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        #
-        # Need to account for edge effects at the top - a row of zeros
-        # is used there
-        #
-        self.assertTrue(numpy.all(result[i < 17] >= low_bound[i < 17] -
-                                  numpy.sqrt(numpy.finfo(float).eps)))
-        self.assertTrue(numpy.all(result[i < 17] <= upper_bound[i < 17] +
-                                  numpy.sqrt(numpy.finfo(float).eps)))
+        numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_01_reshape_double(self):
         '''Make an image twice as large by changing the shape'''
         i, j = numpy.mgrid[0:10, 0:10].astype(float)
-        image = i + j * 10
-        i, j = numpy.mgrid[0:19, 0:19].astype(float) / 2.0
-        expected = i + j * 10
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_TO_SIZE,
-                                                cellprofiler.modules.resize.I_BILINEAR)
+        image = skimage.exposure.rescale_intensity(i + j * 10.0)
+        expected = skimage.transform.resize(
+            image,
+            (19, 19),
+            order=1,
+            mode="symmetric"
+        )
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.specific_width.value = 19
         module.specific_height.value = 19
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(numpy.abs(result - expected) <=
-                                  numpy.sqrt(numpy.finfo(float).eps)))
+        numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_02_reshape_half(self):
         '''Make an image half as large by changing the shape'''
         i, j = numpy.mgrid[0:19, 0:19].astype(float) / 2.0
-        image = i + j * 10
-        i, j = numpy.mgrid[0:10, 0:10].astype(float)
-        expected = i + j * 10
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_TO_SIZE,
-                                                cellprofiler.modules.resize.I_BILINEAR)
+        image = skimage.exposure.rescale_intensity(i + j * 10)
+        expected = skimage.transform.resize(
+            image,
+            (10, 10),
+            order=1,
+            mode="symmetric"
+        )
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.specific_width.value = 10
         module.specific_height.value = 10
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(numpy.abs(result - expected) <=
-                                  numpy.sqrt(numpy.finfo(float).eps)))
+        numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_03_reshape_half_and_double(self):
         '''Make an image twice as large in one dimension and half in other'''
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
-        image = i + j * 5.0
-        i, j = numpy.mgrid[0:19, 0:10].astype(float)
-        expected = i * .5 + j * 10
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_TO_SIZE,
-                                                cellprofiler.modules.resize.I_BILINEAR)
+        image = skimage.exposure.rescale_intensity(i + j * 5.0)
+        expected = skimage.transform.resize(
+            image,
+            (19, 10),
+            order=1,
+            mode="symmetric"
+        )
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.specific_width.value = 10
         module.specific_height.value = 19
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(numpy.abs(result - expected) <=
-                                  numpy.sqrt(numpy.finfo(float).eps)))
+        numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_04_reshape_using_another_images_dimensions(self):
         ''''Resize to another image's dimensions'''
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
-        image = i + j
-        i, j = numpy.mgrid[0:19, 0:10].astype(float)
-        expected = i + j
-        workspace, module = self.make_workspace(image, cellprofiler.modules.resize.R_TO_SIZE,
-                                                cellprofiler.modules.resize.I_BILINEAR)
+        image = skimage.exposure.rescale_intensity(1.0 * i + j)
+        expected = skimage.transform.resize(
+            image,
+            (19, 10),
+            order=1,
+            mode="symmetric"
+        )
+        workspace, module = self.make_workspace(
+            image,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
         module.specific_image.value = 'AnotherImage'
         workspace.image_set.add(module.specific_image.value, cellprofiler.image.Image(expected))
@@ -327,13 +368,17 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         cropping = numpy.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
         workspace, module = self.make_workspace(
-                image, cellprofiler.modules.resize.R_BY_FACTOR, cellprofiler.modules.resize.I_BILINEAR, mask, cropping)
-        assert isinstance(module, cellprofiler.modules.resize.Resize)
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_BILINEAR,
+            mask,
+            cropping
+        )
         module.resizing_factor.value = .5
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.mask.shape), (5, 10))
-        self.assertEqual(tuple(result.crop_mask.shape), (15, 20))
+        self.assertEqual(tuple(result.crop_mask.shape), (5, 10))
         x = result.crop_image_similarly(numpy.zeros(result.crop_mask.shape))
         self.assertEqual(tuple(x.shape), (5, 10))
 
@@ -348,13 +393,17 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         cropping = numpy.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
         workspace, module = self.make_workspace(
-                image, cellprofiler.modules.resize.R_BY_FACTOR, cellprofiler.modules.resize.I_BILINEAR, mask, cropping)
-        assert isinstance(module, cellprofiler.modules.resize.Resize)
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_BILINEAR,
+            mask,
+            cropping
+        )
         module.resizing_factor.value = 2
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.mask.shape), (20, 40))
-        self.assertEqual(tuple(result.crop_mask.shape), (60, 80))
+        self.assertEqual(tuple(result.crop_mask.shape), (20, 40))
         x = result.crop_image_similarly(numpy.zeros(result.crop_mask.shape))
         self.assertEqual(tuple(x.shape), (20, 40))
 
@@ -362,8 +411,10 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         # Regression test of issue #1416
         image = numpy.zeros((20, 22, 3))
         workspace, module = self.make_workspace(
-                image, cellprofiler.modules.resize.R_BY_FACTOR, cellprofiler.modules.resize.I_BILINEAR)
-        assert isinstance(module, cellprofiler.modules.resize.Resize)
+            image,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.resizing_factor.value = .5
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -374,12 +425,16 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image = numpy.zeros((20, 22, 3))
         tgt_image = numpy.zeros((5, 11))
         workspace, module = self.make_workspace(
-                image, cellprofiler.modules.resize.R_TO_SIZE, cellprofiler.modules.resize.I_BILINEAR)
-        assert isinstance(module, cellprofiler.modules.resize.Resize)
+            image,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
         module.specific_image.value = 'AnotherImage'
-        workspace.image_set.add(module.specific_image.value,
-                                cellprofiler.image.Image(tgt_image))
+        workspace.image_set.add(
+            module.specific_image.value,
+            cellprofiler.image.Image(tgt_image)
+        )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.pixel_data.shape), (5, 11, 3))
@@ -389,12 +444,16 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image = numpy.zeros((20, 22, 3))
         tgt_image = numpy.zeros((10, 11, 3))
         workspace, module = self.make_workspace(
-                image, cellprofiler.modules.resize.R_TO_SIZE, cellprofiler.modules.resize.I_BILINEAR)
-        assert isinstance(module, cellprofiler.modules.resize.Resize)
+            image,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_BILINEAR
+        )
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
         module.specific_image.value = 'AnotherImage'
-        workspace.image_set.add(module.specific_image.value,
-                                cellprofiler.image.Image(tgt_image))
+        workspace.image_set.add(
+            module.specific_image.value,
+            cellprofiler.image.Image(tgt_image)
+        )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.pixel_data.shape), (10, 11, 3))

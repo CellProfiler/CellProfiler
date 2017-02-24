@@ -259,7 +259,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         expected = skimage.transform.resize(
             image,
             (30, 30),
-            order=2,
+            order=3,
             mode="symmetric"
         )
         workspace, module = self.make_workspace(

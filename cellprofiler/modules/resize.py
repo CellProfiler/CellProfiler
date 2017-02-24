@@ -272,7 +272,7 @@ class Resize(cellprofiler.module.ImageProcessing):
         elif self.interpolation.value == I_BILINEAR:
             order = 1
         else:
-            order = 2
+            order = 3
 
         output_pixels = skimage.transform.resize(
             image_pixels,
@@ -285,7 +285,7 @@ class Resize(cellprofiler.module.ImageProcessing):
             image.mask,
             shape,
             order=0,
-            mode="symmetric"
+            mode="constant"
         )
 
         mask = skimage.img_as_bool(mask)
@@ -295,7 +295,7 @@ class Resize(cellprofiler.module.ImageProcessing):
                 image.crop_mask,
                 shape,
                 order=0,
-                mode="symmetric"
+                mode="constant"
             )
 
             cropping = skimage.img_as_bool(cropping)

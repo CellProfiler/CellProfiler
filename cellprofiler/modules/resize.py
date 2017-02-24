@@ -245,9 +245,7 @@ class Resize(cellprofiler.module.ImageProcessing):
         for additional in self.additional_images:
             self.apply_resize(workspace, additional.input_image_name.value, additional.output_image_name.value)
 
-    def apply_resize(self, workspace, input_image_name, output_image_name):
-        image = workspace.image_set.get_image(input_image_name)
-
+    def resized_shape(self, image, workspace):
         image_pixels = image.pixel_data
 
         shape = numpy.array(image_pixels.shape).astype(numpy.float)
@@ -256,16 +254,14 @@ class Resize(cellprofiler.module.ImageProcessing):
             factor = self.resizing_factor.value
 
             if image.volumetric:
-                if image.multichannel:
-                    shape = numpy.concatenate(([shape[0]], shape[1:-1] * factor, [shape[-1]]))
-                else:
-                    shape = numpy.concatenate(([shape[0]], shape[1:] * factor))
+                height, width = shape[1:3]
             else:
-                if image.multichannel:
-                    shape = numpy.concatenate((shape[:-1] * factor, [shape[-1]]))
-                else:
-                    shape *= factor
-        elif self.size_method.value == R_TO_SIZE:
+                height, width = shape[:2]
+
+            height *= factor
+
+            width *= factor
+        else:
             if self.use_manual_or_image.value == C_MANUAL:
                 height = self.specific_height.value
                 width = self.specific_width.value
@@ -277,49 +273,60 @@ class Resize(cellprofiler.module.ImageProcessing):
                 else:
                     height, width = other_image.pixel_data.shape[:2]
 
-            new_shape = []
+        new_shape = []
 
-            if image.volumetric:
-                new_shape += [shape[0]]
+        if image.volumetric:
+            new_shape += [shape[0]]
 
-            new_shape += [height, width]
+        new_shape += [height, width]
 
-            if image.multichannel:
-                new_shape += [shape[-1]]
+        if image.multichannel:
+            new_shape += [shape[-1]]
 
-            shape = numpy.array(new_shape)
+        return numpy.asarray(new_shape)
 
+    def spline_order(self):
         if self.interpolation.value == I_NEAREST_NEIGHBOR:
-            order = 0
-        elif self.interpolation.value == I_BILINEAR:
-            order = 1
-        else:
-            order = 3
+            return 0
+
+        if self.interpolation.value == I_BILINEAR:
+            return 1
+
+        return 3
+
+    def apply_resize(self, workspace, input_image_name, output_image_name):
+        image = workspace.image_set.get_image(input_image_name)
+
+        image_pixels = image.pixel_data
+
+        new_shape = self.resized_shape(image, workspace)
+
+        order = self.spline_order()
 
         if image.volumetric and image.multichannel:
-            output_pixels = numpy.zeros(shape.astype(int), dtype=image_pixels.dtype)
+            output_pixels = numpy.zeros(new_shape.astype(int), dtype=image_pixels.dtype)
 
-            for idx in range(int(shape[-1])):
+            for idx in range(int(new_shape[-1])):
                 output_pixels[:, :, :, idx] = skimage.transform.resize(
                     image_pixels[:, :, :, idx],
-                    shape[:-1],
+                    new_shape[:-1],
                     order=order,
                     mode="symmetric"
                 )
         else:
             output_pixels = skimage.transform.resize(
                 image_pixels,
-                shape,
+                new_shape,
                 order=order,
                 mode="symmetric"
             )
 
-        if image.multichannel and len(shape) > image.dimensions:
-            shape = shape[:-1]
+        if image.multichannel and len(new_shape) > image.dimensions:
+            new_shape = new_shape[:-1]
 
         mask = skimage.transform.resize(
             image.mask,
-            shape,
+            new_shape,
             order=0,
             mode="constant"
         )
@@ -329,7 +336,7 @@ class Resize(cellprofiler.module.ImageProcessing):
         if image.has_crop_mask:
             cropping = skimage.transform.resize(
                 image.crop_mask,
-                shape,
+                new_shape,
                 order=0,
                 mode="constant"
             )

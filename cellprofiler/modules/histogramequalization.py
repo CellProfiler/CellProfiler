@@ -30,6 +30,15 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
             doc="Number of bins for image histogram."
         )
 
+        self.kernel_size = cellprofiler.setting.Integer(
+            u"Kernel Size",
+            value=256,
+            minval=1,
+            doc="""The image is partitioned into tiles with dimensions specified by the kernel size. Choose a kernel
+                size that will fit at least one object of interest.
+                """
+        )
+
         self.mask = cellprofiler.setting.ImageNameSubscriber(
             u"Mask",
             can_be_blank=True,
@@ -50,7 +59,8 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
         return __settings__ + [
             self.nbins,
             self.mask,
-            self.local
+            self.local,
+            self.kernel_size
         ]
 
     def visible_settings(self):
@@ -60,6 +70,8 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
 
         if not self.local.value:
             __settings__ += [self.mask]
+        else:
+            __settings__ += [self.kernel_size]
 
         return __settings__
 
@@ -88,13 +100,16 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
         nbins = self.nbins.value
 
         if self.local.value:
+
+            kernel_size = self.kernel_size.value
+
             if x.volumetric:
-                y_data = numpy.zeros_like(x_data)
+                y_data = numpy.zeros_like(x_data, dtype=numpy.float)
 
                 for index, plane in enumerate(x_data):
-                    y_data[index] = skimage.exposure.equalize_adapthist(plane, nbins=nbins)
+                    y_data[index] = skimage.exposure.equalize_adapthist(plane, kernel_size=kernel_size, nbins=nbins)
             else:
-                y_data = skimage.exposure.equalize_adapthist(x_data, nbins=nbins)
+                y_data = skimage.exposure.equalize_adapthist(x_data, kernel_size=kernel_size, nbins=nbins)
         else:
             y_data = skimage.exposure.equalize_hist(x_data, nbins=nbins, mask=mask_data)
 

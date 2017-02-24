@@ -457,3 +457,539 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.pixel_data.shape), (10, 11, 3))
+
+    def test_06_01_resize_volume_factor_grayscale(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        mask = data > 0.5
+
+        crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.resizing_factor.value = 0.5
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected_data = skimage.transform.resize(
+            data,
+            (10, 5, 5),
+            order=0,
+            mode="symmetric"
+        )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 5, 5),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 5, 5),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+    def test_06_02_resize_volume_factor_color(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10, 3)
+
+        mask = data[:, :, :, 0] > 0.5
+
+        crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_BY_FACTOR,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.resizing_factor.value = 2.5
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected_data = numpy.zeros((10, 25, 25, 3), dtype=data.dtype)
+
+        for idx in range(3):
+            expected_data[:, :, :, idx] = skimage.transform.resize(
+                data[:, :, :, idx],
+                (10, 25, 25),
+                order=0,
+                mode="symmetric"
+            )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 25, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 25, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+    def test_06_03_resize_volume_manual_grayscale(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        mask = data > 0.5
+
+        crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.use_manual_or_image.value = cellprofiler.modules.resize.C_MANUAL
+
+        module.specific_width.value = 25
+
+        module.specific_height.value = 30
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected_data = skimage.transform.resize(
+            data,
+            (10, 30, 25),
+            order=0,
+            mode="symmetric"
+        )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+    def test_06_04_resize_volume_manual_color(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10, 3)
+
+        mask = data[:, :, :, 0] > 0.5
+
+        crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.use_manual_or_image.value = cellprofiler.modules.resize.C_MANUAL
+
+        module.specific_width.value = 5
+
+        module.specific_height.value = 8
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        expected_data = numpy.zeros((10, 8, 5, 3), dtype=data.dtype)
+
+        for idx in range(3):
+            expected_data[:, :, :, idx] = skimage.transform.resize(
+                data[:, :, :, idx],
+                (10, 8, 5),
+                order=0,
+                mode="symmetric"
+            )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 8, 5),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 8, 5),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+    def test_06_05_resize_volume_grayscale_other_volume_grayscale(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        mask = data > 0.5
+
+        crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
+
+        module.specific_image.value = "Other Image"
+
+        expected_data = skimage.transform.resize(
+            data,
+            (10, 30, 25),
+            order=0,
+            mode="symmetric"
+        )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        other_image = cellprofiler.image.Image(
+            expected_data,
+            mask=expected_mask,
+            crop_mask=expected_crop_mask,
+            dimensions=3
+        )
+
+        workspace.image_set.add(module.specific_image.value, other_image)
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+    def test_06_06_resize_volume_grayscale_other_volume_color(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10)
+
+        mask = data > 0.5
+
+        crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
+
+        module.specific_image.value = "Other Image"
+
+        expected_data = skimage.transform.resize(
+            data,
+            (10, 30, 25),
+            order=0,
+            mode="symmetric"
+        )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        other_image = cellprofiler.image.Image(
+            numpy.random.rand(10, 30, 25, 3),
+            mask=expected_mask,
+            crop_mask=expected_crop_mask,
+            dimensions=3
+        )
+
+        workspace.image_set.add(module.specific_image.value, other_image)
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+    def test_06_07_resize_volume_color_other_volume_grayscale(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10, 3)
+
+        mask = data[:, :, :, 0] > 0.5
+
+        crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
+
+        module.specific_image.value = "Other Image"
+
+        expected_data = numpy.zeros((10, 30, 25, 3), dtype=data.dtype)
+
+        for idx in range(3):
+            expected_data[:, :, :, idx] = skimage.transform.resize(
+                data[:, :, :, idx],
+                (10, 30, 25),
+                order=0,
+                mode="symmetric"
+            )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        other_image = cellprofiler.image.Image(
+            expected_data,
+            mask=expected_mask,
+            crop_mask=expected_crop_mask,
+            dimensions=3
+        )
+
+        workspace.image_set.add(module.specific_image.value, other_image)
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+    def test_06_08_resize_volume_color_other_volume_color(self):
+        numpy.random.seed(73)
+
+        data = numpy.random.rand(10, 10, 10, 3)
+
+        mask = data[:, :, :, 0] > 0.5
+
+        crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+
+        crop_mask[1:-1, 1:-1, 1:-1] = True
+
+        workspace, module = self.make_workspace(
+            data,
+            cellprofiler.modules.resize.R_TO_SIZE,
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+            mask=mask,
+            cropping=crop_mask,
+            dimensions=3
+        )
+
+        module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
+
+        module.specific_image.value = "Other Image"
+
+        expected_data = numpy.zeros((10, 30, 25, 3), dtype=data.dtype)
+
+        for idx in range(3):
+            expected_data[:, :, :, idx] = skimage.transform.resize(
+                data[:, :, :, idx],
+                (10, 30, 25),
+                order=0,
+                mode="symmetric"
+            )
+
+        expected_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        expected_crop_mask = skimage.img_as_bool(
+            skimage.transform.resize(
+                crop_mask,
+                (10, 30, 25),
+                order=0,
+                mode="constant"
+            )
+        )
+
+        other_image = cellprofiler.image.Image(
+            numpy.random.rand(10, 30, 25, 3),
+            mask=expected_mask,
+            crop_mask=expected_crop_mask,
+            dimensions=3
+        )
+
+        workspace.image_set.add(module.specific_image.value, other_image)
+
+        module.run(workspace)
+
+        actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        assert actual.volumetric
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+        numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+        numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)

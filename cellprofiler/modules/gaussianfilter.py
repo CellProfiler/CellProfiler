@@ -8,7 +8,9 @@ Gaussian filter
 
 import cellprofiler.module
 import cellprofiler.setting
+import cellprofiler.image
 import skimage.filters
+import numpy
 
 
 class GaussianFilter(cellprofiler.module.ImageProcessing):
@@ -28,6 +30,29 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         self.function = skimage.filters.gaussian
 
         super(GaussianFilter, self).run(workspace)
+        x_name = self.x_name.value
+
+        y_name = self.y_name.value
+
+        images = workspace.image_set
+
+        x = images.get_image(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.pixel_data
+
+        spacing = numpy.divide(x.spacing[1], x.spacing)
+        sigma = numpy.multiply(self.sigma.value, spacing)
+        y_data = skimage.filters.gaussian(x_data, sigma=sigma)
+
+        y = cellprofiler.image.Image(
+            dimensions=dimensions,
+            image=y_data,
+            parent_image=x
+        )
+
+        images.add(y_name, y)
 
     def settings(self):
         __settings__ = super(GaussianFilter, self).settings()
@@ -39,6 +64,8 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
     def visible_settings(self):
         __settings__ = super(GaussianFilter, self).visible_settings()
 
-        return __settings__ + [
+        __settings__ += [
             self.sigma
         ]
+
+        return __settings__

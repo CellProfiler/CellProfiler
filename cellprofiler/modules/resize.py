@@ -357,11 +357,14 @@ class Resize(cellprofiler.module.ImageProcessing):
 
         if self.show_window:
             if hasattr(workspace.display_data, 'input_images'):
+                workspace.display_data.multichannel += [image.multichannel]
                 workspace.display_data.input_images += [image.pixel_data]
                 workspace.display_data.output_images += [output_image.pixel_data]
                 workspace.display_data.input_image_names += [input_image_name]
                 workspace.display_data.output_image_names += [output_image_name]
             else:
+                workspace.display_data.dimensions = image.dimensions
+                workspace.display_data.multichannel = [image.multichannel]
                 workspace.display_data.input_images = [image.pixel_data]
                 workspace.display_data.output_images = [output_image.pixel_data]
                 workspace.display_data.input_image_names = [input_image_name]
@@ -376,43 +379,53 @@ class Resize(cellprofiler.module.ImageProcessing):
             1: input image name of image being aligned
             2: output image name of image being aligned
         '''
+        dimensions = workspace.display_data.dimensions
+        multichannel = workspace.display_data.multichannel
         input_images = workspace.display_data.input_images
         output_images = workspace.display_data.output_images
         input_image_names = workspace.display_data.input_image_names
         output_image_names = workspace.display_data.output_image_names
 
-        figure.set_subplots((2, len(input_images)))
+        figure.set_subplots((2, len(input_images)), dimensions=dimensions)
 
-        for i, (input_image_pixels, output_image_pixels, input_image_name, output_image_name) in enumerate(
-                zip(input_images, output_images, input_image_names, output_image_names)
-        ):
-            if input_image_pixels.ndim == 2:
-                figure.subplot_imshow_bw(
+        for i, (
+                input_image_pixels,
+                output_image_pixels,
+                input_image_name,
+                output_image_name,
+                multichannel
+        ) in enumerate(zip(input_images, output_images, input_image_names, output_image_names, multichannel)):
+            if multichannel:
+                figure.subplot_imshow(
                     0,
                     i,
                     input_image_pixels,
-                    title=input_image_name
+                    title=input_image_name,
+                    dimensions=dimensions
                 )
 
-                figure.subplot_imshow_bw(
+                figure.subplot_imshow(
                     1,
                     i,
                     output_image_pixels,
-                    title=output_image_name
+                    title=output_image_name,
+                    dimensions=dimensions
                 )
             else:
-                figure.subplot_imshow(
+                figure.subplot_imshow_bw(
                     0,
                     i,
                     input_image_pixels,
-                    title=input_image_name
+                    title=input_image_name,
+                    dimensions=dimensions
                 )
 
-                figure.subplot_imshow(
+                figure.subplot_imshow_bw(
                     1,
                     i,
                     output_image_pixels,
-                    title=output_image_name
+                    title=output_image_name,
+                    dimensions=dimensions
                 )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):

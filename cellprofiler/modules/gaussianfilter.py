@@ -8,6 +8,7 @@ Gaussian filter
 
 import cellprofiler.module
 import cellprofiler.setting
+import cellprofiler.image
 import skimage.filters
 import numpy
 
@@ -23,17 +24,6 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         self.sigma = cellprofiler.setting.Integer(
             text="Sigma",
             value=1
-        )
-
-        self.shape = cellprofiler.setting.Choice(
-            "Shape of Gaussian",
-            choices=[
-                "isotropic",
-                "anisotropic"
-            ],
-            value="isotropic",
-            doc="""*isotropic* ignores scale and voxel size is uniform. *anisotropic* accounts for voxel size
-            specified within *NamesAndTypes*."""
         )
 
     def run(self, workspace):
@@ -52,16 +42,9 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
 
         x_data = x.pixel_data
 
-        if x.volumetric:
-            if self.shape.value == "isotropic":
-                y_data = skimage.filters.gaussian(x_data, sigma=self.sigma.value)
-            else:
-                spacing = numpy.divide(1,x.spacing)
-                spacing = numpy.divide(spacing, spacing[-1])
-                sigma = numpy.multiply(self.sigma.value, spacing)
-                y_data = skimage.filters.gaussian(x_data, sigma=sigma)
-        else:
-            y_data = skimage.filters.gaussian(x_data, sigma=self.sigma.value)
+        spacing = numpy.divide(x.spacing[1], x.spacing)
+        sigma = numpy.multiply(self.sigma.value, spacing)
+        y_data = skimage.filters.gaussian(x_data, sigma=sigma)
 
         y = cellprofiler.image.Image(
             dimensions=dimensions,
@@ -75,29 +58,14 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         __settings__ = super(GaussianFilter, self).settings()
 
         return __settings__ + [
-            self.sigma,
-            self.shape
+            self.sigma
         ]
 
     def visible_settings(self):
         __settings__ = super(GaussianFilter, self).visible_settings()
 
-        __settings__ = __settings__ + [
-            self.sigma,
-            self.shape
+        __settings__ += [
+            self.sigma
         ]
-
-        #super(GaussianFilter, self).run(workspace)
-
-        #x_name = self.x_name.value
-
-        #images = workspace.image_set
-
-        #x = images.get_image(x_name)
-
-        #if x.volumetric:
-         #   __settings__ = __settings__ + [
-          #      self.shape
-           # ]
 
         return __settings__

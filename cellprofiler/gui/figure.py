@@ -1295,11 +1295,10 @@ class Figure(wx.Frame):
             if colorbar and not is_color_image(image):
                 colormap.set_array(self.images[(x, y)])
                 colormap.autoscale()
-            if use_imshow or g_use_imshow:
-                image = self.images[(x, y)]
-                subplot.imshow(self.normalize_image(image, **kwargs))
-            else:
-                subplot.add_artist(CPImageArtist(self.images[(x, y)], self, kwargs))
+
+            image = self.images[(x, y)]
+
+            subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)
             #
@@ -2055,93 +2054,6 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
 
     def get_outline_name(self):
         return self.__outline_name
-
-
-class CPImageArtist(matplotlib.artist.Artist):
-    def __init__(self, image, frame, kwargs):
-        super(CPImageArtist, self).__init__()
-        self.image = image
-        self.frame = frame
-        self.kwargs = kwargs
-        #
-        # The radius for the gaussian blur of 1 pixel sd
-        #
-        self.filterrad = 4.0
-        self.interpolation = kwargs["interpolation"]
-
-    def draw(self, renderer):
-        global roundoff
-        image = self.frame.normalize_image(self.image,
-                                           **self.kwargs)
-        magnification = renderer.get_image_magnification()
-        numrows, numcols = self.image.shape[:2]
-        if numrows == 0 or numcols == 0:
-            return
-        #
-        # Limit the viewports to the image extents
-        #
-        view_x0 = int(min(numcols - 1, max(0, self.axes.viewLim.x0 - self.filterrad)))
-        view_x1 = int(min(numcols, max(0, self.axes.viewLim.x1 + self.filterrad)))
-        view_y0 = int(min(numrows - 1,
-                          max(0, min(self.axes.viewLim.y0,
-                                     self.axes.viewLim.y1) - self.filterrad)))
-        view_y1 = int(min(numrows,
-                          max(0, max(self.axes.viewLim.y0,
-                                     self.axes.viewLim.y1) + self.filterrad)))
-        xslice = slice(view_x0, view_x1)
-        yslice = slice(view_y0, view_y1)
-        image = image[yslice, xslice, :]
-
-        #
-        # Flip image upside-down if height is negative
-        #
-        flip_ud = self.axes.viewLim.height < 0
-        if flip_ud:
-            image = numpy.flipud(image)
-
-        im = matplotlib.image.fromarray(image, 0)
-        im.is_grayscale = False
-        im.set_interpolation(self.interpolation)
-        fc = self.axes.patch.get_facecolor()
-        bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
-        im.set_bg(*bg)
-
-        # image input dimensions
-        im.reset_matrix()
-
-        # the viewport translation in the X direction
-        tx = view_x0 - self.axes.viewLim.x0 - .5
-        #
-        # the viewport translation in the Y direction
-        # which is from the bottom of the screen
-        #
-        if self.axes.viewLim.height < 0:
-            ty = (self.axes.viewLim.y0 - view_y1) + .5
-        else:
-            ty = view_y0 - self.axes.viewLim.y0 - .5
-        im.apply_translation(tx, ty)
-
-        l, b, r, t = self.axes.bbox.extents
-        widthDisplay = (r - l + 1) * magnification
-        heightDisplay = (t - b + 1) * magnification
-
-        # resize viewport to display
-        sx = widthDisplay / self.axes.viewLim.width
-        sy = abs(heightDisplay / self.axes.viewLim.height)
-        im.apply_scaling(sx, sy)
-        im.resize(widthDisplay, heightDisplay,
-                  norm=1, radius=self.filterrad)
-        bbox = self.axes.bbox.frozen()
-        im._url = self.frame.Title
-
-        # Two ways to do this, try by version
-        mplib_version = matplotlib.__version__.split(".")
-        if mplib_version[0] == '0':
-            renderer.draw_image(l, b, im, bbox)
-        else:
-            gc = renderer.new_gc()
-            gc.set_clip_rectangle(bbox)
-            renderer.draw_image(gc, l, b, im)
 
 
 def get_matplotlib_interpolation_preference():

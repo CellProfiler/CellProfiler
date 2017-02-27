@@ -28,9 +28,6 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         )
 
     def run(self, workspace):
-
-        super(GaussianFilter, self).run(workspace)
-        
         x_name = self.x_name.value
 
         y_name = self.y_name.value
@@ -54,6 +51,13 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         )
 
         images.add(y_name, y)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
 
     def settings(self):
         __settings__ = super(GaussianFilter, self).settings()

@@ -199,7 +199,7 @@ class OverlayOutlines(cellprofiler.module.Module):
         base_image, dimensions = self.base_image(workspace)
 
         if self.wants_color.value == WANTS_COLOR:
-            pixel_data = self.run_color(workspace, base_image)
+            pixel_data = self.run_color(workspace, base_image.copy())
         else:
             pixel_data = self.run_bw(workspace, base_image)
 
@@ -248,7 +248,7 @@ class OverlayOutlines(cellprofiler.module.Module):
                 0,
                 0,
                 workspace.display_data.image_pixel_data,
-                self.output_image_name.value,
+                self.image_name.value,
                 dimensions=dimensions
             )
 
@@ -279,10 +279,12 @@ class OverlayOutlines(cellprofiler.module.Module):
 
         image = workspace.image_set.get_image(self.image_name.value)
 
-        if image.multichannel:
-            return image.pixel_data, image.dimensions
+        pixel_data = skimage.img_as_float(image.pixel_data)
 
-        return skimage.color.gray2rgb(image.pixel_data), image.dimensions
+        if image.multichannel:
+            return pixel_data, image.dimensions
+
+        return skimage.color.gray2rgb(pixel_data), image.dimensions
 
     def run_bw(self, workspace, pixel_data):
         if self.blank_image.value or self.max_type.value == MAX_POSSIBLE:

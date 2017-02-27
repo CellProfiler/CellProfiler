@@ -2027,14 +2027,14 @@ the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.htm
 """ % globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """
-<h3>Introdution</h3>In this context, the term <i>image sequence</i> is used to refer to a collection of images which
+<h3>Introdution</h3>
+In this context, the term <i>image sequence</i> is used to refer to a collection of images which
 can be from a time-lapse assay, a three-dimensional (3-D) Z-stack assay, or both. This section will instruct you how to
 load these collections in order to properly represent your data for processing.
 <h3>Sequences of individual files</h3>
 <p>For some microscopes, the simplest method of capturing image sequences is to simply acquire them as a series of
-individual images, where each image represents a single timepoint/z-slice (for simplicity, we will refer to
-<i>timepoints</i> in the rest of this example). Typically, the image filename reflects the timepoint, such that the
-alphabetical image listing corresponds to the proper sequence, e.g., <i>img000.png</i>, <i>img001.png</i>,
+individual images, where each image represents a single timepoint. Typically, the image filename reflects the timepoint,
+such that the alphabetical image listing corresponds to the proper sequence, e.g., <i>img000.png</i>, <i>img001.png</i>,
 <i>img002.png</i>, etc</p>. It is also not uncommon to store the movie such that one movie's worth of files is stored
 in a single folder.
 <p><i>Example:</i> You have a time-lapse movie of individual files set up as follows:</p>
@@ -2118,8 +2118,13 @@ in a single folder.
         process the images in all movies together as if they were constituents of only one movie.
     </li>
 </ul>
+If your images represent a volume, you can follow the above example to process your volume. It is important to note,
+however, that CellProfiler will analyze each image individually. If you would like to analyze your data as a whole
+volume, we suggest building a .TIF stack from the individual image files using another software application, like FIJI.
+Additionally, whole volume processing is only supported for single-channel volumes. If your images are multi-channel
+you will need to separate the channels before combining images into a single-image stack.
 <h3>Basic image sequences consisting of a single file</h3>
-<p>Another common means of storing time-lapse/Z-stack data is as a single file containing the movie. Examples of this
+<p>Another common means of storing time-lapse or Z-stack data is as a single file containing frames. Examples of this
 approach include image formats such as:</p>
 <ul>
     <li>Multi-frame TIF</li>
@@ -2129,15 +2134,48 @@ approach include image formats such as:</p>
     <li>Standard movie formats: AVI, Quicktime MOV, etc</li>
 </ul>CellProfiler uses the Bio-Formats library for reading various image formats. For more details on supported files,
 see this <a href="http://www.openmicroscopy.org/site/support/bio-formats4/supported-formats.html">webpage</a>. In
-general, we recommend saving stacks and movies in a format such as .TIF.
+general, we recommend saving stacks and movies in .TIF format.
+<p><i>Example:</i> You have several image stacks in the following format:</p>
+<ul>
+    <li>The stacks are saved in .TIF format.</li>
+    <li>Each stack is a single-channel grayscale image.</li>
+    <li>Your files have names like IMG01_CH01.TIF, IMG01_CH02.TIF, ... IMG01_CH09.TIF and IMG02_CH01.TIF,
+    IMG02_CH02.TIF, etc, where IMG01_CH01.TIF designates channel 1 from image 1, IMG01_CH02.TIF designates channel 2
+    from image 1, and IMG02_CH01.TIF designated channel 1 from image 2.</li>
+</ul>
+<p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
+<ul>
+    <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
+    your rules accordingly in order to filter out any files that are not files that are not images to be processed.<br>
+    In the above example, you would drag-and-drop the .TIF files into the File list panel.</li>
+    <li>In the <b>NamesAndTypes</b> module, select "Yes" for "Volumetric" to tell CellProfiler your images should be
+    processed as whole volumes. You can provide the voxel spacing in each dimension. CellProfiler will use this
+    information to correctly computer filter sizes and computing shape features, for example.<br>
+    Additionally assign each channel to a name of your choice. You will need to do this for
+    each channel. For this example, you could do the following:
+        <ul>
+            <li>Select "Assign images matching rules".</li>
+            <li>Make a new rule <code>[File][Does][Contain][CH01]</code></li>
+            <li>Provide a descriptive name for the channel, e.g., <i>DAPI</i>.</li>
+            <li>Click the "Add another image" button to define a second image with a set of rules.</li>
+            <li>Make a new rule <code>[File][Does][Contain][CH02]</code></li>
+            <li>Provide a descriptive name for the channel <i>GFP</i>.</li>
+            <li>Click the "Update" button below the divider to confirm that the proper images are listed and
+            matched across the channels. All file names ending in CH01.TIF should be matched together.</li>
+        </ul>
+    </li>
+    <li>In the <b>Groups</b> module, select "Yes" to automatically group your image sets by image name. All images
+    beginning with IMG01 will be processed in a single group, while images beginning with IMG02 will be processed in
+    another group, and so on. This way, CellProfiler can process all channels from each image.
+    </li>
+</ul>
 <p><i>Example:</i> You have two image stacks in the following format:</p>
 <ul>
     <li>The stacks are Opera's FLEX format.</li>
     <li>Each FLEX file contains 8 fields of view, with 3 channels at each site (DAPI, GFP, Texas Red).</li>
     <li>Each channel is in grayscale format.</li>
 </ul>
-<p>In this case, the procedure to set up the input modules to handle these files is as follows (please note that this
-procedure is basically identical whether the file is for a time-lapse assay or a Z-stack assay):</p>
+<p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
 <ul>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
     your rules accordingly in order to filter out any files that are not files that are not images to be processed.<br>
@@ -2215,8 +2253,7 @@ procedure is basically identical whether the file is for a time-lapse assay or a
     same manner.</li>
     <li>Each slice is in grayscale format.</li>
 </ul>
-<p>In this case, the procedure to set up the input modules to handle these this file is as follows (please note that
-this procedure is basically identical whether the file is for a time-lapse assay or a Z-stack assay):</p>
+<p>In this case, the procedure to set up the input modules to handle these this file is as follows:</p>
 <ul>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
     your rules accordingly in order to filter out any files that are not images to be processed.<br>

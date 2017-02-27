@@ -2028,12 +2028,14 @@ the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.htm
 
 LOADING_IMAGE_SEQUENCES_HELP = """
 <h3>Introduction</h3>
-In this context, the term <i>image sequence</i> is used to refer to a collection of images which
-can be from a time-lapse assay, a three-dimensional (3-D) Z-stack assay, or both. This section will instruct you how to
+In this context, the term <i>image sequence</i> is used to refer to a collection of images
+from a time-lapse assay (movie), a three-dimensional (3-D) Z-stack assay, or both.
+This section will teach you how to
 load these collections in order to properly represent your data for processing.
 <h3>Sequences of individual files</h3>
 <p>For some microscopes, the simplest method of capturing image sequences is to simply acquire them as a series of
-individual images, where each image represents a single timepoint. Typically, the image filename reflects the timepoint,
+individual image files, where each image file represents a single timepoint and/or Z-slice.
+Typically, the image filename reflects the timepoint or Z-slice,
 such that the alphabetical image listing corresponds to the proper sequence, e.g., <i>img000.png</i>, <i>img001.png</i>,
 <i>img002.png</i>, etc</p>. It is also not uncommon to store the movie such that one movie's worth of files is stored
 in a single folder.
@@ -2047,7 +2049,8 @@ in a single folder.
             <li><i>phase</i>: phase-P01.001.TIF, phase-P01.002.TIF,..., phase-P01.287.TIF</li>
         </ul>where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoint&gt;.TIF</i>.
     </li>
-    <li>There are 287 timepoints per movie, and a movie of the 3 channels above is acquired from each well.</li>
+    <li>There are 287 timepoints per movie, and a movie of the 3 channels above is acquired from each well
+    in a multi-well plate.</li>
 </ul>
 <p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
 <ul>
@@ -2061,7 +2064,7 @@ in a single folder.
         <ul>
             <li>Distinguish the movies from each other. This information is typically encapsulated in the filename
             and/or the folder name.</li>
-            <li>For each movie, distinguish the timepoints from each other, ensuring their proper ordering. This
+            <li>For each movie, distinguish the timepoints from each other and ensure their proper ordering. This
             information is usually contained in the filename.</li>
         </ul>To accomplish this, do the following:
         <ul>
@@ -2069,8 +2072,9 @@ in a single folder.
             use these to extract the movie and timepoint tags from the images.</li>
             <li>Use "{X_MANUAL_EXTRACTION}" to create a regular expression to extract the metadata from the filename
             and/or path name.</li>
-            <li>Or, use "{X_IMPORTED_EXTRACTION}" if you have a comma-delimted file (CSV) of the necessary metadata
-            columns (including the movie and timepoint tags) for each image.</li>
+            <li>Or, use "{X_IMPORTED_EXTRACTION}" if you have a comma-delimited file (CSV) of the necessary metadata
+            columns (including the movie and timepoint tags) for each image. Note that microscopes rarely produce 
+            such a file, but it might be worthwhile to write scripts to create them if you do this frequently.</li>
         </ul>If there are multiple channels for each movie, this step may need to be performed for each channel.
         <p>In this example, you could do the following:</p>
         <ul>
@@ -2115,12 +2119,15 @@ in a single folder.
             <li>The tables below this setting will update themselves, and you should be able to visually confirm that
             each well is defined as a group, each with 287 frames' worth of images.</li>
         </ul>Without this step, CellProfiler would not know where one movie ends and the next one begins, and would
-        process the images in all movies together as if they were constituents of only one movie.
+        process the images in all movies together as if they were a single movie. This would result in, for example,
+        the TrackObjects module attempting to track cells from the end of one movie to the start of the next movie.
     </li>
 </ul>
 If your images represent a volume, you can follow the above example to process your volume. It is important to note,
-however, that CellProfiler will analyze each image individually. If you would like to analyze your data as a whole
-volume, we suggest building a .TIF stack from the individual image files using another software application, like FIJI.
+however, that CellProfiler will analyze each Z-slice image individually and sequentially. If you would like to analyze 
+each Z-stack as a whole
+volume, we suggest building a .TIF stack from the individual image files using another software application, like FIJI
+and then using the instructions below for single-file sequences.
 Additionally, whole volume processing is only supported for single-channel volumes. If your images are multi-channel
 you will need to separate the channels before combining images into a single-image stack.
 <h3>Basic image sequences consisting of a single file</h3>
@@ -2139,18 +2146,18 @@ general, we recommend saving stacks and movies in .TIF format.
 <ul>
     <li>The stacks are saved in .TIF format.</li>
     <li>Each stack is a single-channel grayscale image.</li>
-    <li>Your files have names like IMG01_CH01.TIF, IMG01_CH02.TIF, ... IMG01_CH09.TIF and IMG02_CH01.TIF,
+    <li>Your files have names like IMG01_CH01.TIF, IMG01_CH02.TIF, ... IMG01_CH04.TIF and IMG02_CH01.TIF,
     IMG02_CH02.TIF, etc, where IMG01_CH01.TIF designates channel 1 from image 1, IMG01_CH02.TIF designates channel 2
-    from image 1, and IMG02_CH01.TIF designated channel 1 from image 2.</li>
+    from image 1, and IMG02_CH01.TIF designates channel 1 from image 2.</li>
 </ul>
 <p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
 <ul>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
-    your rules accordingly in order to filter out any files that are not files that are not images to be processed.<br>
+    your rules accordingly in order to filter out any files that are not images to be processed.<br>
     In the above example, you would drag-and-drop the .TIF files into the File list panel.</li>
     <li>In the <b>NamesAndTypes</b> module, select "Yes" for "Volumetric" to tell CellProfiler your images should be
     processed as whole volumes. You can provide the voxel spacing in each dimension. CellProfiler will use this
-    information to correctly computer filter sizes and computing shape features, for example.<br>
+    information to correctly compute filter sizes and shape features, for example.<br>
     Additionally assign each channel to a name of your choice. You will need to do this for
     each channel. For this example, you could do the following:
         <ul>
@@ -2178,7 +2185,7 @@ general, we recommend saving stacks and movies in .TIF format.
 <p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
 <ul>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
-    your rules accordingly in order to filter out any files that are not files that are not images to be processed.<br>
+    your rules accordingly in order to filter out any files that are not images to be processed.<br>
     In the above example, you would drag-and-drop the FLEX files into the File list panel.</li>
     <li>In the <b>Metadata</b> module, enable metadata extraction in order to obtain metadata from these files. The key
     step here is to obtain the necessary metadata tags to do two things:

@@ -2027,7 +2027,7 @@ the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.htm
 """ % globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """
-<h3>Introdution</h3>
+<h3>Introduction</h3>
 In this context, the term <i>image sequence</i> is used to refer to a collection of images which
 can be from a time-lapse assay, a three-dimensional (3-D) Z-stack assay, or both. This section will instruct you how to
 load these collections in order to properly represent your data for processing.

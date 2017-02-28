@@ -2123,13 +2123,10 @@ in a single folder.
         the TrackObjects module attempting to track cells from the end of one movie to the start of the next movie.
     </li>
 </ul>
-If your images represent a volume, you can follow the above example to process your volume. It is important to note,
-however, that CellProfiler will analyze each Z-slice image individually and sequentially. If you would like to analyze
-each Z-stack as a whole
-volume, we suggest building a .TIF stack from the individual image files using another software application, like FIJI
-and then using the instructions below for single-file sequences.
-Additionally, whole volume processing is only supported for single-channel volumes. If your images are multi-channel
-you will need to separate the channels before combining images into a single-image stack.
+<p>If your images represent a 3D image, you can follow the above example to process your data. It is important to note,
+however, that CellProfiler will analyze each Z-slice individually and sequentially. Whole volume (3D image) processing
+is supported for single-channel .TIF stacks. Splitting image channels and converting image sets into .TIF stacks can be
+done using another software application, like FIJI.</p>
 <h3>Basic image sequences consisting of a single file</h3>
 <p>Another common means of storing time-lapse or Z-stack data is as a single file containing frames. Examples of this
 approach include image formats such as:</p>

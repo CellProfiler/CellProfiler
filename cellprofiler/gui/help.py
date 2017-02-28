@@ -2171,10 +2171,6 @@ to set up the input modules to handle these files is as follows:</p>
             matched across the channels. All file names ending in CH01.TIF should be matched together.</li>
         </ul>
     </li>
-    <li>In the <b>Groups</b> module, select "Yes" to automatically group your image sets by image name. All images
-    beginning with IMG01 will be processed in a single group, while images beginning with IMG02 will be processed in
-    another group, and so on. This way, CellProfiler can process all channels from each image.
-    </li>
 </ul>
 <p><i>Example:</i> You have two image stacks in the following format:</p>
 <ul>

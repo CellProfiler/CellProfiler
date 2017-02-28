@@ -2139,7 +2139,7 @@ approach include image formats such as:</p>
 </ul>CellProfiler uses the Bio-Formats library for reading various image formats. For more details on supported files,
 see this <a href="http://www.openmicroscopy.org/site/support/bio-formats4/supported-formats.html">webpage</a>. In
 general, we recommend saving stacks and movies in .TIF format.
-<p><i>Example:</i> You have several image stacks in the following format:</p>
+<p><i>Example:</i> You have several image stacks representing 3D structures in the following format:</p>
 <ul>
     <li>The stacks are saved in .TIF format.</li>
     <li>Each stack is a single-channel grayscale image.</li>
@@ -2147,12 +2147,13 @@ general, we recommend saving stacks and movies in .TIF format.
     IMG02_CH02.TIF, etc, where IMG01_CH01.TIF designates channel 1 from image 1, IMG01_CH02.TIF designates channel 2
     from image 1, and IMG02_CH01.TIF designates channel 1 from image 2.</li>
 </ul>
-<p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
+<p>You would like to process each stack as a single image, not as a series of 2D images. In this case, the procedure
+to set up the input modules to handle these files is as follows:</p>
 <ul>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
     your rules accordingly in order to filter out any files that are not images to be processed.<br>
     In the above example, you would drag-and-drop the .TIF files into the File list panel.</li>
-    <li>In the <b>NamesAndTypes</b> module, select "Yes" for "Volumetric" to tell CellProfiler your images should be
+    <li>In the <b>NamesAndTypes</b> module, select "Yes" for "Data is 3D" to tell CellProfiler your images should be
     processed as whole volumes. You can provide the voxel spacing in each dimension. CellProfiler will use this
     information to correctly compute filter sizes and shape features, for example.<br>
     Additionally assign each channel to a name of your choice. You will need to do this for

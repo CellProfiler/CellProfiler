@@ -2041,11 +2041,11 @@ such that the alphabetical image listing corresponds to the proper sequence, e.g
 in a single folder.
 <p><i>Example:</i> You have a time-lapse movie of individual files set up as follows:</p>
 <ul>
-    <li>Three folders, one for each image channel, named <i>fluo2</i>, <i>fluor</i> and <i>phase</i>.</li>
+    <li>Three folders, one for each image channel, named <i>DNA</i>, <i>actin</i> and <i>phase</i>.</li>
     <li>In each folder, the files are named as follows:
         <ul>
-            <li><i>fluo2</i>: calibrate2-P01.001.TIF, calibrate2-P01.002.TIF,..., calibrate2-P01.287.TIF</li>
-            <li><i>fluor</i>: calibrated-P01.001.TIF, calibrated-P01.002.TIF,..., calibrated-P01.287.TIF</li>
+            <li><i>DNA</i>: calibrate2-P01.001.TIF, calibrate2-P01.002.TIF,..., calibrate2-P01.287.TIF</li>
+            <li><i>actin</i>: calibrated-P01.001.TIF, calibrated-P01.002.TIF,..., calibrated-P01.287.TIF</li>
             <li><i>phase</i>: phase-P01.001.TIF, phase-P01.002.TIF,..., phase-P01.287.TIF</li>
         </ul>where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoint&gt;.TIF</i>.
     </li>
@@ -2056,7 +2056,7 @@ in a single folder.
 <ul>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
     your rules accordingly in order to filter out any files that are not part of a movie sequence.
-        <p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders into
+        <p>In the above example, you would drag-and-drop the <i>DNA</i>, <i>actin</i> and <i>phase</i> folders into
         the File list panel.</p>
     </li>
     <li>In the <b>Metadata</b> module, check the box to enable metadata extraction. The key step here is to obtain the
@@ -2073,7 +2073,7 @@ in a single folder.
             <li>Use "{X_MANUAL_EXTRACTION}" to create a regular expression to extract the metadata from the filename
             and/or path name.</li>
             <li>Or, use "{X_IMPORTED_EXTRACTION}" if you have a comma-delimited file (CSV) of the necessary metadata
-            columns (including the movie and timepoint tags) for each image. Note that microscopes rarely produce 
+            columns (including the movie and timepoint tags) for each image. Note that microscopes rarely produce
             such a file, but it might be worthwhile to write scripts to create them if you do this frequently.</li>
         </ul>If there are multiple channels for each movie, this step may need to be performed for each channel.
         <p>In this example, you could do the following:</p>
@@ -2094,10 +2094,10 @@ in a single folder.
         For this example, you could do the following:
         <ul>
             <li>Select "Assign images matching rules".</li>
-            <li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluor]</code> and name it
+            <li>Make a new rule <code>[Metadata][Does][Have Stain matching][actin]</code> and name it
             <i>OrigFluor</i>.</li>
             <li>Click the "Add" button to define another image with a rule.</li>
-            <li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluo2]</code> and name it
+            <li>Make a new rule <code>[Metadata][Does][Have Stain matching][DNA]</code> and name it
             <i>OrigFluo2</i>.</li>
             <li>Click the "Add" button to define another image with a rule.</li>
             <li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it
@@ -2124,7 +2124,7 @@ in a single folder.
     </li>
 </ul>
 If your images represent a volume, you can follow the above example to process your volume. It is important to note,
-however, that CellProfiler will analyze each Z-slice image individually and sequentially. If you would like to analyze 
+however, that CellProfiler will analyze each Z-slice image individually and sequentially. If you would like to analyze
 each Z-stack as a whole
 volume, we suggest building a .TIF stack from the individual image files using another software application, like FIJI
 and then using the instructions below for single-file sequences.

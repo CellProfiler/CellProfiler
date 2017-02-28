@@ -2153,8 +2153,10 @@ to set up the input modules to handle these files is as follows:</p>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
     your rules accordingly in order to filter out any files that are not images to be processed.<br>
     In the above example, you would drag-and-drop the .TIF files into the File list panel.</li>
-    <li>In the <b>NamesAndTypes</b> module, select "Yes" for "Data is 3D" to tell CellProfiler your images should be
-    processed as whole volumes. You can provide the voxel spacing in each dimension. CellProfiler will use this
+    <li>In the <b>NamesAndTypes</b> module, select "Yes" for "Data is 3D". You should also provide the relative X, Y,
+    and Z pixel sizes of your images. X and Y will be determined by the camera and objective you used to capture your
+    images. Your Z size represents the spacing of your Z-series. In most cases, the X and Y pixel size will be the same.
+    You can divide the Z size by X or Y to get a relative value, with X = Y = 1. CellProfiler will use this
     information to correctly compute filter sizes and shape features, for example.<br>
     Additionally assign each channel to a name of your choice. You will need to do this for
     each channel. For this example, you could do the following:

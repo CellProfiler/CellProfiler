@@ -41,7 +41,6 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'enhanceorsuppressfeatures': 'EnhanceOrSuppressFeatures',
                         'erosion': 'Erosion',
                         'expandorshrinkobjects': 'ExpandOrShrinkObjects',
-                        'exporttocellh5': 'ExportToCellH5',
                         'exporttodatabase': 'ExportToDatabase',
                         'exporttospreadsheet': 'ExportToSpreadsheet',
                         'filterobjects': 'FilterObjects',
@@ -141,7 +140,6 @@ builtin_modules = ['align',
                    'enhanceorsuppressfeatures',
                    'erosion',
                    'expandorshrinkobjects',
-                   'exporttocellh5',
                    'exporttodatabase',
                    'exporttospreadsheet',
                    'filterobjects',
@@ -280,7 +278,7 @@ badmodules = []
 datatools = []
 pure_datatools = {}
 
-do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
+do_not_override = ['set_settings', 'create_from_handles', 'test_valid', 'module_class']
 should_override = ['create_settings', 'settings', 'run']
 
 

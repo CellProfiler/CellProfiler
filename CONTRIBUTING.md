@@ -71,7 +71,7 @@ To submit changes to CellProfiler, you'll need to have a [GitHub](https://github
   ```
   $ git fetch upstream
   $ git merge upstream/master
-  $ git push origin/master
+  $ git push origin master
   ```
 
   Your master branch is now updated to match ours. We recommend performing this step often, especially before creating a new branch.
@@ -139,7 +139,7 @@ In this section we provide a general outline of the process for submitting chang
   $ git checkout master
   $ git fetch upstream
   $ git merge upstream/master
-  $ git push origin/master
+  $ git push origin master
   ```
 
   Your master branch now includes your change. Congratulations on a successful contribution!

@@ -9,12 +9,8 @@ addons:
       - libgtk2.0-dev
       - python-dateutil
       - python-imaging
-      - python-lxml
       - python-matplotlib
       - python-mysqldb
-      - python-networkx
-      - python-numpy
-      - python-pandas
       - python-pip
       - python-scipy
       - python-tk
@@ -40,15 +36,17 @@ virtualenv:
 install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
+  - pip install --upgrade numpy
   - pip install --upgrade pytest
   - pip install --upgrade cython
   - pip install joblib
   - pip install scikit-learn
   - pip install --no-deps pyzmq==13.1.0
+  - pip install --upgrade scipy
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
-  - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
   - pip freeze
   - pip install --requirement requirements.txt
+  - pip install --upgrade scipy
 script:
   - python setup.py test -a -x

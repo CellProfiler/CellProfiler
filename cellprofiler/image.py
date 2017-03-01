@@ -405,9 +405,11 @@ def crop_image(image, crop_mask, crop_internal=False):
         j_first = numpy.argwhere(j_cumsum == 1)[0]
         j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
+
         if image.ndim == 3:
-            return image[i_first:i_end, j_first:j_end, :].copy()
-        return image[i_first:i_end, j_first:j_end].copy()
+            return image[i_first[0]:i_end[0], j_first[0]:j_end[0], :].copy()
+
+        return image[i_first[0]:i_end[0], j_first[0]:j_end[0]].copy()
 
 
 class GrayscaleImage(object):

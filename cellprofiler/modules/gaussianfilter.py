@@ -2,13 +2,16 @@
 
 """
 
-Gaussian filter
+A Guassian filter will blur an image and remove noise. Filtering an image with a Gaussian filter can be helpful if the
+foreground signal is noisy or near the noise floor.
 
 """
 
 import cellprofiler.module
 import cellprofiler.setting
+import cellprofiler.image
 import skimage.filters
+import numpy
 
 
 class GaussianFilter(cellprofiler.module.ImageProcessing):
@@ -25,9 +28,36 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         )
 
     def run(self, workspace):
-        self.function = skimage.filters.gaussian
+        x_name = self.x_name.value
 
-        super(GaussianFilter, self).run(workspace)
+        y_name = self.y_name.value
+
+        images = workspace.image_set
+
+        x = images.get_image(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.pixel_data
+
+        spacing = numpy.divide(x.spacing[1], x.spacing)
+        sigma = numpy.multiply(self.sigma.value, spacing)
+        y_data = skimage.filters.gaussian(x_data, sigma=sigma)
+
+        y = cellprofiler.image.Image(
+            dimensions=dimensions,
+            image=y_data,
+            parent_image=x
+        )
+
+        images.add(y_name, y)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
 
     def settings(self):
         __settings__ = super(GaussianFilter, self).settings()
@@ -39,6 +69,8 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
     def visible_settings(self):
         __settings__ = super(GaussianFilter, self).visible_settings()
 
-        return __settings__ + [
+        __settings__ += [
             self.sigma
         ]
+
+        return __settings__

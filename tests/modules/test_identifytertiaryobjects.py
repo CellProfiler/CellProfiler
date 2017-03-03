@@ -6,6 +6,7 @@ import unittest
 import zlib
 from StringIO import StringIO
 
+import cellprofiler.measurement
 import numpy as np
 
 from cellprofiler.preferences import set_headless
@@ -252,14 +253,14 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.secondary_objects_name.value = SECONDARY
         module.subregion_objects_name.value = TERTIARY
         columns = module.get_measurement_columns(None)
-        expected = ((cpm.IMAGE, cpmi.FF_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
-                    (TERTIARY, cpmi.M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
-                    (TERTIARY, cpmi.M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
-                    (TERTIARY, cpmi.M_NUMBER_OBJECT_NUMBER, cpm.COLTYPE_INTEGER),
-                    (PRIMARY, cpmi.FF_CHILDREN_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
-                    (SECONDARY, cpmi.FF_CHILDREN_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
-                    (TERTIARY, cpmi.FF_PARENT % PRIMARY, cpm.COLTYPE_INTEGER),
-                    (TERTIARY, cpmi.FF_PARENT % SECONDARY, cpm.COLTYPE_INTEGER))
+        expected = ((cpm.IMAGE, cellprofiler.measurement.FF_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
+                    (TERTIARY, cellprofiler.measurement.M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
+                    (TERTIARY, cellprofiler.measurement.M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
+                    (TERTIARY, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpm.COLTYPE_INTEGER),
+                    (PRIMARY, cellprofiler.measurement.FF_CHILDREN_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
+                    (SECONDARY, cellprofiler.measurement.FF_CHILDREN_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
+                    (TERTIARY, cellprofiler.measurement.FF_PARENT % PRIMARY, cpm.COLTYPE_INTEGER),
+                    (TERTIARY, cellprofiler.measurement.FF_PARENT % SECONDARY, cpm.COLTYPE_INTEGER))
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cv == ev for cv, ev in zip(column, ec)])
@@ -333,7 +334,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 self.assertEqual(parent_of[child - 1], child)
 
         for location_feature in (
-                cpmi.M_LOCATION_CENTER_X, cpmi.M_LOCATION_CENTER_Y):
+                cellprofiler.measurement.M_LOCATION_CENTER_X, cellprofiler.measurement.M_LOCATION_CENTER_Y):
             values = measurements.get_current_measurement(
                     TERTIARY, location_feature)
             self.assertTrue(np.all(np.isnan(values) == [False, True, False]))
@@ -369,20 +370,20 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
 
                 child_name = module.subregion_objects_name.value
                 primary_name = module.primary_objects_name.value
-                ftr = cpmi.FF_PARENT % primary_name
+                ftr = cellprofiler.measurement.FF_PARENT % primary_name
                 pparents = m[child_name, ftr]
                 self.assertEqual(len(pparents), 3 if missing_primary else 2)
                 if missing_primary:
                     self.assertEqual(pparents[missing - 1], 0)
 
                 secondary_name = module.secondary_objects_name.value
-                ftr = cpmi.FF_PARENT % secondary_name
+                ftr = cellprofiler.measurement.FF_PARENT % secondary_name
                 pparents = m[child_name, ftr]
                 self.assertEqual(len(pparents), 3 if missing_primary else 2)
                 if not missing_primary:
                     self.assertTrue(all([x in pparents for x in range(1, 3)]))
 
-                ftr = cpmi.FF_CHILDREN_COUNT % child_name
+                ftr = cellprofiler.measurement.FF_CHILDREN_COUNT % child_name
                 children = m[primary_name, ftr]
                 self.assertEqual(len(children), 2 if missing_primary else 3)
                 if not missing_primary:

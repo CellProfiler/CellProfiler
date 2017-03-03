@@ -6,6 +6,7 @@ import unittest
 import zlib
 from StringIO import StringIO
 
+import cellprofiler.measurement
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
@@ -24,7 +25,7 @@ import cellprofiler.modules.relateobjects as R
 PARENT_OBJECTS = 'parentobjects'
 CHILD_OBJECTS = 'childobjects'
 MEASUREMENT = 'Measurement'
-IGNORED_MEASUREMENT = '%s_Foo' % R.C_PARENT
+IGNORED_MEASUREMENT = '%s_Foo' % cellprofiler.measurement.C_PARENT
 
 
 class TestRelateObjects(unittest.TestCase):
@@ -342,13 +343,13 @@ class TestRelateObjects(unittest.TestCase):
         self.assertTrue(any([c[0] == PARENT_OBJECTS and c[1] == feat_mean
                              for c in mcolumns]))
         m = workspace.measurements
-        m[CHILD_OBJECTS, R.M_LOCATION_CENTER_X, 1] = child_centers[1]
-        m[CHILD_OBJECTS, R.M_LOCATION_CENTER_Y, 1] = child_centers[0]
+        m[CHILD_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, 1] = child_centers[1]
+        m[CHILD_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, 1] = child_centers[0]
         module.run(workspace)
 
         v = m[PARENT_OBJECTS, feat_mean, 1]
 
-        plabel = m[CHILD_OBJECTS, "_".join((R.C_PARENT, PARENT_OBJECTS)), 1]
+        plabel = m[CHILD_OBJECTS, "_".join((cellprofiler.measurement.C_PARENT, PARENT_OBJECTS)), 1]
 
         self.assertEqual(len(v), 4)
         for idx in range(4):

@@ -491,10 +491,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         expected_columns = (
             (cellprofiler.measurement.IMAGE, cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
             (cellprofiler.measurement.IMAGE, cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
-            (cellprofiler.measurement.IMAGE, cellprofiler.modules.loadsingleimage.C_COUNT + "_" + OBJECTS_NAME),
-            (OBJECTS_NAME, cellprofiler.modules.loadsingleimage.C_LOCATION + "_" + cellprofiler.modules.loadsingleimage.FTR_CENTER_X),
-            (OBJECTS_NAME, cellprofiler.modules.loadsingleimage.C_LOCATION + "_" + cellprofiler.modules.loadsingleimage.FTR_CENTER_Y),
-            (OBJECTS_NAME, cellprofiler.modules.loadsingleimage.C_NUMBER + "_" + cellprofiler.modules.loadsingleimage.FTR_OBJECT_NUMBER))
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME),
+            (OBJECTS_NAME, cellprofiler.measurement.C_LOCATION + "_" + cellprofiler.measurement.FTR_CENTER_X),
+            (OBJECTS_NAME, cellprofiler.measurement.C_LOCATION + "_" + cellprofiler.measurement.FTR_CENTER_Y),
+            (OBJECTS_NAME, cellprofiler.measurement.C_NUMBER + "_" + cellprofiler.measurement.FTR_OBJECT_NUMBER))
         for expected_column in expected_columns:
             self.assertTrue(any([column[0] == expected_column[0] and
                                  column[1] == expected_column[1]
@@ -510,8 +510,8 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.file_settings[0].image_objects_choice.value = cellprofiler.modules.loadsingleimage.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, expected_categories in (
-                (cellprofiler.measurement.IMAGE, (cellprofiler.modules.loadsingleimage.C_COUNT, cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME)),
-                (OBJECTS_NAME, (cellprofiler.modules.loadsingleimage.C_NUMBER, cellprofiler.modules.loadsingleimage.C_LOCATION))):
+                (cellprofiler.measurement.IMAGE, (cellprofiler.measurement.C_COUNT, cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME)),
+                (OBJECTS_NAME, (cellprofiler.measurement.C_NUMBER, cellprofiler.measurement.C_LOCATION))):
             categories = module.get_categories(None, object_name)
             self.assertTrue(all([category in expected_categories
                                  for category in categories]))
@@ -523,11 +523,12 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.file_settings[0].image_objects_choice.value = cellprofiler.modules.loadsingleimage.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, category, expected_features in (
-                (cellprofiler.measurement.IMAGE, cellprofiler.modules.loadsingleimage.C_COUNT, (OBJECTS_NAME,)),
+                (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT, (OBJECTS_NAME,)),
                 (cellprofiler.measurement.IMAGE, cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME, (OBJECTS_NAME,)),
                 (cellprofiler.measurement.IMAGE, cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME, (OBJECTS_NAME,)),
-                (OBJECTS_NAME, cellprofiler.modules.loadsingleimage.C_NUMBER, (cellprofiler.modules.loadsingleimage.FTR_OBJECT_NUMBER,)),
-                (OBJECTS_NAME, cellprofiler.modules.loadsingleimage.C_LOCATION, (cellprofiler.modules.loadsingleimage.FTR_CENTER_X, cellprofiler.modules.loadsingleimage.FTR_CENTER_Y))):
+                (OBJECTS_NAME, cellprofiler.measurement.C_NUMBER, (cellprofiler.measurement.FTR_OBJECT_NUMBER,)),
+                (OBJECTS_NAME, cellprofiler.measurement.C_LOCATION, (
+                cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y))):
             features = module.get_measurements(None, object_name, category)
             self.assertTrue(all([feature in expected_features
                                  for feature in features]))
@@ -571,12 +572,13 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             o = object_set.get_objects(OBJECTS_NAME)
             numpy.testing.assert_equal(labels, o.segmented)
             self.assertEqual(m.get_current_image_measurement(
-                    "_".join((cellprofiler.modules.loadsingleimage.C_COUNT, OBJECTS_NAME))), 9)
+                    "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))), 9)
             self.assertEqual(m.get_current_image_measurement(
                     "_".join((cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME, OBJECTS_NAME))), filename)
             self.assertEqual(m.get_current_image_measurement(
                     "_".join((cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME, OBJECTS_NAME))), directory)
-            for feature in (cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER):
+            for feature in (cellprofiler.measurement.M_LOCATION_CENTER_X, cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER):
                 values = m.get_current_measurement(OBJECTS_NAME, feature)
                 self.assertEqual(len(values), 9)
         finally:

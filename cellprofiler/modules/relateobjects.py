@@ -42,10 +42,8 @@ from centrosome.outline import outline
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
-from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHILD
-from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
-from cellprofiler.modules.identify import \
-    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
+from cellprofiler.measurement import C_PARENT, R_PARENT, C_CHILDREN, R_CHILD, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
+    M_NUMBER_OBJECT_NUMBER, FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.setting import YES, NO
 
 D_NONE = "None"

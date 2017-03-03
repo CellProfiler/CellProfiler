@@ -645,10 +645,10 @@ class IdentifySecondaryObjects(identify.Identify):
         children_per_parent, parents_of_children = \
             objects.relate_children(objects_out)
         measurements.add_measurement(self.primary_objects.value,
-                                     identify.FF_CHILDREN_COUNT % objname,
+                                     cellprofiler.measurement.FF_CHILDREN_COUNT % objname,
                                      children_per_parent)
         measurements.add_measurement(objname,
-                                     identify.FF_PARENT % self.primary_objects.value,
+                                     cellprofiler.measurement.FF_PARENT % self.primary_objects.value,
                                      parents_of_children)
         image_numbers = numpy.ones(len(parents_of_children), int) * \
                         measurements.image_set_number
@@ -679,10 +679,10 @@ class IdentifySecondaryObjects(identify.Identify):
                 children_per_parent, parents_of_children = \
                     parent_objects.relate_children(child_objects)
                 measurements.add_measurement(parent_name,
-                                             identify.FF_CHILDREN_COUNT % child_name,
+                                             cellprofiler.measurement.FF_CHILDREN_COUNT % child_name,
                                              children_per_parent)
                 measurements.add_measurement(child_name,
-                                             identify.FF_PARENT % parent_name,
+                                             cellprofiler.measurement.FF_PARENT % parent_name,
                                              parents_of_children)
         if self.show_window:
             object_area = numpy.sum(segmented_out > 0)
@@ -801,26 +801,26 @@ class IdentifySecondaryObjects(identify.Identify):
         '''Return column definitions for measurements made by this module'''
         columns = identify.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
-                     identify.FF_CHILDREN_COUNT % self.objects_name.value,
+                     cellprofiler.measurement.FF_CHILDREN_COUNT % self.objects_name.value,
                      cellprofiler.measurement.COLTYPE_INTEGER),
                     (self.objects_name.value,
-                     identify.FF_PARENT % self.primary_objects.value,
+                     cellprofiler.measurement.FF_PARENT % self.primary_objects.value,
                      cellprofiler.measurement.COLTYPE_INTEGER)]
         if self.method != M_DISTANCE_N:
             columns += super(IdentifySecondaryObjects, self).get_measurement_columns(pipeline)
         if self.wants_discard_edge and self.wants_discard_primary:
             columns += identify.get_object_measurement_columns(self.new_primary_objects_name.value)
             columns += [(self.new_primary_objects_name.value,
-                         identify.FF_CHILDREN_COUNT % self.objects_name.value,
+                         cellprofiler.measurement.FF_CHILDREN_COUNT % self.objects_name.value,
                          cellprofiler.measurement.COLTYPE_INTEGER),
                         (self.objects_name.value,
-                         identify.FF_PARENT % self.new_primary_objects_name.value,
+                         cellprofiler.measurement.FF_PARENT % self.new_primary_objects_name.value,
                          cellprofiler.measurement.COLTYPE_INTEGER)]
             columns += [(self.primary_objects.value,
-                         identify.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
+                         cellprofiler.measurement.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
                          cellprofiler.measurement.COLTYPE_INTEGER),
                         (self.new_primary_objects_name.value,
-                         identify.FF_PARENT % self.primary_objects.value,
+                         cellprofiler.measurement.FF_PARENT % self.primary_objects.value,
                          cellprofiler.measurement.COLTYPE_INTEGER)]
 
         return columns

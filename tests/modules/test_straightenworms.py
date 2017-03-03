@@ -4,6 +4,7 @@ import itertools
 import unittest
 from StringIO import StringIO
 
+import cellprofiler.measurement
 import centrosome.cpmorphology as morph
 import numpy as np
 
@@ -307,11 +308,11 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         self.assertEqual(m.get_current_image_measurement(
-                "_".join((I.C_COUNT, STRAIGHTENED_OBJECTS_NAME))), 0)
+                "_".join((cellprofiler.measurement.C_COUNT, STRAIGHTENED_OBJECTS_NAME))), 0)
         self.assertEqual(len(m.get_current_measurement(
-                STRAIGHTENED_OBJECTS_NAME, I.M_LOCATION_CENTER_X)), 0)
+                STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X)), 0)
         self.assertEqual(len(m.get_current_measurement(
-                STRAIGHTENED_OBJECTS_NAME, I.M_LOCATION_CENTER_Y)), 0)
+                STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y)), 0)
 
     def test_02_02_straighten_straight_worm(self):
         '''Do a "straightening" that is a 1-1 mapping'''
@@ -341,13 +342,13 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         self.assertEqual(m.get_current_image_measurement(
-                "_".join((I.C_COUNT, STRAIGHTENED_OBJECTS_NAME))), 1)
+                "_".join((cellprofiler.measurement.C_COUNT, STRAIGHTENED_OBJECTS_NAME))), 1)
         v = m.get_current_measurement(
-                STRAIGHTENED_OBJECTS_NAME, I.M_LOCATION_CENTER_X)
+                STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X)
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 5)
         v = m.get_current_measurement(
-                STRAIGHTENED_OBJECTS_NAME, I.M_LOCATION_CENTER_Y)
+                STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y)
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 9)
         object_set = workspace.object_set
@@ -445,34 +446,34 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.wants_measurements.value = False
         columns = module.get_measurement_columns(workspace.pipeline)
         for object_name, feature_name in (
-                (cpmeas.IMAGE, "_".join((I.C_COUNT, STRAIGHTENED_OBJECTS_NAME))),
-                (STRAIGHTENED_OBJECTS_NAME, I.M_LOCATION_CENTER_X),
-                (STRAIGHTENED_OBJECTS_NAME, I.M_LOCATION_CENTER_Y),
-                (STRAIGHTENED_OBJECTS_NAME, I.M_NUMBER_OBJECT_NUMBER)):
+                (cpmeas.IMAGE, "_".join((cellprofiler.measurement.C_COUNT, STRAIGHTENED_OBJECTS_NAME))),
+                (STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
+                (STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
+                (STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)):
             self.assertTrue(any([(o == object_name) and (f == feature_name)
                                  for o, f, t in columns]))
 
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], I.C_COUNT)
+        self.assertEqual(categories[0], cellprofiler.measurement.C_COUNT)
 
         categories = module.get_categories(workspace.pipeline, STRAIGHTENED_OBJECTS_NAME)
         self.assertEqual(len(categories), 2)
-        self.assertTrue(I.C_LOCATION in categories)
-        self.assertTrue(I.C_NUMBER in categories)
+        self.assertTrue(cellprofiler.measurement.C_LOCATION in categories)
+        self.assertTrue(cellprofiler.measurement.C_NUMBER in categories)
 
-        f = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, I.C_COUNT)
+        f = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, cellprofiler.measurement.C_COUNT)
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], STRAIGHTENED_OBJECTS_NAME)
 
-        f = module.get_measurements(workspace.pipeline, STRAIGHTENED_OBJECTS_NAME, I.C_NUMBER)
+        f = module.get_measurements(workspace.pipeline, STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.C_NUMBER)
         self.assertEqual(len(f), 1)
-        self.assertEqual(f[0], I.FTR_OBJECT_NUMBER)
+        self.assertEqual(f[0], cellprofiler.measurement.FTR_OBJECT_NUMBER)
 
-        f = module.get_measurements(workspace.pipeline, STRAIGHTENED_OBJECTS_NAME, I.C_LOCATION)
+        f = module.get_measurements(workspace.pipeline, STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.C_LOCATION)
         self.assertEqual(len(f), 2)
-        self.assertTrue(I.FTR_CENTER_X in f)
-        self.assertTrue(I.FTR_CENTER_Y in f)
+        self.assertTrue(cellprofiler.measurement.FTR_CENTER_X in f)
+        self.assertTrue(cellprofiler.measurement.FTR_CENTER_Y in f)
 
     def test_03_02_get_measurement_columns_wants_images_vertical(self):
         workspace, module = self.make_workspace(np.zeros((5, 2, 0)),

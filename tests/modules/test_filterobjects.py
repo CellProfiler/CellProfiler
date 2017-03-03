@@ -9,6 +9,7 @@ import tempfile
 import unittest
 import zlib
 
+import cellprofiler.measurement
 import numpy as np
 
 from cellprofiler.preferences import set_headless
@@ -22,11 +23,8 @@ import cellprofiler.image as cpi
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurement as cpm
 import cellprofiler.modules.filterobjects as F
-from cellprofiler.modules.identify import \
-    FF_PARENT, FF_COUNT, FF_CHILDREN_COUNT, M_NUMBER_OBJECT_NUMBER, \
-    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, C_CHILDREN, \
-    C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y, C_PARENT, \
-    C_NUMBER, FTR_OBJECT_NUMBER
+from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_PARENT, C_CHILDREN, FTR_CENTER_X, M_LOCATION_CENTER_X, \
+    FTR_CENTER_Y, M_LOCATION_CENTER_Y, FTR_OBJECT_NUMBER, M_NUMBER_OBJECT_NUMBER, FF_COUNT, FF_CHILDREN_COUNT, FF_PARENT
 
 INPUT_IMAGE = "input_image"
 INPUT_OBJECTS = "input_objects"
@@ -157,7 +155,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertEqual(parents[0], 2)
         self.assertEqual(m.get_current_image_measurement(
                 FF_COUNT % OUTPUT_OBJECTS), 1)
-        feature = F.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
+        feature = cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
         child_count = m.get_current_measurement(INPUT_OBJECTS, feature)
         self.assertEqual(len(child_count), 2)
         self.assertEqual(child_count[0], 0)

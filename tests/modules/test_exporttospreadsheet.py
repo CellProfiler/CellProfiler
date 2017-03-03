@@ -22,8 +22,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E
 from cellprofiler.modules import identifyprimaryobjects
-from cellprofiler.modules.identify import \
-    C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.measurement import C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from tests.modules import \
     example_images_directory, maybe_download_sbs
 

@@ -2247,7 +2247,7 @@ to set up the input modules to handle these files is as follows:</p>
         process the slices in all stacks together as if they were constituents of only one stack.
     </li>
 </ul>
-<p><i>Example:</i> You have two Z-stacks in the following format:</p>
+<p><i>Example:</i> You have four Z-stacks in the following format:</p>
 <ul>
     <li>The stacks are in Zeiss' CZI format.</li>
     <li>Each stack consists of a number of slices with 4 channels (DAPI, GFP, Texas Red and Cy3) at each slice.</li>
@@ -2260,14 +2260,14 @@ to set up the input modules to handle these files is as follows:</p>
 <ul>
     <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
     your rules accordingly in order to filter out any files that are not images to be processed.<br>
-    In the above example, you would drag-and-drop the LSM files into the File list panel. In this case, the default
+    In the above example, you would drag-and-drop the CZI files into the File list panel. In this case, the default
     "Images only" filter is sufficient to capture the necessary files.</li>
     <li>In the <b>Metadata</b> module, enable metadata extraction in order to obtain metadata from these files. The key
     step here is to obtain the metadata tags necessary to do two things:
         <ul>
             <li>Distinguish the stacks from each other. This information is contained as the file itself, that is, each
             file represents a different stack.</li>
-            <li>For each stack, distinguish the timepoints from each other, ensuring proper ordering. This information
+            <li>For each stack, distinguish the z-planes from each other, ensuring proper ordering. This information
             is usually contained in the image file's internal metadata.</li>
         </ul>To accomplish this, do the following:
         <ul>

@@ -54,10 +54,9 @@ def test_run_local(image, image_set, module, workspace):
         expected_data = numpy.zeros_like(data)
 
         for index, plane in enumerate(data):
-            expected_data[index] = skimage.exposure.equalize_adapthist(plane)
+            expected_data[index] = skimage.exposure.equalize_adapthist(plane, kernel_size=256)
     else:
-        expected_data = skimage.exposure.equalize_adapthist(data)
-
+        expected_data = skimage.exposure.equalize_adapthist(data, kernel_size=256)
 
     expected = cellprofiler.image.Image(
         image=expected_data,

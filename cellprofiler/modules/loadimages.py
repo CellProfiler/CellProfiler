@@ -52,6 +52,7 @@ import traceback
 import urllib
 import urlparse
 
+import cellprofiler.measurement
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -2708,9 +2709,9 @@ class LoadImages(cpmodule.Module):
                 res += [cpmeas.C_METADATA]
             if len(object_names) > 0:
                 res += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
-                        C_OBJECTS_URL, I.C_COUNT]
+                        C_OBJECTS_URL, cellprofiler.measurement.C_COUNT]
         elif object_name in object_names:
-            res += [I.C_LOCATION, I.C_NUMBER]
+            res += [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER]
         return res
 
     def get_measurements(self, pipeline, object_name, category):
@@ -2725,17 +2726,17 @@ class LoadImages(cpmodule.Module):
                   if channel.image_object_choice == IO_OBJECTS]
                  for image in self.images], [])
         if object_name == cpmeas.IMAGE:
-            if category == I.C_COUNT:
+            if category == cellprofiler.measurement.C_COUNT:
                 result += object_names
             else:
                 result += [c[1].split('_', 1)[1]
                            for c in self.get_measurement_columns(pipeline)
                            if c[1].split('_')[0] == category]
         elif object_name in object_names:
-            if category == I.C_NUMBER:
-                result += [I.FTR_OBJECT_NUMBER]
-            elif category == I.C_LOCATION:
-                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
+            if category == cellprofiler.measurement.C_NUMBER:
+                result += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.measurement.C_LOCATION:
+                result += [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
         return result
 
     def get_measurement_columns(self, pipeline):

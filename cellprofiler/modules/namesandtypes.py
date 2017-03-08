@@ -1736,9 +1736,13 @@ class NamesAndTypes(cpm.Module):
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
         from cellprofiler.measurement import \
             C_OBJECTS_SERIES, C_OBJECTS_FRAME
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \
-            get_object_measurement_columns
+        from cellprofiler.modules.identify import get_object_measurement_columns
+        from cellprofiler.measurement import FTR_OBJECT_NUMBER
+        from cellprofiler.measurement import FTR_CENTER_Y
+        from cellprofiler.measurement import FTR_CENTER_X
+        from cellprofiler.measurement import C_COUNT
+        from cellprofiler.measurement import C_NUMBER
+        from cellprofiler.measurement import C_LOCATION
 
         image_names = self.get_image_names()
         object_names = self.get_object_names()
@@ -1784,7 +1788,9 @@ class NamesAndTypes(cpm.Module):
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_LOCATION, C_NUMBER, C_COUNT
+        from cellprofiler.measurement import C_COUNT
+        from cellprofiler.measurement import C_NUMBER
+        from cellprofiler.measurement import C_LOCATION
         result = []
         if object_name == cpmeas.IMAGE:
             has_images = any(self.get_image_names())
@@ -1805,8 +1811,12 @@ class NamesAndTypes(cpm.Module):
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y
+        from cellprofiler.measurement import FTR_OBJECT_NUMBER
+        from cellprofiler.measurement import FTR_CENTER_Y
+        from cellprofiler.measurement import FTR_CENTER_X
+        from cellprofiler.measurement import C_COUNT
+        from cellprofiler.measurement import C_NUMBER
+        from cellprofiler.measurement import C_LOCATION
 
         image_names = self.get_image_names()
         object_names = self.get_object_names()

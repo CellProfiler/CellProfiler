@@ -1,13 +1,11 @@
-import centrosome.smooth
-import centrosome.threshold
-import numpy
-import scipy.ndimage
-
 import applythreshold
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
+import numpy
+import scipy.ndimage
+import cellprofiler.measurement
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -28,71 +26,6 @@ RB_MEDIAN = "Median"
 RB_MODE = "Mode"
 RB_SD = "Standard deviation"
 RB_MAD = "Median absolute deviation"
-
-'''The location measurement category'''
-C_LOCATION = "Location"
-
-'''The number category (e.g. Number_Object_Number)'''
-C_NUMBER = "Number"
-
-'''The count category (e.g. Count_Nuclei)'''
-C_COUNT = "Count"
-
-'''The threshold category (e.g. Threshold_FinalThreshold_DNA)'''
-C_THRESHOLD = "Threshold"
-
-'''The parent category (e.g. Parent_Nuclei)'''
-C_PARENT = "Parent"
-
-'''The parent relationship'''
-R_PARENT = "Parent"
-
-'''The children category (e.g. Children_Cells_Count)'''
-C_CHILDREN = "Children"
-
-'''The child relationship'''
-R_CHILD = "Child"
-
-FTR_CENTER_X = "Center_X"
-'''The centroid X coordinate measurement feature name'''
-M_LOCATION_CENTER_X = '%s_%s' % (C_LOCATION, FTR_CENTER_X)
-
-FTR_CENTER_Y = "Center_Y"
-'''The centroid Y coordinate measurement feature name'''
-M_LOCATION_CENTER_Y = '%s_%s' % (C_LOCATION, FTR_CENTER_Y)
-
-FTR_OBJECT_NUMBER = "Object_Number"
-'''The object number - an index from 1 to however many objects'''
-M_NUMBER_OBJECT_NUMBER = '%s_%s' % (C_NUMBER, FTR_OBJECT_NUMBER)
-
-'''The format for the object count image measurement'''
-FF_COUNT = '%s_%%s' % C_COUNT
-
-FTR_FINAL_THRESHOLD = "FinalThreshold"
-
-'''Format string for the FinalThreshold feature name'''
-FF_FINAL_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_FINAL_THRESHOLD)
-
-FTR_ORIG_THRESHOLD = "OrigThreshold"
-
-'''Format string for the OrigThreshold feature name'''
-FF_ORIG_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_ORIG_THRESHOLD)
-
-FTR_WEIGHTED_VARIANCE = "WeightedVariance"
-
-'''Format string for the WeightedVariance feature name'''
-FF_WEIGHTED_VARIANCE = '%s_%s_%%s' % (C_THRESHOLD, FTR_WEIGHTED_VARIANCE)
-
-FTR_SUM_OF_ENTROPIES = "SumOfEntropies"
-
-'''Format string for the SumOfEntropies feature name'''
-FF_SUM_OF_ENTROPIES = '%s_%s_%%s' % (C_THRESHOLD, FTR_SUM_OF_ENTROPIES)
-
-'''Format string for # of children per parent feature name'''
-FF_CHILDREN_COUNT = "%s_%%s_Count" % C_CHILDREN
-
-'''Format string for parent of child feature name'''
-FF_PARENT = "%s_%%s" % C_PARENT
 
 '''Threshold scope = automatic - use defaults of global + MCT, no adjustments'''
 TS_AUTOMATIC = "Automatic"
@@ -255,14 +188,14 @@ class Identify(cellprofiler.module.Module):
                             value is a list of names of parents.
         '''
         if object_name == cellprofiler.measurement.IMAGE:
-            return [C_COUNT]
+            return [cellprofiler.measurement.C_COUNT]
         result = []
         if object_dictionary.has_key(object_name):
-            result += [C_LOCATION, C_NUMBER]
+            result += [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER]
             if len(object_dictionary[object_name]) > 0:
-                result += [C_PARENT]
+                result += [cellprofiler.measurement.C_PARENT]
         if object_name in reduce(lambda x, y: x + y, object_dictionary.values()):
-            result += [C_CHILDREN]
+            result += [cellprofiler.measurement.C_CHILDREN]
         return result
 
     def get_object_measurements(self, pipleline, object_name, category,
@@ -275,17 +208,17 @@ class Identify(cellprofiler.module.Module):
                             an object created by this module and each
                             value is a list of names of parents.
         '''
-        if object_name == cellprofiler.measurement.IMAGE and category == C_COUNT:
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
             return list(object_dictionary.keys())
 
         if object_dictionary.has_key(object_name):
-            if category == C_LOCATION:
-                return [FTR_CENTER_X, FTR_CENTER_Y]
-            elif category == C_NUMBER:
-                return [FTR_OBJECT_NUMBER]
-            elif category == C_PARENT:
+            if category == cellprofiler.measurement.C_LOCATION:
+                return [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
+            elif category == cellprofiler.measurement.C_NUMBER:
+                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.measurement.C_PARENT:
                 return list(object_dictionary[object_name])
-        if category == C_CHILDREN:
+        if category == cellprofiler.measurement.C_CHILDREN:
             result = []
             for child_object_name in object_dictionary.keys():
                 if object_name in object_dictionary[child_object_name]:
@@ -324,11 +257,11 @@ def add_object_location_measurements(measurements,
         location_center_y = numpy.zeros((0,), dtype=float)
         location_center_x = numpy.zeros((0,), dtype=float)
         number = numpy.zeros((0,), dtype=int)
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_X,
+    measurements.add_measurement(object_name, cellprofiler.measurement.M_LOCATION_CENTER_X,
                                  location_center_x)
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_Y,
+    measurements.add_measurement(object_name, cellprofiler.measurement.M_LOCATION_CENTER_Y,
                                  location_center_y)
-    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, number)
+    measurements.add_measurement(object_name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, number)
 
 
 def add_object_location_measurements_ijv(measurements,
@@ -346,16 +279,16 @@ def add_object_location_measurements_ijv(measurements,
         areas[:len(areas_bc)] = areas_bc
         center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[1:] / areas
         center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
-    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER,
+    measurements.add_measurement(object_name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x)
+    measurements.add_measurement(object_name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y)
+    measurements.add_measurement(object_name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                                  numpy.arange(1, object_count + 1))
 
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
     measurements.add_measurement('Image',
-                                 FF_COUNT % object_name,
+                                 cellprofiler.measurement.FF_COUNT % object_name,
                                  numpy.array([object_count],
                                              dtype=float))
 
@@ -368,7 +301,7 @@ def get_object_measurement_columns(object_name):
     the measurements made by add_object_location_measurements and
     add_object_count_measurements.
     '''
-    return [(object_name, M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
-            (object_name, M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
-            (object_name, M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
-            (cellprofiler.measurement.IMAGE, FF_COUNT % object_name, cellprofiler.measurement.COLTYPE_INTEGER)]
+    return [(object_name, cellprofiler.measurement.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
+            (object_name, cellprofiler.measurement.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
+            (object_name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_COUNT % object_name, cellprofiler.measurement.COLTYPE_INTEGER)]

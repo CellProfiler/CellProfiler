@@ -90,7 +90,7 @@ D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 class Crop(cpm.Module):
     module_name = "Crop"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
@@ -821,4 +821,9 @@ class Crop(cpm.Module):
             #
             if setting_values[OFF_INDIVIDUAL_OR_ONCE] == "Individually":
                 setting_values[OFF_INDIVIDUAL_OR_ONCE] = IO_INDIVIDUALLY
+
+            setting_values = setting_values[:10] + setting_values[11:]
+
+            variable_revision_number = 3
+
         return setting_values, variable_revision_number, from_matlab

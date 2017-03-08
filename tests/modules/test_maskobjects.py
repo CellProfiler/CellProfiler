@@ -8,6 +8,7 @@ import zlib
 from StringIO import StringIO
 
 import PIL.Image as PILImage
+import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
@@ -231,12 +232,12 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for expected in (
-                (cpmeas.IMAGE, M.I.FF_COUNT % OUTPUT_OBJECTS, cpmeas.COLTYPE_INTEGER),
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS, M.I.FF_PARENT % INPUT_OBJECTS, cpmeas.COLTYPE_INTEGER),
-                (OUTPUT_OBJECTS, M.I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (INPUT_OBJECTS, M.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, cpmeas.COLTYPE_INTEGER)):
+                (cpmeas.IMAGE, cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS, cpmeas.COLTYPE_INTEGER),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, cpmeas.COLTYPE_INTEGER),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, cpmeas.COLTYPE_INTEGER)):
             self.assertTrue(any([all([c in e for c, e in zip(column, expected)])
                                  for column in columns]))
 
@@ -249,33 +250,33 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
 
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], M.I.C_COUNT)
+        self.assertEqual(categories[0], cellprofiler.measurement.C_COUNT)
 
         categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS)
         self.assertEqual(len(categories), 3)
         for category, expected in zip(sorted(categories),
-                                      (M.I.C_LOCATION, M.I.C_NUMBER,
-                                       M.I.C_PARENT)):
+                                      (cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER,
+                                       cellprofiler.measurement.C_PARENT)):
             self.assertEqual(category, expected)
 
         categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], M.I.C_CHILDREN)
+        self.assertEqual(categories[0], cellprofiler.measurement.C_CHILDREN)
 
     def test_02_03_measurements(self):
         workspace, module = self.make_workspace(np.zeros((20, 10), int),
                                                 M.P_MASK,
                                                 np.zeros((20, 10), int))
-        ftr_count = (M.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).split('_', 1)[1]
+        ftr_count = (cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).split('_', 1)[1]
         d = {"Foo": {},
-             cpmeas.IMAGE: {"Foo": [], M.I.C_COUNT: [OUTPUT_OBJECTS]},
+             cpmeas.IMAGE: {"Foo": [], cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS]},
              OUTPUT_OBJECTS: {"Foo": [],
-                              M.I.C_LOCATION: [M.I.FTR_CENTER_X,
-                                               M.I.FTR_CENTER_Y],
-                              M.I.C_PARENT: [INPUT_OBJECTS],
-                              M.I.C_NUMBER: [M.I.FTR_OBJECT_NUMBER]},
+                              cellprofiler.measurement.C_LOCATION: [cellprofiler.measurement.FTR_CENTER_X,
+                                                                    cellprofiler.measurement.FTR_CENTER_Y],
+                              cellprofiler.measurement.C_PARENT: [INPUT_OBJECTS],
+                              cellprofiler.measurement.C_NUMBER: [cellprofiler.measurement.FTR_OBJECT_NUMBER]},
              INPUT_OBJECTS: {"Foo": [],
-                             M.I.C_CHILDREN: [ftr_count]}
+                             cellprofiler.measurement.C_CHILDREN: [ftr_count]}
              }
         for object_name in d.keys():
             od = d[object_name]
@@ -295,14 +296,14 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 0)
         for object_name, feature in (
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_X),
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_Y),
-                (OUTPUT_OBJECTS, M.I.M_NUMBER_OBJECT_NUMBER),
-                (OUTPUT_OBJECTS, M.I.FF_PARENT % INPUT_OBJECTS),
-                (INPUT_OBJECTS, M.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS)):
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS),
+                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS)):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), 0)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -325,15 +326,15 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_y = np.array([5, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 2)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, M.I.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
-                (OUTPUT_OBJECTS, M.I.FF_PARENT % INPUT_OBJECTS, np.array([1, 2])),
-                (INPUT_OBJECTS, M.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 1]))):
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 2])),
+                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 1]))):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):
@@ -357,15 +358,15 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_y = np.array([5, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 2)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, M.I.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
-                (OUTPUT_OBJECTS, M.I.FF_PARENT % INPUT_OBJECTS, np.array([1, 2])),
-                (INPUT_OBJECTS, M.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 1]))):
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 2])),
+                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 1]))):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):
@@ -391,15 +392,15 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_y = np.array([5, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 2)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, M.I.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
-                (OUTPUT_OBJECTS, M.I.FF_PARENT % INPUT_OBJECTS, np.array([1, 3])),
-                (INPUT_OBJECTS, M.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 0, 1]))):
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 3])),
+                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 0, 1]))):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):
@@ -425,15 +426,15 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_y = np.array([5, None, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 3)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, M.I.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, M.I.M_NUMBER_OBJECT_NUMBER, np.array([1, 2, 3])),
-                (OUTPUT_OBJECTS, M.I.FF_PARENT % INPUT_OBJECTS, np.array([1, 2, 3])),
-                (INPUT_OBJECTS, M.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 0, 1]))):
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2, 3])),
+                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 2, 3])),
+                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 0, 1]))):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):

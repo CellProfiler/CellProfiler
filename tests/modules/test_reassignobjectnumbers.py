@@ -6,6 +6,7 @@ import unittest
 import zlib
 from StringIO import StringIO
 
+import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage
 
@@ -208,7 +209,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   cpmeas.Measurements(), image_set_list)
         if parents_of is not None:
             m = workspace.measurements
-            ftr = R.FF_PARENT % parent_object
+            ftr = cellprofiler.measurement.FF_PARENT % parent_object
             m[INPUT_OBJECTS_NAME, ftr] = parents_of
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -224,9 +225,9 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        count = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 0)
-        for feature_name in (I.M_LOCATION_CENTER_X, I.M_LOCATION_CENTER_Y):
+        for feature_name in (cellprofiler.measurement.M_LOCATION_CENTER_X, cellprofiler.measurement.M_LOCATION_CENTER_Y):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 0)
@@ -236,14 +237,14 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for object_name, feature_name, coltype in (
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (INPUT_OBJECTS_NAME, I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                (INPUT_OBJECTS_NAME, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
                  cpmeas.COLTYPE_INTEGER),
-                (OUTPUT_OBJECTS_NAME, I.FF_PARENT % INPUT_OBJECTS_NAME,
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
                  cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
+                (cpmeas.IMAGE, cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
             self.assertTrue(any([object_name == c[0] and
                                  feature_name == c[1] and
                                  coltype == c[2] for c in columns]))
@@ -290,18 +291,18 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        count = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 1)
-        for feature_name, value in ((I.M_LOCATION_CENTER_X, 5),
-                                    (I.M_LOCATION_CENTER_Y, 3),
-                                    (I.FF_PARENT % INPUT_OBJECTS_NAME, 1)):
+        for feature_name, value in ((cellprofiler.measurement.M_LOCATION_CENTER_X, 5),
+                                    (cellprofiler.measurement.M_LOCATION_CENTER_Y, 3),
+                                    (cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME, 1)):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 1)
             self.assertAlmostEqual(values[0], value)
 
         values = m.get_current_measurement(INPUT_OBJECTS_NAME,
-                                           I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
+                                           cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 1)
 
@@ -319,11 +320,11 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(np.all(labels_out == expected))
         m = workspace.measurements
         values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
-                                           I.FF_PARENT % INPUT_OBJECTS_NAME)
+                                           cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 2)
         self.assertTrue(np.all(values == 1))
         values = m.get_current_measurement(INPUT_OBJECTS_NAME,
-                                           I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
+                                           cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 2)
 

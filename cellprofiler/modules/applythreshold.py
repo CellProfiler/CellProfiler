@@ -18,6 +18,7 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
 
+
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
 
@@ -37,43 +38,6 @@ TM_MEASUREMENT = "Measurement"
 TM_LI = "Minimum cross entropy"
 
 TS_ALL = [TS_GLOBAL, TS_ADAPTIVE]
-
-C_LOCATION = "Location"
-C_NUMBER = "Number"
-C_COUNT = "Count"
-C_THRESHOLD = "Threshold"
-C_PARENT = "Parent"
-R_PARENT = "Parent"
-C_CHILDREN = "Children"
-R_CHILD = "Child"
-
-FTR_CENTER_X = "Center_X"
-M_LOCATION_CENTER_X = '%s_%s' % (C_LOCATION, FTR_CENTER_X)
-
-FTR_CENTER_Y = "Center_Y"
-M_LOCATION_CENTER_Y = '%s_%s' % (C_LOCATION, FTR_CENTER_Y)
-
-FTR_OBJECT_NUMBER = "Object_Number"
-
-M_NUMBER_OBJECT_NUMBER = '%s_%s' % (C_NUMBER, FTR_OBJECT_NUMBER)
-
-FF_COUNT = '%s_%%s' % C_COUNT
-
-FTR_FINAL_THRESHOLD = "FinalThreshold"
-FF_FINAL_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_FINAL_THRESHOLD)
-
-FTR_ORIG_THRESHOLD = "OrigThreshold"
-FF_ORIG_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_ORIG_THRESHOLD)
-
-FTR_WEIGHTED_VARIANCE = "WeightedVariance"
-FF_WEIGHTED_VARIANCE = '%s_%s_%%s' % (C_THRESHOLD, FTR_WEIGHTED_VARIANCE)
-
-FTR_SUM_OF_ENTROPIES = "SumOfEntropies"
-FF_SUM_OF_ENTROPIES = '%s_%s_%%s' % (C_THRESHOLD, FTR_SUM_OF_ENTROPIES)
-
-FF_CHILDREN_COUNT = "%s_%%s_Count" % C_CHILDREN
-
-FF_PARENT = "%s_%%s" % C_PARENT
 
 PROTIP_RECOMEND_ICON = "thumb-up.png"
 PROTIP_AVOID_ICON = "thumb-down.png"
@@ -894,9 +858,9 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
     def add_threshold_measurements(self, objname, measurements, local_threshold, global_threshold):
         ave_threshold = numpy.mean(numpy.atleast_1d(local_threshold))
 
-        measurements.add_measurement(cellprofiler.measurement.IMAGE, FF_FINAL_THRESHOLD % objname, ave_threshold)
+        measurements.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_FINAL_THRESHOLD % objname, ave_threshold)
 
-        measurements.add_measurement(cellprofiler.measurement.IMAGE, FF_ORIG_THRESHOLD % objname, global_threshold)
+        measurements.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % objname, global_threshold)
 
     def add_fg_bg_measurements(self, objname, measurements, image, binary_image):
         data = image.pixel_data
@@ -907,7 +871,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
         measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
-            FF_WEIGHTED_VARIANCE % objname,
+            cellprofiler.measurement.FF_WEIGHTED_VARIANCE % objname,
             numpy.array([wv], dtype=float)
         )
 
@@ -915,7 +879,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
         measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
-            FF_SUM_OF_ENTROPIES % objname,
+            cellprofiler.measurement.FF_SUM_OF_ENTROPIES % objname,
             numpy.array([entropies], dtype=float)
         )
 
@@ -924,17 +888,17 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
-            return [C_THRESHOLD]
+            return [cellprofiler.measurement.C_THRESHOLD]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler.measurement.IMAGE and category == C_THRESHOLD:
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_THRESHOLD:
             return [
-                FTR_ORIG_THRESHOLD,
-                FTR_FINAL_THRESHOLD,
-                FTR_SUM_OF_ENTROPIES,
-                FTR_WEIGHTED_VARIANCE
+                cellprofiler.measurement.FTR_ORIG_THRESHOLD,
+                cellprofiler.measurement.FTR_FINAL_THRESHOLD,
+                cellprofiler.measurement.FTR_SUM_OF_ENTROPIES,
+                cellprofiler.measurement.FTR_WEIGHTED_VARIANCE
             ]
 
         return []
@@ -1084,7 +1048,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
 
 
 def image_measurement_columns(image_name):
-    return [(cellprofiler.measurement.IMAGE, FF_FINAL_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_ORIG_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_WEIGHTED_VARIANCE % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_SUM_OF_ENTROPIES % image_name, cellprofiler.measurement.COLTYPE_FLOAT)]
+    return [(cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_FINAL_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_WEIGHTED_VARIANCE % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_SUM_OF_ENTROPIES % image_name, cellprofiler.measurement.COLTYPE_FLOAT)]

@@ -1816,17 +1816,17 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         expected_columns = [
             (cellprofiler.measurement.IMAGE, format % oname, coltype)
             for format, coltype in (
-                (cellprofiler.modules.identify.FF_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.modules.identify.FF_FINAL_THRESHOLD, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.modules.identify.FF_ORIG_THRESHOLD, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.modules.identify.FF_WEIGHTED_VARIANCE, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.modules.identify.FF_SUM_OF_ENTROPIES, cellprofiler.measurement.COLTYPE_FLOAT)
+                (cellprofiler.measurement.FF_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
+                (cellprofiler.measurement.FF_FINAL_THRESHOLD, cellprofiler.measurement.COLTYPE_FLOAT),
+                (cellprofiler.measurement.FF_ORIG_THRESHOLD, cellprofiler.measurement.COLTYPE_FLOAT),
+                (cellprofiler.measurement.FF_WEIGHTED_VARIANCE, cellprofiler.measurement.COLTYPE_FLOAT),
+                (cellprofiler.measurement.FF_SUM_OF_ENTROPIES, cellprofiler.measurement.COLTYPE_FLOAT)
             )]
         expected_columns += [(oname, feature, cellprofiler.measurement.COLTYPE_FLOAT)
-                             for feature in (cellprofiler.modules.identify.M_LOCATION_CENTER_X,
-                                             cellprofiler.modules.identify.M_LOCATION_CENTER_Y)]
+                             for feature in (cellprofiler.measurement.M_LOCATION_CENTER_X,
+                                             cellprofiler.measurement.M_LOCATION_CENTER_Y)]
         expected_columns += [(oname,
-                              cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER,
+                              cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                               cellprofiler.measurement.COLTYPE_INTEGER)]
         self.assertEqual(len(columns), len(expected_columns))
         for column in columns:

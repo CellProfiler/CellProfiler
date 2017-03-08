@@ -87,7 +87,7 @@ from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurement as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
-from identify import M_NUMBER_OBJECT_NUMBER
+from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
 from cellprofiler.preferences import \
@@ -229,7 +229,7 @@ OT_DICTIONARY = {
     "Single object table": OT_COMBINE,
     "Single object view": OT_VIEW
 }
-from identify import C_PARENT
+from cellprofiler.measurement import C_PARENT, M_NUMBER_OBJECT_NUMBER
 
 T_EXPERIMENT = "Experiment"
 T_EXPERIMENT_PROPERTIES = "Experiment_Properties"

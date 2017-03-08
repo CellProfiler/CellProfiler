@@ -105,11 +105,23 @@ class Identify(cellprofiler.module.Module):
         return self.apply_threshold.help_settings()[2:]
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        upgrade_settings = self.apply_threshold.upgrade_threshold_settings(setting_values)
+        threshold_settings_version = int(setting_values[0])
 
-        upgrade_settings[0] = str(self.apply_threshold.variable_revision_number)
+        if threshold_settings_version < 4:
+            setting_values = self.apply_threshold.upgrade_threshold_settings(setting_values)
 
-        return upgrade_settings, self.apply_threshold.variable_revision_number, False
+            threshold_settings_version = 9
+
+        upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+            ["None", "None"] + setting_values[1:],
+            threshold_settings_version,
+            "ApplyThreshold",
+            False
+        )
+
+        upgrade_settings = [str(threshold_settings_version)] + upgrade_settings[2:]
+
+        return upgrade_settings, 0, False
 
     def visible_settings(self):
         return self.apply_threshold.visible_settings()[2:]
@@ -117,11 +129,7 @@ class Identify(cellprofiler.module.Module):
     def threshold_image(self, image_name, workspace, automatic=False):
         input = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        data = input.pixel_data
-
-        mask = input.mask
-
-        local_threshold, global_threshold = self.apply_threshold.get_threshold(data, mask, workspace, automatic)
+        local_threshold, global_threshold = self.apply_threshold.get_threshold(input, workspace, automatic)
 
         self.apply_threshold.add_threshold_measurements(
             self.get_measurement_objects_name(),
@@ -130,13 +138,12 @@ class Identify(cellprofiler.module.Module):
             global_threshold
         )
 
-        binary_image, sigma = self.apply_threshold.apply_threshold(data, mask, local_threshold, automatic)
+        binary_image, sigma = self.apply_threshold.apply_threshold(input, local_threshold, automatic)
 
         self.apply_threshold.add_fg_bg_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            data,
-            mask,
+            input,
             binary_image
         )
 

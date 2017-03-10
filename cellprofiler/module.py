@@ -1034,3 +1034,85 @@ class ImageSegmentation(Module):
             self.x_name,
             self.y_name
         ]
+
+
+class ObjectProcessing(Module):
+    category = "Object Processing"
+
+    def create_settings(self):
+        self.x_name = cellprofiler.setting.ObjectNameSubscriber(
+            "Input"
+        )
+
+        self.y_name = cellprofiler.setting.ObjectNameProvider(
+            "Output",
+            self.__class__.__name__
+        )
+
+    def display(self, workspace, figure):
+        layout = (2, 1)
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions,
+            subplots=layout
+        )
+
+        figure.subplot_imshow_labels(
+            dimensions=workspace.display_data.dimensions,
+            labels=workspace.display_data.x_data,
+            title=self.x_name.value,
+            x=0,
+            y=0
+        )
+
+        figure.subplot_imshow_labels(
+            dimensions=workspace.display_data.dimensions,
+            labels=workspace.display_data.y_data,
+            title=self.y_name.value,
+            x=1,
+            y=0
+        )
+
+    def run(self, workspace):
+        x_name = self.x_name.value
+
+        y_name = self.y_name.value
+
+        objects = workspace.object_set
+
+        x = objects.get_objects(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.segmented
+
+        args = (setting.value for setting in self.settings()[2:])
+
+        y_data = self.function(x_data, *args)
+
+        y = cellprofiler.object.Objects()
+
+        y.segmented = y_data
+
+        y.parent_image = x.parent_image
+
+        objects.add_objects(y, y_name)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
+
+    def settings(self):
+        return [
+            self.x_name,
+            self.y_name
+        ]
+
+    def visible_settings(self):
+        return [
+            self.x_name,
+            self.y_name
+        ]

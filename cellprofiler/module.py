@@ -11,6 +11,7 @@ import cellprofiler.object
 import cellprofiler.setting as cps
 import pipeline as cpp
 import skimage.color
+import mahotas
 
 
 class Module(object):
@@ -1039,6 +1040,15 @@ class ImageSegmentation(Module):
 class ObjectProcessing(Module):
     category = "Object Processing"
 
+    def add_object_measurements(self, objects, measurements):
+        measurements.add_measurement(
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.FF_COUNT % self.y_name.value,
+            numpy.array([objects.count], dtype=numpy.uint8)
+        )
+
+        centers = mahotas.center_of_mass(numpy.ones_like(objects.segmented), labels=objects.segmented)
+
     def create_settings(self):
         self.x_name = cellprofiler.setting.ObjectNameSubscriber(
             "Input"
@@ -1072,6 +1082,78 @@ class ObjectProcessing(Module):
             x=1,
             y=0
         )
+
+    def get_categories(self, pipeline, object_name):
+        if object_name == cellprofiler.measurement.IMAGE:
+            return [cellprofiler.measurement.C_COUNT]
+
+        if object_name == self.x_name.value:
+            return [cellprofiler.measurement.C_CHILDREN]
+
+        if object_name == self.y_name.value:
+            return [
+                cellprofiler.measurement.C_LOCATION,
+                cellprofiler.measurement.C_NUMBER,
+                cellprofiler.measurement.C_PARENT
+            ]
+
+        return []
+
+    def get_measurement_columns(self, pipeline):
+        return [
+            (
+                self.y_name.value,
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                self.y_name.value,
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                self.y_name.value,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                self.y_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                self.x_name.value,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                self.y_name.value,
+                cellprofiler.measurement.FF_PARENT % self.x_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            )
+        ]
+
+    def get_measurements(self, pipeline, object_name, category):
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
+            return [self.y_name.value]
+
+        if object_name == self.x_name.value and category == cellprofiler.measurement.C_CHILDREN:
+            return [cellprofiler.measurement.FF_COUNT % self.y_name.value]
+
+        if object_name == self.y_name.value:
+            if category == cellprofiler.measurement.C_LOCATION:
+                return [
+                    cellprofiler.measurement.FTR_CENTER_X,
+                    cellprofiler.measurement.FTR_CENTER_Y
+                ]
+
+            if category == cellprofiler.measurement.C_NUMBER:
+                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+
+            if category == cellprofiler.measurement.C_PARENT:
+                return [self.x_name.value]
+
+        return []
 
     def run(self, workspace):
         x_name = self.x_name.value

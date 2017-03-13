@@ -3,7 +3,7 @@ import re
 import sys
 import uuid
 
-import numpy as np
+import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -70,7 +70,7 @@ class Module(object):
         self.__as_data_tool = False
         self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
-        self.batch_state = np.zeros((0,), np.uint8)
+        self.batch_state = numpy.zeros((0,), numpy.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
@@ -116,7 +116,7 @@ class Module(object):
                     settings[cpp.MODULE_NOTES].shape[1] > idx):
             n = settings[cpp.MODULE_NOTES][0, idx].flatten()
             for x in n:
-                if isinstance(x, np.ndarray):
+                if isinstance(x, numpy.ndarray):
                     if len(x) == 0:
                         x = ''
                     else:
@@ -127,14 +127,14 @@ class Module(object):
         if settings.dtype.fields.has_key(cpp.BATCH_STATE):
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
-            self.batch_state = np.array(settings[cpp.BATCH_STATE][0, idx].tostring())
+            self.batch_state = numpy.array(settings[cpp.BATCH_STATE][0, idx].tostring())
         setting_count = settings[cpp.NUMBERS_OF_VARIABLES][0, idx]
         variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][0, idx]
         module_name = settings[cpp.MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
             value_cell = settings[cpp.VARIABLE_VALUES][idx, i]
-            if isinstance(value_cell, np.ndarray):
-                if np.product(value_cell.shape) == 0:
+            if isinstance(value_cell, numpy.ndarray):
+                if numpy.product(value_cell.shape) == 0:
                     setting_values.append('')
                 else:
                     setting_values.append(str(value_cell[0]))
@@ -242,7 +242,7 @@ class Module(object):
         module_idx = self.module_num - 1
         setting = handles[cpp.SETTINGS][0, 0]
         setting[cpp.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
-        setting[cpp.MODULE_NOTES][0, module_idx] = np.ndarray(shape=(len(self.notes), 1), dtype='object')
+        setting[cpp.MODULE_NOTES][0, module_idx] = numpy.ndarray(shape=(len(self.notes), 1), dtype='object')
         for i in range(0, len(self.notes)):
             setting[cpp.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
         setting[cpp.NUMBERS_OF_VARIABLES][0, module_idx] = len(self.settings())
@@ -260,7 +260,7 @@ class Module(object):
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[cpp.BATCH_STATE][0, module_idx] = np.fromstring(self.batch_state.tostring(), np.uint8)
+        setting[cpp.BATCH_STATE][0, module_idx] = numpy.fromstring(self.batch_state.tostring(), numpy.uint8)
 
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''
@@ -967,12 +967,12 @@ class ImageSegmentation(Module):
     category = "Image Segmentation"
 
     def add_measurements(self, measurements, labels):
-        n_objects = len(np.unique(labels)[1:]) if 0 in labels else len(np.unique(labels))
+        n_objects = len(numpy.unique(labels)[1:]) if 0 in labels else len(numpy.unique(labels))
 
         measurements.add_measurement(
             "Image",
             "Count_{}".format(self.y_name.value),
-            np.array([n_objects], dtype=np.float)
+            numpy.array([n_objects], dtype=numpy.float)
         )
 
     def create_settings(self):
@@ -989,7 +989,7 @@ class ImageSegmentation(Module):
         layout = (2, 1)
 
         if workspace.display_data.dimensions is 3:
-            overlay = np.zeros(workspace.display_data.x_data.shape + (3,))
+            overlay = numpy.zeros(workspace.display_data.x_data.shape + (3,))
 
             for index, data in enumerate(workspace.display_data.x_data):
                 overlay[index] = skimage.color.label2rgb(
@@ -1040,14 +1040,55 @@ class ImageSegmentation(Module):
 class ObjectProcessing(Module):
     category = "Object Processing"
 
-    def add_object_measurements(self, objects, measurements):
-        measurements.add_measurement(
+    def add_measurements(self, workspace):
+        objects = workspace.object_set.get_objects(self.y_name.value)
+
+        centers = mahotas.center_of_mass(numpy.ones_like(objects.segmented), labels=objects.segmented)
+
+        if numpy.any(objects.segmented == 0):
+            centers = centers[1:]
+
+        center_x, center_y = centers.transpose()
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_LOCATION_CENTER_X,
+            center_x
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_LOCATION_CENTER_Y,
+            center_y
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            numpy.arange(1, objects.count + 1)
+        )
+
+        workspace.measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_COUNT % self.y_name.value,
             numpy.array([objects.count], dtype=numpy.uint8)
         )
 
-        centers = mahotas.center_of_mass(numpy.ones_like(objects.segmented), labels=objects.segmented)
+        parent_objects = workspace.object_set.get_objects(self.x_name.value)
+
+        children_per_parent, parents_of_children = parent_objects.relate_children(objects)
+
+        workspace.measurements.add_measurement(
+            self.x_name.value,
+            cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+            children_per_parent
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.FF_PARENT % self.x_name.value,
+            parents_of_children
+        )
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ObjectNameSubscriber(
@@ -1118,7 +1159,7 @@ class ObjectProcessing(Module):
             ),
             (
                 cellprofiler.measurement.IMAGE,
-                self.y_name.value,
+                cellprofiler.measurement.FF_COUNT % self.y_name.value,
                 cellprofiler.measurement.COLTYPE_INTEGER
             ),
             (
@@ -1179,6 +1220,8 @@ class ObjectProcessing(Module):
         y.parent_image = x.parent_image
 
         objects.add_objects(y, y_name)
+
+        self.add_measurements(workspace)
 
         if self.show_window:
             workspace.display_data.x_data = x_data

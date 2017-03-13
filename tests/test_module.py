@@ -1,5 +1,9 @@
+import numpy
+
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.workspace
 
 
 class TestObjectProcessing():
@@ -80,7 +84,7 @@ class TestObjectProcessing():
             ),
             (
                 cellprofiler.measurement.IMAGE,
-                "ObjectProcessing",
+                cellprofiler.measurement.FF_COUNT % "ObjectProcessing",
                 cellprofiler.measurement.COLTYPE_INTEGER
             ),
             (
@@ -206,3 +210,158 @@ class TestObjectProcessing():
         expected = []
 
         assert actual == expected
+
+    def test_add_measurements(self):
+        measurements = cellprofiler.measurement.Measurements()
+
+        module = cellprofiler.module.ObjectProcessing()
+
+        module.x_name.value = "Objects"
+
+        object_set = cellprofiler.object.ObjectSet()
+
+        labels = numpy.zeros((30, 30), dtype=numpy.uint8)
+
+        i, j = numpy.mgrid[-15:15, -7:23]
+        labels[i ** 2 + j ** 2 <= 25] = 1
+
+        i, j = numpy.mgrid[-15:15, -22:8]
+        labels[i ** 2 + j ** 2 <= 16] = 2
+
+        objects = cellprofiler.object.Objects()
+
+        objects.segmented = labels
+
+        object_set.add_objects(objects, "ObjectProcessing")
+
+        parent_labels = numpy.zeros((30, 30), dtype=numpy.uint8)
+
+        i, j = numpy.mgrid[-15:15, -15:15]
+        parent_labels[i ** 2 + j ** 2 <= 196] = 1
+
+        parent_objects = cellprofiler.object.Objects()
+
+        parent_objects.segmented = parent_labels
+
+        object_set.add_objects(parent_objects, "Objects")
+
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline=None,
+            module=module,
+            image_set=None,
+            object_set=object_set,
+            measurements=measurements,
+            image_set_list=None
+        )
+
+        module.add_measurements(workspace)
+
+        expected_center_x = [15.0, 15.0]
+
+        actual_center_x = measurements.get_measurement(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_LOCATION_CENTER_X
+        )
+
+        numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
+
+        expected_center_y = [7.0, 22.0]
+
+        actual_center_y = measurements.get_measurement(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_LOCATION_CENTER_Y
+        )
+
+        numpy.testing.assert_array_equal(actual_center_y, expected_center_y)
+
+        expected_object_number = [1.0, 2.0]
+
+        actual_object_number = measurements.get_measurement(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+        )
+
+        expected_count = [2.0]
+
+        actual_count = measurements.get_measurement(
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.FF_COUNT % "ObjectProcessing"
+        )
+
+        numpy.testing.assert_array_equal(actual_count, expected_count)
+
+        expected_children_count = [2]
+
+        actual_children_count = measurements.get_measurement(
+            "Objects",
+            cellprofiler.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
+        )
+
+        numpy.testing.assert_array_equal(actual_children_count, expected_children_count)
+
+        expected_parents = [1, 1]
+
+        actual_parents = measurements.get_measurement(
+            "ObjectProcessing",
+            cellprofiler.measurement.FF_PARENT % "Objects"
+        )
+
+        numpy.testing.assert_array_equal(actual_parents, expected_parents)
+
+    def test_run(self):
+        measurements = cellprofiler.measurement.Measurements()
+
+        module = cellprofiler.module.ObjectProcessing()
+
+        module.x_name.value = "Objects"
+
+        object_set = cellprofiler.object.ObjectSet()
+
+        parent_objects = cellprofiler.object.Objects()
+
+        parent_objects.segmented = numpy.ones((10, 10), dtype=numpy.uint8)
+
+        object_set.add_objects(parent_objects, "Objects")
+
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline=None,
+            module=module,
+            image_set=None,
+            object_set=object_set,
+            measurements=measurements,
+            image_set_list=None
+        )
+
+        module.function = lambda x: x
+
+        module.run(workspace)
+
+        assert measurements.has_feature(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_LOCATION_CENTER_X
+        )
+
+        assert measurements.has_feature(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_LOCATION_CENTER_Y
+        )
+
+        assert measurements.has_feature(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+        )
+
+        assert measurements.has_feature(
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.FF_COUNT % "ObjectProcessing"
+        )
+
+        assert measurements.has_feature(
+            "Objects",
+            cellprofiler.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
+        )
+
+        assert measurements.has_feature(
+            "ObjectProcessing",
+            cellprofiler.measurement.FF_PARENT % "Objects"
+        )

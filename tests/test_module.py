@@ -79,6 +79,11 @@ class TestObjectProcessing():
             ),
             (
                 "ObjectProcessing",
+                cellprofiler.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                "ObjectProcessing",
                 cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                 cellprofiler.measurement.COLTYPE_INTEGER
             ),
@@ -158,7 +163,8 @@ class TestObjectProcessing():
 
         expected = [
             cellprofiler.measurement.FTR_CENTER_X,
-            cellprofiler.measurement.FTR_CENTER_Y
+            cellprofiler.measurement.FTR_CENTER_Y,
+            cellprofiler.measurement.FTR_CENTER_Z
         ]
 
         assert actual == expected
@@ -274,6 +280,15 @@ class TestObjectProcessing():
 
         numpy.testing.assert_array_equal(actual_center_y, expected_center_y)
 
+        expected_center_z = [0.0, 0.0]
+
+        actual_center_z = measurements.get_measurement(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_LOCATION_CENTER_Z
+        )
+
+        numpy.testing.assert_array_equal(actual_center_z, expected_center_z)
+
         expected_object_number = [1.0, 2.0]
 
         actual_object_number = measurements.get_measurement(
@@ -344,6 +359,11 @@ class TestObjectProcessing():
         assert measurements.has_feature(
             "ObjectProcessing",
             cellprofiler.measurement.M_LOCATION_CENTER_Y
+        )
+
+        assert measurements.has_feature(
+            "ObjectProcessing",
+            cellprofiler.measurement.M_LOCATION_CENTER_Z
         )
 
         assert measurements.has_feature(

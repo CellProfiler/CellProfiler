@@ -1043,12 +1043,17 @@ class ObjectProcessing(Module):
     def add_measurements(self, workspace):
         objects = workspace.object_set.get_objects(self.y_name.value)
 
-        centers = mahotas.center_of_mass(numpy.ones_like(objects.segmented), labels=objects.segmented)
+        labels = objects.segmented
+
+        if not objects.volumetric:
+            labels = numpy.asarray([labels])
+
+        centers = mahotas.center_of_mass(numpy.ones_like(labels), labels=labels)
 
         if numpy.any(objects.segmented == 0):
             centers = centers[1:]
 
-        center_x, center_y = centers.transpose()
+        center_z, center_x, center_y = centers.transpose()
 
         workspace.measurements.add_measurement(
             self.y_name.value,
@@ -1060,6 +1065,12 @@ class ObjectProcessing(Module):
             self.y_name.value,
             cellprofiler.measurement.M_LOCATION_CENTER_Y,
             center_y
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_LOCATION_CENTER_Z,
+            center_z
         )
 
         workspace.measurements.add_measurement(
@@ -1154,6 +1165,11 @@ class ObjectProcessing(Module):
             ),
             (
                 self.y_name.value,
+                cellprofiler.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                self.y_name.value,
                 cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                 cellprofiler.measurement.COLTYPE_INTEGER
             ),
@@ -1185,7 +1201,8 @@ class ObjectProcessing(Module):
             if category == cellprofiler.measurement.C_LOCATION:
                 return [
                     cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y
+                    cellprofiler.measurement.FTR_CENTER_Y,
+                    cellprofiler.measurement.FTR_CENTER_Z
                 ]
 
             if category == cellprofiler.measurement.C_NUMBER:

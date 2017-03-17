@@ -4,6 +4,7 @@ import sys
 import uuid
 
 import numpy
+import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -11,7 +12,6 @@ import cellprofiler.object
 import cellprofiler.setting as cps
 import pipeline as cpp
 import skimage.color
-import mahotas
 
 
 class Module(object):
@@ -1045,13 +1045,17 @@ class ObjectProcessing(Module):
 
         labels = objects.segmented
 
+        unique_labels = numpy.unique(labels)
+
+        if unique_labels[0] == 0:
+            unique_labels = unique_labels[1:]
+
         if not objects.volumetric:
             labels = numpy.asarray([labels])
 
-        centers = mahotas.center_of_mass(numpy.ones_like(labels), labels=labels)
+        centers = scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels=labels, index=unique_labels)
 
-        if numpy.any(objects.segmented == 0):
-            centers = centers[1:]
+        centers = numpy.array(centers)
 
         center_z, center_x, center_y = centers.transpose()
 

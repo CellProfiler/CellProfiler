@@ -11,7 +11,9 @@ a = Analysis(
         'CellProfiler.py'
     ],
     pathex=['C:\\Users\\Public\\CellProfiler'],
-    binaries=[],
+    binaries=[
+
+    ],
     datas=datas,
     hiddenimports=[
         "cellprofiler.modules.crop",
@@ -99,11 +101,16 @@ a = Analysis(
         "cellprofiler.modules.untangleworms",
         "cellprofiler.modules.watershed",
         "prokaryote",
+        "numpy.*",
         "zmq",
         "zmq.backend.cython"
     ],
-    hookspath=[],
-    runtime_hooks=[],
+    hookspath=[
+
+    ],
+    runtime_hooks=[
+
+    ],
     excludes=[
         "zmq.libzmq"
     ],
@@ -114,36 +121,34 @@ a = Analysis(
 
 a.binaries = [x for x in a.binaries if not x[0].startswith("libzmq.pyd")]
 
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+pyz = PYZ(
+    a.pure,
+    a.zipped_data,
+    cipher=block_cipher
+)
 
-exe = EXE(pyz,
-          a.scripts,
-          exclude_binaries=True,
-          name='CellProfiler',
-          debug=False,
-          strip=False,
-          upx=True,
-          console=True)
+exe = EXE(
+    pyz,
+    a.scripts,
+    exclude_binaries=True,
+    name='CellProfiler',
+    debug=False,
+    strip=False,
+    upx=True,
+    console=True
+)
 
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               name='CellProfiler')
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    name='CellProfiler'
+)
 
 # cp C:\Python27\Lib\site-packages\zmq\libzmq.pyd .\dist\CellProfiler\
 # cp -R C:\Python27\Lib\site-packages\prokaryote .\dist\CellProfiler\
 # cp -R C:\Python27\Lib\site-packages\javabridge\ .\dist\CellProfiler\
-
-# Traceback (most recent call last):
-#   File "cellprofiler\gui\pipelinecontroller.py", line 2847, in do_step
-#     self.__pipeline.run_module(module, workspace)
-#   File "cellprofiler\pipeline.py", line 1997, in run_module
-#     module.run(workspace)
-#   File "cellprofiler\modules\identifysecondaryobjects.py", line 479, in run
-#     (labels_in[0, :], labels_in[-1, :], labels_in[:, 0], labels_in[:, -1]))
-#   File "site-packages\numpy\core\shape_base.py", line 288, in hstack
-# ValueError: all the input array dimensions except for the concatenation axis must match exactly
+# cp -R C:\Python27\Lib\site-packages\bioformats\ .\dist\CellProfiler\

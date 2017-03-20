@@ -50,7 +50,7 @@ class Objects(object):
 
     @property
     def volumetric(self):
-        return self.dimensions is 3
+        return self.dimensions == 3
 
     @property
     def masked(self):
@@ -72,7 +72,7 @@ class Objects(object):
     def __labels_to_segmentation(self, labels):
         dense = downsample_labels(labels)
 
-        if dense.ndim is 3:
+        if dense.ndim == 3:
             z, x, y = dense.shape
         else:
             x, y = dense.shape
@@ -89,7 +89,7 @@ class Objects(object):
 
         assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
 
-        if dense.shape[3] is 1:
+        if dense.shape[3] == 1:
             return dense.reshape(dense.shape[-2:])
 
         return dense.reshape(dense.shape[-3:])
@@ -127,7 +127,7 @@ class Objects(object):
     def shape(self):
         dense, _ = self.__segmented.get_dense()
 
-        if dense.shape[3] is 1:
+        if dense.shape[3] == 1:
             return dense.shape[-2:]
 
         return dense.shape[-3:]
@@ -144,7 +144,7 @@ class Objects(object):
         """
         dense, indices = self.__segmented.get_dense()
 
-        if dense.shape[3] is 1:
+        if dense.shape[3] == 1:
             return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
         return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]

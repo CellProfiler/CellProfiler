@@ -108,7 +108,7 @@ class Image(object):
 
     @property
     def volumetric(self):
-        if self.dimensions is 3:
+        if self.dimensions == 3:
             return True
 
         return False

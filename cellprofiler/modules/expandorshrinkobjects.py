@@ -1,35 +1,26 @@
-'''<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
+"""
+<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
 <hr>
-The module expands or shrinks objects by adding or removing border
-pixels. You can specify a certain number of border pixels to be
-added or removed, expand objects until they are almost touching or shrink
-objects down to a point. Objects are never lost using this module (shrinking
-stops when an object becomes a single pixel). The module can separate touching
-objects without otherwise shrinking
-the objects.
-
-<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that
-remove pixels without completely removing an object. See the Settings help (below)
-for more detail.</p>
-
-<p><i>Special note on saving images:</i> You can use the settings in this module to pass object
-outlines along to the module <b>OverlayOutlines</b> and then save them
-with the <b>SaveImages</b> module. You can also pass the identified objects themselves along to the
-object processing module <b>ConvertToImage</b> and then save them with the
+The module expands or shrinks objects by adding or removing border pixels. You can specify a certain number of border
+pixels to be added or removed, expand objects until they are almost touching or shrink objects down to a point. Objects
+are never lost using this module (shrinking stops when an object becomes a single pixel). The module can separate
+touching objects without otherwise shrinking the objects.
+<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that remove pixels without
+completely removing an object. See the Settings help (below) for more detail.</p>
+<p><i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along to the
+module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. You can also pass the identified
+objects themselves along to the object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.</p>
-
-<h4>Available measurements</h4>
-<b>Image measurements:</b>
+<h4>Available measurements</h4><b>Image measurements:</b>
 <ul>
-<li><i>Count:</i> Number of expanded/shrunken objects in the image.</li>
-</ul>
-<b>Object measurements:</b>
+    <li><i>Count:</i> Number of expanded/shrunken objects in the image.</li>
+</ul><b>Object measurements:</b>
 <ul>
-<li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of
-the expanded/shrunken objects.</li>
+    <li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of the expanded/shrunken
+    objects.</li>
 </ul>
-
-<p>See also <b>Identify</b> modules.</p>'''
+<p>See also <b>Identify</b> modules.</p>
+"""
 
 import numpy as np
 from centrosome.cpmorphology import binary_shrink, thin
@@ -49,15 +40,14 @@ from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.setting import YES, NO
 
-O_SHRINK_INF = 'Shrink objects to a point'
-O_EXPAND_INF = 'Expand objects until touching'
-O_DIVIDE = 'Add partial dividing lines between objects'
-O_SHRINK = 'Shrink objects by a specified number of pixels'
-O_EXPAND = 'Expand objects by a specified number of pixels'
-O_SKELETONIZE = 'Skeletonize each object'
-O_SPUR = 'Remove spurs'
-O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
-         O_SKELETONIZE, O_SPUR]
+O_SHRINK_INF = "Shrink objects to a point"
+O_EXPAND_INF = "Expand objects until touching"
+O_DIVIDE = "Add partial dividing lines between objects"
+O_SHRINK = "Shrink objects by a specified number of pixels"
+O_EXPAND = "Expand objects by a specified number of pixels"
+O_SKELETONIZE = "Skeletonize each object"
+O_SPUR = "Remove spurs"
+O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND, O_SKELETONIZE, O_SPUR]
 
 
 class ExpandOrShrinkObjects(cpm.Module):

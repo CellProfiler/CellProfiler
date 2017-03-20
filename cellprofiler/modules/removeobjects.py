@@ -6,13 +6,16 @@ Remove objects
 
 """
 
+import numpy
+import skimage.morphology
+import skimage.segmentation
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.morphology
 
 
-class RemoveObjects(cellprofiler.module.ImageProcessing):
+class RemoveObjects(cellprofiler.module.ObjectProcessing):
     category = "Mathematical morphology"
 
     module_name = "Remove objects"
@@ -42,6 +45,21 @@ class RemoveObjects(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        self.function = skimage.morphology.remove_small_objects
+        self.function = lambda labels, diameter: remove_objects(labels, diameter)
 
         super(RemoveObjects, self).run(workspace)
+
+
+def remove_objects(labels, diameter):
+    radius = diameter / 2.0
+
+    if labels.ndim == 2:
+        factor = radius ** 2
+    else:
+        factor = (4.0 / 3.0) * (radius ** 3)
+
+    size = numpy.pi * factor
+
+    labels = skimage.morphology.remove_small_objects(labels, size)
+
+    return skimage.segmentation.relabel_sequential(labels)[0]

@@ -1,7 +1,7 @@
 import os
 import setuptools
 
-version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
+version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "data", "VERSION"))
 version = version_file.read().strip()
 
 setuptools.setup(

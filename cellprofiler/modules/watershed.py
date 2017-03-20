@@ -9,6 +9,7 @@ Watershed is a segmentation algorithm. It is used to separate different objects 
 import mahotas
 import numpy
 import scipy.ndimage
+import skimage.color
 import skimage.feature
 import skimage.measure
 import skimage.morphology
@@ -147,9 +148,13 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
             markers = images.get_image(markers_name)
 
-            data = x_data
-
             markers_data = markers.pixel_data
+
+            if x.multichannel:
+                x_data = skimage.color.rgb2gray(x_data)
+
+            if markers.multichannel:
+                markers_data = skimage.color.rgb2gray(markers_data)
 
             mask_data = None
 
@@ -161,7 +166,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
                 mask_data = mask.pixel_data
 
             y_data = skimage.morphology.watershed(
-                image=data,
+                image=x_data,
                 markers=markers_data,
                 mask=mask_data
             )

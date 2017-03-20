@@ -1196,8 +1196,7 @@ class FloatRange(Range):
         maxval - the maximum acceptable value of either
         """
         smin, smax = [(u"%f" % v).rstrip("0") for v in value]
-        text_value = ",".join([x + "0" if x.endswith(".") else ""
-                               for x in smin, smax])
+        text_value = ",".join([x + "0" if x.endswith(".") else x for x in smin, smax])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):

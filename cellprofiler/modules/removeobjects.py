@@ -2,7 +2,7 @@
 
 """
 
-Remove objects
+Remove objects smaller or larger than the specified diameter.
 
 """
 
@@ -16,7 +16,7 @@ import cellprofiler.setting
 
 
 class RemoveObjects(cellprofiler.module.ObjectProcessing):
-    category = "Mathematical morphology"
+    category = ["Mathematical morphology", "Object Processing"]
 
     module_name = "Remove objects"
 
@@ -25,9 +25,13 @@ class RemoveObjects(cellprofiler.module.ObjectProcessing):
     def create_settings(self):
         super(RemoveObjects, self).create_settings()
 
-        self.size = cellprofiler.setting.Float(
+        self.size = cellprofiler.setting.FloatRange(
             text="Size",
-            value=1.0
+            value=(0.0, numpy.inf),
+            doc="""
+            Specify the minimum and maximum diameters of objects (in pixels) to remove. Set the first value to 0 to
+            keep small objects. Set the second value to "inf" to keep large objects.
+            """
         )
 
     def settings(self):
@@ -51,15 +55,21 @@ class RemoveObjects(cellprofiler.module.ObjectProcessing):
 
 
 def remove_objects(labels, diameter):
-    radius = diameter / 2.0
+    labels = labels.copy()
+
+    radius = numpy.divide(diameter, 2.0)
 
     if labels.ndim == 2:
         factor = radius ** 2
     else:
         factor = (4.0 / 3.0) * (radius ** 3)
 
-    size = numpy.pi * factor
+    min_size, max_size = numpy.pi * factor
 
-    labels = skimage.morphology.remove_small_objects(labels, size)
+    if min_size > 0.0:
+        labels = skimage.morphology.remove_small_objects(labels, min_size)
+
+    if max_size < numpy.inf:
+        labels ^= skimage.morphology.remove_small_objects(labels, max_size)
 
     return skimage.segmentation.relabel_sequential(labels)[0]

@@ -13,7 +13,7 @@ def test_run(image, module, image_set, workspace):
 
     module.y_name.value = "ImageGradient"
 
-    if image.dimensions is 3:
+    if image.dimensions == 3:
         module.structuring_element.shape = "ball"
 
     module.run(workspace)
@@ -26,7 +26,7 @@ def test_run(image, module, image_set, workspace):
 
     disk = skimage.morphology.disk(1)
 
-    if image.dimensions is 3 or image.multichannel:
+    if image.dimensions == 3 or image.multichannel:
         expected_data = numpy.zeros_like(data)
 
         for z, img in enumerate(data):

@@ -55,7 +55,7 @@ def test_run_dog(image, image_set, module, workspace):
 
     expected = numpy.zeros_like(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         blobs = skimage.feature.blob_dog(data)
 
         blobs[:, 2] = blobs[:, 2] * numpy.sqrt(2)
@@ -120,7 +120,7 @@ def test_run_doh_with_linear_scale(image, image_set, module, workspace):
 
     expected = numpy.zeros_like(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         blobs = skimage.feature.blob_doh(data)
 
         blobs[:, 2] = blobs[:, 2] * numpy.sqrt(2)
@@ -185,7 +185,7 @@ def test_run_doh_with_logarithmic_scale(image, image_set, module, workspace):
 
     expected = numpy.zeros_like(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         blobs = skimage.feature.blob_doh(data, log_scale=True)
 
         blobs[:, 2] = blobs[:, 2] * numpy.sqrt(2)
@@ -250,7 +250,7 @@ def test_run_log_with_linear_scale(image, image_set, module, workspace):
 
     expected = numpy.zeros_like(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         blobs = skimage.feature.blob_log(data)
 
         blobs[:, 2] = blobs[:, 2] * numpy.sqrt(2)
@@ -315,7 +315,7 @@ def test_run_log_with_logarithmic_scale(image, image_set, module, workspace):
 
     expected = numpy.zeros_like(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         blobs = skimage.feature.blob_log(data, log_scale=True)
 
         blobs[:, 2] = blobs[:, 2] * numpy.sqrt(2)

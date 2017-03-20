@@ -19,17 +19,17 @@ import wx
 
 logger = logging.getLogger(__name__)
 
-IMG_OK = cellprofiler.icons.get_builtin_image("check")
-IMG_ERROR = cellprofiler.icons.get_builtin_image('remove-sign')
-IMG_EYE = cellprofiler.icons.get_builtin_image("eye-open")
-IMG_CLOSED_EYE = cellprofiler.icons.get_builtin_image("eye-close")
-IMG_PAUSE = cellprofiler.icons.get_builtin_image('IMG_PAUSE')
-IMG_GO = cellprofiler.icons.get_builtin_image('IMG_GO')
-IMG_DISABLED = cellprofiler.icons.get_builtin_image("unchecked")
-IMG_UNAVAILABLE = cellprofiler.icons.get_builtin_image('IMG_UNAVAILABLE')
-IMG_SLIDER = cellprofiler.icons.get_builtin_image('IMG_SLIDER')
-IMG_SLIDER_ACTIVE = cellprofiler.icons.get_builtin_image('IMG_SLIDER_ACTIVE')
-IMG_DOWNARROW = cellprofiler.icons.get_builtin_image('downarrow')
+IMG_OK = cellprofiler.icons.icon("check")
+IMG_ERROR = cellprofiler.icons.icon('remove-sign')
+IMG_EYE = cellprofiler.icons.icon("eye-open")
+IMG_CLOSED_EYE = cellprofiler.icons.icon("eye-close")
+IMG_PAUSE = cellprofiler.icons.icon('IMG_PAUSE')
+IMG_GO = cellprofiler.icons.icon('IMG_GO')
+IMG_DISABLED = cellprofiler.icons.icon("unchecked")
+IMG_UNAVAILABLE = cellprofiler.icons.icon('IMG_UNAVAILABLE')
+IMG_SLIDER = cellprofiler.icons.icon('IMG_SLIDER')
+IMG_SLIDER_ACTIVE = cellprofiler.icons.icon('IMG_SLIDER_ACTIVE')
+IMG_DOWNARROW = cellprofiler.icons.icon('downarrow')
 BMP_WARNING = wx.ArtProvider.GetBitmap(wx.ART_WARNING, size=(16, 16))
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'

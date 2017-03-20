@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 # So I have use relative ones. Should check this to see if works on the
 # compiled version
 try:
-    path = os.path.relpath(cellprofiler.icons.get_builtin_images_path())
+    path = os.path.relpath(cellprofiler.icons.directory)
 except:
     if any([x == "--html" for x in sys.argv]) and sys.platform.startswith("win"):
         if hasattr(sys, "frozen"):
@@ -51,7 +51,7 @@ except:
                 ("Warning: HTML being written with absolute paths. You must\n"
                  "change the current drive to %s: to get image links with\n"
                  "relative paths.\n") % drive)
-    path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
+    path = os.path.abspath(cellprofiler.icons.directory)
 
 ####################################################
 #

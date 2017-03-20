@@ -259,7 +259,7 @@ class MeasureObjectNeighbors(cpm.Module):
         if self.distance_method == D_EXPAND:
             # Find the i,j coordinates of the nearest foreground point
             # to every background point
-            if dimensions is 2:
+            if dimensions == 2:
                 i, j = scind.distance_transform_edt(labels == 0,
                                                     return_distances=False,
                                                     return_indices=True)
@@ -333,7 +333,7 @@ class MeasureObjectNeighbors(cpm.Module):
                 angle = np.arccos(dot) * 180. / np.pi
 
             # Make the structuring element for dilation
-            if dimensions is 2:
+            if dimensions == 2:
                 strel = strel_disk(distance)
             else:
                 strel = skimage.morphology.ball(distance)
@@ -341,7 +341,7 @@ class MeasureObjectNeighbors(cpm.Module):
             # A little bigger one to enter into the border with a structure
             # that mimics the one used to create the outline
             #
-            if dimensions is 2:
+            if dimensions == 2:
                 strel_touching = strel_disk(distance + .5)
             else:
                 strel_touching = skimage.morphology.ball(distance + 0.5)
@@ -349,7 +349,7 @@ class MeasureObjectNeighbors(cpm.Module):
             # Get the extents for each object and calculate the patch
             # that excises the part of the image that is "distance"
             # away
-            if dimensions is 2:
+            if dimensions == 2:
                 i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
                 min_i, max_i, min_i_pos, max_i_pos = \
                     scind.extrema(i, labels, object_indexes)
@@ -383,7 +383,7 @@ class MeasureObjectNeighbors(cpm.Module):
                     #
                     continue
                 index = object_number - 1
-                if dimensions is 2:
+                if dimensions == 2:
                     patch = labels[min_i[index]:max_i[index],
                             min_j[index]:max_j[index]]
                     npatch = neighbor_labels[min_i[index]:max_i[index],
@@ -413,7 +413,7 @@ class MeasureObjectNeighbors(cpm.Module):
                     # structuring element to expand the overlapping edge
                     # into the perimeter.
                     #
-                    if dimensions is 2:
+                    if dimensions == 2:
                         outline_patch = perimeter_outlines[
                                         min_i[index]:max_i[index],
                                         min_j[index]:max_j[index]] == object_number

@@ -298,7 +298,7 @@ class MeasureObjectSizeShape(cpm.Module):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
 
-        if len(objects.shape) is 2:
+        if len(objects.shape) == 2:
             #
             # Do the ellipse-related measurements
             #

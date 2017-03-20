@@ -910,7 +910,7 @@ class ModuleView(object):
                     leaf_state = d[None]
                     for subtree_key in [x for x in d.keys() if x is not None]:
                         subtree_state = get_state(d[subtree_key])
-                        if leaf_state is 0:
+                        if leaf_state == 0:
                             leaf_state = subtree_state
                         elif leaf_state != subtree_state:
                             leaf_state = None
@@ -2839,13 +2839,13 @@ class FileCollectionDisplayController(object):
             wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE,
                                      wx.ART_OTHER, size=(16, 16)))
     IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("microscope-icon_16").ConvertToBitmap())
+            cellprofiler.icons.icon("microscope-icon_16").ConvertToBitmap())
     IMAGE_PLANES_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("microscopes_16").ConvertToBitmap())
+            cellprofiler.icons.icon("microscopes_16").ConvertToBitmap())
     COLOR_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("microscope-color_16").ConvertToBitmap())
+            cellprofiler.icons.icon("microscope-color_16").ConvertToBitmap())
     MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("movie_16").ConvertToBitmap())
+            cellprofiler.icons.icon("movie_16").ConvertToBitmap())
 
     ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
     FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)

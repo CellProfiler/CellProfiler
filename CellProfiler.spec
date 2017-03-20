@@ -112,6 +112,7 @@ a = Analysis(
 
     ],
     excludes=[
+        "javabridge",
         "zmq.libzmq"
     ],
     win_no_prefer_redirects=False,

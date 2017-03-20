@@ -988,8 +988,8 @@ class ImageSegmentation(Module):
     def display(self, workspace, figure):
         layout = (2, 1)
 
-        if workspace.display_data.dimensions is 3:
-            overlay = numpy.zeros(workspace.display_data.x_data.shape + (3,))
+        if workspace.display_data.dimensions == 3:
+            overlay = np.zeros(workspace.display_data.x_data.shape + (3,))
 
             for index, data in enumerate(workspace.display_data.x_data):
                 overlay[index] = skimage.color.label2rgb(

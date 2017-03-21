@@ -132,6 +132,7 @@ exe = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
+    icon="cellprofiler/data/CellProfilerIcon.ico",
     name='CellProfiler',
     debug=False,
     strip=False,

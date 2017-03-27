@@ -80,7 +80,6 @@ from cellprofiler.preferences import \
     get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
     get_headless
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
-from cellprofiler.gui.errordialog import show_warning
 
 from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \
@@ -2276,11 +2275,11 @@ class LoadImages(cpmodule.Module):
 
     def display(self, workspace, figure):
         if self.show_window:
-            if hasattr(workspace.display_data, "warning"):
-                show_warning("Images have different sizes",
-                             workspace.display_data.warning,
-                             get_show_report_bad_sizes_dlg,
-                             set_show_report_bad_sizes_dlg)
+            # if hasattr(workspace.display_data, "warning"):
+            #     show_warning("Images have different sizes",
+            #                  workspace.display_data.warning,
+            #                  get_show_report_bad_sizes_dlg,
+            #                  set_show_report_bad_sizes_dlg)
 
             figure.set_subplots((1, 1))
             figure.subplot_table(0, 0,

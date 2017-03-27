@@ -349,6 +349,7 @@ setuptools.setup(
             "pytest",
             "python-bioformats",
             "pyzmq",
+            "raven",
             "scikit-image==0.13.0dev",
             "scipy"
         ],

@@ -1,9 +1,12 @@
 # coding=utf-8
+
 import sys
 import wx
+
 import cellprofiler
 import cellprofiler.preferences
 import cellprofiler.gui.errordialog
+import cellprofiler.utilities.cpjvm
 
 
 class App(wx.App):
@@ -18,6 +21,8 @@ class App(wx.App):
 
         self.workspace_path = kwargs.pop('workspace_path', None)
 
+        cellprofiler.utilities.cpjvm.cp_start_vm()
+
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
@@ -25,7 +30,7 @@ class App(wx.App):
 
         self.SetAppName("CellProfiler{0:s}".format(cellprofiler.__version__))
 
-        self.frame = cellprofiler.gui.cpframe.CPFrame(None, -1, "Cell Profiler")
+        self.frame = cellprofiler.gui.cpframe.CPFrame(None, -1, "CellProfiler")
 
         self.frame.start(self.workspace_path, self.pipeline_path)
 
@@ -54,8 +59,10 @@ class App(wx.App):
     def OnExit(self):
         sys.excepthook = self.original_excepthook
 
+        cellprofiler.utilities.cpjvm.cp_stop_vm()
+
 
 if __name__ == "__main__":
-    CellProfilerApp = App(0)
+    app = App(False)
 
-    CellProfilerApp.MainLoop()
+    app.MainLoop()

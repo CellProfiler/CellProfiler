@@ -100,6 +100,7 @@ a = Analysis(
         "cellprofiler.modules.unmixcolors",
         "cellprofiler.modules.untangleworms",
         "cellprofiler.modules.watershed",
+        "imageio",
         "prokaryote",
         "numpy.*",
         "zmq",

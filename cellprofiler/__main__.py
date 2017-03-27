@@ -107,7 +107,8 @@ def main(args=None):
     if options.data_file is not None:
         cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
 
-    cellprofiler.utilities.cpjvm.cp_start_vm()
+    if not options.show_gui:
+        cellprofiler.utilities.cpjvm.cp_start_vm()
 
     if options.image_set_file is not None:
         cellprofiler.preferences.set_image_set_file(options.image_set_file)
@@ -151,7 +152,8 @@ def main(args=None):
     elif options.run_pipeline:
         run_pipeline_headless(options, args)
 
-    stop_cellprofiler()
+    if not options.show_gui:
+        stop_cellprofiler()
 
 
 def __version__(exit_code):

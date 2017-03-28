@@ -94,7 +94,7 @@ def test_run_binary(workspace, module):
 
     assert pixel_data.shape == objects.shape
 
-    if objects.segmented.ndim is 2:
+    if objects.segmented.ndim == 2:
         assert not pixel_data[0, 0]
 
         assert numpy.all(pixel_data[:, 1:])
@@ -129,7 +129,7 @@ def test_run_grayscale(workspace, module):
 
     expected = numpy.reshape(numpy.arange(256).astype(numpy.float32) / 255, (16, 16))
 
-    if objects.segmented.ndim is 3:
+    if objects.segmented.ndim == 3:
         expected = numpy.tile(expected, (3, 1))
 
         expected = numpy.reshape(expected, (3, 16, 16))
@@ -200,7 +200,7 @@ def test_run_uint16(workspace, module):
 
     expected = numpy.reshape(numpy.arange(256), (16, 16))
 
-    if objects.segmented.ndim is 3:
+    if objects.segmented.ndim == 3:
         expected = numpy.tile(expected, (3, 1))
 
         expected = numpy.reshape(expected, (3, 16, 16))

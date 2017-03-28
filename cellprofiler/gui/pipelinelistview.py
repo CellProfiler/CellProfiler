@@ -698,7 +698,6 @@ class PipelineListView(object):
 
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
-            logger.info("Processing %s" % filename)
             _, ext = os.path.splitext(filename)
             if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PROJECT_CHOICES:
                 self.__frame.Raise()

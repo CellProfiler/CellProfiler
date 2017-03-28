@@ -128,7 +128,6 @@ from weakref import WeakSet
 import cellprofiler.workspace as cpw
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
-from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
     NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
@@ -153,6 +152,10 @@ DEADMAN_START_ADDR = "inproc://deadmanstart"
 DEADMAN_START_MSG = "STARTED"
 NOTIFY_ADDR = "inproc://notify"
 NOTIFY_STOP = "STOP"
+
+ED_STOP = "Stop"
+ED_CONTINUE = "Continue"
+ED_SKIP = "Skip"
 
 the_zmq_context = zmq.Context.instance()
 

@@ -7,7 +7,6 @@ import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.datatoolframe
 import cellprofiler.gui.dialog
-import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.gui.html
 import cellprofiler.gui.html.htmlwindow
@@ -1304,18 +1303,6 @@ class CPFrame(wx.Frame):
     def __on_data_tool_help(self, event, tool_name):
         module = cellprofiler.modules.instantiate_module(tool_name)
         self.do_help_module(tool_name, module.get_help())
-
-    def display_error(self, message, error):
-        """Displays an exception in a standardized way
-
-        """
-        for listener in self.__error_listeners:
-            listener(message, error)
-        tb = sys.exc_info()[2]
-        traceback.print_tb(tb)
-        text = '\n'.join(traceback.format_list(traceback.extract_tb(tb)))
-        text = error.message + '\n' + text
-        cellprofiler.gui.errordialog.display_error_message(self, text, "Caught exception during operation")
 
     def add_error_listener(self, listener):
         """Add a listener for display errors"""

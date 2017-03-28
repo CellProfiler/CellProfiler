@@ -350,6 +350,7 @@ setuptools.setup(
             "python-bioformats",
             "pyzmq",
             "raven",
+            "requests",
             "scikit-image==0.13.0dev",
             "scipy"
         ],

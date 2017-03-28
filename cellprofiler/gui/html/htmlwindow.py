@@ -114,7 +114,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
     def OnOpeningURL(self, file_format, url):
         if file_format == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
-                path = cellprofiler.icons.get_builtin_images_path()
+                path = cellprofiler.icons.directory
                 full_path = os.path.join(path, url[len(MEMORY_SCHEME):])
                 if sys.platform.startswith("win"):
                     my_url = full_path

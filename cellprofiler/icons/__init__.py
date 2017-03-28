@@ -1,27 +1,14 @@
 import os.path
-import sys
-import weakref
+import pkg_resources
 
-if hasattr(sys, "frozen"):
-    path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-
-    path = os.path.join(path, "artwork")
-else:
-    path = os.path.join(os.path.dirname(os.path.dirname(__path__[0])), "artwork")
-
-image_cache = weakref.WeakValueDictionary()
+directory = pkg_resources.resource_filename("cellprofiler", "data")
 
 
-def get_builtin_image(name):
+def icon(name):
     import wx
 
-    try:
-        return image_cache[name]
-    except KeyError:
-        image_cache[name] = image = wx.Image(os.path.join(path, name + ".png"))
+    filename = "{}.png".format(name)
 
-        return image
+    pathname = os.path.join(directory, filename)
 
-
-def get_builtin_images_path():
-    return os.path.join(path, '')
+    return wx.Image(pathname)

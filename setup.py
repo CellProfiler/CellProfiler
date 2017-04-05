@@ -324,9 +324,6 @@ setuptools.setup(
             }
         ],
         description="",
-        dependency_links=[
-            "git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev"
-        ],
         entry_points={
             "console_scripts": [
                 "cellprofiler=cellprofiler.__main__:main"
@@ -341,7 +338,7 @@ setuptools.setup(
             "javabridge",
             "libtiff",
             "mahotas",
-            "matplotlib<2.0.0",
+            "matplotlib",
             "MySQL-python",
             "numpy",
             "prokaryote>=1.0.11",
@@ -351,7 +348,7 @@ setuptools.setup(
             "pyzmq",
             "raven",
             "requests",
-            "scikit-image==0.13.0dev",
+            "scikit-image",
             "scipy"
         ],
         keywords="",

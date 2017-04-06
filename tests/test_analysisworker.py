@@ -10,7 +10,6 @@ import unittest
 import uuid
 
 import cellprofiler.analysis
-import cellprofiler.gui.errordialog
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
@@ -551,8 +550,8 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei"))
-        self.assertTrue(m.has_feature("Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler.analysis.Ack())
         self.awthread.ecute()
@@ -631,8 +630,8 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei"))
-        self.assertTrue(m.has_feature("Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler.analysis.Ack())
         self.awthread.ecute()
@@ -693,7 +692,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cellprofiler.analysis.ExceptionReport)
-        req.reply(cellprofiler.analysis.ExceptionPleaseDebugReply(disposition = cellprofiler.gui.errordialog.ED_SKIP))
+        req.reply(cellprofiler.analysis.ExceptionPleaseDebugReply(disposition = "Skip"))
         #
         # The worker should send ImageSetSuccess for image set 2 anyway.
         #
@@ -718,16 +717,16 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei"))
-        self.assertTrue(m.has_feature("Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         #
         # The count for the skipped image should be None
         #
-        count = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei", 2]
+        count = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei", 2]
         self.assertIsNone(count)
-        count = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei", 3]
-        center_x = m["Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X, 3]
+        count = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei", 3]
+        center_x = m["Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X, 3]
         self.assertEqual(count, len(center_x))
         req.reply(cellprofiler.analysis.Ack())
         self.awthread.ecute()

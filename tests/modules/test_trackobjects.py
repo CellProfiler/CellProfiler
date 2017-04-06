@@ -8,6 +8,7 @@ import zlib
 from StringIO import StringIO
 
 import PIL.Image as PILImage
+import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
@@ -25,7 +26,7 @@ import cellprofiler.workspace as cpw
 from centrosome.filter import permutations
 
 import cellprofiler.modules.trackobjects as T
-from cellprofiler.modules.identify import C_COUNT
+from cellprofiler.measurement import C_COUNT
 
 OBJECT_NAME = "objects"
 
@@ -944,8 +945,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                     (1, module.measurement_name(T.F_LABEL), int),
                     (2, module.measurement_name(T.F_PARENT_IMAGE_NUMBER), int),
                     (3, module.measurement_name(T.F_PARENT_OBJECT_NUMBER), int),
-                    (4, T.M_LOCATION_CENTER_X, float),
-                    (5, T.M_LOCATION_CENTER_Y, float),
+                    (4, cellprofiler.measurement.M_LOCATION_CENTER_X, float),
+                    (5, cellprofiler.measurement.M_LOCATION_CENTER_Y, float),
                     (6, module.measurement_name(T.F_AREA), float)):
                 values = objs[objs[:, 0] == i, index].astype(dtype)
                 m.add_measurement(OBJECT_NAME, feature, values, i + 1)

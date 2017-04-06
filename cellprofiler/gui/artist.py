@@ -1186,7 +1186,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
                 my_range = numpy.arange(1, len(unique))
             idx.shape = l.shape
             pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
-            pts += .5  # Target the centers of the pixels.
+            pts = pts + .5  # Target the centers of the pixels.
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):
                 lines.append(numpy.vstack((pts[off:off + count], pts[off:off + 1])))

@@ -256,7 +256,7 @@ class BlobDetection(cellprofiler.module.Module):
 
         dimensions = x.dimensions
 
-        if dimensions is 2:
+        if dimensions == 2:
             blobs = self.__detect_blobs(x_data)
 
             y_data = self.__draw_circles(blobs, x_data.shape)

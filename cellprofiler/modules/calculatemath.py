@@ -39,7 +39,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-from cellprofiler.modules.identify import R_PARENT, R_CHILD
+from cellprofiler.measurement import R_PARENT, R_CHILD
 
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"

@@ -1969,3 +1969,32 @@ class RelationshipKey:
         self.relationship = relationship
         self.object_name1 = object_name1
         self.object_name2 = object_name2
+
+
+C_LOCATION = "Location"
+C_NUMBER = "Number"
+C_COUNT = "Count"
+C_THRESHOLD = "Threshold"
+C_PARENT = "Parent"
+R_PARENT = "Parent"
+C_CHILDREN = "Children"
+R_CHILD = "Child"
+FTR_CENTER_X = "Center_X"
+M_LOCATION_CENTER_X = '%s_%s' % (C_LOCATION, FTR_CENTER_X)
+FTR_CENTER_Y = "Center_Y"
+M_LOCATION_CENTER_Y = '%s_%s' % (C_LOCATION, FTR_CENTER_Y)
+FTR_CENTER_Z = "Center_Z"
+M_LOCATION_CENTER_Z = "%s_%s" % (C_LOCATION, FTR_CENTER_Z)
+FTR_OBJECT_NUMBER = "Object_Number"
+M_NUMBER_OBJECT_NUMBER = '%s_%s' % (C_NUMBER, FTR_OBJECT_NUMBER)
+FF_COUNT = '%s_%%s' % C_COUNT
+FTR_FINAL_THRESHOLD = "FinalThreshold"
+FF_FINAL_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_FINAL_THRESHOLD)
+FTR_ORIG_THRESHOLD = "OrigThreshold"
+FF_ORIG_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_ORIG_THRESHOLD)
+FTR_WEIGHTED_VARIANCE = "WeightedVariance"
+FF_WEIGHTED_VARIANCE = '%s_%s_%%s' % (C_THRESHOLD, FTR_WEIGHTED_VARIANCE)
+FTR_SUM_OF_ENTROPIES = "SumOfEntropies"
+FF_SUM_OF_ENTROPIES = '%s_%s_%%s' % (C_THRESHOLD, FTR_SUM_OF_ENTROPIES)
+FF_CHILDREN_COUNT = "%s_%%s_Count" % C_CHILDREN
+FF_PARENT = "%s_%%s" % C_PARENT

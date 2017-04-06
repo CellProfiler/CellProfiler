@@ -468,6 +468,8 @@ def test_enhance_neurites_tubeness_positive(image, module, workspace):
 
     expected = -expected[:, :, 0] * (expected[:, :, 0] < 0)
 
+    expected = skimage.exposure.rescale_intensity(expected)
+
     numpy.testing.assert_array_almost_equal(expected, actual)
 
 
@@ -500,7 +502,9 @@ def test_enhance_neurites_tubeness_negative(image, module, workspace):
 
     expected = -expected[:, :, 0] * (expected[:, :, 0] < 0)
 
-    numpy.testing.assert_array_almost_equal(expected, actual)
+    expected = skimage.exposure.rescale_intensity(expected)
+
+    numpy.testing.assert_array_almost_equal(expected, actual, decimal=5)
 
 
 def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
@@ -538,6 +542,8 @@ def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
         )
 
         expected[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0)
+
+    expected = skimage.exposure.rescale_intensity(expected)
 
     numpy.testing.assert_array_almost_equal(expected, actual)
 
@@ -578,7 +584,9 @@ def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
 
         expected[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0)
 
-    numpy.testing.assert_array_almost_equal(expected, actual)
+    expected = skimage.exposure.rescale_intensity(1.0 * expected)
+
+    numpy.testing.assert_array_almost_equal(expected, actual, decimal=5)
 
 
 def test_enhance_circles(image, module, workspace):

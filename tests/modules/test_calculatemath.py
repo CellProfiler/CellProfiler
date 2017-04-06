@@ -7,6 +7,7 @@ import zlib
 from StringIO import StringIO
 
 import PIL.Image as PILImage
+import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
@@ -367,12 +368,12 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                     self.assertTrue(isinstance(m, cpmeas.Measurements))
                     if not flip:
                         m.add_relate_measurement(
-                                1, C.R_PARENT, OBJECT[0], OBJECT[1],
+                                1, cellprofiler.measurement.R_PARENT, OBJECT[0], OBJECT[1],
                                 np.ones(len(oo0), int), oo0,
                                 np.ones(len(oo1), int), oo1)
                     else:
                         m.add_relate_measurement(
-                                1, C.R_PARENT, OBJECT[1], OBJECT[0],
+                                1, cellprofiler.measurement.R_PARENT, OBJECT[1], OBJECT[0],
                                 np.ones(len(oo0), int), oo1,
                                 np.ones(len(oo1), int), oo0)
 
@@ -413,12 +414,12 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                 m = workspace.measurements
                 self.assertTrue(isinstance(m, cpmeas.Measurements))
                 m.add_relate_measurement(
-                        1, C.R_PARENT, OBJECT[0], OBJECT[1],
+                        1, cellprofiler.measurement.R_PARENT, OBJECT[0], OBJECT[1],
                         np.ones(len(oo0), int), oo0,
                         np.ones(len(oo1), int), oo1)
                 for i1, i2 in ((1, 2), (2, 1), (2, 2)):
                     m.add_relate_measurement(
-                            1, C.R_PARENT, OBJECT[0], OBJECT[1],
+                            1, cellprofiler.measurement.R_PARENT, OBJECT[0], OBJECT[1],
                             np.ones(len(oo0), int) * i1, r.permutation(oo0),
                             np.ones(len(oo1), int) * i2, oo1)
 

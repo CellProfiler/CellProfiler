@@ -1724,6 +1724,11 @@ can run ImageJ 1.0 plugins, but there may be incompatibilities.</li></ul>"""
 CHECK_FOR_UPDATES_HELP = """
 Controls whether CellProfiler looks for updates on startup."""
 
+SHOW_TELEMETRY_HELP = """
+Allow limited and anonymous usage statistics and exception reports to be sent
+to the CellProfiler team to help improve CellProfiler.
+"""
+
 SHOW_STARTUP_BLURB_HELP = """
 Controls whether CellProfiler displays an orientation message on startup."""
 

@@ -747,7 +747,7 @@ class Figure(wx.Frame):
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
         else:
-            if dimensions is 2:
+            if dimensions == 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
             else:
                 self.set_grids(subplots)
@@ -1160,7 +1160,7 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
-        if dimensions is 2:
+        if dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax
             if interpolation is None:
@@ -1384,7 +1384,7 @@ class Figure(wx.Frame):
                      our own artist.
         """
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-        if dimensions is 2:
+        if dimensions == 2:
             if renumber:
                 labels = tools.renumber_labels_for_display(labels)
             cm.set_bad((0, 0, 0))
@@ -1572,7 +1572,9 @@ class Figure(wx.Frame):
                       col_labels=None,
                       row_labels=None,
                       n_cols=1,
-                      n_rows=1, **kwargs):
+                      n_rows=1,
+                      dimensions=2,
+                      **kwargs):
         """Put a table into a subplot
 
         x,y - subplot's column and row
@@ -1585,7 +1587,11 @@ class Figure(wx.Frame):
         **kwargs - for backwards compatibility, old argument values
         """
 
-        nx, ny = self.subplots.shape
+        if dimensions == 2:
+            nx, ny = self.subplots.shape
+        else:
+            ny, nx = self.__gridspec.get_geometry()
+
         xstart = float(x) / float(nx)
         ystart = float(y) / float(ny)
         width = float(n_cols) / float(nx)

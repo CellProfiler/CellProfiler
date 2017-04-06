@@ -1,8 +1,10 @@
-import cellprofiler.modules.randomwalkeralgorithm
 import numpy
 import numpy.testing
+import skimage.color
 import skimage.measure
 import skimage.segmentation
+
+import cellprofiler.modules.randomwalkeralgorithm
 
 instance = cellprofiler.modules.randomwalkeralgorithm.RandomWalkerAlgorithm()
 
@@ -22,16 +24,20 @@ def test_run(image, module, workspace):
 
     x_data = image.pixel_data
 
+    if image.multichannel:
+        x_data = skimage.color.rgb2gray(x_data)
+
     labels_data = numpy.zeros_like(x_data, numpy.uint)
 
     labels_data[x_data < 0.5] = 1
+
     labels_data[x_data > 0.5] = 2
 
     expected = skimage.segmentation.random_walker(
         beta=130.0,
         data=x_data,
         labels=labels_data,
-        multichannel=image.multichannel,
+        multichannel=False,
         spacing=image.spacing
     )
 

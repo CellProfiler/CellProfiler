@@ -88,8 +88,8 @@ import cellprofiler.setting as cps
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 import itertools
-from identify import C_COUNT, C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y
-from identify import C_NUMBER, FTR_OBJECT_NUMBER
+from cellprofiler.measurement import C_COUNT, FTR_CENTER_X, FTR_CENTER_Y
+from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
 from identify import add_object_count_measurements
 from identify import add_object_location_measurements
 from identify import get_object_measurement_columns

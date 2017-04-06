@@ -25,7 +25,7 @@ of the region. </p>
 mass of the masked objects.</li>
 </ul>
 '''
-
+import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -301,7 +301,7 @@ class MaskObjects(I.Identify):
         #
         m = workspace.measurements
         m.add_measurement(remaining_object_name,
-                          I.FF_PARENT % object_name,
+                          cellprofiler.measurement.FF_PARENT % object_name,
                           parent_objects)
         if np.max(original_objects.segmented) == 0:
             child_count = np.array([], int)
@@ -310,7 +310,7 @@ class MaskObjects(I.Identify):
                                         np.arange(1, nobjects + 1, dtype=np.int32)))
             child_count = (child_count > 0).astype(int)
         m.add_measurement(object_name,
-                          I.FF_CHILDREN_COUNT % remaining_object_name,
+                          cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
                           child_count)
         if self.retain_or_renumber == R_RETAIN:
             remaining_object_count = nobjects
@@ -381,9 +381,9 @@ class MaskObjects(I.Identify):
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
         columns = I.get_object_measurement_columns(self.remaining_objects.value)
-        columns += [(object_name, I.FF_CHILDREN_COUNT % remaining_object_name,
+        columns += [(object_name, cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
                      cpmeas.COLTYPE_INTEGER),
-                    (remaining_object_name, I.FF_PARENT % object_name,
+                    (remaining_object_name, cellprofiler.measurement.FF_PARENT % object_name,
                      cpmeas.COLTYPE_INTEGER)]
         return columns
 

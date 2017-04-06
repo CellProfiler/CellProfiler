@@ -10,6 +10,7 @@ produces a grayscale image in which objects can be identified using an <b>Identi
 import centrosome.filter
 import numpy
 import scipy.ndimage
+import skimage.exposure
 import skimage.filters
 import skimage.morphology
 import skimage.transform
@@ -262,7 +263,9 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             if self.enhance_method == E_SPECKLES:
                 result = self.enhance_speckles(image, radius, self.speckle_accuracy.value)
             elif self.enhance_method == E_NEURITES:
-                result = self.enhance_neurites(image, radius, self.neurite_choice.value)
+                result = skimage.exposure.rescale_intensity(
+                    self.enhance_neurites(image, radius, self.neurite_choice.value)
+                )
             elif self.enhance_method == E_DARK_HOLES:
                 min_radius = max(1, int(self.hole_size.min / 2))
 
@@ -354,7 +357,10 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         else:
             sigma = self.smoothing.value
 
-            smoothed = scipy.ndimage.gaussian_filter(data, sigma)
+            smoothed = scipy.ndimage.gaussian_filter(
+                data,
+                numpy.divide(sigma, numpy.divide(image.spacing, image.spacing[1]))
+            )
 
             if image.volumetric:
                 result = numpy.zeros_like(smoothed)
@@ -373,7 +379,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
                 # a first-order correction for e**(-2*sigma), possibly
                 # because the hessian is taken from one pixel away
                 # and the gradient is less as sigma gets larger.
-                result = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * sigma * sigma
+                result = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
 
         return self.__unmask(result, image.pixel_data, image.mask)
 

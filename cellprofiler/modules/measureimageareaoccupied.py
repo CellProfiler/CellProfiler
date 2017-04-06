@@ -216,20 +216,21 @@ class MeasureImageAreaOccupied(cpm.Module):
     def measure_objects(self, operand, workspace):
         '''Performs the measurements on the requested objects'''
         objects = workspace.get_objects(operand.operand_objects.value)
-        dimensions = len(objects.shape)
+        image = objects.parent_image
+        dimensions = objects.parent_image.dimensions
         if objects.has_parent_image:
             area_occupied = np.sum(objects.segmented[objects.parent_image.mask] > 0)
             if dimensions is 2:
-                masked = np.logical_and(objects.segmented != 0, objects.parent_image.mask)
+                masked = objects.masked
 
-                perimeter = skimage.measure.perimeter(masked)
+                perimeter = skimage.measure.perimeter(masked > 0)
             else:
                 perimeter = self.__surface_area(objects.segmented, objects.parent_image.spacing)
             total_area = np.sum(objects.parent_image.mask)
         else:
             area_occupied = np.sum(objects.segmented > 0)
             if dimensions is 2:
-                perimeter = skimage.measure.perimeter(objects.segmented > 0)
+                perimeter = skimage.measure.perimeter(objects.segmented)
             else:
                 perimeter = self.__surface_area(objects.segmented)
             total_area = np.product(objects.segmented.shape)
@@ -254,10 +255,10 @@ class MeasureImageAreaOccupied(cpm.Module):
         '''Performs measurements on the requested images'''
         image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
         area_occupied = np.sum(image.pixel_data > 0)
-        if image.dimensions is 2:
-            perimeter = skimage.measure.perimeter(image.pixel_data > 0)
-        else:
+        if image.volumetric:
             perimeter = self.__surface_area(image.pixel_data, image.spacing)
+        else:
+            perimeter = skimage.measure.perimeter(image.pixel_data > 0)
         total_area = np.prod(np.shape(image.pixel_data))
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED % operand.binary_name.value,

@@ -11,7 +11,7 @@ import cellprofiler.setting
 import skimage.morphology
 
 
-class TopHatTransform(cellprofiler.module.MathematicalMorphology):
+class TopHatTransform(cellprofiler.module.ImageProcessing):
     module_name = "TopHatTransform"
 
     variable_revision_number = 1

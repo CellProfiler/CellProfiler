@@ -314,11 +314,12 @@ class NamesAndTypes(cpm.Module):
                 doc=LOAD_AS_CHOICE_HELP_TEXT)
 
         self.volumetric = cps.Binary(
-            text="Data is 3D",
+            text="Process as 3D",
             value=False,
             doc="""
-            If the data is three-dimensional, select "Yes" to load files as volumes. Otherwise, select "No" to load
-            files as two-dimensional images.
+            If you want to treat the data as three-dimensional, select "Yes" to 
+            load files as volumes. Otherwise, select "No" to load files as separate, 
+            two-dimensional images.
             """
         )
 

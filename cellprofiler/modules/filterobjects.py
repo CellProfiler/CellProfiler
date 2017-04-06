@@ -39,8 +39,7 @@ import scipy.ndimage as scind
 from scipy.sparse import coo_matrix
 import traceback
 
-from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
-     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, FF_CHILDREN_COUNT, FF_PARENT
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.object as cpo

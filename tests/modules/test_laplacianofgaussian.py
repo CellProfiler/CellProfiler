@@ -29,7 +29,7 @@ def test_run(image, image_set, module, workspace):
 
     data = skimage.img_as_float(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         sigma = (1.1, 1.2)
     else:
         sigma = (1.3, 1.1, 1.2)

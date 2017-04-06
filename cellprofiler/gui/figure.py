@@ -20,6 +20,7 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
+import matplotlib.colors
 import matplotlib.gridspec
 import matplotlib.patches
 import matplotlib.pyplot
@@ -746,7 +747,7 @@ class Figure(wx.Frame):
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
         else:
-            if dimensions is 2:
+            if dimensions == 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
             else:
                 self.set_grids(subplots)
@@ -1075,15 +1076,35 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def gridshow(self, x, y, image, cmap='gray'):
-        gx = self.__gridspec.get_geometry()[0]
+    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False):
+        gx, gy = self.__gridspec.get_geometry()
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=self.__gridspec[gx * x + y], wspace=0.1, hspace=0.1)
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
+            3,
+            3,
+            subplot_spec=self.__gridspec[gy * y + x],
+            wspace=0.1,
+            hspace=0.1
+        )
 
         z = image.shape[0]
 
+        vmin = min(image[position * (z - 1) / 8].min() for position in range(9))
+
+        vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
+
+        cmap = colormap
+
+        if isinstance(cmap, matplotlib.cm.ScalarMappable):
+            cmap = cmap.cmap
+
+        axes = []
+
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
+
+            if position == 1 and title is not None:
+                ax.set_title(title)
 
             if position / 3 != 2:
                 ax.set_xticklabels([])
@@ -1091,9 +1112,22 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
-            ax.imshow(image[position * (z-1) / 8], cmap=cmap)
+            ax.imshow(
+                image[position * (z - 1) / 8],
+                cmap=cmap,
+                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+            )
 
             self.figure.add_subplot(ax)
+
+            axes += [ax]
+
+        if colorbar:
+            colormap.set_array(image)
+
+            colormap.autoscale()
+
+            self.figure.colorbar(colormap, ax=axes)
 
         matplotlib.pyplot.show()
 
@@ -1126,7 +1160,7 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
-        if dimensions is 2:
+        if dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax
             if interpolation is None:
@@ -1261,11 +1295,10 @@ class Figure(wx.Frame):
             if colorbar and not is_color_image(image):
                 colormap.set_array(self.images[(x, y)])
                 colormap.autoscale()
-            if use_imshow or g_use_imshow:
-                image = self.images[(x, y)]
-                subplot.imshow(self.normalize_image(image, **kwargs))
-            else:
-                subplot.add_artist(CPImageArtist(self.images[(x, y)], self, kwargs))
+
+            image = self.images[(x, y)]
+
+            subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)
             #
@@ -1309,7 +1342,7 @@ class Figure(wx.Frame):
                 hist_fig.figure.canvas.draw()
             return subplot
         else:
-            self.gridshow(x, y, image, colormap)
+            self.gridshow(x, y, image, title, colormap, colorbar)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
@@ -1338,7 +1371,7 @@ class Figure(wx.Frame):
     @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
                               renumber=True, sharex=None, sharey=None,
-                              use_imshow=False):
+                              use_imshow=False, dimensions=2):
         """Show a labels matrix using the default color map
 
         x,y - the subplot's coordinates
@@ -1350,26 +1383,30 @@ class Figure(wx.Frame):
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
         """
-        if renumber:
-            labels = tools.renumber_labels_for_display(labels)
-
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-        cm.set_bad((0, 0, 0))
-        labels = numpy.ma.array(labels, mask=labels == 0)
-        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+        if dimensions == 2:
+            if renumber:
+                labels = tools.renumber_labels_for_display(labels)
+            cm.set_bad((0, 0, 0))
+            labels = numpy.ma.array(labels, mask=labels == 0)
+            mappable = matplotlib.cm.ScalarMappable(cmap=cm)
 
-        if all([c0x == 0 for c0x in cm(0)[:3]]):
-            # Set the lower limit to 0 if the color for index 0 is already black.
-            mappable.set_clim(0, labels.max())
-            cm = None
-        elif numpy.any(labels != 0):
-            mappable.set_clim(1, labels.max())
-            cm = None
-        image = mappable.to_rgba(labels)[:, :, :3]
+            if all([c0x == 0 for c0x in cm(0)[:3]]):
+                # Set the lower limit to 0 if the color for index 0 is already black.
+                mappable.set_clim(0, labels.max())
+                cm = None
+            elif numpy.any(labels != 0):
+                mappable.set_clim(1, labels.max())
+                cm = None
+            image = mappable.to_rgba(labels)[:, :, :3]
+        else:
+            import skimage.color
+
+            image = skimage.color.label2rgb(labels, bg_label=0)
         return self.subplot_imshow(x, y, image, title, clear, colormap=cm,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
-                                   use_imshow=use_imshow)
+                                   use_imshow=use_imshow, dimensions=dimensions)
 
     @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape=None, title=None,
@@ -1535,7 +1572,9 @@ class Figure(wx.Frame):
                       col_labels=None,
                       row_labels=None,
                       n_cols=1,
-                      n_rows=1, **kwargs):
+                      n_rows=1,
+                      dimensions=2,
+                      **kwargs):
         """Put a table into a subplot
 
         x,y - subplot's column and row
@@ -1548,7 +1587,11 @@ class Figure(wx.Frame):
         **kwargs - for backwards compatibility, old argument values
         """
 
-        nx, ny = self.subplots.shape
+        if dimensions == 2:
+            nx, ny = self.subplots.shape
+        else:
+            ny, nx = self.__gridspec.get_geometry()
+
         xstart = float(x) / float(nx)
         ystart = float(y) / float(ny)
         width = float(n_cols) / float(nx)
@@ -2017,93 +2060,6 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
 
     def get_outline_name(self):
         return self.__outline_name
-
-
-class CPImageArtist(matplotlib.artist.Artist):
-    def __init__(self, image, frame, kwargs):
-        super(CPImageArtist, self).__init__()
-        self.image = image
-        self.frame = frame
-        self.kwargs = kwargs
-        #
-        # The radius for the gaussian blur of 1 pixel sd
-        #
-        self.filterrad = 4.0
-        self.interpolation = kwargs["interpolation"]
-
-    def draw(self, renderer):
-        global roundoff
-        image = self.frame.normalize_image(self.image,
-                                           **self.kwargs)
-        magnification = renderer.get_image_magnification()
-        numrows, numcols = self.image.shape[:2]
-        if numrows == 0 or numcols == 0:
-            return
-        #
-        # Limit the viewports to the image extents
-        #
-        view_x0 = int(min(numcols - 1, max(0, self.axes.viewLim.x0 - self.filterrad)))
-        view_x1 = int(min(numcols, max(0, self.axes.viewLim.x1 + self.filterrad)))
-        view_y0 = int(min(numrows - 1,
-                          max(0, min(self.axes.viewLim.y0,
-                                     self.axes.viewLim.y1) - self.filterrad)))
-        view_y1 = int(min(numrows,
-                          max(0, max(self.axes.viewLim.y0,
-                                     self.axes.viewLim.y1) + self.filterrad)))
-        xslice = slice(view_x0, view_x1)
-        yslice = slice(view_y0, view_y1)
-        image = image[yslice, xslice, :]
-
-        #
-        # Flip image upside-down if height is negative
-        #
-        flip_ud = self.axes.viewLim.height < 0
-        if flip_ud:
-            image = numpy.flipud(image)
-
-        im = matplotlib.image.fromarray(image, 0)
-        im.is_grayscale = False
-        im.set_interpolation(self.interpolation)
-        fc = self.axes.patch.get_facecolor()
-        bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
-        im.set_bg(*bg)
-
-        # image input dimensions
-        im.reset_matrix()
-
-        # the viewport translation in the X direction
-        tx = view_x0 - self.axes.viewLim.x0 - .5
-        #
-        # the viewport translation in the Y direction
-        # which is from the bottom of the screen
-        #
-        if self.axes.viewLim.height < 0:
-            ty = (self.axes.viewLim.y0 - view_y1) + .5
-        else:
-            ty = view_y0 - self.axes.viewLim.y0 - .5
-        im.apply_translation(tx, ty)
-
-        l, b, r, t = self.axes.bbox.extents
-        widthDisplay = (r - l + 1) * magnification
-        heightDisplay = (t - b + 1) * magnification
-
-        # resize viewport to display
-        sx = widthDisplay / self.axes.viewLim.width
-        sy = abs(heightDisplay / self.axes.viewLim.height)
-        im.apply_scaling(sx, sy)
-        im.resize(widthDisplay, heightDisplay,
-                  norm=1, radius=self.filterrad)
-        bbox = self.axes.bbox.frozen()
-        im._url = self.frame.Title
-
-        # Two ways to do this, try by version
-        mplib_version = matplotlib.__version__.split(".")
-        if mplib_version[0] == '0':
-            renderer.draw_image(l, b, im, bbox)
-        else:
-            gc = renderer.new_gc()
-            gc.set_clip_rectangle(bbox)
-            renderer.draw_image(gc, l, b, im)
 
 
 def get_matplotlib_interpolation_preference():

@@ -3,7 +3,8 @@ import re
 import sys
 import uuid
 
-import numpy as np
+import numpy
+import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -69,7 +70,7 @@ class Module(object):
         self.__as_data_tool = False
         self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
-        self.batch_state = np.zeros((0,), np.uint8)
+        self.batch_state = numpy.zeros((0,), numpy.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
@@ -115,7 +116,7 @@ class Module(object):
                     settings[cpp.MODULE_NOTES].shape[1] > idx):
             n = settings[cpp.MODULE_NOTES][0, idx].flatten()
             for x in n:
-                if isinstance(x, np.ndarray):
+                if isinstance(x, numpy.ndarray):
                     if len(x) == 0:
                         x = ''
                     else:
@@ -126,14 +127,14 @@ class Module(object):
         if settings.dtype.fields.has_key(cpp.BATCH_STATE):
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
-            self.batch_state = np.array(settings[cpp.BATCH_STATE][0, idx].tostring())
+            self.batch_state = numpy.array(settings[cpp.BATCH_STATE][0, idx].tostring())
         setting_count = settings[cpp.NUMBERS_OF_VARIABLES][0, idx]
         variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][0, idx]
         module_name = settings[cpp.MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
             value_cell = settings[cpp.VARIABLE_VALUES][idx, i]
-            if isinstance(value_cell, np.ndarray):
-                if np.product(value_cell.shape) == 0:
+            if isinstance(value_cell, numpy.ndarray):
+                if numpy.product(value_cell.shape) == 0:
                     setting_values.append('')
                 else:
                     setting_values.append(str(value_cell[0]))
@@ -241,7 +242,7 @@ class Module(object):
         module_idx = self.module_num - 1
         setting = handles[cpp.SETTINGS][0, 0]
         setting[cpp.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
-        setting[cpp.MODULE_NOTES][0, module_idx] = np.ndarray(shape=(len(self.notes), 1), dtype='object')
+        setting[cpp.MODULE_NOTES][0, module_idx] = numpy.ndarray(shape=(len(self.notes), 1), dtype='object')
         for i in range(0, len(self.notes)):
             setting[cpp.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
         setting[cpp.NUMBERS_OF_VARIABLES][0, module_idx] = len(self.settings())
@@ -259,7 +260,7 @@ class Module(object):
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[cpp.BATCH_STATE][0, module_idx] = np.fromstring(self.batch_state.tostring(), np.uint8)
+        setting[cpp.BATCH_STATE][0, module_idx] = numpy.fromstring(self.batch_state.tostring(), numpy.uint8)
 
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''
@@ -965,6 +966,58 @@ class ImageProcessing(Module):
 class ImageSegmentation(Module):
     category = "Image Segmentation"
 
+    def add_measurements(self, workspace):
+        objects = workspace.object_set.get_objects(self.y_name.value)
+
+        labels = objects.segmented
+
+        unique_labels = numpy.unique(labels)
+
+        if unique_labels[0] == 0:
+            unique_labels = unique_labels[1:]
+
+        if len(unique_labels) == 0:
+            center_z, center_x, center_y = [], [], []
+        else:
+            if not objects.volumetric:
+                labels = numpy.asarray([labels])
+
+            centers = scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels=labels, index=unique_labels)
+
+            centers = numpy.array(centers)
+
+            center_z, center_x, center_y = centers.transpose()
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_LOCATION_CENTER_X,
+            center_x
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_LOCATION_CENTER_Y,
+            center_y
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_LOCATION_CENTER_Z,
+            center_z
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            numpy.arange(1, objects.count + 1)
+        )
+
+        workspace.measurements.add_measurement(
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.FF_COUNT % self.y_name.value,
+            numpy.array([objects.count], dtype=numpy.uint8)
+        )
+
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
             "Input"
@@ -978,8 +1031,8 @@ class ImageSegmentation(Module):
     def display(self, workspace, figure):
         layout = (2, 1)
 
-        if workspace.display_data.dimensions is 3:
-            overlay = np.zeros(workspace.display_data.x_data.shape + (3,))
+        if workspace.display_data.dimensions == 3:
+            overlay = numpy.zeros(workspace.display_data.x_data.shape + (3,))
 
             for index, data in enumerate(workspace.display_data.x_data):
                 overlay[index] = skimage.color.label2rgb(
@@ -1014,6 +1067,100 @@ class ImageSegmentation(Module):
             y=0
         )
 
+    def get_categories(self, pipeline, object_name):
+        if object_name == cellprofiler.measurement.IMAGE:
+            return [cellprofiler.measurement.C_COUNT]
+
+        if object_name == self.y_name.value:
+            return [
+                cellprofiler.measurement.C_LOCATION,
+                cellprofiler.measurement.C_NUMBER
+            ]
+
+        return []
+
+    def get_measurement_columns(self, pipeline):
+        return [
+            (
+                self.y_name.value,
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                self.y_name.value,
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                self.y_name.value,
+                cellprofiler.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                self.y_name.value,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_COUNT % self.y_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            )
+        ]
+
+    def get_measurements(self, pipeline, object_name, category):
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
+            return [self.y_name.value]
+
+        if object_name == self.y_name.value:
+            if category == cellprofiler.measurement.C_LOCATION:
+                return [
+                    cellprofiler.measurement.FTR_CENTER_X,
+                    cellprofiler.measurement.FTR_CENTER_Y,
+                    cellprofiler.measurement.FTR_CENTER_Z
+                ]
+
+            if category == cellprofiler.measurement.C_NUMBER:
+                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+
+        return []
+
+    def run(self, workspace):
+        x_name = self.x_name.value
+
+        y_name = self.y_name.value
+
+        images = workspace.image_set
+
+        x = images.get_image(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.pixel_data
+
+        args = (setting.value for setting in self.settings()[2:])
+
+        y_data = self.function(x_data, *args)
+
+        y = cellprofiler.object.Objects()
+
+        y.segmented = y_data
+
+        y.parent_image = x.parent_image
+
+        objects = workspace.object_set
+
+        objects.add_objects(y, y_name)
+
+        self.add_measurements(workspace)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
+
     def settings(self):
         return [
             self.x_name,
@@ -1025,3 +1172,135 @@ class ImageSegmentation(Module):
             self.x_name,
             self.y_name
         ]
+
+
+class ObjectProcessing(ImageSegmentation):
+    category = "Object Processing"
+
+    def add_measurements(self, workspace):
+        super(ObjectProcessing, self).add_measurements(workspace)
+
+        objects = workspace.object_set.get_objects(self.y_name.value)
+
+        parent_objects = workspace.object_set.get_objects(self.x_name.value)
+
+        children_per_parent, parents_of_children = parent_objects.relate_children(objects)
+
+        workspace.measurements.add_measurement(
+            self.x_name.value,
+            cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+            children_per_parent
+        )
+
+        workspace.measurements.add_measurement(
+            self.y_name.value,
+            cellprofiler.measurement.FF_PARENT % self.x_name.value,
+            parents_of_children
+        )
+
+    def create_settings(self):
+        super(ObjectProcessing, self).create_settings()
+
+        self.x_name = cellprofiler.setting.ObjectNameSubscriber(
+            "Input"
+        )
+
+    def display(self, workspace, figure):
+        layout = (2, 1)
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions,
+            subplots=layout
+        )
+
+        figure.subplot_imshow_labels(
+            dimensions=workspace.display_data.dimensions,
+            labels=workspace.display_data.x_data,
+            title=self.x_name.value,
+            x=0,
+            y=0
+        )
+
+        figure.subplot_imshow_labels(
+            dimensions=workspace.display_data.dimensions,
+            labels=workspace.display_data.y_data,
+            title=self.y_name.value,
+            x=1,
+            y=0
+        )
+
+    def get_categories(self, pipeline, object_name):
+        if object_name == self.x_name.value:
+            return [cellprofiler.measurement.C_CHILDREN]
+
+        categories = super(ObjectProcessing, self).get_categories(pipeline, object_name)
+
+        if object_name == self.y_name.value:
+            return categories + [
+                cellprofiler.measurement.C_PARENT
+            ]
+
+        return categories
+
+    def get_measurement_columns(self, pipeline):
+        measurement_columns = super(ObjectProcessing, self).get_measurement_columns(pipeline)
+
+        return measurement_columns + [
+            (
+                self.x_name.value,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                self.y_name.value,
+                cellprofiler.measurement.FF_PARENT % self.x_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            )
+        ]
+
+    def get_measurements(self, pipeline, object_name, category):
+        if object_name == self.x_name.value and category == cellprofiler.measurement.C_CHILDREN:
+            return [cellprofiler.measurement.FF_COUNT % self.y_name.value]
+
+        if object_name == self.y_name.value:
+            if category == cellprofiler.measurement.C_NUMBER:
+                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+
+            if category == cellprofiler.measurement.C_PARENT:
+                return [self.x_name.value]
+
+        return super(ObjectProcessing, self).get_measurements(pipeline, object_name, category)
+
+    def run(self, workspace):
+        x_name = self.x_name.value
+
+        y_name = self.y_name.value
+
+        objects = workspace.object_set
+
+        x = objects.get_objects(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.segmented
+
+        args = (setting.value for setting in self.settings()[2:])
+
+        y_data = self.function(x_data, *args)
+
+        y = cellprofiler.object.Objects()
+
+        y.segmented = y_data
+
+        y.parent_image = x.parent_image
+
+        objects.add_objects(y, y_name)
+
+        self.add_measurements(workspace)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions

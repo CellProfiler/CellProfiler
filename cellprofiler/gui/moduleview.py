@@ -2,6 +2,7 @@
 """ModuleView.py - implements a view on a module
 """
 
+import cellprofiler.gui.pipeline
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -909,7 +910,7 @@ class ModuleView(object):
                     leaf_state = d[None]
                     for subtree_key in [x for x in d.keys() if x is not None]:
                         subtree_state = get_state(d[subtree_key])
-                        if leaf_state is 0:
+                        if leaf_state == 0:
                             leaf_state = subtree_state
                         elif leaf_state != subtree_state:
                             leaf_state = None
@@ -2204,7 +2205,7 @@ class ModuleView(object):
                 self.clear_selection()
 
     def __on_workspace_event(self, event):
-        import cellprofiler.workspace as cpw
+        import cellprofiler.gui.workspace as cpw
         if isinstance(event, (cpw.Workspace.WorkspaceLoadedEvent,
                               cpw.Workspace.WorkspaceCreatedEvent)):
             # Detach and reattach the current module to get it reacclimated
@@ -2893,7 +2894,7 @@ class FileCollectionDisplayController(object):
         assert isinstance(v, cellprofiler.setting.FileCollectionDisplay)
         self.module_view = module_view
         self.v = v
-        assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
+        assert isinstance(pipeline, cellprofiler.gui.pipeline.Pipeline)
         self.pipeline = pipeline
         self.panel = wx.Panel(self.module_view.module_panel, -1,
                               name=edit_control_name(v))

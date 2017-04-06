@@ -228,7 +228,16 @@ class PreferencesDlg(wx.Dialog):
         """
         cmaps = list(matplotlib.cm.datad.keys())
         cmaps.sort()
-        return [["Default Input Folder",
+
+        return [
+            [
+                "Send Telemetry to the CellProfiler Team",
+                cellprofiler.preferences.get_telemetry,
+                cellprofiler.preferences.set_telemetry,
+                CHOICE,
+                cellprofiler.gui.help.SHOW_TELEMETRY_HELP
+            ],
+                ["Default Input Folder",
                  cellprofiler.preferences.get_default_image_directory,
                  cellprofiler.preferences.set_default_image_directory,
                  DIRBROWSE, cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP],

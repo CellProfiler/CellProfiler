@@ -35,7 +35,7 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
-
+import cellprofiler.measurement
 import numpy as np
 from centrosome.cpmorphology import all_connected_components
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -247,11 +247,11 @@ class IdentifyDeadWorms(cpm.Module):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.object_name.value
-        m.add_measurement(object_name, I.M_LOCATION_CENTER_X, center_x)
-        m.add_measurement(object_name, I.M_LOCATION_CENTER_Y, center_y)
+        m.add_measurement(object_name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x)
+        m.add_measurement(object_name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y)
         m.add_measurement(object_name, M_ANGLE, angles * 180 / np.pi)
-        m.add_measurement(object_name, I.M_NUMBER_OBJECT_NUMBER, label_indexes)
-        m.add_image_measurement(I.FF_COUNT % object_name, nlabels)
+        m.add_measurement(object_name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, label_indexes)
+        m.add_image_measurement(cellprofiler.measurement.FF_COUNT % object_name, nlabels)
         #
         # Make the objects
         #
@@ -453,7 +453,7 @@ class IdentifyDeadWorms(cpm.Module):
             angle_distance += np.pi / self.angle_count.value
         else:
             space_distance = self.space_distance.value
-            angle_distance = self.angular_distance.value * 180 / np.pi
+            angle_distance = self.angular_distance.value * np.pi / 180
         #
         # Sort by i and break the sorted vector into chunks where
         # consecutive locations are separated by more than space_distance
@@ -521,28 +521,28 @@ class IdentifyDeadWorms(cpm.Module):
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         object_name = self.object_name.value
-        return [(object_name, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
-                (object_name, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
+        return [(object_name, cellprofiler.measurement.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
+                (object_name, cellprofiler.measurement.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
                 (object_name, M_ANGLE, cpmeas.COLTYPE_FLOAT),
-                (object_name, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, I.FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
+                (object_name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                (cpmeas.IMAGE, cellprofiler.measurement.FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [I.C_COUNT]
+            return [cellprofiler.measurement.C_COUNT]
         elif object_name == self.object_name:
-            return [I.C_LOCATION, I.C_NUMBER, C_WORMS]
+            return [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER, C_WORMS]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == I.C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.C_COUNT:
             return [self.object_name.value]
         elif object_name == self.object_name:
-            if category == I.C_LOCATION:
-                return [I.FTR_CENTER_X, I.FTR_CENTER_Y]
-            elif category == I.C_NUMBER:
-                return [I.FTR_OBJECT_NUMBER]
+            if category == cellprofiler.measurement.C_LOCATION:
+                return [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
+            elif category == cellprofiler.measurement.C_NUMBER:
+                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
             elif category == C_WORMS:
                 return [F_ANGLE]
         return []

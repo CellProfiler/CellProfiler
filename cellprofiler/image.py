@@ -100,18 +100,32 @@ class Image(object):
 
         self.dimensions = dimensions
 
-        self.spacing = spacing
+        self.__spacing = spacing
 
     @property
     def multichannel(self):
-        return True if self.dimensions is 2 and self.pixel_data.ndim is 3 else False
+        return True if self.pixel_data.ndim == self.dimensions + 1 else False
 
     @property
     def volumetric(self):
-        if self.dimensions is 3:
+        if self.dimensions == 3:
             return True
 
         return False
+
+    @property
+    def spacing(self):
+        if self.__spacing is not None:
+            return self.__spacing
+
+        if self.parent_image is None:
+            return (1.0,) * self.dimensions
+
+        return self.parent_image.spacing
+
+    @spacing.setter
+    def spacing(self, spacing):
+        self.__spacing = spacing
 
     def get_image(self):
         """Return the primary image"""
@@ -391,9 +405,11 @@ def crop_image(image, crop_mask, crop_internal=False):
         j_first = numpy.argwhere(j_cumsum == 1)[0]
         j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
+
         if image.ndim == 3:
-            return image[i_first:i_end, j_first:j_end, :].copy()
-        return image[i_first:i_end, j_first:j_end].copy()
+            return image[i_first[0]:i_end[0], j_first[0]:j_end[0], :].copy()
+
+        return image[i_first[0]:i_end[0], j_first[0]:j_end[0]].copy()
 
 
 class GrayscaleImage(object):

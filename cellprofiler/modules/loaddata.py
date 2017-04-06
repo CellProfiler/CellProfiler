@@ -1122,12 +1122,13 @@ class LoadData(cpm.Module):
             workspace.display_data.statistics = statistics
 
     def display(self, workspace, figure):
-        if hasattr(workspace.display_data, "warning"):
-            from cellprofiler.gui.errordialog import show_warning
-            show_warning("Images have different sizes",
-                         workspace.display_data.warning,
-                         cpprefs.get_show_report_bad_sizes_dlg,
-                         cpprefs.set_show_report_bad_sizes_dlg)
+        # if hasattr(workspace.display_data, "warning"):
+        #     from cellprofiler.gui.errordialog import show_warning
+        #     show_warning("Images have different sizes",
+        #                  workspace.display_data.warning,
+        #                  cpprefs.get_show_report_bad_sizes_dlg,
+        #                  cpprefs.set_show_report_bad_sizes_dlg)
+
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, workspace.display_data.statistics)
 

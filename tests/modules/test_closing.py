@@ -10,7 +10,7 @@ def test_run(image, module, image_set, workspace):
 
     module.y_name.value = "closing"
 
-    if image.dimensions is 3 or image.multichannel:
+    if image.dimensions == 3 or image.multichannel:
         module.structuring_element.shape = "ball"
 
         selem = skimage.morphology.ball(1)

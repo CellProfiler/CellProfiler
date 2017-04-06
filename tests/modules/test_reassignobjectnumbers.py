@@ -6,6 +6,7 @@ import unittest
 import zlib
 from StringIO import StringIO
 
+import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage
 
@@ -83,88 +84,6 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         self.assertEqual(module.relabel_option, R.OPTION_UNIFY)
         self.assertEqual(module.distance_threshold, 10)
         self.assertEqual(module.image_name, "MyImage")
-
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1NwSU1WMDRRMDSzMjaxMjJWMDIwsFQgGTAwevryMzAwbGBi'
-                'YKiYczbcMf+ygUjZrS08bEvXON1i1XXnW2wyi0vG3IRTy9G6NLlJOu+xm9vK'
-                '2KN+V4ue1X8wt/h0uWP2Et87az3nbrsySdT2ee38/Tb29taiDAe+SzGk/q98'
-                '8J2JI0pzy9YI8W+mj2SEZ09t4Os7/HF/3f5WvTZb9rtOx515zkSb3FNirjKW'
-                'PRtfu2za8wVmMsfm/r32rc32yaZzCkxt69d/YLG8/kOd6aTYztKLEsY+nh38'
-                'P59e/LlnivfnsD91dTs6mtWOLnzxPSon5kc9C3f9374dssf/rF5Y26z2J1T8'
-                '5jzmWGZfN70kJwXhmvdBP+Q8ag6923HjXV0F/6YHp4X22XSX33e0+DHPjWvf'
-                'hAPiB5Zymhm9r+T6t7JFvEzcckO7TEqry+6OeM9D3Ldz5pm53gn5GM8h5+O4'
-                'zcJm0odD+5awLbzzIWKHYci1jb6bH25h8WM+a3txbvnd8qX7ZzzQbMqv413V'
-                'wFoXbHWpYp6HzaF3Bc8kxcVkCm3cFM8vK9V8u37Xz2853lXXYtcfWznzwsZ3'
-                'dZanOy4LW8iavOL9XP/kpHOn+w3dQ4KJM/yTqxal36r84fNI2ExNTC75dHNf'
-                'Y/uFefNP3b6wfJd9aElMxRw+xeO1rLJF964UH0meyidqd7s1+Fo7X9fHJ2ur'
-                'V5Xa+9Zfq92QKyvq2b6hOdv7+GM+NaWXn59oVvKab+KrfCzwcP+r1e8vfrSa'
-                'sH3d2a62t0H5U+Y+D3gkaPb2r0PtPoVT0deTatriH1/I6K7JvB899ceqzh2s'
-                'JeVPD9ae9z0//dj0UqBvy+8/u309PWqefGOKTItvc9eOKS8K7zG//fdL6brl'
-                '1T+/XBZe7Yr12FRzvhjkJW7Bd/8fxe6skLDvDj3f+2H/dmNt9pydcdODHwV+'
-                'WLs4yvOlXBLT1p9e/VuX/q6X8uOvvTfnj9XPv0ozvvNH5N+NX/eh/9a6P/8Z'
-                '35qL/wUAgFx7fg==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, R.RelabelObjects))
-        self.assertEqual(module.objects_name, "Nuclei")
-        self.assertEqual(module.output_objects_name, "RelabeledNuclei")
-        self.assertEqual(module.relabel_option, "Unify")
-        self.assertAlmostEqual(module.distance_threshold.value, 5)
-        self.assertEqual(module.where_algorithm, R.CA_CENTROIDS)
-        self.assertAlmostEqual(module.minimum_intensity_fraction.value, .9)
-        self.assertTrue(module.wants_image)
-        self.assertEqual(module.image_name, "OrigRGB")
-
-    def test_01_02_load_v1(self):
-        data = ('eJztWt1u2zYUphInbVqsa9EC7U0BXg5DIshp3Z/cVE6NrgZqO0i8DrubIh07'
-                'LGhSkKg03lPscXa5R+ojTIylWOKcSLbln6wSIDiH4ne+80spBFv17qf6Ia7p'
-                'Bm7Vu3s9QgEfUUv0uDc4wEzs4vceWAIczNkBbnGGG2Dj6ktcfXXwsnaw/wrv'
-                'G8ZbNNulNVsPwp+/9hDaDn/vhvdG9GgrkrXELeUTEIKwvr+FKuhZNP4tvD9b'
-                'HrFOKXy2aAD+mCIeb7Ie7w7dq0ct7gQU2tYgOTm82sHgFDy/04uB0eMjcgH0'
-                'hPwJigvxtGM4Jz7hLMJH+tXRK14uFN6TM/71gxeao+g/tIR9diLCDKTHZdzc'
-                'J+O4aUrcNsP7eWJczv+IxvMrE+L8KDH/YSQT5pBz4gQWxWRg9a+slvreZOi7'
-                'o+iTcscj/eNfDnPhtxW8lNuBTYHk8+eZgpdyFy7E3jH0A2p5GC5cD3yZIL8I'
-                'e8wM/I8KXsrHQK1ToOBEiqQeI0OPltKjoRc587Gl8Eu5WtutGXPgf2WkN0T5'
-                '/L+n4KXc4JhxgQM/qu88/m+k9GygNs+HU+NWy8m3mcJtot/DLlikndfxZdX7'
-                'UyW+Um5AzwqowE3ZvLhBPLAF94Zz2TFv30+bJx3lq68fFF4pd4Qf4LpjuYKc'
-                'A5ot/ob+Zq58z9SXevV13Nez+P2ech98gV1OmMjpd1H1auxW/4PbVnDxFeN2'
-                'ot9F2llJ4SphXo1qUXZOgzMz7NxB6XxKuckEMJ+IYQH808a3UV0Puxe97qh+'
-                'V43VxLmI91iRdqp90+YMinpvLsNOMwP3AKXrRsqjz7FOIChh8qP3e4tvkf6V'
-                'di7WzvA9thI7zQw7Z/keW8f43pY6WFc71fecXltN3s0MO++jdL1KufuVY5ta'
-                'vh/tfKzC7qz/+ybt2/wGpH8mt+3O5QYVsyGhb93iPmlf4AP3oO/xgDmrs/v/'
-                '0n9Ffy/+83i6fcdl1s3lJqUsHDe/nkl9z0+/gC3Gipbdvwl+TJgD7gL1rbJe'
-                'S9z3gzNRMf18W/wtcSWuxM2PMxO4SevGQ5ReN+Q9XjdGr7vb5G+JK+unxJW4'
-                'dceZ6Oa+Kr/nSlyJK3Elbj1xF9oYp+7jqfubcv4fCZ5J6/3PKL3eS9kGSl2P'
-                'y3Olnj64PPzo65Rbzug0of4p/LOZOFgoedwMHlPhMa/jIQ4wQXpD1wvZAsEH'
-                'liC23oxGj8LRejwqec8yePcV3v3reL3Rob7RnpuvR2f8OiNxct52JvAl478R'
-                'So+e370x3wil8zzO/7d3s/BVKtolX/Lcxf0MXCVhU+zn32i6Ovvphvmxj8uc'
-                'P23cNE2b2+8xT+XKppH+5cz/F8mEjuw=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, R.RelabelObjects))
-        self.assertEqual(module.objects_name, "Nuclei")
-        self.assertEqual(module.output_objects_name, "RelabeledNuclei")
-        self.assertEqual(module.relabel_option, "Unify")
-        self.assertAlmostEqual(module.distance_threshold.value, 5)
-        self.assertAlmostEqual(module.minimum_intensity_fraction.value, .8)
-        self.assertEqual(module.where_algorithm, R.CA_CLOSEST_POINT)
-        self.assertTrue(module.wants_image)
-        self.assertEqual(module.image_name, "OrigRGB")
 
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -290,7 +209,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   cpmeas.Measurements(), image_set_list)
         if parents_of is not None:
             m = workspace.measurements
-            ftr = R.FF_PARENT % parent_object
+            ftr = cellprofiler.measurement.FF_PARENT % parent_object
             m[INPUT_OBJECTS_NAME, ftr] = parents_of
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -306,9 +225,9 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        count = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 0)
-        for feature_name in (I.M_LOCATION_CENTER_X, I.M_LOCATION_CENTER_Y):
+        for feature_name in (cellprofiler.measurement.M_LOCATION_CENTER_X, cellprofiler.measurement.M_LOCATION_CENTER_Y):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 0)
@@ -318,14 +237,14 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for object_name, feature_name, coltype in (
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (INPUT_OBJECTS_NAME, I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                (INPUT_OBJECTS_NAME, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
                  cpmeas.COLTYPE_INTEGER),
-                (OUTPUT_OBJECTS_NAME, I.FF_PARENT % INPUT_OBJECTS_NAME,
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
                  cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
+                (cpmeas.IMAGE, cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
             self.assertTrue(any([object_name == c[0] and
                                  feature_name == c[1] and
                                  coltype == c[2] for c in columns]))
@@ -372,18 +291,18 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        count = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 1)
-        for feature_name, value in ((I.M_LOCATION_CENTER_X, 5),
-                                    (I.M_LOCATION_CENTER_Y, 3),
-                                    (I.FF_PARENT % INPUT_OBJECTS_NAME, 1)):
+        for feature_name, value in ((cellprofiler.measurement.M_LOCATION_CENTER_X, 5),
+                                    (cellprofiler.measurement.M_LOCATION_CENTER_Y, 3),
+                                    (cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME, 1)):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 1)
             self.assertAlmostEqual(values[0], value)
 
         values = m.get_current_measurement(INPUT_OBJECTS_NAME,
-                                           I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
+                                           cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 1)
 
@@ -401,11 +320,11 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(np.all(labels_out == expected))
         m = workspace.measurements
         values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
-                                           I.FF_PARENT % INPUT_OBJECTS_NAME)
+                                           cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 2)
         self.assertTrue(np.all(values == 1))
         values = m.get_current_measurement(INPUT_OBJECTS_NAME,
-                                           I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
+                                           cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 2)
 

@@ -26,11 +26,8 @@ from cellprofiler.modules.loadimages import \
 from cellprofiler.measurement import C_FILE_NAME,\
      C_PATH_NAME, C_URL, C_SERIES, C_FRAME, \
      C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
-     C_OBJECTS_SERIES, C_OBJECTS_FRAME
-
-from cellprofiler.modules.identify import \
-     C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
-     FTR_CENTER_X, FTR_CENTER_Y
+     C_OBJECTS_SERIES, C_OBJECTS_FRAME, C_LOCATION, C_COUNT, FTR_CENTER_X, M_LOCATION_CENTER_X, FTR_CENTER_Y, \
+    M_LOCATION_CENTER_Y
 
 from cellprofiler.modules.createbatchfiles import \
      CreateBatchFiles, F_BATCH_DATA_H5

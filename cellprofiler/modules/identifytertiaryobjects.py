@@ -52,7 +52,7 @@ identified tertiary objects.</li>
 
 See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
 '''
-
+import cellprofiler.measurement
 import matplotlib
 import matplotlib.cm
 import numpy as np
@@ -273,10 +273,10 @@ class IdentifyTertiaryObjects(cpm.Module):
                 (self.secondary_objects_name, secondary_parents,
                  child_count_of_secondary, R_PARENT)):
             m.add_measurement(self.subregion_objects_name.value,
-                              cpmi.FF_PARENT % parent_objects_name.value,
+                              cellprofiler.measurement.FF_PARENT % parent_objects_name.value,
                               parents_of)
             m.add_measurement(parent_objects_name.value,
-                              cpmi.FF_CHILDREN_COUNT % self.subregion_objects_name.value,
+                              cellprofiler.measurement.FF_CHILDREN_COUNT % self.subregion_objects_name.value,
                               child_count)
             mask = parents_of != 0
             image_number = np.ones(np.sum(mask), int) * m.image_set_number
@@ -349,10 +349,10 @@ class IdentifyTertiaryObjects(cpm.Module):
         for parent in (self.primary_objects_name.value,
                        self.secondary_objects_name.value):
             columns += [(parent,
-                         cpmi.FF_CHILDREN_COUNT % subregion_name,
+                         cellprofiler.measurement.FF_CHILDREN_COUNT % subregion_name,
                          cpmeas.COLTYPE_INTEGER),
                         (subregion_name,
-                         cpmi.FF_PARENT % parent,
+                         cellprofiler.measurement.FF_PARENT % parent,
                          cpmeas.COLTYPE_INTEGER)]
         return columns
 

@@ -2,6 +2,7 @@
 """ runmultiplepipelinesdialog.py - Dialog to collect info for RunMultiplePipelines
 """
 
+import cellprofiler.gui.pipeline
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import datetime
@@ -145,7 +146,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
             elif isinstance(event, cellprofiler.pipeline.PipelineLoadedEvent):
                 module_count[0] = len(caller.modules())
 
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler.gui.pipeline.Pipeline()
         pipeline.add_listener(on_pipeline_event)
         for file_name in file_names:
             file_path = os.path.join(path, file_name)

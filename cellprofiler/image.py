@@ -115,7 +115,28 @@ class Image(object):
 
     @property
     def multichannel(self):
-        return True if self.dimensions is 2 and self.pixel_data.ndim is 3 else False
+        return True if self.pixel_data.ndim == self.dimensions + 1 else False
+
+    @property
+    def volumetric(self):
+        if self.dimensions == 3:
+            return True
+
+        return False
+
+    @property
+    def spacing(self):
+        if self.__spacing is not None:
+            return self.__spacing
+
+        if self.parent_image is None:
+            return (1.0,) * self.dimensions
+
+        return self.parent_image.spacing
+
+    @spacing.setter
+    def spacing(self, spacing):
+        self.__spacing = spacing
 
     def get_image(self):
         """Return the primary image"""
@@ -175,7 +196,6 @@ class Image(object):
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
             numpy.clip(img, 0, 1, out=img)
-        check_consistency(img, self.__mask)
         self.__image = img
 
     image = property(get_image, set_image)
@@ -227,12 +247,10 @@ class Image(object):
         #
         # Exclude channel, if present, from shape
         #
-        if image.ndim == 2:
-            shape = image.shape
-        elif image.ndim == 3:
-            shape = image.shape[:2]
-        else:
-            shape = image.shape[1:]
+        shape = image.shape
+
+        if self.multichannel:
+            shape = shape[:-1]
 
         return numpy.ones(shape, dtype=numpy.bool)
 
@@ -248,7 +266,6 @@ class Image(object):
         if not (m.dtype.type is numpy.bool):
             m = (m != 0)
 
-        check_consistency(self.image, m)
         self.__mask = m
         self.__has_mask = True
 
@@ -399,9 +416,11 @@ def crop_image(image, crop_mask, crop_internal=False):
         j_first = numpy.argwhere(j_cumsum == 1)[0]
         j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
+
         if image.ndim == 3:
-            return image[i_first:i_end, j_first:j_end, :].copy()
-        return image[i_first:i_end, j_first:j_end].copy()
+            return image[i_first[0]:i_end[0], j_first[0]:j_end[0], :].copy()
+
+        return image[i_first[0]:i_end[0], j_first[0]:j_end[0]].copy()
 
 
 class GrayscaleImage(object):
@@ -443,13 +462,6 @@ class RGBImage(object):
     def pixel_data(self):
         '''Return the pixel data without the alpha channel'''
         return self.__image.pixel_data[:, :, :3]
-
-
-def check_consistency(image, mask):
-    """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
-    assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
-    assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
 
 
 class AbstractImageProvider(object):
@@ -560,31 +572,44 @@ class ImageSet(object):
 
         else:
             image = self.__images[name]
-        if must_be_binary and image.pixel_data.ndim == 3:
-            raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != numpy.bool:
+
+        if image.multichannel:
+            if must_be_binary:
+                raise ValueError("Image must be binary, but it was color")
+
+            if must_be_grayscale:
+                pd = image.pixel_data
+
+                pd = pd.transpose(-1, *range(pd.ndim - 1))
+
+                if pd.shape[-1] >= 3 and numpy.all(pd[0] == pd[1]) and numpy.all(pd[0] == pd[2]):
+                    return GrayscaleImage(image)
+
+                raise ValueError("Image must be grayscale, but it was color")
+
+            if must_be_rgb:
+                if image.pixel_data.shape[-1] not in (3, 4):
+                    raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[-1])
+
+                if image.pixel_data.shape[-1] == 4:
+                    logger.warning("Discarding alpha channel.")
+
+                    return RGBImage(image)
+
+            return image
+
+        if must_be_binary and image.pixel_data.dtype != bool:
             raise ValueError("Image was not binary")
-        if must_be_color and image.pixel_data.ndim != 3:
-            raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
-            pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
-            raise ValueError("Image must be grayscale, but it was color")
+
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
+
         if must_be_rgb:
-            if image.pixel_data.ndim != 3:
-                raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3, 4):
-                raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
-            elif image.pixel_data.shape[2] == 4:
-                logger.warning("Discarding alpha channel.")
-                return RGBImage(image)
+            raise ValueError("Image must be RGB, but it was grayscale")
+
+        if must_be_color:
+            raise ValueError("Image must be color, but it was grayscale")
+
         return image
 
     @property

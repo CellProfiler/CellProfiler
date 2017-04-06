@@ -188,7 +188,7 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
-from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
@@ -2180,7 +2180,7 @@ class TrackObjects(cpm.Module):
                 new_object_count[my_image_index] -= 1
             logger.debug("Mitosis: %d:%d to %d:%d and %d, score=%f" %
                          (parent_image_number, parent_object_number,
-                          image_numbers[F[mlidx, IIDX]],
+                          image_numbers[int(F[int(mlidx), int(IIDX)])],
                           F[mlidx, ONIDX],
                           F[mridx, ONIDX],
                           score))

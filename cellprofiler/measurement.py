@@ -1620,31 +1620,44 @@ class Measurements(object):
             image = matching_providers[0].provide_image(self)
             if cache:
                 self.__images[name] = image
-        if must_be_binary and image.pixel_data.ndim == 3:
-            raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != np.bool:
+
+        if image.multichannel:
+            if must_be_binary:
+                raise ValueError("Image must be binary, but it was color")
+
+            if must_be_grayscale:
+                pd = image.pixel_data
+
+                pd = pd.transpose(-1, *range(pd.ndim - 1))
+
+                if pd.shape[-1] >= 3 and np.all(pd[0] == pd[1]) and np.all(pd[0] == pd[2]):
+                    return GrayscaleImage(image)
+
+                raise ValueError("Image must be grayscale, but it was color")
+
+            if must_be_rgb:
+                if image.pixel_data.shape[-1] not in (3, 4):
+                    raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[-1])
+
+                if image.pixel_data.shape[-1] == 4:
+                    logger.warning("Discarding alpha channel.")
+
+                    return RGBImage(image)
+
+            return image
+
+        if must_be_binary and image.pixel_data.dtype != bool:
             raise ValueError("Image was not binary")
-        if must_be_color and image.pixel_data.ndim != 3:
-            raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
-            pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
-            raise ValueError("Image must be grayscale, but it was color")
+
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
+
         if must_be_rgb:
-            if image.pixel_data.ndim != 3:
-                raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3, 4):
-                raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
-            elif image.pixel_data.shape[2] == 4:
-                logger.warning("Discarding alpha channel.")
-                return RGBImage(image)
+            raise ValueError("Image must be RGB, but it was grayscale")
+
+        if must_be_color:
+            raise ValueError("Image must be color, but it was grayscale")
+
         return image
 
     def get_providers(self):
@@ -1956,3 +1969,32 @@ class RelationshipKey:
         self.relationship = relationship
         self.object_name1 = object_name1
         self.object_name2 = object_name2
+
+
+C_LOCATION = "Location"
+C_NUMBER = "Number"
+C_COUNT = "Count"
+C_THRESHOLD = "Threshold"
+C_PARENT = "Parent"
+R_PARENT = "Parent"
+C_CHILDREN = "Children"
+R_CHILD = "Child"
+FTR_CENTER_X = "Center_X"
+M_LOCATION_CENTER_X = '%s_%s' % (C_LOCATION, FTR_CENTER_X)
+FTR_CENTER_Y = "Center_Y"
+M_LOCATION_CENTER_Y = '%s_%s' % (C_LOCATION, FTR_CENTER_Y)
+FTR_CENTER_Z = "Center_Z"
+M_LOCATION_CENTER_Z = "%s_%s" % (C_LOCATION, FTR_CENTER_Z)
+FTR_OBJECT_NUMBER = "Object_Number"
+M_NUMBER_OBJECT_NUMBER = '%s_%s' % (C_NUMBER, FTR_OBJECT_NUMBER)
+FF_COUNT = '%s_%%s' % C_COUNT
+FTR_FINAL_THRESHOLD = "FinalThreshold"
+FF_FINAL_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_FINAL_THRESHOLD)
+FTR_ORIG_THRESHOLD = "OrigThreshold"
+FF_ORIG_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_ORIG_THRESHOLD)
+FTR_WEIGHTED_VARIANCE = "WeightedVariance"
+FF_WEIGHTED_VARIANCE = '%s_%s_%%s' % (C_THRESHOLD, FTR_WEIGHTED_VARIANCE)
+FTR_SUM_OF_ENTROPIES = "SumOfEntropies"
+FF_SUM_OF_ENTROPIES = '%s_%s_%%s' % (C_THRESHOLD, FTR_SUM_OF_ENTROPIES)
+FF_CHILDREN_COUNT = "%s_%%s_Count" % C_CHILDREN
+FF_PARENT = "%s_%%s" % C_PARENT

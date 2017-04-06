@@ -41,7 +41,6 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'enhanceorsuppressfeatures': 'EnhanceOrSuppressFeatures',
                         'erosion': 'Erosion',
                         'expandorshrinkobjects': 'ExpandOrShrinkObjects',
-                        'exporttocellh5': 'ExportToCellH5',
                         'exporttodatabase': 'ExportToDatabase',
                         'exporttospreadsheet': 'ExportToSpreadsheet',
                         'filterobjects': 'FilterObjects',
@@ -88,6 +87,7 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'mergeoutputfiles': 'MergeOutputFiles',
                         'metadata': 'Metadata',
                         'morph': 'Morph',
+                        'morphologicalskeleton': 'MorphologicalSkeleton',
                         'namesandtypes': 'NamesAndTypes',
                         'opening': 'Opening',
                         'noisereduction': 'NoiseReduction',
@@ -97,15 +97,15 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'reassignobjectnumbers': 'ReassignObjectNumbers',
                         'removeholes': 'RemoveHoles',
                         'removeobjects': 'RemoveObjects',
-                        'renameorrenumberfiles': 'RenameOrRenumberFiles',
                         'rescaleintensity': 'RescaleIntensity',
                         'resize': 'Resize',
+                        'save': 'Save',
                         'saveimages': 'SaveImages',
                         'smooth': 'Smooth',
                         'straightenworms': 'StraightenWorms',
+                        'matchtemplate': 'MatchTemplate',
                         'trackobjects': 'TrackObjects',
                         'tile': 'Tile',
-                        'thresholding': 'Thresholding',
                         'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms',
@@ -141,7 +141,6 @@ builtin_modules = ['align',
                    'enhanceorsuppressfeatures',
                    'erosion',
                    'expandorshrinkobjects',
-                   'exporttocellh5',
                    'exporttodatabase',
                    'exporttospreadsheet',
                    'filterobjects',
@@ -187,6 +186,7 @@ builtin_modules = ['align',
                    'medialaxis',
                    'mergeoutputfiles',
                    'morph',
+                   'morphologicalskeleton',
                    'namesandtypes',
                    'opening',
                    'noisereduction',
@@ -196,15 +196,15 @@ builtin_modules = ['align',
                    'reassignobjectnumbers',
                    'removeholes',
                    'removeobjects',
-                   'renameorrenumberfiles',
                    'rescaleintensity',
                    'resize',
+                   'save',
                    'saveimages',
                    'smooth',
                    'straightenworms',
+                   'matchtemplate',
                    'trackobjects',
                    'tile',
-                   'thresholding',
                    'unmixcolors',
                    'untangleworms',
                    'watershed'
@@ -280,7 +280,7 @@ badmodules = []
 datatools = []
 pure_datatools = {}
 
-do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
+do_not_override = ['set_settings', 'create_from_handles', 'test_valid', 'module_class']
 should_override = ['create_settings', 'settings', 'run']
 
 
@@ -308,7 +308,7 @@ def find_cpmodule(m):
     for v, val in m.__dict__.iteritems():
         if isinstance(val, type) and issubclass(val, cpm.Module):
             return val
-    raise "Could not find cpm.CPModule class in %s" % m.__file__
+    raise ValueError("Could not find cellprofiler.module.Module class in %s" % m.__file__)
 
 
 def fill_modules():

@@ -6,6 +6,7 @@ import cStringIO
 import unittest
 
 import numpy as np
+import numpy.testing
 import scipy.ndimage
 from centrosome.outline import outline
 
@@ -821,6 +822,40 @@ class TestCropLabelsAndImage(unittest.TestCase):
                                                   np.zeros((20, 20)))
         self.assertEqual(tuple(labels.shape), (10, 20))
         self.assertEqual(tuple(image.shape), (10, 20))
+
+    def test_relate_children_volume(self):
+        parent_labels = numpy.zeros((30, 30, 30), dtype=numpy.uint8)
+
+        k, i, j = numpy.mgrid[-15:15, -15:15, -15:15]
+        parent_labels[k ** 2 + i ** 2 + j ** 2 <= 196] = 1
+
+        parent_object = cpo.Objects()
+
+        parent_object.segmented = parent_labels
+
+        labels = numpy.zeros((30, 30, 30), dtype=numpy.uint8)
+
+        k, i, j = numpy.mgrid[-15:15, -15:15, -7:23]
+        labels[k ** 2 + i ** 2 + j ** 2 <= 25] = 1
+
+        k, i, j = numpy.mgrid[-15:15, -15:15, -22:8]
+        labels[k ** 2 + i ** 2 + j ** 2 <= 16] = 2
+
+        labels[0, 10:20, 10:20] = 3  # not touching a parent, should not be counted as a child
+
+        object = cpo.Objects()
+
+        object.segmented = labels
+
+        actual_children, actual_parents = parent_object.relate_children(object)
+
+        expected_children = [2]
+
+        expected_parents = [1, 1, 0]
+
+        numpy.testing.assert_array_equal(actual_children, expected_children)
+
+        numpy.testing.assert_array_equal(actual_parents, expected_parents)
 
 
 class TestSizeSimilarly(unittest.TestCase):

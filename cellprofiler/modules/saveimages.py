@@ -46,7 +46,6 @@ from cellprofiler.modules.loadimages import \
     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
 from cellprofiler.modules.loadimages import pathname2url
 from centrosome.cpmorphology import distance_color_labels
-from cellprofiler.utilities.version import get_version
 from bioformats.formatwriter import write_image
 import bioformats.omexml as ome
 

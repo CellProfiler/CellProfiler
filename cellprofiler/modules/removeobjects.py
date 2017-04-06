@@ -2,18 +2,21 @@
 
 """
 
-Remove objects
+Remove objects smaller or larger than the specified diameter.
 
 """
+
+import numpy
+import skimage.morphology
+import skimage.segmentation
 
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.morphology
 
 
-class RemoveObjects(cellprofiler.module.ImageProcessing):
-    category = "Mathematical morphology"
+class RemoveObjects(cellprofiler.module.ObjectProcessing):
+    category = ["Mathematical morphology", "Object Processing"]
 
     module_name = "Remove objects"
 
@@ -22,9 +25,13 @@ class RemoveObjects(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(RemoveObjects, self).create_settings()
 
-        self.size = cellprofiler.setting.Float(
+        self.size = cellprofiler.setting.FloatRange(
             text="Size",
-            value=1.0
+            value=(0.0, numpy.inf),
+            doc="""
+            Specify the minimum and maximum diameters of objects (in pixels) to remove. Set the first value to 0 to
+            keep small objects. Set the second value to "inf" to keep large objects.
+            """
         )
 
     def settings(self):
@@ -42,6 +49,27 @@ class RemoveObjects(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        self.function = skimage.morphology.remove_small_objects
+        self.function = lambda labels, diameter: remove_objects(labels, diameter)
 
         super(RemoveObjects, self).run(workspace)
+
+
+def remove_objects(labels, diameter):
+    labels = labels.copy()
+
+    radius = numpy.divide(diameter, 2.0)
+
+    if labels.ndim == 2:
+        factor = radius ** 2
+    else:
+        factor = (4.0 / 3.0) * (radius ** 3)
+
+    min_size, max_size = numpy.pi * factor
+
+    if min_size > 0.0:
+        labels = skimage.morphology.remove_small_objects(labels, min_size)
+
+    if max_size < numpy.inf:
+        labels ^= skimage.morphology.remove_small_objects(labels, max_size)
+
+    return skimage.segmentation.relabel_sequential(labels)[0]

@@ -2,6 +2,8 @@
 '''
 
 import base64
+
+import cellprofiler.measurement
 import numpy as np
 import os
 import PIL.Image as PILImage
@@ -398,172 +400,6 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:9|s
         self.assertTrue(module.wants_agg_median)
         self.assertEqual(module.objects_choice, E.O_SELECT)
         self.assertEqual(module.objects_list.value, "MyObjects,MyOtherObjects")
-
-    def test_01_01_load_matlab_10(self):
-        data = ('eJwBNATL+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
-                'Q3JlYXRlZCBvbjogVHVlIE9jdCAxMyAwOTowNzoxMyAyMDA5ICAgICAgICAg'
-                'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAAAUlN'
-                'DwAAAKwDAAB4nOxYbW/TMBB2t26CIU2FCWnfCN/4sJWEF4mPeymCStta1qqA'
-                'ACG3cTuDG1eJM7Ug/tt+GvaWtK5JiZslWUCLFKXn+p7zc3e2z94EAFw8BmCd'
-                'f+/wdwVcPWuBXJJeIbcQY9gZeGugDLaD9gv+dqCLYZegDiQ+8sD0CdvrTp+2'
-                'J6PpX8fU9gk6gUO5M39O/GEXuV6jHyoGfzfxGJEW/oHA/BN2O0Xn2MPUCfQD'
-                'fLV1apcyxe6msLE180NJ8UOZv1tSu+j/Fsz6lyP8ti31rwRyG43Z7ika+AS6'
-                'BhqPXOSJAXoCby8G766CJ+SGiwfNM+iFfhE4r2Jw1hWc9Uu/9wjCevprir6Q'
-                'jyetd0eB/Tge9xR9ITcbreqnz/ZP69eXG+VxiAjxNHlExaOG+tAnrHYQtOcZ'
-                '1yg+lrnzwtQcR2RcXDqCA8h4jk7HYcbglOdwyjznPaajtzqntwr2D9ta9lS9'
-                'j3xuX8fv+z2+xEl+X5Yvnwlf87S/MoezAk5o8ng3mOcbbwjtQqJtvzSHUwJV'
-                'oGd/Q7Ev5Bo1HMoMP0z868R/2XFbmvbUeB8j6KTJNw4nrbipfjN3LK197YFi'
-                'X8gtBh0burZh8y13tlzkmgdpxdOsmlae8cxqHoTxXHb9sMzk+019CAdIc7xq'
-                'vJ5r6i2KVwK9l2nUGXsx+mnlSdR+UXcYcjzMJkAfJ++8TYLjse/GkJ7jsExP'
-                '0z9Z7adZ72dJ+O/7jA75etyT+KfFIy9/JK0v/lV/JOE1cOHE60EinxeyyrOi'
-                '5cdNz9dF9vPWS4tvkn2/SSBDKekvm7fOU5jpOUGtG94jQq6jF/o5aZybMXqP'
-                'FP8KmXM1do0Dys6MjlU1DV6tG51n/Eefunw9zBT3ycbf79XuS+2yf/ZixhOV'
-                'z1jUnwOX+iN9nKjzFO1+Qz02A5LHFX7jzkkyr0ogS7gGdmw0yhBPl39Fwa3M'
-                '+fEKNor/om+cPd243dT4/1f7cTi686BoOEUdV1H5xa0zUfc71GcEO+iPhabI'
-                'PIuGU9Rx3fK75bfMfpT2+qF+P5QW14tqXZ203jii0L68q5Tul+J4PVRwhFy3'
-                'kcNwf9J08VC+W0haz4V4LdSj4kJ9mXu9qDrg9XhEXdamNchgF3pIPXf8BgAA'
-                '//9jY4AAViDmAGJGIGaB0iDABOQJCfMI8wHZBkDMBlXHgkUfI5I+ASDLEEij'
-                '6yPGPlYeZi6QPgsS9LFAxbfJ3pS7LOsuB9L/Akk/IwH9IPUaeNTDwGBVDwDn'
-                '9/tU/r77zw==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
-        self.assertEqual(module.db_name, "DefaultDB")
-        self.assertEqual(module.sql_file_prefix, "SQL_")
-        self.assertEqual(module.table_prefix, "Test")
-        self.assertTrue(module.wants_agg_mean)
-        self.assertFalse(module.wants_agg_median)
-        self.assertTrue(module.wants_agg_std_dev)
-        self.assertEqual(module.objects_choice, E.O_SELECT)
-        self.assertEqual(len(module.objects_list.selections), 1)
-        self.assertEqual(module.objects_list.selections[0], "Nuclei")
-
-    def test_01_02_load_v9(self):
-        data = ('eJztW91u2zYUpl0na9qhSHfTYkUBXg5DKshLXSTpxezE62Yg/lltdBi2YaMl'
-                '2lEriwJFpXGHvccerY+wyz3CRFeKJVauaFlK7EUCBOXQ/M7Hc3gOeehY7cbg'
-                'tHEMa4oK243Bk5FhYtgzERsROjmCFtuDJxQjhnVIrCM4cDHsagxW96F6ePS0'
-                'drR/CL9R1UOQ7iq12ve8x+3nAGzzp3eX/Y+2fLkUurncx4wZ1tjZAhXw0G9/'
-                '792vEDXQ0MSvkOliZ04RtLesERlM7cuP2kR3TdxBk3Bn7+q4kyGmTncUAP2P'
-                'e8YFNvvGOyyYEHR7ic8NxyCWj/f1i62XvIQJvP0z8vYF9YYj6Of++fvR3D8l'
-                'wT8V734cauf962DevxLjzzuh/ru+7LA3cELOjWBYMnp2BD1c7lJj3DtDTmAH'
-                '13OQoGdb0MPljquZ2JDDbwl4Lren/R9Pff4fEvAPBTyXB/iCPXmJx66JKMQX'
-                'NsUOn0jnuuw5wabprODPAXZY8/gDXk3AlyL4EtiX5I0bd1Xde6oCuXi6K+C5'
-                '3KPERmPEPN/P2mXGfyui5xb42QvqtHnRJNAiDLpBQOfJvyifGpq35AF5/kpE'
-                'T2U296uMOwlXjuDKoEPSz3eXOS783iRDZKa218v832Xy/oHAz+UmHiHXZLA1'
-                'QWMMmwbFGiN0utK8L5tvVUm7s+JTwNXOlzhuda+60rjTxmde8yLGo6qo1evI'
-                'v7zmQeSrqvnOQ1pc2nmIwdVk9r/PQDQ/uGxMxvpQ/div2wI+uAL8jv9Mu2+0'
-                'LIYtx2DTJfTI7n9p6g/N9lTQFeqAbl/55Vf9z+pfv2Xul2XXgaCeSfLDbRDl'
-                '57JOLGZj/CbL+jptvibxy8ZDkp7PBT1c9vfZ5rGiD2X1yMbFsvNZS+nHtOus'
-                '7LourkMdYuE86884/w7eEqiZyHH8g+FVrtey9i7CJdV/9wV7ufwTNsZn/OuO'
-                'c36wt7Rl8mxT5jkur18QiseUuJY+tzdJT9z61MemVzErirKC3xong8z8vcw+'
-                'u+q5PI2/0pzvsrY7C1ye8+rVX2tp36K8rSfg0pyj1tneLPaDTbZvHfMxS7+I'
-                '86fUrn+cWZ6f0tQ962xvnnXPOttdT7Bbtu7ZFHtv+rokc467knz7co4rCbi4'
-                '/89dZXwb/HtsHuC2vJ649ZAMX3t1/VzRpqxroXFDw9KxnaO+Tcyr/yOuDrLJ'
-                'k02xt8AVuAJX4ApcPvvFLojuF/ye7xcfyoBNsvem+TeJv6gHClweuDq43rgv'
-                'cDcTVwdF3BW4Yt8rcAWuwBW4AlfgNgn3T2mOKwk4Lod/p8D7/xHiidvnvw71'
-                '3/VlDZumTQl/348qk9lLaY5iEqTPCgBHOfX+nL0DEXofzE7gqQs89UU8ho4t'
-                'ZoymNvXYXEYmiBma0vJbe15rI2jlvGcJvAcC70ESr4M1YumITi85+0GLDN8z'
-                'ge/ZIj58YRPKGNERQ0PkYOW7WcOANP2Gj+NkJ4YvPN9lT3rw+P4Xn4ovAKJx'
-                'NY+3f79Nw1eplHfugejv4+4m4CogGuezuAbLxfVXn+gf2LjO/Zf1c8m7/gOx'
-                'RQ67')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.db_name, "TestDB")
-        self.assertEqual(module.sql_file_prefix, "SQL_")
-        self.assertEqual(module.table_prefix, "Test")
-        self.assertEqual(module.db_host, "imgdb01")
-        self.assertEqual(module.db_user, "cpuser")
-        self.assertEqual(module.db_passwd, "dontpeek")
-        self.assertTrue(module.wants_agg_mean)
-        self.assertFalse(module.wants_agg_median)
-        self.assertTrue(module.wants_agg_std_dev)
-        self.assertEqual(module.objects_choice, E.O_SELECT)
-        self.assertEqual(len(module.objects_list.selections), 1)
-        self.assertEqual(module.objects_list.selections[0], "Cells")
-
-    def test_01_03_load_v10(self):
-        data = ('eJztW91v2zYQl10nW9phSB+GbRgK6LEdYkFOmizJhtZ27CwG/LXabVAEWUZb'
-                'tM1BFgWJSu0N/X/2p+0xj3scacuRzMqVLH8jEiDYd+KPv7vj6USJUilTL2ay'
-                '4qEki6VMPdlCKhSrKiAtbHRPRY3siWcGBAQqItZOxRLWxDK+FeUTUT4+PTg6'
-                'PTwQ92X5RAi3xQqlr+nPPz8Lwjb9/ZLucfvQli3HXDuTa5AQpLXNLSEhfGfr'
-                '7+j+DhgINFT4DqgWNB2Kkb6gtXC9r98fKmHFUmEZdN2N6Va2ug1omJXWCGgf'
-                'rqIeVGvoL8i5MGr2Bt4iE2HNxtv989p7Xkw43loHfzg3qDlc/1lAmp0aoSMw'
-                'rmdx6/3gxC3GxS1B92cuPWt/ITjtEx5xfupqv2vLSFPQLVIsoIqoC9r3VrP+'
-                'ZJ/+Ho3190jIlTMD3LEPbpuzg8llq6lCJATCb3F4Jpf6td+Ktt1pH/wuh2d7'
-                'HfZIMt8DTSJ22ZDMw49p4/eeRj8sbxHCfD0XjDc2ho8JB0L4uKfkvZey8Cnv'
-                'NocfbSP8jv0bxN74GG9cKONg4/yYs5fJOSxqmIiWCYPzTxqnsP6GiXO+p5Ob'
-                'GeM1D9w8xzUxxpcQ6Bl8E6SOfcvFh8k52AKWSsQCK2JiDhmwSbDRX8n4Lpsv'
-                '7cP3hIsXkyvEtMRfVdwAqqfd8/SXrzfSHOMUBJeS5JXUp7C4MNdxWZIH217K'
-                '/jPB/nX2e9p6QX1OLbIOfyGMx5nJqNtWGnJqoefrDsfL5IJGoGYi0nf1syi/'
-                'veYXTZ1eMo3w9p91gKZBdT+56XGoWuaBMdv8eNrzIyXP5mfah+8rzk8m29fT'
-                'XFZSGqN+pq3zqZC4nzxwy7j++sXJKx/P2Q215tzXreN8Y1K97fngLjh/mfy7'
-                'fSJfpZL718krOXly/ff+x+Tz19VfLvPF4s2byuWrq0zy4vqFozurFN+Wyq9G'
-                'jV9IBLUWNX9fRtw6Prhjzm4ms2C8h8Cwo/Dy4zA+JayRjhOZgS4H+o5mk/Jp'
-                'U+bLD51v1eMnzzgfT/vwedXpGlTpHaEkSRPsXuR9bRlrcNnzlEnPoTYlj5aN'
-                'W/Z5uY7+ydLhyu1c9HOP+gcsNlVgmvaT7k3y98LHX6/nApcQtTtseeeWLWRo'
-                'zUnz1HX2O+3jt9c88RwbsG1gS1M2z9+HXpf4+8HDFdl5972Di3E4r/W3Zeb3'
-                'YLGOJbgevB+veogbf9J5kdPRptQ1l90i0hSoz8GOCBfhIlyEi3ARLsJFuIeC'
-                'S7twQd+Xcuafw+nXJvkb4R4mLi1EeR7hIlyEW496E/S5zqb4G+EiXISLcBEu'
-                'wm0y7r+Yg+PXfZjsfr+Dtf/DxeN1nf/R1X7XlptQVXUDs+/xDKk7+GjMlFQM'
-                'lOFXWFKR/i24PshiPLoPT5rjSU/iQQrUCGr1dYOyWQR3AUFNqWBrq1SbGWkZ'
-                'r997glmONzuJtwuBaRlwuHYDDCp1gA6l0lBdGagzVF1jasfvjg//Ecd/NIkf'
-                '9nRsEIIVQEADmFDKDxR1nLMVn+bNjgefe/zjVHr6LP7N5/JNEMbzzMm/u9dh'
-                '+BKJ2GOGc78X9MQHlxDG857h/xWmy/Pnn2k/8nGd208b5xjdZo2Tw5O4t2nY'
-                '/3q2/x/7Ruk9')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        #
-        # Export to database is the last module of four
-        #
-        # MySQL database
-        # Don't store in CSV file
-        # DB name = LeeETD
-        # host is imgdb01
-        # user name is cpuser
-        # don't add a prefix
-        # calculate only aggregate mean per image
-        # calculate only aggregate median per well
-        # Select objects to include
-        # include nuclei
-        #
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.db_host, "imgdb01")
-        self.assertEqual(module.db_name, "LeeETD")
-        self.assertEqual(module.db_user, "cpuser")
-        self.assertFalse(module.want_table_prefix)
-        self.assertTrue(module.wants_agg_mean)
-        self.assertFalse(module.wants_agg_median)
-        self.assertFalse(module.wants_agg_std_dev)
-        self.assertFalse(module.wants_agg_mean_well)
-        self.assertTrue(module.wants_agg_median_well)
-        self.assertFalse(module.wants_agg_std_dev_well)
-        self.assertEqual(module.objects_choice, E.O_SELECT)
-        self.assertEqual(module.objects_list.value, "Nuclei")
 
     def test_01_04_load_v11(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -1665,11 +1501,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                            (cpmeas.IMAGE, STRING_IMG_MEASUREMENT,
                             cpmeas.COLTYPE_VARCHAR_FORMAT % 40),
                            (cpmeas.IMAGE, OBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
-                           (OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                           (OBJECT_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
                            (OBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
                 if self.in_module(alt_object):
                     columns += [(cpmeas.IMAGE, ALTOBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
-                                (ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                                (ALTOBJECT_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
                                 (ALTOBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
                 if self.in_module(long_measurement):
                     columns += [(cpmeas.IMAGE, LONG_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
@@ -1701,7 +1537,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 return []
 
             def get_categories(self, pipeline, object_name):
-                return ([M_CATEGORY, I.C_NUMBER]
+                return ([M_CATEGORY, cellprofiler.measurement.C_NUMBER]
                         if (object_name == OBJECT_NAME or
                             ((object_name == ALTOBJECT_NAME) and
                              self.in_module(alt_object)))
@@ -1723,8 +1559,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                                 [LONG_IMG_FEATURE] if self.in_module(long_measurement)
                                 else [WIERD_IMG_FEATURE] if self.in_module(wierd_measurement)
                         else [])
-                elif category == I.C_NUMBER and object_name in (OBJECT_NAME, ALTOBJECT_NAME):
-                    return I.FTR_OBJECT_NUMBER
+                elif category == cellprofiler.measurement.C_NUMBER and object_name in (OBJECT_NAME, ALTOBJECT_NAME):
+                    return cellprofiler.measurement.FTR_OBJECT_NUMBER
                 elif category == "Count" and object_name == cpmeas.IMAGE:
                     result = [OBJECT_NAME]
                     if self.in_module(alt_object):
@@ -1744,11 +1580,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
             m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
             m.add_image_measurement(OBJECT_COUNT_MEASUREMENT, len(OBJ_VALUE))
-            m.add_measurement(OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+            m.add_measurement(OBJECT_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                               np.arange(len(OBJ_VALUE)) + 1)
             m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE.copy())
             if TestModule.in_measurements(alt_object):
-                m.add_measurement(ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                m.add_measurement(ALTOBJECT_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                                   np.arange(100) + 1)
                 m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
                 m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT, ALTOBJ_VALUE)
@@ -2023,7 +1859,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             statement = ("select ImageNumber, ObjectNumber, %s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT,
-                          OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          OBJECT_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                           module.table_prefix.value))
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2091,9 +1927,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                          "%s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT,
-                          OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          OBJECT_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                           ALTOBJECT_NAME, OBJ_MEASUREMENT,
-                          ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          ALTOBJECT_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
                           module.table_prefix.value))
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2983,9 +2819,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                                   for field in fields])
         statement = ("select ImageNumber, %s_%s, %s "
                      "from %sPer_%s order by ImageNumber, %s_%s" %
-                     (object_name, I.M_NUMBER_OBJECT_NUMBER, field_string,
+                     (object_name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, field_string,
                       module.table_prefix.value, object_name, object_name,
-                      I.M_NUMBER_OBJECT_NUMBER))
+                      cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER))
         return statement
 
     def check_experiment_table(self, cursor, module, m):

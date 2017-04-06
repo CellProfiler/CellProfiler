@@ -93,7 +93,6 @@ class FilterObjects(cellprofiler.module.Module):
     variable_revision_number = 7
 
     def create_settings(self):
-        '''Create the initial settings and name the module'''
         self.target_name = cellprofiler.setting.ObjectNameProvider(
             "Name the output objects",
             "FilteredBlue",
@@ -119,7 +118,7 @@ class FilterObjects(cellprofiler.module.Module):
         self.mode = cellprofiler.setting.Choice(
             "Select the filtering mode",
             [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER, MODE_CLASSIFIERS],
-            doc ="""
+            doc="""
             You can choose from the following options:
             <ul>
                 <li><i>{MODE_MEASUREMENTS}</i>: Specify a per-object measurement made by an upstream module in
@@ -458,7 +457,6 @@ class FilterObjects(cellprofiler.module.Module):
             )
         )
 
-
         group.append("divider", cellprofiler.setting.Divider(line=False))
 
         self.additional_objects.append(group)
@@ -502,8 +500,7 @@ class FilterObjects(cellprofiler.module.Module):
                 self.wants_outlines, self.outlines_name]
 
     def visible_settings(self):
-        result =[self.target_name, self.object_name,
-                 self.spacer_2, self.mode]
+        result = [self.target_name, self.object_name, self.spacer_2, self.mode]
 
         if self.mode == MODE_RULES or self.mode == MODE_CLASSIFIERS:
             result += [self.rules_file_name, self.rules_directory,
@@ -552,11 +549,9 @@ class FilterObjects(cellprofiler.module.Module):
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
-        if (self.mode == MODE_MEASUREMENTS and
-            self.filter_choice == FI_LIMITS):
+        if self.mode == MODE_MEASUREMENTS and self.filter_choice == FI_LIMITS:
             for group in self.measurements:
-                if (group.wants_minimum.value == False and
-                    group.wants_maximum.value == False):
+                if not (group.wants_minimum.value or group.wants_maximum.value):
                     raise cellprofiler.setting.ValidationError(
                         'Please enter a minimum and/or maximum limit for your measurement',
                         group.wants_minimum)
@@ -859,8 +854,7 @@ class FilterObjects(cellprofiler.module.Module):
             #
             fn = scipy.ndimage.maximum_position if wants_max else scipy.ndimage.minimum_position
             best_pos = fn(src_values, enclosing_labels, enclosing_range)
-            best_pos = numpy.array((best_pos,) if isinstance(best_pos, tuple)
-                                else best_pos)
+            best_pos = numpy.array((best_pos,) if isinstance(best_pos, tuple) else best_pos)
             best_pos = best_pos.astype(numpy.uint32)
             #
             # Get the label of the pixel at each location
@@ -919,10 +913,10 @@ class FilterObjects(cellprofiler.module.Module):
         # the following histogram has a value > 0 for any object
         # with a border pixel
         #
-        histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
-                                             (border_labels,
-                                           numpy.zeros(border_labels.shape))),
-                                            shape=(numpy.max(border_labeled_image) + 1, 1)).todense()
+        histogram = scipy.sparse.coo_matrix(
+            (numpy.ones(border_labels.shape), (border_labels, numpy.zeros(border_labels.shape))),
+            shape=(numpy.max(border_labeled_image) + 1, 1)
+        ).todense()
         histogram = numpy.array(histogram).flatten()
         if any(histogram[1:] > 0):
             histogram_image = histogram[border_labeled_image]
@@ -1126,11 +1120,10 @@ class FilterObjects(cellprofiler.module.Module):
         from_matlab - true if file was saved by Matlab CP
         '''
 
-        DIR_DEFAULT_INPUT = "Default input folder"
-        DIR_DEFAULT_OUTPUT = "Default output folder"
+        dir_default_input = "Default input folder"
+        dir_default_output = "Default output folder"
 
-        if (module_name == 'KeepLargestObject' and from_matlab
-            and variable_revision_number == 1):
+        if (module_name == 'KeepLargestObject' and from_matlab and variable_revision_number == 1):
             #
             # This is a specialized case:
             # The filtering method is FI_MAXIMAL_PER_OBJECT to pick out
@@ -1149,8 +1142,7 @@ class FilterObjects(cellprofiler.module.Module):
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
-        if (module_name == 'FilterByObjectMeasurement' and from_matlab and
-            variable_revision_number == 5):
+        if (module_name == 'FilterByObjectMeasurement' and from_matlab and variable_revision_number == 5):
             #
             # Swapped first two measurements
             #
@@ -1158,8 +1150,7 @@ class FilterObjects(cellprofiler.module.Module):
                               setting_values[2:])
             variable_revision_number = 6
 
-        if (module_name == 'FilterByObjectMeasurement' and from_matlab and
-            variable_revision_number == 6):
+        if (module_name == 'FilterByObjectMeasurement' and from_matlab and variable_revision_number == 6):
             # The measurement may not be correct here - it will display
             # as an error, though
             measurement = '_'.join((setting_values[2],
@@ -1191,8 +1182,7 @@ class FilterObjects(cellprofiler.module.Module):
             module_name = self.module_name
             from_matlab = False
             variable_revision_number = 1
-        if (from_matlab and module_name == 'FilterByObjectMeasurement' and
-            variable_revision_number == 7):
+        if (from_matlab and module_name == 'FilterByObjectMeasurement' and variable_revision_number == 7):
             #
             # Added rules file name and rules path name
             #
@@ -1208,13 +1198,13 @@ class FilterObjects(cellprofiler.module.Module):
             measurement = "_".join(parts)
             if rules_file_name == cellprofiler.setting.DO_NOT_USE:
                 rules_or_measurements = MODE_MEASUREMENTS
-                rules_directory_choice = DIR_DEFAULT_INPUT
+                rules_directory_choice = dir_default_input
             else:
                 rules_or_measurements = MODE_RULES
                 if rules_path_name == '.':
-                    rules_directory_choice = DIR_DEFAULT_OUTPUT
+                    rules_directory_choice = dir_default_output
                 elif rules_path_name == '&':
-                    rules_directory_choice = DIR_DEFAULT_INPUT
+                    rules_directory_choice = dir_default_input
                 else:
                     rules_directory_choice = DIR_CUSTOM
             if min_value1 == 'No minimum':
@@ -1259,7 +1249,7 @@ class FilterObjects(cellprofiler.module.Module):
             # Added CPA rules
             #
             setting_values = (setting_values[:11] +
-                              [MODE_MEASUREMENTS, DIR_DEFAULT_INPUT, "."] +
+                              [MODE_MEASUREMENTS, dir_default_input, "."] +
                               setting_values[11:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
@@ -1325,9 +1315,9 @@ class FilterObjects(cellprofiler.module.Module):
                 [PO_BOTH] + setting_values[FIXED_SETTING_COUNT_V6:]
             variable_revision_number = 7
 
-        SLOT_DIRECTORY = 7
-        setting_values[SLOT_DIRECTORY] = cellprofiler.setting.DirectoryPath.upgrade_setting(
-            setting_values[SLOT_DIRECTORY])
+        slot_directory = 7
+        setting_values[slot_directory] = cellprofiler.setting.DirectoryPath.upgrade_setting(
+            setting_values[slot_directory])
 
         return setting_values, variable_revision_number, from_matlab
 

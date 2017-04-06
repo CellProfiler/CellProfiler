@@ -1196,8 +1196,7 @@ class FloatRange(Range):
         maxval - the maximum acceptable value of either
         """
         smin, smax = [(u"%f" % v).rstrip("0") for v in value]
-        text_value = ",".join([x + "0" if x.endswith(".") else ""
-                               for x in smin, smax])
+        text_value = ",".join([x + "0" if x.endswith(".") else x for x in smin, smax])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
@@ -1674,10 +1673,8 @@ class Choice(Setting):
 
 
 class StructuringElement(Setting):
-    def __init__(self, shape="disk", size=1):
-        self.shape = shape
-        self.size = size
-        super(StructuringElement, self).__init__("Structuring element", self.get_value())
+    def __init__(self, text="Structuring element", value="disk,1", doc=None):
+        super(StructuringElement, self).__init__(text, value, doc=doc)
 
     @staticmethod
     def get_choices():
@@ -1693,6 +1690,25 @@ class StructuringElement(Setting):
 
     def get_value(self):
         return getattr(skimage.morphology, self.shape)(self.size)
+
+    def set_value(self, value):
+        self.value_text = value
+
+    @property
+    def shape(self):
+        return str(self.value_text.split(",")[0])
+
+    @shape.setter
+    def shape(self, value):
+        self.value_text = ",".join((value, str(self.size)))
+
+    @property
+    def size(self):
+        return int(self.value_text.split(",")[1])
+
+    @size.setter
+    def size(self, value):
+        self.value_text = ",".join((self.shape, str(value)))
 
 
 class CustomChoice(Choice):

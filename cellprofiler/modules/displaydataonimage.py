@@ -1,4 +1,4 @@
-'''<b>Display Data On Image</b> 
+'''<b>Display Data On Image</b>
 produces an image with measured data on top of identified objects.
 <hr>
 This module displays either a single image measurement on an image of
@@ -16,7 +16,7 @@ import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"

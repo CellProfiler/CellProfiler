@@ -153,14 +153,14 @@ class CorrectIlluminationCalculate(cpm.Module):
             <ul>
             <li><i>%(YES)s:</i> Rescaling is recommended if you plan to
             use the <i>%(IC_REGULAR)s</i> method (and hence, the <i>%(DOS_DIVIDE)s</i> option in
-            <b>CorrectIlluminationApply</b>) so that the corrected images are in the
-            range 0 to 1.</li>
+            <b>CorrectIlluminationApply</b>). Rescaling the illumination function to >1 ensures 
+            that the values in your corrected image will stay between 0-1 after division. </li>
             <li><i>%(NO)s:</i> Rescaling is not recommended if you plan to use the <i>%(IC_BACKGROUND)s</i>
-            method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>.
-            Note that as a result of the illumination function being rescaled from 1 to
-            infinity, the rescaling of each image might be dramatic if there is substantial
-            variation across the field of view, causing the corrected images
-            to be very dark. </li>
+            method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>.  
+            Because rescaling causes the illumination function to have values from 1 to infinity, 
+            subtracting those values from your image would cause the corrected images to be very dark, 
+            even negative.
+            </li>
             <li>%(RE_MEDIAN)s<i>:</i> This option chooses the median value in the
             image to rescale so that division increases some values and decreases others.</li>
             </ul>''' % globals())

@@ -69,10 +69,12 @@ as video tutorials.</p>
 
 import logging
 import os
+import re
 import sys
 import urllib2
 import xml.dom.minidom as DOM
 
+import cellprofiler.measurement
 import matplotlib.mlab as mlab
 import numpy as np
 import scipy.ndimage as scind
@@ -81,6 +83,7 @@ from scipy.io import loadmat
 from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
+import cellprofiler
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
@@ -671,7 +674,6 @@ class UntangleWorms(cpm.Module):
     def post_group(self, workspace, grouping):
         '''Write the training data file as we finish grouping.'''
         if self.mode == MODE_TRAIN:
-            from cellprofiler.utilities.version import version_number
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
             #
             # Either get weights from our instance or instantiate
@@ -741,7 +743,7 @@ class UntangleWorms(cpm.Module):
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
             for tag, value in (
-                    (T_VERSION, version_number),
+                    (T_VERSION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))),
                     (T_MIN_AREA, min_area),
                     (T_MAX_AREA, max_area),
                     (T_COST_THRESHOLD, max_cost),
@@ -870,9 +872,9 @@ class UntangleWorms(cpm.Module):
             else:
                 center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
                 center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
-            measurements.add_measurement(name, I.M_LOCATION_CENTER_X, center_x)
-            measurements.add_measurement(name, I.M_LOCATION_CENTER_Y, center_y)
-            measurements.add_measurement(name, I.M_NUMBER_OBJECT_NUMBER, o.indices)
+            measurements.add_measurement(name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x)
+            measurements.add_measurement(name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y)
+            measurements.add_measurement(name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, o.indices)
             #
             # Save outlines
             #
@@ -1789,12 +1791,13 @@ class UntangleWorms(cpm.Module):
             # Find all segments from the end branch
             #
             direction = graph.incidence_directions[end_branch_area, last_segment]
-            last_coord = graph.segments[last_segment][direction][-1]
+
+            last_coord = graph.segments[last_segment][int(direction)][-1]
             for j in graph.incident_segments[end_branch_area]:
                 if j in unfinished_segment:
                     continue  # segment already in the path
                 direction = not graph.incidence_directions[end_branch_area, j]
-                first_coord = graph.segments[j][direction][0]
+                first_coord = graph.segments[j][int(direction)][0]
                 gap_length = np.sqrt(np.sum((last_coord - first_coord) ** 2))
                 next_length = current_length + gap_length + graph.segment_lengths[j]
                 if next_length > max_length:
@@ -2393,29 +2396,29 @@ class UntangleWorms(cpm.Module):
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [I.C_COUNT]
+            return [cellprofiler.measurement.C_COUNT]
         if ((object_name == self.overlap_objects.value and
                      self.overlap in (OO_BOTH, OO_WITH_OVERLAP)) or
                 (object_name == self.nonoverlapping_objects.value and
                          self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP))):
-            return [I.C_LOCATION, I.C_NUMBER, C_WORM]
+            return [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER, C_WORM]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if object_name == cpmeas.IMAGE and category == I.C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.C_COUNT:
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
                 result += [self.nonoverlapping_objects.value]
         if ((wants_overlapping and object_name == self.overlap_objects) or
                 (wants_nonoverlapping and object_name == self.nonoverlapping_objects)):
-            if category == I.C_LOCATION:
-                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
-            elif category == I.C_NUMBER:
-                result += [I.FTR_OBJECT_NUMBER]
+            if category == cellprofiler.measurement.C_LOCATION:
+                result += [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
+            elif category == cellprofiler.measurement.C_NUMBER:
+                result += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
             elif category == C_WORM:
                 result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result

@@ -28,6 +28,8 @@ See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>Con
 
 import logging
 
+import cellprofiler.measurement
+
 logger = logging.getLogger(__name__)
 
 import os
@@ -233,10 +235,10 @@ class EditObjectsManually(I.Identify):
         m = workspace.measurements
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(filtered_objects_name,
-                          I.FF_PARENT % orig_objects_name,
+                          cellprofiler.measurement.FF_PARENT % orig_objects_name,
                           parents)
         m.add_measurement(orig_objects_name,
-                          I.FF_CHILDREN_COUNT % filtered_objects_name,
+                          cellprofiler.measurement.FF_CHILDREN_COUNT % filtered_objects_name,
                           child_count)
         #
         # The object count
@@ -449,10 +451,10 @@ class EditObjectsManually(I.Identify):
         filtered_image_name = self.filtered_objects.value
         columns = I.get_object_measurement_columns(filtered_image_name)
         columns += [(orig_image_name,
-                     I.FF_CHILDREN_COUNT % filtered_image_name,
+                     cellprofiler.measurement.FF_CHILDREN_COUNT % filtered_image_name,
                      cpmeas.COLTYPE_INTEGER),
                     (filtered_image_name,
-                     I.FF_PARENT % orig_image_name,
+                     cellprofiler.measurement.FF_PARENT % orig_image_name,
                      cpmeas.COLTYPE_INTEGER)]
         return columns
 

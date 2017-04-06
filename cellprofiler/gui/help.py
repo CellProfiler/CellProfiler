@@ -1724,6 +1724,11 @@ can run ImageJ 1.0 plugins, but there may be incompatibilities.</li></ul>"""
 CHECK_FOR_UPDATES_HELP = """
 Controls whether CellProfiler looks for updates on startup."""
 
+SHOW_TELEMETRY_HELP = """
+Allow limited and anonymous usage statistics and exception reports to be sent
+to the CellProfiler team to help improve CellProfiler.
+"""
+
 SHOW_STARTUP_BLURB_HELP = """
 Controls whether CellProfiler displays an orientation message on startup."""
 
@@ -2405,10 +2410,14 @@ for you. If you have defined a plate metadata tag (with the name, "Plate"),
 the plate viewer will group your images by plate and display a choice box
 that lets you pick the plate to display.
 <p>
-Click on a well to see the images for that well. Channels are composited together if there is more
-than one channel and you can control the color used to display each channel.
-If you have more than one site per well and have site metadata (with the name,
-"Site"), the plate viewer will tile the sites when displaying.
+Click on a well to see the images for that well. If you have more than one site 
+per well and have site metadata (with the name, "Site"), the plate viewer will 
+tile the sites when displaying, and the values under "X" and "Y" determine the 
+position of each site in the tiled grid.
+<p>
+The values for "Red", "Green", and "Blue" in each row are brightness multipliers- 
+changing the values will determine the color and scaling used to display each 
+channel.  "Alpha" determines the weight each channel contributes to the summed image.  
 """
 
 #########################################################

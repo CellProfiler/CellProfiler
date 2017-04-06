@@ -1,12 +1,12 @@
 import bioformats.formatreader
 import ctypes
+import cellprofiler
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
-import cellprofiler.utilities.version
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
@@ -107,7 +107,8 @@ def main(args=None):
     if options.data_file is not None:
         cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
 
-    cellprofiler.utilities.cpjvm.cp_start_vm()
+    if not options.show_gui:
+        cellprofiler.utilities.cpjvm.cp_start_vm()
 
     if options.image_set_file is not None:
         cellprofiler.preferences.set_image_set_file(options.image_set_file)
@@ -151,7 +152,8 @@ def main(args=None):
     elif options.run_pipeline:
         run_pipeline_headless(options, args)
 
-    stop_cellprofiler()
+    if not options.show_gui:
+        stop_cellprofiler()
 
 
 def __version__(exit_code):
@@ -162,6 +164,12 @@ def __version__(exit_code):
 
 def stop_cellprofiler():
     cellprofiler.utilities.zmqrequest.join_to_the_boundary()
+
+    # Bioformats readers have to be properly closed.
+    # This is especially important when using OmeroReaders as leaving the
+    # readers open leaves the OMERO.server services open which in turn leads to
+    # high memory consumption.
+    bioformats.formatreader.clear_image_reader_cache()
 
     cellprofiler.utilities.cpjvm.cp_stop_vm()
 

@@ -52,6 +52,7 @@ import traceback
 import urllib
 import urlparse
 
+import cellprofiler.measurement
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -79,11 +80,12 @@ from cellprofiler.preferences import \
     get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
     get_headless
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
-from cellprofiler.gui.errordialog import show_warning
 
 from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \
     C_OBJECTS_URL
+import numpy
+import skimage.io
 
 '''STK TIFF Tag UIC1 - for MetaMorph internal use'''
 UIC1_TAG = 33628
@@ -2273,11 +2275,11 @@ class LoadImages(cpmodule.Module):
 
     def display(self, workspace, figure):
         if self.show_window:
-            if hasattr(workspace.display_data, "warning"):
-                show_warning("Images have different sizes",
-                             workspace.display_data.warning,
-                             get_show_report_bad_sizes_dlg,
-                             set_show_report_bad_sizes_dlg)
+            # if hasattr(workspace.display_data, "warning"):
+            #     show_warning("Images have different sizes",
+            #                  workspace.display_data.warning,
+            #                  get_show_report_bad_sizes_dlg,
+            #                  set_show_report_bad_sizes_dlg)
 
             figure.set_subplots((1, 1))
             figure.subplot_table(0, 0,
@@ -2706,9 +2708,9 @@ class LoadImages(cpmodule.Module):
                 res += [cpmeas.C_METADATA]
             if len(object_names) > 0:
                 res += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
-                        C_OBJECTS_URL, I.C_COUNT]
+                        C_OBJECTS_URL, cellprofiler.measurement.C_COUNT]
         elif object_name in object_names:
-            res += [I.C_LOCATION, I.C_NUMBER]
+            res += [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER]
         return res
 
     def get_measurements(self, pipeline, object_name, category):
@@ -2723,17 +2725,17 @@ class LoadImages(cpmodule.Module):
                   if channel.image_object_choice == IO_OBJECTS]
                  for image in self.images], [])
         if object_name == cpmeas.IMAGE:
-            if category == I.C_COUNT:
+            if category == cellprofiler.measurement.C_COUNT:
                 result += object_names
             else:
                 result += [c[1].split('_', 1)[1]
                            for c in self.get_measurement_columns(pipeline)
                            if c[1].split('_')[0] == category]
         elif object_name in object_names:
-            if category == I.C_NUMBER:
-                result += [I.FTR_OBJECT_NUMBER]
-            elif category == I.C_LOCATION:
-                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
+            if category == cellprofiler.measurement.C_NUMBER:
+                result += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.measurement.C_LOCATION:
+                result += [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
         return result
 
     def get_measurement_columns(self, pipeline):
@@ -3181,18 +3183,21 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
-
-    def __init__(self, name, pathname, filename, rescale=True,
-                 series=None, index=None, channel=None):
+    def __init__(self, name, pathname, filename, rescale=True, series=None, index=None, channel=None, volume=False, spacing=None):
         super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
         self.rescale = rescale
         self.series = series
         self.index = index
         self.channel = channel
+        self.__volume = volume
+        self.__spacing = spacing
 
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
+        if self.__volume:
+            return self.__provide_volume()
+
         from bioformats.formatreader import get_image_reader
         self.cache_file()
         filename = self.get_filename()
@@ -3257,12 +3262,37 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             image.channel_names = list(channel_names)
         return image
 
+    def __provide_volume(self):
+        data = skimage.io.imread(url2pathname(self.get_url()))
+
+        # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
+        if data.dtype in [numpy.int8, numpy.uint8]:
+            self.scale = 255
+        elif data.dtype in [numpy.int16, numpy.uint16]:
+            self.scale = 65535
+        elif data.dtype == numpy.int32:
+            self.scale = 2**32-1
+        elif data.dtype == numpy.uint32:
+            self.scale = 2**32
+        else:
+            self.scale = 1
+
+        return cpimage.Image(
+            image=data,
+            path_name=self.get_pathname(),
+            file_name=self.get_filename(),
+            convert=False,
+            dimensions=3,
+            scale=self.scale,
+            spacing=self.__spacing
+        )
+
 
 class LoadImagesImageProviderURL(LoadImagesImageProvider):
     '''Reference an image via a URL'''
 
     def __init__(self, name, url, rescale=True,
-                 series=None, index=None, channel=None):
+                 series=None, index=None, channel=None, volume=False, spacing=None):
         if url.lower().startswith("file:"):
             path = url2pathname(url)
             pathname, filename = os.path.split(path)
@@ -3270,7 +3300,7 @@ class LoadImagesImageProviderURL(LoadImagesImageProvider):
             pathname = ""
             filename = url
         super(LoadImagesImageProviderURL, self).__init__(
-                name, pathname, filename, rescale, series, index, channel)
+                name, pathname, filename, rescale, series, index, channel, volume, spacing)
         self.url = url
 
     def get_url(self):

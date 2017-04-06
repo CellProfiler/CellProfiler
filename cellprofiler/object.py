@@ -40,6 +40,25 @@ class Objects(object):
         self.__parent_image = None
 
     @property
+    def dimensions(self):
+        if self.__parent_image:
+            return self.__parent_image.dimensions
+
+        shape = self.shape
+
+        return len(shape)
+
+    @property
+    def volumetric(self):
+        return self.dimensions == 3
+
+    @property
+    def masked(self):
+        mask = self.parent_image.mask
+
+        return numpy.logical_and(self.segmented, mask)
+
+    @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
@@ -53,7 +72,7 @@ class Objects(object):
     def __labels_to_segmentation(self, labels):
         dense = downsample_labels(labels)
 
-        if dense.ndim is 3:
+        if dense.ndim == 3:
             z, x, y = dense.shape
         else:
             x, y = dense.shape
@@ -70,7 +89,7 @@ class Objects(object):
 
         assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
 
-        if dense.shape[3] is 1:
+        if dense.shape[3] == 1:
             return dense.reshape(dense.shape[-2:])
 
         return dense.reshape(dense.shape[-3:])
@@ -106,11 +125,15 @@ class Objects(object):
 
     @property
     def shape(self):
-        '''The i and j extents of the labels'''
-        return self.__segmented.shape[-2:]
+        dense, _ = self.__segmented.get_dense()
+
+        if dense.shape[3] == 1:
+            return dense.shape[-2:]
+
+        return dense.shape[-3:]
 
     def get_labels(self):
-        '''Get a set of labels matrices consisting of non-overlapping labels
+        """Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you
         want to use a labels matrix, you have an ambiguous situation and the
@@ -118,10 +141,13 @@ class Objects(object):
         non-overlapping labels.
 
         returns a list of label matrixes and the indexes in each
-        '''
+        """
         dense, indices = self.__segmented.get_dense()
-        return [
-            (dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
+        if dense.shape[3] == 1:
+            return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
+        return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""
@@ -253,7 +279,11 @@ class Objects(object):
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
-        histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+        if self.volumetric:
+            histogram = self.histogram_from_labels(self.segmented, children.segmented)
+        else:
+            histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+
         return self.relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
@@ -306,21 +336,28 @@ class Objects(object):
         # If the labels are different shapes, crop to shared shape.
         #
         common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
-        parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
-        child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+
+        if parent_labels.ndim == 3:
+            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
+            child_labels = child_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
+        else:
+            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
+            child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+
         #
         # Only look at points that are labeled in parent and child
         #
         not_zero = (parent_labels > 0) & (child_labels > 0)
         not_zero_count = numpy.sum(not_zero)
+
         #
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
         #
-        return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
-                                        (parent_labels[not_zero],
-                            child_labels[not_zero])),
-                                       shape=(parent_count + 1, child_count + 1)).toarray()
+        return scipy.sparse.coo_matrix(
+            (numpy.ones((not_zero_count,)), (parent_labels[not_zero], child_labels[not_zero])),
+            shape=(parent_count + 1, child_count + 1)
+        ).toarray()
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):
@@ -836,14 +873,33 @@ def crop_labels_and_image(labels, image):
 
     Assumes that points outside of the common boundary should be masked.
     '''
-    min_height = min(labels.shape[0], image.shape[0])
-    min_width = min(labels.shape[1], image.shape[1])
-    if image.ndim == 2:
-        return (labels[:min_height, :min_width],
-                image[:min_height, :min_width])
-    else:
-        return (labels[:min_height, :min_width],
-                image[:min_height, :min_width, :])
+    min_dim1 = min(labels.shape[0], image.shape[0])
+    min_dim2 = min(labels.shape[1], image.shape[1])
+
+    if labels.ndim == 3:  # volume
+        min_dim3 = min(labels.shape[2], image.shape[2])
+
+        if image.ndim == 4:  # multichannel volume
+            return (
+                labels[:min_dim1, :min_dim2, :min_dim3],
+                image[:min_dim1, :min_dim2, :min_dim3, :],
+            )
+
+        return (
+            labels[:min_dim1, :min_dim2, :min_dim3],
+            image[:min_dim1, :min_dim2, :min_dim3],
+        )
+
+    if image.ndim == 3:  # multichannel image
+        return (
+            labels[:min_dim1, :min_dim2],
+            image[:min_dim1, :min_dim2, :]
+        )
+
+    return (
+        labels[:min_dim1, :min_dim2],
+        image[:min_dim1, :min_dim2]
+    )
 
 
 def size_similarly(labels, secondary):

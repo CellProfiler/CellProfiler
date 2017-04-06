@@ -203,7 +203,7 @@ class MeasureImageQuality(cpm.Module):
             image divided by mean image intensity. Since it is tailored for autofocusing
             applications (difference focus for the same field of view), it assumes that the
             overall intensity and the number of objects in the image is constant, making it less
-            useful for comparision images of different fields of view. For distinguishing
+            useful for comparison images of different fields of view. For distinguishing
             extremely blurry images, however, it performs well.</li>
             <li><i>%(F_LOCAL_FOCUS_SCORE)s:</i> A local version of the Focus Score, it subdivides the
             image into non-overlapping tiles, computes the normalized variance for each, and
@@ -817,11 +817,20 @@ class MeasureImageQuality(cpm.Module):
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
-                i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
-                m, n = (np.array(shape) + scale - 1) / scale
-                i = (i * float(m) / float(shape[0])).astype(int)
-                j = (j * float(n) / float(shape[1])).astype(int)
-                grid = i * n + j + 1
+                if image.dimensions is 2:
+                    i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
+                    m, n = (np.array(shape) + scale - 1) / scale
+                    i = (i * float(m) / float(shape[0])).astype(int)
+                    j = (j * float(n) / float(shape[1])).astype(int)
+                    grid = i * n + j + 1
+                else:
+                    k, i, j = np.mgrid[0:shape[0], 0:shape[1], 0:shape[2]].astype(float)
+                    o, m, n = (np.array(shape) + scale - 1) / scale
+                    k = (k * float(o) / float(shape[0])).astype(int)
+                    i = (i * float(m) / float(shape[1])).astype(int)
+                    j = (j * float(n) / float(shape[2])).astype(int)
+                    grid = k * o + i * n + j + 1  # hmm
+
                 if image.has_mask:
                     grid[np.logical_not(image.mask)] = 0
                 grid_range = np.arange(0, m * n + 1, dtype=np.int32)
@@ -997,6 +1006,10 @@ class MeasureImageQuality(cpm.Module):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
+            if image.dimensions is 3:
+                # TODO: calculate "radial power spectrum" for volumes.
+                continue
+
             pixel_data = image.pixel_data
 
             if image.has_mask:
@@ -1039,6 +1052,9 @@ class MeasureImageQuality(cpm.Module):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
+            # TODO: works on 2D slice of image, i suspect the thresholding methods in centrosome aren't working in 3D
+            pixel_data = image.pixel_data.astype(np.float32)
+
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm
                 object_fraction = threshold_group.object_fraction.value
@@ -1048,7 +1064,7 @@ class MeasureImageQuality(cpm.Module):
                 (local_threshold, global_threshold) = \
                     (cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            pixel_data,
                                             mask=image.mask,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
@@ -1058,7 +1074,7 @@ class MeasureImageQuality(cpm.Module):
                      else
                      cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            pixel_data,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
                                             use_weighted_variance=use_weighted_variance,

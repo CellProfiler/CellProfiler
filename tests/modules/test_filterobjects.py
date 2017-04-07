@@ -456,7 +456,6 @@ FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_n
         self.assertEqual(module.measurements[0].measurement, "Texture_Granulectomy")
         self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
         self.assertAlmostEqual(module.measurements[0].max_limit.value, 0.85)
-        self.assertEqual(module.outlines_name, "MyOutlines")
 
     def test_05_05_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -570,8 +569,6 @@ FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:4|show
         for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
-            self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
-            self.assertFalse(group.wants_outlines)
 
     def test_05_07_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -644,8 +641,6 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
-            self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
-            self.assertFalse(group.wants_outlines)
 
     def test_05_08_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -720,8 +715,6 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
-            self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
-            self.assertFalse(group.wants_outlines)
 
     def test_05_09_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -797,8 +790,6 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
-            self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
-            self.assertFalse(group.wants_outlines)
 
     def test_08_01_filter_by_rule(self):
         labels = numpy.zeros((10, 20), int)

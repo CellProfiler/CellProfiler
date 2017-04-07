@@ -62,18 +62,13 @@ FI_LIMITS = "Limits"
 FI_ALL = [FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT, FI_LIMITS]
 
 '''The number of settings for this module in the pipeline if no additional objects'''
-FIXED_SETTING_COUNT = 13
-
 FIXED_SETTING_COUNT_V6 = 12
 
-'''The number of settings per additional object'''
-ADDITIONAL_OBJECT_SETTING_COUNT = 4
-
 '''The location of the setting count'''
-ADDITIONAL_OBJECT_SETTING_INDEX = 11
+ADDITIONAL_OBJECT_SETTING_INDEX = 9
 
 '''The location of the measurements count setting'''
-MEASUREMENT_COUNT_SETTING_INDEX = 10
+MEASUREMENT_COUNT_SETTING_INDEX = 8
 
 MODE_RULES = "Rules"
 MODE_CLASSIFIERS = "Classifiers"
@@ -288,18 +283,6 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             })
         )
 
-        self.wants_outlines = cellprofiler.setting.Binary(
-            "Retain outlines of the identified objects?",
-            False,
-            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
-        )
-
-        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-            "Name the outline image",
-            "FilteredObjects",
-            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
-        )
-
         self.additional_objects = []
 
         self.additional_object_count = cellprofiler.setting.HiddenCount(
@@ -426,22 +409,6 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
         )
 
         group.append(
-            "wants_outlines",
-            cellprofiler.setting.Binary(
-                "Retain outlines of relabeled objects?",
-                False
-            )
-        )
-
-        group.append(
-            "outlines_name",
-            cellprofiler.setting.OutlineNameProvider(
-                "Name the outline image",
-                "OutlinesFilteredGreen"
-            )
-        )
-
-        group.append(
             "remover",
             cellprofiler.setting.RemoveSettingButton(
                 "",
@@ -477,8 +444,6 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             self.mode,
             self.filter_choice,
             self.enclosing_object_name,
-            self.wants_outlines,
-            self.outlines_name,
             self.rules_directory,
             self.rules_file_name,
             self.rules_class,
@@ -491,17 +456,22 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             settings += x.pipeline_settings()
 
         for x in self.additional_objects:
-            settings += [x.object_name, x.target_name, x.wants_outlines, x.outlines_name]
+            settings += [x.object_name, x.target_name]
 
         return settings
 
     def help_settings(self):
-        return [self.y_name, self.x_name, self.mode,
-                self.filter_choice, self.per_object_assignment,
-                self.rules_directory,
-                self.rules_file_name, self.rules_class,
-                self.enclosing_object_name,
-                self.wants_outlines, self.outlines_name]
+        return [
+            self.x_name,
+            self.y_name,
+            self.mode,
+            self.filter_choice,
+            self.per_object_assignment,
+            self.rules_directory,
+            self.rules_file_name,
+            self.rules_class,
+            self.enclosing_object_name
+        ]
 
     def visible_settings(self):
         visible_settings = super(FilterObjects, self).visible_settings()
@@ -541,15 +511,9 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
                         visible_settings += [group.remover]
                     visible_settings += [group.divider]
                 visible_settings += [self.add_measurement_button]
-        visible_settings.append(self.wants_outlines)
-        if self.wants_outlines.value:
-            visible_settings.append(self.outlines_name)
         visible_settings.append(self.spacer_3)
         for x in self.additional_objects:
-            temp = x.visible_settings()
-            if not x.wants_outlines.value:
-                del temp[temp.index(x.wants_outlines) + 1]
-            visible_settings += temp
+            visible_settings += x.visible_settings()
         visible_settings += [self.additional_object_button]
         return visible_settings
 
@@ -626,13 +590,11 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
         #
         # Loop over both the primary and additional objects
         #
-        object_list = ([(self.x_name.value, self.y_name.value,
-                         self.wants_outlines.value, self.outlines_name.value)] +
-                       [(x.object_name.value, x.target_name.value,
-                         x.wants_outlines.value, x.outlines_name.value)
-                        for x in self.additional_objects])
+        object_list = [(self.x_name.value, self.y_name.value)] + [
+            (x.object_name.value, x.target_name.value) for x in self.additional_objects
+        ]
         m = workspace.measurements
-        for src_name, target_name, wants_outlines, outlines_name in object_list:
+        for src_name, target_name in object_list:
             src_objects = workspace.get_objects(src_name)
             target_labels = src_objects.segmented.copy()
             #
@@ -662,14 +624,6 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             workspace.object_set.add_objects(target_objects, target_name)
 
             self.add_measurements(workspace, src_name, target_name)
-
-            #
-            # Add an outline if asked to do so
-            #
-            if wants_outlines:
-                outline_image = cellprofiler.image.Image(centrosome.outline.outline(target_labels) > 0,
-                                                         parent_image=target_objects.parent_image)
-                workspace.image_set.add(outlines_name, outline_image)
 
         if self.show_window:
             src_objects = workspace.get_objects(src_name)
@@ -1270,7 +1224,30 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
 
             y_name = setting_values[0]
 
-            setting_values = [x_name, y_name] + setting_values[2:]
+            measurement_count = int(setting_values[10])
+
+            additional_object_count = int(setting_values[11])
+
+            n_measurement_settings = measurement_count * 5
+
+            additional_object_settings = setting_values[13 + n_measurement_settings:]
+
+            additional_object_names = additional_object_settings[::4]
+
+            additional_target_names = additional_object_settings[1::4]
+
+            new_additional_object_settings = sum(
+                [[object_name, target_name] for object_name, target_name in zip(
+                    additional_object_names,
+                    additional_target_names
+                )],
+                []
+            )
+
+            setting_values = [
+                x_name,
+                y_name
+            ] + setting_values[2:5] + setting_values[7:13 + n_measurement_settings] + new_additional_object_settings
 
             variable_revision_number = 8
 

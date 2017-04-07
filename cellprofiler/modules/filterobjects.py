@@ -660,23 +660,9 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             if src_objects.has_parent_image:
                 target_objects.parent_image = src_objects.parent_image
             workspace.object_set.add_objects(target_objects, target_name)
-            #
-            # Add measurements for the new objects
-            cellprofiler.modules.identify.add_object_count_measurements(m, target_name, new_object_count)
-            cellprofiler.modules.identify.add_object_location_measurements(m, target_name, target_labels)
-            #
-            # Relate the old numbering to the new numbering
-            #
-            m.add_measurement(target_name,
-                              cellprofiler.measurement.FF_PARENT % src_name,
-                              numpy.array(indexes))
-            #
-            # Count the children (0 / 1)
-            #
-            child_count = (label_indexes[1:] > 0).astype(int)
-            m.add_measurement(src_name,
-                              cellprofiler.measurement.FF_CHILDREN_COUNT % target_name,
-                              child_count)
+
+            self.add_measurements(workspace, src_name, target_name)
+
             #
             # Add an outline if asked to do so
             #

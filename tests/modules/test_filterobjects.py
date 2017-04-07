@@ -1029,6 +1029,57 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             numpy.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
             numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
 
+    def test_measurements(self):
+        workspace, module = self.make_workspace(object_dict={
+            INPUT_OBJECTS: numpy.zeros((10, 10), dtype=numpy.uint8),
+            "additional_objects": numpy.zeros((10, 10), dtype=numpy.uint8)
+        })
+
+        module.x_name.value = INPUT_OBJECTS
+
+        module.y_name.value = OUTPUT_OBJECTS
+
+        module.add_additional_object()
+
+        module.additional_objects[0].object_name.value = "additional_objects"
+
+        module.additional_objects[0].target_name.value = "additional_result"
+
+        module.measurements[0].measurement.value = TEST_FTR
+
+        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
+
+        measurements = workspace.measurements
+
+        measurements.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.zeros((0,)))
+
+        module.run(workspace)
+
+        object_names = [(INPUT_OBJECTS, OUTPUT_OBJECTS), ("additional_objects", "additional_result")]
+
+        for input_object_name, output_object_name in object_names:
+            assert measurements.has_current_measurements(
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_COUNT % output_object_name
+            )
+
+            assert measurements.has_current_measurements(
+                input_object_name,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % output_object_name
+            )
+
+            output_object_features = [
+                cellprofiler.measurement.FF_PARENT % input_object_name,
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+            ]
+
+            for feature in output_object_features:
+                assert measurements.has_current_measurements(output_object_name, feature)
+
+
 class FakeClassifier(object):
     def __init__(self, answers, classes):
         '''initializer

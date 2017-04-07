@@ -81,8 +81,8 @@ class TestFilterObjects(unittest.TestCase):
     def test_00_01_zeros_single(self):
         '''Test keep single object on an empty labels matrix'''
         workspace, module = self.make_workspace({INPUT_OBJECTS: numpy.zeros((10, 10), int)})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
         m = workspace.measurements
@@ -96,8 +96,8 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace(
                 {INPUT_OBJECTS: numpy.zeros((10, 10), int),
                  ENCLOSING_OBJECTS: numpy.zeros((10, 10), int)})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
@@ -110,8 +110,8 @@ class TestFilterObjects(unittest.TestCase):
     def test_00_03_zeros_filter(self):
         '''Test object filtering on an empty labels matrix'''
         workspace, module = self.make_workspace({INPUT_OBJECTS: numpy.zeros((10, 10), int)})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
         module.measurements[0].min_limit.value = 0
@@ -131,8 +131,8 @@ class TestFilterObjects(unittest.TestCase):
         expected[labels == 1] = 0
         expected[labels == 2] = 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL
         m = workspace.measurements
@@ -161,8 +161,8 @@ class TestFilterObjects(unittest.TestCase):
         expected[labels == 1] = 0
         expected[labels == 2] = 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
         m = workspace.measurements
@@ -183,8 +183,8 @@ class TestFilterObjects(unittest.TestCase):
         labels[:, 10:] = 2
         workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
                                                  ENCLOSING_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
@@ -206,8 +206,8 @@ class TestFilterObjects(unittest.TestCase):
         labels[:, 10:] = 2
         workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
                                                  ENCLOSING_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
@@ -228,8 +228,8 @@ class TestFilterObjects(unittest.TestCase):
         expected = sub_labels * (sub_labels != 3)
         workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
                                                  ENCLOSING_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
@@ -251,8 +251,8 @@ class TestFilterObjects(unittest.TestCase):
         expected = sub_labels * (sub_labels != 3)
         workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
                                                  ENCLOSING_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
@@ -280,8 +280,8 @@ class TestFilterObjects(unittest.TestCase):
                 expected[labels == i + 1] = idx
                 idx += 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
         module.measurements[0].wants_minimum.value = True
@@ -310,8 +310,8 @@ class TestFilterObjects(unittest.TestCase):
                 expected[labels == i + 1] = idx
                 idx += 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
         module.measurements[0].min_limit.value = my_min
@@ -339,8 +339,8 @@ class TestFilterObjects(unittest.TestCase):
                 expected[labels == i + 1] = idx
                 idx += 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
         module.measurements[0].min_limit.value = .3
@@ -369,8 +369,8 @@ class TestFilterObjects(unittest.TestCase):
                 expected[labels == i + 1] = idx
                 idx += 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.add_measurement()
         m = workspace.measurements
         for i in range(2):
@@ -407,8 +407,8 @@ class TestFilterObjects(unittest.TestCase):
                 idx += 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels,
                                                  "my_alternates": alternates})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
         module.measurements[0].min_limit.value = my_min
@@ -451,8 +451,8 @@ FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_n
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement))
-        self.assertEqual(module.object_name, "MyObjects")
-        self.assertEqual(module.target_name, "MyFilteredObjects")
+        self.assertEqual(module.x_name, "MyObjects")
+        self.assertEqual(module.y_name, "MyFilteredObjects")
         self.assertEqual(module.measurements[0].measurement, "Texture_Granulectomy")
         self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
         self.assertAlmostEqual(module.measurements[0].max_limit.value, 0.85)
@@ -490,8 +490,8 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
-        self.assertEqual(module.object_name, "Things")
-        self.assertEqual(module.target_name, "FilteredThings")
+        self.assertEqual(module.x_name, "Things")
+        self.assertEqual(module.y_name, "FilteredThings")
         self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
         self.assertEqual(module.rules_directory.dir_choice,
                          cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME)
@@ -546,8 +546,8 @@ FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:4|show
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
-        self.assertEqual(module.target_name, "MyFilteredObjects")
-        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.y_name, "MyFilteredObjects")
+        self.assertEqual(module.x_name, "MyObjects")
         self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
         self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
         self.assertEqual(module.rules_directory.dir_choice, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
@@ -619,8 +619,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
-        self.assertEqual(module.target_name, "MyFilteredObjects")
-        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.y_name, "MyFilteredObjects")
+        self.assertEqual(module.x_name, "MyObjects")
         self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
         self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
         self.assertEqual(module.rules_directory.dir_choice, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
@@ -694,8 +694,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
-        self.assertEqual(module.target_name, "MyFilteredObjects")
-        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.y_name, "MyFilteredObjects")
+        self.assertEqual(module.x_name, "MyObjects")
         self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
         self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
         self.assertEqual(module.per_object_assignment, cellprofiler.modules.filterobjects.PO_BOTH)
@@ -771,8 +771,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
-        self.assertEqual(module.target_name, "MyFilteredObjects")
-        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.y_name, "MyFilteredObjects")
+        self.assertEqual(module.x_name, "MyObjects")
         self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
         self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
         self.assertEqual(module.per_object_assignment, cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP)
@@ -800,70 +800,6 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
             self.assertFalse(group.wants_outlines)
 
-    def test_06_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns function'''
-        workspace, module = self.make_workspace({INPUT_OBJECTS: numpy.zeros((10, 10), int)})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
-        module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
-        m = workspace.measurements
-        m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.zeros((0,)))
-        module.run(workspace)
-        image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
-        result_features = m.get_feature_names(OUTPUT_OBJECTS)
-        object_features = m.get_feature_names(INPUT_OBJECTS)
-        columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 6)
-        for feature in image_features:
-            self.assertTrue(any([(column[0] == cellprofiler.measurement.IMAGE and
-                                  column[1] == feature)
-                                 for column in columns]))
-        for feature in result_features:
-            self.assertTrue(any([(column[0] == OUTPUT_OBJECTS and
-                                  column[1] == feature)
-                                 for column in columns]))
-        for feature in object_features:
-            if feature != TEST_FTR:
-                self.assertTrue(any([(column[0] == INPUT_OBJECTS and
-                                      column[1] == feature)
-                                     for column in columns]))
-
-        for column in columns:
-            self.assertTrue(column[0] in (cellprofiler.measurement.IMAGE, OUTPUT_OBJECTS, INPUT_OBJECTS))
-            if column[0] == cellprofiler.measurement.IMAGE:
-                self.assertTrue(column[1] in image_features)
-            elif column[0] == OUTPUT_OBJECTS:
-                self.assertTrue(column[1] in result_features)
-
-        for feature, coltype in (
-                (cellprofiler.measurement.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.measurement.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER)):
-            fcolumns = [x for x in columns if x[1] == feature]
-            self.assertEqual(
-                    len(fcolumns), 1, "Missing or duplicate column: %s" % feature)
-            self.assertEqual(fcolumns[0][2], coltype)
-
-        m_output_objects_count = \
-            (cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).partition("_")[-1]
-        for object_name, category in (
-                (cellprofiler.measurement.IMAGE, dict(Count=[OUTPUT_OBJECTS])),
-                (INPUT_OBJECTS, {cellprofiler.measurement.C_CHILDREN: [m_output_objects_count]}),
-                (OUTPUT_OBJECTS, {
-                    cellprofiler.measurement.C_LOCATION: [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y],
-                    cellprofiler.measurement.C_PARENT: [INPUT_OBJECTS],
-                    cellprofiler.measurement.C_NUMBER: [cellprofiler.measurement.FTR_OBJECT_NUMBER]})):
-            categories = module.get_categories(None, object_name)
-            for c in category.keys():
-                self.assertTrue(c in categories)
-                ff = module.get_measurements(None, object_name, c)
-                for f in ff:
-                    self.assertTrue(f in category[c])
-
     def test_08_01_filter_by_rule(self):
         labels = numpy.zeros((10, 20), int)
         labels[3:5, 4:9] = 1
@@ -881,12 +817,12 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             fd.write(rules_file_contents)
             fd.close()
             rules_dir, rules_file = os.path.split(rules_path)
-            module.object_name.value = "MyObjects"
+            module.x_name.value = "MyObjects"
             module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
             module.rules_file_name.value = rules_file
             module.rules_directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
             module.rules_directory.custom_path = rules_dir
-            module.target_name.value = "MyTargetObjects"
+            module.y_name.value = "MyTargetObjects"
             module.run(workspace)
             target_objects = workspace.object_set.get_objects("MyTargetObjects")
             target_labels = target_objects.segmented
@@ -916,13 +852,13 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 m.add_measurement("MyObjects", "MyMeasurement",
                                   numpy.array([1.5, 2.3, 1.8]))
                 rules_dir, rules_file = os.path.split(rules_path)
-                module.object_name.value = "MyObjects"
+                module.x_name.value = "MyObjects"
                 module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
                 module.rules_file_name.value = rules_file
                 module.rules_directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
                 module.rules_directory.custom_path = rules_dir
                 module.rules_class.value = rules_class
-                module.target_name.value = "MyTargetObjects"
+                module.y_name.value = "MyTargetObjects"
                 module.run(workspace)
                 target_objects = workspace.object_set.get_objects("MyTargetObjects")
                 target_labels = target_objects.segmented
@@ -943,8 +879,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         expected[4:8, 1:5] = 1
 
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.mode.value = cellprofiler.modules.filterobjects.MODE_BORDER
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -970,8 +906,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
 
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
 
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.mode.value = cellprofiler.modules.filterobjects.MODE_BORDER
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -994,8 +930,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.mode.value = cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL
@@ -1024,8 +960,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         module.mode.value = cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL
@@ -1041,8 +977,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
     def test_11_00_classify_none(self):
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS : numpy.zeros((10, 10), int)})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         with self.make_classifier(module, numpy.zeros(0, int), classes = [1]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(0)
             module.run(workspace)
@@ -1054,8 +990,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         labels[4:7, 4:7] = 1
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS : labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         with self.make_classifier(module, numpy.ones(1, int), classes = [1, 2]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(1)
             module.run(workspace)
@@ -1067,8 +1003,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         labels[4:7, 4:7] = 1
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS : labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         with self.make_classifier(module, numpy.ones(1, int)*2, classes = [1, 2]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(1)
             module.run(workspace)
@@ -1081,8 +1017,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         labels[5:7, 5:7] = 2
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS : labels})
-        module.object_name.value = INPUT_OBJECTS
-        module.target_name.value = OUTPUT_OBJECTS
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
         with self.make_classifier(
             module, numpy.array([1, 2]), classes = [1, 2]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(2)

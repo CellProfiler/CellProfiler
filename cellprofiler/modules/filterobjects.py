@@ -87,31 +87,25 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cellprofiler.module.Module):
-    module_name = 'FilterObjects'
-    category = "Object Processing"
-    variable_revision_number = 7
+class FilterObjects(cellprofiler.module.ObjectProcessing):
+    module_name = "FilterObjects"
+
+    variable_revision_number = 8
 
     def create_settings(self):
-        self.target_name = cellprofiler.setting.ObjectNameProvider(
-            "Name the output objects",
-            "FilteredBlue",
-            doc="Enter a name for the collection of objects that are retained after applying the filter(s)."
-        )
+        super(FilterObjects, self).create_settings()
 
-        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
-            "Select the object to filter",
-            cellprofiler.setting.NONE,
-            doc="""
-            Select the set of objects that you want to filter. This setting
-            also controls which measurement choices appear for filtering:
-            you can only filter based on measurements made on the object you select.
-            If you intend to use a measurement
-            calculated by the <b>CalculateMath</b> module to to filter objects, select
-            the first operand's object here, because <b>CalculateMath</b> measurements
-            are stored with the first operand's object.
-            """
-        )
+        self.x_name.doc="""
+        Select the set of objects that you want to filter. This setting
+        also controls which measurement choices appear for filtering:
+        you can only filter based on measurements made on the object you select.
+        If you intend to use a measurement
+        calculated by the <b>CalculateMath</b> module to to filter objects, select
+        the first operand's object here, because <b>CalculateMath</b> measurements
+        are stored with the first operand's object.
+        """
+
+        self.y_name.doc = "Enter a name for the collection of objects that are retained after applying the filter(s)."
 
         self.spacer_1 = cellprofiler.setting.Divider(line=False)
 
@@ -350,7 +344,7 @@ class FilterObjects(cellprofiler.module.Module):
             "measurement",
             cellprofiler.setting.Measurement(
                 "Select the measurement to filter by",
-                self.object_name.get_value,
+                self.x_name.get_value,
                 "AreaShape_Area",
                 doc="""
                 <i>(Used only if filtering using {MODE_MEASUREMENTS})</i><br>
@@ -477,22 +471,32 @@ class FilterObjects(cellprofiler.module.Module):
             self.add_measurement()
 
     def settings(self):
-        result = [self.target_name, self.object_name, self.mode,
-                  self.filter_choice, self.enclosing_object_name,
-                  self.wants_outlines, self.outlines_name,
-                  self.rules_directory,
-                  self.rules_file_name,
-                  self.rules_class,
-                  self.measurement_count, self.additional_object_count,
-                  self.per_object_assignment]
+        settings = super(FilterObjects, self).settings()
+
+        settings += [
+            self.mode,
+            self.filter_choice,
+            self.enclosing_object_name,
+            self.wants_outlines,
+            self.outlines_name,
+            self.rules_directory,
+            self.rules_file_name,
+            self.rules_class,
+            self.measurement_count,
+            self.additional_object_count,
+            self.per_object_assignment
+        ]
+
         for x in self.measurements:
-            result += x.pipeline_settings()
+            settings += x.pipeline_settings()
+
         for x in self.additional_objects:
-            result += [x.object_name, x.target_name, x.wants_outlines, x.outlines_name]
-        return result
+            settings += [x.object_name, x.target_name, x.wants_outlines, x.outlines_name]
+
+        return settings
 
     def help_settings(self):
-        return [self.target_name, self.object_name, self.mode,
+        return [self.y_name, self.x_name, self.mode,
                 self.filter_choice, self.per_object_assignment,
                 self.rules_directory,
                 self.rules_file_name, self.rules_class,
@@ -500,10 +504,12 @@ class FilterObjects(cellprofiler.module.Module):
                 self.wants_outlines, self.outlines_name]
 
     def visible_settings(self):
-        result = [self.target_name, self.object_name, self.spacer_2, self.mode]
+        visible_settings = super(FilterObjects, self).visible_settings()
+
+        visible_settings += [self.spacer_2, self.mode]
 
         if self.mode == MODE_RULES or self.mode == MODE_CLASSIFIERS:
-            result += [self.rules_file_name, self.rules_directory,
+            visible_settings += [self.rules_file_name, self.rules_directory,
                        self.rules_class]
             self.rules_class.text = "Class number" if self.mode == MODE_RULES \
                 else "Class name"
@@ -513,39 +519,39 @@ class FilterObjects(cellprofiler.module.Module):
                 pass
 
         elif self.mode == MODE_MEASUREMENTS:
-            result += [self.spacer_1, self.filter_choice]
+            visible_settings += [self.spacer_1, self.filter_choice]
             if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
-                result += [self.measurements[0].measurement,
+                visible_settings += [self.measurements[0].measurement,
                            self.measurements[0].divider]
             elif self.filter_choice in (FI_MINIMAL_PER_OBJECT,
                                         FI_MAXIMAL_PER_OBJECT):
-                result += [self.per_object_assignment,
+                visible_settings += [self.per_object_assignment,
                            self.measurements[0].measurement,
                            self.enclosing_object_name,
                            self.measurements[0].divider]
             elif self.filter_choice == FI_LIMITS:
                 for i, group in enumerate(self.measurements):
-                    result += [group.measurement, group.wants_minimum]
+                    visible_settings += [group.measurement, group.wants_minimum]
                     if group.wants_minimum:
-                        result.append(group.min_limit)
-                    result.append(group.wants_maximum)
+                        visible_settings.append(group.min_limit)
+                    visible_settings.append(group.wants_maximum)
                     if group.wants_maximum.value:
-                        result.append(group.max_limit)
+                        visible_settings.append(group.max_limit)
                     if i > 0:
-                        result += [group.remover]
-                    result += [group.divider]
-                result += [self.add_measurement_button]
-        result.append(self.wants_outlines)
+                        visible_settings += [group.remover]
+                    visible_settings += [group.divider]
+                visible_settings += [self.add_measurement_button]
+        visible_settings.append(self.wants_outlines)
         if self.wants_outlines.value:
-            result.append(self.outlines_name)
-        result.append(self.spacer_3)
+            visible_settings.append(self.outlines_name)
+        visible_settings.append(self.spacer_3)
         for x in self.additional_objects:
             temp = x.visible_settings()
             if not x.wants_outlines.value:
                 del temp[temp.index(x.wants_outlines) + 1]
-            result += temp
-        result += [self.additional_object_button]
-        return result
+            visible_settings += temp
+        visible_settings += [self.additional_object_button]
+        return visible_settings
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
@@ -590,7 +596,7 @@ class FilterObjects(cellprofiler.module.Module):
 
     def run(self, workspace):
         '''Filter objects for this image set, display results'''
-        src_objects = workspace.get_objects(self.object_name.value)
+        src_objects = workspace.get_objects(self.x_name.value)
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
         elif self.mode == MODE_MEASUREMENTS:
@@ -620,7 +626,7 @@ class FilterObjects(cellprofiler.module.Module):
         #
         # Loop over both the primary and additional objects
         #
-        object_list = ([(self.object_name.value, self.target_name.value,
+        object_list = ([(self.x_name.value, self.y_name.value,
                          self.wants_outlines.value, self.outlines_name.value)] +
                        [(x.object_name.value, x.target_name.value,
                          x.wants_outlines.value, x.outlines_name.value)
@@ -704,13 +710,13 @@ class FilterObjects(cellprofiler.module.Module):
 
     def display(self, workspace, figure):
         '''Display what was filtered'''
-        src_name = self.object_name.value
+        src_name = self.x_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
         image = workspace.display_data.image
         image_names = workspace.display_data.image_names
         target_objects_segmented = workspace.display_data.target_objects_segmented
 
-        target_name = self.target_name.value
+        target_name = self.y_name.value
 
         if image is None:
             # Oh so sad - no image, just display the old and new labels
@@ -752,7 +758,7 @@ class FilterObjects(cellprofiler.module.Module):
         src_objects - the Objects instance to be filtered
         '''
         measurement = self.measurements[0].measurement.value
-        src_name = self.object_name.value
+        src_name = self.x_name.value
         values = workspace.measurements.get_current_measurement(src_name,
                                                                 measurement)
         if len(values) == 0:
@@ -768,7 +774,7 @@ class FilterObjects(cellprofiler.module.Module):
         src_objects - the Objects instance to be filtered
         '''
         measurement = self.measurements[0].measurement.value
-        src_name = self.object_name.value
+        src_name = self.x_name.value
         enclosing_name = self.enclosing_object_name.value
         src_objects = workspace.get_objects(src_name)
         enclosing_objects = workspace.get_objects(enclosing_name)
@@ -871,7 +877,7 @@ class FilterObjects(cellprofiler.module.Module):
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         '''
-        src_name = self.object_name.value
+        src_name = self.x_name.value
         hits = None
         m = workspace.measurements
         for group in self.measurements:
@@ -1028,7 +1034,7 @@ class FilterObjects(cellprofiler.module.Module):
             features.append(feature_name)
 
         feature_vector = numpy.column_stack([
-            workspace.measurements[self.object_name.value, feature_name]
+            workspace.measurements[self.x_name.value, feature_name]
             for feature_name in features])
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
@@ -1036,56 +1042,10 @@ class FilterObjects(cellprofiler.module.Module):
         return indexes.flatten()
 
     def get_measurement_columns(self, pipeline):
-        '''Return measurement column defs for the parent/child measurement'''
-        object_list = ([(self.object_name.value, self.target_name.value)] +
-                       [(x.object_name.value, x.target_name.value)
-                        for x in self.additional_objects])
-        columns = []
-        for src_name, target_name in object_list:
-            columns += [(target_name,
-                         cellprofiler.measurement.FF_PARENT % src_name,
-                         cellprofiler.measurement.COLTYPE_INTEGER),
-                        (src_name,
-                         cellprofiler.measurement.FF_CHILDREN_COUNT % target_name,
-                         cellprofiler.measurement.COLTYPE_INTEGER)]
-            columns += cellprofiler.modules.identify.get_object_measurement_columns(target_name)
-        return columns
-
-    def get_categories(self, pipeline, object_name):
-        """Return the categories of measurements that this module produces
-
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        """
-        categories = []
-        if object_name == cellprofiler.measurement.IMAGE:
-            categories += ["Count"]
-        elif object_name == self.object_name:
-            categories.append("Children")
-        if object_name == self.target_name.value:
-            categories += ("Parent", "Location", "Number")
-        return categories
-
-    def get_measurements(self, pipeline, object_name, category):
-        """Return the measurements that this module produces
-
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        category - return measurements made in this category
-        """
-        result = []
-
-        if object_name == cellprofiler.measurement.IMAGE:
-            if category == "Count":
-                result += [self.target_name.value]
-        if object_name == self.object_name and category == "Children":
-            result += ["%s_Count" % self.target_name.value]
-        if object_name == self.target_name:
-            if category == "Location":
-                result += ["Center_X", "Center_Y"]
-            elif category == "Parent":
-                result += [self.object_name.value]
-            elif category == "Number":
-                result += ["Object_Number"]
-        return result
+        return super(FilterObjects, self).get_measurement_columns(
+            pipeline,
+            additional_objects=[(x.object_name.value, x.target_name.value) for x in self.additional_objects]
+        )
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file
@@ -1318,6 +1278,15 @@ class FilterObjects(cellprofiler.module.Module):
         slot_directory = 7
         setting_values[slot_directory] = cellprofiler.setting.DirectoryPath.upgrade_setting(
             setting_values[slot_directory])
+
+        if not from_matlab and variable_revision_number == 7:
+            x_name = setting_values[1]
+
+            y_name = setting_values[0]
+
+            setting_values = [x_name, y_name] + setting_values[2:]
+
+            variable_revision_number = 8
 
         return setting_values, variable_revision_number, from_matlab
 

@@ -29,6 +29,7 @@ import numpy
 import scipy
 import scipy.ndimage
 import scipy.sparse
+import skimage.morphology
 
 import cellprofiler.gui.help
 import cellprofiler.image
@@ -572,7 +573,7 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             if self.filter_choice == FI_LIMITS:
                 indexes = self.keep_within_limits(workspace, src_objects)
         elif self.mode == MODE_BORDER:
-            indexes = self.discard_border_objects(workspace, src_objects)
+            indexes = self.discard_border_objects(src_objects)
         elif self.mode == MODE_CLASSIFIERS:
             indexes = self.keep_by_class(workspace, src_objects)
         else:
@@ -840,58 +841,37 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
         indexes = indexes + 1
         return indexes
 
-    def discard_border_objects(self, workspace, src_objects):
+    def discard_border_objects(self, src_objects):
         '''Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         '''
-        labeled_image = src_objects.segmented
+        labels = src_objects.segmented
 
-        border_labeled_image = labeled_image.copy()
+        interior_pixels = skimage.morphology.binary_erosion(numpy.ones_like(labels))
 
-        border_labels = list(border_labeled_image[0, :])
-        border_labels.extend(border_labeled_image[:, 0])
-        border_labels.extend(border_labeled_image[border_labeled_image.shape[0] - 1, :])
-        border_labels.extend(border_labeled_image[:, border_labeled_image.shape[1] - 1])
-        border_labels = numpy.array(border_labels)
-        #
-        # the following histogram has a value > 0 for any object
-        # with a border pixel
-        #
-        histogram = scipy.sparse.coo_matrix(
-            (numpy.ones(border_labels.shape), (border_labels, numpy.zeros(border_labels.shape))),
-            shape=(numpy.max(border_labeled_image) + 1, 1)
-        ).todense()
-        histogram = numpy.array(histogram).flatten()
-        if any(histogram[1:] > 0):
-            histogram_image = histogram[border_labeled_image]
-            border_labeled_image[histogram_image > 0] = 0
-        elif src_objects.has_parent_image:
-            if src_objects.parent_image.has_mask:
-                # The assumption here is that, if nothing touches the border,
-                # the mask is a large, elliptical mask that tells you where the
-                # well is. That's the way the old Matlab code works and it's duplicated here
-                #
-                # The operation below gets the mask pixels that are on the border of the mask
-                # The erosion turns all pixels touching an edge to zero. The not of this
-                # is the border + formerly masked-out pixels.
-                image = src_objects.parent_image
-                mask_border = numpy.logical_not(scipy.ndimage.binary_erosion(image.mask))
-                mask_border = numpy.logical_and(mask_border, image.mask)
-                border_labels = labeled_image[mask_border]
-                border_labels = border_labels.flatten()
-                histogram = scipy.sparse.coo_matrix(
-                    (numpy.ones(border_labels.shape),
-                     (border_labels,
-                      numpy.zeros(border_labels.shape))),
-                    shape=(numpy.max(labeled_image) + 1, 1)).todense()
-                histogram = numpy.array(histogram).flatten()
-                if any(histogram[1:] > 0):
-                    histogram_image = histogram[labeled_image]
-                    border_labeled_image[histogram_image > 0] = 0
+        border_pixels = numpy.logical_not(interior_pixels)
 
-        return numpy.unique(border_labeled_image)[1:]
+        border_labels = set(labels[border_pixels])
+
+        if border_labels == set([0]) and src_objects.has_parent_image and src_objects.parent_image.has_mask:
+            # The assumption here is that, if nothing touches the border,
+            # the mask is a large, elliptical mask that tells you where the
+            # well is. That's the way the old Matlab code works and it's duplicated here
+            #
+            # The operation below gets the mask pixels that are on the border of the mask
+            # The erosion turns all pixels touching an edge to zero. The not of this
+            # is the border + formerly masked-out pixels.
+            mask = src_objects.parent_image.mask
+
+            interior_pixels = skimage.morphology.binary_erosion(mask)
+
+            border_pixels = numpy.logical_not(interior_pixels)
+
+            border_labels = set(labels[border_pixels])
+
+        return list(set(labels.ravel()).difference(border_labels))
 
     def get_rules(self):
         '''Read the rules from a file'''

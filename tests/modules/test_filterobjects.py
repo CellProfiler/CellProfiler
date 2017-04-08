@@ -1070,6 +1070,32 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             for feature in output_object_features:
                 assert measurements.has_current_measurements(output_object_name, feature)
 
+    def test_discard_border_objects_volume(self):
+        labels = numpy.zeros((9, 16, 16), dtype=numpy.uint8)
+        labels[:3, 1:5, 1:5] = 1       # touches bottom z-slice
+        labels[-3:, -5:-1, -5:-1] = 2  # touches top z-slice
+        labels[2:7, 6:10, 6:10] = 3
+        labels[2:5, :5, -5:-1] = 4     # touches top edge
+        labels[6:9, -5:-1, :5] = 5     # touches left edge
+
+        expected = numpy.zeros_like(labels)
+        expected[2:7, 6:10, 6:10] = 1
+
+        src_objects = cellprofiler.object.Objects()
+        src_objects.segmented = labels
+
+        workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
+
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
+        module.mode.value = cellprofiler.modules.filterobjects.MODE_BORDER
+
+        module.run(workspace)
+
+        output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+
+        numpy.testing.assert_array_equal(output_objects.segmented, expected)
+
 
 class FakeClassifier(object):
     def __init__(self, answers, classes):

@@ -48,21 +48,9 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
             "Skeleton"
         )
 
-        self.branches_name = cellprofiler.setting.ImageNameProvider(
-            "Branches",
-            "MeasureSkeletonBranches"
-        )
-
-        self.endpoints_name = cellprofiler.setting.ImageNameProvider(
-            "Endpoints",
-            "MeasureSkeletonEndpoints"
-        )
-
     def settings(self):
         return [
-            self.skeleton_name,
-            self.branches_name,
-            self.endpoints_name
+            self.skeleton_name
         ]
 
     def run(self, workspace):

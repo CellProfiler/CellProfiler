@@ -643,11 +643,11 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             else:
                 image = workspace.image_set.get_image(image_names[0]).pixel_data
 
-            workspace.display_data.src_objects_segmented = \
-                src_objects.segmented
+            workspace.display_data.src_objects_segmented = src_objects.segmented
             workspace.display_data.image_names = image_names
             workspace.display_data.image = image
             workspace.display_data.target_objects_segmented = target_objects.segmented
+            workspace.display_data.dimensions = src_objects.dimensions
 
     def display(self, workspace, figure):
         '''Display what was filtered'''
@@ -656,20 +656,23 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
         image = workspace.display_data.image
         image_names = workspace.display_data.image_names
         target_objects_segmented = workspace.display_data.target_objects_segmented
+        dimensions = workspace.display_data.dimensions
 
         target_name = self.y_name.value
 
         if image is None:
             # Oh so sad - no image, just display the old and new labels
-            figure.set_subplots((1, 2))
+            figure.set_subplots((1, 2), dimensions=dimensions)
             figure.subplot_imshow_labels(0, 0, src_objects_segmented,
-                                         title="Original: %s" % src_name)
+                                         title="Original: %s" % src_name,
+                                         dimensions=dimensions)
             figure.subplot_imshow_labels(0, 1, target_objects_segmented,
                                          title="Filtered: %s" %
                                          target_name,
-                                         sharexy=figure.subplot(0, 0))
+                                         sharexy=figure.subplot(0, 0),
+                                         dimensions=dimensions)
         else:
-            figure.set_subplots((2, 1))
+            figure.set_subplots((2, 1), dimensions=dimensions)
             orig_minus_filtered = src_objects_segmented.copy()
             orig_minus_filtered[target_objects_segmented > 0] = 0
             cplabels = [
@@ -678,19 +681,21 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
                 dict(name="%s removed" % src_name,
                      labels=[orig_minus_filtered])]
             title = "Original: %s, Filtered: %s" % (src_name, target_name)
-            if image.ndim == 3:
+            if image.ndim > dimensions:
                 figure.subplot_imshow_color(
-                    0, 0, image, title=title, cplabels=cplabels)
+                    0, 0, image, title=title, cplabels=cplabels, dimensions=dimensions)
             else:
                 figure.subplot_imshow_grayscale(
-                    0, 0, image, title=title, cplabels=cplabels)
+                    0, 0, image, title=title, cplabels=cplabels, dimensions=dimensions)
 
             statistics = [[numpy.max(src_objects_segmented)],
                           [numpy.max(target_objects_segmented)]]
             figure.subplot_table(
                 1, 0, statistics,
                 row_labels=("Number of objects pre-filtering",
-                            "Number of objects post-filtering"))
+                            "Number of objects post-filtering"),
+                dimensions=dimensions
+            )
 
     def keep_one(self, workspace, src_objects):
         '''Return an array containing the single object to keep

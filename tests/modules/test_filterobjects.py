@@ -424,39 +424,6 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
         self.assertTrue(numpy.all(alternates.segmented == expected_alternates))
 
-    def test_05_00_load_matlab_v5(self):
-        data = """CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:1234
-FromMatlab:True
-
-FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_number:5|show_window:False|notes:\x5B\x5D]
-    Which object would you like to filter by, or if using a Ratio, what is the numerator object?:MyObjects
-    What do you want to call the filtered objects?:MyFilteredObjects
-    Which category of measurements would you want to filter by?:Texture
-    Which feature do you want to use? (Enter the feature number or name - see help for details):Granulectomy
-    For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?:MyImage
-    For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?:15
-    Minimum value required:No minimum
-    Maximum value allowed:0.85
-    What do you want to call the outlines of the identified objects (optional)?:MyOutlines
-"""
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement))
-        self.assertEqual(module.x_name, "MyObjects")
-        self.assertEqual(module.y_name, "MyFilteredObjects")
-        self.assertEqual(module.measurements[0].measurement, "Texture_Granulectomy")
-        self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
-        self.assertAlmostEqual(module.measurements[0].max_limit.value, 0.85)
-
     def test_05_05_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

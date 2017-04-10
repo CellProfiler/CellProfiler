@@ -2,6 +2,7 @@ import cellprofiler.module
 import cellprofiler.setting
 import numpy
 import scipy.ndimage
+import skimage.measure
 import skimage.segmentation
 import skimage.util
 
@@ -65,6 +66,8 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
         ]
 
     def run(self, workspace):
+        names = ["Branches", "Endpoints"]
+
         input_image_name = self.skeleton_name.value
 
         image_set = workspace.image_set
@@ -81,6 +84,8 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
 
         endpoint_nodes = endpoints(pixels)
 
+        statistics = self.measure(input_image, workspace)
+
         if self.show_window:
             workspace.display_data.skeleton = pixels
 
@@ -96,8 +101,12 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
 
             workspace.display_data.dimensions = dimensions
 
+            workspace.display_data.names = names
+
+            workspace.display_data.statistics = statistics
+
     def display(self, workspace, figure=None):
-        layout = (2, 1)
+        layout = (2, 2)
 
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions,
@@ -119,3 +128,41 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
             x=1,
             y=0
         )
+
+        figure.subplot_table(
+            col_labels=workspace.display_data.names,
+            dimensions=workspace.display_data.dimensions,
+            statistics=workspace.display_data.statistics,
+            title="Measurement",
+            x=0,
+            y=1
+        )
+
+    def measure(self, image, workspace):
+        data = image.pixel_data
+
+        data = data.astype(numpy.bool)
+
+        measurements = workspace.measurements
+
+        measurement_name = self.skeleton_name.value
+
+        statistics = []
+
+        name = "Skeleton_Branches_{}".format(measurement_name)
+
+        value = numpy.count_nonzero(skimage.measure.label(branches(data)))
+
+        statistics.append(value)
+
+        measurements.add_image_measurement(name, value)
+
+        name = "Skeleton_Endpoints_{}".format(measurement_name)
+
+        value = numpy.count_nonzero(skimage.measure.label(endpoints(data)))
+
+        statistics.append(value)
+
+        measurements.add_image_measurement(name, value)
+
+        return [statistics]

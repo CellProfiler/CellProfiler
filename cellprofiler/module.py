@@ -894,7 +894,7 @@ class ImageProcessing(Module):
             self.__class__.__name__
         )
 
-    def display(self, workspace, figure):
+    def display(self, workspace, figure, cmap=["gray", "gray"]):
         layout = (2, 1)
 
         figure.set_subplots(
@@ -903,7 +903,7 @@ class ImageProcessing(Module):
         )
 
         figure.subplot_imshow(
-            colormap="gray",
+            colormap=cmap[0],
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             x=0,
@@ -911,7 +911,7 @@ class ImageProcessing(Module):
         )
 
         figure.subplot_imshow(
-            colormap="gray",
+            colormap=cmap[1],
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
             x=1,

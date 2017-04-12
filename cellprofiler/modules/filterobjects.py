@@ -30,6 +30,7 @@ import scipy
 import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
+import skimage.segmentation
 
 import cellprofiler.gui.help
 import cellprofiler.image
@@ -673,27 +674,50 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
                                          dimensions=dimensions)
         else:
             figure.set_subplots((2, 1), dimensions=dimensions)
-            orig_minus_filtered = src_objects_segmented.copy()
-            orig_minus_filtered[target_objects_segmented > 0] = 0
-            cplabels = [
-                dict(name=target_name,
-                     labels=[target_objects_segmented]),
-                dict(name="%s removed" % src_name,
-                     labels=[orig_minus_filtered])]
-            title = "Original: %s, Filtered: %s" % (src_name, target_name)
-            if image.ndim > dimensions:
-                figure.subplot_imshow_color(
-                    0, 0, image, title=title, cplabels=cplabels, dimensions=dimensions)
-            else:
-                figure.subplot_imshow_grayscale(
-                    0, 0, image, title=title, cplabels=cplabels, dimensions=dimensions)
 
-            statistics = [[numpy.max(src_objects_segmented)],
-                          [numpy.max(target_objects_segmented)]]
+            if dimensions == 3:
+                overlay = numpy.zeros(target_objects_segmented.shape + (3,), dtype=image.dtype)
+
+                for idx, plane in enumerate(image):
+                    overlay[idx] = skimage.segmentation.mark_boundaries(
+                        plane,
+                        label_img=src_objects_segmented[idx],
+                        color=(1, 0, 1),
+                        mode="outer"
+                    )
+
+                    overlay[idx] = skimage.segmentation.mark_boundaries(
+                        overlay[idx],
+                        label_img=target_objects_segmented[idx],
+                        color=(0, 1, 0),
+                        mode="outer"
+                    )
+            else:
+                overlay = skimage.segmentation.mark_boundaries(
+                    image,
+                    label_img=src_objects_segmented,
+                    color=(1, 0, 1),
+                    mode="outer"
+                )
+
+                overlay = skimage.segmentation.mark_boundaries(
+                    overlay,
+                    label_img=target_objects_segmented,
+                    color=(0, 1, 0),
+                    mode="outer"
+                )
+
+            title = "Original: %s, Filtered: %s" % (src_name, target_name)
+
+            figure.subplot_imshow(0, 0, overlay, title=title, dimensions=dimensions)
+
+            statistics = [[numpy.max(src_objects_segmented)], [numpy.max(target_objects_segmented)]]
+
             figure.subplot_table(
-                1, 0, statistics,
-                row_labels=("Number of objects pre-filtering",
-                            "Number of objects post-filtering"),
+                1,
+                0,
+                statistics,
+                row_labels=("Number of objects pre-filtering", "Number of objects post-filtering"),
                 dimensions=dimensions
             )
 

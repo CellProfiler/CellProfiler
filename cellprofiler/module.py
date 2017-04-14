@@ -1177,7 +1177,7 @@ class ImageSegmentation(Module):
 class ObjectProcessing(ImageSegmentation):
     category = "Object Processing"
 
-    def add_measurements(self, workspace):
+    def add_measurements(self, workspace, categories=None):
         super(ObjectProcessing, self).add_measurements(workspace)
 
         objects = workspace.object_set.get_objects(self.y_name.value)

@@ -835,7 +835,7 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             #
             # Get the label of the pixel at each location
             #
-            indexes = src_labels[best_pos[:, 0], best_pos[:, 1]]
+            indexes = src_labels[best_pos.transpose().tolist()]
             indexes = set(indexes)
             indexes = list(indexes)
             indexes.sort()

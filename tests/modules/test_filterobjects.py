@@ -1063,6 +1063,128 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
 
         numpy.testing.assert_array_equal(output_objects.segmented, expected)
 
+    def test_keep_maximal_per_object_most_overlap_volume(self):
+        labels = numpy.zeros((1, 10, 20), int)
+        labels[:, :, :10] = 1
+        labels[:, :, 10:] = 2
+
+        sub_labels = numpy.zeros((1, 10, 20), int)
+        sub_labels[:, 2, 4] = 1
+        sub_labels[:, 4:6, 8:15] = 2
+        sub_labels[:, 8, 15] = 3
+
+        expected = sub_labels * (sub_labels != 3)
+
+        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels})
+
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
+        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+
+        m = workspace.measurements
+
+        m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 4, 2]))
+
+        module.run(workspace)
+
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+
+        self.assertTrue(numpy.all(labels.segmented == expected))
+
+    def test_keep_minimal_per_object_both_parents_image(self):
+        labels = numpy.zeros((10, 20), int)
+        labels[:, :10] = 1
+        labels[:, 10:] = 2
+
+        sub_labels = numpy.zeros((10, 20), int)
+        sub_labels[2, 4] = 1
+        sub_labels[4:6, 8:15] = 2
+        sub_labels[8, 15] = 3
+
+        expected = numpy.zeros_like(sub_labels)
+        expected[2, 4] = 1
+        expected[8, 15] = 2
+
+        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels})
+
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
+        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
+        module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_BOTH
+
+        m = workspace.measurements
+
+        m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 4, 2]))
+
+        module.run(workspace)
+
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+
+        self.assertTrue(numpy.all(labels.segmented == expected))
+
+    def test_keep_maximal_both_parents_volume(self):
+        labels = numpy.zeros((2, 10, 20), int)
+        labels[:, :, :10] = 1
+        labels[:, :, 10:] = 2
+
+        sub_labels = numpy.zeros((2, 10, 20), int)
+        sub_labels[:, 2, 4] = 1
+        sub_labels[:, 4:6, 8:15] = 2
+        sub_labels[:, 8, 15] = 3
+
+        expected = numpy.zeros_like(sub_labels)
+        expected[sub_labels == 2] = 1
+
+        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels})
+
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
+        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_BOTH
+
+        m = workspace.measurements
+
+        m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 4, 2]))
+
+        module.run(workspace)
+
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+
+        self.assertTrue(numpy.all(labels.segmented == expected))
+
+    def test_keep_maximal_volume(self):
+        labels = numpy.zeros((2, 10, 20), int)
+        labels[:, 2, 4] = 1
+        labels[:, 4:6, 8:15] = 2
+        labels[:, 8, 15] = 3
+
+        expected = numpy.zeros_like(labels)
+        expected[labels == 2] = 1
+
+        workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
+
+        module.x_name.value = INPUT_OBJECTS
+        module.y_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
+        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
+
+        m = workspace.measurements
+
+        m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 4, 2]))
+
+        module.run(workspace)
+
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+
+        self.assertTrue(numpy.all(labels.segmented == expected))
+
 
 class FakeClassifier(object):
     def __init__(self, answers, classes):

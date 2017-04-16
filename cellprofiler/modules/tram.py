@@ -1,6 +1,6 @@
-
-MEAS_TRAM = "TrAM"
 CAT_TRAM = "TRAM"
+MEAS_TRAM = "TrAM"
+FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_TRAM)
 IMAGE = "Image"
 
 # todo
@@ -89,22 +89,13 @@ class TrAM(cpm.Module):
 
 
     def post_group(self, workspace, grouping): #todo: main routine. In progress
-        pipeline = workspace.pipeline
-        image_set = workspace.image_set
-        object_set = workspace.object_set
         measurements = workspace.measurements
-        frame = workspace.frame
-        display_data = workspace.display_data
-
         obj_name = self.object_name.get_value()
-
-        names = measurements.get_names()
-        cols = measurements.get_measurement_columns()
         obj_names = measurements.get_object_names()
-        group = measurements.get_group_number()
+
 
         # find the tracking label
-        feature_names_list = [measurements.get_feature_names(obj_name) for obj_name in obj_names]
+        feature_names_list = [measurements.get_feature_names(obj_name) for obj_name in obj_names]# todo: make sure obj_names is of length 1?
         feature_names = dict(zip(obj_names, feature_names_list))[obj_name]
         tracking_label_feature_name = [name for name in feature_names if name.startswith("TrackObjects_Label")][0]
         # and get its values
@@ -165,6 +156,11 @@ class TrAM(cpm.Module):
                 normalized_data_dict = {data_keys[i] : normalized_data_for_label[:,i] for i in range(0,len(data_keys)) }
                 tram = self.compute_TrAM(normalized_data_dict)
             tram_dict.update({label : tram})
+
+        tram_data = tram_dict.values()
+
+        for img in img_numbers:
+            workspace.measurements.add_measurement(obj_name, FULL_TRAM_MEAS_NAME, tram_data, image_set_number=img)
 
         pass
 
@@ -258,32 +254,24 @@ class TrAM(cpm.Module):
 
         return [sel for sel in selections if sel.startswith(object_name)]
 
-
     def get_measurement_columns(self, pipeline): #todo: 1st draft. Need to verify correct
-        return [self.object_name.get_value(), MEAS_TRAM, cpmeas.COLTYPE_FLOAT]
+        return [(self.object_name.get_value(), FULL_TRAM_MEAS_NAME, cpmeas.COLTYPE_FLOAT)]
 
-    def get_object_relationships(self, pipeline): #todo: 1st draft. Need to verify
-        '''Return the object relationships produced by this module'''
-        object_name = self.object_name.value
+#    def get_object_relationships(self, pipeline): #todo: 1st draft. Need to verify
+#        '''Return the object relationships produced by this module'''
+#        object_name = self.object_name.value
 
-        return [("Parent", object_name, object_name, cpmeas.MCA_AVAILABLE_POST_GROUP)]
+#        return [("Parent", object_name, object_name, cpmeas.MCA_AVAILABLE_POST_GROUP)]
 
 
     def get_categories(self, pipeline, object_name): #todo.  1st draft need to verify
-        if object_name ==self.object.name:
+        if object_name == self.object_name.get_value():
             return [CAT_TRAM]
         return []
 
     def get_measurements(self, pipeline, object_name, category): #todo: 1st draft
         if object_name == self.object_name.get_value() and category == CAT_TRAM:
             return [MEAS_TRAM]
-        return []
-
-    def get_measurement_objects(self, pipeline, object_name, category,
-                                measurement): #todo: 1st draft
-        if (object_name == self.object_name.get_value() and category == CAT_TRAM and
-                    measurement == MEAS_TRAM):
-            return [self.object_name.value]
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name): # todo: 1st draft

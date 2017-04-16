@@ -1454,6 +1454,7 @@ class TrackObjects(cpm.Module):
     def post_group(self, workspace, grouping):
         # If any tracking method other than LAP, recalculate measurements
         # (Really, only the final age needs to be re-done)
+        logger.info("In post_group")
         image_numbers = self.get_group_image_numbers(workspace)
         if self.tracking_method != TM_LAP:
             m = workspace.measurements

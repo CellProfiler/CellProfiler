@@ -131,15 +131,15 @@
 PACKAGEHOST				= http://cellprofiler.org/linked_files/CPPackageHost/
 
 MAKE_FLAGS				?= -j4
-PREFIX					?= $HOME/usr/CellProfiler
-SRCDIR					?= $HOME/usr/CellProfiler/src/CellProfiler
-TMPDIR					?= $(PREFIX)/tmp
+PREFIX					?= /usr/CellProfiler
+SRCDIR					?= /usr/CellProfiler/src/CellProfiler
+TMPDIR					?= $(PWD)/tmp
 
 # Set DISABLE_PRECHECKS to "YES" (case sensitive!) to explicitly
 # disable prechecks. Disabling is not recommended. It may lead
 # to failed builds because of missing/wrong dependencies.
 DISABLE_PRECHECKS			?= NO
-WXUSEGTK				?= YES
+WXUSEGTK				?= yes
 WGETFLAGS				?= --continue --tries=10 --timeout=60 --no-check-certificate 
 
 # Versions and prefixes of packages:
@@ -1019,8 +1019,8 @@ $(SITEPKGPREFIX)/$(QIMGTOARRVERSION)-py$(PYVERSION).egg-info:	$(SRCDIR)/$(QIMGTO
 
 
 cp2:					cellprofiler
-cellprofiler:				$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py
-$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(H5PYVERSION)-py$(PYVERSION)-linux-i686.egg $(SCIPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(SCIPYVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/vigra/vigranumpycore.so $(SITEPKGPREFIX)/ilastik-$(ILASTIKMAJVERSION)-py$(PYVERSION).egg $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py$(PYVERSION).egg $(PYPIPREFIX)/bin/easy_install $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py$(PYVERSION)-linux-i686.egg $(PYSQLITEPREFIX)/lib/python$(PYVERSION)/site-packages/$(PYSQLITEVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py$(PYVERSION).egg $(PYTHONPREFIX)/bin/pilfile.py
+cellprofiler:				$(CELLPROFILERPREFIX)/CellProfiler.py
+$(CELLPROFILERPREFIX)/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(H5PYVERSION)-py$(PYVERSION)-linux-i686.egg $(SCIPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(SCIPYVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/vigra/vigranumpycore.so $(SITEPKGPREFIX)/ilastik-$(ILASTIKMAJVERSION)-py$(PYVERSION).egg $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py$(PYVERSION).egg $(PYPIPREFIX)/bin/easy_install $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py$(PYVERSION)-linux-i686.egg $(PYSQLITEPREFIX)/lib/python$(PYVERSION)/site-packages/$(PYSQLITEVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py$(PYVERSION).egg $(PYTHONPREFIX)/bin/pilfile.py
 					mkdir -p "$(CELLPROFILERPREFIX)" && \
 					cd "$(CELLPROFILERPREFIX)" && \
 					if test -d "./CellProfiler" ; then \
@@ -1252,10 +1252,10 @@ distclean:				clean
 #
 # Downloads and fetching of sources
 #
-#$(SRCDIR)/findlibjvm.class:
-#					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-#					wget $(WGETFLAGS) "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/findlibjvm.class" && \
-#					touch "$@"
+$(SRCDIR)/findlibjvm.class:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/findlibjvm.class" && \
+					touch "$@"
 
 $(SRCDIR)/$(NUMPYVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \

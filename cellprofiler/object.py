@@ -279,7 +279,11 @@ class Objects(object):
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
-        histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+        if self.volumetric:
+            histogram = self.histogram_from_labels(self.segmented, children.segmented)
+        else:
+            histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+
         return self.relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
@@ -332,21 +336,28 @@ class Objects(object):
         # If the labels are different shapes, crop to shared shape.
         #
         common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
-        parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
-        child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+
+        if parent_labels.ndim == 3:
+            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
+            child_labels = child_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
+        else:
+            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
+            child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+
         #
         # Only look at points that are labeled in parent and child
         #
         not_zero = (parent_labels > 0) & (child_labels > 0)
         not_zero_count = numpy.sum(not_zero)
+
         #
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
         #
-        return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
-                                        (parent_labels[not_zero],
-                            child_labels[not_zero])),
-                                       shape=(parent_count + 1, child_count + 1)).toarray()
+        return scipy.sparse.coo_matrix(
+            (numpy.ones((not_zero_count,)), (parent_labels[not_zero], child_labels[not_zero])),
+            shape=(parent_count + 1, child_count + 1)
+        ).toarray()
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):

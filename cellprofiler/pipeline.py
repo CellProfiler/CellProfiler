@@ -665,8 +665,6 @@ class Pipeline(object):
 
         """
         # clear previously seen errors on reload
-        import cellprofiler.gui.errordialog
-        cellprofiler.gui.errordialog.clear_old_errors()
         import cellprofiler.modules
         reload(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
@@ -958,8 +956,7 @@ class Pipeline(object):
                         "later versions of CellProfiler."
                     ).format(pipeline_version)
                     logging.warning(message)
-            else:
-                pipeline_stats_logger.info("Pipeline saved with CellProfiler version {}".format(pipeline_version))
+
         #
         # The module section
         #

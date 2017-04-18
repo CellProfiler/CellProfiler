@@ -25,7 +25,7 @@ def test_run_without_mask(image, image_set, module, workspace):
     if image.multichannel:
         data = skimage.color.rgb2gray(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         expected_data = skimage.filters.sobel(data)
     else:
         expected_data = numpy.zeros_like(data)
@@ -51,7 +51,7 @@ def test_run_with_mask(image, image_set, module, workspace):
 
     mask_shape = image.pixel_data.shape
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         mask_data = numpy.random.rand(mask_shape[0], mask_shape[1])
 
         mask_data[:5] = 0
@@ -89,7 +89,7 @@ def test_run_with_mask(image, image_set, module, workspace):
     if image.multichannel:
         data = skimage.color.rgb2gray(data)
 
-    if image.dimensions is 2:
+    if image.dimensions == 2:
         expected_data = skimage.filters.sobel(data, mask=mask_data)
     else:
         expected_data = numpy.zeros_like(data)

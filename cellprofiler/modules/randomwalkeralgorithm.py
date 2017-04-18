@@ -4,16 +4,18 @@
 
 Random walker algorithm
 
-Single-channel images can be two-or-three-dimensional and multichannel images can be three-or-four-dimensional.
+Single-channel images can be two-or-three-dimensional.
 
 """
+
+import numpy
+import skimage.color
+import skimage.measure
+import skimage.segmentation
 
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import numpy
-import skimage.measure
-import skimage.segmentation
 
 
 class RandomWalkerAlgorithm(cellprofiler.module.ImageSegmentation):
@@ -75,6 +77,9 @@ class RandomWalkerAlgorithm(cellprofiler.module.ImageSegmentation):
 
         x_data = x.pixel_data
 
+        if x.multichannel:
+            x_data = skimage.color.rgb2gray(x_data)
+
         labels_data = numpy.zeros_like(x_data, numpy.uint8)
 
         labels_data[x_data > self.first_phase.value] = 1
@@ -85,7 +90,7 @@ class RandomWalkerAlgorithm(cellprofiler.module.ImageSegmentation):
             beta=self.beta.value,
             data=x_data,
             labels=labels_data,
-            multichannel=x.multichannel,
+            multichannel=False,
             spacing=x.spacing
         )
 
@@ -99,7 +104,7 @@ class RandomWalkerAlgorithm(cellprofiler.module.ImageSegmentation):
 
         workspace.object_set.add_objects(objects, y_name)
 
-        self.add_measurements(workspace.measurements, y_data)
+        self.add_measurements(workspace)
 
         if self.show_window:
             workspace.display_data.x_data = x_data

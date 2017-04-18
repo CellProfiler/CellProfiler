@@ -21,7 +21,7 @@ def test_run(image, module, image_set, workspace):
     if image.multichannel:
         data = skimage.color.rgb2gray(data)
 
-    if image.dimensions is 3:
+    if image.dimensions == 3:
         expected_data = numpy.zeros_like(data)
 
         for z, img in enumerate(data):

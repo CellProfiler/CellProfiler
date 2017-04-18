@@ -10,7 +10,6 @@ import unittest
 import uuid
 
 import cellprofiler.analysis
-import cellprofiler.gui.errordialog
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
@@ -693,7 +692,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cellprofiler.analysis.ExceptionReport)
-        req.reply(cellprofiler.analysis.ExceptionPleaseDebugReply(disposition = cellprofiler.gui.errordialog.ED_SKIP))
+        req.reply(cellprofiler.analysis.ExceptionPleaseDebugReply(disposition = "Skip"))
         #
         # The worker should send ImageSetSuccess for image set 2 anyway.
         #

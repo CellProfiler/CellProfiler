@@ -25,7 +25,6 @@ setuptools.setup(
     },
     extras_require={
         "application": [
-
         ],
         "test": [
             "pytest"
@@ -40,7 +39,7 @@ setuptools.setup(
         "javabridge",
         "libtiff",
         "mahotas",
-        "matplotlib<2.0.0",
+        "matplotlib",
         "MySQL-python",
         "numpy",
         "prokaryote>=1.0.11",
@@ -48,6 +47,8 @@ setuptools.setup(
         "pytest",
         "python-bioformats",
         "pyzmq",
+        "raven",
+        "requests",
         "scikit-image",
         "scipy"
     ],

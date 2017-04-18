@@ -27,7 +27,7 @@ def test_run_markers(image, module, image_set, workspace):
 
     module.markers_name.value = "markers"
 
-    if image.multichannel or image.dimensions is 3:
+    if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
 
         for idx, data in enumerate(image.pixel_data):
@@ -37,7 +37,7 @@ def test_run_markers(image, module, image_set, workspace):
 
     denoised = denoised.astype(numpy.uint8)
 
-    if image.multichannel or image.dimensions is 3:
+    if image.multichannel or image.dimensions == 3:
         markers = numpy.zeros_like(denoised)
 
         for idx, data in enumerate(denoised):
@@ -56,7 +56,7 @@ def test_run_markers(image, module, image_set, workspace):
         )
     )
 
-    if image.multichannel or image.dimensions is 3:
+    if image.multichannel or image.dimensions == 3:
         gradient = numpy.zeros_like(denoised)
 
         for idx, data in enumerate(denoised):
@@ -74,6 +74,11 @@ def test_run_markers(image, module, image_set, workspace):
     )
 
     module.run(workspace)
+
+    if image.multichannel:
+        gradient = skimage.color.rgb2gray(gradient)
+
+        markers = skimage.color.rgb2gray(markers)
 
     expected = skimage.morphology.watershed(gradient, markers)
 

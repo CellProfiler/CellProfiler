@@ -21,12 +21,10 @@ approach to assigning parent/child relationships, consider using the <b>MaskObje
 
 import re
 
-import centrosome.cpmorphology
-import centrosome.outline
 import numpy
 import scipy.ndimage
+import skimage.segmentation
 
-import cellprofiler.gui.tools
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
@@ -467,7 +465,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
             parents_of_masked = parents_of[mask] - 1
 
-            pperim = centrosome.outline.outline(parents.segmented)
+            pperim = skimage.segmentation.find_boundaries(parents.segmented, mode="inner") * parents.segmented
 
             # Get a list of all points on the perimeter
             perim_loc = numpy.argwhere(pperim != 0)

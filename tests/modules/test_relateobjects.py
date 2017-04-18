@@ -264,39 +264,30 @@ class TestRelateObjects(unittest.TestCase):
         self.assertTrue(numpy.all(numpy.abs(v - expected) < .0001))
 
     def test_04_02_distance_minima(self):
-        '''Check centroid-perimeter distance calculation'''
-        i, j = numpy.mgrid[0:14, 0:30]
-        #
-        # Make the objects different sizes to exercise more code
-        #
-        parent_labels = (i >= 6) * 1 + (j >= 14) * 2 + 1
-        child_labels = numpy.zeros(i.shape)
-        numpy.random.seed(0)
-        # Take 12 random points and label them
-        child_centers = numpy.random.permutation(numpy.prod(i.shape))[:12]
-        child_centers = numpy.vstack((i.flatten()[child_centers],
-                                      j.flatten()[child_centers]))
-        child_labels[child_centers[0], child_centers[1]] = numpy.arange(1, 13)
-        #
-        # Measure the distance from the child to the edge of its parent.
-        # We do this using the distance transform with a background that's
-        # the edges of the labels
-        #
-        background = ((i != 0) & (i != 5) & (i != 6) & (i != 13) &
-                      (j != 0) & (j != 13) & (j != 14) & (j != 29))
-        d = scipy.ndimage.distance_transform_edt(background)
-        expected = d[child_centers[0], child_centers[1]]
+        parents = numpy.zeros((11, 11), dtype=numpy.uint8)
 
-        workspace, module = self.make_workspace(parent_labels, child_labels)
-        self.assertTrue(isinstance(module, cellprofiler.modules.relateobjects.Relate))
+        children = numpy.zeros_like(parents)
+
+        parents[1:10, 1:10] = 1
+
+        children[2:3, 2:3] = 1
+
+        children[3:8, 3:8] = 2
+
+        workspace, module = self.make_workspace(parents, children)
+
         module.find_parent_child_distances.value = cellprofiler.modules.relateobjects.D_MINIMUM
+
         module.run(workspace)
-        self.features_and_columns_match(workspace)
-        meas = workspace.measurements
-        v = meas.get_current_measurement(CHILD_OBJECTS,
-                                         cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS)
-        self.assertEqual(v.shape[0], 12)
-        self.assertTrue(numpy.all(numpy.abs(v - expected) < .0001))
+
+        expected = [1, 4]
+
+        actual = workspace.measurements.get_current_measurement(
+            CHILD_OBJECTS,
+            cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
+        )
+
+        numpy.testing.assert_array_equal(actual, expected)
 
     def test_04_03_means_of_distances(self):
         #

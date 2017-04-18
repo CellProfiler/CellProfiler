@@ -625,6 +625,30 @@ class TestObjects(unittest.TestCase):
         np.testing.assert_array_equal(labels_children_per_parent, ijv_children_per_parent)
         np.testing.assert_array_equal(labels_parents_of_children, ijv_parents_of_children)
 
+    def test_center_of_mass_with_background_label(self):
+        labels = numpy.zeros((11, 11), dtype=numpy.uint8)
+
+        labels[3:8, 3:8] = 1
+
+        objects = cpo.Objects()
+
+        objects.segmented = labels
+
+        centers = objects.center_of_mass
+
+        np.testing.assert_array_equal(centers, [[5, 5]])
+
+    def test_center_of_mass_without_background_label(self):
+        labels = numpy.ones((11, 11), dtype=numpy.uint8)
+
+        objects = cpo.Objects()
+
+        objects.segmented = labels
+
+        centers = objects.center_of_mass
+
+        np.testing.assert_array_equal(centers, [[5, 5]])
+
 
 class TestSegmentation(unittest.TestCase):
     def test_01_01_dense(self):

@@ -422,9 +422,9 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
         parents_of = self.get_parents_of(workspace, parent_name)
 
-        pcenters = centrosome.cpmorphology.centers_of_labels(parents.segmented).transpose()
+        pcenters = parents.center_of_mass
 
-        ccenters = centrosome.cpmorphology.centers_of_labels(children.segmented).transpose()
+        ccenters = children.center_of_mass
 
         if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
             dist = numpy.array([numpy.NaN] * len(parents_of))
@@ -461,7 +461,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
         else:
             mask = parents_of > 0
 
-            ccenters = centrosome.cpmorphology.centers_of_labels(children.segmented).transpose()
+            ccenters = children.center_of_mass
 
             ccenters = ccenters[mask, :]
 

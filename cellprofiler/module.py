@@ -973,24 +973,17 @@ class ImageSegmentation(Module):
 
         objects = workspace.object_set.get_objects(object_name)
 
-        labels = objects.segmented
+        centers = objects.center_of_mass
 
-        unique_labels = numpy.unique(labels)
-
-        if unique_labels[0] == 0:
-            unique_labels = unique_labels[1:]
-
-        if len(unique_labels) == 0:
+        if len(centers) == 0:
             center_z, center_x, center_y = [], [], []
         else:
-            if not objects.volumetric:
-                labels = numpy.asarray([labels])
+            if objects.volumetric:
+                center_z, center_x, center_y = centers.transpose()
+            else:
+                center_z = [0] * len(centers)
 
-            centers = scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels=labels, index=unique_labels)
-
-            centers = numpy.array(centers)
-
-            center_z, center_x, center_y = centers.transpose()
+                center_x, center_y = centers.transpose()
 
         workspace.measurements.add_measurement(
             object_name,

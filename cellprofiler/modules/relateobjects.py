@@ -478,10 +478,16 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             perim_loc = numpy.argwhere(pperim != 0)
 
             # Get the label # for each point
-            perim_idx = pperim[perim_loc[:, 0], perim_loc[:, 1]]
+            perim_idx = pperim[perim_loc.transpose().tolist()]
 
             # Sort the points by label #
-            idx = numpy.lexsort((perim_loc[:, 1], perim_loc[:, 0], perim_idx))
+            reverse_column_order = range(children.dimensions)[::-1]
+
+            coordinates = perim_loc[:, reverse_column_order].transpose().tolist()
+
+            coordinates.append(perim_idx)
+
+            idx = numpy.lexsort(coordinates)
 
             perim_loc = perim_loc[idx, :]
 

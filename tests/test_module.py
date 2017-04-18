@@ -107,6 +107,88 @@ class TestObjectProcessing():
 
         assert actual == expected
 
+    def test_get_measurement_columns_additional_objects(self):
+        module = cellprofiler.module.ObjectProcessing()
+
+        module.x_name.value = "Objects"
+
+        actual = module.get_measurement_columns(None, additional_objects=[("additional_input", "additional_output")])
+
+        expected = [
+            (
+                "ObjectProcessing",
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                "ObjectProcessing",
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                "ObjectProcessing",
+                cellprofiler.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                "ObjectProcessing",
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_COUNT % "ObjectProcessing",
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                "Objects",
+                cellprofiler.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                "ObjectProcessing",
+                cellprofiler.measurement.FF_PARENT % "Objects",
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                "additional_output",
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                "additional_output",
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                "additional_output",
+                cellprofiler.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                "additional_output",
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_COUNT % "additional_output",
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                "additional_input",
+                cellprofiler.measurement.FF_CHILDREN_COUNT % "additional_output",
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                "additional_output",
+                cellprofiler.measurement.FF_PARENT % "additional_input",
+                cellprofiler.measurement.COLTYPE_INTEGER
+            )
+        ]
+
+        assert actual == expected
+
     def test_get_measurements_image_count(self):
         module = cellprofiler.module.ObjectProcessing()
 

@@ -326,12 +326,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
                 if data is not None and len(data) > 0:
                     if len(parents_of) > 0:
-                        means = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                            scipy.ndimage.mean(
-                                data.astype(float),
-                                parents_of, parent_indexes
-                            )
-                        )
+                        means = scipy.ndimage.mean(data.astype(float), parents_of, parent_indexes)
                     else:
                         means = numpy.zeros((0,))
                 else:
@@ -494,11 +489,8 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             perim_idx = perim_idx[idx]
 
             # Get counts and indexes to each run of perimeter points
-            counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                scipy.ndimage.sum(
-                    numpy.ones(len(perim_idx)),
-                    perim_idx,
-                    numpy.arange(1, perim_idx[-1] + 1))
+            counts = scipy.ndimage.sum(
+                numpy.ones(len(perim_idx)), perim_idx, numpy.arange(1, perim_idx[-1] + 1)
             ).astype(numpy.int32)
 
             indexes = numpy.cumsum(counts) - counts
@@ -528,9 +520,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             dist = numpy.sqrt(numpy.sum((perim_loc[cp_index, :] - ccenters[clabel, :]) ** 2, 1))
 
             # Finally, find the minimum distance per child
-            min_dist = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                scipy.ndimage.minimum(dist, clabel, numpy.arange(len(ccounts)))
-            )
+            min_dist = scipy.ndimage.minimum(dist, clabel, numpy.arange(len(ccounts)))
 
             # Account for unparented children
             dist = numpy.array([numpy.NaN] * len(mask))

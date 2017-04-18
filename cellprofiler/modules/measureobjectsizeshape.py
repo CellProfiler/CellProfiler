@@ -420,7 +420,7 @@ class MeasureObjectSizeShape(cpm.Module):
             self.record_measurement(workspace, object_name, F_EXTENT, extents)
 
             # Centers of mass
-            centers = objects.center_of_mass
+            centers = objects.center_of_mass()
 
             center_z, center_x, center_y = centers.transpose()
 

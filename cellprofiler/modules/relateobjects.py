@@ -420,9 +420,9 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
         parents_of = self.get_parents_of(workspace, parent_name)
 
-        pcenters = parents.center_of_mass
+        pcenters = parents.center_of_mass()
 
-        ccenters = children.center_of_mass
+        ccenters = children.center_of_mass()
 
         if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
             dist = numpy.array([numpy.NaN] * len(parents_of))
@@ -459,7 +459,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
         else:
             mask = parents_of > 0
 
-            ccenters = children.center_of_mass
+            ccenters = children.center_of_mass()
 
             ccenters = ccenters[mask, :]
 

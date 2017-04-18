@@ -973,7 +973,7 @@ class ImageSegmentation(Module):
 
         objects = workspace.object_set.get_objects(object_name)
 
-        centers = objects.center_of_mass
+        centers = objects.center_of_mass()
 
         if len(centers) == 0:
             center_z, center_x, center_y = [], [], []

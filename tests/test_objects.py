@@ -634,7 +634,7 @@ class TestObjects(unittest.TestCase):
 
         objects.segmented = labels
 
-        centers = objects.center_of_mass
+        centers = objects.center_of_mass()
 
         np.testing.assert_array_equal(centers, [[5, 5]])
 
@@ -645,7 +645,7 @@ class TestObjects(unittest.TestCase):
 
         objects.segmented = labels
 
-        centers = objects.center_of_mass
+        centers = objects.center_of_mass()
 
         np.testing.assert_array_equal(centers, [[5, 5]])
 

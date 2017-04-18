@@ -444,7 +444,6 @@ class Objects(object):
         """
         return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
 
-    @property
     def center_of_mass(self):
         labels = self.segmented
 

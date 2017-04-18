@@ -76,12 +76,13 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
         For example, when relating speckles to the nuclei that contains them, the nuclei are the parents.
         """
 
-        self.y_name.text = "Child objects"
-
-        self.y_name.doc = """
-        Child objects are defined as those objects contained within the parent object. For example, when relating
-        speckles to the nuclei that contains them, the speckles are the children.
-        """
+        self.y_name = cellprofiler.setting.ObjectNameSubscriber(
+            "Child objects",
+            doc="""
+            Child objects are defined as those objects contained within the parent object. For example, when relating
+            speckles to the nuclei that contains them, the speckles are the children.
+            """
+        )
 
         self.find_parent_child_distances = cellprofiler.setting.Choice(
             "Calculate child-parent distances?",
@@ -350,26 +351,28 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
             workspace.display_data.parents_of = parents_of
 
+            workspace.display_data.dimensions = parents.dimensions
+
     def display(self, workspace, figure):
         if not self.show_window:
             return
 
-        figure.set_subplots((2, 2))
+        dimensions = workspace.display_data.dimensions
 
-        renumbered_parent_labels = cellprofiler.gui.tools.renumber_labels_for_display(
-                workspace.display_data.parent_labels
-        )
+        figure.set_subplots((2, 2), dimensions=dimensions)
 
         child_labels = workspace.display_data.child_labels
 
         parents_of = workspace.display_data.parents_of
+
+        parent_labels = workspace.display_data.parent_labels
 
         #
         # discover the mapping so that we can apply it to the children
         #
         mapping = numpy.arange(workspace.display_data.parent_count + 1)
 
-        mapping[workspace.display_data.parent_labels.flatten()] = renumbered_parent_labels.flatten()
+        mapping[parent_labels] = parent_labels
 
         parent_labeled_children = numpy.zeros(child_labels.shape, int)
 
@@ -380,9 +383,11 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
         figure.subplot_imshow_labels(
             0,
             0,
-            renumbered_parent_labels,
+            parent_labels,
             title=self.x_name.value,
-            renumber=False
+            renumber=False,
+            dimensions=dimensions
+
         )
 
         figure.subplot_imshow_labels(
@@ -390,8 +395,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             0,
             child_labels,
             title=self.y_name.value,
-            sharex=figure.subplot(0, 0),
-            sharey=figure.subplot(0, 0)
+            dimensions=dimensions
         )
 
         figure.subplot_imshow_labels(
@@ -400,8 +404,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             parent_labeled_children,
             "{} labeled by {}".format(self.y_name.value, self.x_name.value),
             renumber=False,
-            sharex=figure.subplot(0, 0),
-            sharey=figure.subplot(0, 0)
+            dimensions=dimensions
         )
 
     def get_parent_names(self):

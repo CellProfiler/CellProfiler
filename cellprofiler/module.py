@@ -938,7 +938,8 @@ class ImageProcessing(Module):
         y = cellprofiler.image.Image(
             dimensions=dimensions,
             image=y_data,
-            parent_image=x
+            parent_image=x,
+            convert=False
         )
 
         images.add(y_name, y)

@@ -21,6 +21,7 @@ import numpy as np
 import scipy.linalg
 import scipy.ndimage as scind
 import skimage.filters
+import skimage.util
 from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
 from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -741,9 +742,14 @@ class CorrectIlluminationCalculate(cpm.Module):
         elif self.smoothing_method == SM_MEDIAN_FILTER:
             filter_sigma = max(1, int(sigma+.5))
             strel = strel_disk(filter_sigma)
-            indices, values = rank_order(pixel_data, 65535)
-            indices = indices.astype(np.uint16)
-            output_pixels = skimage.filters.median(pixel_data, strel, mask=mask)
+            output_pixels = skimage.util.apply_parallel(
+                array=pixel_data,
+                extra_keywords={
+                    "mask": mask,
+                    "selem": strel
+                },
+                function=skimage.filters.median
+            )
         elif self.smoothing_method == SM_TO_AVERAGE:
             mean = np.mean(pixel_data[mask])
             output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean

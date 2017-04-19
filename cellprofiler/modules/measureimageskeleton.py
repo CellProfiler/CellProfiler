@@ -8,6 +8,31 @@ import skimage.util
 
 
 def _neighbors(image):
+    """
+
+    Counts the neighbor pixels for each pixel of an image:
+
+            x = [
+                [0, 1, 0],
+                [1, 1, 1],
+                [0, 1, 0]
+            ]
+
+            _neighbors(x)
+
+            [
+                [0, 3, 0],
+                [3, 4, 3],
+                [0, 3, 0]
+            ]
+
+    :type image: numpy.ndarray
+
+    :param image: A two-or-three dimensional image
+
+    :return: neighbor pixels for each pixel of an image
+
+    """
     padding = skimage.util.pad(image, 1, "constant")
 
     mask = padding > 0

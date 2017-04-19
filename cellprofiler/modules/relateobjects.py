@@ -378,7 +378,6 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             0,
             parent_labels,
             title=self.x_name.value,
-            renumber=False,
             dimensions=dimensions
 
         )
@@ -396,7 +395,6 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             1,
             parent_labeled_children,
             "{} labeled by {}".format(self.y_name.value, self.x_name.value),
-            renumber=False,
             dimensions=dimensions
         )
 

@@ -1370,7 +1370,7 @@ class Figure(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
-                              renumber=True, sharex=None, sharey=None,
+                              sharex=None, sharey=None,
                               use_imshow=False, dimensions=2):
         """Show a labels matrix using the default color map
 
@@ -1383,9 +1383,6 @@ class Figure(wx.Frame):
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
         """
-        if dimensions == 2 and renumber:
-            labels = tools.renumber_labels_for_display(labels)
-
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
 
         cm.set_bad((0, 0, 0))

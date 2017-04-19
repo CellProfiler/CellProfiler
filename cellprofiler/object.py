@@ -4,6 +4,7 @@
 import centrosome.index
 import centrosome.outline
 import numpy
+import scipy.ndimage
 import scipy.sparse
 
 OBJECT_TYPE_NAME = "objects"
@@ -442,6 +443,16 @@ class Objects(object):
         a center or an area
         """
         return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
+
+    def center_of_mass(self):
+        labels = self.segmented
+
+        index = numpy.unique(labels)
+
+        if index[0] == 0:
+            index = index[1:]
+
+        return numpy.array(scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels, index))
 
 
 class Segmentation(object):

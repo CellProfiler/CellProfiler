@@ -403,9 +403,9 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.recompute()
         self.pressed_button = (-1, None, False)
 
-        from cellprofiler.icons import get_builtin_image
+        from cellprofiler.icons import icon
         def get_builtin_bitmap(name):
-            return wx.BitmapFromImage(get_builtin_image(name))
+            return wx.BitmapFromImage(icon(name))
 
         self.color_channel_image = get_builtin_bitmap("color")
         self.monochrome_channel_image = get_builtin_bitmap("monochrome")

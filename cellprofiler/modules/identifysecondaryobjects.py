@@ -475,8 +475,9 @@ class IdentifySecondaryObjects(identify.Identify):
         # * labels touching the edge, including small removed
         #
         labels_in = objects.unedited_segmented.copy()
-        labels_touching_edge = numpy.hstack(
-                (labels_in[0, :], labels_in[-1, :], labels_in[:, 0], labels_in[:, -1]))
+
+        labels_touching_edge = numpy.hstack((labels_in[0, :], labels_in[-1, :], labels_in[:, 0], labels_in[:, -1]))
+
         labels_touching_edge = numpy.unique(labels_touching_edge)
         is_touching = numpy.zeros(numpy.max(labels_in) + 1, bool)
         is_touching[labels_touching_edge] = True

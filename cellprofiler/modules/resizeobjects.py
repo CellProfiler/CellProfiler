@@ -36,7 +36,8 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
                 <li><i>Dimensions:</i> Enter the new height and width of the resized objects.</li>
                 <li><i>Factor:</i> Enter a single value which specifies the scaling.</li>
             </ul>
-            """
+            """,
+            value="Factor"
         )
 
         self.factor = cellprofiler.setting.Float(

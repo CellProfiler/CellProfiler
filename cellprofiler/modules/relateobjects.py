@@ -569,6 +569,9 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
             primary_parents_of_parent = meas.get_current_measurement(parent_name, primary_parent_feature)
 
+            if len(primary_parents_of_parent) == 0:
+                return primary_parents_of_parent
+
             #
             # There may not be a 1-1 relationship, but we attempt to
             # construct one

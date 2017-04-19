@@ -394,3 +394,42 @@ class TestRelateObjects(unittest.TestCase):
         )
 
         numpy.testing.assert_array_equal(actual, expected)
+
+    def test_relate_zeros_with_step_parent(self):
+        # https://github.com/CellProfiler/CellProfiler/issues/2441
+        parents = numpy.zeros((10, 10), dtype=numpy.uint8)
+
+        children = numpy.zeros_like(parents)
+
+        step_parents = numpy.zeros_like(parents)
+
+        step_parents_object = cellprofiler.object.Objects()
+
+        step_parents_object.segmented = step_parents
+
+        workspace, module = self.make_workspace(parents, children)
+
+        workspace.measurements.add_measurement(
+            "Step",
+            cellprofiler.measurement.FF_PARENT % PARENT_OBJECTS,
+            []
+        )
+
+        module.step_parent_names[0].step_parent_name.value = "Step"
+
+        workspace.object_set.add_objects(step_parents_object, "Step")
+
+        module.wants_step_parent_distances.value = True
+
+        module.find_parent_child_distances.value = cellprofiler.modules.relateobjects.D_MINIMUM
+
+        module.run(workspace)
+
+        expected = []
+
+        actual = workspace.measurements.get_current_measurement(
+            CHILD_OBJECTS,
+            cellprofiler.modules.relateobjects.FF_MINIMUM % "Step"
+        )
+
+        numpy.testing.assert_array_equal(actual, expected)

@@ -336,6 +336,7 @@ setuptools.setup(
             "h5py",
             "inflect",
             "javabridge",
+            "joblib",
             "libtiff",
             "mahotas",
             "matplotlib",
@@ -349,6 +350,7 @@ setuptools.setup(
             "raven",
             "requests",
             "scikit-image",
+            "scikit-learn",
             "scipy"
         ],
         keywords="",

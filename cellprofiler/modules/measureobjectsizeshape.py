@@ -420,24 +420,7 @@ class MeasureObjectSizeShape(cpm.Module):
             self.record_measurement(workspace, object_name, F_EXTENT, extents)
 
             # Centers of mass
-            import mahotas
-
-            if objects.has_parent_image:
-                image = objects.parent_image
-
-                data = image.pixel_data
-
-                spacing = image.spacing
-            else:
-                data = np.ones_like(labels)
-
-                spacing = (1.0, 1.0, 1.0)
-
-            centers = mahotas.center_of_mass(data, labels=labels)
-
-            if np.any(labels == 0):
-                # Remove the 0-label center of mass
-                centers = centers[1:]
+            centers = objects.center_of_mass()
 
             center_z, center_x, center_y = centers.transpose()
 

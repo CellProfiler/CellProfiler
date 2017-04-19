@@ -1370,7 +1370,7 @@ class Figure(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
-                              renumber=True, sharex=None, sharey=None,
+                              sharex=None, sharey=None,
                               use_imshow=False, dimensions=2):
         """Show a labels matrix using the default color map
 
@@ -1384,25 +1384,31 @@ class Figure(wx.Frame):
                      our own artist.
         """
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-        if dimensions == 2:
-            if renumber:
-                labels = tools.renumber_labels_for_display(labels)
-            cm.set_bad((0, 0, 0))
-            labels = numpy.ma.array(labels, mask=labels == 0)
-            mappable = matplotlib.cm.ScalarMappable(cmap=cm)
 
-            if all([c0x == 0 for c0x in cm(0)[:3]]):
-                # Set the lower limit to 0 if the color for index 0 is already black.
-                mappable.set_clim(0, labels.max())
-                cm = None
-            elif numpy.any(labels != 0):
-                mappable.set_clim(1, labels.max())
-                cm = None
+        cm.set_bad((0, 0, 0))
+
+        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+
+        if all([c0x == 0 for c0x in cm(0)[:3]]):
+            # Set the lower limit to 0 if the color for index 0 is already black.
+            mappable.set_clim(0, labels.max())
+
+            cm = None
+        elif numpy.any(labels != 0):
+            mappable.set_clim(1, labels.max())
+
+            cm = None
+
+        labels = numpy.ma.array(labels, mask=labels == 0)
+
+        if dimensions == 2:
             image = mappable.to_rgba(labels)[:, :, :3]
         else:
-            import skimage.color
+            image = numpy.zeros(labels.shape + (3,), dtype=numpy.float64)
 
-            image = skimage.color.label2rgb(labels, bg_label=0)
+            for index, plane in enumerate(labels):
+                image[index] = mappable.to_rgba(plane)[:, :, :3]
+
         return self.subplot_imshow(x, y, image, title, clear, colormap=cm,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,

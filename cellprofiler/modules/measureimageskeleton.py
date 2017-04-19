@@ -4,6 +4,7 @@ import skimage.measure
 import skimage.segmentation
 import skimage.util
 
+import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
 
@@ -151,6 +152,49 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
             x=0,
             y=1
         )
+
+    def get_categories(self, pipeline, object_name):
+        if object_name == self.skeleton_name:
+            return ["MT"]
+        else:
+            return []
+
+    def get_feature_name(self, name):
+        image = self.skeleton_name.value
+
+        return "Skeleton_{}_{}".format(image, name)
+
+    def get_measurements(self, pipeline, object_name, category):
+        if object_name == self.skeleton_name and category == "MT":
+            return ["Skeleton"]
+        else:
+            return []
+
+    def get_measurement_columns(self, pipeline):
+        image = self.skeleton_name.value
+
+        features = [
+            self.get_measurement_name("Branches"),
+            self.get_measurement_name("Endpoints")
+        ]
+
+        column_type = cellprofiler.measurement.COLTYPE_INTEGER
+
+        return [(image, feature, column_type) for feature in features]
+
+    def get_measurement_images(self, pipeline, object_name, category, measurement):
+        if measurement in self.get_measurements(pipeline, object_name, category):
+            return [self.skeleton_name.value]
+        else:
+            return []
+
+    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
+        return []
+
+    def get_measurement_name(self, name):
+        feature = self.get_feature_name(name)
+
+        return "_".join(["MT", feature])
 
     def measure(self, image, workspace):
         data = image.pixel_data

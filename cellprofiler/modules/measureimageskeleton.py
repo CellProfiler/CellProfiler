@@ -165,7 +165,7 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
 
         name = "Skeleton_Branches_{}".format(measurement_name)
 
-        value = numpy.count_nonzero(skimage.measure.label(branches(data)))
+        value = numpy.count_nonzero(branches(data))
 
         statistics.append(value)
 
@@ -173,7 +173,7 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
 
         name = "Skeleton_Endpoints_{}".format(measurement_name)
 
-        value = numpy.count_nonzero(skimage.measure.label(endpoints(data)))
+        value = numpy.count_nonzero(endpoints(data))
 
         statistics.append(value)
 

@@ -1,52 +1,26 @@
-services:
-  - mysql
 addons:
   apt:
     packages:
-      - cython
       - libhdf5-serial-dev
-      - libwxgtk2.8-dev
-      - libgtk2.0-dev
-      - python-dateutil
-      - python-imaging
-      - python-matplotlib
       - python-mysqldb
       - python-pip
-      - python-scipy
-      - python-tk
-      - python-wxgtk2.8
-env:
-  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
-before_script:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3
-cache:
   apt: true
-  directories:
-    - $HOME/.cache/pip
+  directories: $HOME/.cache/pip
+dist: trusty
+env:
+  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
+install:
+  - pip install --upgrade pip
+  - pip install --upgrade cython
+  - pip install --upgrade joblib
+  - pip install --upgrade numpy
+  - pip install --upgrade scipy
+  - pip install --upgrade --editable .
+  - pip freeze
 language: python
 notifications:
   email: false
-python:
-  - 2.7
-sudo: false
-virtualenv:
-  system_site_packages: true
-install:
-  - pip install --upgrade pip
-  - pip install --upgrade wheel
-  - pip install --upgrade numpy
-  - pip install --upgrade pytest
-  - pip install --upgrade cython
-  - pip install joblib
-  - pip install scikit-learn
-  - pip install --no-deps pyzmq==13.1.0
-  - pip install --upgrade scipy
-  - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
-  - pip install --editable git+https://github.com/scikit-image/scikit-image.git#egg=scikit-image-0.13.0dev
-  - pip freeze
-  - pip install --requirement requirements.txt
-  - pip install --upgrade scipy
-script:
-  - python setup.py test -a -x
+python: 2.7.12
+script: python setup.py test -a -x
+services: mysql
+sudo: required

@@ -134,12 +134,11 @@ def resize(data, size):
     if data.ndim == 3:
         size = (data.shape[0],) + size
 
-    return skimage.transform.resize(
+    return scipy.ndimage.zoom(
         data,
-        size,
+        numpy.divide(numpy.multiply(1.0, size), data.shape),
         order=0,
-        mode="edge",
-        preserve_range=True
+        mode="nearest"
     )
 
 

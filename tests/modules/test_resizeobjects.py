@@ -155,7 +155,7 @@ def test_resize_by_dimensions_shrink_image_labels(image_labels, module, object_s
 
     expected_labels = numpy.zeros((10, 5), dtype=numpy.uint8)
 
-    expected_labels[1:4, 0:2] = 1
+    expected_labels[1:4, 1:2] = 1
 
     expected_labels[0:4, 3:4] = 2
 
@@ -197,9 +197,9 @@ def test_resize_by_dimensions_enlarge_image_labels(image_labels, module, object_
 
     expected_labels = numpy.zeros((40, 80), dtype=numpy.uint8)
 
-    expected_labels[4:16, 8:32] = 1
+    expected_labels[4:16, 7:32] = 1
 
-    expected_labels[0:16, 48:72] = 2
+    expected_labels[0:16, 48:73] = 2
 
     expected_labels[24:36, 0:32] = 3
 
@@ -319,7 +319,7 @@ def test_resize_by_dimensions_shrink_volume_labels(module, object_set, objects, 
 
     expected_labels = numpy.zeros((9, 10, 5), dtype=numpy.uint8)
 
-    expected_labels[0:9, 1:4, 0:2] = 1
+    expected_labels[0:9, 1:4, 1:2] = 1
 
     expected_labels[0:5, 0:4, 3:4] = 2
 
@@ -361,9 +361,9 @@ def test_resize_by_dimensions_enlarge_volume_labels(module, object_set, objects,
 
     expected_labels = numpy.zeros((9, 40, 80), dtype=numpy.uint8)
 
-    expected_labels[0:9, 4:16, 8:32] = 1
+    expected_labels[0:9, 4:16, 7:32] = 1
 
-    expected_labels[0:5, 0:16, 48:72] = 2
+    expected_labels[0:5, 0:16, 48:73] = 2
 
     expected_labels[4:9, 24:36, 0:32] = 3
 

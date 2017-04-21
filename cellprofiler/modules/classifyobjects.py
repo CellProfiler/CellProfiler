@@ -1,4 +1,4 @@
-'''<b>Classify Objects</b> classifies objects into different classes according 
+'''<b>Classify Objects</b> classifies objects into different classes according
 to the value of measurements you choose.
 <hr>
 This module classifies objects into a number of different bins
@@ -616,8 +616,7 @@ class ClassifyObjects(cpm.Module):
             saved_values = workspace.display_data.saved_values[i]
             mapping[np.isnan(saved_values)] = 0
         labels = object_codes[mapping[workspace.display_data.labels]]
-        figure.subplot_imshow_labels(0, 1, labels, title=object_name,
-                                     renumber=False)
+        figure.subplot_imshow_labels(0, 1, labels, title=object_name)
         #
         # Draw a 4-bar histogram
         #
@@ -740,7 +739,6 @@ class ClassifyObjects(cpm.Module):
             #
             figure.subplot_imshow_labels(2, i, labels,
                                          title=group.object_name.value,
-                                         renumber=False,
                                          sharexy=figure.subplot(2, 0))
 
     def get_colors(self, count):

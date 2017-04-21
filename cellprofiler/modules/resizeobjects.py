@@ -7,12 +7,12 @@ import cellprofiler.setting
 
 
 __doc__ = """
-Upsize or downsize an object's label matrix by a factor or by specifying the final dimensions in pixels. ResizeObjects
+<p>Upsize or downsize an object's label matrix by a factor or by specifying the final dimensions in pixels. ResizeObjects
 uses nearest neighbor interpolation to preserve object labels after the resizing operation. When resizing 3D data,
-ResizeObjects resizes the height and width and keeps the original depth (or z-dimension).<br>
-ResizeObjects is useful for processing very large or 3D data. A user might downsize a 3D image to generate a
+ResizeObjects resizes the height and width and keeps the original depth (or z-dimension).</p>
+<p>ResizeObjects is useful for processing very large or 3D data. A user might downsize a 3D image to generate a
 segmentation. She can then use ResizeObjects to stretch the segmented objects to their original size before
-computing measurements with the original 3D image.
+computing measurements with the original 3D image.</p>
 """
 
 
@@ -45,7 +45,7 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
             0.25,
             minval=0,
             doc="""
-            <i>(Used only if resizing by <i>Factor</i>)</i><br>
+            <i>(Used only if resizing by <i>Factor</i>)</i><br />
             Numbers less than 1 will shrink the objects; numbers greater than 1 will enlarge the objects.
             """
         )
@@ -55,7 +55,7 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
             100,
             minval=1,
             doc="""
-            <i>(Used only if resizing by <i>Dimensions</i>)</i><br>
+            <i>(Used only if resizing by <i>Dimensions</i>)</i><br />
             Enter the desired width of the final objects, in pixels.
             """
         )
@@ -65,7 +65,7 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
             100,
             minval=1,
             doc="""
-            <i>(Used only if resizing by <i>Dimensions</i>)</i><br>
+            <i>(Used only if resizing by <i>Dimensions</i>)</i><br />
             Enter the desired height of the final objects, in pixels.
             """
         )

@@ -103,6 +103,7 @@ class Test(setuptools.Command):
             raise ImportError
 
         import cellprofiler.__main__
+        import cellprofiler.preferences
         import cellprofiler.utilities.cpjvm
 
         #
@@ -119,6 +120,8 @@ class Test(setuptools.Command):
             TestCaseFunction.runtest = runtest
         except:
             pass
+
+        cellprofiler.preferences.set_headless()
 
         cellprofiler.utilities.cpjvm.cp_start_vm()
 
@@ -336,6 +339,7 @@ setuptools.setup(
             "h5py",
             "inflect",
             "javabridge",
+            "joblib",
             "libtiff",
             "mahotas",
             "matplotlib",
@@ -349,6 +353,7 @@ setuptools.setup(
             "raven",
             "requests",
             "scikit-image",
+            "scikit-learn",
             "scipy"
         ],
         keywords="",

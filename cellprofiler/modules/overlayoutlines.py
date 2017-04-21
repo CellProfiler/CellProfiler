@@ -11,7 +11,6 @@ import numpy
 import skimage.color
 import skimage.segmentation
 
-import cellprofiler.gui.figure
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting

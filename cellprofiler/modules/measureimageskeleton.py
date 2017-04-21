@@ -154,24 +154,31 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == self.skeleton_name:
-            return ["MT"]
-        else:
-            return []
+        if object_name == cellprofiler.measurement.IMAGE:
+            return [
+                "Skeleton"
+            ]
+
+        return []
 
     def get_feature_name(self, name):
         image = self.skeleton_name.value
 
-        return "Skeleton_{}_{}".format(image, name)
+        return "Skeleton_{}_{}".format(name, image)
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == self.skeleton_name and category == "MT":
-            return ["Skeleton"]
-        else:
-            return []
+        name = self.skeleton_name.value
+
+        if object_name == cellprofiler.measurement.IMAGE and category == "Skeleton":
+            return [
+                "Skeleton_Branches_{}".format(name),
+                "Skeleton_Endpoints_{}".format(name)
+            ]
+
+        return []
 
     def get_measurement_columns(self, pipeline):
-        image = self.skeleton_name.value
+        image = cellprofiler.measurement.IMAGE
 
         features = [
             self.get_measurement_name("Branches"),
@@ -185,16 +192,13 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.skeleton_name.value]
-        else:
-            return []
 
-    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
         return []
 
     def get_measurement_name(self, name):
         feature = self.get_feature_name(name)
 
-        return "_".join(["MT", feature])
+        return feature
 
     def measure(self, image, workspace):
         data = image.pixel_data

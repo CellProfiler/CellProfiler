@@ -317,10 +317,11 @@ class NamesAndTypes(cpm.Module):
             text="Process as 3D",
             value=False,
             doc="""
-            If you want to treat the data as three-dimensional, select "Yes" to 
-            load files as volumes. Otherwise, select "No" to load files as separate, 
+            If you want to treat the data as three-dimensional, select "Yes" to
+            load files as volumes. Otherwise, select "No" to load files as separate,
             two-dimensional images.
-            """
+            """,
+            callback=lambda value: self.pipeline.set_volumetric(value)
         )
 
         self.x = cps.Float(

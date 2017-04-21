@@ -2196,6 +2196,19 @@ class PipelineController(object):
                 return
             remove_input_modules = True
 
+        if self.__pipeline.volumetric() and not module.volumetric():
+            message = "{} does not support processing 3D data and will not be added to the pipeline.".format(
+                module.module_name
+            )
+
+            wx.MessageBox(
+                message,
+                caption="Warning",
+                style=wx.OK
+            )
+
+            return
+
         self.__pipeline.add_module(module)
         if remove_input_modules:
             while True:

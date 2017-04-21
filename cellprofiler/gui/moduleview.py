@@ -2105,6 +2105,7 @@ class ModuleView(object):
     def __on_radiobox_change(self, event, setting, control):
         if not self.__handle_change:
             return
+        setting.on_event_fired(control.GetStringSelection() == "Yes")
         self.on_value_change(
             setting, control, control.GetStringSelection(), event)
 

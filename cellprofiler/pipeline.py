@@ -576,6 +576,13 @@ class Pipeline(object):
         self.__image_plane_details_metadata_settings = tuple()
 
         self.__undo_stack = []
+        self.__volumetric = False
+
+    def set_volumetric(self, value):
+        self.__volumetric = value
+
+    def volumetric(self):
+        return self.__volumetric
 
     def copy(self, save_image_plane_details=True):
         '''Create a copy of the pipeline modules and settings'''

@@ -529,7 +529,9 @@ class MeasureObjectSizeShape(cpm.Module):
                            object_name, feature_name, result):
         """Record the result of a measurement in the workspace's measurements"""
         data = fix(result)
-
+        workspace.add_measurement(object_name,
+                                  "%s_%s" % (AREA_SHAPE, feature_name),
+                                  data)
         if self.show_window and np.any(np.isfinite(data)) > 0:
             data = data[np.isfinite(data)]
             workspace.display_data.statistics.append(

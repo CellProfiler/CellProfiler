@@ -1262,7 +1262,6 @@ class IdentifyPrimaryObjects(identify.Identify):
         """Return the objects associated with image measurements
 
         """
-        result = super(IdentifyPrimaryObjects, self).get_measurement_objects(pipeline, object_name, category, measurement)
         return super(IdentifyPrimaryObjects, self).get_measurement_objects(pipeline, object_name, category, measurement)
 
 

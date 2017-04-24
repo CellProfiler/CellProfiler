@@ -880,6 +880,9 @@ class Module(object):
         '''Called when a setting has been changed in the GUI'''
         pass
 
+    def volumetric(self):
+        return False
+
 
 class ImageProcessing(Module):
     category = "Image Processing"
@@ -962,6 +965,9 @@ class ImageProcessing(Module):
             self.x_name,
             self.y_name
         ]
+
+    def volumetric(self):
+        return True
 
 
 class ImageSegmentation(Module):
@@ -1173,6 +1179,9 @@ class ImageSegmentation(Module):
             self.y_name
         ]
 
+    def volumetric(self):
+        return True
+
 
 class ObjectProcessing(ImageSegmentation):
     category = "Object Processing"
@@ -1312,3 +1321,6 @@ class ObjectProcessing(ImageSegmentation):
             workspace.display_data.y_data = y_data
 
             workspace.display_data.dimensions = dimensions
+
+    def volumetric(self):
+        return True

@@ -562,6 +562,9 @@ class MeasureObjectSizeShape(cpm.Module):
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True
+
 
 def form_factor(objects):
     """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""

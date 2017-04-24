@@ -1,4 +1,4 @@
-'''<b>Measure Image Intensity</b> measures the total intensity in an image 
+'''<b>Measure Image Intensity</b> measures the total intensity in an image
 by summing all of the pixel intensities (excluding masked pixels).
 <hr>
 This module will sum all pixel values to measure the total image
@@ -333,3 +333,4 @@ class MeasureImageIntensity(cpm.Module):
         if variable_revision_number == 1:
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
+

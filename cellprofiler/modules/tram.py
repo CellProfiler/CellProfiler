@@ -21,6 +21,8 @@ import cellprofiler.measurement as cpmeas
 from collections import Counter
 import re
 
+
+
 class TrAM(cpm.Module):
     module_name = "TrAM"
     category = "Object Processing"
@@ -99,33 +101,33 @@ class TrAM(cpm.Module):
 
         figure - the figure to use for the display.
         """
-        # get the TrAM values. Just for the first time point because they are just duplicadted across time
-        if self.show_window:
-            figure.set_subplots((1, 1))
-            figure.subplot_histogram(0, 0,
-                                     workspace.display_data.tram_values,
-                                     bins=50,
-                                     xlabel="TrAM",
-                                     ylabel="Count",
-                                     title="TrAM for %s" % self.object_name.get_value())
-            figure.Refresh()
+# todo: why does the below code fail?
+#        if self.show_window:
+#            figure.set_subplots((1, 1))
+#            figure.subplot_histogram(0, 0,
+#            workspace.display_data.tram_values,
+#            bins=50,
+#            xlabel="TrAM",
+#            ylabel="Count",
+#            title="TrAM for %s" % self.object_name.get_value())
+#            figure.Refresh()
+
+        pass
 
 
     def post_group(self, workspace, grouping):
         self.show_window = True
 
         measurements = workspace.measurements
-        obj_name = self.object_name.get_value()
-        obj_names = measurements.get_object_names()
+        obj_name = self.object_name.get_value() # the object the user has selected
         img_numbers = measurements.get_image_numbers()
         num_images = len(img_numbers)
 
         # get vector of tracking label for each data point
-        feature_names_list = [measurements.get_feature_names(obj_name) for obj_name in obj_names]# todo: make sure obj_names is of length 1?
-        feature_names = dict(zip(obj_names, feature_names_list))[obj_name]
+        feature_names = measurements.get_feature_names(obj_name)
         tracking_label_feature_name = [name for name in feature_names
                                        if name.startswith(trackobjects.F_PREFIX + "_" + trackobjects.F_LABEL)][0]
-        label_vals = measurements.get_measurement(obj_name, tracking_label_feature_name, img_numbers)
+        label_vals = measurements.get_measurement(obj_name, tracking_label_feature_name, img_numbers) # get the label data
         label_dict = {tracking_label_feature_name : label_vals} # keep it
 
         # get vector of lifetime for each tracking point
@@ -133,7 +135,7 @@ class TrAM(cpm.Module):
                                  if name.startswith(trackobjects.F_PREFIX + "_" + trackobjects.F_LIFETIME)][0]
         lifetime_vals = measurements.get_measurement(obj_name, lifetime_feature_name, img_numbers)
 
-        selections = self.get_selected_tram_measurements()
+        selections = self.get_selected_tram_measurements() # measurements that the user wants to run TrAM on
 
         # get a tuple dictionary entry relating feature name with data values
         def get_dict_entry(sel):
@@ -186,12 +188,21 @@ class TrAM(cpm.Module):
         keep_indices = [i for i, label in enumerate(label_vals_flattened) if label in labels_for_complete_trajectories]
         data_only_dict_complete_trajectories = {k : [v[i] for i in keep_indices] for k, v in data_only_dict.items()}
 
-        # compute typical inter-timepoint variation
+        # compute typical inter-timepoint variation. This is computed across only non-mitotic tracks
         label_vals_flattened_complete_trajectories =[label_vals_flattened[i] for i in keep_indices]
         image_vals_flattened_complete_trajectories = [image_vals_flattened[i] for i in keep_indices]
         tad = TrAM.compute_typical_deviations(data_only_dict_complete_trajectories,
                                               label_vals_flattened_complete_trajectories,
                                               image_vals_flattened_complete_trajectories)
+
+        # add in data for cells there the whole time but result from mitoses
+        labels_for_mitotic_trajectories = [label for label in max_lifetime_by_label.keys()
+                                           if max_lifetime_by_label[label] == num_images
+                                           and label_counts[label] < num_images]
+
+        self.get_full_track_data_for_mitotic_cells(measurements, obj_name, label_vals_flattened, image_vals_flattened,
+                                                   labels_for_mitotic_trajectories)
+
 
         # put all the data into a 2D array and normalize by typical deviations
         data_array = np.column_stack(data_only_dict_complete_trajectories.values())
@@ -228,11 +239,12 @@ class TrAM(cpm.Module):
         # store the non-nan TrAM values for the histogram display
         workspace.display_data.tram_values = [value for value in tram_dict.values() if not np.isnan(value)]
 
-        pass
+        # todo: add unique identifier for each TrAM track
+
+        pass #todo remove
 
     def compute_TrAM(self, normalized_values_dict, euclidian):
         """
-        
         :param normalized_values_dict: keys are feature names, values are normalized feature values across the track 
         :param euclidian list of pairs (tuples) of XY features which should be treated as Euclidian in the computation
         :return: TrAM value for this trajectory
@@ -310,6 +322,12 @@ class TrAM(cpm.Module):
             tram = np.max(np.power(means, 1.0/p))
 
         return tram
+
+    @staticmethod
+    def get_full_track_data_for_mitotic_cells(measurements, obj_name, label_vals_flattened, image_vals_flattened,
+                                              labels_for_mitotic_trajectories):
+        feature_names = measurements.get_feature_names(obj_name)
+        pass
 
     @staticmethod
     def compute_typical_deviations(values_dict, labels_vec, image_vec):

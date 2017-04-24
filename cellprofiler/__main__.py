@@ -11,6 +11,7 @@ import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
 import cStringIO
+import glob
 import h5py
 import json
 import logging
@@ -19,6 +20,7 @@ import matplotlib
 import numpy
 import optparse
 import os
+import os.path
 import pkg_resources
 import re
 import site
@@ -613,7 +615,6 @@ def run_pipeline_headless(options, args):
     """
     Run a CellProfiler pipeline in headless mode
     """
-
     if options.first_image_set is not None:
         if not options.first_image_set.isdigit():
             raise ValueError("The --first-image-set option takes a numeric argument")
@@ -679,6 +680,8 @@ def run_pipeline_headless(options, args):
 
     if file_list is not None:
         pipeline.read_file_list(file_list)
+    elif options.image_directory is not None:
+        pipeline.add_pathnames_to_file_list(glob.glob(os.path.join(options.image_directory, "*")))
 
     #
     # Fixup CreateBatchFiles with any command-line input or output directories

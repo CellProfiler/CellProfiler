@@ -443,7 +443,7 @@ class MeasureObjectSizeShape(cpm.Module):
 
                 verts, faces, _, _ = skimage.measure.marching_cubes(
                     volume,
-                    spacing=spacing,
+                    spacing=objects.parent_image.spacing if objects.has_parent_image else (1.0,) * labels.ndim,
                     level=0
                 )
 

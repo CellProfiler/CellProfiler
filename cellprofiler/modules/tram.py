@@ -240,6 +240,7 @@ class TrAM(cpm.Module):
         workspace.display_data.tram_values = [value for value in tram_dict.values() if not np.isnan(value)]
 
         # todo: add unique identifier for each TrAM track
+        # todo: add mitosis count to each track
 
         pass #todo remove
 
@@ -324,9 +325,24 @@ class TrAM(cpm.Module):
         return tram
 
     @staticmethod
-    def get_full_track_data_for_mitotic_cells(measurements, obj_name, label_vals_flattened, image_vals_flattened,
+    def get_full_track_data_for_mitotic_cells(measurements, obj_name, tram_features, label_vals_flattened, image_vals_flattened,
                                               labels_for_mitotic_trajectories):
+        """
+        
+        :param measurements: The usual measurements object 
+        :param obj_name: Name of object we are tracking
+        :param tram_features: List of feature names used for TrAM calculation
+        :param label_vals_flattened: The tracking labels, flattened to a single vector
+        :param image_vals_flattened: The image numbers, flattened to a single vector
+        :param labels_for_mitotic_trajectories: The tracking labels we should analyze
+        :return: Tuple of
+                 (1) dictionary from feature name to data list
+                 (2) TrAM labels list
+                 (3) Image numbers list
+                 
+        """
         feature_names = measurements.get_feature_names(obj_name)
+        
         pass
 
     @staticmethod

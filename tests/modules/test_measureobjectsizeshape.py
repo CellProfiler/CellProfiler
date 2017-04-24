@@ -384,3 +384,20 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             self.assertTrue(column[0] in ['SomeObjects', 'OtherObjects'])
             self.assertTrue(column[1] in features)
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
+
+    def test_run_volume(self):
+        labels = np.ones((10, 10, 10), dtype=np.uint8)
+
+        labels[0, :, :] = 0
+
+        workspace, module = self.make_workspace(labels)
+
+        module.run(workspace)
+
+        for feature in [cpmoas.F_AREA, cpmoas.F_EXTENT, cpmoas.F_CENTER_X, cpmoas.F_CENTER_Y, cpmoas.F_CENTER_Z,
+                        cpmoas.F_PERIMETER]:
+            assert workspace.measurements.has_current_measurements(OBJECTS_NAME, cpmoas.AREA_SHAPE + "_" + feature)
+
+            assert len(
+                workspace.measurements.get_current_measurement(OBJECTS_NAME, cpmoas.AREA_SHAPE + "_" + feature)
+            ) == 1

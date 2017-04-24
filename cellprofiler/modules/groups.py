@@ -545,3 +545,6 @@ class Groups(cpm.Module):
             setting_values = new_setting_values
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

@@ -4212,6 +4212,9 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
 
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True
+
 
 class ColumnNameMapping:
     """Represents a mapping of feature name to column name"""

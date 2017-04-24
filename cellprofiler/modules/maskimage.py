@@ -1,4 +1,4 @@
-"""<b>Mask Image</b> hides certain portions of an image (based on previously identified 
+"""<b>Mask Image</b> hides certain portions of an image (based on previously identified
 objects or a binary image) so they are ignored by subsequent mask-respecting modules
 in the pipeline.
 <hr>
@@ -164,7 +164,7 @@ class MaskImage(cpm.Module):
             figure.subplot_imshow_grayscale(1, 0, masked_pixels,
                                             "Masked image: %s" % self.masked_image_name.value,
                                             dimensions=workspace.display_data.dimensions)
-        
+
 
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
@@ -195,3 +195,6 @@ class MaskImage(cpm.Module):
             variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

@@ -522,3 +522,6 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
                              col_labels=workspace.display_data.col_labels)
+
+    def volumetric(self):
+        return True

@@ -1179,6 +1179,9 @@ class ImageSegmentation(Module):
             self.y_name
         ]
 
+    def volumetric(self):
+        return True
+
 
 class ObjectProcessing(ImageSegmentation):
     category = "Object Processing"
@@ -1318,3 +1321,6 @@ class ObjectProcessing(ImageSegmentation):
             workspace.display_data.y_data = y_data
 
             workspace.display_data.dimensions = dimensions
+
+    def volumetric(self):
+        return True

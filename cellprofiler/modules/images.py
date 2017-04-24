@@ -299,6 +299,9 @@ class Images(cpm.Module):
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True
+
 
 class DirectoryPredicate(cps.Filter.FilterPredicate):
     '''A predicate that only filters directories'''

@@ -172,10 +172,10 @@ try:
 #
 ##################################
 
-    from cellstar.process.segmentation import Segmentation
-    from cellstar.parameter_fitting.test_pf import run_pf
-    from cellstar.parameter_fitting.test_rank_pf import run_rank_pf
-    from cellstar.utils.python_util import memory_profile, speed_profile
+    from cellstar.utils.params_util import default_parameters, create_size_weights
+    from cellstar.segmentation import Segmentation
+    from cellstar.parameter_fitting.pf_runner import run_pf, run_rank_pf
+    from cellstar.utils.debug_util import memory_profile, speed_profile, explorer_expected
 
 except ImportError as e: 
     # in new version 2.12 all the errors are properly shown in console (Windows)
@@ -204,6 +204,36 @@ FTR_OBJECT_QUALITY = "Quality"
 '''The object quality - floating number lower the higher the better'''
 M_OBJECT_FEATURES_OBJECT_QUALITY= '%s_%s' % (C_OBJECT_FEATURES, FTR_OBJECT_QUALITY)
 
+def hack_add_from_file_into_EditObjects(dialog_box):
+    import wx
+    def on_load(event):
+        with wx.FileDialog(None,
+           message="Select image with labels",
+           wildcard="Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
+           style=wx.FD_OPEN) as dlg:
+            if dlg.ShowModal() != wx.ID_OK:
+                return
+            path = dlg.Path
+
+        import bioformats
+        labels_loaded = (bioformats.load_image(path) * 255).astype(int)
+        if labels_loaded.ndim == 3:
+            labels_loaded = np.sum(labels_loaded, 2) / labels_loaded.shape[2]
+
+        for l in np.unique(labels_loaded):
+            if l != 0:
+                dialog_box.add_label(l == labels_loaded)
+        # TODO no shape check, no float check
+        dialog_box.init_labels()
+        dialog_box.display()
+        dialog_box.record_undo()
+
+    ID_ACTION_LOAD_FROM_FILE = wx.NewId()
+    sizer = dialog_box.toolbar.ContainingSizer
+    load_file_button = wx.Button(dialog_box, ID_ACTION_LOAD_FROM_FILE, "Add from file")
+    list(sizer.Children)[-1].Sizer.Add(load_file_button,0, wx.ALIGN_CENTER)
+    dialog_box.Bind(wx.EVT_BUTTON, on_load, load_file_button)
+
 ###################################
 #
 # The module class
@@ -211,13 +241,15 @@ M_OBJECT_FEATURES_OBJECT_QUALITY= '%s_%s' % (C_OBJECT_FEATURES, FTR_OBJECT_QUALI
 ###################################
 
 
-class YeastCellSegmentation(cpmi.Identify):
+class IdentifyYeastCells(cpmi.Identify):
     module_name = "IdentifyYeastCells"
     category = "Yeast Toolbox"
-    variable_revision_number = 6
+    variable_revision_number = 8
     current_workspace = ''
+    fitting_image_set = None
     param_fit_progress = 0
-    
+    param_fit_progress_partial = 0
+
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber(
             "Select the input image",doc="""
@@ -234,6 +266,11 @@ class YeastCellSegmentation(cpmi.Identify):
             How do you call the image you want to use as background 
             image (same image will be used for every image in the workflow)?
             """%globals())
+
+        self.ignore_mask_image_name = cps.ImageNameSubscriber(
+            "Select ignore mask image",doc="""
+            You can provide a ignore mark with regions in the image which are to be ignored by the algorithm in segmentation.
+            """%globals(), can_be_blank=True)
 
         # TODO add bkg. synthetized from first image
         self.background_elimination_strategy = cps.Choice(
@@ -304,7 +341,7 @@ class YeastCellSegmentation(cpmi.Identify):
 
         self.segmentation_precision = cps.Integer(
             "Segmentation precision",
-            9,minval=2,maxval=15,doc = '''\
+            2,minval=1,maxval=5,doc = '''\
             <i>(Used only when you want to specify advanced parameters)</i><br>
             Describes how thouroughly the algorithm serches for cells. Higher values should 
             make it easier to find smaller cells because the more parameters sets are searched. 
@@ -312,13 +349,51 @@ class YeastCellSegmentation(cpmi.Identify):
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
-            <li>Start with relatively high value (e.g. 15) </li>
+            <li>Start with relatively high value (e.g. 4) </li>
             <li>If you are satisfied with results, lower the value by 1 until discovered objects still look OK </li>
             </ul></dd>
             </dl>
             '''%globals()
             )
-            
+
+        self.specify_precision_details = cps.Binary(
+            'Do you want to edit details of segmentation precision?', False)
+
+        self.iterations = cps.Integer(
+            "Iterations",
+            6, minval=1, maxval=15, doc = 'Number of iterations done by CellStar.')
+
+        self.seeds_border = cps.Float(
+            "Seeds from border",
+            1, minval=0, maxval=5, doc = '''\
+            How many seeds are to be extracted from this source:<br><br>
+            val = 0 - no seeds from this source<br>
+            val in (0.0, 0.5] - seeds only from second iteration<br>
+            val in (0.5, 1) - seeds only in first iteration<br>
+            val = 1 - seeds in every iteration<br>
+            val in (1, 5.0) - additional random seeding: val*seeds_num total<br>
+            ''')
+
+        self.seeds_content = cps.Float(
+            "Seeds from content",
+            1, minval=0, maxval=5, doc = self.seeds_border.doc)
+
+        self.seeds_centroid = cps.Float(
+            "Seeds from centroid",
+            1, minval=0, maxval=5, doc = self.seeds_border.doc)
+
+        self.contour_points = cps.Integer(
+            "Contour points",
+            44, minval=36, maxval=70, doc = 'Number of points in every contour.')
+
+        self.contour_precision = cps.Float(
+            "Contour precision",
+            49.75, minval=25, maxval=200, doc = 'Number of space points covering average cell diameter.')
+
+        self.weights_number = cps.Integer(
+            "Cell size variants",
+            2, minval=1, maxval=4, doc = 'Number of tested difference size weights in every cell grow.')
+
         self.maximal_cell_overlap = cps.Float(
             "Maximal overlap allowed while final filtering of cells",
             0.2,minval=0,maxval=1,doc='''\
@@ -344,11 +419,20 @@ class YeastCellSegmentation(cpmi.Identify):
         self.use_ground_truth_to_set_params = cps.DoSomething("","Autoadapt parameters",
             self.ground_truth_editor, doc="""
             Use this option to autoadapt parameters required for correct contour identification. This procedure should be run onced
-            for one image in the serie. Using your input the algorithm "learns" to recognized cells. When you click this button the winow will open.
-            Please select one of the images which you would like to segment. On this images you should draw few cells (3-6) and click "Done". Then the 
+            for one image in the serie. Using your input the algorithm "learns" to recognized cells. When you click this button the window will open.
+            Please select one of the images which you would like to segment. If you use background or ignore mask images you will have to provide them as well.
+            On the input image you should draw few cells (3-6) and click "Done". Then the
             "learning" procedure will start. Please be patient. Usually single iteration lasts 1-5 min. The more iteration you will choose, the more likely
-            it is that the algorithm will work better on your images. 
-            Please check 
+            it is that the algorithm will work better on your images.
+            <br><br>
+            There is an experimental alternative to selecting existing image files which may be useful when images are "produced" by the pipeline:
+            <ol>
+            <li>Start Test Run and step down to IdentifyYeastCells module</li>
+            <li>Step through IdentifyYeastCells - it will run segmentation and remember input images.</li>
+            <li>Now you can adapt without specifing any images.</li>
+            </ol>
+            <br><br>
+            Please check
             <a href="http://www.cellprofiler.org/yeasttoolbox/"> Yeast Toolbox documentation</a> for more details.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
@@ -369,7 +453,7 @@ class YeastCellSegmentation(cpmi.Identify):
             <i>(Used only when you want to specify advanced parameters)</i><br>
             Use this option to display autoadapted parameters."""%globals())
 
-        self.autoadapted_params = cps.Text(text="Autoadapted parameters: ", value="[[0.1, 0.0442, 304.45, 15.482, 189.40820000000002, 7.0], [300, 10, 0, 18, 10]]", doc="""
+        self.autoadapted_params = cps.Text(text="Autoadapted parameters: ", value="[[0.0442, 304.45, 15.482, 189.40820000000002], [300, 10, 0, 18, 10]]", doc="""
             <i>(Used only when you want to specify advanced and autoadapted parameters)</i><br>
             Autoadapted parameters are pasted here from the "learning" preocedure. These parameters are used to characterize cell borders. 
             Edit them only if you know what you are doing. If you found good parameters for your datasets
@@ -387,6 +471,9 @@ class YeastCellSegmentation(cpmi.Identify):
             <i>(Used only if outlines are to be saved)</i><br>
             You can use the outlines of the identified objects in modules downstream,
             by selecting them from any drop-down image list."""%globals())
+
+    PRECISION_PARAMS_START = 20
+    PRECISION_PARAMS_END = 26
 
     def settings(self):
         return [self.input_image_name, 
@@ -406,51 +493,82 @@ class YeastCellSegmentation(cpmi.Identify):
                 self.background_elimination_strategy,
                 self.show_autoadapted_params,
                 self.autoadapted_params,
-                self.autoadaptation_steps
+                self.autoadaptation_steps,
+                self.ignore_mask_image_name,
+
+                self.specify_precision_details,
+                self.iterations,
+                self.seeds_border,
+                self.seeds_content,
+                self.seeds_centroid,
+                self.contour_points,
+                self.contour_precision,
+                self.weights_number,
                 ]
-    
+
     def visible_settings(self):
-        list = [self.input_image_name, 
-                self.object_name, 
+        list = [self.input_image_name,
+                self.object_name,
                 self.average_cell_diameter,
                 ]
 
-        list+=[self.bright_field_image,
-                self.background_brighter_then_cell_inside,
-                self.autoadaptation_steps,
-                self.use_ground_truth_to_set_params,
-                self.show_autoadapted_params]
-        
-        if self.show_autoadapted_params:
-            list.append( self.autoadapted_params )
+        list += [self.bright_field_image,
+                 self.background_brighter_then_cell_inside,
+                 self.autoadaptation_steps,
+                 self.use_ground_truth_to_set_params,
+                 self.show_autoadapted_params]
 
-        list.append( self.advanced_parameters )
-        
+        if self.show_autoadapted_params:
+            list.append(self.autoadapted_params)
+
+        list.append(self.advanced_parameters)
+
         #
         # Show the user the background only if self.provide_background is checked
         #
         if self.advanced_parameters:
-            list.append( self.segmentation_precision )
-            list.append( self.maximal_cell_overlap )
-            list.append( self.advanced_cell_filtering )
+            list.append(self.segmentation_precision)
+
+            list.append(self.specify_precision_details)
+            if self.specify_precision_details:
+                list.append(self.iterations)
+                list.append(self.seeds_border)
+                list.append(self.seeds_content)
+                list.append(self.seeds_centroid)
+                list.append(self.contour_points)
+                list.append(self.contour_precision)
+                list.append(self.weights_number)
+
+            list.append(self.maximal_cell_overlap)
+            list.append(self.advanced_cell_filtering)
             if self.advanced_cell_filtering:
-                list.append( self.min_cell_area )
-                list.append( self.max_cell_area )
+                list.append(self.min_cell_area)
+                list.append(self.max_cell_area)
             # Show the user the background only if self.provide_background is checked
-            list.append( self.background_elimination_strategy ) #
-            
+            list.append(self.background_elimination_strategy)  #
+
             if self.background_elimination_strategy == BKG_FILE:
-                list.append(self.background_image_name) 
-            
+                list.append(self.background_image_name)
+
+            list.append(self.ignore_mask_image_name)
+
         list.append(self.should_save_outlines)
         #
         # Show the user the scale only if self.should_save_outlines is checked
         #
         if self.should_save_outlines:
             list.append(self.save_outlines)
-        
+
         return list
-    
+
+
+    def on_setting_changed(self, setting, pipeline):
+        '''If precision is changed then update all the related settings'''
+        if setting == self.segmentation_precision or \
+                                setting == self.specify_precision_details and not self.specify_precision_details.value:
+            self.set_ui_from_precision(self.segmentation_precision.value)
+
+
     def is_interactive(self):
         return False
 
@@ -498,6 +616,17 @@ class YeastCellSegmentation(cpmi.Identify):
             setting_values = setting_values + [True]
             variable_revision_number = 4
 
+        if variable_revision_number < 7:
+            setting_values = setting_values + ['Leave blank']  # ignore mask
+            # decode precision index 3
+            setting_values[3] = str(self.precision_to_ui_map[int(setting_values[3])])
+            variable_revision_number = 7
+        if variable_revision_number == 7:
+            # fill new ones based on precision
+            setting_values = setting_values + [False]
+            params_from_precision = self.get_ui_params_from_precision(int(setting_values[3]))
+            setting_values[self.PRECISION_PARAMS_START:self.PRECISION_PARAMS_END+1] = params_from_precision
+            variable_revision_number = 8
         return setting_values, variable_revision_number, from_matlab
 
     def display(self, workspace, figure=None):
@@ -532,7 +661,7 @@ class YeastCellSegmentation(cpmi.Identify):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         result = self.get_object_categories(pipeline, object_name,
-                                             {self.object_name.value: [] })
+                                            {self.object_name.value: []})
         result += [C_OBJECT_FEATURES]
         return result
 
@@ -544,10 +673,17 @@ class YeastCellSegmentation(cpmi.Identify):
         """
 
         result = self.get_object_measurements(pipeline, object_name, category,
-                                               {self.object_name.value: [] })
+                                              {self.object_name.value: []})
         if category == C_OBJECT_FEATURES:
             result += [FTR_OBJECT_QUALITY]
         return result
+
+    ui_to_precision_map = dict([(1, 9), (2, 11), (3, 12), (4, 13), (5, 15)])
+    precision_to_ui_map = dict([(v, k) for k, v in ui_to_precision_map.items()] + [(10, 2)])
+
+    @property
+    def decoded_segmentation_precision_value(self):
+        return self.ui_to_precision_map[self.segmentation_precision.value]
 
     @memory_profile
     def run(self, workspace):
@@ -555,63 +691,39 @@ class YeastCellSegmentation(cpmi.Identify):
         self.current_workspace = workspace
         image_set = workspace.image_set
 
-        input_image = image_set.get_image(input_image_name,must_be_grayscale = True)
+        # same image_set for fitting
+        self.fitting_image_set = image_set
+
+        #
+        # Load images from workspace
+        #
+        input_pixels, background_pixels, ignore_mask_pixels = self.get_input_images_from_image_set(image_set)
+
+        input_image = image_set.get_image(input_image_name, must_be_grayscale=True)
         self.input_image_file_name = input_image.file_name
-        input_pixels = input_image.pixel_data
-
-        # Load previously computed background.
-        if self.background_elimination_strategy == BKG_FILE:
-            background_pixels = image_set.get_image(self.background_image_name.value, must_be_grayscale=True).pixel_data
-        elif self.background_elimination_strategy == BKG_FIRST: #TODO make it happen
-            background_pixels = self.__get(F_BACKGROUND, workspace, None)
-        else:
-            background_pixels = None
-
-        # Invert images if required.
-        if not self.background_brighter_then_cell_inside:
-            input_pixels = 1 - input_pixels
-            if self.background_elimination_strategy == BKG_FILE:
-                background_pixels = 1 - background_pixels
-
-        # support for fluorescent images
-        # here it is design question: we assume that the user *should* say
-        # truth about background and inside of cells: insides are brighter
-        # than background (so the bkg and image for fluorescent will be 
-        # inverted at this stage)
-        if not self.bright_field_image:
-            sigma = 4 # TODO think if it is a big problem to hardcode it here
-            size = int(sigma * 4)+1
-            mask = np.ones(input_pixels.shape, bool)
-            edge_pixels = laplacian_of_gaussian(input_pixels, mask, size, sigma)
-            factor = 10 # TODO think if hardcoded is fine
-            input_pixels = np.subtract(input_pixels, factor*edge_pixels) 
-
+        self.current_workspace.display_data.input_pixels = input_pixels
 
         #
-        # Preprocessing (only normalization)
+        # Preprocessing
         #
-        normalized_image, background_pixels = self.preprocessing(input_pixels, background_pixels)
+        input_pixels, background_pixels, ignore_mask_pixels = self.preprocess_images(input_pixels, background_pixels, ignore_mask_pixels)
 
         #
         # Segmentation
         #
-        objects, objects_qualities, background_pixels = self.segmentation(normalized_image, background_pixels)
+        objects, objects_qualities, background_pixels = self.segmentation(input_pixels, background_pixels, ignore_mask_pixels)
         objects.parent_image = input_image
 
         if self.__get(F_BACKGROUND, workspace, None) is None and self.background_elimination_strategy == BKG_FIRST:
             self.__set(F_BACKGROUND, workspace, background_pixels)
-        
-        #
-        # Postprocessing
-        #
-        self.postprocessing(objects)
+
         workspace.object_set.add_objects(objects, self.object_name.value)
 
         # Make outlines
         outline_image = cellprofiler.cpmath.outline.outline(objects.segmented)
         if self.should_save_outlines.value:
             out_img = cpi.Image(outline_image.astype(bool),
-                                parent_image = normalized_image)
+                                parent_image = input_image)
             workspace.image_set.add(self.save_outlines.value, out_img)
 
         # Save measurements
@@ -625,43 +737,79 @@ class YeastCellSegmentation(cpmi.Identify):
 
         cpmi.add_object_count_measurements(workspace.measurements,
                                            self.object_name.value, np.max(objects.segmented))
-        
-    # 
-    # Preprocessing of the input bright field image data.
-    # Returns: normalized_image 
-    #
-    def preprocessing(self,input_pixels,background_pixels):
-        def adam_normalization(image):
-            width = image.shape[1]
-            height = image.shape[0]
-            image1d = np.array(list(image.reshape(-1)))
-            image2d = np.zeros(image.shape)
-            
-            for y in xrange(height):
-                for x in xrange(width):
-                    image2d[y,x] = image1d[y*width + x]
-            return image2d
 
-        #if self.current_workspace.frame is not None:
-        self.current_workspace.display_data.input_pixels = input_pixels
-            
-        
-        if background_pixels != None:
-            background_pixels_normalized = adam_normalization(background_pixels)
-        else:
-            background_pixels_normalized = None
-            
-        return adam_normalization(input_pixels), background_pixels_normalized
+    def set_params_from_ui(self, params):
+        def update_params(next_name, first_name, random_name, ui_value):
+            params["segmentation"]["seeding"]["from"][next_name] = ui_value >= 1 or ui_value <= 0.5
+            params["segmentation"]["seeding"]["from"][first_name] = ui_value > 0.5
+            params["segmentation"]["seeding"]["from"][random_name] = max(0, ui_value - 1)
+
+        params_seeding = params["segmentation"]["seeding"]["from"]
+        params["segmentation"]["steps"] = self.iterations.value
+        update_params("cellBorderRemovingCurrSegments", "cellBorder", "cellBorderRandom", self.seeds_border.value)
+        update_params("cellContentRemovingCurrSegments", "cellContent", "cellContentRandom", self.seeds_content.value)
+        params_seeding["cellBorderRemovingCurrSegmentsRandom"] = params_seeding["cellBorderRandom"]
+        params_seeding["cellContentRemovingCurrSegmentsRandom"] = params_seeding["cellContentRandom"]
+
+        params["segmentation"]["seeding"]["from"]["snakesCentroids"] = self.seeds_centroid.value > 0.0
+        params["segmentation"]["seeding"]["from"]["snakesCentroidsRandom"] = max(0, self.seeds_centroid.value - 1)
+
+        params["segmentation"]["stars"]["points"] = self.contour_points.value
+        params["segmentation"]["stars"]["step"] = 1.0 / self.contour_precision.value
+
+        default_size_weight_average = np.average(params["segmentation"]["stars"]["sizeWeight"])
+        params["segmentation"]["stars"]["sizeWeight"] = list(
+            create_size_weights(default_size_weight_average, self.weights_number.value)
+        )
+
+    def get_ui_params_from_precision(self, ui_precision):
+        def params_to_ui(params_seeding, next_name, first_name, random_name):
+            random = params_seeding[random_name]
+            next = params_seeding[next_name]
+            first = params_seeding[first_name]
+            if random != 0:
+                return random + 1
+            elif next and first:
+                return 1
+            elif first:
+                return 0.7
+            elif next:
+                return 0.5
+            return 0.0
+
+        params = default_parameters(self.ui_to_precision_map[ui_precision], 30)
+
+        ui_params = [params["segmentation"]["steps"]]
+        params_seeding = params["segmentation"]["seeding"]["from"]
+        ui_params.append(params_to_ui(params_seeding, "cellBorderRemovingCurrSegments", "cellBorder", "cellBorderRandom"))
+        ui_params.append(params_to_ui(params_seeding, "cellContentRemovingCurrSegments", "cellContent", "cellContentRandom"))
+
+        ui_params.append(params_to_ui(params_seeding, "snakesCentroids", "snakesCentroids", "snakesCentroidsRandom"))
+
+        ui_params.append(params["segmentation"]["stars"]["points"])
+        ui_params.append(1.0 / params["segmentation"]["stars"]["step"])
+        ui_params.append(len(params["segmentation"]["stars"]["sizeWeight"]))
+
+        return ui_params
+
+    def set_ui_from_precision(self, ui_precision):
+        ui_precision_values = self.get_ui_params_from_precision(ui_precision)
+        ui_precision_settings = self.settings()[self.PRECISION_PARAMS_START:self.PRECISION_PARAMS_END+1]
+        for setting, value in zip(ui_precision_settings, ui_precision_values):
+            setting.value = value
+
 
     def prepare_cell_star_object(self, segmentation_precision):
         cellstar = Segmentation(segmentation_precision, self.average_cell_diameter.value)
         cellstar.parameters["segmentation"]["maxOverlap"] = self.maximal_cell_overlap.value
+        self.set_params_from_ui(cellstar.parameters)
+
         if self.advanced_cell_filtering.value:
             def calculate_area_multiplier(area):
                 return 4.0 * area / self.average_cell_diameter.value ** 2 / math.pi
 
-            def calculate_size_multiplier(area):
-                return calculate_area_multiplier(area) ** 0.5
+            #def calculate_size_multiplier(area):
+            #    return calculate_area_multiplier(area) ** 0.5
 
             areas_range = self.min_cell_area.value, self.max_cell_area.value
             cellstar.parameters["segmentation"]["minArea"] = max(cellstar.parameters["segmentation"]["minArea"], calculate_area_multiplier(areas_range[0]))
@@ -674,12 +822,35 @@ class YeastCellSegmentation(cpmi.Identify):
             self.autoadapted_params.value = cellstar.encode_auto_params()
         return cellstar
 
+    def preprocess_images(self, input_image, background_image, ignore_mask):
+        # Invert images if required.
+        if not self.background_brighter_then_cell_inside:
+            input_image = 1 - input_image
+            if background_image is not None:
+                background_image = 1 - background_image
+
+        # support for fluorescent images
+        # here it is design question: we assume that the user *should* say
+        # truth about background and inside of cells: insides are brighter
+        # than background (so the bkg and image for fluorescent will be
+        # inverted at this stage)
+        if not self.bright_field_image: # TODO what about background?
+            # TODO exception will be thrown if orig image is not 1 channel...
+            sigma = 4  # TODO think if it is a big problem to hardcode it here
+            size = int(sigma * 4) + 1
+            mask = np.ones(input_image.shape, bool)
+            edge_pixels = laplacian_of_gaussian(input_image, mask, size, sigma)
+            factor = 10  # TODO think if hardcoded is fine
+            input_image = np.subtract(input_image, factor * edge_pixels)
+
+        return input_image, background_image, ignore_mask
+
     #
     # Segmentation of the image into yeast cells.
     # Returns: yeast cells, yeast cells qualities, background
     #
-    def segmentation(self, normalized_image, background_pixels):
-        cellstar = self.prepare_cell_star_object(self.segmentation_precision.value)
+    def segmentation(self, normalized_image, background_pixels, ignore_mask_pixels = None):
+        cellstar = self.prepare_cell_star_object(self.decoded_segmentation_precision_value)
 
         if self.input_image_file_name is not None:
             dedicated_image_folder = pj(pref.get_default_output_directory(), self.input_image_file_name)
@@ -688,6 +859,7 @@ class YeastCellSegmentation(cpmi.Identify):
 
         cellstar.set_frame(normalized_image)
         cellstar.set_background(background_pixels)
+        cellstar.set_mask(ignore_mask_pixels)
         segmented_image, snakes = cellstar.run_segmentation()
 
         objects = cellprofiler.objects.Objects()
@@ -695,94 +867,233 @@ class YeastCellSegmentation(cpmi.Identify):
         objects.unedited_segmented = segmented_image
         objects.small_removed_segmented = np.zeros(normalized_image.shape)
         # objects.parent_image = normalized_image has to be cellprofiler image
-        
-        #if self.current_workspace.frame is not None:
+
         self.current_workspace.display_data.segmentation_pixels = objects.segmented
 
-        return objects, np.array([-s.rank for s in snakes]), cellstar.images.background
+        raw_qualities = [-s.rank for s in snakes]
+        if not raw_qualities == []:
+            raw_interval = min(raw_qualities), max(raw_qualities)
+            logger.info("Qualities are in interval [%.3f,%.3f]." % raw_interval)
+
+        return objects, np.array(raw_qualities), cellstar.images.background
+
+    def fit_parameters(self, input_image, background_image, ignore_mask_image, ground_truth_labels, number_of_steps,
+                       update_callback, wait_callback):
+        """
+
+        :param wait_callback: function that wait and potentially updates UI
+        :param update_callback: function that take number of steps completed and return if fitting should be continued
+        """
+        keep_going = True
+
+        self.param_fit_progress = 0
+        self.best_snake_score = 10
+        self.best_rank_score = 1000000000
+        aft_active = []
+        adaptations_stopped = False
+        cellstar = self.prepare_cell_star_object(min(11, self.decoded_segmentation_precision_value))
+        self.best_parameters = cellstar.parameters
+        self.autoadapted_params.value = cellstar.encode_auto_params()
+
+        try:
+            while (keep_going or not adaptations_stopped) and self.param_fit_progress < number_of_steps:
+                # here put one it. of fitting instead
+                wait_callback(0.5)
+
+                # Thread ended with exception so optimisation have to be stopped.
+                if any(aft_active) and aft_active[0].exception is not None:
+                    break
+
+                # Clean aft_active from dead threads.
+                while any(aft_active) and (not aft_active[0].is_alive() and aft_active[0].started):
+                    aft_active = aft_active[1:]
+
+                # If thread in line start first of them.
+                if any(aft_active) and not aft_active[0].started:
+                    # update parameters which may already be changed
+                    aft_active[0].update_params(self.best_parameters)
+                    aft_active[0].start()
+
+                adaptations_stopped = aft_active == []
+
+                if adaptations_stopped and keep_going and self.param_fit_progress < number_of_steps:
+                    aft_active.append(
+                        AutoFitterThread(run_pf, self.update_snake_params,
+                                         input_image, background_image, ignore_mask_image, ground_truth_labels,
+                                         self.best_parameters,
+                                         self.decoded_segmentation_precision_value, self.average_cell_diameter.value,
+                                         self.update_partial_iteration_progress))
+
+
+                    aft_active.append(
+                        AutoFitterThread(run_rank_pf, self.update_rank_params,
+                                         input_image, background_image, ignore_mask_image, ground_truth_labels,
+                                         self.best_parameters,
+                                         self.update_partial_iteration_progress))
+
+                # here update params. in the GUI
+                keep_going_update = update_callback(self.param_fit_progress + self.param_fit_progress_partial)
+                keep_going = keep_going and keep_going_update
+
+        finally:
+            update_callback(number_of_steps)
+
+    def fit_parameters_with_ui(self, input_image, background_image, ignore_mask_image, ground_truth_labels):
+        import wx
+
+        # reading GT from dialog_box.labels[0] and image from self.pixel
+        progress_max = self.autoadaptation_steps.value * 2  # every step consists of: snake params and ranking params fitting
+
+        with wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progress_max * 100,  # show percents of change
+                               style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME) as dialog:
+            def update(steps):
+                return dialog.Update(steps * 100)[0]
+
+            def wait(time):
+                return wx.Sleep(int(time+0.5))
+
+            self.fit_parameters(input_image, background_image, ignore_mask_image, ground_truth_labels, progress_max, update, wait)
+
+    def get_param_fitting_input_images_from_image_set(self):
+        """
+        Try to load images from current workspace. Can be used when fitting is called in test run after segmentation has been
+        run at least once.
+        """
+        if self.fitting_image_set is None:
+            return None
+
+        images = self.get_input_images_from_image_set(self.fitting_image_set)
+        if images is None:
+            return None
+        return images + (None,)
+
+    def get_input_images_from_image_set(self, image_set):
+        try:
+            background_needed = self.background_elimination_strategy == BKG_FILE
+            ignore_mask_needed = self.ignore_mask_image_name.value != cps.LEAVE_BLANK
+
+            background_image = None
+            ignore_mask = None
+
+            # load images from workspace
+            input_image = image_set.get_image(self.input_image_name.value, must_be_grayscale=True).pixel_data
+            if background_needed:
+                background_image = image_set.get_image(self.background_image_name.value, must_be_grayscale=True).pixel_data
+            if ignore_mask_needed:
+                ignore_mask_image = image_set.get_image(self.ignore_mask_image_name)
+                ignore_mask = ignore_mask_image.pixel_data > 0
+
+            return input_image, background_image, ignore_mask
+        except Exception as ex:
+            logger.info("Could not use image from workspace.image_set because: " + str(ex))
+            return None
+
+
+    def get_param_fitting_input_images_from_user(self):
+        import wx
+        from bioformats import load_image
+
+        def get_file_path(message):
+            with wx.FileDialog(None,
+                               message=message,
+                               wildcard="Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
+                               style=wx.FD_OPEN) as dlg:
+                if dlg.ShowModal() == wx.ID_OK:
+                    return dlg.Path
+                else:
+                    return None
+
+        def load_image_grayscale(path):
+            image = load_image(path)
+            if image.ndim == 3:
+                image = np.sum(image, 2) / image.shape[2]
+            return image
+
+        input_image = None
+        background_image = None
+        ignore_mask = None
+        labels = None
+
+        background_needed = self.background_elimination_strategy == BKG_FILE
+        ignore_mask_needed = self.ignore_mask_image_name.value != cps.LEAVE_BLANK
+
+        message = "In order to autoadapt parameters you need to provide:\n- input image"
+        if background_needed:
+            message += "\n- background image"
+
+        if ignore_mask_needed:
+            message += "\n- ignore mask image"
+
+        with wx.MessageDialog(None, message, "Select images for autoadapt", wx.OK | wx.ICON_INFORMATION) as dlg:
+            dlg.ShowModal()
+
+        input_image_path = get_file_path("Select sample input image")
+        if input_image_path is None:
+            return None
+        else:
+            input_image = load_image_grayscale(input_image_path)
+            label_path = input_image_path + ".lab.png"  # if file attached load labels from file
+            if isfile(label_path):
+                labels = (load_image_grayscale(label_path) * 255).astype(int)
+
+        if background_needed:
+            background_image_path = get_file_path("Select background image")
+            if background_image_path is None:
+                return None
+            else:
+                background_image = load_image_grayscale(background_image_path)
+
+        if ignore_mask_needed:
+            ignore_mask_path = get_file_path("Select ignore mask image")
+            if ignore_mask_path is None:
+                return None
+            else:
+                ignore_mask = load_image_grayscale(ignore_mask_path) > 0
+
+        return input_image, background_image, ignore_mask, labels
 
     def ground_truth_editor( self ):
         '''Display a UI for GT editing'''
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         from wx import OK
         import wx
-        #title = "%s #%d, image cycle #%d: " % (self.module_name,
-        #                                     self.module_num,
-        #                                     image_set_number)
-        
-        ### opening file dialog
-        labels = None
-        image_path = None
-        with wx.FileDialog(None,
-                            message = "Open an image file",
-                            wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
-                            style = wx.FD_OPEN) as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
-                from bioformats import load_image
-                image_path = dlg.Path
-                image = load_image(image_path) #lip.provide_image(None).pixel_data
-                label_path = dlg.Path + ".lab.png" # if file attached load labels from file
-                if isfile(label_path):
-                    labels = (load_image(label_path) * 255).astype(int)
-            else:
-                return
+
+        ### check if user want to use last pipeline run images
+        pipeline_imagery = self.get_param_fitting_input_images_from_image_set()
+        if pipeline_imagery is not None:
+            # ask if user want to use it
+            with wx.MessageDialog(None,
+                                  "Images used in previous pipeline run are available. Do you want to use them for autoadapting?",
+                                  "Using pipeline images", wx.YES_NO | wx.ICON_QUESTION) as dlg:
+                use_pipeline = dlg.ShowModal()
+            if use_pipeline == wx.ID_NO:
+                pipeline_imagery = None
+
+        ### opening file dialogs
+        input_data = pipeline_imagery or self.get_param_fitting_input_images_from_user()
+        if input_data is None:
+            return
+        input_image, background_image, ignore_mask, labels = input_data
 
         ### opening GT editor
         title = "Please mark few representative cells to allow for autoadapting parameters. \n"
         title += " \n"
         title += 'Press "F" to being freehand drawing.\n'
         title += "Click Help for full instructions."
-        self.pixel_data = image
 
-        ## now we need to do same operation we will do invisibely based on user resposnes
-        # Load previously computed background.
-        if self.background_elimination_strategy == BKG_FILE:
-            try:
-                background_pixels = image_set.get_image(self.background_image_name.value, must_be_grayscale=True).pixel_data
-            except Exception:
-                dlg = wx.MessageDialog(None, "Please load background file first (or switch to different method of background elimination)!", "Warning!", wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
-                return
-
-        elif self.background_elimination_strategy == BKG_FIRST: #TODO make it happen
-            background_pixels = self.__get(F_BACKGROUND, workspace, None)
-        else:
-            background_pixels = None
-
-        # Invert images if required.
-        if not self.background_brighter_then_cell_inside:
-            self.pixel_data = 1 - self.pixel_data
-            if self.background_elimination_strategy == BKG_FILE:
-                background_pixels = 1 - background_pixels
-
-        # adapt the fluorescent image if req.
-        if not self.bright_field_image:
-            # TODO exception will be thrown if orig image is not 1 channel...
-            sigma = 4 # TODO think if it is a big problem to hardcode it here
-            size = int(sigma * 4)+1
-            mask = np.ones(self.pixel_data.shape, bool)
-            edge_pixels = laplacian_of_gaussian(self.pixel_data, mask, size, sigma)
-            factor = 10 # TODO think if hardcoded is fine
-            self.pixel_data = np.subtract(self.pixel_data, factor*edge_pixels) 
-
-        if background_pixels:
-            self.pixel_data = self.pixel_data - background_pixels
-        ## end of image adaptation
-
-        # TODO think what to do if the user chooses new image (and we load old cells)
         if labels is None or not labels.any():
-            edit_labels = [np.zeros(self.pixel_data.shape[:2], int)]
+            edit_labels = [np.zeros(input_image.shape[:2], int)]
 
             if getattr(self, "last_labeling", None) is not None:
-                if self.last_labeling[0] == image_path:
+                if self.last_labeling[0] == hash(abs(np.sum(input_image))):
                     edit_labels = [self.last_labeling[1]]
 
             ## two next lines are hack from Lee
             edit_labels[0][0, 0] = 1
             edit_labels[0][-2, -2] = 1
             with EditObjectsDialog(
-                    self.pixel_data, edit_labels, False, title) as dialog_box:
+                    input_image, edit_labels, False, title) as dialog_box:
+                hack_add_from_file_into_EditObjects(dialog_box)
                 result = dialog_box.ShowModal()
                 if result != OK:
                     return None
@@ -791,74 +1102,22 @@ class YeastCellSegmentation(cpmi.Identify):
             labels[0, 0] = 0
             labels[-2, -2] = 0
 
-            self.last_labeling = (image_path, labels)
+            self.last_labeling = (hash(abs(np.sum(input_image))), labels)
 
         # check if the user provided GT
-        # TODO check for con. comp. and e.g. let it go if more then 3 cells were added
         if not labels.any():
-            dlg = wx.MessageDialog(None, "Please correctly select at least one cell. Otherwise, parameters can not be autoadapted!", "Warning!", wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            with wx.MessageDialog(None,
+                                  "Please correctly select at least one cell. Otherwise, parameters can not be autoadapted!",
+                                  "Warning!", wx.OK | wx.ICON_WARNING) as dlg:
+                dlg.ShowModal()
             return
 
-        ### fitting params 
-        # reading GT from dialog_box.labels[0] and image from self.pixel
-        progressMax = self.autoadaptation_steps.value * 2  # every step consists of: snake params and ranking params fitting
+        input_processed, background_processed, ignore_mask_processed = self.preprocess_images(input_image, background_image, ignore_mask)
 
-        with wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progressMax,
-                               style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME) as dialog:
-            keepGoing = True
+        self.fit_parameters_with_ui(input_processed, background_processed, ignore_mask_processed, labels)
 
-            self.param_fit_progress = 0
-            self.best_snake_score = 10
-            self.best_rank_score = 1000000000
-            aft_active = []
-            adaptations_stopped = False
-            cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
-            self.best_parameters = cellstar.parameters
-            self.autoadapted_params.value = cellstar.encode_auto_params()
-
-            try:
-                while (keepGoing or not adaptations_stopped) and self.param_fit_progress < progressMax:
-                    # here put one it. of fitting instead
-                    wx.Sleep(0.5)
-
-                    # Thread ended with exception so optimisation have to be stopped.
-                    if any(aft_active) and aft_active[0].exception is not None:
-                        break
-
-                    # Clean aft_active from dead threads.
-                    while any(aft_active) and (not aft_active[0].is_alive() and aft_active[0].started):
-                        aft_active = aft_active[1:]
-
-                    # If thread in line start first of them.
-                    if any(aft_active) and not aft_active[0].started:
-                        # update parameters which may already be changed
-                        aft_active[0].update_params(self.best_parameters)
-                        aft_active[0].start()
-
-                    adaptations_stopped = aft_active == []
-
-                    if adaptations_stopped and keepGoing and self.param_fit_progress < progressMax:
-                        aft_active.append(
-                            AutoFitterThread(run_pf, self.update_snake_params, image, labels, self.best_parameters,
-                                     self.segmentation_precision.value, self.average_cell_diameter.value))
-
-                        aft_active.append(
-                            AutoFitterThread(run_rank_pf, self.update_rank_params, image, labels, self.best_parameters))
-
-                    # here update params. in the GUI
-                    keepGoingUpdate = dialog.Update(self.param_fit_progress)[0]
-                    keepGoing = keepGoing and keepGoingUpdate
-
-            finally:
-                dialog.Update(progressMax)
-
-    #
-    # Postprocess objects found by CellStar
-    #
-    def postprocessing(self, objects):
-        pass
+    def update_partial_iteration_progress(self, fraction):
+        self.param_fit_progress_partial = min(0.99, max(self.param_fit_progress_partial, fraction))
 
     def update_snake_params(self, new_parameters, new_snake_score):
         if new_snake_score < self.best_snake_score:
@@ -871,6 +1130,7 @@ class YeastCellSegmentation(cpmi.Identify):
         else:
             logger.info("New auto parameters (%f) are not better than current (%f)." % (new_snake_score,self.best_snake_score))
         self.param_fit_progress += 1
+        self.param_fit_progress_partial = 0
 
     def update_rank_params(self, new_parameters, new_rank_score):
         if new_rank_score < self.best_rank_score:
@@ -882,21 +1142,22 @@ class YeastCellSegmentation(cpmi.Identify):
         else:
             logger.info("New auto ranking parameters (%f) are not better than current (%f)." % (new_rank_score,self.best_rank_score))
         self.param_fit_progress += 1
+        self.param_fit_progress_partial = 0
 
 
 class AutoFitterThread(threading.Thread):
-
     def __init__(self, target, callback, *args):
         self._target = target
         self._args = list(args)
         self._callback = callback
         self.started = False
+        self.mock_alive = False
         self.exception = None
         super(AutoFitterThread, self).__init__()
         pass
 
     def update_params(self, new_params):
-        self._args[2] = new_params
+        self._args[4] = new_params
 
     def run(self):
         try:
@@ -906,6 +1167,22 @@ class AutoFitterThread(threading.Thread):
         except:
             self.exception = True
             raise
+
+    def start(self):
+        #  check if call on the same thread because of explorer
+        if not explorer_expected():
+            self.started = True
+            super(AutoFitterThread, self).start()
+        else:
+            self.mock_alive = True
+            self.run()
+            self.mock_alive = False
+
+    def is_alive(self):
+        if not explorer_expected():
+            return super(AutoFitterThread, self).is_alive()
+        else:
+            return self.mock_alive
 
     def kill(self):
         pass

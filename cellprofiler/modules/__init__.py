@@ -117,21 +117,24 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'watershed': 'Watershed'
 =======
                         'run_imagej': 'RunImageJ',
-                        'saveimages': 'SaveImages',
-                        'sendemail': 'SendEmail',
-                        'smooth': 'Smooth',
-                        'straightenworms': 'StraightenWorms',
-                        'trackobjects': 'TrackObjects',
-                        'tile': 'Tile',
-                        'calculateimageoverlap': 'CalculateImageOverlap',
+                        'saveimages' : 'SaveImages',
+                        'sendemail' : 'SendEmail',
+                        'smooth' : 'Smooth',
+                        'straightenworms' : 'StraightenWorms',
+                        'trackobjects' : 'TrackObjects',
+                        'tile' : 'Tile',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms',
+<<<<<<< master
 <<<<<<< master
                         'yeast_cell_segmentation' : 'YeastCellSegmentation'
 >>>>>>> Yeast Toolbox
 =======
                         'yeast_cell_segmentation': 'YeastCellSegmentation'
 >>>>>>> Update __init__.py
+=======
+                        'yeast_cell_segmentation' : 'IdentifyYeastCells'
+>>>>>>> Merge branch 'yit' into sstoma-yit
                         }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory

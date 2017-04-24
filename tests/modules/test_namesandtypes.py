@@ -1291,7 +1291,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         n.single_load_as_choice.value = load_as_type
         n.single_rescale.value = rescaled
         n.manual_rescale.value = manual_rescale
-        n.volumetric.value = volume
+        n.process_as_3d.value = volume
         if spacing is not None:
             z, x, y = spacing
             n.x.value = x

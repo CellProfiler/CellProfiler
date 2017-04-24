@@ -2114,6 +2114,21 @@ class Pipeline(object):
                 m.reorder_image_measurements(new_image_numbers)
         m.flush()
 
+        if self.volumetric():
+            unsupported = [module.module_name for module in self.__modules if not module.volumetric()]
+
+            if len(unsupported) > 0:
+                self.report_prepare_run_error(
+                    None,
+                    "Cannot run pipeline. "
+                    "The pipeline is configured to process data as 3D. "
+                    "The pipeline contains modules which do not support 3D processing:"
+                    "\n\n{}".format(", ".join(unsupported))
+                )
+
+                return False
+
+
         return True
 
     def post_run(self, *args):

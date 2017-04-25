@@ -171,6 +171,15 @@ class TrAM(cpm.Module):
                                      in it.groupby(zip(label_vals_flattened, lifetime_vals_flattened),
                                                    lambda x: x[0]))
 
+        # sometimes the label is nan. Remove those and their corresponding data
+        not_nan_indices = [i for i, label in enumerate(label_vals_flattened) if not np.isnan(label)]
+        if len(not_nan_indices) > 0:
+            label_vals_flattened = [label_vals_flattened[i] for i in not_nan_indices]
+            lifetime_vals_flattened = [lifetime_vals_flattened[i] for i in not_nan_indices]
+
+            for k in vector_dict.keys():
+                vector_dict.update({k : [vector_dict.get(k)[i] for i in not_nan_indices]})
+
 
         # Include only labels which appear exactly num_images times and have max lifetime of num_images.
         # These are the cells that are tracked the whole time. todo: figure out a way to deal with mitosis
@@ -200,8 +209,8 @@ class TrAM(cpm.Module):
                                            if max_lifetime_by_label[label] == num_images
                                            and label_counts[label] < num_images]
 
-        self.get_full_track_data_for_mitotic_cells(measurements, obj_name, label_vals_flattened, image_vals_flattened,
-                                                   labels_for_mitotic_trajectories)
+#        self.get_full_track_data_for_mitotic_cells(measurements, obj_name, label_vals_flattened, image_vals_flattened,
+#                                                   labels_for_mitotic_trajectories)
 
 
         # put all the data into a 2D array and normalize by typical deviations
@@ -231,10 +240,15 @@ class TrAM(cpm.Module):
 
             tram_dict.update({label : tram})
 
+        # function to return nan if key is nan, otherwis get from dictionary
+        def nan_if_key_nan(dict, key):
+            if(np.isnan(key)): return(float('nan'))
+            else: return dict.get(key)
+
         # place the measurements in the workspace for each image
         for img, labels in zip(img_numbers, label_vals):
             workspace.measurements.add_measurement(obj_name, FULL_TRAM_MEAS_NAME,
-                                                   [tram_dict[label] for label in labels], image_set_number=img)
+                                                   [nan_if_key_nan(tram_dict, label) for label in labels], image_set_number=img)
 
         # store the non-nan TrAM values for the histogram display
         workspace.display_data.tram_values = [value for value in tram_dict.values() if not np.isnan(value)]

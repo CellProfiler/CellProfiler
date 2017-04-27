@@ -1,24 +1,17 @@
 import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.otsu
 import centrosome.outline
 import centrosome.propagate
-import centrosome.threshold
 import numpy
-import scipy.misc
 import scipy.ndimage
-import skimage.morphology.watershed
+import skimage.morphology
 
+import applythreshold
 import cellprofiler.gui.help
-import cellprofiler.icons
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
-import cellprofiler.preferences
 import cellprofiler.setting
-import cellprofiler.workspace
-import identify
 
 __doc__ = u"""
 <b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using objects identified by another module
@@ -127,29 +120,32 @@ N_SETTING_VALUES = 14
 R_PARENT = "Parent"
 
 
-class IdentifySecondaryObjects(identify.Identify):
+class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
     module_name = "IdentifySecondaryObjects"
+
     variable_revision_number = 9
+
     category = "Object Processing"
+
+    def __init__(self):
+        self.apply_threshold = applythreshold.ApplyThreshold()
+
+        super(IdentifySecondaryObjects, self).__init__()
 
     def create_settings(self):
         super(IdentifySecondaryObjects, self).create_settings()
 
-        self.primary_objects = cellprofiler.setting.ObjectNameSubscriber(
-            "Select the input objects",
-            "Nuclei",
-            doc="""
-            What did you call the objects you want to use as "seeds" to identify a secondary
-            object around each one? By definition, each primary object must be associated with exactly one
-            secondary object and completely contained within it.
-            """
-        )
+        self.x_name.text = "Select the input objects"
 
-        self.objects_name = cellprofiler.setting.ObjectNameProvider(
-            "Name the objects to be identified",
-            "Cells",
-            doc="Enter the name that you want to call the objects identified by this module."
-        )
+        self.x_name.doc = """
+        What did you call the objects you want to use as "seeds" to identify a secondary
+        object around each one? By definition, each primary object must be associated with exactly one
+        secondary object and completely contained within it.
+        """
+
+        self.y_name.text = "Name the objects to be identified"
+
+        self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
         self.method = cellprofiler.setting.Choice(
             "Select the method to identify the secondary objects",
@@ -229,9 +225,6 @@ class IdentifySecondaryObjects(identify.Identify):
                 "M_DISTANCE_N": M_DISTANCE_N
             })
         )
-
-        # default smoothing scale is different for idprimary and idsecondary
-        self.threshold_smoothing_scale.value = 0
 
         self.distance_to_dilate = cellprofiler.setting.Integer(
             "Number of pixels by which to expand the primary objects",
@@ -353,12 +346,19 @@ class IdentifySecondaryObjects(identify.Identify):
             """
         )
 
+        self.threshold_setting_version = cellprofiler.setting.Integer(
+            "Threshold setting version",
+            value=self.apply_threshold.variable_revision_number
+        )
+
+        self.apply_threshold.create_settings()
+
+        self.apply_threshold.threshold_smoothing_scale.value = 0
+
     def settings(self):
         settings = super(IdentifySecondaryObjects, self).settings()
 
-        return [
-            self.primary_objects,
-            self.objects_name,
+        return settings + [
             self.method,
             self.image_name,
             self.distance_to_dilate,
@@ -371,18 +371,17 @@ class IdentifySecondaryObjects(identify.Identify):
             self.wants_primary_outlines,
             self.new_primary_outlines_name,
             self.fill_holes
-        ] + settings
+        ] + [self.threshold_setting_version] + self.apply_threshold.settings()[2:]
 
     def visible_settings(self):
-        visible_settings = [
-            self.image_name,
-            self.primary_objects,
-            self.objects_name,
-            self.method
-        ]
+        visible_settings = [self.image_name]
+
+        visible_settings += super(IdentifySecondaryObjects, self).visible_settings()
+
+        visible_settings += [self.method]
 
         if self.method != M_DISTANCE_N:
-            visible_settings += super(IdentifySecondaryObjects, self).visible_settings()
+            visible_settings += self.apply_threshold.visible_settings()[2:]
 
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             visible_settings += [self.distance_to_dilate]
@@ -415,13 +414,13 @@ class IdentifySecondaryObjects(identify.Identify):
 
     def help_settings(self):
         help_settings = [
-            self.primary_objects,
-            self.objects_name,
+            self.x_name,
+            self.y_name,
             self.method,
             self.image_name
         ]
 
-        help_settings += super(IdentifySecondaryObjects, self).help_settings()
+        help_settings += self.apply_threshold.help_settings()[2:]
 
         help_settings += [
             self.distance_to_dilate,
@@ -443,14 +442,25 @@ class IdentifySecondaryObjects(identify.Identify):
         if variable_revision_number < 9:
             raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
 
-        upgrade_settings, _, _ = super(IdentifySecondaryObjects, self).upgrade_settings(
-            setting_values[N_SETTING_VALUES:],
-            variable_revision_number,
-            module_name,
+        threshold_setting_values = setting_values[N_SETTING_VALUES:]
+
+        threshold_settings_version = int(threshold_setting_values[0])
+
+        if threshold_settings_version < 4:
+            threshold_setting_values = self.apply_threshold.upgrade_threshold_settings(threshold_setting_values)
+
+            threshold_settings_version = 9
+
+        threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+            ["None", "None"] + threshold_setting_values[1:],
+            threshold_settings_version,
+            "ApplyThreshold",
             False
         )
 
-        setting_values = setting_values[:N_SETTING_VALUES] + upgrade_settings
+        threshold_upgrade_settings = [str(threshold_settings_version)] + threshold_upgrade_settings[2:]
+
+        setting_values = setting_values[:N_SETTING_VALUES] + threshold_upgrade_settings
 
         return setting_values, variable_revision_number, False
 
@@ -461,12 +471,14 @@ class IdentifySecondaryObjects(identify.Identify):
         workspace.display_data.statistics = []
         img = image.pixel_data
         mask = image.mask
-        objects = workspace.object_set.get_objects(self.primary_objects.value)
+        objects = workspace.object_set.get_objects(self.x_name.value)
         global_threshold = None
         if self.method == M_DISTANCE_N:
             has_threshold = False
         else:
-            thresholded_image = self.threshold_image(image_name, workspace)
+            thresholded_image, global_threshold, sigma = self._threshold_image(image_name, workspace)
+            workspace.display_data.global_threshold = global_threshold
+            workspace.display_data.threshold_sigma = sigma
             has_threshold = True
 
         #
@@ -624,7 +636,7 @@ class IdentifySecondaryObjects(identify.Identify):
         objects_out.small_removed_segmented = small_removed_segmented_out
         objects_out.segmented = segmented_out
         objects_out.parent_image = image
-        objname = self.objects_name.value
+        objname = self.y_name.value
         workspace.object_set.add_objects(objects_out, objname)
         if self.use_outlines.value:
             out_img = cellprofiler.image.Image(secondary_outline.astype(bool),
@@ -635,27 +647,25 @@ class IdentifySecondaryObjects(identify.Identify):
         # Add measurements
         #
         measurements = workspace.measurements
-        identify.add_object_count_measurements(measurements, objname, object_count)
-        identify.add_object_location_measurements(measurements, objname,
-                                                  segmented_out)
+        super(IdentifySecondaryObjects, self).add_measurements(workspace)
         #
         # Relate the secondary objects to the primary ones and record
         # the relationship.
         #
         children_per_parent, parents_of_children = \
             objects.relate_children(objects_out)
-        measurements.add_measurement(self.primary_objects.value,
+        measurements.add_measurement(self.x_name.value,
                                      cellprofiler.measurement.FF_CHILDREN_COUNT % objname,
                                      children_per_parent)
         measurements.add_measurement(objname,
-                                     cellprofiler.measurement.FF_PARENT % self.primary_objects.value,
+                                     cellprofiler.measurement.FF_PARENT % self.x_name.value,
                                      parents_of_children)
         image_numbers = numpy.ones(len(parents_of_children), int) * \
                         measurements.image_set_number
         mask = parents_of_children > 0
         measurements.add_relate_measurement(
                 self.module_num, R_PARENT,
-                self.primary_objects.value, self.objects_name.value,
+                self.x_name.value, self.y_name.value,
                 image_numbers[mask], parents_of_children[mask],
                 image_numbers[mask],
                 numpy.arange(1, len(parents_of_children) + 1)[mask])
@@ -665,25 +675,26 @@ class IdentifySecondaryObjects(identify.Identify):
         if self.wants_discard_edge and self.wants_discard_primary:
             workspace.object_set.add_objects(new_objects,
                                              self.new_primary_objects_name.value)
-            identify.add_object_count_measurements(measurements,
-                                                   self.new_primary_objects_name.value,
-                                                   numpy.max(new_objects.segmented))
-            identify.add_object_location_measurements(measurements,
-                                                      self.new_primary_objects_name.value,
-                                                      new_objects.segmented)
-            for parent_objects, parent_name, child_objects, child_name in (
-                    (objects, self.primary_objects.value,
-                     new_objects, self.new_primary_objects_name.value),
-                    (new_objects, self.new_primary_objects_name.value,
-                     objects_out, objname)):
-                children_per_parent, parents_of_children = \
-                    parent_objects.relate_children(child_objects)
-                measurements.add_measurement(parent_name,
-                                             cellprofiler.measurement.FF_CHILDREN_COUNT % child_name,
-                                             children_per_parent)
-                measurements.add_measurement(child_name,
-                                             cellprofiler.measurement.FF_PARENT % parent_name,
-                                             parents_of_children)
+            super(IdentifySecondaryObjects, self).add_measurements(
+                workspace,
+                input_object_name=self.x_name.value,
+                output_object_name=self.new_primary_objects_name.value
+            )
+
+            children_per_parent, parents_of_children = new_objects.relate_children(objects_out)
+
+            measurements.add_measurement(
+                self.new_primary_objects_name.value,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % objname,
+                children_per_parent
+            )
+
+            measurements.add_measurement(
+                objname,
+                cellprofiler.measurement.FF_PARENT % self.new_primary_objects_name.value,
+                parents_of_children
+            )
+
         if self.show_window:
             object_area = numpy.sum(segmented_out > 0)
             workspace.display_data.object_pct = \
@@ -694,9 +705,30 @@ class IdentifySecondaryObjects(identify.Identify):
             workspace.display_data.global_threshold = global_threshold
             workspace.display_data.object_count = object_count
 
-    def display(self, workspace, figure):
-        from identify import TS_BINARY_IMAGE
+    def _threshold_image(self, image_name, workspace, automatic=False):
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
+        local_threshold, global_threshold = self.apply_threshold.get_threshold(image, workspace, automatic)
+
+        self.apply_threshold.add_threshold_measurements(
+            self.y_name.value,
+            workspace.measurements,
+            local_threshold,
+            global_threshold
+        )
+
+        binary_image, sigma = self.apply_threshold.apply_threshold(image, local_threshold, automatic)
+
+        self.apply_threshold.add_fg_bg_measurements(
+            self.y_name.value,
+            workspace.measurements,
+            image,
+            binary_image
+        )
+
+        return binary_image, global_threshold, sigma
+
+    def display(self, workspace, figure):
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
         primary_labels = workspace.display_data.primary_labels
@@ -720,7 +752,7 @@ class IdentifySecondaryObjects(identify.Identify):
                                "%.1f pixels" % median_diameter])
             statistics.append(["90th pctile diameter",
                                "%.1f pixels" % high_diameter])
-            if self.method != M_DISTANCE_N and self.threshold_scope != TS_BINARY_IMAGE:
+            if self.method != M_DISTANCE_N:
                 statistics.append(["Thresholding filter size",
                                    "%.1f" % workspace.display_data.threshold_sigma])
             statistics.append(["Area covered by objects", "%.1f %%" % object_pct])
@@ -729,16 +761,16 @@ class IdentifySecondaryObjects(identify.Identify):
         figure.set_subplots((2, 2))
         title = "Input image, cycle #%d" % workspace.measurements.image_number
         figure.subplot_imshow_grayscale(0, 0, img, title)
-        figure.subplot_imshow_labels(1, 0, segmented_out, "%s objects" % self.objects_name.value,
+        figure.subplot_imshow_labels(1, 0, segmented_out, "%s objects" % self.y_name.value,
                                      sharexy=figure.subplot(0, 0))
 
         cplabels = [
-            dict(name=self.primary_objects.value,
+            dict(name=self.x_name.value,
                  labels=[primary_labels]),
-            dict(name=self.objects_name.value,
+            dict(name=self.y_name.value,
                  labels=[segmented_out])]
         title = "%s and %s outlines" % (
-            self.primary_objects.value, self.objects_name.value)
+            self.x_name.value, self.y_name.value)
         figure.subplot_imshow_grayscale(
                 0, 1, img, title=title, cplabels=cplabels,
                 sharexy=figure.subplot(0, 0))
@@ -794,95 +826,94 @@ class IdentifySecondaryObjects(identify.Identify):
         return segmented_labels_out
 
     def is_object_identification_module(self):
-        '''IdentifySecondaryObjects makes secondary objects sets so it's a identification module'''
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
-        columns = identify.get_object_measurement_columns(self.objects_name.value)
-        columns += [(self.primary_objects.value,
-                     cellprofiler.measurement.FF_CHILDREN_COUNT % self.objects_name.value,
-                     cellprofiler.measurement.COLTYPE_INTEGER),
-                    (self.objects_name.value,
-                     cellprofiler.measurement.FF_PARENT % self.primary_objects.value,
-                     cellprofiler.measurement.COLTYPE_INTEGER)]
-        if self.method != M_DISTANCE_N:
-            columns += super(IdentifySecondaryObjects, self).get_measurement_columns(pipeline)
         if self.wants_discard_edge and self.wants_discard_primary:
-            columns += identify.get_object_measurement_columns(self.new_primary_objects_name.value)
-            columns += [(self.new_primary_objects_name.value,
-                         cellprofiler.measurement.FF_CHILDREN_COUNT % self.objects_name.value,
-                         cellprofiler.measurement.COLTYPE_INTEGER),
-                        (self.objects_name.value,
-                         cellprofiler.measurement.FF_PARENT % self.new_primary_objects_name.value,
-                         cellprofiler.measurement.COLTYPE_INTEGER)]
-            columns += [(self.primary_objects.value,
-                         cellprofiler.measurement.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
-                         cellprofiler.measurement.COLTYPE_INTEGER),
-                        (self.new_primary_objects_name.value,
-                         cellprofiler.measurement.FF_PARENT % self.primary_objects.value,
-                         cellprofiler.measurement.COLTYPE_INTEGER)]
+            columns = super(IdentifySecondaryObjects, self).get_measurement_columns(
+                pipeline,
+                additional_objects=[
+                    (self.x_name, self.new_primary_objects_name.value)
+                ]
+            )
+
+            columns += [
+                (
+                    self.new_primary_objects_name.value,
+                    cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                    cellprofiler.measurement.COLTYPE_INTEGER
+                ),
+                (
+                    self.y_name.value,
+                    cellprofiler.measurement.FF_PARENT % self.new_primary_objects_name.value,
+                    cellprofiler.measurement.COLTYPE_INTEGER
+                )
+            ]
+        else:
+            columns = super(IdentifySecondaryObjects, self).get_measurement_columns(pipeline)
+
+        if self.method != M_DISTANCE_N:
+            columns += self.apply_threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
 
         return columns
 
     def get_categories(self, pipeline, object_name):
-        """Return the categories of measurements that this module produces
+        categories = super(IdentifySecondaryObjects, self).get_categories(pipeline, object_name)
 
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        """
-        object_dictionary = self.get_object_dictionary()
-        categories = []
         if self.method != M_DISTANCE_N:
-            categories += super(IdentifySecondaryObjects, self).get_categories(pipeline, object_name)
-        categories += self.get_object_categories(pipeline, object_name,
-                                                 object_dictionary)
+            categories += self.apply_threshold.get_categories(pipeline, object_name)
+
+        if self.wants_discard_edge and self.wants_discard_primary:
+            if object_name == self.new_primary_objects_name.value:
+                # new_primary_objects_name objects has the same categories as y_name objects
+                categories += super(IdentifySecondaryObjects, self).get_categories(pipeline, self.y_name.value)
+
+                categories += [cellprofiler.measurement.C_CHILDREN]
+
         return categories
 
     def get_measurements(self, pipeline, object_name, category):
-        """Return the measurements that this module produces
+        measurements = super(IdentifySecondaryObjects, self).get_measurements(pipeline, object_name, category)
 
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        category - return measurements made in this category
-        """
-        object_dictionary = self.get_object_dictionary()
+        if self.method.value != M_DISTANCE_N:
+            measurements += self.apply_threshold.get_measurements(pipeline, object_name, category)
 
-        result = []
-
-        if self.method != M_DISTANCE_N:
-            result += super(IdentifySecondaryObjects, self).get_measurements(pipeline, object_name, category)
-
-        result += self.get_object_measurements(pipeline, object_name, category, object_dictionary)
-
-        return result
-
-    def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
-
-        see Identify.get_object_categories, Identify.get_object_measurements
-        '''
-        object_dictionary = {
-            self.objects_name.value: [self.primary_objects.value]
-        }
         if self.wants_discard_edge and self.wants_discard_primary:
-            object_dictionary[self.objects_name.value] += \
-                [self.new_primary_objects_name.value]
-            object_dictionary[self.new_primary_objects_name.value] = \
-                [self.primary_objects.value]
-        return object_dictionary
+            if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
+                measurements += [
+                    self.new_primary_objects_name.value
+                ]
+
+            if object_name == self.y_name.value and category == cellprofiler.measurement.C_PARENT:
+                measurements += [
+                    self.new_primary_objects_name.value
+                ]
+
+            if object_name == self.new_primary_objects_name.value:
+                if category == cellprofiler.measurement.C_LOCATION:
+                    measurements += [
+                        cellprofiler.measurement.FTR_CENTER_X,
+                        cellprofiler.measurement.FTR_CENTER_Y,
+                        cellprofiler.measurement.FTR_CENTER_Z
+                    ]
+
+                if category == cellprofiler.measurement.C_NUMBER:
+                    measurements += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+
+                if category == cellprofiler.measurement.C_PARENT:
+                    measurements += [self.x_name.value]
+
+            if category == cellprofiler.measurement.C_CHILDREN:
+                if object_name == self.x_name.value:
+                    measurements += [cellprofiler.measurement.FF_COUNT % self.new_primary_objects_name.value]
+
+                if object_name == self.new_primary_objects_name.value:
+                    measurements += [cellprofiler.measurement.FF_COUNT % self.y_name.value]
+
+        return measurements
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
         if self.method != M_DISTANCE_N:
-            return super(IdentifySecondaryObjects, self).get_measurement_objects(
-                pipeline,
-                object_name,
-                category,
-                measurement
-            )
+            return [self.y_name.value]
 
         return []
-
-    def get_measurement_objects_name(self):
-        return self.objects_name.value
-
-
-IdentifySecondary = IdentifySecondaryObjects

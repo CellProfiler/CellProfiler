@@ -421,7 +421,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                 pixels to the objects that are immediately adjacent to them. This method is suited in cases
                 such as objects with branching extensions, for instance neurites, where the goal is to trace
                 outward from the cell body along the branch, assigning pixels in the branch along the way. See
-                the help for the <b>IdentifySecondary</b> module for more details on this method.</li>
+                the help for the <b>IdentifySecondaryObjects</b> module for more details on this method.</li>
                 <li><i>{WA_NONE}</i>: If objects are well separated and bright relative to the background, it
                 may be unnecessary to attempt to separate clumped objects. Using the very fast <i>{WA_NONE}</i>
                 option, a simple threshold will be used to identify objects. This will override any declumping

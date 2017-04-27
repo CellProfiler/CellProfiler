@@ -75,6 +75,11 @@ def test_run_markers(image, module, image_set, workspace):
 
     module.run(workspace)
 
+    if image.multichannel:
+        gradient = skimage.color.rgb2gray(gradient)
+
+        markers = skimage.color.rgb2gray(markers)
+
     expected = skimage.morphology.watershed(gradient, markers)
 
     expected = skimage.measure.label(expected)

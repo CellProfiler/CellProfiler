@@ -1,4 +1,4 @@
-'''<b>Measure Granularity</b> outputs spectra of size measurements 
+'''<b>Measure Granularity</b> outputs spectra of size measurements
 of the textures in the image.
 <hr>
 Image granularity is a texture measurement that tries a series of structure elements
@@ -40,6 +40,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
+import skimage.morphology
 
 'Granularity category'
 C_GRANULARITY = "Granularity_%s_%s"
@@ -213,10 +214,14 @@ class MeasureGranularity(cpm.Module):
         new_shape = np.array(im.pixel_data.shape)
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
-            i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) /
-                    image.subsample_size.value)
-            pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
-            mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > .9
+            if im.dimensions is 2:
+                i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) / image.subsample_size.value)
+                pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
+                mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > .9
+            else:
+                k, i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1], 0:new_shape[2]].astype(float) / image.subsample_size.value)
+                pixels = scind.map_coordinates(im.pixel_data, (k, i, j), order=1)
+                mask = scind.map_coordinates(im.mask.astype(float), (k, i, j)) > .9
         else:
             pixels = im.pixel_data
             mask = im.mask
@@ -225,25 +230,45 @@ class MeasureGranularity(cpm.Module):
         #
         if image.image_sample_size.value < 1:
             back_shape = new_shape * image.image_sample_size.value
-            i, j = (np.mgrid[0:back_shape[0], 0:back_shape[1]].astype(float) /
-                    image.image_sample_size.value)
-            back_pixels = scind.map_coordinates(pixels, (i, j), order=1)
-            back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > .9
+            if im.dimensions is 2:
+                i, j = (np.mgrid[0:back_shape[0], 0:back_shape[1]].astype(float) / image.image_sample_size.value)
+                back_pixels = scind.map_coordinates(pixels, (i, j), order=1)
+                back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > .9
+            else:
+                k, i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1], 0:new_shape[2]].astype(float) / image.subsample_size.value)
+                back_pixels = scind.map_coordinates(pixels, (k, i, j), order=1)
+                back_mask = scind.map_coordinates(mask.astype(float), (k, i, j)) > .9
         else:
             back_pixels = pixels
             back_mask = mask
+            back_shape = new_shape
         radius = image.element_size.value
-        back_pixels = morph.grey_erosion(back_pixels, radius, back_mask)
-        back_pixels = morph.grey_dilation(back_pixels, radius, back_mask)
+        if im.dimensions is 2:
+            selem = skimage.morphology.disk(radius, dtype=bool)
+        else:
+            selem = skimage.morphology.ball(radius, dtype=bool)
+        back_pixels_mask = np.zeros_like(back_pixels)
+        back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
+        back_pixels = skimage.morphology.erosion(back_pixels_mask, selem=selem)
+        back_pixels_mask = np.zeros_like(back_pixels)
+        back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
+        back_pixels = skimage.morphology.dilation(back_pixels_mask, selem=selem)
         if image.image_sample_size.value < 1:
-            i, j = np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float)
-            #
-            # Make sure the mapping only references the index range of
-            # back_pixels.
-            #
-            i *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
-            j *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
-            back_pixels = scind.map_coordinates(back_pixels, (i, j), order=1)
+            if im.dimensions is 2:
+                i, j = np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float)
+                #
+                # Make sure the mapping only references the index range of
+                # back_pixels.
+                #
+                i *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
+                j *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
+                back_pixels = scind.map_coordinates(back_pixels, (i, j), order=1)
+            else:
+                k, i, j = np.mgrid[0:new_shape[0], 0:new_shape[1], 0:new_shape[2]].astype(float)
+                k *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
+                i *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
+                j *= float(back_shape[2] - 1) / float(new_shape[2] - 1)
+                back_pixels = scind.map_coordinates(back_pixels, (k, i, j), order=1)
         pixels -= back_pixels
         pixels[pixels < 0] = 0
 
@@ -290,14 +315,17 @@ class MeasureGranularity(cpm.Module):
         currentmean = startmean
         startmean = max(startmean, np.finfo(float).eps)
 
-        footprint = np.array([[False, True, False],
-                              [True, True, True],
-                              [False, True, False]])
+        if im.dimensions is 2:
+            footprint = skimage.morphology.disk(1, dtype=bool)
+        else:
+            footprint = skimage.morphology.ball(1, dtype=bool)
         statistics = [image.image_name.value]
         for i in range(1, ng + 1):
             prevmean = currentmean
-            ero = morph.grey_erosion(ero, mask=mask, footprint=footprint)
-            rec = morph.grey_reconstruction(ero, pixels, footprint)
+            ero_mask = np.zeros_like(ero)
+            ero_mask[mask == True] = ero[mask == True]
+            ero = skimage.morphology.erosion(ero_mask, selem=footprint)
+            rec = skimage.morphology.reconstruction(ero, pixels, selem=footprint)
             currentmean = np.mean(rec[mask])
             gs = (prevmean - currentmean) * 100 / startmean
             statistics += ["%.2f" % gs]
@@ -308,15 +336,21 @@ class MeasureGranularity(cpm.Module):
             # original image so we can match against object labels
             #
             orig_shape = im.pixel_data.shape
-            i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1]].astype(float)
-            #
-            # Make sure the mapping only references the index range of
-            # back_pixels.
-            #
-            i *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
-            j *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
-            rec = scind.map_coordinates(rec, (i, j), order=1)
-
+            if im.dimensions is 2:
+                i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1]].astype(float)
+                #
+                # Make sure the mapping only references the index range of
+                # back_pixels.
+                #
+                i *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
+                j *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
+                rec = scind.map_coordinates(rec, (i, j), order=1)
+            else:
+                k, i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1], 0:orig_shape[2]].astype(float)
+                k *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
+                i *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
+                j *= float(new_shape[2] - 1) / float(orig_shape[2] - 1)
+                rec = scind.map_coordinates(rec, (k, i, j), order=1)
             #
             # Calculate the means for the objects
             #
@@ -416,6 +450,9 @@ class MeasureGranularity(cpm.Module):
             setting_values = new_setting_values
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True
 
 
 class GranularitySettingsGroup(cps.SettingsGroup):

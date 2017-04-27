@@ -379,3 +379,6 @@ class BlobDetection(cellprofiler.module.Module):
         figure.subplot_imshow(1, 0, overlay, dimensions=dimensions)
 
         figure.subplot_imshow(2, 0, y_data, colormap=colormap, dimensions=dimensions)
+
+    def volumetric(self):
+        return True

@@ -420,24 +420,7 @@ class MeasureObjectSizeShape(cpm.Module):
             self.record_measurement(workspace, object_name, F_EXTENT, extents)
 
             # Centers of mass
-            import mahotas
-
-            if objects.has_parent_image:
-                image = objects.parent_image
-
-                data = image.pixel_data
-
-                spacing = image.spacing
-            else:
-                data = np.ones_like(labels)
-
-                spacing = (1.0, 1.0, 1.0)
-
-            centers = mahotas.center_of_mass(data, labels=labels)
-
-            if np.any(labels == 0):
-                # Remove the 0-label center of mass
-                centers = centers[1:]
+            centers = objects.center_of_mass()
 
             center_z, center_x, center_y = centers.transpose()
 
@@ -460,7 +443,7 @@ class MeasureObjectSizeShape(cpm.Module):
 
                 verts, faces, _, _ = skimage.measure.marching_cubes(
                     volume,
-                    spacing=spacing,
+                    spacing=objects.parent_image.spacing if objects.has_parent_image else (1.0,) * labels.ndim,
                     level=0
                 )
 
@@ -578,6 +561,9 @@ class MeasureObjectSizeShape(cpm.Module):
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True
 
 
 def form_factor(objects):

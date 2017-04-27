@@ -743,6 +743,9 @@ class MeasureObjectNeighbors(cpm.Module):
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True
+
 
 def get_colormap(name):
     '''Get colormap, accounting for possible request for default'''

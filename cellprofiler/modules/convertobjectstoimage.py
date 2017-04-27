@@ -243,6 +243,9 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
 
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True
+
 #
 # Backwards compatability
 #

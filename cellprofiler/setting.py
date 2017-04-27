@@ -1196,8 +1196,7 @@ class FloatRange(Range):
         maxval - the maximum acceptable value of either
         """
         smin, smax = [(u"%f" % v).rstrip("0") for v in value]
-        text_value = ",".join([x + "0" if x.endswith(".") else ""
-                               for x in smin, smax])
+        text_value = ",".join([x + "0" if x.endswith(".") else x for x in smin, smax])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
@@ -1589,13 +1588,14 @@ class Binary(Setting):
     for historical reasons.
     """
 
-    def __init__(self, text, value, *args, **kwargs):
+    def __init__(self, text, value, callback=None, *args, **kwargs):
         """Initialize the binary setting with the module, explanatory
         text and value. The value for a binary setting is True or
         False.
         """
         str_value = (value and YES) or NO
         super(Binary, self).__init__(text, str_value, *args, **kwargs)
+        self.__callback = callback
 
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
@@ -1619,6 +1619,10 @@ class Binary(Setting):
     def __nonzero__(self):
         '''Return the value when testing for True / False'''
         return self.value
+
+    def on_event_fired(self, selection):
+        if self.__callback is not None:
+            self.__callback(selection)
 
 
 class Choice(Setting):

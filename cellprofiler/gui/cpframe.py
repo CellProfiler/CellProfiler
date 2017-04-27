@@ -664,7 +664,6 @@ class CPFrame(wx.Frame):
         # make_help_menu adds submenus, otherwise the submenus
         # will disappear on the Mac.
         self.__menu_help.Append(ID_HELP_WELCOME, "Show Welcome Screen", "Display the welcome screen shown at startup")
-        self.__menu_help.Append(ID_HELP_RELEASE_NOTES, "Release Notes", "Show the release notes in a browser")
         self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual", "Launch the HTML help in a browser")
         self.__menu_help.AppendSeparator()
         cellprofiler.gui.help.make_help_menu(cellprofiler.gui.help.MAIN_HELP, self, self.__menu_help)
@@ -716,7 +715,6 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
         wx.EVT_MENU(self, ID_HELP_MODULE, self.__on_help_module)
         wx.EVT_BUTTON(self, ID_HELP_MODULE, self.__on_help_module)
-        wx.EVT_MENU(self, ID_HELP_RELEASE_NOTES, self.__on_help_release_notes)
         wx.EVT_MENU(self, ID_HELP_ONLINE_MANUAL, self.__on_help_online_manual)
         wx.EVT_MENU(self, ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
         wx.EVT_MENU(self, ID_HELP_SOURCE_CODE, self.__on_help_source_code)
@@ -937,11 +935,6 @@ class CPFrame(wx.Frame):
             os.system('open CellProfiler_python.command')
         else:
             os.system('open -na CellProfiler.app')
-
-    @staticmethod
-    def __on_help_release_notes(event):
-        import webbrowser
-        webbrowser.open("http://github.com/CellProfiler/CellProfiler/wiki/CellProfiler-release-notes")
 
     @staticmethod
     def __on_help_online_manual(event):

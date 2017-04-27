@@ -1018,7 +1018,7 @@ class ImageSegmentation(Module):
         workspace.measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_COUNT % object_name,
-            numpy.array([objects.count], dtype=numpy.uint8)
+            numpy.array([objects.count], dtype=float)
         )
 
     def create_settings(self):

@@ -1,5 +1,4 @@
 import math
-import re
 
 import centrosome.cpmorphology
 import centrosome.outline
@@ -8,12 +7,12 @@ import centrosome.threshold
 import numpy
 import scipy.ndimage
 import scipy.sparse
-import skimage.morphology.watershed
+import skimage.morphology
 
+import applythreshold
 import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
-import identify
 
 __doc__ = """
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images containing bright
@@ -225,26 +224,24 @@ INTENSITY_DECLUMPING_ICON = "IdentifyPrimaryObjects_IntensityDeclumping.png"
 SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
 
 
-class IdentifyPrimaryObjects(identify.Identify):
+class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
     variable_revision_number = 13
 
     category = "Object Processing"
 
     module_name = "IdentifyPrimaryObjects"
 
+    def __init__(self):
+        self.apply_threshold = applythreshold.ApplyThreshold()
+
+        super(IdentifyPrimaryObjects, self).__init__()
+
     def create_settings(self):
         super(IdentifyPrimaryObjects, self).create_settings()
 
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
-            "Select the input image",
-            doc="Select the image that you want to use to identify objects."
-        )
+        self.x_name.doc = "Select the image that you want to use to identify objects."
 
-        self.object_name = cellprofiler.setting.ObjectNameProvider(
-            "Name the primary objects to be identified",
-            "Nuclei",
-            doc="Enter the name that you want to call the objects identified by this module."
-        )
+        self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
         self.size_range = cellprofiler.setting.IntegerRange(
             SIZE_RANGE_SETTING_TEXT,
@@ -635,16 +632,16 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "LIMIT_CHOICE_VALUE": LIMIT_NONE,
                 "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
                 "NO": cellprofiler.setting.NO,
-                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold_correction_factor.get_text(),
+                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.apply_threshold.threshold_correction_factor.get_text(),
                 "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
-                "THRESHOLD_METHOD_TEXT": self.global_operation.get_text(),
-                "THRESHOLD_METHOD_VALUE": centrosome.threshold.TM_MCT,
+                "THRESHOLD_METHOD_TEXT": self.apply_threshold.global_operation.get_text(),
+                "THRESHOLD_METHOD_VALUE": applythreshold.TM_LI,
                 "THRESHOLD_RANGE_MAX": 1.0,
                 "THRESHOLD_RANGE_MIN": 0.0,
-                "THRESHOLD_RANGE_TEXT": self.threshold_range.get_text(),
-                "THRESHOLD_SCOPE_TEXT": self.threshold_scope.get_text(),
-                "THRESHOLD_SCOPE_VALUE": identify.TS_GLOBAL,
-                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.threshold_smoothing_scale.get_text(),
+                "THRESHOLD_RANGE_TEXT": self.apply_threshold.threshold_range.get_text(),
+                "THRESHOLD_SCOPE_TEXT": self.apply_threshold.threshold_scope.get_text(),
+                "THRESHOLD_SCOPE_VALUE": applythreshold.TS_GLOBAL,
+                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.apply_threshold.threshold_smoothing_scale.get_text(),
                 "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
                 "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
                 "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
@@ -654,12 +651,19 @@ class IdentifyPrimaryObjects(identify.Identify):
             })
         )
 
+        self.threshold_setting_version = cellprofiler.setting.Integer(
+            "Threshold setting version",
+            value=self.apply_threshold.variable_revision_number
+        )
+
+        self.apply_threshold.create_settings()
+
+        self.apply_threshold.threshold_smoothing_scale.value = 1.3488  # sigma = 1
+
     def settings(self):
         settings = super(IdentifyPrimaryObjects, self).settings()
 
-        return [
-            self.image_name,
-            self.object_name,
+        settings += [
             self.size_range,
             self.exclude_size,
             self.exclude_border_objects,
@@ -674,7 +678,11 @@ class IdentifyPrimaryObjects(identify.Identify):
             self.limit_choice,
             self.maximum_object_count,
             self.use_advanced
-        ] + settings
+        ]
+
+        threshold_settings = self.apply_threshold.settings()[2:]
+
+        return settings + [self.threshold_setting_version] + threshold_settings
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab:
@@ -719,63 +727,82 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             variable_revision_number = 13
 
-        upgrade_settings, _, _ = super(IdentifyPrimaryObjects, self).upgrade_settings(
-            setting_values[N_SETTINGS:],
-            variable_revision_number,
-            module_name,
+        threshold_setting_values = setting_values[N_SETTINGS:]
+
+        threshold_settings_version = int(threshold_setting_values[0])
+
+        if threshold_settings_version < 4:
+            threshold_setting_values = self.apply_threshold.upgrade_threshold_settings(threshold_setting_values)
+
+            threshold_settings_version = 9
+
+        threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+            ["None", "None"] + threshold_setting_values[1:],
+            threshold_settings_version,
+            "ApplyThreshold",
             False
         )
 
-        setting_values = setting_values[:N_SETTINGS] + upgrade_settings
+        threshold_upgrade_settings = [str(threshold_settings_version)] + threshold_upgrade_settings[2:]
+
+        setting_values = setting_values[:N_SETTINGS] + threshold_upgrade_settings
 
         return setting_values, variable_revision_number, False
 
     def help_settings(self):
-        help_settings = super(IdentifyPrimaryObjects, self).help_settings()
+        threshold_help_settings = self.apply_threshold.help_settings()[2:]
 
-        return [self.use_advanced,
-                self.image_name,
-                self.object_name,
-                self.size_range,
-                self.exclude_size,
-                self.exclude_border_objects
-                ] + help_settings + [
-                   self.unclump_method,
-                   self.watershed_method,
-                   self.automatic_smoothing,
-                   self.smoothing_filter_size,
-                   self.automatic_suppression,
-                   self.maxima_suppression_size,
-                   self.low_res_maxima,
-                   self.fill_holes,
-                   self.limit_choice,
-                   self.maximum_object_count]
+        return [
+            self.use_advanced,
+            self.x_name,
+            self.y_name,
+            self.size_range,
+            self.exclude_size,
+            self.exclude_border_objects
+        ] + threshold_help_settings + [
+            self.use_advanced,
+            self.x_name,
+            self.y_name,
+            self.size_range,
+            self.exclude_size,
+            self.exclude_border_objects
+        ]
 
     def visible_settings(self):
-        vv = [
-            self.use_advanced,
-            self.image_name,
-            self.object_name,
+        visible_settings = [self.use_advanced]
+
+        visible_settings += super(IdentifyPrimaryObjects, self).visible_settings()
+
+        visible_settings += [
             self.size_range,
             self.exclude_size,
             self.exclude_border_objects
         ]
 
         if self.use_advanced.value:
-            vv += super(IdentifyPrimaryObjects, self).visible_settings()
-            vv += [self.unclump_method]
+            visible_settings += self.apply_threshold.visible_settings()[2:]
+
+            visible_settings += [self.unclump_method]
+
             if self.unclump_method != UN_NONE:
-                vv += [self.watershed_method, self.automatic_smoothing]
+                visible_settings += [self.watershed_method, self.automatic_smoothing]
+
                 if not self.automatic_smoothing.value:
-                    vv += [self.smoothing_filter_size]
-                vv += [self.automatic_suppression]
+                    visible_settings += [self.smoothing_filter_size]
+
+                visible_settings += [self.automatic_suppression]
+
                 if not self.automatic_suppression.value:
-                    vv += [self.maxima_suppression_size]
-                vv += [self.low_res_maxima]
-            vv += [self.fill_holes, self.limit_choice]
+                    visible_settings += [self.maxima_suppression_size]
+
+                visible_settings += [self.low_res_maxima]
+
+            visible_settings += [self.fill_holes, self.limit_choice]
+
             if self.limit_choice != LIMIT_NONE:
-                vv += [self.maximum_object_count]
-        return vv
+                visible_settings += [self.maximum_object_count]
+
+        return visible_settings
 
     @property
     def advanced(self):
@@ -786,10 +813,10 @@ class IdentifyPrimaryObjects(identify.Identify):
         return not self.advanced
 
     def run(self, workspace):
-        image_name = self.image_name.value
+        image_name = self.x_name.value
         image = workspace.image_set.get_image(image_name)
         workspace.display_data.statistics = []
-        binary_image = self.threshold_image(image_name, workspace, automatic=self.basic)
+        binary_image, global_threshold, sigma = self._threshold_image(image_name, workspace, automatic=self.basic)
 
         #
         # Fill background holes inside foreground objects
@@ -870,7 +897,8 @@ class IdentifyPrimaryObjects(identify.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%" % (100.0 * float(object_area) /
                                                 float(total_area))])
-                statistics.append(["Thresholding filter size", "%.1f" % workspace.display_data.threshold_sigma])
+                statistics.append(["Thresholding filter size", "%.1f" % sigma])
+                statistics.append(["Threshold", "%0.3g" % global_threshold])
                 if self.basic or self.unclump_method != UN_NONE:
                     statistics.append(["Declumping smoothing filter size",
                                        "%.1f" % (self.calc_smoothing_filter_size())])
@@ -882,10 +910,9 @@ class IdentifyPrimaryObjects(identify.Identify):
             workspace.display_data.border_excluded_labels = border_excluded_labeled_image
 
         # Add image measurements
-        objname = self.object_name.value
+        objname = self.y_name.value
         measurements = workspace.measurements
-        identify.add_object_count_measurements(measurements,
-                                               objname, object_count)
+
         # Add label matrices to the object set
         objects = cellprofiler.object.Objects()
         objects.segmented = labeled_image
@@ -893,10 +920,32 @@ class IdentifyPrimaryObjects(identify.Identify):
         objects.small_removed_segmented = small_removed_labels
         objects.parent_image = image
 
-        workspace.object_set.add_objects(objects, self.object_name.value)
-        identify.add_object_location_measurements(workspace.measurements,
-                                                  self.object_name.value,
-                                                  labeled_image)
+        workspace.object_set.add_objects(objects, self.y_name.value)
+
+        self.add_measurements(workspace)
+
+    def _threshold_image(self, image_name, workspace, automatic=False):
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+
+        local_threshold, global_threshold = self.apply_threshold.get_threshold(image, workspace, automatic)
+
+        self.apply_threshold.add_threshold_measurements(
+            self.y_name.value,
+            workspace.measurements,
+            local_threshold,
+            global_threshold
+        )
+
+        binary_image, sigma = self.apply_threshold.apply_threshold(image, local_threshold, automatic)
+
+        self.apply_threshold.add_fg_bg_measurements(
+            self.y_name.value,
+            workspace.measurements,
+            image,
+            binary_image
+        )
+
+        return binary_image, global_threshold, sigma
 
     def limit_object_count(self, labeled_image, object_count):
         '''Limit the object count according to the rules
@@ -966,7 +1015,7 @@ class IdentifyPrimaryObjects(identify.Identify):
             return labeled_image, object_count, 7
 
         cpimage = workspace.image_set.get_image(
-                self.image_name.value, must_be_grayscale=True)
+                self.x_name.value, must_be_grayscale=True)
         image = cpimage.pixel_data
         mask = cpimage.mask
 
@@ -1194,17 +1243,17 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             ax = figure.subplot_imshow_grayscale(0, 0, image, title)
             figure.subplot_imshow_labels(1, 0, labeled_image,
-                                         self.object_name.value,
+                                         self.y_name.value,
                                          sharexy=ax)
 
             cplabels = [
-                dict(name=self.object_name.value,
+                dict(name=self.y_name.value,
                      labels=[labeled_image]),
                 dict(name="Objects filtered out by size",
                      labels=[size_excluded_labeled_image]),
                 dict(name="Objects touching border",
                      labels=[border_excluded_labeled_image])]
-            title = "%s outlines" % self.object_name.value
+            title = "%s outlines" % self.y_name.value
             figure.subplot_imshow_grayscale(
                     0, 1, image, title, cplabels=cplabels, sharexy=ax)
 
@@ -1221,48 +1270,31 @@ class IdentifyPrimaryObjects(identify.Identify):
             return self.smoothing_filter_size.value
 
     def is_object_identification_module(self):
-        '''IdentifyPrimaryObjects makes primary objects sets so it's a identification module'''
         return True
 
-    def get_measurement_objects_name(self):
-        '''Return the name to be appended to image measurements made by module
-        '''
-        return self.object_name.value
-
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimAutomatic'''
-        columns = identify.get_object_measurement_columns(self.object_name.value)
-        columns += super(IdentifyPrimaryObjects, self).get_measurement_columns(pipeline)
+        columns = super(IdentifyPrimaryObjects, self).get_measurement_columns(pipeline)
+
+        columns += self.apply_threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
+
         return columns
 
     def get_categories(self, pipeline, object_name):
-        """Return the categories of measurements that this module produces
+        categories = self.apply_threshold.get_categories(pipeline, object_name)
 
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        """
-        result = super(IdentifyPrimaryObjects, self).get_categories(pipeline, object_name)
-        result += self.get_object_categories(pipeline, object_name,
-                                             {self.object_name.value: []})
-        return result
+        categories += super(IdentifyPrimaryObjects, self).get_categories(pipeline, object_name)
+
+        return categories
 
     def get_measurements(self, pipeline, object_name, category):
-        """Return the measurements that this module produces
+        measurements = self.apply_threshold.get_measurements(pipeline, object_name, category)
 
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        category - return measurements made in this category
-        """
-        result = super(IdentifyPrimaryObjects, self).get_measurements(pipeline, object_name, category)
+        measurements += super(IdentifyPrimaryObjects, self).get_measurements(pipeline, object_name, category)
 
-        result += self.get_object_measurements(pipeline, object_name, category, {self.object_name.value: []})
+        return measurements
 
-        return result
+    def get_measurement_objects(self, pipeline, object_name, category, measurement):
+        if measurement in self.get_measurements(pipeline, object_name, category):
+            return [self.y_name.value]
 
-    def get_measurement_objects(self, pipeline, object_name, category,
-                                measurement):
-        """Return the objects associated with image measurements
-
-        """
-        return super(IdentifyPrimaryObjects, self).get_measurement_objects(pipeline, object_name, category, measurement)
-
-
-IdentifyPrimAutomatic = IdentifyPrimaryObjects
+        return []

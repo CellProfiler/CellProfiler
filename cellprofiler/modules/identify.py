@@ -1,11 +1,8 @@
-import applythreshold
-import cellprofiler.gui.help
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.setting
 import numpy
 import scipy.ndimage
+
 import cellprofiler.measurement
+import cellprofiler.module
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -73,111 +70,6 @@ TECH_NOTE_ICON = "gear.png"
 
 
 class Identify(cellprofiler.module.Module):
-    def __init__(self):
-        self.apply_threshold = applythreshold.ApplyThreshold()
-
-        super(Identify, self).__init__()
-
-    def create_settings(self):
-        self.threshold_setting_version = cellprofiler.setting.Integer(
-            "Threshold setting version",
-            value=self.apply_threshold.variable_revision_number
-        )
-
-        for setting_name, setting in vars(self.apply_threshold).iteritems():
-            if isinstance(setting, cellprofiler.setting.Setting):
-                if isinstance(setting, cellprofiler.setting.ImageNameProvider) or \
-                        isinstance(setting, cellprofiler.setting.ImageNameSubscriber):
-                    continue
-
-                setattr(self, setting_name, setting)
-
-        self.threshold_smoothing_scale.value = 1.3488  # sigma = 1
-
-    def settings(self):
-        settings = [self.threshold_setting_version]
-
-        settings += self.apply_threshold.settings()[2:]
-
-        return settings
-
-    def help_settings(self):
-        return self.apply_threshold.help_settings()[2:]
-
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        threshold_settings_version = int(setting_values[0])
-
-        if threshold_settings_version < 4:
-            setting_values = self.apply_threshold.upgrade_threshold_settings(setting_values)
-
-            threshold_settings_version = 9
-
-        upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
-            ["None", "None"] + setting_values[1:],
-            threshold_settings_version,
-            "ApplyThreshold",
-            False
-        )
-
-        upgrade_settings = [str(threshold_settings_version)] + upgrade_settings[2:]
-
-        return upgrade_settings, 0, False
-
-    def visible_settings(self):
-        return self.apply_threshold.visible_settings()[2:]
-
-    def threshold_image(self, image_name, workspace, automatic=False):
-        input = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-
-        local_threshold, global_threshold = self.apply_threshold.get_threshold(input, workspace, automatic)
-
-        self.apply_threshold.add_threshold_measurements(
-            self.get_measurement_objects_name(),
-            workspace.measurements,
-            local_threshold,
-            global_threshold
-        )
-
-        binary_image, sigma = self.apply_threshold.apply_threshold(input, local_threshold, automatic)
-
-        self.apply_threshold.add_fg_bg_measurements(
-            self.get_measurement_objects_name(),
-            workspace.measurements,
-            input,
-            binary_image
-        )
-
-        if hasattr(workspace, "display_data"):
-            workspace.display_data.threshold_sigma = sigma
-
-            if hasattr(workspace.display_data, "statistics"):
-                workspace.display_data.statistics.append(["Threshold", "%0.3g" % global_threshold])
-
-        return binary_image
-
-    def get_measurement_objects_name(self):
-        '''Return the name of the measurement objects
-
-        Identify modules store measurements in the Image table and append an object name to distinguish between
-        different thresholds in the same pipeline.
-        '''
-        raise NotImplementedError("Please implement get_measurement_objects_name() for this module")
-
-    def get_measurement_columns(self, pipeline):
-        return applythreshold.image_measurement_columns(self.get_measurement_objects_name())
-
-    def get_categories(self, pipeline, object_name):
-        return self.apply_threshold.get_categories(pipeline, object_name)
-
-    def get_measurements(self, pipeline, object_name, category):
-        return self.apply_threshold.get_measurements(pipeline, object_name, category)
-
-    def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if measurement in self.get_measurements(pipeline, object_name, category):
-            return [self.get_measurement_objects_name()]
-
-        return []
-
     def get_object_categories(self, pipeline, object_name, object_dictionary):
         '''Get categories related to creating new children
 

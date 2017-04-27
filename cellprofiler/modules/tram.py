@@ -1,27 +1,31 @@
 from cellprofiler.modules import trackobjects
-
-CAT_TRAM = "TrAM"
-MEAS_TRAM = "TrAM"
-FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_TRAM)
-IMAGE = "Image"
-MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
-
-# todo
-__doc__ = ""
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 import numpy as np
 import itertools as it
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 import cellprofiler.measurement as cpmeas
-from collections import Counter
+from collections import Counter, defaultdict
 import re
+from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
+import logging
 
+CAT_TRAM = "TrAM"
+MEAS_TRAM = "TrAM"
+MEAS_LABEL = "Label"
+FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_TRAM)
+FULL_LABEL_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_LABEL)
+IMAGE_NUM_KEY = "Image"
+MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
 
+LABELS_KEY = "labels"
+IMAGE_NUMS_KEY = "image_nums"
+OBJECT_NUMS_KEY = "object_nums"
+PARENT_OBJECT_NUMS_KEY = "parent_object_nums"
+
+# todo
+__doc__ = ""
+
+logger = logging.getLogger(__name__)
 
 class TrAM(cpm.Module):
     module_name = "TrAM"
@@ -123,147 +127,175 @@ class TrAM(cpm.Module):
         img_numbers = measurements.get_image_numbers()
         num_images = len(img_numbers)
 
+        def flatten_list_of_lists(lol): # todo move outside
+            return list(it.chain.from_iterable(lol))
+
         # get vector of tracking label for each data point
         feature_names = measurements.get_feature_names(obj_name)
         tracking_label_feature_name = [name for name in feature_names
-                                       if name.startswith(trackobjects.F_PREFIX + "_" + trackobjects.F_LABEL)][0]
-        label_vals = measurements.get_measurement(obj_name, tracking_label_feature_name, img_numbers) # get the label data
-        label_dict = {tracking_label_feature_name : label_vals} # keep it
+                                       if name.startswith("%s_%s" % (trackobjects.F_PREFIX, trackobjects.F_LABEL))][0]
+        label_vals = measurements.get_measurement(obj_name, tracking_label_feature_name, img_numbers)
+        label_vals_flattened_all = flatten_list_of_lists(label_vals)
+        # determine which indexes we should keep. Get rid of any nan label values
+        not_nan_indices = [i for i, label in enumerate(label_vals_flattened_all) if not np.isnan(label)]
+        label_vals_flattened = [label_vals_flattened_all[i] for i in not_nan_indices] # excludes nan
 
-        # get vector of lifetime for each tracking point
-        lifetime_feature_name = [name for name in feature_names
-                                 if name.startswith(trackobjects.F_PREFIX + "_" + trackobjects.F_LIFETIME)][0]
-        lifetime_vals = measurements.get_measurement(obj_name, lifetime_feature_name, img_numbers)
+        # convenience function to flatten and remove values corresponding to nan labels
+        def extract_flattened_measurements_for_valid_labels(lol):
+            return [flatten_list_of_lists(lol)[i] for i in not_nan_indices]
 
-        selections = self.get_selected_tram_measurements() # measurements that the user wants to run TrAM on
-
-        # get a tuple dictionary entry relating feature name with data values
-        def get_dict_entry(sel):
+        # function to get a tuple dictionary entry relating feature name with data values
+        def get_feature_values_tuple(sel):
             feat_obj_name, feat_name = sel.split("|")
             vals = measurements.get_measurement(feat_obj_name, feat_name, measurements.get_image_numbers())
-            return (feat_name, vals)
+            vals_flattened = extract_flattened_measurements_for_valid_labels(vals)
+            return (feat_name, vals_flattened)
 
-        dict_entry_list = [get_dict_entry(sel) for sel in selections]
-        all_values_dict = dict(dict_entry_list) # contains dictionary from feature name to values
+        # get all the data for TrAM
+        selections = self.get_selected_tram_measurements() # measurements that the user wants to run TrAM on
+        all_values_dict = dict(get_feature_values_tuple(sel) for sel in selections)
         # determine if there are any euclidian (XY) pairs
         if self.wants_XY_Euclidian.value:
             euclidian_pairs = TrAM.Determine_Euclidian_pairs(all_values_dict.keys())
         else:
             euclidian_pairs = []
 
-        all_values_dict.update(label_dict) # add the label dictionary
+        # sanity check: make sure all vectors have the same length
+        vec_lengths = set([len(value) for value in all_values_dict.values()])
+        assert len(vec_lengths) == 1
 
-        # get image numbers into the dict
-        counts = [len(x) for x in label_vals] # number of tracked objects at each time point
-        z = zip(img_numbers, counts)
-        image_vals = [[image for _ in xrange(count)] for image, count in zip(img_numbers, counts)]
-        all_values_dict.update({IMAGE : image_vals})
+        # get vector of image numbers into the dict
+        counts = [len([v for v in x if not np.isnan(v)]) for x in label_vals] # number of non-nan labels at each time point
+        image_vals = [[image for _ in xrange(count)] for image, count in zip(img_numbers, counts)] # repeat image number
+        image_vals_flattened = flatten_list_of_lists(image_vals)
 
-        # We have all the data in lists of lists. Flatten.
-        def flatten_list_of_lists(lol):
-            return list(it.chain.from_iterable(lol))
-        vector_dict = {k : flatten_list_of_lists(v) for k, v in all_values_dict.items()}
-
-        lifetime_vals_flattened = flatten_list_of_lists(lifetime_vals)
-        label_vals_flattened = flatten_list_of_lists(label_vals)
+        # determine max lifetime by label so we can select different cell behaviors
+        lifetime_feature_name = [name for name in feature_names
+                                 if name.startswith("%s_%s" % (trackobjects.F_PREFIX, trackobjects.F_LIFETIME))][0]
+        lifetime_vals_flattened =\
+            extract_flattened_measurements_for_valid_labels(measurements.get_measurement(obj_name,
+                                                                                         lifetime_feature_name,
+                                                                                         img_numbers))
         max_lifetime_by_label = dict(max(lifetimes)
                                      for label, lifetimes
                                      in it.groupby(zip(label_vals_flattened, lifetime_vals_flattened),
                                                    lambda x: x[0]))
 
-        # sometimes the label is nan. Remove those and their corresponding data
-        not_nan_indices = [i for i, label in enumerate(label_vals_flattened) if not np.isnan(label)]
-        if len(not_nan_indices) > 0:
-            label_vals_flattened = [label_vals_flattened[i] for i in not_nan_indices]
-            lifetime_vals_flattened = [lifetime_vals_flattened[i] for i in not_nan_indices]
 
-            for k in vector_dict.keys():
-                vector_dict.update({k : [vector_dict.get(k)[i] for i in not_nan_indices]})
-
-
-        # Include only labels which appear exactly num_images times and have max lifetime of num_images.
-        # These are the cells that are tracked the whole time. todo: figure out a way to deal with mitosis
+        # These are the cells that are tracked the whole time.
         label_counts = Counter(label_vals_flattened) # dict with count of each label
         labels_for_complete_trajectories = [label for label in max_lifetime_by_label.keys()
                                             if max_lifetime_by_label[label] == num_images
                                             and label_counts[label] == num_images]
+        # labels for cells there the whole time but result from splitting
+        labels_for_split_trajectories = [label for label in max_lifetime_by_label.keys()
+                                           if max_lifetime_by_label[label] == num_images
+                                           and label_counts[label] > num_images
+                                           and not np.isnan(label)]
 
-        # create dictionary that doesn't have the tracking label or image number since these will never be TrAMmed.
-        data_only_dict = vector_dict.copy()
-        data_only_dict.pop(tracking_label_feature_name) # remove
-        image_vals_flattened = data_only_dict.pop(IMAGE) # remove and keep
+
+        # create dictionary to translate from label to object number in last frame. This is how we will store results.
+        object_nums_flattened =\
+            extract_flattened_measurements_for_valid_labels(measurements.get_measurement(obj_name,
+                                                                                         M_NUMBER_OBJECT_NUMBER,
+                                                                                         img_numbers))
+        last_image_num = img_numbers[-1]
+        last_frame_label_to_object_num =\
+            {object_num : label for object_num, label, image_num in zip(object_nums_flattened, label_vals_flattened,
+                                                                        image_vals_flattened)
+             if image_num == last_image_num}
 
         # now restrict vectors only to labels of complete trajectories
-        keep_indices = [i for i, label in enumerate(label_vals_flattened) if label in labels_for_complete_trajectories]
-        data_only_dict_complete_trajectories = {k : [v[i] for i in keep_indices] for k, v in data_only_dict.items()}
+        complete_trajectory_indices = [i for i, label in enumerate(label_vals_flattened) if label in labels_for_complete_trajectories]
+        all_values_dict_complete_trajectories = {k : [v[i] for i in complete_trajectory_indices] for k, v in all_values_dict.items()}
 
-        # compute typical inter-timepoint variation. This is computed across only non-mitotic tracks
-        label_vals_flattened_complete_trajectories =[label_vals_flattened[i] for i in keep_indices]
-        image_vals_flattened_complete_trajectories = [image_vals_flattened[i] for i in keep_indices]
-        tad = TrAM.compute_typical_deviations(data_only_dict_complete_trajectories,
+        # compute typical inter-timepoint variation for complete trajectories only.
+        label_vals_flattened_complete_trajectories = [label_vals_flattened[i] for i in complete_trajectory_indices]
+        image_vals_flattened_complete_trajectories = [image_vals_flattened[i] for i in complete_trajectory_indices]
+        tad = TrAM.compute_typical_deviations(all_values_dict_complete_trajectories,
                                               label_vals_flattened_complete_trajectories,
                                               image_vals_flattened_complete_trajectories)
 
-        # add in data for cells there the whole time but result from mitoses
-        labels_for_mitotic_trajectories = [label for label in max_lifetime_by_label.keys()
-                                           if max_lifetime_by_label[label] == num_images
-                                           and label_counts[label] < num_images]
-
-#        self.get_full_track_data_for_mitotic_cells(measurements, obj_name, label_vals_flattened, image_vals_flattened,
-#                                                   labels_for_mitotic_trajectories)
-
 
         # put all the data into a 2D array and normalize by typical deviations
-        data_array = np.column_stack(data_only_dict_complete_trajectories.values())
-        data_keys = data_only_dict_complete_trajectories.keys()
-        inv_devs = np.diag([1/tad[k] for k in data_keys]) # inverse of typical deviation
-        normalized_data_array = np.dot(data_array, inv_devs) # perform the multiplication
+        all_data_array = np.column_stack(all_values_dict.values())
+        tram_feature_names = all_values_dict_complete_trajectories.keys()
+        inv_devs = np.diag([1/tad[k] for k in tram_feature_names]) # diagonal matrix of inverse typical deviation
+        normalized_all_data_array = np.dot(all_data_array, inv_devs) # perform the multiplication
 
-        # now get all unique labels and run through them, computing tram
+        # this is how we identify our TrAM measurements to cells
+        next_available_tram_label = 0
+
+        # compute TrAM for each complete trajectory. Store result by object number in last frame
         tram_dict = dict()
-        for label in set(label_vals_flattened):
-            # if not a complete trajectory then the answer is nan
-            if label not in labels_for_complete_trajectories:
+        for label in labels_for_complete_trajectories:
+            indices = [i for i, lab in enumerate(label_vals_flattened_complete_trajectories) if lab == label]
+
+            if len(indices) < MIN_TRAM_LENGTH: # not enough data points
                 tram = float('nan')
             else:
-                indices = [i for i in range(0, len(label_vals_flattened_complete_trajectories))
-                           if label_vals_flattened_complete_trajectories[i] == label]
+                tram = self.compute_TrAM(tram_feature_names, normalized_all_data_array,
+                                         image_vals_flattened_complete_trajectories, indices, euclidian_pairs)
 
-                if len(indices) < MIN_TRAM_LENGTH:
-                    tram = float('nan')
-                else:
-                    normalized_data_for_label = normalized_data_array[indices,] # get the corresponding data
-                    images = [image_vals_flattened_complete_trajectories[i] for i in indices]
-                    normalized_data_for_label = normalized_data_for_label[np.argsort(images),] # order by time
-                    normalized_data_dict = {data_keys[i] : normalized_data_for_label[:,i] for i in range(0,len(data_keys)) }
-                    tram = self.compute_TrAM(normalized_data_dict, euclidian_pairs)
+            object_num = last_frame_label_to_object_num.get(label)
+            tram_dict.update({object_num : (tram, next_available_tram_label)})
+            next_available_tram_label += 1
 
-            tram_dict.update({label : tram})
 
-        # function to return nan if key is nan, otherwis get from dictionary
-        def nan_if_key_nan(dict, key):
-            if(np.isnan(key)): return(float('nan'))
-            else: return dict.get(key)
+        # now compute TrAM for split trajectories
+        tracking_info_dict = dict()
+        tracking_info_dict[LABELS_KEY] = label_vals_flattened
+        tracking_info_dict[IMAGE_NUMS_KEY] = image_vals_flattened
+        tracking_info_dict[OBJECT_NUMS_KEY] = object_nums_flattened
 
-        # place the measurements in the workspace for each image
-        for img, labels in zip(img_numbers, label_vals):
-            workspace.measurements.add_measurement(obj_name, FULL_TRAM_MEAS_NAME,
-                                                   [nan_if_key_nan(tram_dict, label) for label in labels], image_set_number=img)
+        parent_object_text_start = "%s_%s" % (trackobjects.F_PREFIX, trackobjects.F_PARENT_OBJECT_NUMBER)
+        parent_object_feature = next(feature_name for feature_name in feature_names
+                                     if feature_name.startswith(parent_object_text_start))
+        tracking_info_dict[PARENT_OBJECT_NUMS_KEY] = \
+            extract_flattened_measurements_for_valid_labels(measurements.get_measurement(obj_name,
+                                                                                         parent_object_feature,
+                                                                                         img_numbers))
+
+        split_trajectories_tram_dict = \
+            self.get_full_track_data_for_split_cells(labels_for_split_trajectories, tram_feature_names,
+                                                     euclidian_pairs, normalized_all_data_array,
+                                                     tracking_info_dict, next_available_tram_label)
+        tram_dict.update(split_trajectories_tram_dict) # store them with the others
+
+        # todo: return image numbers to report TrAM for and store tram for all those images/objects
+
+        def get_element_or_default_for_None(x, index, default):
+            if x is None:
+                return default
+            else:
+                return x[index]
+
+        # place the measurements in the workspace for last image
+        tram_values_to_save =\
+            [get_element_or_default_for_None(tram_dict.get(object_num), 0, float('nan')) for object_num in last_frame_label_to_object_num]
+        tram_labels_to_save =\
+            [get_element_or_default_for_None(tram_dict.get(object_num), 1, float('nan')) for object_num in last_frame_label_to_object_num]
+        workspace.measurements.add_measurement(obj_name, FULL_TRAM_MEAS_NAME, tram_values_to_save, last_image_num)
+        workspace.measurements.add_measurement(obj_name, FULL_LABEL_MEAS_NAME, tram_labels_to_save, last_image_num)
 
         # store the non-nan TrAM values for the histogram display
-        workspace.display_data.tram_values = [value for value in tram_dict.values() if not np.isnan(value)]
+        workspace.display_data.tram_values = [value for value, tram_label in tram_dict.values() if not np.isnan(value)]
 
-        # todo: add unique identifier for each TrAM track
-        # todo: add mitosis count to each track
 
-        pass #todo remove
-
-    def compute_TrAM(self, normalized_values_dict, euclidian):
+    def compute_TrAM(self, tram_feature_names, normalized_data_array, image_vals_flattened, indices, euclidian):
+        # todo: update the below text
         """
         :param normalized_values_dict: keys are feature names, values are normalized feature values across the track 
         :param euclidian list of pairs (tuples) of XY features which should be treated as Euclidian in the computation
         :return: TrAM value for this trajectory
         """
+
+        normalized_data_for_label = normalized_data_array[indices,:]  # get the corresponding data
+        images = [image_vals_flattened[i] for i in indices]
+
+        normalized_data_for_label = normalized_data_for_label[np.argsort(images),]  # order by image
+        normalized_values_dict = {tram_feature_names[i]: normalized_data_for_label[:, i] for i in range(0, len(tram_feature_names))}
+
         def compute_single_aberration(normalized_values):
             """
             Figure out the deviation from smooth at each time point
@@ -338,26 +370,67 @@ class TrAM(cpm.Module):
 
         return tram
 
-    @staticmethod
-    def get_full_track_data_for_mitotic_cells(measurements, obj_name, tram_features, label_vals_flattened, image_vals_flattened,
-                                              labels_for_mitotic_trajectories):
+    def get_full_track_data_for_split_cells(self, labels_for_split_trajectories, tram_feature_names, euclidian,
+                                            normalized_data_array, tracking_info_dict, next_available_tram_label):
+        # todo: update text below
         """
         
-        :param measurements: The usual measurements object 
-        :param obj_name: Name of object we are tracking
-        :param tram_features: List of feature names used for TrAM calculation
-        :param label_vals_flattened: The tracking labels, flattened to a single vector
-        :param image_vals_flattened: The image numbers, flattened to a single vector
+        :param normalized_data_array: array whose columns correspond to TrAM features, in order of tram_feature_names
+        :param tracking_info_dict: dictionary of tracking info (flattened arrays), e.g. object numbers, parents.
         :param labels_for_mitotic_trajectories: The tracking labels we should analyze
-        :return: Tuple of
-                 (1) dictionary from feature name to data list
-                 (2) TrAM labels list
-                 (3) Image numbers list
-                 
+        :param next_available_tram_label: First available label number for tram (this gets updated by the method)
+        :return: dictionary from object number in last frame to (TrAM value, TrAM label)
         """
-        feature_names = measurements.get_feature_names(obj_name)
-        
-        pass
+
+        label_vals_flattened = tracking_info_dict[LABELS_KEY]
+        image_vals_flattened = tracking_info_dict[IMAGE_NUMS_KEY]
+        object_nums_flattened = tracking_info_dict[OBJECT_NUMS_KEY]
+        parent_object_nums_flattened = tracking_info_dict[PARENT_OBJECT_NUMS_KEY]
+
+        first_image_num = min(image_vals_flattened)
+        last_image_num = max(image_vals_flattened)
+
+        # Make a map from (image,object_number) to flattened array index so we can find parents
+        img_obj_to_index = dict([((image_vals_flattened[i], object_nums_flattened[i]), i)
+                                 for i in range(0, len(image_vals_flattened))])
+
+        # Make a map from label to object number(s) for the last image. We will work backward from these
+        object_nums_for_label_last_image = defaultdict(list) # need to store lists because there can be multiple
+        # Restrict to labels for split trajectories and only last image
+        for label, object_num, image_num in zip(label_vals_flattened, object_nums_flattened, image_vals_flattened):
+            if image_num == last_image_num and label in labels_for_split_trajectories:
+                object_nums_for_label_last_image[label].append(object_num)
+
+        # Compute TrAM for each label in labels_for_split_cells. They will all have
+        # a complete set of predecessor objects going from the end to the start since
+        # they were filtered to have a max lifetime equal to the number of frames.
+        # Here we piece together the entire trajectory for each cell and compute TrAM.
+        # construct the object trajectory in terms of array indexes. These get placed
+        # in an accumulator (list) that should be initialized as empty.
+        def get_parent_indices(image_num, object_num, accum):
+            if image_num < first_image_num: return
+
+            index = img_obj_to_index[(image_num, object_num)]
+            parent_object_num = parent_object_nums_flattened[index]
+            get_parent_indices(image_num-1, parent_object_num, accum)
+
+            accum.append(index)
+
+        # cycle through everything in our dict and compute tram. Store.
+        result = dict()
+        for label in object_nums_for_label_last_image.keys():
+            for object_num_last_image in object_nums_for_label_last_image.get(label): # this is a list
+                indices = list()
+                get_parent_indices(last_image_num, object_num_last_image, indices)
+
+                # Indices now contains the indices for the tracked object across images
+                tram = self.compute_TrAM(tram_feature_names, normalized_data_array, image_vals_flattened,
+                                         indices, euclidian)
+                tram_label = next_available_tram_label
+                next_available_tram_label += 1
+                result.update({object_num_last_image : (tram, tram_label)})
+
+        return result
 
     @staticmethod
     def compute_typical_deviations(values_dict, labels_vec, image_vec):
@@ -428,7 +501,8 @@ class TrAM(cpm.Module):
         return [sel for sel in selections if sel.startswith(object_name)]
 
     def get_measurement_columns(self, pipeline):
-        return [(self.object_name.get_value(), FULL_TRAM_MEAS_NAME, cpmeas.COLTYPE_FLOAT)]
+        return [(self.object_name.get_value(), FULL_TRAM_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
+                (self.object_name.get_value(), FULL_LABEL_MEAS_NAME, cpmeas.COLTYPE_FLOAT)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name.get_value():
@@ -437,7 +511,7 @@ class TrAM(cpm.Module):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name.get_value() and category == CAT_TRAM:
-            return [MEAS_TRAM]
+            return [MEAS_TRAM, MEAS_LABEL]
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):

@@ -20,6 +20,7 @@ FULL_PARENT_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_PARENT)
 FULL_SPLIT_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_SPLIT)
 IMAGE_NUM_KEY = "Image"
 MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
+MIN_NUM_KNOTS = 3
 
 LABELS_KEY = "labels"
 IMAGE_NUMS_KEY = "image_nums"
@@ -29,8 +30,60 @@ TRAM_KEY = "TrAM"
 SPLIT_KEY = "split"
 PARENT_KEY = "parent"
 
-# todo
-__doc__ = ""
+FLOAT_NAN = float('nan')
+
+__doc__ = """
+<b>TrAM</b> Provides a metric for tracking quality based on temporal
+smoothness of features measured across the trajectory.
+<hr>
+This module must be placed downstream of a module that identifies objects
+(e.g., <b>IdentifyPrimaryObjects</b>) and a <b>TrackObjects</b> that tracks
+them. There must be at least %d frames to perform a TrAM analysis.
+
+<p><b>TODO</b>For an example pipeline using TrAM see the CellProfiler
+<a href="http://www.cellprofiler.org/examples.html#TrAM">Examples</a> webpage.</p>
+
+<h4>Available measurements</h4>
+<ul>
+<li><i>TrAM:</i> The TrAM value for the trajectory. Values near 1 are typical
+for a good trajectory. Large values (typically 3 or higher) are more likely
+to correspond to aberrant tracks. The value <i>nan</i> is assigned to objects
+with partial tracks or those for whom <i>Is_Parent</i> is 1. A histogram of
+all computed TrAM values is displayed to help define a cutoff.</li>
+<li><i>Labels:</i> Each tracked item that has a lineage from the first to the
+last frame is assigned a TrAM label on the last frame. If the final object
+does not arise from a split during tracking, then it has this same unique label
+for its entire track. That label is not assigned to any other objects. But if
+an object arises from a split, then its ancestor object(s) will be assigned
+multiple labels (combined from its progeny). These labels are separated by
+a "|" symbol.</li>
+<li><i>Is_Parent:</i> If the object splits into daughters during its track then 
+flag will be 1, and <i>Labels</i> will contain two or more labels separated by "|".
+Otherwise it is 0 and <i>Labels</i> has only one label.</li>
+<li><i>Split_Trajectory:</i> If the object arose from an ancestor whose trajectory
+split, then this value is 1. Otherwise it is 0.</li>
+</ul>
+The following inputs parameterize the TrAM computation:
+<ul>
+<li><i>Tracked objects:</i> Select the tracked objects on which TrAM will be computed</li>
+<li><i>TrAM measurements</i> These are measurements for the selected tracked objects which
+will be used in the TrAM computation. At least one must be selected. Note there may be
+a delay of a few seconds between the selection of <i>Tracked objects</i> and the update of this
+selection component.</li>
+<li><i>Euclidian XY metric</i>If selected (the default) then measurements that are available
+as X-Y pairs (e.g. location) will be have a Euclidian (isotropic) metric applied in TrAM.
+Note that this feature is currently not available for X-Y-Z tracks.</li>
+<li><i>Number of spline knots</i>The number of knots (indpendent values) used when computing
+smoothing splines. This should be around 1/5th the number of frames for reasonably oversampled
+time lapse sequences, and must be %d or greater. It is approximately the maximum number of
+wiggles expected in well tracked trajectories.</li>
+<li><i>TrAM exponent</i>This number is between 0 and 1 (default 0.5), and specifies how
+strongly simultaneous sudden changes in multiple features synergize in the TrAM metric. A
+lower value signifies higher synergy (at the risk of missing tracking failures that are
+reflected in only some of the features).</li>
+</ul>
+<b>TODO: cite paper</b>
+""" % (MIN_TRAM_LENGTH, MIN_NUM_KNOTS)
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +95,12 @@ class TrAM(cpm.Module):
     def create_settings(self):
         # for them to choose the tracked objects
         self.object_name = cps.ObjectNameSubscriber(
-                "Select the tracked objects", cps.NONE, doc="""
+                "Tracked objects", cps.NONE, doc="""
             Select the tracked objects for computing TrAM.""")
 
-        # which measurements will go into the TrAM computation todo: possible to restrict measurements shown?
-        self.tram_measurements = cps.MeasurementMultiChoice(
-            "TrAM measurements", doc="""
+        # which measurements will go into the TrAM computation
+        self.tram_measurements = MeasurementMultiChoiceForCategory(
+            "TrAM measurements", category_chooser=self.object_name, doc="""
             This setting defines the tracked quantities that will be used
             to compute the TrAM metric. At least one must be selected.""")
 
@@ -58,7 +111,7 @@ class TrAM(cpm.Module):
 
         # spline knots
         self.num_knots = cps.Integer(
-            "Number of spline knots", 4, minval=3, doc="""
+            "Number of spline knots", 4, minval=MIN_NUM_KNOTS, doc="""
             Number of knots to use in the spline fit to time series""")
 
         # TrAM exponent
@@ -70,12 +123,20 @@ class TrAM(cpm.Module):
         return [self.object_name, self.tram_measurements, self.wants_XY_Euclidian, self.num_knots, self.p]
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected at least one measurement for TrAM'''
-        if (len(self.get_selected_tram_measurements()) == 0):
+        '''Make sure that the user has selected at least one measurement for TrAM and that there are tracking data.'''
+        if len(self.get_selected_tram_measurements()) == 0:
             raise cps.ValidationError(
                     "Please select at least one TrAM measurement for tracking of %s" % self.object_name.get_value(),
                     self.tram_measurements)
-        # todo: check for tracking data for the chosen object
+
+        # check on available tracking columns for the selected object
+        obj_name = self.object_name.get_value()
+        mc = pipeline.get_measurement_columns()
+        num_tracking_cols = len([entry for entry in mc if entry[0] == obj_name and entry[1].startswith(trackobjects.F_PREFIX)])
+        if num_tracking_cols == 0:
+            msg = "No %s data available for %s. Please select an object with tracking data."\
+                  % (trackobjects.F_PREFIX, obj_name)
+            raise cps.ValidationError(msg, self.object_name)
 
     def visible_settings(self):
         return self.settings()
@@ -128,7 +189,7 @@ class TrAM(cpm.Module):
         img_numbers = measurements.get_image_numbers()
         num_images = len(img_numbers)
 
-        def flatten_list_of_lists(lol): # todo move outside
+        def flatten_list_of_lists(lol):
             return list(it.chain.from_iterable(lol))
 
         # get vector of tracking label for each data point
@@ -167,7 +228,7 @@ class TrAM(cpm.Module):
 
         # get vector of image numbers into the dict
         counts = [len([v for v in x if not np.isnan(v)]) for x in label_vals] # number of non-nan labels at each time point
-        image_vals = [[image for _ in xrange(count)] for image, count in zip(img_numbers, counts)] # repeat image number
+        image_vals = [[image for _ in range(count)] for image, count in zip(img_numbers, counts)] # repeat image number
         image_vals_flattened = flatten_list_of_lists(image_vals)
 
         # determine max lifetime by label so we can select different cell behaviors
@@ -231,15 +292,13 @@ class TrAM(cpm.Module):
         # this is how we identify our TrAM measurements to cells
         next_available_tram_label = 0
 
-        # todo: add flag for split vs complete trajectory
-
         # compute TrAM for each complete trajectory. Store result by object number in last frame
         tram_dict = dict()
         for label in labels_for_complete_trajectories:
             indices = [i for i, lab in enumerate(label_vals_flattened) if lab == label]
 
             if len(indices) < MIN_TRAM_LENGTH: # not enough data points
-                tram = float('nan')
+                tram = FLOAT_NAN
             else:
                 tram = self.compute_TrAM(tram_feature_names, normalized_all_data_array,
                                          image_vals_flattened, indices, euclidian_pairs)
@@ -264,9 +323,9 @@ class TrAM(cpm.Module):
                                                                                          img_numbers))
 
         split_trajectories_tram_dict = \
-            self.get_full_track_data_for_split_cells(labels_for_split_trajectories, tram_feature_names,
-                                                     euclidian_pairs, normalized_all_data_array,
-                                                     tracking_info_dict, next_available_tram_label)
+            self.evaluate_tram_for_split_cells(labels_for_split_trajectories, tram_feature_names,
+                                               euclidian_pairs, normalized_all_data_array,
+                                               tracking_info_dict, next_available_tram_label)
         tram_dict.update(split_trajectories_tram_dict) # store them with the others
 
         def get_element_or_default_for_None(x, index, default):
@@ -294,7 +353,7 @@ class TrAM(cpm.Module):
                     result_dict.update({LABELS_KEY: str(int(tram_label))})
                 else: # if there is already a TRAM_KEY then we are a parent and don't have a valid TrAM
                     result_dict.update({PARENT_KEY: 1})
-                    result_dict.update({TRAM_KEY: float('nan')})
+                    result_dict.update({TRAM_KEY: FLOAT_NAN})
                     result_dict.update({LABELS_KEY: "%s|%s" % (result_dict[LABELS_KEY], str(int(tram_label)))}) # append
 
                 result_dict.update({SPLIT_KEY: split_flag})
@@ -322,13 +381,17 @@ class TrAM(cpm.Module):
 
 
     def compute_TrAM(self, tram_feature_names, normalized_data_array, image_vals_flattened, indices, euclidian):
-        # todo: update the below text
         """
-        :param normalized_values_dict: keys are feature names, values are normalized feature values across the track 
-        :param euclidian list of pairs (tuples) of XY features which should be treated as Euclidian in the computation
-        :return: TrAM value for this trajectory
+        Compute the TrAM statistic for a single trajectory
+        
+        :param tram_feature_names: Names of the features to use (in order of the columns in normalized_data_array) 
+        :param normalized_data_array: Source of data (normalized to typical absolute deviations). Columns correspond
+        to TrAM features, and rows are for all cells across images
+        :param image_vals_flattened: The image numbers corresponding to rows in normalized_data_array
+        :param indices: The rows in normalized_data_array which are relevant to this trajectory
+        :param euclidian: List of pairs of features which should be treated with a Euclidian metric
+        :return: The computed TrAM value
         """
-
         normalized_data_for_label = normalized_data_array[indices,:]  # get the corresponding data
         images = [image_vals_flattened[i] for i in indices]
 
@@ -353,7 +416,7 @@ class TrAM(cpm.Module):
                 interp_func = interp.LSQUnivariateSpline(xs, normalized_values, knot_locs)
                 smoothed_vals = interp_func(xs)
             except ValueError:
-                smoothed_vals = np.zeros(len(xs)) + float('nan') # return nan array
+                smoothed_vals = np.zeros(len(xs)) + FLOAT_NAN # return nan array
 
             return abs(normalized_values - smoothed_vals)
 
@@ -409,16 +472,18 @@ class TrAM(cpm.Module):
 
         return tram
 
-    def get_full_track_data_for_split_cells(self, labels_for_split_trajectories, tram_feature_names, euclidian,
-                                            normalized_data_array, tracking_info_dict, next_available_tram_label):
-        # todo: update text below
+    def evaluate_tram_for_split_cells(self, labels_for_split_trajectories, tram_feature_names, euclidian,
+                                      normalized_data_array, tracking_info_dict, next_available_tram_label):
         """
-        
-        :param normalized_data_array: array whose columns correspond to TrAM features, in order of tram_feature_names
-        :param tracking_info_dict: dictionary of tracking info (flattened arrays), e.g. object numbers, parents.
-        :param labels_for_mitotic_trajectories: The tracking labels we should analyze
-        :param next_available_tram_label: First available label number for tram (this gets updated by the method)
-        :return: dictionary from object number in last frame to (TrAM value, TrAM label)
+        Compute TrAM results for cells that have split trajectories        
+        :param labels_for_split_trajectories: TrackObjects labels for trajectories that split
+        :param tram_feature_names:  The feature names that are used to compute TrAM
+        :param euclidian: List of feature pairs (XY) to be Euclidianized
+        :param normalized_data_array: Data for the TrAM features, normalized by typical absolute deviation
+        :param tracking_info_dict: Dictionary of other relevant information about the cells
+        :param next_available_tram_label: Tram label number. We increment this as we use it.
+        :return: Dictionary whose keys are TrAM labels and values are dictionaries containing values
+        for the keys TRAM_KEY, OBJECT_NUMS_KEY, SPLIT_KEY
         """
 
         label_vals_flattened = tracking_info_dict[LABELS_KEY]
@@ -513,8 +578,8 @@ class TrAM(cpm.Module):
 
         return result
 
-    @classmethod
-    def Determine_Euclidian_pairs(cls, features):
+    @staticmethod
+    def Determine_Euclidian_pairs(features):
         """
         Look for any pairs that end in "_X" and "_Y" or have "_X_" and "_Y_" within them
         :param features:list of names 
@@ -573,3 +638,33 @@ class TrAM(cpm.Module):
         TrackObjects, MakeProjection and CorrectIllumination_Calculate.
         """
         return True
+
+class MeasurementMultiChoiceForCategory(cps.MeasurementMultiChoice):
+    '''A multi-choice setting for selecting multiple measurements within a given category'''
+
+    def __init__(self, text, category_chooser, value='', *args, **kwargs):
+        '''Initialize the measurement multi-choice
+
+        At initialization, the choices are empty because the measurements
+        can't be fetched here. It's done (bit of a hack) in test_valid.
+        '''
+        super(cps.MeasurementMultiChoice, self).__init__(text, [], value, *args, **kwargs)
+        self.category_chooser = category_chooser
+
+    def populate_choices(self, pipeline):
+        #
+        # Find our module
+        #
+        for module in pipeline.modules():
+            for setting in module.visible_settings():
+                if id(setting) == id(self):
+                    break
+        columns = pipeline.get_measurement_columns(module)
+
+        def valid_mc(c):
+            '''Disallow any measurement column with "," or "|" in its names. Must be from specified category.'''
+            return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"]) and c[0] == self.category_chooser.get_value()
+
+        self.set_choices([self.make_measurement_choice(c[0], c[1])
+                          for c in columns if valid_mc(c)])
+

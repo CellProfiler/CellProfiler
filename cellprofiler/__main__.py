@@ -47,7 +47,6 @@ def main(args=None):
     if args is None:
         args = sys.argv
 
-
     cellprofiler.preferences.set_awt_headless(True)
 
     exit_code = 0
@@ -312,7 +311,7 @@ def parse_args(args):
         "--get-batch-commands",
         dest="batch_commands_file",
         default=None,
-        help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" ' "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh")
+        help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" ' "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline.")
 
     parser.add_option(
         "--data-file",
@@ -551,6 +550,8 @@ def get_batch_commands(filename):
     m = cellprofiler.measurement.Measurements(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
+    print("has measurement image: ", ("no", "yes")[m.has_feature(cellprofiler.measurement.IMAGE,cellprofiler.measurement.GROUP_NUMBER)])
+
 
     if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
         group_numbers = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
@@ -579,6 +580,8 @@ def get_batch_commands(filename):
 
             return
 
+    print("Image numbers")
+    print(image_numbers)
     metadata_tags = m.get_grouping_tags()
 
     groupings = m.get_groupings(metadata_tags)

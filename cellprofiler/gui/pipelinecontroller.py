@@ -673,13 +673,23 @@ class PipelineController(object):
         self.do_save_as_workspace()
 
     def do_save_as_workspace(self):
-        wildcard = "CellProfiler project (*.%s)|*.%s" % (
-            cellprofiler.preferences.EXT_PROJECT, cellprofiler.preferences.EXT_PROJECT)
+        default_filename = cellprofiler.preferences.get_current_workspace_path()
+        if default_filename is None:
+            default_filename = "project.%s" % cellprofiler.preferences.EXT_PROJECT
+            default_path = None
+        else:
+            default_path, default_filename = os.path.split(default_filename)
+            default_filename = \
+                os.path.splitext(default_filename)[0] + "." + cellprofiler.preferences.EXT_PROJECT
+
+        wildcard = "CellProfiler project (*.%s)|*.%s" % (cellprofiler.preferences.EXT_PROJECT, cellprofiler.preferences.EXT_PROJECT)
         with wx.FileDialog(
                 self.__frame,
                 "Save project file as",
                 wildcard=wildcard,
                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if default_path is not None:
+                dlg.Path = os.path.join(default_path, default_filename)
             if dlg.ShowModal() == wx.ID_OK:
                 pathname, filename = os.path.split(dlg.Path)
                 fullname = dlg.Path

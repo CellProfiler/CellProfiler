@@ -11,9 +11,13 @@ import logging
 
 CAT_TRAM = "TrAM"
 MEAS_TRAM = "TrAM"
-MEAS_LABEL = "Label"
+MEAS_LABELS = "Labels"
+MEAS_PARENT = "Is_Parent"
+MEAS_SPLIT = "Split_Trajectory"
 FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_TRAM)
-FULL_LABEL_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_LABEL)
+FULL_LABELS_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_LABELS)
+FULL_PARENT_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_PARENT)
+FULL_SPLIT_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_SPLIT)
 IMAGE_NUM_KEY = "Image"
 MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
 
@@ -21,6 +25,9 @@ LABELS_KEY = "labels"
 IMAGE_NUMS_KEY = "image_nums"
 OBJECT_NUMS_KEY = "object_nums"
 PARENT_OBJECT_NUMS_KEY = "parent_object_nums"
+TRAM_KEY = "TrAM"
+SPLIT_KEY = "split"
+PARENT_KEY = "parent"
 
 # todo
 __doc__ = ""
@@ -66,8 +73,9 @@ class TrAM(cpm.Module):
         '''Make sure that the user has selected at least one measurement for TrAM'''
         if (len(self.get_selected_tram_measurements()) == 0):
             raise cps.ValidationError(
-                    "Please select at least one TrAM measurement for tracking of " + self.object_name.get_value(),
+                    "Please select at least one TrAM measurement for tracking of %s" % self.object_name.get_value(),
                     self.tram_measurements)
+        # todo: check for tracking data for the chosen object
 
     def visible_settings(self):
         return self.settings()
@@ -188,10 +196,14 @@ class TrAM(cpm.Module):
 
 
         # create dictionary to translate from label to object number in last frame. This is how we will store results.
-        object_nums_flattened =\
-            extract_flattened_measurements_for_valid_labels(measurements.get_measurement(obj_name,
-                                                                                         M_NUMBER_OBJECT_NUMBER,
-                                                                                         img_numbers))
+        object_nums = measurements.get_measurement(obj_name, M_NUMBER_OBJECT_NUMBER, img_numbers) # list of lists
+        object_nums_flattened = extract_flattened_measurements_for_valid_labels(object_nums)
+        object_count_by_image = {img_num:len(v) for img_num, v in zip(img_numbers, object_nums)}
+
+        # create a mapping from object number in an image to its index in the data array for later
+        index_by_img_and_object = {(img_num, obj_num): index for img_num, obj_nums in zip(img_numbers, object_nums)
+                                   for index, obj_num in enumerate(obj_nums)}
+
         last_image_num = img_numbers[-1]
         last_frame_label_to_object_num =\
             {object_num : label for object_num, label, image_num in zip(object_nums_flattened, label_vals_flattened,
@@ -219,6 +231,8 @@ class TrAM(cpm.Module):
         # this is how we identify our TrAM measurements to cells
         next_available_tram_label = 0
 
+        # todo: add flag for split vs complete trajectory
+
         # compute TrAM for each complete trajectory. Store result by object number in last frame
         tram_dict = dict()
         for label in labels_for_complete_trajectories:
@@ -230,8 +244,8 @@ class TrAM(cpm.Module):
                 tram = self.compute_TrAM(tram_feature_names, normalized_all_data_array,
                                          image_vals_flattened, indices, euclidian_pairs)
 
-            object_num = last_frame_label_to_object_num.get(label)
-            tram_dict.update({object_num : (tram, next_available_tram_label)})
+            obj_nums = {image_vals_flattened[i] : object_nums_flattened[i] for i in indices} # pairs of image and object
+            tram_dict.update({next_available_tram_label : {TRAM_KEY : tram, OBJECT_NUMS_KEY : obj_nums, SPLIT_KEY : 0}})
             next_available_tram_label += 1
 
 
@@ -255,24 +269,56 @@ class TrAM(cpm.Module):
                                                      tracking_info_dict, next_available_tram_label)
         tram_dict.update(split_trajectories_tram_dict) # store them with the others
 
-        # todo: return image numbers to report TrAM for and store tram for all those images/objects
-
         def get_element_or_default_for_None(x, index, default):
             if x is None:
                 return default
             else:
                 return x[index]
 
-        # place the measurements in the workspace for last image
-        tram_values_to_save =\
-            [get_element_or_default_for_None(tram_dict.get(object_num), 0, float('nan')) for object_num in last_frame_label_to_object_num]
-        tram_labels_to_save =\
-            [get_element_or_default_for_None(tram_dict.get(object_num), 1, float('nan')) for object_num in last_frame_label_to_object_num]
-        workspace.measurements.add_measurement(obj_name, FULL_TRAM_MEAS_NAME, tram_values_to_save, last_image_num)
-        workspace.measurements.add_measurement(obj_name, FULL_LABEL_MEAS_NAME, tram_labels_to_save, last_image_num)
+        results_to_store_by_img = {img_num: [None for _ in range(object_count_by_image[img_num])]
+                                   for img_num in img_numbers} # Seems excessive. there must be a better way.
+
+        # cycle through each tram computed
+        for tram_label, traj_dict in tram_dict.iteritems():
+            tram = traj_dict[TRAM_KEY]
+            split_flag = traj_dict[SPLIT_KEY]
+            for img_num, object_num in traj_dict[OBJECT_NUMS_KEY].iteritems(): # every object across images for this tram
+                index = index_by_img_and_object[(img_num, object_num)]
+                result_dict = results_to_store_by_img[img_num][index]
+
+                if result_dict is None:
+                    result_dict = dict() # initialize
+                    results_to_store_by_img[img_num][index] = result_dict # store it
+                    result_dict.update({PARENT_KEY: 0})
+                    result_dict.update({TRAM_KEY: tram})
+                    result_dict.update({LABELS_KEY: str(int(tram_label))})
+                else: # if there is already a TRAM_KEY then we are a parent and don't have a valid TrAM
+                    result_dict.update({PARENT_KEY: 1})
+                    result_dict.update({TRAM_KEY: float('nan')})
+                    result_dict.update({LABELS_KEY: "%s|%s" % (result_dict[LABELS_KEY], str(int(tram_label)))}) # append
+
+                result_dict.update({SPLIT_KEY: split_flag})
+
+        # Loop over all images and save out
+        tram_values_to_save = list()
+        parent_values_to_save = list()
+        split_values_to_save = list()
+        label_values_to_save = list()
+
+        for img_num, vec in results_to_store_by_img.iteritems():
+            tram_values_to_save.append([get_element_or_default_for_None(v, TRAM_KEY, float("nan")) for v in vec])
+            parent_values_to_save.append([get_element_or_default_for_None(v, PARENT_KEY, float("nan")) for v in vec])
+            split_values_to_save.append([get_element_or_default_for_None(v, SPLIT_KEY, float("nan")) for v in vec])
+            label_values_to_save.append([get_element_or_default_for_None(v, LABELS_KEY, "") for v in vec])
+
+        img_nums = results_to_store_by_img.keys()
+        workspace.measurements.add_measurement(obj_name, FULL_TRAM_MEAS_NAME, tram_values_to_save, image_set_number=img_nums)
+        workspace.measurements.add_measurement(obj_name, FULL_PARENT_MEAS_NAME, parent_values_to_save, image_set_number=img_nums)
+        workspace.measurements.add_measurement(obj_name, FULL_SPLIT_MEAS_NAME, split_values_to_save, image_set_number=img_nums)
+        workspace.measurements.add_measurement(obj_name, FULL_LABELS_MEAS_NAME, label_values_to_save, image_set_number=img_nums)
 
         # store the non-nan TrAM values for the histogram display
-        workspace.display_data.tram_values = [value for value, tram_label in tram_dict.values() if not np.isnan(value)]
+        workspace.display_data.tram_values = [d.get(TRAM_KEY) for d in tram_dict.values() if not np.isnan(d.get(TRAM_KEY))]
 
 
     def compute_TrAM(self, tram_feature_names, normalized_data_array, image_vals_flattened, indices, euclidian):
@@ -400,28 +446,33 @@ class TrAM(cpm.Module):
         # Here we piece together the entire trajectory for each cell and compute TrAM.
         # construct the object trajectory in terms of array indexes. These get placed
         # in an accumulator (list) that should be initialized as empty.
-        def get_parent_indices(image_num, object_num, accum):
+        def get_parent_indices(image_num, object_num, index_accum, object_num_accum):
             if image_num < first_image_num: return
 
             index = img_obj_to_index[(image_num, object_num)]
             parent_object_num = parent_object_nums_flattened[index]
-            get_parent_indices(image_num-1, parent_object_num, accum)
+            get_parent_indices(image_num - 1, parent_object_num, index_accum, object_num_accum) # recurse for all earlier
 
-            accum.append(index)
+            index_accum.append(index)
+            object_num_accum.append(object_num)
 
         # cycle through everything in our dict and compute tram. Store.
         result = dict()
         for label in object_nums_for_label_last_image.keys():
             for object_num_last_image in object_nums_for_label_last_image.get(label): # this is a list
-                indices = list()
-                get_parent_indices(last_image_num, object_num_last_image, indices)
+                indices_list = list()
+                object_nums_list = list()
+                get_parent_indices(last_image_num, object_num_last_image, indices_list, object_nums_list)
 
                 # Indices now contains the indices for the tracked object across images
                 tram = self.compute_TrAM(tram_feature_names, normalized_data_array, image_vals_flattened,
-                                         indices, euclidian)
-                tram_label = next_available_tram_label
+                                         indices_list, euclidian)
+
+                # for each image number, the corresponding object number
+                obj_nums = dict(zip([image_vals_flattened[i] for i in indices_list], object_nums_list))
+
+                result.update({next_available_tram_label: {TRAM_KEY: tram, OBJECT_NUMS_KEY: obj_nums, SPLIT_KEY: 1}})
                 next_available_tram_label += 1
-                result.update({object_num_last_image : (tram, tram_label)})
 
         return result
 
@@ -495,7 +546,9 @@ class TrAM(cpm.Module):
 
     def get_measurement_columns(self, pipeline):
         return [(self.object_name.get_value(), FULL_TRAM_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
-                (self.object_name.get_value(), FULL_LABEL_MEAS_NAME, cpmeas.COLTYPE_FLOAT)]
+                (self.object_name.get_value(), FULL_PARENT_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
+                (self.object_name.get_value(), FULL_SPLIT_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
+                (self.object_name.get_value(), FULL_LABELS_MEAS_NAME, cpmeas.COLTYPE_VARCHAR)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name.get_value():
@@ -504,7 +557,7 @@ class TrAM(cpm.Module):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name.get_value() and category == CAT_TRAM:
-            return [MEAS_TRAM, MEAS_LABEL]
+            return [MEAS_TRAM, MEAS_PARENT, MEAS_SPLIT, MEAS_LABELS]
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):

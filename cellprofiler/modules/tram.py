@@ -82,7 +82,8 @@ strongly simultaneous sudden changes in multiple features synergize in the TrAM 
 lower value signifies higher synergy (at the risk of missing tracking failures that are
 reflected in only some of the features).</li>
 </ul>
-<b>TODO: cite paper</b>
+See Patsch, K <i>et al.</i>, <a href=https://www.nature.com/articles/srep34785>Single cell
+dynamic phenotyping</a>, Scientific Reports 6:34785 (2016)
 """ % (MIN_TRAM_LENGTH, MIN_NUM_KNOTS)
 
 logger = logging.getLogger(__name__)

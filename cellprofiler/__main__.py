@@ -79,6 +79,7 @@ def main(args=None):
 
     if options.batch_commands_file is not None:
         get_batch_commands(options.batch_commands_file)
+        exit() # added by Volker, typically we do not want to run a pipeline when we call CellProfiler to create batch scripts. Exit, once the batch files have been created.
 
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)

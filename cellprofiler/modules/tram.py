@@ -63,28 +63,10 @@ Otherwise it is 0 and <i>Labels</i> has only one label.</li>
 <li><i>Split_Trajectory:</i> If the object arose from an ancestor whose trajectory
 split, then this value is 1. Otherwise it is 0.</li>
 </ul>
-The following inputs parameterize the TrAM computation:
-<ul>
-<li><i>Tracked objects:</i> Select the tracked objects on which TrAM will be computed</li>
-<li><i>TrAM measurements</i> These are measurements for the selected tracked objects which
-will be used in the TrAM computation. At least one must be selected. Note there may be
-a delay of a few seconds between the selection of <i>Tracked objects</i> and the update of this
-selection component.</li>
-<li><i>Euclidian XY metric</i>If selected (the default) then measurements that are available
-as X-Y pairs (e.g. location) will be have a Euclidian (isotropic) metric applied in TrAM.
-Note that this feature is currently not available for X-Y-Z tracks.</li>
-<li><i>Number of spline knots</i>The number of knots (indpendent values) used when computing
-smoothing splines. This should be around 1/5th the number of frames for reasonably oversampled
-time lapse sequences, and must be %d or greater. It is approximately the maximum number of
-wiggles expected in well tracked trajectories.</li>
-<li><i>TrAM exponent</i>This number is between 0 and 1 (default 0.5), and specifies how
-strongly simultaneous sudden changes in multiple features synergize in the TrAM metric. A
-lower value signifies higher synergy (at the risk of missing tracking failures that are
-reflected in only some of the features).</li>
-</ul>
+<p>
 See Patsch, K <i>et al.</i>, <a href=https://www.nature.com/articles/srep34785>Single cell
 dynamic phenotyping</a>, Scientific Reports 6:34785 (2016)
-""" % (MIN_TRAM_LENGTH, MIN_NUM_KNOTS)
+""" % (MIN_TRAM_LENGTH)
 
 logger = logging.getLogger(__name__)
 
@@ -102,23 +84,37 @@ class TrAM(cpm.Module):
         # which measurements will go into the TrAM computation
         self.tram_measurements = MeasurementMultiChoiceForCategory(
             "TrAM measurements", category_chooser=self.object_name, doc="""
-            This setting defines the tracked quantities that will be used
-            to compute the TrAM metric. At least one must be selected.""")
+            These are measurements for the selected tracked objects which
+            will be used in the TrAM computation. At least one must be selected.
+            Note there may be a delay of a few seconds between the selection of
+            <i>Tracked objects</i> and the update of this selection component.""")
 
         self.wants_XY_Euclidian = cps.Binary(
-            'Euclidian XY metric?', True, doc='''
-            Euclidianize the metric for all measurements occurring in X-Y pairs
-            ''')
+            'Euclidian XY metric?', True, doc="""
+            If selected (the default) then measurements that are available
+            as X-Y pairs (e.g. location) will be have a Euclidian (isotropic)
+            metric applied in TrAM. Note that this feature is currently not available
+            for X-Y-Z tracks.
+            """)
 
         # spline knots
         self.num_knots = cps.Integer(
             "Number of spline knots", 4, minval=MIN_NUM_KNOTS, doc="""
-            Number of knots to use in the spline fit to time series""")
+            Number of spline knots</i>The number of knots (indpendent values) used
+            when computing smoothing splines. This should be around 1/5th the number
+            of frames for reasonably oversampled time lapse sequences, and must be 3
+            or greater. It is approximately the maximum number of wiggles expected in
+            well-tracked trajectories
+            """)
 
         # TrAM exponent
         self.p = cps.Float(
             "TrAM exponent", 0.5, minval=0.01, maxval=1, doc="""
-            The exponent used to combine different measurements.""")
+            This number is between 0.01 and 1 (default 0.5), and specifies how
+            strongly simultaneous sudden changes in multiple features synergize in
+            the TrAM metric. A lower value signifies higher synergy (at the risk of
+            missing tracking failures that are reflected in only some of the features).
+            """)
 
     def settings(self):
         return [self.object_name, self.tram_measurements, self.wants_XY_Euclidian, self.num_knots, self.p]

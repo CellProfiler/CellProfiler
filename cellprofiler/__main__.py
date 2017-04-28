@@ -55,11 +55,8 @@ def main(args=None):
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         cellprofiler.preferences.set_headless()
-
         cellprofiler.worker.aw_parse_args()
-
         cellprofiler.worker.main()
-
         sys.exit(exit_code)
 
     options, args = parse_args(args)
@@ -71,6 +68,11 @@ def main(args=None):
         cellprofiler.preferences.set_headless()
 
         options.run_pipeline = True
+
+    if options.batch_commands_file:
+        cellprofiler.preferences.set_headless()
+        options.run_pipeline = False
+        options.show_gui = False
 
     set_log_level(options)
 
@@ -309,7 +311,7 @@ def parse_args(args):
         "--get-batch-commands",
         dest="batch_commands_file",
         default=None,
-        help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" ' "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh")
+        help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" ' "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline.")
 
     parser.add_option(
         "--data-file",

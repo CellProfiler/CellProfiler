@@ -533,7 +533,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         self.fill_holes = cellprofiler.setting.Choice(
             'Fill holes in identified objects?',
             FH_ALL,
-            value=FH_THRESHOLDING,
+            value=FH_DECLUMP,
             doc="""
             This option controls how holes are filled in:
             <ul>

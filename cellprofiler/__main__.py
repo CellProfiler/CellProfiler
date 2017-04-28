@@ -47,6 +47,7 @@ def main(args=None):
     if args is None:
         args = sys.argv
 
+
     cellprofiler.preferences.set_awt_headless(True)
 
     exit_code = 0
@@ -62,6 +63,10 @@ def main(args=None):
 
         sys.exit(exit_code)
 
+    #if any([arg.startswith('--get-batch-commands') for arg in args]):    
+    #    cellprofiler.preferences.set_headless()
+
+
     options, args = parse_args(args)
 
     if options.print_version:
@@ -72,6 +77,11 @@ def main(args=None):
 
         options.run_pipeline = True
 
+    if options.batch_commands_file:
+        cellprofiler.preferences.set_headless()
+        options.run_pipeline = False
+        options.show_gui = False
+
     set_log_level(options)
 
     if options.print_groups_file is not None:
@@ -79,7 +89,6 @@ def main(args=None):
 
     if options.batch_commands_file is not None:
         get_batch_commands(options.batch_commands_file)
-        exit() # added by Volker, typically we do not want to run a pipeline when we call CellProfiler to create batch scripts. Exit, once the batch files have been created.
 
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)

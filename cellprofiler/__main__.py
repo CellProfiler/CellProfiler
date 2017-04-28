@@ -56,16 +56,9 @@ def main(args=None):
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         cellprofiler.preferences.set_headless()
-
         cellprofiler.worker.aw_parse_args()
-
         cellprofiler.worker.main()
-
         sys.exit(exit_code)
-
-    #if any([arg.startswith('--get-batch-commands') for arg in args]):    
-    #    cellprofiler.preferences.set_headless()
-
 
     options, args = parse_args(args)
 

@@ -105,18 +105,11 @@ class TrAM(cpm.Module):
 
         figure - the figure to use for the display.
         """
-# todo: why does the below code fail?
-#        if self.show_window:
-#            figure.set_subplots((1, 1))
-#            figure.subplot_histogram(0, 0,
-#            workspace.display_data.tram_values,
-#            bins=50,
-#            xlabel="TrAM",
-#            ylabel="Count",
-#            title="TrAM for %s" % self.object_name.get_value())
-#            figure.Refresh()
+        if self.show_window:
+            figure.set_subplots((1,1))
+            figure.subplot_histogram(0, 0, workspace.display_data.tram_values, bins=40, xlabel="TrAM",
+                                     title="TrAM for %s" % self.object_name.get_value())
 
-        pass
 
 
     def post_group(self, workspace, grouping):
@@ -229,13 +222,13 @@ class TrAM(cpm.Module):
         # compute TrAM for each complete trajectory. Store result by object number in last frame
         tram_dict = dict()
         for label in labels_for_complete_trajectories:
-            indices = [i for i, lab in enumerate(label_vals_flattened_complete_trajectories) if lab == label]
+            indices = [i for i, lab in enumerate(label_vals_flattened) if lab == label]
 
             if len(indices) < MIN_TRAM_LENGTH: # not enough data points
                 tram = float('nan')
             else:
                 tram = self.compute_TrAM(tram_feature_names, normalized_all_data_array,
-                                         image_vals_flattened_complete_trajectories, indices, euclidian_pairs)
+                                         image_vals_flattened, indices, euclidian_pairs)
 
             object_num = last_frame_label_to_object_num.get(label)
             tram_dict.update({object_num : (tram, next_available_tram_label)})

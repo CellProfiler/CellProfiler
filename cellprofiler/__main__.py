@@ -550,8 +550,6 @@ def get_batch_commands(filename):
     m = cellprofiler.measurement.Measurements(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
-    print("has measurement image: ", ("no", "yes")[m.has_feature(cellprofiler.measurement.IMAGE,cellprofiler.measurement.GROUP_NUMBER)])
-
 
     if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
         group_numbers = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
@@ -580,8 +578,6 @@ def get_batch_commands(filename):
 
             return
 
-    print("Image numbers")
-    print(image_numbers)
     metadata_tags = m.get_grouping_tags()
 
     groupings = m.get_groupings(metadata_tags)

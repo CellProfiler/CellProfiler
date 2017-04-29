@@ -34,11 +34,16 @@ FLOAT_NAN = float('nan')
 
 __doc__ = """
 <b>TrAM</b> Provides a metric for tracking quality based on temporal
-smoothness of features measured across the trajectory.
+smoothness of features measured across the trajectory (Tracking Aberration
+Measure).
 <hr>
 This module must be placed downstream of a module that identifies objects
 (e.g., <b>IdentifyPrimaryObjects</b>) and a <b>TrackObjects</b> that tracks
-them. There must be at least %d frames to perform a TrAM analysis.
+them. There must be at least %d frames to perform a TrAM analysis. The TrAM
+statistic reflects how typical the maximum deviation from smooth time series
+a chosen set of measurements are. Typical fluctuations are determined from
+measurement differences in adjacent time points of objects whose trajectories
+are complete and without splitting events.
 
 <p><b>TODO</b>For an example pipeline using TrAM see the CellProfiler
 <a href="http://www.cellprofiler.org/examples.html#TrAM">Examples</a> webpage.</p>
@@ -89,15 +94,16 @@ class TrAM(cpm.Module):
             Note there may be a delay of a few seconds between the selection of
             <i>Tracked objects</i> and the update of this selection component.""")
 
+        # Treat X-Y value pairs as Euclidian in the TrAM measure?
         self.wants_XY_Euclidian = cps.Binary(
             'Euclidian XY metric?', True, doc="""
             If selected (the default) then measurements that are available
             as X-Y pairs (e.g. location) will be have a Euclidian (isotropic)
-            metric applied in TrAM. Note that this feature is currently not available
-            for X-Y-Z tracks.
+            metric applied in TrAM. Note that the X-Y-Z extension of this feature
+            is not currently available.
             """)
 
-        # spline knots
+        # number of spline knots
         self.num_knots = cps.Integer(
             "Number of spline knots", 4, minval=MIN_NUM_KNOTS, doc="""
             Number of spline knots</i>The number of knots (indpendent values) used
@@ -228,7 +234,7 @@ class TrAM(cpm.Module):
         image_vals = [[image for _ in range(count)] for image, count in zip(img_numbers, counts)] # repeat image number
         image_vals_flattened = flatten_list_of_lists(image_vals)
 
-        # determine max lifetime by label so we can select different cell behaviors
+        # determine max lifetime by label so we can select different object behaviors
         lifetime_feature_name = [name for name in feature_names
                                  if name.startswith("%s_%s" % (trackobjects.F_PREFIX, trackobjects.F_LIFETIME))][0]
         lifetime_vals_flattened =\
@@ -241,12 +247,12 @@ class TrAM(cpm.Module):
                                                    lambda x: x[0]))
 
 
-        # These are the cells that are tracked the whole time.
+        # Labels for objects that are tracked the whole time.
         label_counts = Counter(label_vals_flattened) # dict with count of each label
         labels_for_complete_trajectories = [label for label in max_lifetime_by_label.keys()
                                             if max_lifetime_by_label[label] == num_images
                                             and label_counts[label] == num_images]
-        # labels for cells there the whole time but result from splitting
+        # labels for objects there the whole time but result from splitting
         labels_for_split_trajectories = [label for label in max_lifetime_by_label.keys()
                                            if max_lifetime_by_label[label] == num_images
                                            and label_counts[label] > num_images
@@ -286,7 +292,7 @@ class TrAM(cpm.Module):
         inv_devs = np.diag([1/tad[k] for k in tram_feature_names]) # diagonal matrix of inverse typical deviation
         normalized_all_data_array = np.dot(all_data_array, inv_devs) # perform the multiplication
 
-        # this is how we identify our TrAM measurements to cells
+        # this is how we identify our TrAM measurements to objects
         next_available_tram_label = 0
 
         # compute TrAM for each complete trajectory. Store result by object number in last frame
@@ -320,9 +326,9 @@ class TrAM(cpm.Module):
                                                                                          img_numbers))
 
         split_trajectories_tram_dict = \
-            self.evaluate_tram_for_split_cells(labels_for_split_trajectories, tram_feature_names,
-                                               euclidian_pairs, normalized_all_data_array,
-                                               tracking_info_dict, next_available_tram_label)
+            self.evaluate_tram_for_split_objects(labels_for_split_trajectories, tram_feature_names,
+                                                 euclidian_pairs, normalized_all_data_array,
+                                                 tracking_info_dict, next_available_tram_label)
         tram_dict.update(split_trajectories_tram_dict) # store them with the others
 
         def get_element_or_default_for_None(x, index, default):
@@ -383,7 +389,7 @@ class TrAM(cpm.Module):
         
         :param tram_feature_names: Names of the features to use (in order of the columns in normalized_data_array) 
         :param normalized_data_array: Source of data (normalized to typical absolute deviations). Columns correspond
-        to TrAM features, and rows are for all cells across images
+        to TrAM features, and rows are for all objects across images
         :param image_vals_flattened: The image numbers corresponding to rows in normalized_data_array
         :param indices: The rows in normalized_data_array which are relevant to this trajectory
         :param euclidian: List of pairs of features which should be treated with a Euclidian metric
@@ -469,15 +475,15 @@ class TrAM(cpm.Module):
 
         return tram
 
-    def evaluate_tram_for_split_cells(self, labels_for_split_trajectories, tram_feature_names, euclidian,
-                                      normalized_data_array, tracking_info_dict, next_available_tram_label):
+    def evaluate_tram_for_split_objects(self, labels_for_split_trajectories, tram_feature_names, euclidian,
+                                        normalized_data_array, tracking_info_dict, next_available_tram_label):
         """
-        Compute TrAM results for cells that have split trajectories        
-        :param labels_for_split_trajectories: TrackObjects labels for trajectories that split
-        :param tram_feature_names:  The feature names that are used to compute TrAM
-        :param euclidian: List of feature pairs (XY) to be Euclidianized
-        :param normalized_data_array: Data for the TrAM features, normalized by typical absolute deviation
-        :param tracking_info_dict: Dictionary of other relevant information about the cells
+        Compute TrAM results for objects that have split trajectories        
+        :param labels_for_split_trajectories: TrackObjects labels for trajectories that split.
+        :param tram_feature_names:  The feature names that are used to compute TrAM.
+        :param euclidian: List of feature pairs (XY) to be Euclidianized.
+        :param normalized_data_array: Data for the TrAM features, normalized by typical absolute deviation.
+        :param tracking_info_dict: Dictionary of other relevant information about the objects.
         :param next_available_tram_label: Tram label number. We increment this as we use it.
         :return: Dictionary whose keys are TrAM labels and values are dictionaries containing values
         for the keys TRAM_KEY, OBJECT_NUMS_KEY, SPLIT_KEY
@@ -502,10 +508,10 @@ class TrAM(cpm.Module):
             if image_num == last_image_num and label in labels_for_split_trajectories:
                 object_nums_for_label_last_image[label].append(object_num)
 
-        # Compute TrAM for each label in labels_for_split_cells. They will all have
+        # Compute TrAM for each label of split objects. They will all have
         # a complete set of predecessor objects going from the end to the start since
         # they were filtered to have a max lifetime equal to the number of frames.
-        # Here we piece together the entire trajectory for each cell and compute TrAM.
+        # Here we piece together the entire trajectory for each object and compute TrAM.
         # construct the object trajectory in terms of array indexes. These get placed
         # in an accumulator (list) that should be initialized as empty.
         def get_parent_indices(image_num, object_num, index_accum, object_num_accum):

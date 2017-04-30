@@ -566,12 +566,13 @@ class PipelineListView(object):
 
         menu = wx.Menu()
         try:
+            module = self.get_active_module()
             if self.list_ctrl.active_item is not None:
                 sub_menu = wx.Menu()
                 self.__controller.populate_edit_menu(sub_menu)
                 menu.AppendSubMenu(sub_menu, "&Add")
-                menu.Append(ID_EDIT_DELETE, "&Delete")
-                menu.Append(ID_EDIT_DUPLICATE, "Duplicate")
+                menu.Append(ID_EDIT_DELETE, "&Delete module "+str(module.module_num))
+                menu.Append(ID_EDIT_DUPLICATE, "Duplicate module "+str(module.module_num))
                 menu.Append(ID_EDIT_ENABLE_MODULE, "Enable")
                 menu.Append(ID_HELP_MODULE, "&Help")
             else:

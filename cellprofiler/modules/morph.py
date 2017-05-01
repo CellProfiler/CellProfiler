@@ -846,46 +846,6 @@ class Morph(cpm.Module):
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1,
                                                    doc=self.CUSTOM_REPEATS_DOC))
 
-        group.append("scale", cps.Float(
-                "Diameter", 3, minval=3, doc="""
-            Morphological open, close, erode and dialate are performed
-            with structuring elements which determine the diameter of the
-            circle enclosing the pixels to consider when applying the operation.
-            This setting controls the diameter of the structuring element."""))
-
-        group.append("x_offset", cps.Float(
-                "X offset", 1, doc="""
-            <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
-            settings)</i>. The X offset to the first neighborhood pixel in
-            the structuring element.
-            """ % globals()))
-
-        group.append("y_offset", cps.Float(
-                "Y offset", 1, doc="""
-            <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
-            structuring elements)</i>. The Y offset to the first neighborhood
-            pixel in the structuring element.
-            """ % globals()))
-
-        group.append("angle", cps.Float(
-                "Angle", 0, minval=-180, maxval=180, doc="""
-            <i>(Used only for the %(SE_LINE)s structuring element).</i>
-            The angle, in degrees counter-clockwise from the horizontal,
-            of the line.
-            """ % globals()))
-
-        group.append("width", cps.Float(
-                "Width", 3, minval=1, doc="""
-            <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
-            The width of the rectangle in pixels.
-            """ % globals()))
-
-        group.append("height", cps.Float(
-                "Height", 3, minval=1, doc="""
-            <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
-            The height of the rectangle in pixels.
-            """ % globals()))
-
         group.append("rescale_values", cps.Binary(
                 "Rescale values from 0 to 1?", True, doc="""
             <i>(Used only for the %(F_DISTANCE)s operation).</i>
@@ -914,12 +874,7 @@ class Morph(cpm.Module):
         '''Return the settings as saved in the pipeline file'''
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            result += [function.function, function.repeats_choice,
-                       function.custom_repeats, function.scale,
-                       function.structuring_element,
-                       function.x_offset, function.y_offset,
-                       function.angle, function.width, function.height,
-                       function.rescale_values]
+            result += [function.function, function.repeats_choice, function.custom_repeats, function.rescale_values]
         return result
 
     def visible_settings(self):
@@ -990,7 +945,6 @@ class Morph(cpm.Module):
         '''Apply the function once to the image, returning the result'''
         count = function.repeat_count
         function_name = function.function.value
-        scale = function.scale.value
         custom_repeats = function.custom_repeats.value
 
         is_binary = pixel_data.dtype.kind == 'b'
@@ -1099,8 +1053,7 @@ class Morph(cpm.Module):
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V2):
                 new_setting_values += setting_values[i:i + FUNCTION_SETTING_COUNT_V2]
-                new_setting_values += [SE_DISK, "1", "1", "0", "3", "3",
-                                       "3,3,111111111"]
+                new_setting_values += ["disk", "1", "1", "0", "3", "3", "3,3,111111111"]
             setting_values = new_setting_values
             variable_revision_number = 3
 

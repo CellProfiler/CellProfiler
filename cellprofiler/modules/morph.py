@@ -384,7 +384,6 @@ in <b>Morph</b> to achieve the same result.</td>
 </tr>
 </table>
 '''
-
 import logging
 import sys
 
@@ -409,7 +408,6 @@ F_DISTANCE = 'distance'
 F_ENDPOINTS = 'endpoints'
 F_FILL = 'fill'
 F_HBREAK = 'hbreak'
-F_INVERT = 'invert'
 F_LIFE = 'life'
 F_MAJORITY = 'majority'
 F_OPEN = 'open'
@@ -425,7 +423,7 @@ F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CONVEX_HULL,
          F_DIAG, F_DISTANCE, F_ENDPOINTS, F_FILL,
-         F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE,
+         F_HBREAK, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE,
          F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
 R_ONCE = 'Once'
@@ -449,7 +447,7 @@ SE_ALL = sorted([SE_DISK, SE_DIAMOND, SE_LINE, SE_OCTAGON,
 F_NEED_SE = [F_OPEN, F_TOPHAT]
 SE_F_TEXT = ", ".join(F_NEED_SE[:-1]) + " and " + F_NEED_SE[-1]
 
-F_NO_REPEATS = [F_OPEN, F_INVERT]
+F_NO_REPEATS = [F_OPEN]
 
 FUNCTION_SETTING_COUNT_V1 = 3
 FUNCTION_SETTING_COUNT_V2 = 4
@@ -774,7 +772,7 @@ class Morph(cpm.Module):
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_REMOVE,
+                              F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE,
                               F_SHRINK,
                               F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN,
                               F_VBREAK, F_OPENLINES) or
@@ -806,19 +804,6 @@ class Morph(cpm.Module):
                 return morph.fill(pixel_data, mask, count)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)
-            elif function_name == F_INVERT:
-                if is_binary:
-                    if mask is None:
-                        return ~ pixel_data
-                    result = pixel_data.copy()
-                    result[mask] = ~result[mask]
-                    return result
-                elif mask is None:
-                    return 1 - pixel_data
-                else:
-                    result = pixel_data.copy()
-                    result[mask] = 1 - result[mask]
-                    return result
             elif function_name == F_LIFE:
                 return morph.life(pixel_data, count)
             elif function_name == F_MAJORITY:
@@ -895,18 +880,6 @@ class Morph(cpm.Module):
                         new_setting_values += [R_CUSTOM, setting_values[i * 2 + 3]]
             setting_values = new_setting_values
             from_matlab = False
-            variable_revision_number = 1
-        if ((not from_matlab) and module_name == 'ImageConvexHull' and
-                    variable_revision_number == 1):
-            #
-            # Convert ImageConvexHull into an invert operation and
-            # a convex hull operation
-            #
-            image_name, output_name = setting_values
-            setting_values = [image_name, output_name,
-                              F_INVERT, R_ONCE, "1",
-                              F_CONVEX_HULL, R_ONCE, "1"]
-            module_name = self.module_name
             variable_revision_number = 1
 
         if (not from_matlab) and variable_revision_number == 1:

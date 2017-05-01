@@ -408,7 +408,6 @@ F_DIAG = 'diag'
 F_DISTANCE = 'distance'
 F_ENDPOINTS = 'endpoints'
 F_FILL = 'fill'
-F_FILL_SMALL = 'fill small holes'
 F_HBREAK = 'hbreak'
 F_INVERT = 'invert'
 F_LIFE = 'life'
@@ -426,7 +425,7 @@ F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CONVEX_HULL,
          F_DIAG, F_DISTANCE, F_ENDPOINTS, F_FILL,
-         F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE,
+         F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE,
          F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
 R_ONCE = 'Once'
@@ -659,11 +658,6 @@ class Morph(cpm.Module):
                 pass
             elif function.function == F_DISTANCE:
                 result.append(function.rescale_values)
-            elif function.function == F_FILL_SMALL:
-                function.custom_repeats.text = "Maximum hole area"
-                function.custom_repeats.doc = """Fill in all holes that have
-                this many pixels or fewer."""
-                result.append(function.custom_repeats)
             elif function.function == F_OPENLINES:
                 function.custom_repeats.text = "Line length"
                 function.custom_repeats.doc = """Only keep lines that have this many pixels or more."""
@@ -769,7 +763,7 @@ class Morph(cpm.Module):
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_FILL_SMALL, F_HBREAK, F_LIFE, F_MAJORITY,
+                              F_HBREAK, F_LIFE, F_MAJORITY,
                               F_REMOVE, F_SHRINK, F_SKEL, F_SKELPE, F_SPUR,
                               F_THICKEN, F_THIN, F_VBREAK)
             and not is_binary):
@@ -780,7 +774,6 @@ class Morph(cpm.Module):
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_FILL_SMALL,
                               F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_REMOVE,
                               F_SHRINK,
                               F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN,
@@ -811,11 +804,6 @@ class Morph(cpm.Module):
                 return morph.endpoints(pixel_data, mask)
             elif function_name == F_FILL:
                 return morph.fill(pixel_data, mask, count)
-            elif function_name == F_FILL_SMALL:
-                def small_fn(area, foreground):
-                    return (not foreground) and (area <= custom_repeats)
-
-                return morph.fill_labeled_holes(pixel_data, mask, small_fn)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)
             elif function_name == F_INVERT:

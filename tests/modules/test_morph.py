@@ -150,7 +150,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
                morph.F_CLEAN, morph.F_CONVEX_HULL,
                morph.F_DIAG, morph.F_DISTANCE,
                morph.F_ENDPOINTS, morph.F_FILL,
-               morph.F_FILL_SMALL, morph.F_HBREAK, morph.F_INVERT,
+               morph.F_HBREAK, morph.F_INVERT,
                morph.F_MAJORITY, morph.F_OPEN, morph.F_REMOVE,
                morph.F_SHRINK, morph.F_SKEL, morph.F_SKELPE, morph.F_SPUR,
                morph.F_THICKEN, morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]

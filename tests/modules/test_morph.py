@@ -247,7 +247,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
-        ops = [morph.F_BOTHAT, morph.F_BRANCHPOINTS, morph.F_BRIDGE,
+        ops = [morph.F_BRANCHPOINTS, morph.F_BRIDGE,
                morph.F_CLEAN, morph.F_CLOSE, morph.F_CONVEX_HULL,
                morph.F_DIAG, morph.F_DILATE, morph.F_DISTANCE,
                morph.F_ENDPOINTS, morph.F_ERODE, morph.F_FILL,

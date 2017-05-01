@@ -428,7 +428,7 @@ F_THICKEN = 'thicken'
 F_THIN = 'thin'
 F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
-F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_CONVEX_HULL,
+F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_CONVEX_HULL,
          F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL,
          F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE,
          F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
@@ -451,7 +451,7 @@ SE_ALL = sorted([SE_DISK, SE_DIAMOND, SE_LINE, SE_OCTAGON,
                  SE_PERIODIC_LINE, SE_RECTANGLE, SE_SQUARE, SE_PAIR,
                  SE_ARBITRARY])
 
-F_NEED_SE = [F_BOTHAT, F_CLOSE, F_DILATE, F_ERODE, F_OPEN, F_TOPHAT]
+F_NEED_SE = [F_CLOSE, F_DILATE, F_ERODE, F_OPEN, F_TOPHAT]
 SE_F_TEXT = ", ".join(F_NEED_SE[:-1]) + " and " + F_NEED_SE[-1]
 
 F_NO_REPEATS = [F_CLOSE, F_OPEN, F_INVERT]
@@ -894,10 +894,7 @@ class Morph(cpm.Module):
                                           function_name)
         else:
             for i in range(count):
-                if function_name == F_BOTHAT:
-                    new_pixel_data = morph.black_tophat(pixel_data, mask=mask,
-                                                        footprint=strel)
-                elif function_name == F_CLOSE:
+                if function_name == F_CLOSE:
 
                     new_pixel_data = morph.closing(pixel_data, mask=mask,
                                                    footprint=strel)

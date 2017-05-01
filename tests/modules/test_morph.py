@@ -149,7 +149,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         ops = [morph.F_BRANCHPOINTS, morph.F_BRIDGE,
                morph.F_CLEAN, morph.F_CONVEX_HULL,
                morph.F_DIAG, morph.F_DISTANCE,
-               morph.F_ENDPOINTS, morph.F_ERODE, morph.F_FILL,
+               morph.F_ENDPOINTS, morph.F_FILL,
                morph.F_FILL_SMALL, morph.F_HBREAK, morph.F_INVERT,
                morph.F_MAJORITY, morph.F_OPEN, morph.F_REMOVE,
                morph.F_SHRINK, morph.F_SKEL, morph.F_SKELPE, morph.F_SPUR,
@@ -501,12 +501,3 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
             return cpmorph.skeletonize(x, ordering=pe * d)
 
         self.binary_tteesstt('skelpe', fn)
-
-    def test_03_01_color(self):
-        # Regression test for issue # 324
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 15)).astype(np.float32)
-        image = image[:, :, np.newaxis] * np.ones(3)[np.newaxis, np.newaxis, :]
-        result = self.execute(image, morph.F_ERODE,
-                              mask=np.ones(image.shape[:2], np.bool))
-        self.assertTrue(np.all(result < image[:, :, 0] + np.finfo(np.float32).eps))

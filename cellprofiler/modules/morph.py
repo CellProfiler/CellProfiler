@@ -786,13 +786,13 @@ R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 FUNCTION_SETTING_COUNT_V1 = 3
 FUNCTION_SETTING_COUNT_V2 = 4
 FUNCTION_SETTING_COUNT_V3 = 11
-FUNCTION_SETTING_COUNT = 12
+FUNCTION_SETTING_COUNT = 4
 
 
 class Morph(cpm.Module):
     module_name = "Morph"
     category = "Image Processing"
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
@@ -1064,6 +1064,30 @@ class Morph(cpm.Module):
                 new_setting_values += [cps.YES]
             setting_values = new_setting_values
             variable_revision_number = 4
+
+        if variable_revision_number == 4:
+            functions = setting_values[2::12]
+
+            unavailable = [function for function in functions if function not in F_ALL]
+
+            if len(unavailable) > 0:
+                message = "Unsupported operation(s): {}".format(", ".join(unavailable))
+
+                message += "\nYou can reimplement this functionality using equivalent Mathematical Morphology modules."
+
+                raise NotImplementedError(message)
+
+            repeats = setting_values[3::12]
+
+            repeat_counts = setting_values[4::12]
+
+            rescale = setting_values[13::12]
+
+            new_setting_values = list(sum(zip(functions, repeats, repeat_counts, rescale), ()))
+
+            setting_values = setting_values[:2] + new_setting_values
+
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
 

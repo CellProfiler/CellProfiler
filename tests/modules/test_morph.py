@@ -130,58 +130,10 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
 Version:3
 DateRevision:300
 GitHash:
-ModuleCount:5
+ModuleCount:1
 HasImagePlaneDetails:False
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    :
-    Filter images?:Images only
-    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
-
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Extract metadata?:No
-    Metadata data type:Text
-    Metadata types:{}
-    Extraction method count:1
-    Metadata extraction method:Extract from file/folder names
-    Metadata source:File name
-    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-    Extract metadata from:All images
-    Select the filtering criteria:and (file does contain "")
-    Metadata file location:
-    Match file and image metadata:\x5B\x5D
-    Use case insensitive matching?:No
-
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Assign a name to:All images
-    Select the image type:Grayscale image
-    Name to assign these images:DNA
-    Match metadata:\x5B\x5D
-    Image set matching method:Order
-    Set intensity range from:Image metadata
-    Assignments count:1
-    Single images count:0
-    Maximum intensity:255.0
-    Process as 3D:No
-    x:1.0
-    y:1.0
-    z:1.0
-    Select the rule criteria:and (file does contain "")
-    Name to assign these images:DNA
-    Name to assign these objects:Cell
-    Select the image type:Grayscale image
-    Set intensity range from:Image metadata
-    Retain outlines of loaded objects?:No
-    Name the outline image:LoadedOutlines
-    Maximum intensity:255.0
-
-Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Do you want to group your images?:No
-    grouping metadata count:1
-    Metadata category:None
-
-Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
     Name the output image:MorphBlue
     Select the operation to perform:life
@@ -207,7 +159,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
 
         pipeline.load(StringIO.StringIO(data))
 
-        module = pipeline.modules()[4]
+        module = pipeline.modules()[0]
 
         self.assertEqual(module.image_name.value, "DNA")
 

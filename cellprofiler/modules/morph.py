@@ -405,7 +405,6 @@ F_BRIDGE = 'bridge'
 F_CLEAN = 'clean'
 F_CONVEX_HULL = 'convex hull'
 F_DIAG = 'diag'
-F_DILATE = 'dilate'
 F_DISTANCE = 'distance'
 F_ENDPOINTS = 'endpoints'
 F_ERODE = 'erode'
@@ -427,7 +426,7 @@ F_THIN = 'thin'
 F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CONVEX_HULL,
-         F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL,
+         F_DIAG, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL,
          F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE,
          F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
@@ -449,7 +448,7 @@ SE_ALL = sorted([SE_DISK, SE_DIAMOND, SE_LINE, SE_OCTAGON,
                  SE_PERIODIC_LINE, SE_RECTANGLE, SE_SQUARE, SE_PAIR,
                  SE_ARBITRARY])
 
-F_NEED_SE = [F_DILATE, F_ERODE, F_OPEN, F_TOPHAT]
+F_NEED_SE = [F_ERODE, F_OPEN, F_TOPHAT]
 SE_F_TEXT = ", ".join(F_NEED_SE[:-1]) + " and " + F_NEED_SE[-1]
 
 F_NO_REPEATS = [F_OPEN, F_INVERT]
@@ -788,7 +787,7 @@ class Morph(cpm.Module):
                               F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN,
                               F_VBREAK, F_OPENLINES) or
                 (is_binary and
-                         function_name in (F_DILATE, F_ERODE, F_OPEN))):
+                         function_name in (F_ERODE, F_OPEN))):
             # All of these have an iterations argument or it makes no
             # sense to iterate
             if function_name == F_BRANCHPOINTS:
@@ -804,11 +803,6 @@ class Morph(cpm.Module):
                     return morph.convex_hull_image(pixel_data & mask)
             elif function_name == F_DIAG:
                 return morph.diag(pixel_data, mask, count)
-            elif function_name == F_DILATE:
-                return scind.binary_dilation(pixel_data,
-                                             strel,
-                                             iterations=count,
-                                             mask=mask)
             elif function_name == F_DISTANCE:
                 image = scind.distance_transform_edt(pixel_data)
                 if function.rescale_values.value:
@@ -882,10 +876,7 @@ class Morph(cpm.Module):
                                           function_name)
         else:
             for i in range(count):
-                if function_name == F_DILATE:
-                    new_pixel_data = morph.grey_dilation(pixel_data, mask=mask,
-                                                         footprint=strel)
-                elif function_name == F_ERODE:
+                if function_name == F_ERODE:
                     new_pixel_data = morph.grey_erosion(pixel_data, mask=mask,
                                                         footprint=strel)
                 elif function_name == F_OPEN:

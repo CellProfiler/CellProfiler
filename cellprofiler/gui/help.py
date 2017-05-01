@@ -579,7 +579,7 @@ CellProfiler, the objects you identify are called <i>primary</i>,
 <li><b>IdentifyPrimary</b> modules identify objects without relying on any
 information other than a single grayscale input image (e.g., nuclei are
 typically primary objects).</li>
-<li><b>IdentifySecondary</b> modules require a grayscale image plus an image
+<li><b>IdentifySecondaryObjects</b> modules require a grayscale image plus an image
 where primary objects have already been identified, because the secondary
 objects are determined based on the primary objects (e.g., cells can be
 secondary objects when their identification is based on the location of nuclei). </li>

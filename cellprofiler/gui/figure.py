@@ -29,6 +29,7 @@ import numpy.ma
 import os
 import scipy.ndimage
 import scipy.sparse
+import skimage.color
 import sys
 import uuid
 import wx
@@ -1385,31 +1386,15 @@ class Figure(wx.Frame):
         """
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
 
-        cm.set_bad((0, 0, 0))
-
         mappable = matplotlib.cm.ScalarMappable(cmap=cm)
 
-        if all([c0x == 0 for c0x in cm(0)[:3]]):
-            # Set the lower limit to 0 if the color for index 0 is already black.
-            mappable.set_clim(0, labels.max())
+        colors = mappable.to_rgba(numpy.unique(labels))[:, :3]
 
-            cm = None
-        elif numpy.any(labels != 0):
-            mappable.set_clim(1, labels.max())
+        numpy.random.shuffle(colors)
 
-            cm = None
+        image = skimage.color.label2rgb(labels, bg_label=0, colors=colors)
 
-        labels = numpy.ma.array(labels, mask=labels == 0)
-
-        if dimensions == 2:
-            image = mappable.to_rgba(labels)[:, :, :3]
-        else:
-            image = numpy.zeros(labels.shape + (3,), dtype=numpy.float64)
-
-            for index, plane in enumerate(labels):
-                image[index] = mappable.to_rgba(plane)[:, :, :3]
-
-        return self.subplot_imshow(x, y, image, title, clear, colormap=cm,
+        return self.subplot_imshow(x, y, image, title, clear,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow=use_imshow, dimensions=dimensions)

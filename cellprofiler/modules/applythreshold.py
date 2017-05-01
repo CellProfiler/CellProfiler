@@ -883,8 +883,32 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             numpy.array([entropies], dtype=float)
         )
 
-    def get_measurement_columns(self, pipeline):
-        return image_measurement_columns(self.get_measurement_objects_name())
+    def get_measurement_columns(self, pipeline, object_name=None):
+        if object_name is None:
+            object_name = self.y_name.value
+
+        return [
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_FINAL_THRESHOLD % object_name,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_ORIG_THRESHOLD % object_name,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_WEIGHTED_VARIANCE % object_name,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.FF_SUM_OF_ENTROPIES % object_name,
+                cellprofiler.measurement.COLTYPE_FLOAT
+            )
+        ]
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
@@ -1045,10 +1069,3 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                 ),
                 self.upper_outlier_fraction
             )
-
-
-def image_measurement_columns(image_name):
-    return [(cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_FINAL_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_WEIGHTED_VARIANCE % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_SUM_OF_ENTROPIES % image_name, cellprofiler.measurement.COLTYPE_FLOAT)]

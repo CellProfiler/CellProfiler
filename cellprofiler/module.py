@@ -982,14 +982,14 @@ class ImageSegmentation(Module):
         centers = objects.center_of_mass()
 
         if len(centers) == 0:
-            center_z, center_x, center_y = [], [], []
+            center_z, center_y, center_x = [], [], []
         else:
             if objects.volumetric:
-                center_z, center_x, center_y = centers.transpose()
+                center_z, center_y, center_x = centers.transpose()
             else:
                 center_z = [0] * len(centers)
 
-                center_x, center_y = centers.transpose()
+                center_y, center_x = centers.transpose()
 
         workspace.measurements.add_measurement(
             object_name,
@@ -1018,7 +1018,7 @@ class ImageSegmentation(Module):
         workspace.measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_COUNT % object_name,
-            numpy.array([objects.count], dtype=numpy.uint8)
+            numpy.array([objects.count], dtype=float)
         )
 
     def create_settings(self):

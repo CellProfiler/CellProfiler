@@ -345,7 +345,7 @@ class TestObjectProcessing():
 
         module.add_measurements(workspace)
 
-        expected_center_x = [15.0, 15.0]
+        expected_center_x = [7.0, 22.0]
 
         actual_center_x = measurements.get_measurement(
             "ObjectProcessing",
@@ -354,7 +354,7 @@ class TestObjectProcessing():
 
         numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
 
-        expected_center_y = [7.0, 22.0]
+        expected_center_y = [15.0, 15.0]
 
         actual_center_y = measurements.get_measurement(
             "ObjectProcessing",
@@ -664,7 +664,7 @@ class TestImageSegmentation():
 
         module.add_measurements(workspace)
 
-        expected_center_x = [15.0, 15.0]
+        expected_center_x = [7.0, 22.0]
 
         actual_center_x = measurements.get_measurement(
             "ImageSegmentation",
@@ -673,7 +673,7 @@ class TestImageSegmentation():
 
         numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
 
-        expected_center_y = [7.0, 22.0]
+        expected_center_y = [15.0, 15.0]
 
         actual_center_y = measurements.get_measurement(
             "ImageSegmentation",

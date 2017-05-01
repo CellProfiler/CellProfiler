@@ -40,8 +40,8 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
 
         x_data = x.pixel_data
 
-        spacing = numpy.divide(x.spacing[1], x.spacing)
-        sigma = numpy.multiply(self.sigma.value, spacing)
+        sigma = numpy.divide(self.sigma.value, x.spacing)
+
         y_data = skimage.filters.gaussian(x_data, sigma=sigma)
 
         y = cellprofiler.image.Image(

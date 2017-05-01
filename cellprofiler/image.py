@@ -116,7 +116,7 @@ class Image(object):
     @property
     def spacing(self):
         if self.__spacing is not None:
-            return self.__spacing
+            return tuple(numpy.divide(self.__spacing, self.__spacing[1]))
 
         if self.parent_image is None:
             return (1.0,) * self.dimensions

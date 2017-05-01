@@ -3837,7 +3837,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         self.assertEqual((9, 9, 9), image.pixel_data.shape)
 
-        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
         self.assertTrue(np.all(expected == image.pixel_data))
 
@@ -3861,7 +3861,7 @@ class TestLoadImagesImageProviderURL(unittest.TestCase):
 
         self.assertEqual((9, 9, 9), image.pixel_data.shape)
 
-        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
         self.assertTrue(np.all(expected == image.pixel_data))
 

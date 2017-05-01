@@ -413,7 +413,6 @@ F_MAJORITY = 'majority'
 F_OPENLINES = 'openlines'
 F_REMOVE = 'remove'
 F_SHRINK = 'shrink'
-F_SKEL = 'skel'
 F_SKELPE = 'skelpe'
 F_SPUR = 'spur'
 F_THICKEN = 'thicken'
@@ -423,7 +422,7 @@ F_VBREAK = 'vbreak'
 F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CONVEX_HULL,
          F_DIAG, F_DISTANCE, F_ENDPOINTS, F_FILL,
          F_HBREAK, F_LIFE, F_MAJORITY, F_OPENLINES, F_REMOVE,
-         F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
+         F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
 R_ONCE = 'Once'
 R_FOREVER = 'Forever'
@@ -755,7 +754,7 @@ class Morph(cpm.Module):
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_HBREAK, F_LIFE, F_MAJORITY,
-                              F_REMOVE, F_SHRINK, F_SKEL, F_SKELPE, F_SPUR,
+                              F_REMOVE, F_SHRINK, F_SKELPE, F_SPUR,
                               F_THICKEN, F_THIN, F_VBREAK)
             and not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
@@ -764,7 +763,7 @@ class Morph(cpm.Module):
             pixel_data = pixel_data != 0
 
         if function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                             F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN,
+                             F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN,
                              F_THIN, F_VBREAK, F_OPENLINES):
             # All of these have an iterations argument or it makes no
             # sense to iterate
@@ -802,8 +801,6 @@ class Morph(cpm.Module):
                 return morph.remove(pixel_data, mask, count)
             elif function_name == F_SHRINK:
                 return morph.binary_shrink(pixel_data, count)
-            elif function_name == F_SKEL:
-                return morph.skeletonize(pixel_data, mask)
             elif function_name == F_SKELPE:
                 return morph.skeletonize(
                         pixel_data, mask,

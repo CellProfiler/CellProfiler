@@ -153,7 +153,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
                morph.F_HBREAK,
                morph.F_MAJORITY, morph.F_REMOVE,
                morph.F_SHRINK, morph.F_SKELPE, morph.F_SPUR,
-               morph.F_THICKEN, morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]
+               morph.F_THICKEN, morph.F_THIN, morph.F_VBREAK]
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, morph.Morph))

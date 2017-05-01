@@ -417,33 +417,16 @@ F_SKELPE = 'skelpe'
 F_SPUR = 'spur'
 F_THICKEN = 'thicken'
 F_THIN = 'thin'
-F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CONVEX_HULL,
          F_DIAG, F_DISTANCE, F_ENDPOINTS, F_FILL,
          F_HBREAK, F_LIFE, F_MAJORITY, F_OPENLINES, F_REMOVE,
-         F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
+         F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_VBREAK]
 
 R_ONCE = 'Once'
 R_FOREVER = 'Forever'
 R_CUSTOM = 'Custom'
 R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
-
-SE_DISK = "Disk"
-SE_DIAMOND = "Diamond"
-SE_LINE = "Line"
-SE_OCTAGON = "Octagon"
-SE_PERIODIC_LINE = "Periodic line"
-SE_RECTANGLE = "Rectangle"
-SE_SQUARE = "Square"
-SE_PAIR = "Pair"
-SE_ARBITRARY = "Custom"
-SE_ALL = sorted([SE_DISK, SE_DIAMOND, SE_LINE, SE_OCTAGON,
-                 SE_PERIODIC_LINE, SE_RECTANGLE, SE_SQUARE, SE_PAIR,
-                 SE_ARBITRARY])
-
-F_NEED_SE = [F_TOPHAT]
-SE_F_TEXT = ", ".join(F_NEED_SE[:-1]) + " and " + F_NEED_SE[-1]
 
 FUNCTION_SETTING_COUNT_V1 = 3
 FUNCTION_SETTING_COUNT_V2 = 4
@@ -507,54 +490,6 @@ class Morph(cpm.Module):
 
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1,
                                                    doc=self.CUSTOM_REPEATS_DOC))
-
-        group.append("structuring_element", cps.Choice(
-                "Structuring element", SE_ALL, SE_DISK, doc="""
-            <i>(Used only for %(SE_F_TEXT)s)</i><br>
-            The structuring element controls which neighboring pixels participate
-            in the operation. For instance, for the %(F_ERODE)s operation, all
-            pixels in the neighborhood of the pixel must be in the foreground for
-            the pixel to be in the foreground in the output image. If a circular
-            structuring element is used, then a pixel will be in the foreground
-            only if all neighborhood pixels within a circle surrounding the
-            pixel are in the foreground in the input image.
-
-            <p>The structuring elements are:<br>
-            <ul>
-            <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The diameter
-            setting determines the circle's diameter and all pixels that are
-            at or closer than that diameter will be in the neighborhood.</li>
-            <li><i>%(SE_ARBITRARY)s</i>: A structuring element which lets
-            the user choose the exact neighborhood pixels to use.</li>
-            <li><i>%(SE_DIAMOND)s</i>: A diamond centered on the pixel. The
-            diameter setting determines the distance between the top and bottom
-            and left and right corners of the diamond.</li>
-            <li><i>%(SE_LINE)s</i>: A line centered on the pixel. The line
-            has two settings. The angle setting gives the rotation of the line
-            in the counter-clockwise direction in degrees, with a horizontal
-            line having an angle of zero. The length of the line is determined
-            by the diameter setting - only pixels at or closer than 1/2 of the
-            diameter are included in the neighborhood. The line is drawn using
-            the <a href="http://dx.doi.org/10.1147%%2Fsj.41.0025">
-            Bresenham algorithm</a>.</li>
-            <li><i>%(SE_OCTAGON)s</i>: An octagon centered on the pixel. The
-            octagon is inscribed inside a square. The diameter setting controls
-            the length of the square's side. The diameter is rounded to the nearest
-            integer in the series, n * 6 + 1 so a perfect octagon can be drawn.</li>
-            <li><i>%(SE_PAIR)s</i>: The neighborhood of the pixel is
-            composed of the pixel itself and the pixel at the x and y offsets
-            given by the settings.</li>
-            <li><i>%(SE_PERIODIC_LINE)s</i>: The points along a line described
-            by an offset, centered on the pixel. The periodic line has three
-            settings. The neighborhood pixels are all within a circle whose
-            diameter is the diameter setting. Within the circle, pixels are
-            chosen at N times the x and y offset from the center for positive
-            and negative values of N.</li>
-            <li><i>%(SE_RECTANGLE)s</i>: A rectangle centered on the pixel.
-            The rectangle's height and width are given by two settings.</li>
-            <li><i>%(SE_SQUARE)s</i>: a square centered on the pixel. The
-            diameter setting determines the length of the square's side.</li>
-            </ul></p>""" % globals()))
 
         group.append("scale", cps.Float(
                 "Diameter", 3, minval=3, doc="""
@@ -659,21 +594,6 @@ class Morph(cpm.Module):
                 function.custom_repeats.text = self.CUSTOM_REPEATS_TEXT
                 function.custom_repeats.doc = self.CUSTOM_REPEATS_DOC
                 result.append(function.custom_repeats)
-            if function.function in F_NEED_SE:
-                result.append(function.structuring_element)
-                if function.structuring_element == SE_ARBITRARY:
-                    result.append(function.strel)
-                elif function.structuring_element in (
-                        SE_DIAMOND, SE_DISK, SE_OCTAGON, SE_SQUARE):
-                    result.append(function.scale)
-                elif function.structuring_element == SE_LINE:
-                    result += [function.angle, function.scale]
-                elif function.structuring_element == SE_PAIR:
-                    result += [function.x_offset, function.y_offset]
-                elif function.structuring_element == SE_PERIODIC_LINE:
-                    result += [function.x_offset, function.y_offset, function.scale]
-                elif function.structuring_element == SE_RECTANGLE:
-                    result += [function.width, function.height]
             if function.can_remove:
                 result.append(function.remove)
         result += [self.add_button]
@@ -726,30 +646,6 @@ class Morph(cpm.Module):
         custom_repeats = function.custom_repeats.value
 
         is_binary = pixel_data.dtype.kind == 'b'
-        if function.structuring_element == SE_ARBITRARY:
-            strel = np.array(function.strel.get_matrix())
-        elif function.structuring_element == SE_DISK:
-            strel = morph.strel_disk(scale / 2.0)
-        elif function.structuring_element == SE_DIAMOND:
-            strel = morph.strel_diamond(scale / 2.0)
-        elif function.structuring_element == SE_LINE:
-            strel = morph.strel_line(scale, function.angle.value)
-        elif function.structuring_element == SE_OCTAGON:
-            strel = morph.strel_octagon(scale / 2.0)
-        elif function.structuring_element == SE_PAIR:
-            strel = morph.strel_pair(function.x_offset.value,
-                                     function.y_offset.value)
-        elif function.structuring_element == SE_PERIODIC_LINE:
-            xoff = function.x_offset.value
-            yoff = function.y_offset.value
-            n = max(scale / 2.0 / np.sqrt(float(xoff * xoff + yoff * yoff)), 1)
-            strel = morph.strel_periodicline(
-                    xoff, yoff, n)
-        elif function.structuring_element == SE_RECTANGLE:
-            strel = morph.strel_rectangle(
-                    function.width.value, function.height.value)
-        else:
-            strel = morph.strel_square(scale)
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
@@ -817,17 +713,6 @@ class Morph(cpm.Module):
             else:
                 raise NotImplementedError("Unimplemented morphological function: %s" %
                                           function_name)
-        else:
-            for i in range(count):
-                if function_name == F_TOPHAT:
-                    new_pixel_data = morph.white_tophat(pixel_data, mask=mask,
-                                                        footprint=strel)
-                else:
-                    raise NotImplementedError("Unimplemented morphological function: %s" %
-                                              function_name)
-                if np.all(new_pixel_data == pixel_data):
-                    break
-                pixel_data = new_pixel_data
             return pixel_data
 
     def upgrade_settings(self, setting_values,

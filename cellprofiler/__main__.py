@@ -80,7 +80,11 @@ def main(args=None):
         print_groups(options.print_groups_file)
 
     if options.batch_commands_file is not None:
-        get_batch_commands(options.batch_commands_file)
+        try:
+            nr_per_batch = int(options.images_per_batch)
+        except:
+            nr_per_batch = 1
+        get_batch_commands(options.batch_commands_file, nr_per_batch)
 
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
@@ -314,6 +318,13 @@ def parse_args(args):
         help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" ' "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline.")
 
     parser.add_option(
+        "--images-per-batch",
+        dest="images_per_batch",
+        default="1",
+        help='For pipelines that do not use image grouping this option specifies the number of images that should be processed in each batch if --get-batch-commands is used. Defaults to 10.'    
+    )
+
+    parser.add_option(
         "--data-file",
         dest="data_file",
         default=None,
@@ -534,7 +545,7 @@ def print_groups(filename):
     json.dump(groupings, sys.stdout)
 
 
-def get_batch_commands(filename):
+def get_batch_commands(filename, n_per_job=1):
     """Print the commands needed to run the given batch data file headless
 
     filename - the name of a Batch_data.h5 file. The file should group image sets.
@@ -550,6 +561,7 @@ def get_batch_commands(filename):
     m = cellprofiler.measurement.Measurements(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
+    print("has measurement image: ", ("no", "yes")[m.has_feature(cellprofiler.measurement.IMAGE,cellprofiler.measurement.GROUP_NUMBER)])
 
     if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
         group_numbers = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
@@ -575,18 +587,24 @@ def get_batch_commands(filename):
                 print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off)
 
                 prev = off
+    else:
+        metadata_tags = m.get_grouping_tags()
 
-            return
-
-    metadata_tags = m.get_grouping_tags()
-
-    groupings = m.get_groupings(metadata_tags)
-
-    for grouping in groupings:
-        group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
-
-        print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
-
+        if len(metadata_tags) == 1 and metadata_tags[0] == 'ImageNumber':
+            #do file numbers
+            for i in range(0, len(image_numbers), n_per_job):
+                first = image_numbers[i]
+                last  = image_numbers[min(i+n_per_job-1, len(image_numbers)-1)]
+                print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, first, last)
+        else:
+            # This is the original code, doesn't work if the only metadata tag is group number
+            # not sure whether it works in other cases.
+            # Also not sure whether this code can even be reached as grouping should land us in the first "if" branch 
+            groupings = m.get_groupings(metadata_tags)
+            for grouping in groupings:
+                group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
+                print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
+    return
 
 def write_schema(pipeline_filename):
     if pipeline_filename is None:

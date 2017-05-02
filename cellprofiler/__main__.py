@@ -82,7 +82,8 @@ def main(args=None):
     if options.batch_commands_file is not None:
         try:
             nr_per_batch = int(options.images_per_batch)
-        except:
+        except(ValueError):
+            logging.warning("non-integer argument to --images-per-batch. Defaulting to 1.")
             nr_per_batch = 1
         get_batch_commands(options.batch_commands_file, nr_per_batch)
 
@@ -321,7 +322,7 @@ def parse_args(args):
         "--images-per-batch",
         dest="images_per_batch",
         default="1",
-        help='For pipelines that do not use image grouping this option specifies the number of images that should be processed in each batch if --get-batch-commands is used. Defaults to 10.'    
+        help='For pipelines that do not use image grouping this option specifies the number of images that should be processed in each batch if --get-batch-commands is used. Defaults to 1.'    
     )
 
     parser.add_option(

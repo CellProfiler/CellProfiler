@@ -1906,45 +1906,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                  image_numbers[:-1], object_numbers[:-1],
                                  image_numbers[1:], object_numbers[1:])
 
-    def test_10_04_neighbour_track_split(self):
-        '''Track an object that splits'''
-        labels1 = np.zeros((11,10), int)
-        labels1[1:10,1:8] = 1
-        labels2 = np.zeros((11,10), int)
-        labels2[1:6,1:8] = 1
-        labels2[6:10,1:8] = 2
-        def fn(module, workspace, idx):
-            if idx == 0:
-                module.pixel_radius.value = 5
-                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
-        measurements = self.runTrackObjects((labels1,labels2, labels2), fn)
-        def m(feature, idx):
-            name = "_".join((T.F_PREFIX, feature, "5"))
-            values = measurements.get_measurement(OBJECT_NAME, name, idx + 1)
-            self.assertEqual(len(values), 2)
-            return values
-
-        labels = m(T.F_LABEL,2)
-        self.assertEqual(len(labels),2)
-        self.assertTrue(np.all(labels == 1))
-        parents = m(T.F_PARENT_OBJECT_NUMBER,1)
-        self.assertTrue(np.all(parents == 1))
-        self.assertTrue(np.all(m(T.F_PARENT_IMAGE_NUMBER, 1) == 1))
-        parents = m(T.F_PARENT_OBJECT_NUMBER,2)
-        self.assertTrue(np.all(parents == np.array([1,2])))
-        self.assertTrue(np.all(m(T.F_PARENT_IMAGE_NUMBER, 2) == 2))
-        def m(feature):
-            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "5"))
-            return measurements.get_all_measurements(cpmeas.IMAGE, name)[1]
-        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 0)
-        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
-        self.assertEqual(m(T.F_SPLIT_COUNT), 1)
-        self.assertEqual(m(T.F_MERGE_COUNT), 0)
-        self.check_relationships(measurements,
-                                 [1, 1, 2, 2], [1, 1, 1, 2],
-                                 [2, 2, 3, 3], [1, 2, 1, 2])
-
-    def test_10_05_neighbour_track_negative(self):
+    def test_10_04_neighbour_track_negative(self):
         '''Track unrelated objects'''
         labels1 = np.zeros((10,10), int)
         labels1[1:5,1:5] = 1
@@ -1970,7 +1932,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_SPLIT_COUNT), 0)
         self.assertEqual(m(T.F_MERGE_COUNT), 0)
 
-    def test_10_06_neighbour_track_ambiguous(self):
+    def test_10_05_neighbour_track_ambiguous(self):
         '''Track disambiguation from among two possible parents'''
         labels1 = np.zeros((20,20), int)
         labels1[1:4,1:4] = 1
@@ -1990,7 +1952,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_LABEL), 2)
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
 
-    def test_10_07_neighbour_track_group_with_drop(self):
+    def test_10_06_neighbour_track_group_with_drop(self):
         '''Track groups with one lost'''
         labels1 = np.zeros((20,20), int)
         labels1[2,2] = 1

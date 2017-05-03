@@ -43,12 +43,12 @@ class Closing(cellprofiler.module.ImageProcessing):
     def run(self, workspace):
 
         x = workspace.image_set.get_image(self.x_name.value)
-        is_strel_2D = self.structuring_element.value.ndim == 2
-        is_img_2D = x.pixel_data.ndim == 2
+        is_strel_2d = self.structuring_element.value.ndim == 2
+        is_img_2d = x.pixel_data.ndim == 2
 
-        if is_strel_2D and not is_img_2D:
+        if is_strel_2d and not is_img_2d:
             self.function = planewise_morphology_closing
-        elif not is_strel_2D and is_img_2D:
+        elif not is_strel_2d and is_img_2d:
             raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
         else:
             if x.pixel_data.dtype == numpy.bool:

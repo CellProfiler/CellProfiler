@@ -9,9 +9,4 @@ build/
 dist/
 frozen_version.py
 plugins/
-<<<<<<< master
 src/
-=======
-
-.idea/**
->>>>>>> Merge branch 'yit' into sstoma-yit

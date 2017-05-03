@@ -98,15 +98,7 @@ class SaveImages(cellprofiler.module.Module):
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
             "Select the image to save",
-            cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only if "{IF_IMAGE}", "{IF_MASK}" or "{IF_CROPPING}" are selected to save)</i><br>
-            Select the image you want to save.
-            """.format(**{
-                "IF_CROPPING": IF_CROPPING,
-                "IF_IMAGE": IF_IMAGE,
-                "IF_MASK": IF_MASK
-            })
+            doc="Select the image you want to save."
         )
 
         self.file_name_method = cellprofiler.setting.Choice(
@@ -230,7 +222,6 @@ class SaveImages(cellprofiler.module.Module):
             "Output file location",
             self.file_image_name,
             doc="""
-            <i>(Used only when saving non-movie files)</i><br>
             This setting lets you choose the folder for the output files. {IO_FOLDER_CHOICE_HELP_TEXT}
             <p>An additional option is the following:</p>
             <ul>
@@ -744,7 +735,7 @@ class SaveImages(cellprofiler.module.Module):
             return BIT_DEPTH_8
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if variable_revision_number == 1:
+        if variable_revision_number == 11:
             if setting_values[0] == "Objects":
                 raise NotImplementedError(
                     "Unsupported image type: Objects. Use <i>ConvertObjectsToImage</i> to create an image."

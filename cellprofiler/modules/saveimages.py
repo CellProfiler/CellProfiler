@@ -328,22 +328,6 @@ class SaveImages(cellprofiler.module.Module):
             })
         )
 
-        self.rescale = cellprofiler.setting.Binary(
-            "Rescale the images?",
-            False,
-            doc="""
-            Select <i>{YES}</i> if you want the image to occupy the full dynamic range of the bit
-            depth you have chosen. For example, if you save an image to an 8-bit file, the
-            smallest grayscale value will be mapped to 0 and the largest value will be mapped
-            to 2<sup>8</sup>-1 = 255.
-            <p>This will increase the contrast of the output image but will also effectively
-            stretch the image data, which may not be desirable in some
-            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>
-            """.format(**{
-                "YES": cellprofiler.setting.YES
-            })
-        )
-
         self.update_file_names = cellprofiler.setting.Binary(
             "Record the file and path information to the saved image?",
             False,
@@ -395,7 +379,6 @@ class SaveImages(cellprofiler.module.Module):
                 self.file_name_suffix, self.file_format,
                 self.pathname, self.bit_depth,
                 self.overwrite, self.when_to_save,
-                self.rescale,
                 self.update_file_names, self.create_subdirectories,
                 self.root_dir]
 
@@ -576,23 +559,7 @@ class SaveImages(cellprofiler.module.Module):
             pixels = image.pixel_data
             u16hack = (self.get_bit_depth() == BIT_DEPTH_16 and
                        pixels.dtype.kind in ('u', 'i'))
-            if self.rescale.value:
-                pixels = pixels.copy()
-                # Normalize intensities for each channel
-                if pixels.ndim == 3:
-                    # RGB
-                    for i in range(3):
-                        img_min = numpy.min(pixels[:, :, i])
-                        img_max = numpy.max(pixels[:, :, i])
-                        if img_max > img_min:
-                            pixels[:, :, i] = (pixels[:, :, i] - img_min) / (img_max - img_min)
-                else:
-                    # Grayscale
-                    img_min = numpy.min(pixels)
-                    img_max = numpy.max(pixels)
-                    if img_max > img_min:
-                        pixels = (pixels - img_min) / (img_max - img_min)
-            elif not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
+            if not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
                 # Clip at 0 and 1
                 if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
                     sys.stderr.write(
@@ -801,7 +768,7 @@ class SaveImages(cellprofiler.module.Module):
                 setting_values[10] = FF_JPEG
 
             new_setting_values = setting_values[:2]
-            new_setting_values += setting_values[4:16]
+            new_setting_values += setting_values[4:15]
             new_setting_values += setting_values[18:-1]
 
             setting_values = new_setting_values

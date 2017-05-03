@@ -238,3 +238,6 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
         measurements.add_image_measurement(name, value)
 
         return [statistics]
+
+    def volumetric(self):
+        return True

@@ -47,8 +47,6 @@ IF_MOVIE = "Movie"
 IF_OBJECTS = "Objects"
 IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_OBJECTS]
 
-OLD_BIT_DEPTH_8 = "8"
-OLD_BIT_DEPTH_16 = "16"
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
 BIT_DEPTH_FLOAT = "32-bit floating point"
@@ -90,16 +88,12 @@ CM_GRAY = "gray"
 GC_GRAYSCALE = "Grayscale"
 GC_COLOR = "Color"
 
-'''Offset to the directory path setting'''
-OFFSET_DIRECTORY_PATH = 11
-
-'''Offset to the bit depth setting in version 11'''
-OFFSET_BIT_DEPTH_V11 = 12
-
 
 class SaveImages(cellprofiler.module.Module):
     module_name = "SaveImages"
+
     variable_revision_number = 11
+
     category = "File Processing"
 
     def create_settings(self):
@@ -1006,232 +1000,6 @@ class SaveImages(cellprofiler.module.Module):
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8
-
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        """Adjust the setting values to be backwards-compatible with old versions
-
-        """
-
-        PC_DEFAULT = "Default output folder"
-
-        #################################
-        #
-        # Matlab legacy
-        #
-        #################################
-        if from_matlab and variable_revision_number == 12:
-            # self.create_subdirectories.value is already False by default.
-            variable_revision_number = 13
-        if from_matlab and variable_revision_number == 13:
-            new_setting_values = list(setting_values)
-            for i in [3, 12]:
-                if setting_values[i] == '\\':
-                    new_setting_values[i] == cellprofiler.setting.DO_NOT_USE
-            variable_revision_number = 14
-        if from_matlab and variable_revision_number == 14:
-            new_setting_values = []
-            if setting_values[0].isdigit():
-                new_setting_values.extend([IF_FIGURE, setting_values[1]])
-            elif setting_values[3] == 'avi':
-                new_setting_values.extend([IF_MOVIE, setting_values[0]])
-            elif setting_values[0].startswith("Cropping"):
-                new_setting_values.extend([IF_CROPPING,
-                                           setting_values[0][len("Cropping"):]])
-            elif setting_values[0].startswith("CropMask"):
-                new_setting_values.extend([IF_MASK,
-                                           setting_values[0][len("CropMask"):]])
-            else:
-                new_setting_values.extend([IF_IMAGE, setting_values[0]])
-            new_setting_values.append(new_setting_values[1])
-            if setting_values[1] == 'N':
-                new_setting_values.extend([FN_SEQUENTIAL, "None", "None"])
-            elif setting_values[1][0] == '=':
-                new_setting_values.extend([FN_SINGLE_NAME, setting_values[1][1:],
-                                           setting_values[1][1:]])
-            else:
-                if len(cellprofiler.measurement.find_metadata_tokens(setting_values[1])):
-                    new_setting_values.extend([FN_WITH_METADATA, setting_values[1],
-                                               setting_values[1]])
-                else:
-                    new_setting_values.extend([FN_FROM_IMAGE, setting_values[1],
-                                               setting_values[1]])
-            new_setting_values.extend(setting_values[2:4])
-            if setting_values[4] == '.':
-                new_setting_values.extend([PC_DEFAULT, "None"])
-            elif setting_values[4] == '&':
-                new_setting_values.extend([PC_WITH_IMAGE, "None"])
-            else:
-                if len(cellprofiler.measurement.find_metadata_tokens(setting_values[1])):
-                    new_setting_values.extend([PC_WITH_METADATA,
-                                               setting_values[4]])
-                else:
-                    new_setting_values.extend([PC_CUSTOM, setting_values[4]])
-            new_setting_values.extend(setting_values[5:11])
-            #
-            # Last value is there just to display some text in Matlab
-            #
-            new_setting_values.extend(setting_values[12:-1])
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-
-        ##########################
-        #
-        # Version 2
-        #
-        ##########################
-        if not from_matlab and variable_revision_number == 1:
-            # The logic of the question about overwriting was reversed.
-            if setting_values[11] == cellprofiler.setting.YES:
-                setting_values[11] = cellprofiler.setting.NO
-            else:
-                setting_values[11] = cellprofiler.setting.YES
-            variable_revision_number = 2
-
-        #########################
-        #
-        # Version 3
-        #
-        #########################
-        if (not from_matlab) and variable_revision_number == 2:
-            # Default image/output directory -> Default Image Folder
-            if setting_values[8].startswith("Default output"):
-                setting_values = (setting_values[:8] +
-                                  [PC_DEFAULT] + setting_values[9:])
-            elif setting_values[8].startswith("Same"):
-                setting_values = (setting_values[:8] +
-                                  [PC_WITH_IMAGE] + setting_values[9:])
-            variable_revision_number = 3
-
-        #########################
-        #
-        # Version 4
-        #
-        #########################
-        if (not from_matlab) and variable_revision_number == 3:
-            # Changed save type from "Figure" to "Module window"
-            if setting_values[0] == "Figure":
-                setting_values[0] = IF_FIGURE
-            setting_values = cellprofiler.preferences.standardize_default_folder_names(setting_values, 8)
-            variable_revision_number = 4
-
-        #########################
-        #
-        # Version 5
-        #
-        #########################
-        if (not from_matlab) and variable_revision_number == 4:
-            save_image_or_figure, image_name, figure_name, \
-            file_name_method, file_image_name, \
-            single_file_name, file_name_suffix, file_format, \
-            pathname_choice, pathname, bit_depth, \
-            overwrite, when_to_save, \
-            when_to_save_movie, rescale, colormap, \
-            update_file_names, create_subdirectories = setting_values
-
-            pathname = SaveImagesDirectoryPath.static_join_string(
-                    pathname_choice, pathname)
-
-            setting_values = [
-                save_image_or_figure, image_name, figure_name,
-                file_name_method, file_image_name, single_file_name,
-                file_name_suffix != cellprofiler.setting.DO_NOT_USE,
-                file_name_suffix, file_format,
-                pathname, bit_depth, overwrite, when_to_save,
-                rescale, colormap, update_file_names, create_subdirectories]
-            variable_revision_number = 5
-
-        #######################
-        #
-        # Version 6
-        #
-        #######################
-        if (not from_matlab) and variable_revision_number == 5:
-            setting_values = list(setting_values)
-            file_name_method = setting_values[3]
-            single_file_name = setting_values[5]
-            wants_file_suffix = setting_values[6]
-            file_name_suffix = setting_values[7]
-            if file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
-                file_name_suffix = single_file_name
-                wants_file_suffix = cellprofiler.setting.YES
-                file_name_method = FN_FROM_IMAGE
-            elif file_name_method == FN_WITH_METADATA:
-                file_name_method = FN_SINGLE_NAME
-            setting_values[3] = file_name_method
-            setting_values[6] = wants_file_suffix
-            setting_values[7] = file_name_suffix
-            variable_revision_number = 6
-
-        ######################
-        #
-        # Version 7 - added objects
-        #
-        ######################
-        if (not from_matlab) and (variable_revision_number == 6):
-            setting_values = (
-                setting_values[:2] + ["None"] + setting_values[2:14] +
-                [GC_GRAYSCALE] + setting_values[14:])
-            variable_revision_number = 7
-        ######################
-        #
-        # Version 8 - added root_dir
-        #
-        ######################
-        if (not from_matlab) and (variable_revision_number == 7):
-            setting_values = setting_values + [cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME]
-            variable_revision_number = 8
-        ######################
-        #
-        # Version 9 - FF_TIF now outputs .tif files (go figure), so
-        #             change FF_TIF in settings to FF_TIFF to maintain ultimate
-        #             backwards compatibiliy.
-        #
-        ######################
-        if (not from_matlab) and (variable_revision_number == 8):
-            if setting_values[9] == FF_TIF:
-                setting_values = setting_values[:9] + [FF_TIFF] + \
-                                 setting_values[10:]
-            variable_revision_number = 9
-
-        ######################
-        #
-        # Version 10 - Add number of digits for sequential numbering
-        #
-        ######################
-        if (not from_matlab) and (variable_revision_number == 9):
-            setting_values = setting_values[:7] + ["4"] + \
-                             setting_values[7:]
-            variable_revision_number = 10
-
-        ######################
-        #
-        # Version 11 - Allow selection of movie format
-        #
-        ######################
-        if (not from_matlab) and (variable_revision_number == 10):
-            setting_values = setting_values + [FF_AVI]
-            variable_revision_number = 11
-
-        ######################
-        #
-        # Version 11.5 - name of bit depth changed
-        #                (can fix w/o version change)
-        #
-        ######################
-        if variable_revision_number == 11:
-            bit_depth = setting_values[OFFSET_BIT_DEPTH_V11]
-            bit_depth = {
-                OLD_BIT_DEPTH_8: BIT_DEPTH_8,
-                OLD_BIT_DEPTH_16: BIT_DEPTH_16}.get(bit_depth, bit_depth)
-            setting_values = setting_values[:OFFSET_BIT_DEPTH_V11] + \
-                             [bit_depth] + setting_values[OFFSET_BIT_DEPTH_V11 + 1:]
-
-        setting_values[OFFSET_DIRECTORY_PATH] = \
-            SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
-
-        return setting_values, variable_revision_number, from_matlab
 
     def validate_module(self, pipeline):
         if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and

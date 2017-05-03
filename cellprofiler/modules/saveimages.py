@@ -16,17 +16,13 @@ is supported for TIFF only.</p>
 See also <b>NamesAndTypes</b>.
 """
 
-import logging
 import os
 import os.path
 import sys
 
 import bioformats.formatwriter
 import bioformats.omexml
-import centrosome.cpmorphology
-import matplotlib
 import numpy
-import scipy.io.matlab.mio
 
 import cellprofiler.gui.help
 import cellprofiler.measurement
@@ -34,9 +30,6 @@ import cellprofiler.module
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
-
-
-logger = logging.getLogger(__name__)
 
 
 IF_IMAGE = "Image"
@@ -56,12 +49,9 @@ FN_SINGLE_NAME = "Single name"
 SINGLE_NAME_TEXT = "Enter single file name"
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 
-FF_BMP = "bmp"
 FF_JPEG = "jpeg"
 FF_PNG = "png"
 FF_TIFF = "tiff"
-FF_AVI = "avi"
-FF_MOV = "mov"
 
 PC_WITH_IMAGE = "Same folder as image"
 

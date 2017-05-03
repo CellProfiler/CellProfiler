@@ -34,6 +34,7 @@ import urllib
 import urllib2
 import re
 import numpy
+import pkg_resources
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
@@ -939,7 +940,7 @@ class Pipeline(object):
                 if git_hash is not None:
                     message = (
                         "Your pipeline was saved using an old version\n"
-                        "of CellProfiler (rev {}{}).\n"
+                        "of CellProfiler ({}).\n"
                         "The current version of CellProfiler can load\n"
                         "and run this pipeline, but if you make changes\n"
                         "to it and save, the older version of CellProfiler\n"
@@ -948,7 +949,7 @@ class Pipeline(object):
                         "You can ignore this warning if you do not plan to save\n"
                         "this pipeline or if you will only use it with this or\n"
                         "later versions of CellProfiler."
-                    ).format(git_hash, pipeline_date)
+                    ).format(pkg_resources.get_distribution("CellProfiler").version)
                     logging.warning(message)
                 else:
                     message = (

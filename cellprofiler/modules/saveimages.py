@@ -54,35 +54,28 @@ BIT_DEPTH_FLOAT = "32-bit floating point"
 FN_FROM_IMAGE = "From image filename"
 FN_SEQUENTIAL = "Sequential numbers"
 FN_SINGLE_NAME = "Single name"
+
 SINGLE_NAME_TEXT = "Enter single file name"
-FN_WITH_METADATA = "Name with metadata"
-FN_IMAGE_FILENAME_WITH_METADATA = "Image filename with metadata"
-METADATA_NAME_TEXT = """Enter file name with metadata"""
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
+
 FF_BMP = "bmp"
 FF_JPG = "jpg"
 FF_JPEG = "jpeg"
-FF_PBM = "pbm"
-FF_PCX = "pcx"
-FF_PGM = "pgm"
 FF_PNG = "png"
-FF_PNM = "pnm"
-FF_PPM = "ppm"
-FF_RAS = "ras"
 FF_TIF = "tif"
 FF_TIFF = "tiff"
-FF_XWD = "xwd"
 FF_AVI = "avi"
 FF_MAT = "mat"
 FF_MOV = "mov"
+
 FF_SUPPORTING_16_BIT = [FF_TIF, FF_TIFF]
+
 PC_WITH_IMAGE = "Same folder as image"
-OLD_PC_WITH_IMAGE_VALUES = ["Same folder as image"]
-PC_CUSTOM = "Custom"
-PC_WITH_METADATA = "Custom with metadata"
+
 WS_EVERY_CYCLE = "Every cycle"
 WS_FIRST_CYCLE = "First cycle"
 WS_LAST_CYCLE = "Last cycle"
+
 CM_GRAY = "gray"
 
 GC_GRAYSCALE = "Grayscale"
@@ -1061,25 +1054,6 @@ class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):
         if self.dir_choice not in self.dir_choices:
             raise cellprofiler.setting.ValidationError("%s is not a valid directory option" %
                                                        self.dir_choice, self)
-
-    @staticmethod
-    def upgrade_setting(value):
-        '''Upgrade setting from previous version'''
-        dir_choice, custom_path = cellprofiler.setting.DirectoryPath.split_string(value)
-        if dir_choice in OLD_PC_WITH_IMAGE_VALUES:
-            dir_choice = PC_WITH_IMAGE
-        elif dir_choice in (PC_CUSTOM, PC_WITH_METADATA):
-            if custom_path.startswith('.'):
-                dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
-            elif custom_path.startswith('&'):
-                dir_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
-                custom_path = '.' + custom_path[1:]
-            else:
-                dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
-        else:
-            return cellprofiler.setting.DirectoryPath.upgrade_setting(value)
-        return cellprofiler.setting.DirectoryPath.static_join_string(dir_choice, custom_path)
-
 
 def save_bmp(path, img):
     '''Save an image as a Microsoft .bmp file

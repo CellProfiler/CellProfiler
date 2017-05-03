@@ -59,7 +59,6 @@ SINGLE_NAME_TEXT = "Enter single file name"
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 
 FF_BMP = "bmp"
-FF_JPG = "jpg"
 FF_JPEG = "jpeg"
 FF_PNG = "png"
 FF_TIFF = "tiff"
@@ -265,7 +264,6 @@ class SaveImages(cellprofiler.module.Module):
             "Saved file format",
             [
                 FF_BMP,
-                FF_JPG,
                 FF_JPEG,
                 FF_PNG,
                 FF_TIFF
@@ -975,9 +973,10 @@ class SaveImages(cellprofiler.module.Module):
         if variable_revision_number == 1:
             if setting_values[10] == "mat":
                 raise NotImplementedError("Unsupported file format: {}".format(setting_values[10]))
-
-            if setting_values[10] == "tif":
+            elif setting_values[10] == "tif":
                 setting_values[10] = FF_TIFF
+            elif setting_values[10] == "jpg":
+                setting_values[10] = FF_JPEG
 
             variable_revision_number = 12
 

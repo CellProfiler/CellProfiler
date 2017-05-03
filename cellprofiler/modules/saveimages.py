@@ -42,7 +42,6 @@ logger = logging.getLogger(__name__)
 IF_IMAGE = "Image"
 IF_MASK = "Mask"
 IF_CROPPING = "Cropping"
-IF_FIGURE = "Module window"
 IF_MOVIE = "Movie"
 IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 
@@ -118,17 +117,6 @@ class SaveImages(cellprofiler.module.Module):
                 "IF_CROPPING": IF_CROPPING,
                 "IF_IMAGE": IF_IMAGE,
                 "IF_MASK": IF_MASK
-            })
-        )
-
-        self.figure_name = cellprofiler.setting.FigureSubscriber(
-            "Select the module display window to save",
-            cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only if saving "{IF_FIGURE}")</i><br>
-            Enter the module number/name for which you want to save the module display window.
-            """.format(**{
-                "IF_FIGURE": IF_FIGURE
             })
         )
 
@@ -419,7 +407,6 @@ class SaveImages(cellprofiler.module.Module):
     def settings(self):
         """Return the settings in the order to use when saving"""
         return [self.save_image_or_figure, self.image_name,
-                self.figure_name,
                 self.file_name_method, self.file_image_name,
                 self.single_file_name, self.number_of_digits,
                 self.wants_file_name_suffix,
@@ -432,13 +419,12 @@ class SaveImages(cellprofiler.module.Module):
 
     def visible_settings(self):
         """Return only the settings that should be shown"""
-        result = [self.save_image_or_figure]
-        if self.save_image_or_figure == IF_FIGURE:
-            result.append(self.figure_name)
-        else:
-            result.append(self.image_name)
+        result = [
+            self.save_image_or_figure,
+            self.image_name,
+            self.file_name_method
+        ]
 
-        result.append(self.file_name_method)
         if self.file_name_method == FN_FROM_IMAGE:
             result += [self.file_image_name, self.wants_file_name_suffix]
             if self.wants_file_name_suffix:
@@ -837,7 +823,7 @@ class SaveImages(cellprofiler.module.Module):
                 setting_values[10] = FF_JPEG
 
             new_setting_values = setting_values[:2]
-            new_setting_values += setting_values[3:16]
+            new_setting_values += setting_values[4:16]
             new_setting_values += setting_values[18:]
 
             setting_values = new_setting_values

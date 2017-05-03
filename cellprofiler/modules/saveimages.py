@@ -65,7 +65,6 @@ FF_PNG = "png"
 FF_TIF = "tif"
 FF_TIFF = "tiff"
 FF_AVI = "avi"
-FF_MAT = "mat"
 FF_MOV = "mov"
 
 FF_SUPPORTING_16_BIT = [FF_TIF, FF_TIFF]
@@ -85,7 +84,7 @@ GC_COLOR = "Color"
 class SaveImages(cellprofiler.module.Module):
     module_name = "SaveImages"
 
-    variable_revision_number = 11
+    variable_revision_number = 12
 
     category = "File Processing"
 
@@ -273,14 +272,13 @@ class SaveImages(cellprofiler.module.Module):
                 FF_JPEG,
                 FF_PNG,
                 FF_TIF,
-                FF_TIFF,
-                FF_MAT
+                FF_TIFF
             ],
             value=FF_TIF,
             doc="""
             <i>(Used only when saving non-movie files)</i><br>
-            Select the image or movie format to save the image(s). Most common
-            image formats are available; MAT-files are readable by MATLAB."""
+            Select the image or movie format to save the image(s). Most common image formats are available.
+            """
         )
 
         self.movie_format = cellprofiler.setting.Choice(
@@ -337,7 +335,6 @@ class SaveImages(cellprofiler.module.Module):
                 BIT_DEPTH_FLOAT
             ],
             doc="""
-            <i>(Used only when saving files in a non-MAT format)</i><br>
             Select the bit-depth at which you want to save the images.
             <i>{BIT_DEPTH_FLOAT}</i> saves the image as floating-point decimals
             with 32-bit precision in its raw form, typically scaled between
@@ -396,7 +393,6 @@ class SaveImages(cellprofiler.module.Module):
             "Rescale the images?",
             False,
             doc="""
-            <i>(Used only when saving non-MAT file images)</i><br>
             Select <i>{YES}</i> if you want the image to occupy the full dynamic range of the bit
             depth you have chosen. For example, if you save an image to an 8-bit file, the
             smallest grayscale value will be mapped to 0 and the largest value will be mapped
@@ -423,7 +419,7 @@ class SaveImages(cellprofiler.module.Module):
                 Background pixels are colored black. Grayscale images are more suitable if you are going to
                 load the image as objects using <b>NamesAndTypes</b> or some other program that will be used to
                 relate object measurements to the pixels in the image. You should save grayscale images using
-                the .TIF or .MAT formats if possible; otherwise you may have problems saving files with more
+                the .TIF format if possible; otherwise you may have problems saving files with more
                 than 255 objects.</li>
                 <li><i>{GC_COLOR}:</i> Assigns different colors to different objects.</li>
             </ul>
@@ -438,7 +434,6 @@ class SaveImages(cellprofiler.module.Module):
             "Select colormap",
             value=CM_GRAY,
             doc="""
-            <i>(Used only when saving non-MAT file images)</i><br>
             This affects how images color intensities are displayed. All available colormaps can be seen
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.
             """
@@ -538,12 +533,7 @@ class SaveImages(cellprofiler.module.Module):
         result.append(self.overwrite)
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.when_to_save)
-        if (self.save_image_or_figure == IF_IMAGE and
-                    self.file_format != FF_MAT):
-            result.append(self.rescale)
-            if self.get_bit_depth() == "8-bit integer":
-                result.append(self.colormap)
-        elif self.save_image_or_figure == IF_OBJECTS:
+        if self.save_image_or_figure == IF_OBJECTS:
             result.append(self.gray_or_color)
             if self.gray_or_color == GC_COLOR:
                 result.append(self.colormap)
@@ -674,11 +664,7 @@ class SaveImages(cellprofiler.module.Module):
             return
 
         labels = [l for l, c in objects.get_labels()]
-        if self.get_file_format() == FF_MAT:
-            pixels = objects.segmented
-            scipy.io.matlab.mio.savemat(filename, {"Image": pixels}, format='5')
-
-        elif self.gray_or_color == GC_GRAYSCALE:
+        if self.gray_or_color == GC_GRAYSCALE:
             if objects.count > 255:
                 pixel_type = bioformats.omexml.PT_UINT16
             else:
@@ -758,54 +744,53 @@ class SaveImages(cellprofiler.module.Module):
             pixels = image.pixel_data
             u16hack = (self.get_bit_depth() == BIT_DEPTH_16 and
                        pixels.dtype.kind in ('u', 'i'))
-            if self.file_format != FF_MAT:
-                if self.rescale.value:
-                    pixels = pixels.copy()
-                    # Normalize intensities for each channel
-                    if pixels.ndim == 3:
-                        # RGB
-                        for i in range(3):
-                            img_min = numpy.min(pixels[:, :, i])
-                            img_max = numpy.max(pixels[:, :, i])
-                            if img_max > img_min:
-                                pixels[:, :, i] = (pixels[:, :, i] - img_min) / (img_max - img_min)
-                    else:
-                        # Grayscale
-                        img_min = numpy.min(pixels)
-                        img_max = numpy.max(pixels)
+            if self.rescale.value:
+                pixels = pixels.copy()
+                # Normalize intensities for each channel
+                if pixels.ndim == 3:
+                    # RGB
+                    for i in range(3):
+                        img_min = numpy.min(pixels[:, :, i])
+                        img_max = numpy.max(pixels[:, :, i])
                         if img_max > img_min:
-                            pixels = (pixels - img_min) / (img_max - img_min)
-                elif not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
-                    # Clip at 0 and 1
-                    if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
-                        sys.stderr.write(
-                                "Warning, clipping image %s before output. Some intensities are outside of range 0-1" %
-                                self.image_name.value)
-                        pixels = pixels.copy()
-                        pixels[pixels < 0] = 0
-                        pixels[pixels > 1] = 1
-
-                if pixels.ndim == 2 and self.colormap != CM_GRAY and \
-                                self.get_bit_depth() == BIT_DEPTH_8:
-                    # Convert grayscale image to rgb for writing
-                    if self.colormap == cellprofiler.setting.DEFAULT:
-                        colormap = cellprofiler.preferences.get_default_colormap()
-                    else:
-                        colormap = self.colormap.value
-                    cm = matplotlib.cm.get_cmap(colormap)
-
-                    mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-                    pixels = mapper.to_rgba(pixels, bytes=True)
-                    pixel_type = bioformats.omexml.PT_UINT8
-                elif self.get_bit_depth() == BIT_DEPTH_8:
-                    pixels = (pixels * 255).astype(numpy.uint8)
-                    pixel_type = bioformats.omexml.PT_UINT8
-                elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-                    pixel_type = bioformats.omexml.PT_FLOAT
+                            pixels[:, :, i] = (pixels[:, :, i] - img_min) / (img_max - img_min)
                 else:
-                    if not u16hack:
-                        pixels = (pixels * 65535)
-                    pixel_type = bioformats.omexml.PT_UINT16
+                    # Grayscale
+                    img_min = numpy.min(pixels)
+                    img_max = numpy.max(pixels)
+                    if img_max > img_min:
+                        pixels = (pixels - img_min) / (img_max - img_min)
+            elif not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
+                # Clip at 0 and 1
+                if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
+                    sys.stderr.write(
+                            "Warning, clipping image %s before output. Some intensities are outside of range 0-1" %
+                            self.image_name.value)
+                    pixels = pixels.copy()
+                    pixels[pixels < 0] = 0
+                    pixels[pixels > 1] = 1
+
+            if pixels.ndim == 2 and self.colormap != CM_GRAY and \
+                            self.get_bit_depth() == BIT_DEPTH_8:
+                # Convert grayscale image to rgb for writing
+                if self.colormap == cellprofiler.setting.DEFAULT:
+                    colormap = cellprofiler.preferences.get_default_colormap()
+                else:
+                    colormap = self.colormap.value
+                cm = matplotlib.cm.get_cmap(colormap)
+
+                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+                pixels = mapper.to_rgba(pixels, bytes=True)
+                pixel_type = bioformats.omexml.PT_UINT8
+            elif self.get_bit_depth() == BIT_DEPTH_8:
+                pixels = (pixels * 255).astype(numpy.uint8)
+                pixel_type = bioformats.omexml.PT_UINT8
+            elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
+                pixel_type = bioformats.omexml.PT_FLOAT
+            else:
+                if not u16hack:
+                    pixels = (pixels * 65535)
+                pixel_type = bioformats.omexml.PT_UINT16
 
         elif self.save_image_or_figure == IF_MASK:
             pixels = image.mask.astype(numpy.uint8) * 255
@@ -819,9 +804,7 @@ class SaveImages(cellprofiler.module.Module):
         if filename is None:  # failed overwrite check
             return
 
-        if self.get_file_format() == FF_MAT:
-            scipy.io.matlab.mio.savemat(filename, {"Image": pixels}, format='5')
-        elif self.get_file_format() == FF_BMP:
+        if self.get_file_format() == FF_BMP:
             save_bmp(filename, pixels)
         else:
             self.do_save_image(workspace, filename, pixels, pixel_type)
@@ -993,6 +976,15 @@ class SaveImages(cellprofiler.module.Module):
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if variable_revision_number == 1:
+            if setting_values[10] == "mat":
+                raise NotImplementedError("Unsupported file format: {}".format(setting_values[10]))
+
+            variable_revision_number = 12
+
+        return setting_values, variable_revision_number, False
 
     def validate_module(self, pipeline):
         if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and

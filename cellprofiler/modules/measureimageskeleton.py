@@ -1,6 +1,5 @@
 import numpy
 import scipy.ndimage
-import skimage.measure
 import skimage.segmentation
 import skimage.util
 

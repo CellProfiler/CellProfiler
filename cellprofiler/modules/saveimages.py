@@ -62,12 +62,9 @@ FF_BMP = "bmp"
 FF_JPG = "jpg"
 FF_JPEG = "jpeg"
 FF_PNG = "png"
-FF_TIF = "tif"
 FF_TIFF = "tiff"
 FF_AVI = "avi"
 FF_MOV = "mov"
-
-FF_SUPPORTING_16_BIT = [FF_TIF, FF_TIFF]
 
 PC_WITH_IMAGE = "Same folder as image"
 
@@ -271,10 +268,9 @@ class SaveImages(cellprofiler.module.Module):
                 FF_JPG,
                 FF_JPEG,
                 FF_PNG,
-                FF_TIF,
                 FF_TIFF
             ],
-            value=FF_TIF,
+            value=FF_TIFF,
             doc="""
             <i>(Used only when saving non-movie files)</i><br>
             Select the image or movie format to save the image(s). Most common image formats are available.
@@ -285,15 +281,15 @@ class SaveImages(cellprofiler.module.Module):
             "Saved movie format",
             [
                 FF_AVI,
-                FF_TIF,
+                FF_TIFF,
                 FF_MOV
             ],
             value=FF_AVI,
             doc="""
             <i>(Used only when saving movie files)</i><br>
             Select the movie format to use when saving movies. AVI and MOV
-            store images from successive image sets as movie frames. TIF
-            stores each image as an image plane in a TIF stack.
+            store images from successive image sets as movie frames. TIFF
+            stores each image as an image plane in a TIFF stack.
             """
         )
 
@@ -524,8 +520,7 @@ class SaveImages(cellprofiler.module.Module):
             result.append(self.movie_format)
         else:
             result.append(self.file_format)
-        supports_16_bit = (self.file_format in FF_SUPPORTING_16_BIT and
-                           self.save_image_or_figure == IF_IMAGE)
+        supports_16_bit = (self.file_format == FF_TIFF and self.save_image_or_figure == IF_IMAGE)
         if supports_16_bit:
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)
@@ -971,8 +966,7 @@ class SaveImages(cellprofiler.module.Module):
         return self.file_format.value
 
     def get_bit_depth(self):
-        if (self.save_image_or_figure == IF_IMAGE and
-                    self.get_file_format() in FF_SUPPORTING_16_BIT):
+        if (self.save_image_or_figure == IF_IMAGE and self.get_file_format() == FF_TIFF):
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8
@@ -981,6 +975,9 @@ class SaveImages(cellprofiler.module.Module):
         if variable_revision_number == 1:
             if setting_values[10] == "mat":
                 raise NotImplementedError("Unsupported file format: {}".format(setting_values[10]))
+
+            if setting_values[10] == "tif":
+                setting_values[10] = FF_TIFF
 
             variable_revision_number = 12
 

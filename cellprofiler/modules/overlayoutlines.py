@@ -384,3 +384,6 @@ class OverlayOutlines(cellprofiler.module.Module):
             variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

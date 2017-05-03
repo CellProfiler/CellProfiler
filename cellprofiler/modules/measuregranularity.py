@@ -451,6 +451,9 @@ class MeasureGranularity(cpm.Module):
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True
+
 
 class GranularitySettingsGroup(cps.SettingsGroup):
     def granularity_feature(self, length):

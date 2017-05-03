@@ -443,7 +443,7 @@ class MeasureObjectSizeShape(cpm.Module):
 
                 verts, faces, _, _ = skimage.measure.marching_cubes(
                     volume,
-                    spacing=spacing,
+                    spacing=objects.parent_image.spacing if objects.has_parent_image else (1.0,) * labels.ndim,
                     level=0
                 )
 
@@ -561,6 +561,9 @@ class MeasureObjectSizeShape(cpm.Module):
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True
 
 
 def form_factor(objects):

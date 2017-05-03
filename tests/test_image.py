@@ -106,7 +106,7 @@ class TestImage(unittest.TestCase):
 
         x = cpi.Image(image=data, spacing=(0.33, 0.33))
 
-        self.assertEqual(x.spacing, (0.33, 0.33))
+        self.assertEqual(x.spacing, (1.0, 1.0))
 
     def test_spacing_parent_image(self):
         data = np.ones((5, 5))
@@ -115,7 +115,7 @@ class TestImage(unittest.TestCase):
 
         x = cpi.Image(image=data, parent_image=px)
 
-        self.assertEqual(x.spacing, (0.33, 0.33))
+        self.assertEqual(x.spacing, (1.0, 1.0))
 
     def test_spacing_volume_default(self):
         data = np.ones((5, 10, 10))
@@ -129,7 +129,7 @@ class TestImage(unittest.TestCase):
 
         x = cpi.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
 
-        self.assertEqual(x.spacing, (0.77, 0.33, 0.33))
+        self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
 
     def test_spacing_volume_parent_image(self):
         data = np.ones((5, 10, 10))
@@ -138,7 +138,7 @@ class TestImage(unittest.TestCase):
 
         x = cpi.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
 
-        self.assertEqual(x.spacing, (0.77, 0.33, 0.33))
+        self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
 
 
 IMAGE_NAME = "image"

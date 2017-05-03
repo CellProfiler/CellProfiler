@@ -576,6 +576,13 @@ class Pipeline(object):
         self.__image_plane_details_metadata_settings = tuple()
 
         self.__undo_stack = []
+        self.__volumetric = False
+
+    def set_volumetric(self, value):
+        self.__volumetric = value
+
+    def volumetric(self):
+        return self.__volumetric
 
     def copy(self, save_image_plane_details=True):
         '''Create a copy of the pipeline modules and settings'''
@@ -2106,6 +2113,21 @@ class Pipeline(object):
                     np.arange(len(image_numbers)) + 1
                 m.reorder_image_measurements(new_image_numbers)
         m.flush()
+
+        if self.volumetric():
+            unsupported = [module.module_name for module in self.__modules if not module.volumetric()]
+
+            if len(unsupported) > 0:
+                self.report_prepare_run_error(
+                    None,
+                    "Cannot run pipeline. "
+                    "The pipeline is configured to process data as 3D. "
+                    "The pipeline contains modules which do not support 3D processing:"
+                    "\n\n{}".format(", ".join(unsupported))
+                )
+
+                return False
+
 
         return True
 

@@ -1291,7 +1291,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         n.single_load_as_choice.value = load_as_type
         n.single_rescale.value = rescaled
         n.manual_rescale.value = manual_rescale
-        n.volumetric.value = volume
+        n.process_as_3d.value = volume
         if spacing is not None:
             z, x, y = spacing
             n.x.value = x
@@ -1767,7 +1767,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         self.assertEqual((9, 9, 9), image.pixel_data.shape)
 
-        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
         self.assertTrue(image.pixel_data.dtype.kind == "f")
 
@@ -1788,7 +1788,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         self.assertEqual((9, 9, 9, 3), image.pixel_data.shape)
 
-        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
         self.assertTrue(image.pixel_data.dtype.kind == "f")
 
@@ -1809,7 +1809,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         self.assertEqual((9, 9, 9), image.pixel_data.shape)
 
-        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
         self.assertTrue(image.pixel_data.dtype.kind == "b")
 
@@ -1829,6 +1829,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         self.assertEqual((9, 9, 9), image.pixel_data.shape)
 
-        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
         self.assertTrue(image.pixel_data.dtype.kind == "f")

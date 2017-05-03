@@ -1690,7 +1690,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         #
         idp = identifyprimaryobjects.IdentifyPrimaryObjects()
         idp.module_num = 1
-        idp.object_name.value = OBJECTS_NAME
+        idp.y_name.value = OBJECTS_NAME
         pipeline.add_module(idp)
 
         module = E.ExportToSpreadsheet()
@@ -1721,7 +1721,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         #
         idp = identifyprimaryobjects.IdentifyPrimaryObjects()
         idp.module_num = 1
-        idp.object_name.value = OBJECTS_NAME
+        idp.y_name.value = OBJECTS_NAME
         pipeline.add_module(idp)
 
         module = E.ExportToSpreadsheet()
@@ -2214,8 +2214,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = identifyprimaryobjects.IdentifyPrimaryObjects()
         module.module_num = 1
         pipeline.add_module(module)
-        module.image_name.value = "my_image"
-        module.object_name.value = OBJECTS_NAME
+        module.x_name.value = "my_image"
+        module.y_name.value = OBJECTS_NAME
         module = E.ExportToSpreadsheet()
         module.module_num = 2
         pipeline.add_module(module)

@@ -359,7 +359,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
             smoothed = scipy.ndimage.gaussian_filter(
                 data,
-                numpy.divide(sigma, numpy.divide(image.spacing, image.spacing[1]))
+                numpy.divide(sigma, image.spacing)
             )
 
             if image.volumetric:

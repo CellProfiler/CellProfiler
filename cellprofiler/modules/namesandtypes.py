@@ -313,14 +313,15 @@ class NamesAndTypes(cpm.Module):
                                           LOAD_AS_MASK],
                 doc=LOAD_AS_CHOICE_HELP_TEXT)
 
-        self.volumetric = cps.Binary(
+        self.process_as_3d = cps.Binary(
             text="Process as 3D",
             value=False,
             doc="""
-            If you want to treat the data as three-dimensional, select "Yes" to 
-            load files as volumes. Otherwise, select "No" to load files as separate, 
+            If you want to treat the data as three-dimensional, select "Yes" to
+            load files as volumes. Otherwise, select "No" to load files as separate,
             two-dimensional images.
-            """
+            """,
+            callback=lambda value: self.pipeline.set_volumetric(value)
         )
 
         self.x = cps.Float(
@@ -674,7 +675,7 @@ class NamesAndTypes(cpm.Module):
             self.assignments_count,
             self.single_images_count,
             self.manual_rescale,
-            self.volumetric,
+            self.process_as_3d,
             self.x,
             self.y,
             self.z
@@ -695,9 +696,9 @@ class NamesAndTypes(cpm.Module):
         return result
 
     def visible_settings(self):
-        result = [self.assignment_method, self.volumetric]
+        result = [self.assignment_method, self.process_as_3d]
 
-        if self.volumetric.value:
+        if self.process_as_3d.value:
             result += [
                 self.x,
                 self.y,
@@ -1541,7 +1542,7 @@ class NamesAndTypes(cpm.Module):
 
         url = m.alter_url_post_create_batch(url)
 
-        volume = self.volumetric.value
+        volume = self.process_as_3d.value
 
         spacing = (self.z.value, self.x.value, self.y.value) if volume else None
 
@@ -1941,6 +1942,9 @@ class NamesAndTypes(cpm.Module):
             variable_revision_number = 7
 
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True
 
     class FakeModpathResolver(object):
         '''Resolve one modpath to one ipd'''

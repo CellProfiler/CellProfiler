@@ -43,6 +43,7 @@ import runmultiplepipelinesdialog
 import string
 import sys
 import threading
+import traceback
 import urllib
 import wx
 import wx.lib.buttons
@@ -672,13 +673,23 @@ class PipelineController(object):
         self.do_save_as_workspace()
 
     def do_save_as_workspace(self):
-        wildcard = "CellProfiler project (*.%s)|*.%s" % (
-            cellprofiler.preferences.EXT_PROJECT, cellprofiler.preferences.EXT_PROJECT)
+        default_filename = cellprofiler.preferences.get_current_workspace_path()
+        if default_filename is None:
+            default_filename = "project.%s" % cellprofiler.preferences.EXT_PROJECT
+            default_path = None
+        else:
+            default_path, default_filename = os.path.split(default_filename)
+            default_filename = \
+                os.path.splitext(default_filename)[0] + "." + cellprofiler.preferences.EXT_PROJECT
+
+        wildcard = "CellProfiler project (*.%s)|*.%s" % (cellprofiler.preferences.EXT_PROJECT, cellprofiler.preferences.EXT_PROJECT)
         with wx.FileDialog(
                 self.__frame,
                 "Save project file as",
                 wildcard=wildcard,
                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if default_path is not None:
+                dlg.Path = os.path.join(default_path, default_filename)
             if dlg.ShowModal() == wx.ID_OK:
                 pathname, filename = os.path.split(dlg.Path)
                 fullname = dlg.Path
@@ -929,7 +940,7 @@ class PipelineController(object):
         except cellprofiler.pipeline.PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception as instance:
-            error = cellprofiler.gui.dialog.Error("Error")
+            error = cellprofiler.gui.dialog.Error("Error", instance.message)
 
             if error.status is wx.ID_CANCEL:
                 cellprofiler.preferences.cancel_progress()
@@ -1058,7 +1069,7 @@ class PipelineController(object):
                     self.__workspace.refresh_image_set()
                     self.__workspace.measurements.write_image_sets(dlg.Path)
                 except Exception as e:
-                    error = cellprofiler.gui.dialog.Error("Error")
+                    error = cellprofiler.gui.dialog.Error("Error", e.message)
 
                     if error.status is wx.ID_CANCEL:
                         cellprofiler.preferences.cancel_progress()
@@ -1450,7 +1461,7 @@ class PipelineController(object):
                        "\t%s") % (module_name,
                                   event.error.message,
                                   '\n\t'.join(event.settings))
-        error = cellprofiler.gui.dialog.Error("Error")
+        error = cellprofiler.gui.dialog.Error("Error", message)
 
         if error.status is wx.ID_CANCEL:
             cellprofiler.preferences.cancel_progress()
@@ -2196,6 +2207,19 @@ class PipelineController(object):
                 return
             remove_input_modules = True
 
+        if self.__pipeline.volumetric() and not module.volumetric():
+            message = "{} does not support processing 3D data and will not be added to the pipeline.".format(
+                module.module_name
+            )
+
+            wx.MessageBox(
+                message,
+                caption="Warning",
+                style=wx.OK
+            )
+
+            return
+
         self.__pipeline.add_module(module)
         if remove_input_modules:
             while True:
@@ -2474,7 +2498,9 @@ class PipelineController(object):
         except:
             _, exc, tb = sys.exc_info()
 
-            error = cellprofiler.gui.dialog.Error("Error")
+            traceback.print_tb(tb, logger)
+
+            error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cellprofiler.preferences.cancel_progress()
@@ -2499,7 +2525,9 @@ class PipelineController(object):
         except:
             _, exc, tb = sys.exc_info()
 
-            error = cellprofiler.gui.dialog.Error("Error")
+            traceback.print_tb(tb, logger)
+
+            error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cellprofiler.preferences.cancel_progress()
@@ -2521,7 +2549,9 @@ class PipelineController(object):
         except:
             _, exc, tb = sys.exc_info()
 
-            error = cellprofiler.gui.dialog.Error("Error")
+            traceback.print_tb(tb, logger)
+
+            error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cellprofiler.preferences.cancel_progress()
@@ -2545,7 +2575,9 @@ class PipelineController(object):
         except:
             _, exc, tb = sys.exc_info()
 
-            error = cellprofiler.gui.dialog.Error("Error")
+            traceback.print_tb(tb, logger)
+
+            error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cellprofiler.preferences.cancel_progress()
@@ -2616,7 +2648,7 @@ class PipelineController(object):
                         "%s\n\nDo you want to stop processing?") %
                        evt)
 
-        error = cellprofiler.gui.dialog.Error("Error")
+        error = cellprofiler.gui.dialog.Error("Error", "2519")
 
         if error.status is wx.ID_CANCEL:
             cellprofiler.preferences.cancel_progress()

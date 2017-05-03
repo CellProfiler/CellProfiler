@@ -1300,6 +1300,9 @@ Do you want to save it anyway?""" %
 
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True
+
 
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""

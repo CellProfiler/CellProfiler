@@ -44,8 +44,7 @@ IF_MASK = "Mask"
 IF_CROPPING = "Cropping"
 IF_FIGURE = "Module window"
 IF_MOVIE = "Movie"
-IF_OBJECTS = "Objects"
-IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_OBJECTS]
+IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
@@ -70,11 +69,6 @@ PC_WITH_IMAGE = "Same folder as image"
 WS_EVERY_CYCLE = "Every cycle"
 WS_FIRST_CYCLE = "First cycle"
 WS_LAST_CYCLE = "Last cycle"
-
-CM_GRAY = "gray"
-
-GC_GRAYSCALE = "Grayscale"
-GC_COLOR = "Color"
 
 
 class SaveImages(cellprofiler.module.Module):
@@ -105,20 +99,12 @@ class SaveImages(cellprofiler.module.Module):
                 cropping can be of a different size than the mask.</li>
                 <li><i>{IF_MOVIE}:</i> A sequence of images can be saved as a movie file. Currently only AVIs
                 can be written. Each image becomes a frame of the movie.</li>
-                <li><i>{IF_OBJECTS}:</i> Objects can be saved as an image. The image is saved as grayscale
-                unless you select a color map other than gray. Background pixels appear as black and each
-                object is assigned an intensity level corresponding to its object number. The resulting image
-                can be loaded as objects by the <b>NamesAndTypes</b> module. Objects are best saved as TIF
-                files. <b>SaveImages</b> will use an 8-bit TIF file if there are fewer than 256 objects and
-                will use a 16-bit TIF otherwise. Results may be unpredictable if you save using PNG and there
-                are more than 255 objects or if you save using one of the other file formats.</li>
             </ul>
             """.format(**{
                 "IF_CROPPING": IF_CROPPING,
                 "IF_IMAGE": IF_IMAGE,
                 "IF_MASK": IF_MASK,
-                "IF_MOVIE": IF_MOVIE,
-                "IF_OBJECTS": IF_OBJECTS
+                "IF_MOVIE": IF_MOVIE
             })
         )
 
@@ -132,17 +118,6 @@ class SaveImages(cellprofiler.module.Module):
                 "IF_CROPPING": IF_CROPPING,
                 "IF_IMAGE": IF_IMAGE,
                 "IF_MASK": IF_MASK
-            })
-        )
-
-        self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
-            "Select the objects to save",
-            cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only if saving "{IF_OBJECTS}")</i><br>
-            Select the objects that you want to save.
-            """.format(**{
-                "IF_OBJECTS": IF_OBJECTS
             })
         )
 
@@ -399,40 +374,6 @@ class SaveImages(cellprofiler.module.Module):
             })
         )
 
-        self.gray_or_color = cellprofiler.setting.Choice(
-            "Save as grayscale or color image?",
-            [
-                GC_GRAYSCALE,
-                GC_COLOR
-            ],
-            doc="""
-            <i>(Used only when saving "{IF_OBJECTS}")</i><br>
-            You can save objects as a grayscale image or as a color image.
-            <ul>
-                <li><i>{GC_GRAYSCALE}:</i> Use the pixel's object number (label) for the grayscale intensity.
-                Background pixels are colored black. Grayscale images are more suitable if you are going to
-                load the image as objects using <b>NamesAndTypes</b> or some other program that will be used to
-                relate object measurements to the pixels in the image. You should save grayscale images using
-                the .TIF format if possible; otherwise you may have problems saving files with more
-                than 255 objects.</li>
-                <li><i>{GC_COLOR}:</i> Assigns different colors to different objects.</li>
-            </ul>
-            """.format(**{
-                "IF_OBJECTS": IF_OBJECTS,
-                "GC_COLOR": GC_COLOR,
-                "GC_GRAYSCALE": GC_GRAYSCALE
-            })
-        )
-
-        self.colormap = cellprofiler.setting.Colormap(
-            "Select colormap",
-            value=CM_GRAY,
-            doc="""
-            This affects how images color intensities are displayed. All available colormaps can be seen
-            <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.
-            """
-        )
-
         self.update_file_names = cellprofiler.setting.Binary(
             "Record the file and path information to the saved image?",
             False,
@@ -478,14 +419,14 @@ class SaveImages(cellprofiler.module.Module):
     def settings(self):
         """Return the settings in the order to use when saving"""
         return [self.save_image_or_figure, self.image_name,
-                self.objects_name, self.figure_name,
+                self.figure_name,
                 self.file_name_method, self.file_image_name,
                 self.single_file_name, self.number_of_digits,
                 self.wants_file_name_suffix,
                 self.file_name_suffix, self.file_format,
                 self.pathname, self.bit_depth,
                 self.overwrite, self.when_to_save,
-                self.rescale, self.gray_or_color, self.colormap,
+                self.rescale,
                 self.update_file_names, self.create_subdirectories,
                 self.root_dir, self.movie_format]
 
@@ -494,8 +435,6 @@ class SaveImages(cellprofiler.module.Module):
         result = [self.save_image_or_figure]
         if self.save_image_or_figure == IF_FIGURE:
             result.append(self.figure_name)
-        elif self.save_image_or_figure == IF_OBJECTS:
-            result.append(self.objects_name)
         else:
             result.append(self.image_name)
 
@@ -526,10 +465,6 @@ class SaveImages(cellprofiler.module.Module):
         result.append(self.overwrite)
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.when_to_save)
-        if self.save_image_or_figure == IF_OBJECTS:
-            result.append(self.gray_or_color)
-            if self.gray_or_color == GC_COLOR:
-                result.append(self.colormap)
         result.append(self.update_file_names)
         if self.file_name_method == FN_FROM_IMAGE:
             result.append(self.create_subdirectories)
@@ -567,8 +502,6 @@ class SaveImages(cellprofiler.module.Module):
             should_save = self.run_image(workspace)
         elif self.save_image_or_figure == IF_MOVIE:
             should_save = self.run_movie(workspace)
-        elif self.save_image_or_figure == IF_OBJECTS:
-            should_save = self.run_objects(workspace)
         else:
             raise NotImplementedError(("Saving a %s is not yet supported" %
                                        self.save_image_or_figure))
@@ -633,68 +566,9 @@ class SaveImages(cellprofiler.module.Module):
         self.do_save_image(workspace, out_file, pixels, bioformats.omexml.PT_UINT8,
                            t=current_frame, size_t=frames)
 
-    def run_objects(self, workspace):
-        #
-        # First, check to see if we should save this image
-        #
-        if self.when_to_save == WS_FIRST_CYCLE:
-            if workspace.measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] > 1:
-                workspace.display_data.wrote_image = False
-                self.save_filename_measurements(workspace)
-                return
-
-        elif self.when_to_save == WS_LAST_CYCLE:
-            workspace.display_data.wrote_image = False
-            self.save_filename_measurements(workspace)
-            return
-        self.save_objects(workspace)
-
-    def save_objects(self, workspace):
-        objects_name = self.objects_name.value
-        objects = workspace.object_set.get_objects(objects_name)
-        filename = self.get_filename(workspace)
-        if filename is None:  # failed overwrite check
-            return
-
-        labels = [l for l, c in objects.get_labels()]
-        if self.gray_or_color == GC_GRAYSCALE:
-            if objects.count > 255:
-                pixel_type = bioformats.omexml.PT_UINT16
-            else:
-                pixel_type = bioformats.omexml.PT_UINT8
-            for i, l in enumerate(labels):
-                self.do_save_image(
-                        workspace, filename, l, pixel_type, t=i, size_t=len(labels))
-
-        else:
-            if self.colormap == cellprofiler.setting.DEFAULT:
-                colormap = cellprofiler.preferences.get_default_colormap()
-            else:
-                colormap = self.colormap.value
-            cm = matplotlib.cm.get_cmap(colormap)
-
-            cpixels = numpy.zeros((labels[0].shape[0], labels[0].shape[1], 3))
-            counts = numpy.zeros(labels[0].shape, int)
-            mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-            for pixels in labels:
-                cpixels[pixels != 0, :] += \
-                    mapper.to_rgba(centrosome.cpmorphology.distance_color_labels(pixels),
-                                   bytes=True)[pixels != 0, :3]
-                counts[pixels != 0] += 1
-            counts[counts == 0] = 1
-            cpixels = cpixels / counts[:, :, numpy.newaxis]
-            self.do_save_image(workspace, filename, cpixels, bioformats.omexml.PT_UINT8)
-        self.save_filename_measurements(workspace)
-        if self.show_window:
-            workspace.display_data.wrote_image = True
-
     def post_group(self, workspace, *args):
-        if (self.when_to_save == WS_LAST_CYCLE and
-                    self.save_image_or_figure != IF_MOVIE):
-            if self.save_image_or_figure == IF_OBJECTS:
-                self.save_objects(workspace)
-            else:
-                self.save_image(workspace)
+        if (self.when_to_save == WS_LAST_CYCLE and self.save_image_or_figure != IF_MOVIE):
+            self.save_image(workspace)
 
     def do_save_image(self, workspace, filename, pixels, pixel_type,
                       c=0, z=0, t=0,
@@ -763,19 +637,7 @@ class SaveImages(cellprofiler.module.Module):
                     pixels[pixels < 0] = 0
                     pixels[pixels > 1] = 1
 
-            if pixels.ndim == 2 and self.colormap != CM_GRAY and \
-                            self.get_bit_depth() == BIT_DEPTH_8:
-                # Convert grayscale image to rgb for writing
-                if self.colormap == cellprofiler.setting.DEFAULT:
-                    colormap = cellprofiler.preferences.get_default_colormap()
-                else:
-                    colormap = self.colormap.value
-                cm = matplotlib.cm.get_cmap(colormap)
-
-                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-                pixels = mapper.to_rgba(pixels, bytes=True)
-                pixel_type = bioformats.omexml.PT_UINT8
-            elif self.get_bit_depth() == BIT_DEPTH_8:
+            if self.get_bit_depth() == BIT_DEPTH_8:
                 pixels = (pixels * 255).astype(numpy.uint8)
                 pixel_type = bioformats.omexml.PT_UINT8
             elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
@@ -852,23 +714,14 @@ class SaveImages(cellprofiler.module.Module):
 
     @property
     def file_name_feature(self):
-        '''The file name measurement for the output file'''
-        if self.save_image_or_figure == IF_OBJECTS:
-            return '_'.join((cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, self.objects_name.value))
         return '_'.join((cellprofiler.modules.loadimages.C_FILE_NAME, self.image_name.value))
 
     @property
     def path_name_feature(self):
-        '''The path name measurement for the output file'''
-        if self.save_image_or_figure == IF_OBJECTS:
-            return '_'.join((cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, self.objects_name.value))
         return '_'.join((cellprofiler.modules.loadimages.C_PATH_NAME, self.image_name.value))
 
     @property
     def url_feature(self):
-        '''The URL measurement for the output file'''
-        if self.save_image_or_figure == IF_OBJECTS:
-            return '_'.join((cellprofiler.modules.loadimages.C_OBJECTS_URL, self.objects_name.value))
         return '_'.join((cellprofiler.modules.loadimages.C_URL, self.image_name.value))
 
     @property
@@ -971,12 +824,23 @@ class SaveImages(cellprofiler.module.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if variable_revision_number == 1:
+            if setting_values[0] == "Objects":
+                raise NotImplementedError(
+                    "Unsupported image type: Objects. Use <i>ConvertObjectsToImage</i> to create an image."
+                )
+
             if setting_values[10] == "mat":
                 raise NotImplementedError("Unsupported file format: {}".format(setting_values[10]))
             elif setting_values[10] == "tif":
                 setting_values[10] = FF_TIFF
             elif setting_values[10] == "jpg":
                 setting_values[10] = FF_JPEG
+
+            new_setting_values = setting_values[:2]
+            new_setting_values += setting_values[3:16]
+            new_setting_values += setting_values[18:]
+
+            setting_values = new_setting_values
 
             variable_revision_number = 12
 

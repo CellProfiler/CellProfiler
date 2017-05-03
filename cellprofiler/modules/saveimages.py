@@ -269,7 +269,7 @@ class SaveImages(cellprofiler.module.Module):
             with 32-bit precision in its raw form, typically scaled between
             0 and 1.
             <b>{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only
-            for TIF formats. Currently, saving images in 12-bit is not supported.</b>
+            for TIFF formats. Currently, saving images in 12-bit is not supported.</b>
             """.format(**{
                 "BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT,
                 "BIT_DEPTH_16": BIT_DEPTH_16

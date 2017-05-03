@@ -225,7 +225,6 @@ class SaveImages(cellprofiler.module.Module):
         self.file_format = cellprofiler.setting.Choice(
             "Saved file format",
             [
-                FF_BMP,
                 FF_JPEG,
                 FF_PNG,
                 FF_TIFF
@@ -625,10 +624,8 @@ class SaveImages(cellprofiler.module.Module):
         if filename is None:  # failed overwrite check
             return
 
-        if self.get_file_format() == FF_BMP:
-            save_bmp(filename, pixels)
-        else:
-            self.do_save_image(workspace, filename, pixels, pixel_type)
+        self.do_save_image(workspace, filename, pixels, pixel_type)
+
         if self.show_window:
             workspace.display_data.wrote_image = True
         if self.when_to_save != WS_LAST_CYCLE:
@@ -796,7 +793,7 @@ class SaveImages(cellprofiler.module.Module):
                     "Unsupported image type: Objects. Use <i>ConvertObjectsToImage</i> to create an image."
                 )
 
-            if setting_values[10] == "mat":
+            if setting_values[10] in ("bmp", "mat"):
                 raise NotImplementedError("Unsupported file format: {}".format(setting_values[10]))
             elif setting_values[10] == "tif":
                 setting_values[10] = FF_TIFF
@@ -873,102 +870,3 @@ class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):
         if self.dir_choice not in self.dir_choices:
             raise cellprofiler.setting.ValidationError("%s is not a valid directory option" %
                                                        self.dir_choice, self)
-
-def save_bmp(path, img):
-    '''Save an image as a Microsoft .bmp file
-
-    path - path to file to save
-
-    img - either a 2d, uint8 image or a 2d + 3 plane uint8 RGB color image
-
-    Saves file as an uncompressed 8-bit or 24-bit .bmp image
-    '''
-    #
-    # Details from
-    # http://en.wikipedia.org/wiki/BMP_file_format#cite_note-DIBHeaderTypes-3
-    #
-    # BITMAPFILEHEADER
-    # http://msdn.microsoft.com/en-us/library/dd183374(v=vs.85).aspx
-    #
-    # BITMAPINFOHEADER
-    # http://msdn.microsoft.com/en-us/library/dd183376(v=vs.85).aspx
-    #
-    BITMAPINFOHEADER_SIZE = 40
-    img = img.astype(numpy.uint8)
-    w = img.shape[1]
-    h = img.shape[0]
-    #
-    # Convert RGB to interleaved
-    #
-    if img.ndim == 3:
-        rgb = True
-        #
-        # Compute padded raster length
-        #
-        raster_length = (w * 3 + 3) & ~ 3
-        tmp = numpy.zeros((h, raster_length), numpy.uint8)
-        #
-        # Do not understand why but RGB is BGR
-        #
-        tmp[:, 2:(w * 3):3] = img[:, :, 0]
-        tmp[:, 1:(w * 3):3] = img[:, :, 1]
-        tmp[:, 0:(w * 3):3] = img[:, :, 2]
-        img = tmp
-    else:
-        rgb = False
-        if w % 4 != 0:
-            raster_length = (w + 3) & ~ 3
-            tmp = numpy.zeros((h, raster_length), numpy.uint8)
-            tmp[:, :w] = img
-            img = tmp
-    #
-    # The image is upside-down in .BMP
-    #
-    bmp = numpy.ascontiguousarray(numpy.flipud(img)).data
-    with open(path, "wb") as fd:
-        def write2(value):
-            '''write a two-byte little-endian value to the file'''
-            fd.write(numpy.array([value], "<u2").data[:2])
-
-        def write4(value):
-            '''write a four-byte little-endian value to the file'''
-            fd.write(numpy.array([value], "<u4").data[:4])
-
-        #
-        # Bitmap file header (1st pass)
-        # byte
-        # 0-1 = "BM"
-        # 2-5 = length of file
-        # 6-9 = 0
-        # 10-13 = offset from beginning of file to bitmap bits
-        fd.write("BM")
-        length = 14  # BITMAPFILEHEADER
-        length += BITMAPINFOHEADER_SIZE
-        if not rgb:
-            length += 4 * 256  # 256 color table entries
-        hdr_length = length
-        length += len(bmp)
-        write4(length)
-        write4(0)
-        write4(hdr_length)
-        #
-        # BITMAPINFOHEADER
-        #
-        write4(BITMAPINFOHEADER_SIZE)  # biSize
-        write4(w)  # biWidth
-        write4(h)  # biHeight
-        write2(1)  # biPlanes = 1
-        write2(24 if rgb else 8)  # biBitCount
-        write4(0)  # biCompression = BI_RGB
-        write4(len(bmp))  # biSizeImage
-        write4(7200)  # biXPelsPerMeter
-        write4(7200)  # biYPelsPerMeter
-        write4(0 if rgb else 256)  # biClrUsed (no palette)
-        write4(0)  # biClrImportant
-        if not rgb:
-            # The color table
-            color_table = numpy.column_stack(
-                [numpy.arange(256)] * 3 +
-                [numpy.zeros(256, numpy.uint32)]).astype(numpy.uint8)
-            fd.write(numpy.ascontiguousarray(color_table, numpy.uint8).data)
-        fd.write(bmp)

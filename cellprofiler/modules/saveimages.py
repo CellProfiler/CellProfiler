@@ -96,8 +96,7 @@ class SaveImages(cellprofiler.module.Module):
                 module also creates a cropping image which is typically the same size as the original image.
                 However, since the <b>Crop</b> permits removal of the rows and columns that are left blank, the
                 cropping can be of a different size than the mask.</li>
-                <li><i>{IF_MOVIE}:</i> A sequence of images can be saved as a movie file. Currently only AVIs
-                can be written. Each image becomes a frame of the movie.</li>
+                <li><i>{IF_MOVIE}:</i> A sequence of images can be saved as a TIFF stack.</li>
             </ul>
             """.format(**{
                 "IF_CROPPING": IF_CROPPING,
@@ -235,22 +234,6 @@ class SaveImages(cellprofiler.module.Module):
             doc="""
             <i>(Used only when saving non-movie files)</i><br>
             Select the image or movie format to save the image(s). Most common image formats are available.
-            """
-        )
-
-        self.movie_format = cellprofiler.setting.Choice(
-            "Saved movie format",
-            [
-                FF_AVI,
-                FF_TIFF,
-                FF_MOV
-            ],
-            value=FF_AVI,
-            doc="""
-            <i>(Used only when saving movie files)</i><br>
-            Select the movie format to use when saving movies. AVI and MOV
-            store images from successive image sets as movie frames. TIFF
-            stores each image as an image plane in a TIFF stack.
             """
         )
 
@@ -415,7 +398,7 @@ class SaveImages(cellprofiler.module.Module):
                 self.overwrite, self.when_to_save,
                 self.rescale,
                 self.update_file_names, self.create_subdirectories,
-                self.root_dir, self.movie_format]
+                self.root_dir]
 
     def visible_settings(self):
         """Return only the settings that should be shown"""
@@ -439,10 +422,7 @@ class SaveImages(cellprofiler.module.Module):
             result.append(self.single_file_name)
         else:
             raise NotImplementedError("Unhandled file name method: %s" % self.file_name_method)
-        if self.save_image_or_figure == IF_MOVIE:
-            result.append(self.movie_format)
-        else:
-            result.append(self.file_format)
+        result.append(self.file_format)
         supports_16_bit = (self.file_format == FF_TIFF and self.save_image_or_figure == IF_IMAGE)
         if supports_16_bit:
             # TIFF supports 8 & 16-bit, all others are written 8-bit
@@ -799,7 +779,8 @@ class SaveImages(cellprofiler.module.Module):
         """Return the file format associated with the extension in self.file_format
         """
         if self.save_image_or_figure == IF_MOVIE:
-            return self.movie_format.value
+            return FF_TIFF
+
         return self.file_format.value
 
     def get_bit_depth(self):
@@ -824,7 +805,7 @@ class SaveImages(cellprofiler.module.Module):
 
             new_setting_values = setting_values[:2]
             new_setting_values += setting_values[4:16]
-            new_setting_values += setting_values[18:]
+            new_setting_values += setting_values[18:-1]
 
             setting_values = new_setting_values
 

@@ -157,7 +157,7 @@ try:
     from cellprofiler.modules.identifyobjectsmanually import IdentifyObjectsManually
     import cellprofiler.cpimage as cpi
     import cellprofiler.measurements as cpmeas
-    import cellprofiler.settings as cps
+    import cellprofiler.setting as cps
     import cellprofiler.preferences as cpp
     import cellprofiler.cpmath as cpmath
     import cellprofiler.cpmath.outline
@@ -862,7 +862,7 @@ class IdentifyYeastCells(cpmi.Identify):
         cellstar.set_mask(ignore_mask_pixels)
         segmented_image, snakes = cellstar.run_segmentation()
 
-        objects = cellprofiler.objects.Objects()
+        objects = cellprofiler.object.Objects()
         objects.segmented = segmented_image
         objects.unedited_segmented = segmented_image
         objects.small_removed_segmented = np.zeros(normalized_image.shape)

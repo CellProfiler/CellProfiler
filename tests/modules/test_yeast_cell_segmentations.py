@@ -26,7 +26,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.yeast_cell_segmentation as YS
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline
-import cellprofiler.settings
+import cellprofiler.setting
 from cellprofiler.workspace import Workspace
 
 IMAGE_NAME = "my_image"

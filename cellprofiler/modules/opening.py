@@ -57,6 +57,7 @@ class Opening(cellprofiler.module.ImageProcessing):
 
         super(Opening, self).run(workspace)
 
+
 def planewise_morphology_opening(x_data, structuring_element):
     y_data = numpy.zeros_like(x_data)
 

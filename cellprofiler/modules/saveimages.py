@@ -42,7 +42,7 @@ IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
-BIT_DEPTH_FLOAT = "32-bit floating point"
+BIT_DEPTH_FLOAT = "64-bit floating point"
 
 FN_FROM_IMAGE = "From image filename"
 FN_SEQUENTIAL = "Sequential numbers"
@@ -259,7 +259,7 @@ class SaveImages(cellprofiler.module.Module):
             doc="""
             Select the bit-depth at which you want to save the images.
             <i>{BIT_DEPTH_FLOAT}</i> saves the image as floating-point decimals
-            with 32-bit precision in its raw form, typically scaled between
+            with 64-bit precision in its raw form, typically scaled between
             0 and 1.
             <b>{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only
             for TIFF formats. Currently, saving images in 12-bit is not supported.</b>

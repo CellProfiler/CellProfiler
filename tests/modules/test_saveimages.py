@@ -325,6 +325,6 @@ def test_save_image_tiff_float(tmpdir, image, module, workspace):
 
     data = skimage.io.imread(os.path.join(directory, "example.tiff"))
 
-    assert data.dtype == numpy.float32
+    assert data.dtype == numpy.float64
 
     numpy.testing.assert_array_equal(data, skimage.util.img_as_float(image.pixel_data))

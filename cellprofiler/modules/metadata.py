@@ -934,6 +934,9 @@ class Metadata(cpm.Module):
             self.table.insert_column(i, column)
 
         self.table.add_rows(columns, data)
+        cellprofiler.preferences.report_progress(
+                    "MetadataCount", None,
+                    "Found %d rows" % len(data))
 
     def on_deactivated(self):
         self.pipeline = None

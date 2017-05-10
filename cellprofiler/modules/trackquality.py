@@ -9,15 +9,15 @@ import re
 from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
 import logging
 
-CAT_TRAM = "TrAM"
+CAT_TRACK_QUALITY = "TrackQuality"
 MEAS_TRAM = "TrAM"
 MEAS_LABELS = "Labels"
 MEAS_PARENT = "Is_Parent"
 MEAS_SPLIT = "Split_Trajectory"
-FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_TRAM)
-FULL_LABELS_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_LABELS)
-FULL_PARENT_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_PARENT)
-FULL_SPLIT_MEAS_NAME = "%s_%s" % (CAT_TRAM, MEAS_SPLIT)
+FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_TRAM)
+FULL_LABELS_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_LABELS)
+FULL_PARENT_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_PARENT)
+FULL_SPLIT_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_SPLIT)
 IMAGE_NUM_KEY = "Image"
 MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
 MIN_NUM_KNOTS = 3
@@ -33,9 +33,9 @@ PARENT_KEY = "parent"
 FLOAT_NAN = float('nan')
 
 __doc__ = """
-<b>TrAM</b> Provides a metric for tracking quality based on temporal
-smoothness of features measured across the trajectory (Tracking Aberration
-Measure).
+<b>TrackQuality</b> provides tracking quality metrics. TrAM (Tracking
+Aberration Measure) is based on temporal smoothness of features measured
+across each object's trajectory.
 <hr>
 This module must be placed downstream of a module that identifies objects
 (e.g., <b>IdentifyPrimaryObjects</b>) and a <b>TrackObjects</b> that tracks
@@ -75,8 +75,8 @@ dynamic phenotyping</a>, Scientific Reports 6:34785 (2016)
 
 logger = logging.getLogger(__name__)
 
-class TrAM(cpm.Module):
-    module_name = "TrAM"
+class TrackQuality(cpm.Module):
+    module_name = "TrackQuality"
     category = "Object Processing"
     variable_revision_number = 1
 
@@ -115,7 +115,7 @@ class TrAM(cpm.Module):
 
         # TrAM exponent
         self.p = cps.Float(
-            "TrAM exponent", 0.5, minval=0.01, maxval=1, doc="""
+            "TrAM exponent", 0.5, minval=0.01, maxval=1.0, doc="""
             This number is between 0.01 and 1 (default 0.5), and specifies how
             strongly simultaneous sudden changes in multiple features synergize in
             the TrAM metric. A lower value signifies higher synergy (at the risk of
@@ -145,44 +145,13 @@ class TrAM(cpm.Module):
         return self.settings()
 
     def run(self, workspace):
-        """Run the module (abstract method)
-
-        workspace    - The workspace contains
-            pipeline     - instance of cpp for this run
-            image_set    - the images in the image set being processed
-            object_set   - the objects (labeled masks) in this image set
-            measurements - the measurements for this run
-            frame        - the parent frame to whatever frame is created.
-                           None means don't draw.
-            display_data - the run() module should store anything to be
-                           displayed in this attribute, which will be used in
-                           display()
-
-        run() should not attempt to display any data, but should communicate it
-        to display() via the workspace.
-        """
         pass
 
-
-
     def display_post_group(self, workspace, figure):
-        """Display the results of work done post-group
-
-        This method is only called if self.show_window is True
-
-        workspace - the current workspace. workspace.display_data should have
-                    whatever information is needed for the display. Numpy arrays
-                    lists, tuples, dictionaries and Python builtin objects are
-                    allowed.
-
-        figure - the figure to use for the display.
-        """
         if self.show_window:
             figure.set_subplots((1,1))
             figure.subplot_histogram(0, 0, workspace.display_data.tram_values, bins=40, xlabel="TrAM",
                                      title="TrAM for %s" % self.object_name.get_value())
-
-
 
     def post_group(self, workspace, grouping):
         self.show_window = True
@@ -221,13 +190,13 @@ class TrAM(cpm.Module):
         all_values_dict = dict(get_feature_values_tuple(sel) for sel in selections)
         # determine if there are any euclidian (XY) pairs
         if self.wants_XY_Euclidian.value:
-            euclidian_pairs = TrAM.Determine_Euclidian_pairs(all_values_dict.keys())
+            euclidian_pairs = TrackQuality.Determine_Euclidian_pairs(all_values_dict.keys())
         else:
             euclidian_pairs = []
 
         # sanity check: make sure all vectors have the same length
         vec_lengths = set([len(value) for value in all_values_dict.values()])
-        assert len(vec_lengths) == 1
+        assert len(vec_lengths) == 1, "Measurement vectors have differing lengths"
 
         # get vector of image numbers into the dict
         counts = [len([v for v in x if not np.isnan(v)]) for x in label_vals] # number of non-nan labels at each time point
@@ -281,9 +250,9 @@ class TrAM(cpm.Module):
         # compute typical inter-timepoint variation for complete trajectories only.
         label_vals_flattened_complete_trajectories = [label_vals_flattened[i] for i in complete_trajectory_indices]
         image_vals_flattened_complete_trajectories = [image_vals_flattened[i] for i in complete_trajectory_indices]
-        tad = TrAM.compute_typical_deviations(all_values_dict_complete_trajectories,
-                                              label_vals_flattened_complete_trajectories,
-                                              image_vals_flattened_complete_trajectories)
+        tad = TrackQuality.compute_typical_deviations(all_values_dict_complete_trajectories,
+                                                      label_vals_flattened_complete_trajectories,
+                                                      image_vals_flattened_complete_trajectories)
 
 
         # put all the data into a 2D array and normalize by typical deviations
@@ -620,17 +589,16 @@ class TrAM(cpm.Module):
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name.get_value():
-            return [CAT_TRAM]
+            return [CAT_TRACK_QUALITY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == self.object_name.get_value() and category == CAT_TRAM:
+        if object_name == self.object_name.get_value() and category == CAT_TRACK_QUALITY:
             return [MEAS_TRAM, MEAS_PARENT, MEAS_SPLIT, MEAS_LABELS]
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
         return [self.wants_XY_Euclidian, self.p, self.num_knots]
-
 
     def is_aggregation_module(self): # todo - not sure what to return here
         """If true, the module uses data from other imagesets in a group

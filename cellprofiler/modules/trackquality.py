@@ -95,7 +95,7 @@ class TrackQuality(cpm.Module):
             <i>Tracked objects</i> and the update of this selection component.""")
 
         # Treat X-Y value pairs as isotropic in the TrAM measure?
-        self.wants_isotropic = cps.Binary(
+        self.isotropic = cps.Binary(
             'Isotropic XY metric?', True, doc="""
             If selected (the default) then measurements that are available
             as X-Y pairs (e.g. location) will be have an isotropic
@@ -123,7 +123,7 @@ class TrackQuality(cpm.Module):
             """)
 
     def settings(self):
-        return [self.object_name, self.tram_measurements, self.wants_isotropic, self.num_knots, self.p]
+        return [self.object_name, self.tram_measurements, self.isotropic, self.num_knots, self.p]
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected at least one measurement for TrAM and that there are tracking data.'''
@@ -189,7 +189,7 @@ class TrackQuality(cpm.Module):
         selections = self.get_selected_tram_measurements() # measurements that the user wants to run TrAM on
         all_values_dict = dict(get_feature_values_tuple(sel) for sel in selections)
         # determine if there are any potential isotropic (XY) pairs
-        if self.wants_isotropic.value:
+        if self.isotropic.value:
             isotropic_pairs = TrackQuality.Determine_Isotropic_pairs(all_values_dict.keys())
         else:
             isotropic_pairs = []
@@ -598,7 +598,7 @@ class TrackQuality(cpm.Module):
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
-        return [self.wants_isotropic, self.p, self.num_knots]
+        return [self.isotropic, self.p, self.num_knots]
 
     def is_aggregation_module(self): # todo - not sure what to return here
         """If true, the module uses data from other imagesets in a group

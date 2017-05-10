@@ -9,15 +9,15 @@ import re
 from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
 import logging
 
-CAT_TRACK_QUALITY = "TrackQuality"
+CAT_MEASURE_TRACK_QUALITY = "MeasureTrackQuality"
 MEAS_TRAM = "TrAM"
 MEAS_LABELS = "Labels"
 MEAS_PARENT = "Is_Parent"
 MEAS_SPLIT = "Split_Trajectory"
-FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_TRAM)
-FULL_LABELS_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_LABELS)
-FULL_PARENT_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_PARENT)
-FULL_SPLIT_MEAS_NAME = "%s_%s" % (CAT_TRACK_QUALITY, MEAS_SPLIT)
+FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_TRAM)
+FULL_LABELS_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_LABELS)
+FULL_PARENT_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_PARENT)
+FULL_SPLIT_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_SPLIT)
 IMAGE_NUM_KEY = "Image"
 MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
 MIN_NUM_KNOTS = 3
@@ -76,8 +76,8 @@ dynamic phenotyping</a>, Scientific Reports 6:34785 (2016)
 logger = logging.getLogger(__name__)
 
 class TrackQuality(cpm.Module):
-    module_name = "TrackQuality"
-    category = "Object Processing"
+    module_name = "MeasureTrackQuality"
+    category = "Measurement"
     variable_revision_number = 1
 
     def create_settings(self):
@@ -589,11 +589,11 @@ class TrackQuality(cpm.Module):
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name.get_value():
-            return [CAT_TRACK_QUALITY]
+            return [CAT_MEASURE_TRACK_QUALITY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == self.object_name.get_value() and category == CAT_TRACK_QUALITY:
+        if object_name == self.object_name.get_value() and category == CAT_MEASURE_TRACK_QUALITY:
             return [MEAS_TRAM, MEAS_PARENT, MEAS_SPLIT, MEAS_LABELS]
         return []
 

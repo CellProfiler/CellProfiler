@@ -2648,7 +2648,7 @@ class PipelineController(object):
                         "%s\n\nDo you want to stop processing?") %
                        evt)
 
-        error = cellprofiler.gui.dialog.Error("Error", "2519")
+        error = cellprofiler.gui.dialog.Error("Error", message)
 
         if error.status is wx.ID_CANCEL:
             cellprofiler.preferences.cancel_progress()

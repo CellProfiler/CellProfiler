@@ -23,6 +23,8 @@ import sys
 import bioformats.formatwriter
 import bioformats.omexml
 import numpy
+import skimage.io
+import skimage.util
 
 import cellprofiler.gui.help
 import cellprofiler.measurement
@@ -40,7 +42,7 @@ IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
-BIT_DEPTH_FLOAT = "32-bit floating point"
+BIT_DEPTH_FLOAT = "64-bit floating point"
 
 FN_FROM_IMAGE = "From image filename"
 FN_SEQUENTIAL = "Sequential numbers"
@@ -257,7 +259,7 @@ class SaveImages(cellprofiler.module.Module):
             doc="""
             Select the bit-depth at which you want to save the images.
             <i>{BIT_DEPTH_FLOAT}</i> saves the image as floating-point decimals
-            with 32-bit precision in its raw form, typically scaled between
+            with 64-bit precision in its raw form, typically scaled between
             0 and 1.
             <b>{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only
             for TIFF formats. Currently, saving images in 12-bit is not supported.</b>
@@ -535,47 +537,41 @@ class SaveImages(cellprofiler.module.Module):
     def save_image(self, workspace):
         if self.show_window:
             workspace.display_data.wrote_image = False
+
         image = workspace.image_set.get_image(self.image_name.value)
-        if self.save_image_or_figure == IF_IMAGE:
+
+        if image.volumetric and self.file_format.value != FF_TIFF:
+            raise RuntimeError(
+                "Unsupported file format {} for 3D pipeline. Use {} format when processing images as 3D.".format(
+                    self.file_format.value,
+                    FF_TIFF
+                )
+            )
+
+        if self.save_image_or_figure.value == IF_IMAGE:
             pixels = image.pixel_data
-            u16hack = (self.get_bit_depth() == BIT_DEPTH_16 and
-                       pixels.dtype.kind in ('u', 'i'))
-            if not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
-                # Clip at 0 and 1
-                if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
-                    sys.stderr.write(
-                            "Warning, clipping image %s before output. Some intensities are outside of range 0-1" %
-                            self.image_name.value)
-                    pixels = pixels.copy()
-                    pixels[pixels < 0] = 0
-                    pixels[pixels > 1] = 1
+        elif self.save_image_or_figure.value == IF_MASK:
+            pixels = image.mask
+        elif self.save_image_or_figure.value == IF_CROPPING:
+            pixels = image.crop_mask
 
-            if self.get_bit_depth() == BIT_DEPTH_8:
-                pixels = (pixels * 255).astype(numpy.uint8)
-                pixel_type = bioformats.omexml.PT_UINT8
-            elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-                pixel_type = bioformats.omexml.PT_FLOAT
-            else:
-                if not u16hack:
-                    pixels = (pixels * 65535)
-                pixel_type = bioformats.omexml.PT_UINT16
-
-        elif self.save_image_or_figure == IF_MASK:
-            pixels = image.mask.astype(numpy.uint8) * 255
-            pixel_type = bioformats.omexml.PT_UINT8
-
-        elif self.save_image_or_figure == IF_CROPPING:
-            pixels = image.crop_mask.astype(numpy.uint8) * 255
-            pixel_type = bioformats.omexml.PT_UINT8
+        if self.get_bit_depth() == BIT_DEPTH_8:
+            pixels = skimage.util.img_as_ubyte(pixels)
+        elif self.get_bit_depth() == BIT_DEPTH_16:
+            pixels = skimage.util.img_as_uint(pixels)
+        elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
+            pixels = skimage.util.img_as_float(pixels)
 
         filename = self.get_filename(workspace)
+
         if filename is None:  # failed overwrite check
             return
 
-        self.do_save_image(workspace, filename, pixels, pixel_type)
+        skimage.io.imsave(filename, pixels)
 
         if self.show_window:
             workspace.display_data.wrote_image = True
+
         if self.when_to_save != WS_LAST_CYCLE:
             self.save_filename_measurements(workspace)
 
@@ -788,6 +784,9 @@ class SaveImages(cellprofiler.module.Module):
                         "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
                         undefined_tags[0],
                         self.single_file_name if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix)
+
+    def volumetric(self):
+        return True
 
 
 class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):

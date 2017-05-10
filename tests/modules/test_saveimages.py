@@ -1,7 +1,42 @@
+import os.path
 import StringIO
 
+import numpy
+import numpy.random
+import numpy.testing
+import pytest
+import skimage.data
+import skimage.util
+
+import cellprofiler.image
 import cellprofiler.modules.saveimages
 import cellprofiler.pipeline
+import cellprofiler.setting
+
+
+instance = cellprofiler.modules.saveimages.SaveImages()
+
+
+@pytest.fixture(
+    scope="module",
+    params=[
+        skimage.data.camera(),
+        skimage.data.astronaut()
+    ],
+    ids=[
+        "grayscale_image",
+        "multichannel_image"
+    ]
+)
+def image(request):
+    return cellprofiler.image.Image(image=request.param)
+
+
+@pytest.fixture(scope="module")
+def volume():
+    data = numpy.random.rand(10, 10, 10)
+
+    return cellprofiler.image.Image(image=data, dimensions=3)
 
 
 def test_load_v11():
@@ -161,3 +196,233 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
     module = pipeline.modules()[3]
 
     assert module.file_format.value == "tiff"
+
+
+def test_save_image_png_8(tmpdir, image, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_PNG
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example.png"))
+
+    data = skimage.io.imread(os.path.join(directory, "example.png"))
+
+    assert data.dtype == numpy.uint8
+
+    numpy.testing.assert_array_equal(data, skimage.util.img_as_ubyte(image.pixel_data))
+
+
+def test_save_image_jpeg_8(tmpdir, image, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_JPEG
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example.jpeg"))
+
+    data = skimage.io.imread(os.path.join(directory, "example.jpeg"))
+
+    assert data.dtype == numpy.uint8
+
+    # TODO: How best to test lossy format?
+
+
+def test_save_image_tiff_8(tmpdir, image, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example.tiff"))
+
+    data = skimage.io.imread(os.path.join(directory, "example.tiff"))
+
+    assert data.dtype == numpy.uint8
+
+    numpy.testing.assert_array_equal(data, skimage.util.img_as_ubyte(image.pixel_data))
+
+
+def test_save_image_tiff_16(tmpdir, image, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_16
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example.tiff"))
+
+    data = skimage.io.imread(os.path.join(directory, "example.tiff"))
+
+    assert data.dtype == numpy.uint16
+
+    numpy.testing.assert_array_equal(data, skimage.util.img_as_uint(image.pixel_data))
+
+
+def test_save_image_tiff_float(tmpdir, image, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example.tiff"))
+
+    data = skimage.io.imread(os.path.join(directory, "example.tiff"))
+
+    assert data.dtype == numpy.float64
+
+    numpy.testing.assert_array_equal(data, skimage.util.img_as_float(image.pixel_data))
+
+
+def test_save_volume_tiff_8(tmpdir, volume, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    workspace.image_set.add("example_volume", volume)
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example_volume"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example_volume"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example_volume.tiff"))
+
+    data = skimage.io.imread(os.path.join(directory, "example_volume.tiff"))
+
+    assert data.dtype == numpy.uint8
+
+    numpy.testing.assert_array_equal(data, skimage.util.img_as_ubyte(volume.pixel_data))
+
+
+def test_save_volume_tiff_16(tmpdir, volume, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    workspace.image_set.add("example_volume", volume)
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example_volume"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example_volume"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_16
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example_volume.tiff"))
+
+    data = skimage.io.imread(os.path.join(directory, "example_volume.tiff"))
+
+    assert data.dtype == numpy.uint16
+
+    numpy.testing.assert_array_equal(data, skimage.util.img_as_uint(volume.pixel_data))
+
+
+def test_save_volume_tiff_float(tmpdir, volume, module, workspace):
+    directory = str(tmpdir.mkdir("images"))
+
+    workspace.image_set.add("example_volume", volume)
+
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
+
+    module.image_name.value = "example_volume"
+
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
+
+    module.single_file_name.value = "example_volume"
+
+    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
+
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT
+
+    module.run(workspace)
+
+    assert os.path.exists(os.path.join(directory, "example_volume.tiff"))
+
+    data = skimage.io.imread(os.path.join(directory, "example_volume.tiff"))
+
+    assert data.dtype == numpy.float64
+
+    numpy.testing.assert_array_equal(data, skimage.util.img_as_float(volume.pixel_data))

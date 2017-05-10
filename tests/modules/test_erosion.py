@@ -28,6 +28,8 @@ def test_run(image, module, image_set, workspace):
         # test planewise
         selem = skimage.morphology.disk(1)
 
+        module.structuring_element.shape = "disk"
+
         module.run(workspace)
 
         actual = image_set.get_image("erosion")

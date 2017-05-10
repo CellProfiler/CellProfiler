@@ -94,11 +94,11 @@ class TrackQuality(cpm.Module):
             Note there may be a delay of a few seconds between the selection of
             <i>Tracked objects</i> and the update of this selection component.""")
 
-        # Treat X-Y value pairs as Euclidian in the TrAM measure?
-        self.wants_XY_Euclidian = cps.Binary(
-            'Euclidian XY metric?', True, doc="""
+        # Treat X-Y value pairs as isotropic in the TrAM measure?
+        self.wants_isotropic = cps.Binary(
+            'Isotropic XY metric?', True, doc="""
             If selected (the default) then measurements that are available
-            as X-Y pairs (e.g. location) will be have a Euclidian (isotropic)
+            as X-Y pairs (e.g. location) will be have an isotropic
             metric applied in TrAM. Note that the X-Y-Z extension of this feature
             is not currently available.
             """)
@@ -123,7 +123,7 @@ class TrackQuality(cpm.Module):
             """)
 
     def settings(self):
-        return [self.object_name, self.tram_measurements, self.wants_XY_Euclidian, self.num_knots, self.p]
+        return [self.object_name, self.tram_measurements, self.wants_isotropic, self.num_knots, self.p]
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected at least one measurement for TrAM and that there are tracking data.'''
@@ -188,11 +188,11 @@ class TrackQuality(cpm.Module):
         # get all the data for TrAM
         selections = self.get_selected_tram_measurements() # measurements that the user wants to run TrAM on
         all_values_dict = dict(get_feature_values_tuple(sel) for sel in selections)
-        # determine if there are any euclidian (XY) pairs
-        if self.wants_XY_Euclidian.value:
-            euclidian_pairs = TrackQuality.Determine_Euclidian_pairs(all_values_dict.keys())
+        # determine if there are any potential isotropic (XY) pairs
+        if self.wants_isotropic.value:
+            isotropic_pairs = TrackQuality.Determine_Isotropic_pairs(all_values_dict.keys())
         else:
-            euclidian_pairs = []
+            isotropic_pairs = []
 
         # sanity check: make sure all vectors have the same length
         vec_lengths = set([len(value) for value in all_values_dict.values()])
@@ -273,7 +273,7 @@ class TrackQuality(cpm.Module):
                 tram = FLOAT_NAN
             else:
                 tram = self.compute_TrAM(tram_feature_names, normalized_all_data_array,
-                                         image_vals_flattened, indices, euclidian_pairs)
+                                         image_vals_flattened, indices, isotropic_pairs)
 
             obj_nums = {image_vals_flattened[i] : object_nums_flattened[i] for i in indices} # pairs of image and object
             tram_dict.update({next_available_tram_label : {TRAM_KEY : tram, OBJECT_NUMS_KEY : obj_nums, SPLIT_KEY : 0}})
@@ -296,7 +296,7 @@ class TrackQuality(cpm.Module):
 
         split_trajectories_tram_dict = \
             self.evaluate_tram_for_split_objects(labels_for_split_trajectories, tram_feature_names,
-                                                 euclidian_pairs, normalized_all_data_array,
+                                                 isotropic_pairs, normalized_all_data_array,
                                                  tracking_info_dict, next_available_tram_label)
         tram_dict.update(split_trajectories_tram_dict) # store them with the others
 
@@ -352,7 +352,7 @@ class TrackQuality(cpm.Module):
         workspace.display_data.tram_values = [d.get(TRAM_KEY) for d in tram_dict.values() if not np.isnan(d.get(TRAM_KEY))]
 
 
-    def compute_TrAM(self, tram_feature_names, normalized_data_array, image_vals_flattened, indices, euclidian):
+    def compute_TrAM(self, tram_feature_names, normalized_data_array, image_vals_flattened, indices, isotropic_pairs):
         """
         Compute the TrAM statistic for a single trajectory
         
@@ -361,7 +361,7 @@ class TrackQuality(cpm.Module):
         to TrAM features, and rows are for all objects across images
         :param image_vals_flattened: The image numbers corresponding to rows in normalized_data_array
         :param indices: The rows in normalized_data_array which are relevant to this trajectory
-        :param euclidian: List of pairs of features which should be treated with a Euclidian metric
+        :param isotropic_pairs: List of pairs of features which should be treated with a Euclidian metric
         :return: The computed TrAM value
         """
         normalized_data_for_label = normalized_data_array[indices,:]  # get the corresponding data
@@ -402,21 +402,21 @@ class TrackQuality(cpm.Module):
         p = self.p.get_value()
 
         # handle Euclidian weightings
-        num_euclidian = len(euclidian)
-        if num_euclidian != 0:
+        num_isotropic = len(isotropic_pairs)
+        if num_isotropic != 0:
             column_names = aberration_dict.keys()
             remaining_features = list(column_names)
 
             column_list = list() # we will accumulate data here
             weight_list = list() # will accumulate weights here
 
-            for x, y in euclidian:
+            for x, y in isotropic_pairs:
                 # find data columns
                 x_col = next(i for i, val in enumerate(column_names) if x == val)
                 y_col = next(i for i, val in enumerate(column_names) if y == val)
 
-                euclidian_vec = np.sqrt(np.apply_along_axis(np.mean, 1, aberration_array[:,(x_col,y_col)]))
-                column_list.append(euclidian_vec)
+                isotropic_vec = np.sqrt(np.apply_along_axis(np.mean, 1, aberration_array[:,(x_col,y_col)]))
+                column_list.append(isotropic_vec)
                 weight_list.append(2) # 2 data elements used to weight is twice the usual
 
                 # remove the column names from remaining features
@@ -444,13 +444,13 @@ class TrackQuality(cpm.Module):
 
         return tram
 
-    def evaluate_tram_for_split_objects(self, labels_for_split_trajectories, tram_feature_names, euclidian,
+    def evaluate_tram_for_split_objects(self, labels_for_split_trajectories, tram_feature_names, isotropic_pairs,
                                         normalized_data_array, tracking_info_dict, next_available_tram_label):
         """
         Compute TrAM results for objects that have split trajectories        
         :param labels_for_split_trajectories: TrackObjects labels for trajectories that split.
         :param tram_feature_names:  The feature names that are used to compute TrAM.
-        :param euclidian: List of feature pairs (XY) to be Euclidianized.
+        :param isotropic_pairs: List of feature pairs (XY) to be Euclidianized.
         :param normalized_data_array: Data for the TrAM features, normalized by typical absolute deviation.
         :param tracking_info_dict: Dictionary of other relevant information about the objects.
         :param next_available_tram_label: Tram label number. We increment this as we use it.
@@ -503,7 +503,7 @@ class TrackQuality(cpm.Module):
 
                 # Indices now contains the indices for the tracked object across images
                 tram = self.compute_TrAM(tram_feature_names, normalized_data_array, image_vals_flattened,
-                                         indices_list, euclidian)
+                                         indices_list, isotropic_pairs)
 
                 # for each image number, the corresponding object number
                 obj_nums = dict(zip([image_vals_flattened[i] for i in indices_list], object_nums_list))
@@ -551,11 +551,11 @@ class TrackQuality(cpm.Module):
         return result
 
     @staticmethod
-    def Determine_Euclidian_pairs(features):
+    def Determine_Isotropic_pairs(features):
         """
         Look for any pairs that end in "_X" and "_Y" or have "_X_" and "_Y_" within them
         :param features:list of names 
-        :return: list of tubples containing pairs of names which are Euclidian
+        :return: list of tubples containing pairs of names which can be paired using an isotropic (Euclidian) metric
         """
 
         # first find all the ones with a "_X$"
@@ -598,7 +598,7 @@ class TrackQuality(cpm.Module):
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
-        return [self.wants_XY_Euclidian, self.p, self.num_knots]
+        return [self.wants_isotropic, self.p, self.num_knots]
 
     def is_aggregation_module(self): # todo - not sure what to return here
         """If true, the module uses data from other imagesets in a group

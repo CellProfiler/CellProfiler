@@ -322,7 +322,7 @@ def parse_args(args):
         "--images-per-batch",
         dest="images_per_batch",
         default="1",
-        help='For pipelines that do not use image grouping this option specifies the number of images that should be processed in each batch if --get-batch-commands is used. Defaults to 1.'    
+        help='For pipelines that do not use image grouping this option specifies the number of images that should be processed in each batch if --get-batch-commands is used. Defaults to 1.'
     )
 
     parser.add_option(
@@ -591,18 +591,17 @@ def get_batch_commands(filename, n_per_job=1):
         metadata_tags = m.get_grouping_tags()
 
         if len(metadata_tags) == 1 and metadata_tags[0] == 'ImageNumber':
-            #do file numbers
             for i in range(0, len(image_numbers), n_per_job):
                 first = image_numbers[i]
-                last  = image_numbers[min(i+n_per_job-1, len(image_numbers)-1)]
+                last = image_numbers[min(i+n_per_job-1, len(image_numbers)-1)]
                 print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, first, last)
         else:
-            # This is the original code, doesn't work if the only metadata tag is group number
-            # not sure whether it works in other cases.
-            # Also not sure whether this code can even be reached as grouping should land us in the first "if" branch 
+            # LoadData w/ images grouped by metadata tags
             groupings = m.get_groupings(metadata_tags)
+
             for grouping in groupings:
                 group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
+
                 print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
     return
 

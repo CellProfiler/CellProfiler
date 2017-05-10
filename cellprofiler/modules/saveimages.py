@@ -540,6 +540,14 @@ class SaveImages(cellprofiler.module.Module):
 
         image = workspace.image_set.get_image(self.image_name.value)
 
+        if image.volumetric and self.file_format.value != FF_TIFF:
+            raise RuntimeError(
+                "Unsupported file format {} for 3D pipeline. Use {} format when processing images as 3D.".format(
+                    self.file_format.value,
+                    FF_TIFF
+                )
+            )
+
         if self.save_image_or_figure.value == IF_IMAGE:
             pixels = image.pixel_data
         elif self.save_image_or_figure.value == IF_MASK:
@@ -776,6 +784,9 @@ class SaveImages(cellprofiler.module.Module):
                         "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
                         undefined_tags[0],
                         self.single_file_name if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix)
+
+    def volumetric(self):
+        return True
 
 
 class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):

@@ -258,8 +258,8 @@ class EditObjectsDialog(wx.Dialog):
         self.inside_print = False
 
         class CanvasPatch(matplotlib.backends.backend_wxagg.FigureCanvasWxAgg):
-            def __init__(self):
-                pass
+            def __init__(self, parent, id, figure):
+                matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.__init__(self, parent, id, figure)
 
             def print_figure(self, *args, **kwargs):
                 self.Parent.inside_print = True
@@ -268,7 +268,7 @@ class EditObjectsDialog(wx.Dialog):
                 finally:
                     self.Parent.inside_print = False
 
-        self.panel = CanvasPatch()
+        self.panel = CanvasPatch(self, -1, self.figure)
         self.toolbar = cellprofiler.gui.figure.CPNavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #

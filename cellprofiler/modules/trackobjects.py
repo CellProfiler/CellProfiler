@@ -1110,81 +1110,46 @@ class TrackObjects(cpm.Module):
 
     def run_followneighbors(self, workspace, objects):
         '''Track objects based on following neighbors'''
+        cellstar = NeighbourMovementTracking()
+        cellstar.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
+        cellstar.parameters_tracking["max_distance"] = self.pixel_radius.value
+        multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["default_empty_cost"]) / \
+                     NeighbourMovementTrackingParameters.parameters_cost_initial["default_empty_cost"]
+        cellstar.parameters_cost_iteration["default_empty_cost"] = multiplier * self.drop_cost.value
+        cellstar.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
+        multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["area_weight"]) / \
+                     NeighbourMovementTrackingParameters.parameters_cost_initial["area_weight"]
+        cellstar.parameters_cost_iteration["area_weight"] = multiplier * self.area_weight.value
+        cellstar.parameters_cost_initial["area_weight"] = self.area_weight.value
 
-        def run_localised_matching(workspace, objects):
-            '''Track based on localised matching costs'''
-            cellstar = NeighbourMovementTracking()
-            cellstar.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
-            cellstar.parameters_tracking["max_distance"] = self.pixel_radius.value
-            multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["default_empty_cost"]) / \
-                         NeighbourMovementTrackingParameters.parameters_cost_initial["default_empty_cost"]
-            cellstar.parameters_cost_iteration["default_empty_cost"] = multiplier * self.drop_cost.value
-            cellstar.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
-            multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["area_weight"]) / \
-                         NeighbourMovementTrackingParameters.parameters_cost_initial["area_weight"]
-            cellstar.parameters_cost_iteration["area_weight"] = multiplier * self.area_weight.value
-            cellstar.parameters_cost_initial["area_weight"] = self.area_weight.value
+        old_labels = self.get_saved_labels(workspace)
+        if not old_labels is None:
+            old_i,old_j = (centers_of_labels(old_labels)+.5).astype(int)
+            old_count = len(old_i)
 
-            old_labels = self.get_saved_labels(workspace)
-            if not old_labels is None:
-                old_i,old_j = (centers_of_labels(old_labels)+.5).astype(int)
-                old_count = len(old_i)
-                
-                i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
-                count = len(i)
-                
-                new_labels = objects.segmented
-                # Matching is (expected to be) a injective function of old labels to new labels so we can inverse it.
-                matching = cellstar.run_tracking(old_labels,new_labels)
-                
-                new_object_numbers = np.zeros(count,int)
-                old_object_numbers = np.zeros(old_count,int)
-                for old, new in matching:
-                    new_object_numbers[new-1] = old
-                    old_object_numbers[old-1] = new
-                
-                self.map_objects(workspace, 
-                                 old_object_numbers, 
-                                 new_object_numbers,
-                                 i,j)
-            else:
-                i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
-                count = len(i)
-                self.map_objects(workspace, np.zeros((0,),int), 
-                                 np.zeros(count,int), i,j)
-                                 
-                                 
-            self.set_saved_labels(workspace, objects.segmented)
+            i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
+            count = len(i)
 
-        #import time
-        #start = time.clock()
-        objects = workspace.object_set.get_objects(self.object_name.value)
-        run_localised_matching(workspace, objects)
+            new_labels = objects.segmented
+            # Matching is (expected to be) a injective function of old labels to new labels so we can inverse it.
+            matching = cellstar.run_tracking(old_labels,new_labels)
 
-        # Prepare output images
-        if self.wants_image.value:
-            import matplotlib.transforms
-            from cellprofiler.gui.cpfigure import figure_to_image, only_display_image
-            
-            figure = matplotlib.figure.Figure()
-            canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
-            ax = figure.add_subplot(1,1,1)
-            self.draw(objects.segmented, ax, 
-                      self.get_saved_object_numbers(workspace))
-            #
-            # This is the recipe for just showing the axis
-            #
-            only_display_image(figure, objects.segmented.shape)
-            image_pixels = figure_to_image(figure, dpi=figure.dpi)
-            image = cpi.Image(image_pixels)
-            workspace.image_set.add(self.image_name.value, image)
-            
-        #if workspace.frame is not None:
-            workspace.display_data.labels = objects.segmented
-            workspace.display_data.object_numbers = \
-                     self.get_saved_object_numbers(workspace)
-        #end = time.clock()
-        #print "tracking_plugin", end - start
+            new_object_numbers = np.zeros(count,int)
+            old_object_numbers = np.zeros(old_count,int)
+            for old, new in matching:
+                new_object_numbers[new-1] = old
+                old_object_numbers[old-1] = new
+
+            self.map_objects(workspace,
+                             old_object_numbers,
+                             new_object_numbers,
+                             i,j)
+        else:
+            i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
+            count = len(i)
+            self.map_objects(workspace, np.zeros((0,),int),
+                             np.zeros(count,int), i,j)
+        self.set_saved_labels(workspace, objects.segmented)
 
     def run_distance(self, workspace, objects):
         '''Track objects based on distance'''

@@ -114,7 +114,7 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms',
                         'watershed': 'Watershed',
-						'yeast_cell_segmentation' : 'IdentifyYeastCells'
+						'identifyyeastcells' : 'IdentifyYeastCells'
                         }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
@@ -217,7 +217,7 @@ builtin_modules = ['align',
                    'unmixcolors',
                    'untangleworms',
                    'watershed',
-                   'yeast_cell_segmentation'
+                   'identifyyeastcells'
                    ]
 
 # CP-Matlab to CP-python module substitutions

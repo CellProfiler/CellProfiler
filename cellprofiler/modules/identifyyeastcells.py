@@ -3,8 +3,13 @@ import threading
 
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-__doc__ = """<b>IdentifyYeastCells</b> identifies yeast (or other round) objects in the image. This module can be used
-with brightfield images (as well as fluorescent ones).
+__doc__ = """<b>IdentifyYeastCells</b> identifies yeast (or other round) objects in the image. This module was designed 
+to work on brightfield images. However in some cases it can also be efficient with fluorescent imagery.
+
+The important part of the module is parameter fitting mechanism which allows to adapt it to many different types of imagery. 
+
+There is a number of various usage example available on website 
+<a href="http://www.cellstar-algorithm.org/">CellStar algorithm</a> which includes ready to use pipelines.
 
 <hr>
 
@@ -12,25 +17,7 @@ with brightfield images (as well as fluorescent ones).
 To use this module, you will need to make sure that your input image has the following qualities:
 <ul>
 <li>The image should be grayscale.</li>
-<li>The foreground (i.e, regions of interest) are lighter than the background.</li>
 </ul>
-If this is not the case, other modules can be used to pre-process the images to ensure they are in 
-the proper form:
-<ul>
-<li>If the objects in your images are dark on a light background, you 
-should invert the images using the Invert operation in the <b>ImageMath</b> module.</li>
-<li>If you are working with color images, they must first be converted to
-grayscale using the <b>ColorToGray</b> module.</li>
-</ul>
-<p>If you have images in which the foreground and background cannot be distinguished by intensity alone
-(e.g, brightfield or DIC images), you can use the <a href="http://www.ilastik.org/">ilastik</a> package
-bundled with CellProfiler to perform pixel-based classification (Windows only). You first train a classifier 
-by identifying areas of images that fall into one of several classes, such as cell body, nucleus, 
-background, etc. Then, the <b>ClassifyPixels</b> module takes the classifier and applies it to each image 
-to identify areas that correspond to the trained classes. The result of <b>ClassifyPixels</b> is 
-an image in which the region that falls into the class of interest is light on a dark background. Since 
-this new image satisfies the constraints above, it can be used as input in <b>IdentifyPrimaryObjects</b>. 
-See the <b>ClassifyPixels</b> module for more information.</p>
 
 <h4>What do the settings mean?</h4>
 See below for help on the individual settings. The following icons are used to call attention to
@@ -53,22 +40,11 @@ the measurements that are produced by this module.
 Once the module has finished processing, the module display window 
 will show the following panels:
 <ul>
-<li><i>Upper left:</i> The raw, original image.</li>
-<li><i>Upper right:</i> The identified objects shown as a color
+<li><i>Left:</i> The raw, original image.</li>
+<li><i>Right:</i> The identified objects shown as a color
 image where connected pixels that belong to the same object are assigned the same
 color (<i>label image</i>). It is important to note that assigned colors are 
 arbitrary; they are used simply to help you distingush the various objects. </li>
-<li><i>Lower left:</i> The raw image overlaid with the colored outlines of the 
-identified objects. Each object is assigned one of three (default) colors:
-<ul>
-<li>Green: Acceptable; passed all criteria</li>
-<li>Magenta: Discarded based on size</li>
-<li>Yellow: Discarded due to touching the border</li>
-</ul>
-If you need to change the color defaults, you can 
-make adjustments in <i>File > Preferences</i>.</li>
-<li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as
-those calculated by the module in order to produce the objects shown.</li>
 </ul>
 
 <a name="Available_measurements">
@@ -76,15 +52,6 @@ those calculated by the module in order to produce the objects shown.</li>
 <b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> The number of primary objects identified.</li>
-<li><i>OriginalThreshold:</i> The global threshold for the image.</li>
-<li><i>FinalThreshold:</i> For the global threshold methods, this value is the
-same as <i>OriginalThreshold</i>. For the adaptive or per-object methods, this
-value is the mean of the local thresholds.</li>
-<li><i>WeightedVariance:</i> The sum of the log-transformed variances of the 
-foreground and background pixels, weighted by the number of pixels in 
-each distribution.</li>
-<li><i>SumOfEntropies:</i> The sum of entropies computed from the foreground and
-background distributions.</li>
 </ul>
 
 <b>Object measurements:</b>
@@ -92,17 +59,21 @@ background distributions.</li>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary 
 object centroids. The centroid is calculated as the center of mass of the binary 
 representation of the object.</li>
+<li><i>Features_Quality:</i> The module internal quality measure describing how well objects fits the model.
+It can be used to filter out the weakest objects.</li>
 </ul>
 
-<p>This module was prepared by Filip Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at 
-<a href="http://www.let-your-data-speak.com/">Scopem, ETH</a> for inquires. The method uses CellStar approach 
-developed by Versari et al., in prep. For more details related to Yeast segmentation in CellProfiler, 
-please refer to <a href="http://www.cellprofiler.org/yeasttoolbox/">Yeast Toolbox</a>.
+<h3>Publications</h3>
 
-<h3>Credits (coding)</h3>
-Filip Mroz, Adam Kaczmarek, Szymon Stoma.
+This module was prepared by Filip Mroz, Adam Kaczmarek and Szymon Stoma. The method uses CellStar approach 
+developed by Versari et al. It is also available with a dedicated GUI for semi-automatic segmentation.
 
-<h3>Credits (method)</h3>
+"Long-term Tracking of Budding Yeast Cells in Brightfield Microscopy: CellStar and the Evaluation Platform." 
+Journal of The Royal Society Interface 14.127 (2017)
+
+Please reach us at <a href="http://www.cellstar-algorithm.org/">CellStar algorithm</a> website for inquires and manuals.
+
+<h3>Credits</h3>
 Filip Mroz, Adam Kaczmarek, Szymon Stoma,
 Artemis Llamosi,
 Kirill Batmanov,
@@ -113,9 +84,6 @@ Simon F. Noerrelykke,
 Gregory Batt,
 Pawel Rychlikowski,
 Pascal Hersen.
-
-<h3>Publications</h3>
-<p> Versari et al. (in preparation)
 
 """%globals()
 
@@ -200,7 +168,7 @@ BKG_FILE = 'File'
 C_OBJECT_FEATURES = "Features"
 
 FTR_OBJECT_QUALITY = "Quality"
-'''The object quality - floating number lower the higher the better'''
+'''The object quality - floating number the higher the better'''
 M_OBJECT_FEATURES_OBJECT_QUALITY= '%s_%s' % (C_OBJECT_FEATURES, FTR_OBJECT_QUALITY)
 
 def hack_add_from_file_into_EditObjects(dialog_box):
@@ -222,7 +190,7 @@ def hack_add_from_file_into_EditObjects(dialog_box):
         for l in np.unique(labels_loaded):
             if l != 0:
                 dialog_box.add_label(l == labels_loaded)
-        # TODO no shape check, no float check
+        # no shape check, no float check
         dialog_box.init_labels()
         dialog_box.display()
         dialog_box.record_undo()
@@ -271,7 +239,6 @@ class IdentifyYeastCells(cpmi.Identify):
             You can provide a ignore mark with regions in the image which are to be ignored by the algorithm in segmentation.
             """%globals(), can_be_blank=True)
 
-        # TODO add bkg. synthetized from first image
         self.background_elimination_strategy = cps.Choice(
             'Select the background calculation mode',
             [BKG_CURRENT, BKG_FILE],doc = """
@@ -279,8 +246,7 @@ class IdentifyYeastCells(cpmi.Identify):
             <ul>
             <li><i>loaded from file</i>: Use this option if your background does not change at all for all images in the serie. </li>
             <li><i>computed from actual image</i>: This is default option. The algorithm will try to automatically compute the background for
-            each individual image. In some specific cases it is better to use manually precomputed background loaded from file. Please check 
-            <a href="http://www.cellprofiler.org/yeasttoolbox/"> Yeast Toolbox documentation</a> for more details.</li>
+            each individual image. In some specific cases it is better to use manually precomputed background loaded from file.</li>
             </ul>"""%globals())
         
         self.average_cell_diameter = cps.Float(
@@ -293,7 +259,7 @@ class IdentifyYeastCells(cpmi.Identify):
 
         self.advanced_cell_filtering = cps.Binary(
             'Do you want to filter cells by area?', False, doc="""
-            This parameter is used for cell filtering. The algorithm creates many more cell candidats then finally accepted cells (these
+            This parameter is used for cell filtering. The algorithm creates many more cell candidates than finally accepted cells (these
             cells overlap with each other). At the final phase of algorithm the cells are selected from the ensamble of cell candidates based on the 
             "quality" measure. Use this option if you want to absolutely prohibit too small (or too big) cells to be chosen (regardless of "quality"). 
             """%globals())
@@ -320,8 +286,7 @@ class IdentifyYeastCells(cpmi.Identify):
         self.background_brighter_then_cell_inside = cps.Binary(
             'Is the area without cells (background) brighter then cell interiors?', True, doc="""
             Please check if the area inside of the cells is <b>darker</b> then the area without the cells (background). Use e.g. ImageJ to measure 
-            average intensity. Please check 
-            <a href="http://www.cellprofiler.org/yeasttoolbox/"> Yeast Toolbox documentation</a> for more details.
+            average intensity.
             """%globals()
             )
 
@@ -342,29 +307,30 @@ class IdentifyYeastCells(cpmi.Identify):
             "Segmentation precision",
             2,minval=1,maxval=5,doc = '''\
             <i>(Used only when you want to specify advanced parameters)</i><br>
-            Describes how thouroughly the algorithm serches for cells. Higher values should 
+            Describes how thouroughly the algorithm searches for cells. Higher values should 
             make it easier to find smaller cells because the more parameters sets are searched. 
             The cost is longer runtime.
-            <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
-            <ul>
-            <li>Start with relatively high value (e.g. 4) </li>
-            <li>If you are satisfied with results, lower the value by 1 until discovered objects still look OK </li>
-            </ul></dd>
-            </dl>
             '''%globals()
             )
 
         self.specify_precision_details = cps.Binary(
-            'Do you want to edit details of segmentation precision?', False)
+            '''\
+            <i>(Used only when you want to specify advanced parameters)</i><br>
+            Do you want to edit details of segmentation precision?<br>
+            <img src="memory:%(TECH_NOTE_ICON)s">&nbsp;These are low level parameters that can be modified
+            to further tweak result.
+            ''', False)
 
         self.iterations = cps.Integer(
             "Iterations",
-            6, minval=1, maxval=15, doc = 'Number of iterations done by CellStar.')
+            6, minval=1, maxval=15, doc = '''\
+            <i>(Used only when you want to specify precision details)</i><br>
+            Number of segmentation iterations done by CellStar.''')
 
         self.seeds_border = cps.Float(
             "Seeds from border",
             1, minval=0, maxval=5, doc = '''\
+            <i>(Used only when you want to specify precision details)</i><br>
             How many seeds are to be extracted from this source:<br><br>
             val = 0 - no seeds from this source<br>
             val in (0.0, 0.5] - seeds only from second iteration<br>
@@ -383,23 +349,29 @@ class IdentifyYeastCells(cpmi.Identify):
 
         self.contour_points = cps.Integer(
             "Contour points",
-            44, minval=36, maxval=70, doc = 'Number of points in every contour.')
+            44, minval=36, maxval=70, doc = '''\
+            <i>(Used only when you want to specify precision details)</i><br>
+            Number of points in every contour.''')
 
         self.contour_precision = cps.Float(
             "Contour precision",
-            49.75, minval=25, maxval=200, doc = 'Number of space points covering average cell diameter.')
+            49.75, minval=25, maxval=200, doc = '''\
+            <i>(Used only when you want to specify precision details)</i><br>
+            Number of space points covering average cell diameter.''')
 
         self.weights_number = cps.Integer(
             "Cell size variants",
-            2, minval=1, maxval=4, doc = 'Number of tested difference size weights in every cell grow.')
+            2, minval=1, maxval=4, doc = '''\
+            <i>(Used only when you want to specify precision details)</i><br>
+            Number of tested difference size weights in every cell grow.''')
 
         self.maximal_cell_overlap = cps.Float(
             "Maximal overlap allowed while final filtering of cells",
             0.2,minval=0,maxval=1,doc='''\
             <i>(Used only when you want to specify advanced parameters)</i><br>
-            This parameter is used for cell filtering. The algorithm creates many more cell candidats then finally accepted cells (these
+            This parameter is used for cell filtering. The algorithm creates many more cell candidates then finally accepted cells (these
             cells overlap with each other). At the final phase of algorithm the cells are selected from the ensamble of cell candidates based on the 
-            "quality" measure. One of the condition checked while filetering is the overlap of the current candidate cell with already chosen cells. 
+            "quality" measure. One of the condition checked while filtering is the overlap of the current candidate cell with already chosen cells. 
             Use this parameter if you want to allow to choose cells even if they overlap. Important: at the end cells do not overlap - they are 
             trimmed in such a way that the cell of higher "quality" will "borrow" the area of lower "quality" cells. 
             '''%globals()
@@ -417,11 +389,11 @@ class IdentifyYeastCells(cpmi.Identify):
 
         self.use_ground_truth_to_set_params = cps.DoSomething("","Autoadapt parameters",
             self.ground_truth_editor, doc="""
-            Use this option to autoadapt parameters required for correct contour identification. This procedure should be run onced
-            for one image in the serie. Using your input the algorithm "learns" to recognized cells. When you click this button the window will open.
+            Use this option to autoadapt parameters required for correct contour identification. This procedure should be run once
+            for one image in the series. Using your input the algorithm "learns" to recognized cells. When you click this button the window will open.
             Please select one of the images which you would like to segment. If you use background or ignore mask images you will have to provide them as well.
             On the input image you should draw few cells (3-6) and click "Done". Then the
-            "learning" procedure will start. Please be patient. Usually single iteration lasts 1-5 min. The more iteration you will choose, the more likely
+            "learning" procedure will start. Please be patient. Usually single iteration lasts 1-3 min. The more iteration you will choose, the more likely
             it is that the algorithm will work better on your images.
             <br><br>
             There is an experimental alternative to selecting existing image files which may be useful when images are "produced" by the pipeline:
@@ -431,20 +403,16 @@ class IdentifyYeastCells(cpmi.Identify):
             <li>Now you can adapt without specifing any images.</li>
             </ol>
             <br><br>
-            Please check
-            <a href="http://www.cellprofiler.org/yeasttoolbox/"> Yeast Toolbox documentation</a> for more details.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
             <li>Start with single iteration, then check how well the algorithm is able to recognize your cells </li>
-            <li>If you have more time, use more iterations. You can always cancell (it will last 1-5 min). The algorithm will
+            <li>If you have more time, use more iterations. You can always cancel (it will last 1-5 min). The algorithm will
             then remember the best parameters he learned during the session. </li>
             <li>Parameters are stored as a text in "Autoadapted parameters". If you found good parameters for your datasets
             you can copy them to another pipeline.<\li>
             </ul></dd>
             </dl>
-            Please check 
-            <a href="http://www.cellprofiler.org/yeasttoolbox/"> Yeast Toolbox documentation</a> for more details.
             """%globals())
 
         self.show_autoadapted_params = cps.Binary(
@@ -456,15 +424,12 @@ class IdentifyYeastCells(cpmi.Identify):
             <i>(Used only when you want to specify advanced and autoadapted parameters)</i><br>
             Autoadapted parameters are pasted here from the "learning" preocedure. These parameters are used to characterize cell borders. 
             Edit them only if you know what you are doing. If you found good parameters for your datasets
-            you can copy them to another pipeline. Please check 
-            <a href="http://www.cellprofiler.org/yeasttoolbox/"> Yeast Toolbox documentation</a> for more details.
+            you can copy them to another pipeline.
             """%globals())
 
         self.should_save_outlines = cps.Binary(
-            'Retain outlines of the identified objects?', False, doc="""
-            Use this method to automatically estimate advanced parameters required for correct recognition of cell borders.
-            """%globals())
-        
+            'Retain outlines of the identified objects?', False, doc="Do you want to use objects outlines in modules downstream?")
+
         self.save_outlines = cps.OutlineNameProvider(
             'Name the outline image',"PrimaryOutlines", doc="""\
             <i>(Used only if outlines are to be saved)</i><br>
@@ -833,13 +798,12 @@ class IdentifyYeastCells(cpmi.Identify):
         # truth about background and inside of cells: insides are brighter
         # than background (so the bkg and image for fluorescent will be
         # inverted at this stage)
-        if not self.bright_field_image: # TODO what about background?
-            # TODO exception will be thrown if orig image is not 1 channel...
-            sigma = 4  # TODO think if it is a big problem to hardcode it here
+        if not self.bright_field_image:
+            sigma = 4
             size = int(sigma * 4) + 1
             mask = np.ones(input_image.shape, bool)
             edge_pixels = laplacian_of_gaussian(input_image, mask, size, sigma)
-            factor = 10  # TODO think if hardcoded is fine
+            factor = 10
             input_image = np.subtract(input_image, factor * edge_pixels)
 
         return input_image, background_image, ignore_mask

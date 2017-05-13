@@ -190,10 +190,15 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
-from centrosome.neighmovetrack import NeighbourMovementTracking, NeighbourMovementTrackingParameters
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
+
+# if neighmovetrack is not available remove it from options
+try:
+    from centrosome.neighmovetrack import NeighbourMovementTracking, NeighbourMovementTrackingParameters
+except:
+    TM_ALL.remove(TM_FOLLOWNEIGHBORS)
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
 DT_COLOR_ONLY = 'Color Only'

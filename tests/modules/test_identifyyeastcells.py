@@ -1,4 +1,4 @@
-"""test_yeast_cell_segmentations.py: test the YeastSegmentation module
+"""test_identifyyeastcells.py: test the IdentifyYeastCells module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -23,7 +23,7 @@ import scipy.ndimage
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.modules.yeast_cell_segmentation as YS
+import cellprofiler.modules.identifyyeastcells as YS
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline
 import cellprofiler.setting
@@ -38,7 +38,7 @@ MASKING_OBJECTS_NAME = "masking_objects"
 MEASUREMENT_NAME = "my_measurement"
 
 
-class test_YeastSegmentation(unittest.TestCase):
+class test_IdentifyYeastCells(unittest.TestCase):
     def load_error_handler(self, caller, event):
         if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.fail(event.error.message)

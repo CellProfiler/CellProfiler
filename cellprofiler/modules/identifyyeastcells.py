@@ -161,7 +161,6 @@ try:
     import cellprofiler.preferences as cpp
     import cellprofiler.cpmath as cpmath
     import cellprofiler.cpmath.outline
-    import cellprofiler.objects
     from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
     import cellprofiler.preferences as pref
     from cellprofiler.cpmath.filter import laplacian_of_gaussian

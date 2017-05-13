@@ -24,7 +24,7 @@ import scipy.ndimage
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.identifyyeastcells as YS
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline
 import cellprofiler.setting
 from cellprofiler.workspace import Workspace

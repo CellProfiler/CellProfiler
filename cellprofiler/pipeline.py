@@ -951,6 +951,12 @@ class Pipeline(object):
                     ).format(git_hash, pipeline_date)
                     logging.warning(message)
                 else:
+                    # pipeline versions pre-3.0.0 have unpredictable formatting
+                    if pipeline_version == 300:
+                        pipeline_version = ".".join([version for version in str(pipeline_version)])
+                    else:
+                        pipeline_version = str(pipeline_version)
+
                     message = (
                         "Your pipeline was saved using an old version\n"
                         "of CellProfiler (version {}). The current version\n"

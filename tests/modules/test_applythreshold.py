@@ -605,7 +605,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_BACKGROUND
         module.run(workspace)
         m = workspace.measurements
-        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
+        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value]
         self.assertAlmostEqual(m_threshold, threshold)
 
     def test_05_04_otsu3_high(self):
@@ -626,7 +626,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
         module.run(workspace)
         m = workspace.measurements
-        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
+        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value]
         self.assertAlmostEqual(m_threshold, threshold)
 
     def test_06_01_adaptive_otsu_small(self):

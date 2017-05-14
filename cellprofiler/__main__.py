@@ -683,7 +683,9 @@ def run_pipeline_headless(options, args):
     if file_list is not None:
         pipeline.read_file_list(file_list)
     elif options.image_directory is not None:
-        pipeline.add_pathnames_to_file_list(glob.glob(os.path.join(options.image_directory, "*")))
+        pathname = os.path.join(os.path.abspath(options.image_directory), "*")
+
+        pipeline.add_pathnames_to_file_list(glob.glob(pathname))
 
     #
     # Fixup CreateBatchFiles with any command-line input or output directories

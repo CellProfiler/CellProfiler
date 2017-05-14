@@ -35,7 +35,7 @@ class Error(wx.MessageDialog):
 
 class Telemetry(wx.MessageDialog):
     def __init__(self):
-        message = "Send Telemetry to the CellProfiler Team"
+        message = "Send diagnostic information to the CellProfiler Team"
 
         super(Telemetry, self).__init__(
             message=message,
@@ -49,7 +49,7 @@ class Telemetry(wx.MessageDialog):
 
         self.SetExtendedMessage(extended_message)
 
-        self.SetYesNoLabels("Enable Telemetry", "Disable Telemetry")
+        self.SetYesNoLabels("Send diagnostic information", "Stop sending diagnostic information")
 
         self.status = self.ShowModal()
 

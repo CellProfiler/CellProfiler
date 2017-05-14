@@ -22,15 +22,15 @@ class GammaCorrection(cellprofiler.module.ImageProcessing):
 
         self.gamma = cellprofiler.setting.Float(
             doc="""
-            A gamma value, γ < 1, is an encoding gamma, and the process of
+            A gamma value < 1 is an encoding gamma, and the process of
             encoding with this compressive power-law non-linearity, gamma
-            compression, darkens images; conversely a gamma value, γ > 1, is a
+            compression, darkens images; conversely a gamma value > 1 is a
             decoding gamma and the application of the expansive power-law
             non-linearity, gamma expansion, brightens images.
             """,
             maxval=100.0,
             minval=0.0,
-            text="γ",
+            text="Gamma",
             value=1.0
         )
 

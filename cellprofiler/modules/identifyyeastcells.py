@@ -120,18 +120,18 @@ import numpy as np
 #
 ##################################
 try:
+    import bioformats
+
     from cellprofiler.modules import identify as cpmi
-    import cellprofiler.cpmodule as cpm
-    from cellprofiler.modules.identifyobjectsmanually import IdentifyObjectsManually
-    import cellprofiler.cpimage as cpi
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.module as cpm
+    import cellprofiler.image as cpi
+    import cellprofiler.measurement as cpmeas
     import cellprofiler.setting as cps
     import cellprofiler.preferences as cpp
-    import cellprofiler.cpmath as cpmath
-    import cellprofiler.cpmath.outline
     from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
     import cellprofiler.preferences as pref
-    from cellprofiler.cpmath.filter import laplacian_of_gaussian
+    import centrosome.outline
+    from centrosome.filter import laplacian_of_gaussian
 
 #################################
 #
@@ -182,7 +182,6 @@ def hack_add_from_file_into_EditObjects(dialog_box):
                 return
             path = dlg.Path
 
-        import bioformats
         labels_loaded = (bioformats.load_image(path) * 255).astype(int)
         if labels_loaded.ndim == 3:
             labels_loaded = np.sum(labels_loaded, 2) / labels_loaded.shape[2]
@@ -684,7 +683,7 @@ class IdentifyYeastCells(cpmi.Identify):
         workspace.object_set.add_objects(objects, self.object_name.value)
 
         # Make outlines
-        outline_image = cellprofiler.cpmath.outline.outline(objects.segmented)
+        outline_image = centrosome.outline.outline(objects.segmented)
         if self.should_save_outlines.value:
             out_img = cpi.Image(outline_image.astype(bool),
                                 parent_image = input_image)
@@ -903,7 +902,6 @@ class IdentifyYeastCells(cpmi.Identify):
 
     def fit_parameters_with_ui(self, input_image, background_image, ignore_mask_image, ground_truth_labels):
         import wx
-
         # reading GT from dialog_box.labels[0] and image from self.pixel
         progress_max = self.autoadaptation_steps.value * 2  # every step consists of: snake params and ranking params fitting
 
@@ -954,8 +952,6 @@ class IdentifyYeastCells(cpmi.Identify):
 
     def get_param_fitting_input_images_from_user(self):
         import wx
-        from bioformats import load_image
-
         def get_file_path(message):
             with wx.FileDialog(None,
                                message=message,
@@ -967,7 +963,7 @@ class IdentifyYeastCells(cpmi.Identify):
                     return None
 
         def load_image_grayscale(path):
-            image = load_image(path)
+            image = bioformats.load_image(path)
             if image.ndim == 3:
                 image = np.sum(image, 2) / image.shape[2]
             return image
@@ -1016,11 +1012,10 @@ class IdentifyYeastCells(cpmi.Identify):
         return input_image, background_image, ignore_mask, labels
 
     def ground_truth_editor( self ):
-        '''Display a UI for GT editing'''
-        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
-        from wx import OK
         import wx
+        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
 
+        '''Display a UI for GT editing'''
         ### check if user want to use last pipeline run images
         pipeline_imagery = self.get_param_fitting_input_images_from_image_set()
         if pipeline_imagery is not None:
@@ -1058,7 +1053,7 @@ class IdentifyYeastCells(cpmi.Identify):
                     input_image, edit_labels, False, title) as dialog_box:
                 hack_add_from_file_into_EditObjects(dialog_box)
                 result = dialog_box.ShowModal()
-                if result != OK:
+                if result != wx.OK:
                     return None
                 labels = dialog_box.labels[0]
             ## two next lines are hack from Lee

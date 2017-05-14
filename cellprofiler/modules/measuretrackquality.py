@@ -9,6 +9,8 @@ import re
 from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
 import logging
 
+# todo: make sure coherent error message is produced when num timepoints is < MIN_TRAM_LENGTH
+
 CAT_MEASURE_TRACK_QUALITY = "MeasureTrackQuality"
 MEAS_TRAM = "TrAM"
 MEAS_LABELS = "Labels"
@@ -82,6 +84,7 @@ class TrackQuality(cpm.Module):
 
     def create_settings(self):
         # for them to choose the tracked objects
+        # todo: do not allow them to select if there are not 6 or more time points. Put this in description.
         self.object_name = cps.ObjectNameSubscriber(
                 "Tracked objects", cps.NONE, doc="""
             Select the tracked objects for computing TrAM.""")
@@ -114,7 +117,7 @@ class TrackQuality(cpm.Module):
             """)
 
         # TrAM exponent
-        self.p = cps.Float(
+        self.tram_exponent = cps.Float(
             "TrAM exponent", 0.5, minval=0.01, maxval=1.0, doc="""
             This number is between 0.01 and 1 (default 0.5), and specifies how
             strongly simultaneous sudden changes in multiple features synergize in
@@ -123,7 +126,7 @@ class TrackQuality(cpm.Module):
             """)
 
     def settings(self):
-        return [self.object_name, self.tram_measurements, self.isotropic, self.num_knots, self.p]
+        return [self.object_name, self.tram_measurements, self.isotropic, self.num_knots, self.tram_exponent]
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected at least one measurement for TrAM and that there are tracking data.'''
@@ -399,7 +402,7 @@ class TrackQuality(cpm.Module):
         # now combine them with the appropriate power
         aberration_array = np.column_stack(aberration_dict.values())
 
-        p = self.p.get_value()
+        p = self.tram_exponent.get_value()
 
         # handle Euclidian weightings
         num_isotropic = len(isotropic_pairs)
@@ -598,7 +601,7 @@ class TrackQuality(cpm.Module):
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
-        return [self.isotropic, self.p, self.num_knots]
+        return [self.isotropic, self.tram_exponent, self.num_knots]
 
     def is_aggregation_module(self): # todo - not sure what to return here
         """If true, the module uses data from other imagesets in a group

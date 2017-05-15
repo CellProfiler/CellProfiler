@@ -5,6 +5,7 @@
 .eggs/
 .idea/
 .python-version
+.ipynb_checkpoints/
 build/
 dist/
 frozen_version.py

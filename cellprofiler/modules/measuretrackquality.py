@@ -56,7 +56,7 @@ dynamic phenotyping</a>, Scientific Reports 6:34785 (2016)
 
 logger = logging.getLogger(__name__)
 
-class measure_track_quality(cpm.Module):
+class MeasureTrackQuality(cpm.Module):
     module_name = "MeasureTrackQuality"
     category = "Measurement"
     variable_revision_number = 1

@@ -74,7 +74,6 @@ class MeasureTrackQuality(cpm.Module):
     MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
     MIN_NUM_KNOTS = 3
 
-
     LABELS_KEY = "labels"
     IMAGE_NUMS_KEY = "image_nums"
     OBJECT_NUMS_KEY = "object_nums"
@@ -185,7 +184,7 @@ class MeasureTrackQuality(cpm.Module):
         all_values_dict = dict(get_feature_values_tuple(sel) for sel in selections)
         # determine if there are any potential isotropic (XY) pairs
         if self.isotropic.value:
-            isotropic_pairs = measure_track_quality.Determine_Isotropic_pairs(all_values_dict.keys())
+            isotropic_pairs = MeasureTrackQuality.Determine_Isotropic_pairs(all_values_dict.keys())
         else:
             isotropic_pairs = []
 
@@ -245,7 +244,7 @@ class MeasureTrackQuality(cpm.Module):
         # compute typical inter-timepoint variation for complete trajectories only.
         label_vals_flattened_complete_trajectories = [label_vals_flattened[i] for i in complete_trajectory_indices]
         image_vals_flattened_complete_trajectories = [image_vals_flattened[i] for i in complete_trajectory_indices]
-        tad = measure_track_quality.compute_typical_deviations(all_values_dict_complete_trajectories,
+        tad = MeasureTrackQuality.compute_typical_deviations(all_values_dict_complete_trajectories,
                                                                label_vals_flattened_complete_trajectories,
                                                                image_vals_flattened_complete_trajectories)
 

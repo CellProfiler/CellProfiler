@@ -1,39 +1,18 @@
-from cellprofiler.modules import trackobjects
-import numpy as np
-import itertools as it
+import itertools
+import logging
+import re
+from collections import Counter, defaultdict
+
+import numpy
+
+import cellprofiler.measurement as cpmeas
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-import cellprofiler.measurement as cpmeas
-from collections import Counter, defaultdict
-import re
 from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
-import logging
+from cellprofiler.modules import trackobjects
 
 # todo: make sure coherent error message is produced when num timepoints is < MIN_TRAM_LENGTH
-
-CAT_MEASURE_TRACK_QUALITY = "MeasureTrackQuality"
-MEAS_TRAM = "TrAM"
-MEAS_LABELS = "Labels"
-MEAS_PARENT = "Is_Parent"
-MEAS_SPLIT = "Split_Trajectory"
-FULL_TRAM_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_TRAM)
-FULL_LABELS_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_LABELS)
-FULL_PARENT_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_PARENT)
-FULL_SPLIT_MEAS_NAME = "%s_%s" % (CAT_MEASURE_TRACK_QUALITY, MEAS_SPLIT)
-IMAGE_NUM_KEY = "Image"
-MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
-MIN_NUM_KNOTS = 3
-
-LABELS_KEY = "labels"
-IMAGE_NUMS_KEY = "image_nums"
-OBJECT_NUMS_KEY = "object_nums"
-PARENT_OBJECT_NUMS_KEY = "parent_object_nums"
-TRAM_KEY = "TrAM"
-SPLIT_KEY = "split"
-PARENT_KEY = "parent"
-
-FLOAT_NAN = float('nan')
-
+# todo: see if you can access the class attribute MIN_TRAM_LENGTH instead of 6 for the below __doc__ string
 __doc__ = """
 <b>TrackQuality</b> provides tracking quality metrics. TrAM (Tracking
 Aberration Measure) is based on temporal smoothness of features measured
@@ -41,7 +20,7 @@ across each object's trajectory.
 <hr>
 This module must be placed downstream of a module that identifies objects
 (e.g., <b>IdentifyPrimaryObjects</b>) and a <b>TrackObjects</b> that tracks
-them. There must be at least %d frames to perform a TrAM analysis. The TrAM
+them. There must be at least 6 frames to perform a TrAM analysis. The TrAM
 statistic reflects how typical the maximum deviation from smooth time series
 a chosen set of measurements are. Typical fluctuations are determined from
 measurement differences in adjacent time points of objects whose trajectories
@@ -65,22 +44,44 @@ an object arises from a split, then its ancestor object(s) will be assigned
 multiple labels (combined from its progeny). These labels are separated by
 a "|" symbol.</li>
 <li><i>Is_Parent:</i> If the object splits into daughters during its track then 
-flag will be 1, and <i>Labels</i> will contain two or more labels separated by "|".
-Otherwise it is 0 and <i>Labels</i> has only one label.</li>
+flag will be 1, and <i>Labels</i> will be a list of two or more labels.
+Otherwise it is 0 and <i>Labels</i> is a list containing one label.</li>
 <li><i>Split_Trajectory:</i> If the object arose from an ancestor whose trajectory
 split, then this value is 1. Otherwise it is 0.</li>
 </ul>
 <p>
 See Patsch, K <i>et al.</i>, <a href=https://www.nature.com/articles/srep34785>Single cell
 dynamic phenotyping</a>, Scientific Reports 6:34785 (2016)
-""" % (MIN_TRAM_LENGTH)
+"""
 
 logger = logging.getLogger(__name__)
 
-class TrackQuality(cpm.Module):
+class measure_track_quality(cpm.Module):
     module_name = "MeasureTrackQuality"
     category = "Measurement"
     variable_revision_number = 1
+
+    CAT_MEASURE_TRACK_QUALITY = "MeasureTrackQuality"
+    MEAS_TRAM = "TrAM"
+    MEAS_LABELS = "Labels"
+    MEAS_PARENT = "Is_Parent"
+    MEAS_SPLIT = "Split_Trajectory"
+    FULL_TRAM_MEAS_NAME = "{}_{}".format(CAT_MEASURE_TRACK_QUALITY, MEAS_TRAM)
+    FULL_LABELS_MEAS_NAME = "{}_{}".format(CAT_MEASURE_TRACK_QUALITY, MEAS_LABELS)
+    FULL_PARENT_MEAS_NAME = "{}_{}".format(CAT_MEASURE_TRACK_QUALITY, MEAS_PARENT)
+    FULL_SPLIT_MEAS_NAME = "{}_{}".format(CAT_MEASURE_TRACK_QUALITY, MEAS_SPLIT)
+    IMAGE_NUM_KEY = "Image"
+    MIN_TRAM_LENGTH = 6 # minimum number of timepoints to calculate TrAM
+    MIN_NUM_KNOTS = 3
+
+
+    LABELS_KEY = "labels"
+    IMAGE_NUMS_KEY = "image_nums"
+    OBJECT_NUMS_KEY = "object_nums"
+    PARENT_OBJECT_NUMS_KEY = "parent_object_nums"
+    TRAM_KEY = "TrAM"
+    SPLIT_KEY = "split"
+    PARENT_KEY = "parent"
 
     def create_settings(self):
         # for them to choose the tracked objects
@@ -93,9 +94,7 @@ class TrackQuality(cpm.Module):
         self.tram_measurements = MeasurementMultiChoiceForCategory(
             "TrAM measurements", category_chooser=self.object_name, doc="""
             These are measurements for the selected tracked objects which
-            will be used in the TrAM computation. At least one must be selected.
-            Note there may be a delay of a few seconds between the selection of
-            <i>Tracked objects</i> and the update of this selection component.""")
+            will be used in the TrAM computation. At least one must be selected.""")
 
         # Treat X-Y value pairs as isotropic in the TrAM measure?
         self.isotropic = cps.Binary(
@@ -108,8 +107,8 @@ class TrackQuality(cpm.Module):
 
         # number of spline knots
         self.num_knots = cps.Integer(
-            "Number of spline knots", 4, minval=MIN_NUM_KNOTS, doc="""
-            Number of spline knots</i>The number of knots (indpendent values) used
+            "Number of spline knots", 4, minval=self.MIN_NUM_KNOTS, doc="""
+            The number of knots (indpendent values) used
             when computing smoothing splines. This should be around 1/5th the number
             of frames for reasonably oversampled time lapse sequences, and must be 3
             or greater. It is approximately the maximum number of wiggles expected in
@@ -132,20 +131,16 @@ class TrackQuality(cpm.Module):
         '''Make sure that the user has selected at least one measurement for TrAM and that there are tracking data.'''
         if len(self.get_selected_tram_measurements()) == 0:
             raise cps.ValidationError(
-                    "Please select at least one TrAM measurement for tracking of %s" % self.object_name.get_value(),
+                    "Please select at least one TrAM measurement for tracking of {}".format(self.object_name.value),
                     self.tram_measurements)
 
         # check on available tracking columns for the selected object
-        obj_name = self.object_name.get_value()
+        obj_name = self.object_name.value
         mc = pipeline.get_measurement_columns()
         num_tracking_cols = len([entry for entry in mc if entry[0] == obj_name and entry[1].startswith(trackobjects.F_PREFIX)])
         if num_tracking_cols == 0:
-            msg = "No %s data available for %s. Please select an object with tracking data."\
-                  % (trackobjects.F_PREFIX, obj_name)
+            msg = "No {} data available for {}. Please select an object with tracking data.".format(trackobjects.F_PREFIX, obj_name)
             raise cps.ValidationError(msg, self.object_name)
-
-    def visible_settings(self):
-        return self.settings()
 
     def run(self, workspace):
         pass
@@ -154,32 +149,29 @@ class TrackQuality(cpm.Module):
         if self.show_window:
             figure.set_subplots((1,1))
             figure.subplot_histogram(0, 0, workspace.display_data.tram_values, bins=40, xlabel="TrAM",
-                                     title="TrAM for %s" % self.object_name.get_value())
+                                     title="TrAM for {}".format(self.object_name.value))
 
     def post_group(self, workspace, grouping):
         self.show_window = True
 
         measurements = workspace.measurements
-        obj_name = self.object_name.get_value() # the object the user has selected
+        obj_name = self.object_name.value # the object the user has selected
         img_numbers = measurements.get_image_numbers()
         num_images = len(img_numbers)
-
-        def flatten_list_of_lists(lol):
-            return list(it.chain.from_iterable(lol))
 
         # get vector of tracking label for each data point
         feature_names = measurements.get_feature_names(obj_name)
         tracking_label_feature_name = [name for name in feature_names
-                                       if name.startswith("%s_%s" % (trackobjects.F_PREFIX, trackobjects.F_LABEL))][0]
+                                       if name.startswith("{}_{}".format(trackobjects.F_PREFIX, trackobjects.F_LABEL))][0]
         label_vals = measurements.get_measurement(obj_name, tracking_label_feature_name, img_numbers)
-        label_vals_flattened_all = flatten_list_of_lists(label_vals)
+        label_vals_flattened_all = numpy.concatenate(label_vals).ravel().tolist()
         # determine which indexes we should keep. Get rid of any nan label values
-        not_nan_indices = [i for i, label in enumerate(label_vals_flattened_all) if not np.isnan(label)]
+        not_nan_indices = [i for i, label in enumerate(label_vals_flattened_all) if not numpy.isnan(label)]
         label_vals_flattened = [label_vals_flattened_all[i] for i in not_nan_indices] # excludes nan
 
         # convenience function to flatten and remove values corresponding to nan labels
         def extract_flattened_measurements_for_valid_labels(lol):
-            return [flatten_list_of_lists(lol)[i] for i in not_nan_indices]
+            return [numpy.concatenate(lol).tolist()[i] for i in not_nan_indices]
 
         # function to get a tuple dictionary entry relating feature name with data values
         def get_feature_values_tuple(sel):
@@ -193,7 +185,7 @@ class TrackQuality(cpm.Module):
         all_values_dict = dict(get_feature_values_tuple(sel) for sel in selections)
         # determine if there are any potential isotropic (XY) pairs
         if self.isotropic.value:
-            isotropic_pairs = TrackQuality.Determine_Isotropic_pairs(all_values_dict.keys())
+            isotropic_pairs = measure_track_quality.Determine_Isotropic_pairs(all_values_dict.keys())
         else:
             isotropic_pairs = []
 
@@ -202,21 +194,21 @@ class TrackQuality(cpm.Module):
         assert len(vec_lengths) == 1, "Measurement vectors have differing lengths"
 
         # get vector of image numbers into the dict
-        counts = [len([v for v in x if not np.isnan(v)]) for x in label_vals] # number of non-nan labels at each time point
+        counts = [len([v for v in x if not numpy.isnan(v)]) for x in label_vals] # number of non-nan labels at each time point
         image_vals = [[image for _ in range(count)] for image, count in zip(img_numbers, counts)] # repeat image number
-        image_vals_flattened = flatten_list_of_lists(image_vals)
+        image_vals_flattened = sum(image_vals, [])
 
         # determine max lifetime by label so we can select different object behaviors
         lifetime_feature_name = [name for name in feature_names
-                                 if name.startswith("%s_%s" % (trackobjects.F_PREFIX, trackobjects.F_LIFETIME))][0]
+                                 if name.startswith("{}_{}".format(trackobjects.F_PREFIX, trackobjects.F_LIFETIME))][0]
         lifetime_vals_flattened =\
             extract_flattened_measurements_for_valid_labels(measurements.get_measurement(obj_name,
                                                                                          lifetime_feature_name,
                                                                                          img_numbers))
         max_lifetime_by_label = dict(max(lifetimes)
                                      for label, lifetimes
-                                     in it.groupby(zip(label_vals_flattened, lifetime_vals_flattened),
-                                                   lambda x: x[0]))
+                                     in itertools.groupby(zip(label_vals_flattened, lifetime_vals_flattened),
+                                                          lambda x: x[0]))
 
 
         # Labels for objects that are tracked the whole time.
@@ -226,9 +218,9 @@ class TrackQuality(cpm.Module):
                                             and label_counts[label] == num_images]
         # labels for objects there the whole time but result from splitting
         labels_for_split_trajectories = [label for label in max_lifetime_by_label.keys()
-                                           if max_lifetime_by_label[label] == num_images
-                                           and label_counts[label] > num_images
-                                           and not np.isnan(label)]
+                                         if max_lifetime_by_label[label] == num_images
+                                         and label_counts[label] > num_images
+                                         and not numpy.isnan(label)]
 
 
         # create dictionary to translate from label to object number in last frame. This is how we will store results.
@@ -253,16 +245,16 @@ class TrackQuality(cpm.Module):
         # compute typical inter-timepoint variation for complete trajectories only.
         label_vals_flattened_complete_trajectories = [label_vals_flattened[i] for i in complete_trajectory_indices]
         image_vals_flattened_complete_trajectories = [image_vals_flattened[i] for i in complete_trajectory_indices]
-        tad = TrackQuality.compute_typical_deviations(all_values_dict_complete_trajectories,
-                                                      label_vals_flattened_complete_trajectories,
-                                                      image_vals_flattened_complete_trajectories)
+        tad = measure_track_quality.compute_typical_deviations(all_values_dict_complete_trajectories,
+                                                               label_vals_flattened_complete_trajectories,
+                                                               image_vals_flattened_complete_trajectories)
 
 
         # put all the data into a 2D array and normalize by typical deviations
-        all_data_array = np.column_stack(all_values_dict.values())
+        all_data_array = numpy.column_stack(all_values_dict.values())
         tram_feature_names = all_values_dict_complete_trajectories.keys()
-        inv_devs = np.diag([1/tad[k] for k in tram_feature_names]) # diagonal matrix of inverse typical deviation
-        normalized_all_data_array = np.dot(all_data_array, inv_devs) # perform the multiplication
+        inv_devs = numpy.diag([1 / tad[k] for k in tram_feature_names]) # diagonal matrix of inverse typical deviation
+        normalized_all_data_array = numpy.dot(all_data_array, inv_devs) # perform the multiplication
 
         # this is how we identify our TrAM measurements to objects
         next_available_tram_label = 0
@@ -272,27 +264,27 @@ class TrackQuality(cpm.Module):
         for label in labels_for_complete_trajectories:
             indices = [i for i, lab in enumerate(label_vals_flattened) if lab == label]
 
-            if len(indices) < MIN_TRAM_LENGTH: # not enough data points
-                tram = FLOAT_NAN
+            if len(indices) < self.MIN_TRAM_LENGTH: # not enough data points
+                tram = numpy.nan
             else:
                 tram = self.compute_TrAM(tram_feature_names, normalized_all_data_array,
                                          image_vals_flattened, indices, isotropic_pairs)
 
             obj_nums = {image_vals_flattened[i] : object_nums_flattened[i] for i in indices} # pairs of image and object
-            tram_dict.update({next_available_tram_label : {TRAM_KEY : tram, OBJECT_NUMS_KEY : obj_nums, SPLIT_KEY : 0}})
+            tram_dict.update({next_available_tram_label : {self.TRAM_KEY : tram, self.OBJECT_NUMS_KEY : obj_nums, self.SPLIT_KEY : 0}})
             next_available_tram_label += 1
 
 
         # now compute TrAM for split trajectories
         tracking_info_dict = dict()
-        tracking_info_dict[LABELS_KEY] = label_vals_flattened
-        tracking_info_dict[IMAGE_NUMS_KEY] = image_vals_flattened
-        tracking_info_dict[OBJECT_NUMS_KEY] = object_nums_flattened
+        tracking_info_dict[self.LABELS_KEY] = label_vals_flattened
+        tracking_info_dict[self.IMAGE_NUMS_KEY] = image_vals_flattened
+        tracking_info_dict[self.OBJECT_NUMS_KEY] = object_nums_flattened
 
-        parent_object_text_start = "%s_%s" % (trackobjects.F_PREFIX, trackobjects.F_PARENT_OBJECT_NUMBER)
+        parent_object_text_start = "{}_{}".format(trackobjects.F_PREFIX, trackobjects.F_PARENT_OBJECT_NUMBER)
         parent_object_feature = next(feature_name for feature_name in feature_names
                                      if feature_name.startswith(parent_object_text_start))
-        tracking_info_dict[PARENT_OBJECT_NUMS_KEY] = \
+        tracking_info_dict[self.PARENT_OBJECT_NUMS_KEY] = \
             extract_flattened_measurements_for_valid_labels(measurements.get_measurement(obj_name,
                                                                                          parent_object_feature,
                                                                                          img_numbers))
@@ -314,24 +306,25 @@ class TrackQuality(cpm.Module):
 
         # cycle through each tram computed
         for tram_label, traj_dict in tram_dict.iteritems():
-            tram = traj_dict[TRAM_KEY]
-            split_flag = traj_dict[SPLIT_KEY]
-            for img_num, object_num in traj_dict[OBJECT_NUMS_KEY].iteritems(): # every object across images for this tram
+            tram = traj_dict[self.TRAM_KEY]
+            split_flag = traj_dict[self.SPLIT_KEY]
+            for img_num, object_num in traj_dict[self.OBJECT_NUMS_KEY].iteritems(): # every object across images for this tram
                 index = index_by_img_and_object[(img_num, object_num)]
                 result_dict = results_to_store_by_img[img_num][index]
 
                 if result_dict is None:
                     result_dict = dict() # initialize
                     results_to_store_by_img[img_num][index] = result_dict # store it
-                    result_dict.update({PARENT_KEY: 0})
-                    result_dict.update({TRAM_KEY: tram})
-                    result_dict.update({LABELS_KEY: str(int(tram_label))})
+                    result_dict.update({self.PARENT_KEY:0})
+                    result_dict.update({self.TRAM_KEY:tram})
+                    result_dict.update({self.LABELS_KEY:[tram_label]})
                 else: # if there is already a TRAM_KEY then we are a parent and don't have a valid TrAM
-                    result_dict.update({PARENT_KEY: 1})
-                    result_dict.update({TRAM_KEY: FLOAT_NAN})
-                    result_dict.update({LABELS_KEY: "%s|%s" % (result_dict[LABELS_KEY], str(int(tram_label)))}) # append
+                    result_dict.update({self.PARENT_KEY:1})
+                    result_dict.update({self.TRAM_KEY:numpy.nan})
+                    previous_list = result_dict[self.LABELS_KEY]
+                    previous_list.append(tram_label)
 
-                result_dict.update({SPLIT_KEY: split_flag})
+                result_dict.update({self.SPLIT_KEY: split_flag})
 
         # Loop over all images and save out
         tram_values_to_save = list()
@@ -340,19 +333,19 @@ class TrackQuality(cpm.Module):
         label_values_to_save = list()
 
         for img_num, vec in results_to_store_by_img.iteritems():
-            tram_values_to_save.append([get_element_or_default_for_None(v, TRAM_KEY, float("nan")) for v in vec])
-            parent_values_to_save.append([get_element_or_default_for_None(v, PARENT_KEY, float("nan")) for v in vec])
-            split_values_to_save.append([get_element_or_default_for_None(v, SPLIT_KEY, float("nan")) for v in vec])
-            label_values_to_save.append([get_element_or_default_for_None(v, LABELS_KEY, "") for v in vec])
+            tram_values_to_save.append([get_element_or_default_for_None(v, self.TRAM_KEY, numpy.nan) for v in vec])
+            parent_values_to_save.append([get_element_or_default_for_None(v, self.PARENT_KEY, numpy.nan) for v in vec])
+            split_values_to_save.append([get_element_or_default_for_None(v, self.SPLIT_KEY, numpy.nan) for v in vec])
+            label_values_to_save.append([get_element_or_default_for_None(v, self.LABELS_KEY, None) for v in vec])
 
         img_nums = results_to_store_by_img.keys()
-        workspace.measurements.add_measurement(obj_name, FULL_TRAM_MEAS_NAME, tram_values_to_save, image_set_number=img_nums)
-        workspace.measurements.add_measurement(obj_name, FULL_PARENT_MEAS_NAME, parent_values_to_save, image_set_number=img_nums)
-        workspace.measurements.add_measurement(obj_name, FULL_SPLIT_MEAS_NAME, split_values_to_save, image_set_number=img_nums)
-        workspace.measurements.add_measurement(obj_name, FULL_LABELS_MEAS_NAME, label_values_to_save, image_set_number=img_nums)
+        workspace.measurements.add_measurement(obj_name, self.FULL_TRAM_MEAS_NAME, tram_values_to_save, image_set_number=img_nums)
+        workspace.measurements.add_measurement(obj_name, self.FULL_PARENT_MEAS_NAME, parent_values_to_save, image_set_number=img_nums)
+        workspace.measurements.add_measurement(obj_name, self.FULL_SPLIT_MEAS_NAME, split_values_to_save, image_set_number=img_nums)
+        workspace.measurements.add_measurement(obj_name, self.FULL_LABELS_MEAS_NAME, label_values_to_save, image_set_number=img_nums)
 
         # store the non-nan TrAM values for the histogram display
-        workspace.display_data.tram_values = [d.get(TRAM_KEY) for d in tram_dict.values() if not np.isnan(d.get(TRAM_KEY))]
+        workspace.display_data.tram_values = [d.get(self.TRAM_KEY) for d in tram_dict.values() if not numpy.isnan(d.get(self.TRAM_KEY))]
 
 
     def compute_TrAM(self, tram_feature_names, normalized_data_array, image_vals_flattened, indices, isotropic_pairs):
@@ -370,7 +363,7 @@ class TrackQuality(cpm.Module):
         normalized_data_for_label = normalized_data_array[indices,:]  # get the corresponding data
         images = [image_vals_flattened[i] for i in indices]
 
-        normalized_data_for_label = normalized_data_for_label[np.argsort(images),]  # order by image
+        normalized_data_for_label = normalized_data_for_label[numpy.argsort(images),]  # order by image
         normalized_values_dict = {tram_feature_names[i]: normalized_data_for_label[:, i] for i in range(0, len(tram_feature_names))}
 
         def compute_single_aberration(normalized_values):
@@ -382,25 +375,25 @@ class TrackQuality(cpm.Module):
             import scipy.interpolate as interp
 
             n = len(normalized_values)
-            xs = np.array(range(1, n+1), float)
+            xs = numpy.array(range(1, n + 1), float)
             num_knots = self.num_knots.get_value()
             knot_deltas = (n-1.0)/(num_knots+1.0)
-            knot_locs = 1 + np.array(range(1, num_knots)) * knot_deltas
+            knot_locs = 1 + numpy.array(range(1, num_knots)) * knot_deltas
 
             try:
                 interp_func = interp.LSQUnivariateSpline(xs, normalized_values, knot_locs)
                 smoothed_vals = interp_func(xs)
             except ValueError:
-                smoothed_vals = np.zeros(len(xs)) + FLOAT_NAN # return nan array
+                smoothed_vals = numpy.zeros(len(xs)) + numpy.nan # return nan array
 
             return abs(normalized_values - smoothed_vals)
 
         # compute aberrations for each of the features
-        aberration_dict = {feat_name : compute_single_aberration(np.array(values))
+        aberration_dict = {feat_name : compute_single_aberration(numpy.array(values))
                            for feat_name, values in normalized_values_dict.items()}
 
         # now combine them with the appropriate power
-        aberration_array = np.column_stack(aberration_dict.values())
+        aberration_array = numpy.column_stack(aberration_dict.values())
 
         p = self.tram_exponent.get_value()
 
@@ -418,7 +411,7 @@ class TrackQuality(cpm.Module):
                 x_col = next(i for i, val in enumerate(column_names) if x == val)
                 y_col = next(i for i, val in enumerate(column_names) if y == val)
 
-                isotropic_vec = np.sqrt(np.apply_along_axis(np.mean, 1, aberration_array[:,(x_col,y_col)]))
+                isotropic_vec = numpy.sqrt(numpy.apply_along_axis(numpy.mean, 1, aberration_array[:, (x_col, y_col)]))
                 column_list.append(isotropic_vec)
                 weight_list.append(2) # 2 data elements used to weight is twice the usual
 
@@ -432,18 +425,18 @@ class TrackQuality(cpm.Module):
                 column_list.append(aberration_array[:,col])
                 weight_list.append(1)
 
-            data_array = np.column_stack(column_list) # make array
-            weight_array = np.array(weight_list, float)
-            weight_array = weight_array / np.sum(weight_array) # normalize weights
-            weight_matrix = np.diag(weight_array)
+            data_array = numpy.column_stack(column_list) # make array
+            weight_array = numpy.array(weight_list, float)
+            weight_array = weight_array / numpy.sum(weight_array) # normalize weights
+            weight_matrix = numpy.diag(weight_array)
 
-            pwr = np.power(data_array, p)
-            weighted_means = np.apply_along_axis(np.sum, 1, np.matmul(pwr, weight_matrix))
-            tram = np.max(np.power(weighted_means, 1.0/p))
+            pwr = numpy.power(data_array, p)
+            weighted_means = numpy.apply_along_axis(numpy.sum, 1, numpy.matmul(pwr, weight_matrix))
+            tram = numpy.max(numpy.power(weighted_means, 1.0 / p))
         else:
-            pwr = np.power(aberration_array, p)
-            means = np.apply_along_axis(np.mean, 1, pwr)
-            tram = np.max(np.power(means, 1.0/p))
+            pwr = numpy.power(aberration_array, p)
+            means = numpy.apply_along_axis(numpy.mean, 1, pwr)
+            tram = numpy.max(numpy.power(means, 1.0 / p))
 
         return tram
 
@@ -461,10 +454,10 @@ class TrackQuality(cpm.Module):
         for the keys TRAM_KEY, OBJECT_NUMS_KEY, SPLIT_KEY
         """
 
-        label_vals_flattened = tracking_info_dict[LABELS_KEY]
-        image_vals_flattened = tracking_info_dict[IMAGE_NUMS_KEY]
-        object_nums_flattened = tracking_info_dict[OBJECT_NUMS_KEY]
-        parent_object_nums_flattened = tracking_info_dict[PARENT_OBJECT_NUMS_KEY]
+        label_vals_flattened = tracking_info_dict[self.LABELS_KEY]
+        image_vals_flattened = tracking_info_dict[self.IMAGE_NUMS_KEY]
+        object_nums_flattened = tracking_info_dict[self.OBJECT_NUMS_KEY]
+        parent_object_nums_flattened = tracking_info_dict[self.PARENT_OBJECT_NUMS_KEY]
 
         first_image_num = min(image_vals_flattened)
         last_image_num = max(image_vals_flattened)
@@ -511,7 +504,8 @@ class TrackQuality(cpm.Module):
                 # for each image number, the corresponding object number
                 obj_nums = dict(zip([image_vals_flattened[i] for i in indices_list], object_nums_list))
 
-                result.update({next_available_tram_label: {TRAM_KEY: tram, OBJECT_NUMS_KEY: obj_nums, SPLIT_KEY: 1}})
+                result.update({next_available_tram_label: {self.TRAM_KEY:tram, self.OBJECT_NUMS_KEY:obj_nums,
+                                                           self.SPLIT_KEY:1}})
                 next_available_tram_label += 1
 
         return result
@@ -528,13 +522,13 @@ class TrackQuality(cpm.Module):
         """
         # input is a list of time series lists
         def compute_median_abs_deviation(values_lists):
-            return np.median(abs(np.diff(reduce(np.append, values_lists))))
+            return numpy.median(abs(numpy.diff(reduce(numpy.append, values_lists))))
 
         # mapping from label to indices
         labels_dict = dict()
         labels_set = set(labels_vec)
         for label in labels_set:
-            indices = np.flatnonzero(labels_vec == label) # which
+            indices = [i for i, lab in enumerate(labels_vec) if lab == label] # which match
             labels_dict.update({label : indices})
 
         result = dict()
@@ -580,28 +574,25 @@ class TrackQuality(cpm.Module):
         selections = self.tram_measurements.get_selections()
 
         # get the object set to work on
-        object_name = self.object_name.get_value()
+        object_name = self.object_name.value
 
         return [sel for sel in selections if sel.startswith(object_name)]
 
     def get_measurement_columns(self, pipeline):
-        return [(self.object_name.get_value(), FULL_TRAM_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
-                (self.object_name.get_value(), FULL_PARENT_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
-                (self.object_name.get_value(), FULL_SPLIT_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
-                (self.object_name.get_value(), FULL_LABELS_MEAS_NAME, cpmeas.COLTYPE_VARCHAR)]
+        return [(self.object_name.value, self.FULL_TRAM_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
+                (self.object_name.value, self.FULL_PARENT_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
+                (self.object_name.value, self.FULL_SPLIT_MEAS_NAME, cpmeas.COLTYPE_FLOAT),
+                (self.object_name.value, self.FULL_LABELS_MEAS_NAME, cpmeas.COLTYPE_BLOB)]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == self.object_name.get_value():
-            return [CAT_MEASURE_TRACK_QUALITY]
+        if object_name == self.object_name.value:
+            return [self.CAT_MEASURE_TRACK_QUALITY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == self.object_name.get_value() and category == CAT_MEASURE_TRACK_QUALITY:
-            return [MEAS_TRAM, MEAS_PARENT, MEAS_SPLIT, MEAS_LABELS]
+        if object_name == self.object_name.value and category == self.CAT_MEASURE_TRACK_QUALITY:
+            return [self.MEAS_TRAM, self.MEAS_PARENT, self.MEAS_SPLIT, self.MEAS_LABELS]
         return []
-
-    def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
-        return [self.isotropic, self.tram_exponent, self.num_knots]
 
     def is_aggregation_module(self): # todo - not sure what to return here
         """If true, the module uses data from other imagesets in a group

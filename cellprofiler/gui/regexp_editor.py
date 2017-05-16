@@ -64,8 +64,9 @@ class RegexpDialog(wx.Dialog):
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
         self.__guesses = RE_FILENAME_GUESSES
-        self.font = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
-        self.error_font = wx.SystemSettings.GetFont(wx.SYS_ANSI_VAR_FONT)
+        settings = wx.SystemSettings()
+        self.font = settings.GetFont(wx.SYS_ANSI_FIXED_FONT)
+        self.error_font = settings.GetFont(wx.SYS_ANSI_VAR_FONT)
         temp = wx.ClientDC(self)
         temp.Font = self.font
         edit_size = temp.GetTextExtent("                                        ")

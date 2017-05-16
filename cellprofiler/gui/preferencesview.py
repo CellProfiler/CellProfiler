@@ -120,30 +120,30 @@ class PreferencesView(object):
         edit_box = wx.ComboBox(panel, -1, value, choices=choices)
         sizer.Add(edit_box, 1, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
-        browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
+        browse_bmp = wx.ArtProvider().GetBitmap(wx.ART_FOLDER_OPEN,
                                               wx.ART_CMN_DIALOG,
                                               (16, 16))
         browse_button = wx.BitmapButton(panel, -1, bitmap=browse_bmp)
-        browse_button.SetToolTipString("Browse for %s folder" % text)
+        browse_button.SetToolTip("Browse for %s folder" % text)
         sizer.Add(browse_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
 
-        new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR,
+        new_bmp = wx.ArtProvider().GetBitmap(wx.ART_NEW_DIR,
                                            wx.ART_CMN_DIALOG,
                                            (16, 16))
         new_button = wx.BitmapButton(panel, -1, bitmap=new_bmp)
-        new_button.SetToolTipString("Make a new sub-folder")
+        new_button.SetToolTip("Make a new sub-folder")
         if os.path.isdir(value):
             new_button.Disable()
         sizer.Add(new_button, 0, wx.ALIGN_CENTER)
         if refresh_action is not None:
-            refresh_bitmap = wx.ArtProvider.GetBitmap(wx.ART_REDO,
+            refresh_bitmap = wx.ArtProvider().GetBitmap(wx.ART_REDO,
                                                       wx.ART_CMN_DIALOG,
                                                       (16, 16))
             refresh_button = wx.BitmapButton(panel, -1, bitmap=refresh_bitmap)
             sizer.AddSpacer(2)
             sizer.Add(refresh_button, 0, wx.ALIGN_CENTER, 1)
-            refresh_button.SetToolTipString("Refresh the Default Input Folder list")
+            refresh_button.SetToolTip("Refresh the Default Input Folder list")
 
             def on_refresh(event):
                 refresh_action()
@@ -162,11 +162,11 @@ class PreferencesView(object):
         def on_edit_box_change(event):
             if os.path.isdir(edit_box.Value):
                 new_button.Disable()
-                new_button.SetToolTipString("%s is a directory" %
+                new_button.SetToolTip("%s is a directory" %
                                             edit_box.Value)
             else:
                 new_button.Enable()
-                new_button.SetToolTipString("Press button to create the %s folder" %
+                new_button.SetToolTip("Press button to create the %s folder" %
                                             edit_box.Value)
             self.__on_edit_box_change(event, edit_box, text, actions)
             event.Skip()

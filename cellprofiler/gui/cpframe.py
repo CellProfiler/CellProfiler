@@ -31,6 +31,7 @@ import pdb
 import sys
 import traceback
 import wx
+import wx.adv
 import wx.html
 import wx.lib.scrolledpanel
 
@@ -128,8 +129,9 @@ class CPFrame(wx.Frame):
         #
         # Screen size metrics might be used below
         #
-        screen_width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
-        screen_height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+        settings = wx.SystemSettings()
+        screen_width = settings.GetMetric(index=wx.SYS_SCREEN_X)
+        screen_height = settings.GetMetric(index=wx.SYS_SCREEN_Y)
 
         # Crappy splitters leave crud on the screen because they want custom
         # background painting but fail to do it. Here, we have a fight with
@@ -143,13 +145,13 @@ class CPFrame(wx.Frame):
         # bottom left will be the file browser
 
         self.__module_list_panel = wx.Panel(self.__left_win)
-        self.__module_list_panel.SetToolTipString(
+        self.__module_list_panel.SetToolTip(
                 "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
-        self.__pipeline_test_panel.SetToolTipString(
+        self.__pipeline_test_panel.SetToolTip(
                 "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
         self.__module_controls_panel = wx.Panel(self.__left_win, -1, style=wx.BORDER_NONE)
-        self.__module_controls_panel.SetToolTipString(
+        self.__module_controls_panel.SetToolTip(
                 "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
         #
         # The right window has the following structure:
@@ -188,15 +190,14 @@ class CPFrame(wx.Frame):
         #
         # Path list sash controls path list sizing
         #
-        self.__path_list_sash = wx.SashLayoutWindow(
+        self.__path_list_sash = wx.adv.SashLayoutWindow(
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        self.__path_list_sash.Bind(wx.EVT_SASH_DRAGGED,
-                                   self.__on_sash_drag)
-        self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
-        self.__path_list_sash.SetAlignment(wx.LAYOUT_TOP)
+        self.__path_list_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
+        self.__path_list_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
+        self.__path_list_sash.SetAlignment(wx.adv.LAYOUT_TOP)
         self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__path_list_sash.SetDefaultBorderSize(4)
-        self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
+        self.__path_list_sash.SetSashVisible(wx.adv.SASH_BOTTOM, True)
         self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -254,16 +255,15 @@ class CPFrame(wx.Frame):
         #
         ######################################################################
 
-        self.__imageset_sash = wx.SashLayoutWindow(
+        self.__imageset_sash = wx.adv.SashLayoutWindow(
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
-        self.__imageset_sash.SetAlignment(wx.LAYOUT_BOTTOM)
+        self.__imageset_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
+        self.__imageset_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
         self.__imageset_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__imageset_sash.SetDefaultBorderSize(4)
         self.__imageset_sash.SetExtraBorderSize(2)
-        self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
-        self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
-                                  self.__on_sash_drag)
+        self.__imageset_sash.SetSashVisible(wx.adv.SASH_TOP, True)
+        self.__imageset_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__imageset_sash.Hide()
         self.__imageset_panel = wx.Panel(self.__imageset_sash)
         self.__imageset_panel.Sizer = wx.BoxSizer()
@@ -281,7 +281,7 @@ class CPFrame(wx.Frame):
         #
         self.__preferences_panel = wx.Panel(self.__right_win, -1)
         self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
-        self.__preferences_panel.SetToolTipString(
+        self.__preferences_panel.SetToolTip(
                 "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
         #
         # Progress and status panels
@@ -443,8 +443,7 @@ class CPFrame(wx.Frame):
         """Run the sash layout algorithm on the path/module/imageset panel"""
         self.__pmi_layout_in_progress = True
         try:
-            wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
-                                              self.__module_panel)
+            wx.adv.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel, self.__module_panel)
             self.__right_win.Layout()
         finally:
             self.__pmi_layout_in_progress = False
@@ -506,11 +505,11 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
                 wx.ID_NEW,
                 "New Project",
-                help="Create an empty project")
+                "Create an empty project")
         self.__menu_file.Append(
                 wx.ID_OPEN,
                 "Open Project...\tctrl+O",
-                help='Open a project from a .%s project file' % cellprofiler.preferences.EXT_PROJECT)
+                'Open a project from a .%s project file' % cellprofiler.preferences.EXT_PROJECT)
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(
                 self.recent_workspace_files,
@@ -518,15 +517,15 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
                 wx.ID_SAVE,
                 "Save Project\tctrl+S",
-                help='Save the project to the current project file')
+                'Save the project to the current project file')
         self.__menu_file.Append(
                 wx.ID_SAVEAS,
                 "Save Project As...",
-                help='Save the project to a file of your choice')
+                'Save the project to a file of your choice')
         self.__menu_file.Append(
                 ID_FILE_REVERT_TO_SAVED,
                 "Revert to Saved",
-                help="Reload the project file, discarding changes")
+                "Reload the project file, discarding changes")
         submenu = wx.Menu()
         submenu.Append(
                 ID_FILE_LOAD_PIPELINE,
@@ -582,7 +581,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_EXIT, 'E&xit\tctrl+Q', 'Quit the application')
 
         self.menu_edit = wx.Menu()
-        self.menu_edit.Append(wx.ID_UNDO, help="Undo last action")
+        self.menu_edit.Append(wx.ID_UNDO, "", "Undo last action")
         self.menu_edit.AppendSeparator()
 
         self.menu_edit.Append(wx.ID_CUT)
@@ -816,54 +815,62 @@ class CPFrame(wx.Frame):
     @staticmethod
     def on_cut(event):
         """Handle ID_CUT"""
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         if (focus is not None and hasattr(focus, "Cut")
             and hasattr(focus, 'CanCut') and focus.CanCut()):
             focus.Cut()
 
     @staticmethod
     def on_update_cut_ui(event):
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanCut') and focus.CanCut()))
 
     @staticmethod
     def on_copy(event):
         """Handle ID_COPY"""
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         if focus is not None and hasattr(focus, "Copy") and \
                 hasattr(focus, 'CanCopy') and focus.CanCopy():
             focus.Copy()
 
     @staticmethod
     def on_update_copy_ui(event):
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanCopy') and focus.CanCopy()))
 
     @staticmethod
     def on_paste(event):
         """Handle ID_PASTE"""
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         if focus is not None and hasattr(focus, "Paste") and \
                 hasattr(focus, "CanPaste") and focus.CanPaste():
             focus.Paste()
 
     @staticmethod
     def on_update_paste_ui(event):
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanPaste') and focus.CanPaste()))
 
     @staticmethod
     def on_select_all(event):
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         if focus and hasattr(focus, "SelectAll"):
             focus.SelectAll()
 
     @staticmethod
     def on_update_select_all_ui(event):
-        focus = wx.Window.FindFocus()
+        window = wx.Window()
+        focus = window.FindFocus()
         if hasattr(focus, "CanSelect") and not focus.CanSelect():
             event.Enable(False)
             return
@@ -959,7 +966,7 @@ class CPFrame(wx.Frame):
     def about(event):
         info = cellprofiler.gui.dialog.AboutDialogInfo()
 
-        wx.AboutBox(info)
+        wx.adv.AboutBox(info)
 
     def __on_help_welcome(self, event):
         self.show_welcome_screen(True)
@@ -1153,8 +1160,9 @@ class CPFrame(wx.Frame):
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
 
     def __do_layout(self):
-        width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
-        height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+        settings = wx.SystemSettings()
+        width = settings.GetMetric(wx.SYS_SCREEN_X)
+        height = settings.GetMetric(wx.SYS_SCREEN_Y)
         self.SetSize((int(width * 2 / 3), int(height * 2 / 3)))
         splitter = self.__splitter
         right_win = self.__right_win
@@ -1184,8 +1192,8 @@ class CPFrame(wx.Frame):
     def __make_search_frame(self):
         """Make and hide the "search the help" frame"""
         background_color = cellprofiler.preferences.get_background_color()
-        size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
-                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
+        settings = wx.SystemSettings()
+        size = (settings.GetMetric(wx.SYS_SCREEN_X) / 2, settings.GetMetric(wx.SYS_SCREEN_Y) / 2)
         self.search_frame = wx.Frame(
                 self, title = "Search CellProfiler help",
                 size = size,
@@ -1286,7 +1294,7 @@ class CPFrame(wx.Frame):
         dlg = wx.FileDialog(
                 self, "Choose data output file for %s data tool" %
                       tool_name, wildcard="Measurements file(*.mat,*.h5)|*.mat;*.h5",
-                style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
+                style=(wx.FD_OPEN | wx.FD_FILE_MUST_EXIST))
         if dlg.ShowModal() == wx.ID_OK:
             cellprofiler.gui.datatoolframe.DataToolFrame(self,
                                                          module_name=tool_name,

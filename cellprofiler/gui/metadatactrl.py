@@ -529,17 +529,19 @@ class MetadataControl(wx.PyControl):
     def OnPaint(self, event):
         dc = wx.BufferedPaintDC(self)
         try:
-            dc.BackgroundMode = wx.SOLID
-            background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
+            dc.BackgroundMode = 100
+            settings = wx.SystemSettings()
+            background_color = settings.GetColour(wx.SYS_COLOUR_WINDOW)
             metadata_color = cellprofiler.preferences.get_primary_outline_color()
-            selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
-            selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
-            text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)
+            selected_background_color = settings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+            selected_color = settings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+            text_color = settings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
             dc.Background = wx.Brush(background_color)
             dc.Font = self.Font
             dc.Clear()
             if self.native_border:
-                renderer = wx.RendererNative.Get()
+                native = wx.RendererNative()
+                renderer = native.Get()
                 style = 0
                 if self.FindFocus() == self:
                     style |= wx.CONTROL_FOCUSED | wx.CONTROL_CURRENT
@@ -583,7 +585,7 @@ class MetadataControl(wx.PyControl):
             }
             background_color = [colors[state][0] for state in state_list]
             foreground_color = [colors[state][1] for state in state_list]
-            dc.BackgroundMode = wx.SOLID
+            dc.BackgroundMode = 100
             for text, position, background, foreground in zip(
                     text_list, position_list, background_color, foreground_color):
                 dc.SetTextBackground(background)

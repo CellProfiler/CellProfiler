@@ -15,14 +15,17 @@ import logging
 import matplotlib
 import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
+import matplotlib.cm
 import matplotlib.figure
 import matplotlib.lines
 import matplotlib.path
 import numpy
 import scipy.ndimage
 import scipy.ndimage
+import scipy.sparse
 import sys
 import wx
+import wx.adv
 import wx.html
 
 logger = logging.getLogger(__name__)
@@ -296,12 +299,12 @@ class EditObjectsDialog(wx.Dialog):
         # The help sash
         #
         ########################################
-        self.help_sash = wx.SashLayoutWindow(self.sash_parent)
-        self.help_sash.Bind(wx.EVT_SASH_DRAGGED, self.on_help_sash_drag)
-        self.help_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
-        self.help_sash.SetAlignment(wx.LAYOUT_BOTTOM)
+        self.help_sash = wx.adv.SashLayoutWindow(self.sash_parent)
+        self.help_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.on_help_sash_drag)
+        self.help_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
+        self.help_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
         self.help_sash.SetDefaultBorderSize(4)
-        self.help_sash.SetSashVisible(wx.SASH_TOP, True)
+        self.help_sash.SetSashVisible(wx.adv.SASH_TOP, True)
         self.html_panel = wx.html.HtmlWindow(self.help_sash)
         if sys.platform == 'darwin':
             LEFT_MOUSE = "mouse"
@@ -427,11 +430,11 @@ class EditObjectsDialog(wx.Dialog):
                                   "Reverse selection")
         sub_sizer.Add(toggle_button, 0, wx.ALIGN_CENTER)
         self.undo_button = wx.Button(self, wx.ID_UNDO)
-        self.undo_button.SetToolTipString("Undo last edit")
+        self.undo_button.SetToolTip("Undo last edit")
         self.undo_button.Enable(False)
         sub_sizer.Add(self.undo_button)
         reset_button = wx.Button(self, -1, "Reset")
-        reset_button.SetToolTipString(
+        reset_button.SetToolTip(
                 "Undo all editing and restore the original objects")
         sub_sizer.Add(reset_button)
         self.display_image_button = \
@@ -639,7 +642,8 @@ class EditObjectsDialog(wx.Dialog):
         # capture window.
         #
         while True:
-            window = wx.Window.GetCapture()
+            wx_window = wx.Window()
+            window = wx_window.GetCapture()
             if window is None:
                 break
             window.ReleaseCapture()
@@ -1936,7 +1940,7 @@ class EditObjectsDialog(wx.Dialog):
         self.layout_sash()
 
     def layout_sash(self):
-        wx.LayoutAlgorithm().LayoutWindow(
+        wx.adv.LayoutAlgorithm().LayoutWindow(
                 self.sash_parent, self.panel)
         if self.help_sash.IsShown():
             self.help_sash.Layout()

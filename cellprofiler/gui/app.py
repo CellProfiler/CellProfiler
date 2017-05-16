@@ -12,6 +12,7 @@ import raven.transport.threaded_requests
 import wx
 
 import cellprofiler
+import cellprofiler.gui.cpframe
 import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
 import cellprofiler.gui.dialog

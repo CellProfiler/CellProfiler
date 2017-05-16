@@ -80,8 +80,7 @@ class MergeOutputFiles(cpm.Module):
 
         dlg = wx.Dialog(None, title="Merge output files",
                         size=(640, 480),
-                        style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |
-                              wx.THICK_FRAME)
+                        style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         dlg.SetIcon(get_cp_icon())
         #
         # Layout:

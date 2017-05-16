@@ -30,14 +30,14 @@ IMG_UNAVAILABLE = cellprofiler.icons.get_builtin_image('IMG_UNAVAILABLE')
 IMG_SLIDER = cellprofiler.icons.get_builtin_image('IMG_SLIDER')
 IMG_SLIDER_ACTIVE = cellprofiler.icons.get_builtin_image('IMG_SLIDER_ACTIVE')
 IMG_DOWNARROW = cellprofiler.icons.get_builtin_image('downarrow')
-BMP_WARNING = wx.ArtProvider.GetBitmap(wx.ART_WARNING, size=(16, 16))
+BMP_WARNING = wx.ArtProvider().GetBitmap(wx.ART_WARNING, size=(16, 16))
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
 PADDING = 1
 
 
 def plv_get_bitmap(data):
-    return wx.BitmapFromImage(data)
+    return wx.Bitmap(data)
 
 
 PAUSE_COLUMN = 0
@@ -139,7 +139,7 @@ class PipelineListView(object):
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
         self.outputs_panel.Sizer = wx.BoxSizer()
         if wx.VERSION < (2, 9):
-            self.outputs_panel.BackgroundStyle = wx.SOLID
+            self.outputs_panel.BackgroundStyle = 100
         else:
             self.outputs_panel.BackgroundStyle = wx.BG_STYLE_COLOUR
         self.outputs_button = wx.Button(self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT)
@@ -223,7 +223,7 @@ class PipelineListView(object):
             # Mostly, this painting activity is for debugging, so you
             # can see how big the control is. But you need to handle
             # the event to keep the control from being painted.
-            dc.SetBackgroundMode(wx.TRANSPARENT)
+            dc.SetBackgroundMode(106)  # wx.TRANSPARENT
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(wx.TRANSPARENT_PEN)
             r = transparent_window.GetRect()
@@ -245,7 +245,7 @@ class PipelineListView(object):
             event.Skip()
 
         input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
-        transparent_window.SetToolTipString(
+        transparent_window.SetToolTip(
                 "The current pipeline is a legacy pipeline that does not use these modules")
         self.transparent_window = transparent_window
 
@@ -599,7 +599,7 @@ class PipelineListView(object):
 
         text_data_object = wx.TextDataObject()
         fd.seek(0)
-        text_data_object.SetData(fd.read())
+        text_data_object.SetData(wx.DF_UNICODETEXT, fd.read())
 
         data_object = wx.DataObjectComposite()
         data_object.Add(pipeline_data_object)
@@ -944,7 +944,7 @@ PIPELINE_DATA_FORMAT = "CellProfiler.Pipeline"
 class PipelineDataObject(wx.CustomDataObject):
     def __init__(self):
         super(PipelineDataObject, self).__init__(
-                wx.CustomDataFormat(PIPELINE_DATA_FORMAT))
+                wx.DataFormat(PIPELINE_DATA_FORMAT))
 
 
 class PipelineDropTarget(wx.PyDropTarget):
@@ -981,7 +981,7 @@ class PipelineDropTarget(wx.PyDropTarget):
         return action
 
 
-class PipelineListCtrl(wx.PyScrolledWindow):
+class PipelineListCtrl(wx.ScrolledWindow):
     """A custom widget for the pipeline module list"""
 
     class PipelineListCtrlItem(object):
@@ -1113,9 +1113,10 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         # it's not.
         self.always_draw_current_as_if_selected = False
         # A pen to use to draw shadow edges on buttons
-        self.shadow_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
+        settings = wx.SystemSettings()
+        self.shadow_pen = wx.Pen(settings.GetColour(wx.SYS_COLOUR_3DSHADOW))
         # A pen to use to draw lighted edges on buttons
-        self.light_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
+        self.light_pen = wx.Pen(settings.GetColour(wx.SYS_COLOUR_3DLIGHT))
         self.SetScrollRate(self.line_height, self.line_height)
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
@@ -1277,7 +1278,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         if self.running_item >= index:
             self.running_item += 1
         self.AdjustScrollbars()
-        self.SetBestSize(self.GetVirtualSize())
+        self.SetInitialSize(self.GetVirtualSize())
         self.Refresh(eraseBackground=False)
 
     def get_insert_index(self, position):
@@ -1416,15 +1417,17 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
         dc.BeginDrawing()
 
-        dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
+        settings = wx.SystemSettings()
+
+        dc.Background = wx.Brush(settings.GetColour(wx.SYS_COLOUR_LISTBOX))
 
         dc.Clear()
 
         dc.Font = self.Font
 
-        text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
+        text_color = settings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
 
-        text_color_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+        text_color_selected = settings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
 
         for index, item in enumerate(self.items):
             if self.show_go_pause and self.test_mode:
@@ -1473,7 +1476,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             else:
                 text_color = text_color
 
-            dc.SetBackgroundMode(wx.TRANSPARENT)
+            dc.SetBackgroundMode(106)  # wx.TRANSPARENT
 
             dc.SetTextForeground(text_color)
 
@@ -1648,7 +1651,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     elif not item.module.is_input_module():
                         tooltip_text = "Click to enable the %s module" % item.module.module_name
             if tooltip_text is not None:
-                self.SetToolTipString(tooltip_text)
+                self.SetToolTip(tooltip_text)
             else:
                 self.SetToolTip(None)
 

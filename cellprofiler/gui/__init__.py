@@ -26,7 +26,7 @@ def get_cp_bitmap(size=None):
     img = get_cp_image()
     if size is not None:
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
-    return wx.BitmapFromImage(img)
+    return wx.Bitmap(img)
 
 
 def get_cp_icon(size=None):
@@ -69,14 +69,15 @@ def draw_item_selection_rect(window, dc, rect, flags):
     # might work in Cocoa
     #
     import wx
+    settings = wx.SystemSettings()
     if sys.platform != 'darwin':
-        wx.RendererNative.Get().DrawItemSelectionRect(
-                window, dc, rect, flags)
+        native = wx.RendererNative()
+        native.Get().DrawItemSelectionRect(window, dc, rect, flags)
     elif flags & wx.CONTROL_SELECTED:
         if flags & wx.CONTROL_FOCUSED:
-            color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+            color = settings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
         else:
-            color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_INACTIVECAPTION)
+            color = settings.GetColour(wx.SYS_COLOUR_INACTIVECAPTION)
         old_brush = dc.Brush
         new_brush = wx.Brush(color)
         dc.Brush = new_brush
@@ -90,11 +91,11 @@ def draw_item_selection_rect(window, dc, rect, flags):
         # brush.
         #
         if flags & wx.CONTROL_FOCUSED:
-            pen_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+            pen_color = settings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
         else:
-            pen_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+            pen_color = settings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
         old_brush = dc.Brush
         dc.Brush = wx.TRANSPARENT_BRUSH
         old_pen = dc.Pen
-        dc.Pen = wx.Pen(pen_color, width=2)
+        dc.Pen = wx.Pen(pen_color, 2)
         dc.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height)

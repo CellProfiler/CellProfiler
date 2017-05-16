@@ -46,6 +46,7 @@ import threading
 import traceback
 import urllib
 import wx
+import wx.adv
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
 
@@ -267,22 +268,22 @@ class PipelineController(object):
         self.__help_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_HELP_MODULE,
             "?", (0, 0), (30, -1))
-        self.__help_button.SetToolTipString("Get Help for selected module")
+        self.__help_button.SetToolTip("Get Help for selected module")
         self.__mcp_text = wx.StaticText(self.__module_controls_panel, -1, "Adjust modules:")
         self.__mcp_add_module_button = wx.Button(self.__module_controls_panel, -1, "+", (0, 0), (30, -1))
-        self.__mcp_add_module_button.SetToolTipString("Add a module")
+        self.__mcp_add_module_button.SetToolTip("Add a module")
         self.__mcp_remove_module_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_EDIT_DELETE,
             "-", (0, 0), (30, -1))
-        self.__mcp_remove_module_button.SetToolTipString("Remove selected module")
+        self.__mcp_remove_module_button.SetToolTip("Remove selected module")
         self.__mcp_module_up_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_EDIT_MOVE_UP,
             "^", (0, 0), (30, -1))
-        self.__mcp_module_up_button.SetToolTipString("Move selected module up")
+        self.__mcp_module_up_button.SetToolTip("Move selected module up")
         self.__mcp_module_down_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_EDIT_MOVE_DOWN,
             "v", (0, 0), (30, -1))
-        self.__mcp_module_down_button.SetToolTipString("Move selected module down")
+        self.__mcp_module_down_button.SetToolTip("Move selected module down")
         mcp_sizer.AddMany([(self.__help_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
                            ((1, 3), 3),
                            (self.__mcp_text, 0, wx.ALIGN_CENTER | wx.ALL, 3),
@@ -334,39 +335,39 @@ class PipelineController(object):
         #
         # Launch sizer
         #
-        self.__test_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_TEST"))
+        self.__test_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_TEST"))
         self.__test_mode_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=self.__test_bmp,label=self.ENTER_TEST_MODE)
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
-        self.__test_mode_button.SetToolTipString(self.ENTER_TEST_MODE_HELP)
+        self.__test_mode_button.SetToolTip(self.ENTER_TEST_MODE_HELP)
 
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
 
-        analyze_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_ANALYZE_16"))
+        analyze_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_ANALYZE_16"))
         self.__analyze_images_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=analyze_bmp,
                                                                           label=self.ANALYZE_IMAGES)
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
-        self.__analyze_images_button.SetToolTipString(self.ANALYZE_IMAGES_HELP)
+        self.__analyze_images_button.SetToolTip(self.ANALYZE_IMAGES_HELP)
 
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
 
         #
         # Analysis sizer
         #
-        stop_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_STOP"))
-        pause_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("pause"))
+        stop_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_STOP"))
+        pause_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("pause"))
         self.__pause_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=pause_bmp, label=self.PAUSE)
         self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
-        self.__pause_button.SetToolTipString(self.PAUSE_HELP)
+        self.__pause_button.SetToolTip(self.PAUSE_HELP)
         self.__tcp_analysis_sizer.Add(self.__pause_button, 1, wx.EXPAND)
 
         self.__resume_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=analyze_bmp, label=self.RESUME)
         self.__resume_button.Bind(wx.EVT_BUTTON, self.on_resume)
-        self.__resume_button.SetToolTipString(self.RESUME_HELP)
+        self.__resume_button.SetToolTip(self.RESUME_HELP)
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
 
         self.__stop_analysis_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=stop_bmp, label='Stop Analysis')
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
-        self.__stop_analysis_button.SetToolTipString(
+        self.__stop_analysis_button.SetToolTip(
             "Cancel the analysis run")
         self.__tcp_analysis_sizer.Add(self.__stop_analysis_button, 1, wx.EXPAND)
         #
@@ -376,7 +377,7 @@ class PipelineController(object):
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
         self.__tcp_test_sizer.AddSpacer(2)
 
-        run_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_RUN"))
+        run_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_RUN"))
         self.__tcp_continue = wx.lib.buttons.GenBitmapTextButton(panel, label="Run", bitmap=run_bmp)
         self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
         self.__tcp_continue.Bind(wx.EVT_BUTTON, self.on_debug_continue)
@@ -387,7 +388,7 @@ class PipelineController(object):
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
 
-        view_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FIND, wx.ART_BUTTON)
+        view_bitmap = wx.ArtProvider().GetBitmap(wx.ART_FIND, wx.ART_BUTTON)
         self.__tcp_view = wx.lib.buttons.GenBitmapTextButton(panel, label="Viewer", bitmap=view_bitmap)
         self.__tcp_view.SetToolTip(wx.ToolTip("Open the workspace viewer"))
         self.__tcp_view.Bind(wx.EVT_BUTTON, self.on_debug_view_workspace)
@@ -401,7 +402,7 @@ class PipelineController(object):
         self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
         sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
 
-        next_image_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_IMAGE"))
+        next_image_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_IMAGE"))
         self.__tcp_next_imageset = wx.lib.buttons.GenBitmapTextButton(panel, label="Next Image Set",
                                                                       bitmap=next_image_bmp)
         self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
@@ -612,11 +613,11 @@ class PipelineController(object):
             button_bar = wx.StdDialogButtonSizer()
             panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
-            info_bitmap = wx.ArtProvider.GetBitmap(
+            info_bitmap = wx.ArtProvider().GetBitmap(
                 wx.ART_INFORMATION,
                 client=wx.ART_CMN_DIALOG)
             message_sizer.Add(
-                wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+                wx.StaticBitmap(subpanel, label=info_bitmap),
                 0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
             message_sizer.AddSpacer(12)
             text = wx.StaticText(
@@ -881,9 +882,9 @@ class PipelineController(object):
                     dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
                     sizer = wx.BoxSizer(wx.HORIZONTAL)
                     dlg.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
-                    bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION,
+                    bmp = wx.ArtProvider().GetBitmap(wx.ART_QUESTION,
                                                    wx.ART_CMN_DIALOG)
-                    sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp), 0,
+                    sizer.Add(wx.StaticBitmap(dlg, label=bmp), 0,
                               wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     sizer.AddSpacer(8)
                     vsizer = wx.BoxSizer(wx.VERTICAL)
@@ -978,7 +979,7 @@ class PipelineController(object):
                               os.path.split(pathname)[1]
                     sizer.Add(wx.StaticText(dlg, label=message), 0, wx.EXPAND)
                     sizer.AddSpacer(4)
-                    gb_sizer = wx.BoxSizer(groupbox, wx.VERTICAL)
+                    gb_sizer = wx.BoxSizer(wx.VERTICAL)
                     sizer.Add(gb_sizer, 1, wx.EXPAND)
                     rb_primary = wx.RadioButton(dlg, label="&Primary pipeline")
                     gb_sizer.Add(rb_primary, 0, wx.ALIGN_LEFT)
@@ -1095,11 +1096,11 @@ class PipelineController(object):
         button_bar = wx.StdDialogButtonSizer()
         panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
-        info_bitmap = wx.ArtProvider.GetBitmap(
+        info_bitmap = wx.ArtProvider().GetBitmap(
             wx.ART_INFORMATION,
             client=wx.ART_CMN_DIALOG)
         message_sizer.Add(
-            wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+            wx.StaticBitmap(subpanel, label=info_bitmap),
             0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
         message_sizer.AddSpacer(12)
         help_text = (
@@ -1214,8 +1215,8 @@ class PipelineController(object):
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             message_sizer = wx.BoxSizer(wx.HORIZONTAL)
             dlg.Sizer.Add(message_sizer, 0, wx.EXPAND | wx.ALL, 15)
-            bmpInfo = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, wx.ART_CMN_DIALOG)
-            message_sizer.Add(wx.StaticBitmap(dlg, bitmap=bmpInfo), 0,
+            bmpInfo = wx.ArtProvider().GetBitmap(wx.ART_INFORMATION, wx.ART_CMN_DIALOG)
+            message_sizer.Add(wx.StaticBitmap(dlg, label=bmpInfo), 0,
                               wx.ALIGN_TOP | wx.ALIGN_LEFT)
             message_sizer.AddSpacer(12)
             message_sizer.Add(wx.StaticText(dlg, label=message), 0,
@@ -1311,7 +1312,7 @@ class PipelineController(object):
             #
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             super_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 5)
-            question_mark = wx.ArtProvider.GetBitmap(wx.ART_HELP,
+            question_mark = wx.ArtProvider().GetBitmap(wx.ART_HELP,
                                                      wx.ART_MESSAGE_BOX)
             icon = wx.StaticBitmap(dialog, -1, question_mark)
             sizer.Add(icon, 0, wx.EXPAND | wx.ALL, 5)
@@ -1366,7 +1367,7 @@ class PipelineController(object):
         self.__workspace.close()
 
     def __on_pipeline_event(self, caller, event):
-        if not wx.Thread_IsMain():
+        if not wx.IsMainThread():
             wx.CallAfter(self.__on_pipeline_event, caller, event)
         if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             error_msg = None
@@ -2267,7 +2268,7 @@ class PipelineController(object):
         dlg = runmultiplepipelinesdialog.RunMultplePipelinesDialog(
             parent=self.__frame,
             title="Run multiple pipelines",
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME,
+            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
             size=(640, 480))
         try:
             if dlg.ShowModal() == wx.ID_OK:
@@ -2301,7 +2302,7 @@ class PipelineController(object):
         ##################################
 
         if cellprofiler.preferences.get_wants_pony():
-            wx.Sound(os.path.join(cellprofiler.icons.path, "HorseWhinnying.wav")).Play()
+            wx.adv.Sound(os.path.join(cellprofiler.icons.path, "HorseWhinnying.wav")).Play()
 
         ok, reason = self.__frame.preferences_view.check_preferences()
 
@@ -2450,7 +2451,7 @@ class PipelineController(object):
         opened, which can overwhelm the user and cause UI hangs.
         """
         # just in case.
-        assert wx.Thread_IsMain(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
 
         # only one window at a time
         if self.interaction_pending:
@@ -2472,7 +2473,7 @@ class PipelineController(object):
     def module_display_request(self, evt):
         """
         """
-        assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
         if module_num <= 0 or \
@@ -2509,7 +2510,7 @@ class PipelineController(object):
             evt.reply(cellprofiler.analysis.Ack())
 
     def module_display_post_run_request(self, evt):
-        assert wx.Thread_IsMain(), "PipelineController.module_post_run_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_post_run_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
@@ -2533,7 +2534,7 @@ class PipelineController(object):
                 cellprofiler.preferences.cancel_progress()
 
     def module_display_post_group_request(self, evt):
-        assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_post_group_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data)
@@ -2596,7 +2597,7 @@ class PipelineController(object):
         """Report an error in analysis to the user, giving options for
         skipping, aborting, and debugging."""
 
-        assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.analysis_exception() must be called from main thread!"
 
         self.debug_request_queue = Queue.Queue()
 
@@ -3344,7 +3345,7 @@ class PipelineController(object):
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
                wx.EXPAND | wx.ALL, 10)
-        bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+        bitmap = wx.ArtProvider().GetBitmap(wx.ART_INFORMATION,
                                           wx.ART_CMN_DIALOG,
                                           size=(32, 32))
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
@@ -3412,7 +3413,7 @@ class PipelineController(object):
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
                wx.EXPAND | wx.ALL, 10)
-        bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+        bitmap = wx.ArtProvider().GetBitmap(wx.ART_INFORMATION,
                                           wx.ART_CMN_DIALOG,
                                           size=(32, 32))
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,

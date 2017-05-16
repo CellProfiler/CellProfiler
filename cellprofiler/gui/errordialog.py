@@ -80,7 +80,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     """
 
     import wx
-    assert wx.Thread_IsMain(), "Can only display errors from WX thread."
+    assert wx.IsMainThread(), "Can only display errors from WX thread."
 
     if remote_exc_info:
         from_subprocess = True
@@ -139,7 +139,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     # Handle show details button
     #
     details_button = wx.Button(dialog, -1, "Details...")
-    details_button.SetToolTipString("Show error details")
+    details_button.SetToolTip("Show error details")
     aux_button_box.Add(details_button, 0,
                        wx.EXPAND | wx.BOTTOM,
                        5)
@@ -167,7 +167,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     # Handle copy button
     #
     copy_button = wx.Button(dialog, -1, "Copy to clipboard")
-    copy_button.SetToolTipString("Copy error to clipboard")
+    copy_button.SetToolTip("Copy error to clipboard")
     aux_button_box.Add(copy_button, 0,
                        wx.EXPAND | wx.BOTTOM, 5)
 
@@ -188,7 +188,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     if ((tb or remote_exc_info) is not None) and (not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG')):
         if not from_subprocess:
             pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
-            pdb_button.SetToolTipString("Debug in python's pdb on the console")
+            pdb_button.SetToolTip("Debug in python's pdb on the console")
             aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
 
             def handle_pdb(event):
@@ -200,7 +200,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
                     previously_seen_error_locations.remove((filename, line_number))
         else:
             pdb_button = wx.Button(dialog, -1, "Debug remotely...")
-            pdb_button.SetToolTipString("Debug remotely in pdb via telnet")
+            pdb_button.SetToolTip("Debug remotely in pdb via telnet")
             aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
 
             def handle_pdb(event):
@@ -249,7 +249,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
         on_report(event, dialog, traceback_text, pipeline)
 
     report_button = wx.Button(dialog, label="Send report...")
-    report_button.SetToolTipString("Upload error report to the CellProfiler Project")
+    report_button.SetToolTip("Upload error report to the CellProfiler Project")
     dialog.Bind(wx.EVT_BUTTON, handle_report, report_button)
 
     #
@@ -266,11 +266,11 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     button_sizer = wx.BoxSizer(wx.HORIZONTAL)
     button_sizer.Add((2, 2))
     button_sizer.Add(stop_button)
-    button_sizer.Add((5, 5), proportion=1)
+    button_sizer.Add((5, 5), 1)
     button_sizer.Add(continue_button)
-    button_sizer.Add((5, 5), proportion=1)
+    button_sizer.Add((5, 5), 1)
     button_sizer.Add(report_button)
-    button_sizer.Add((5, 5), proportion=1)
+    button_sizer.Add((5, 5), 1)
     button_sizer.Add(skip_button)
     button_sizer.Add((2, 2))
     if continue_only:
@@ -352,7 +352,7 @@ def show_warning(title, message, get_preference, set_preference):
         subsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
         subsizer.Add(wx.StaticBitmap(dlg, wx.ID_ANY,
-                                     wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+                                     wx.ArtProvider().GetBitmap(wx.ART_INFORMATION,
                                                               wx.ART_CMN_DIALOG)),
                      0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT, 5)
         text = wx.StaticText(dlg, wx.ID_ANY, message)
@@ -398,8 +398,9 @@ def display_error_message(parent, message, title, buttons=None,
         dlg.Sizer.Add(sizer, 1, wx.EXPAND)
 
         sizer.AddSpacer(10)
-        icon = wx.ArtProvider.GetBitmap(wx.ART_ERROR)
-        sizer.Add(wx.StaticBitmap(dlg, bitmap=icon), 0,
+        provider = wx.ArtProvider()
+        icon = provider.GetBitmap(wx.ART_ERROR)
+        sizer.Add(wx.StaticBitmap(dlg, icon), 0,
                   wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP | wx.ALL, 10)
         sizer.AddSpacer(10)
         message_ctrl = wx.TextCtrl(
@@ -408,8 +409,9 @@ def display_error_message(parent, message, title, buttons=None,
         line_sizes = [message_ctrl.GetTextExtent(line)
                       for line in message.split("\n")]
         width = reduce(max, [x[0] for x in line_sizes])
-        width += wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
-        width += wx.SystemSettings.GetMetric(wx.SYS_BORDER_X) * 2
+        settings = wx.SystemSettings()
+        width += settings.GetMetric(wx.SYS_VSCROLL_X)
+        width += settings.GetMetric(wx.SYS_BORDER_X) * 2
         height = sum([x[1] for x in line_sizes])
         message_ctrl.SetMinSize((width, min(height, size[1])))
         sizer.Add(message_ctrl, 1, wx.EXPAND)

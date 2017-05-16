@@ -16,11 +16,15 @@ import javabridge
 import logging
 import math
 import matplotlib
+import matplotlib.artist
+import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
+import matplotlib.collections
 import matplotlib.colorbar
 import matplotlib.colors
+import matplotlib.image
 import matplotlib.gridspec
 import matplotlib.patches
 import matplotlib.pyplot
@@ -439,8 +443,9 @@ class Figure(wx.Frame):
         height = height * canvas_height
 
         best_width, best_height = ctrl.GetBestSizeTuple()
-        vscroll_x = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
-        hscroll_y = wx.SystemSettings.GetMetric(wx.SYS_HSCROLL_Y)
+        settings = wx.SystemSettings()
+        vscroll_x = settings.GetMetric(wx.SYS_VSCROLL_X)
+        hscroll_y = settings.GetMetric(wx.SYS_HSCROLL_Y)
         if height < best_height:
             #
             # If the control's ideal height is less than what's allowed

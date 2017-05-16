@@ -15,6 +15,7 @@ import cellprofiler.preferences
 import cellprofiler.gui.workspace
 import h5py
 import wx
+import wx.adv
 import wx.lib.scrolledpanel
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
@@ -119,7 +120,7 @@ class DataToolFrame(wx.Frame):
         self.Size = (self.module_view.get_max_width(), self.Size[1])
         module_panel.Layout()
         self.Show()
-        self.tbicon = wx.TaskBarIcon()
+        self.tbicon = wx.adv.TaskBarIcon()
         self.tbicon.SetIcon(cellprofiler.gui.get_cp_icon(), "CellProfiler2.0")
         self.SetIcon(cellprofiler.gui.get_cp_icon())
 

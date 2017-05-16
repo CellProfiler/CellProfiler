@@ -25,6 +25,6 @@ class Pipeline(cellprofiler.pipeline.Pipeline):
             dialog.Destroy()
         else:
             super(Pipeline, self).respond_to_version_mismatch_error(message)
-    
+
     def save(self, fd_or_filename, format=FMT_NATIVE, save_image_plane_details=True):
         super(Pipeline, self).save(fd_or_filename, format, save_image_plane_details)

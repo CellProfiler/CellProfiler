@@ -230,9 +230,9 @@ class PlateViewer(object):
         self.plate_panel.Bind(wx.EVT_MOTION, self.on_plate_motion)
         self.plate_panel.Bind(wx.EVT_LEFT_DOWN, self.on_plate_click)
         self.plate_choice.Bind(wx.EVT_CHOICE, self.on_plate_choice_evt)
-        self.site_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
+        self.site_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                             lambda event: self.update_figure())
-        self.channel_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
+        self.channel_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                                lambda event: self.update_figure())
         self.frame.Bind(wx.EVT_CLOSE, self.on_close)
         self.subcanvaspanel.Bind(wx.EVT_SIZE, self.on_subcanvaspanel_size)
@@ -288,18 +288,18 @@ class PlateViewer(object):
         x, y = event.GetPositionTuple()
         hit = self.plate_hit_test(x, y)
         if hit is None or self.plate_data is None:
-            self.plate_panel.SetToolTipString("")
+            self.plate_panel.SetToolTip("")
         else:
             row, col = hit
             well_name = "%s%02d" % (well_row_name(row), col + 1)
             well = self.plate_data[row, col]
             if well is None:
-                self.plate_panel.SetToolTipString("%s: no data" % well_name)
+                self.plate_panel.SetToolTip("%s: no data" % well_name)
             else:
                 text = "%s: %d files" % (
                     well_name,
                     sum([len(v) for v in well.values()]))
-                self.plate_panel.SetToolTipString(text)
+                self.plate_panel.SetToolTip(text)
 
     def on_update(self):
         if (tuple(sorted(self.plate_choice.GetItems())) !=

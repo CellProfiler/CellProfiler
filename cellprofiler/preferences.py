@@ -115,8 +115,10 @@ def get_config():
         app = wx.App(0)
         config = wx.Config.Get(False)
     if not config:
-        wx.Config.Set(wx.Config('CellProfiler', 'BroadInstitute', 'CellProfilerLocal.cfg', 'CellProfilerGlobal.cfg',
-                                wx.CONFIG_USE_LOCAL_FILE))
+        # TODO: CONFIG_USE_LOCAL_FILE?
+        # wx_config = wx.Config('CellProfiler', 'BroadInstitute', 'CellProfilerLocal.cfg', 'CellProfilerGlobal.cfg', wx.CONFIG_USE_LOCAL_FILE)
+        wx_config = wx.Config('CellProfiler', 'BroadInstitute', 'CellProfilerLocal.cfg', 'CellProfilerGlobal.cfg')
+        wx.Config.Set(wx_config)
         config = wx.Config.Get()
         if not config.Exists(PREFERENCES_VERSION):
             for key in ALL_KEYS:
@@ -616,7 +618,7 @@ def set_table_font_size(table_font_size):
 def tuple_to_color(t, default=(0, 0, 0)):
     import wx
     try:
-        return wx.Colour(red=int(t[0]), green=int(t[1]), blue=int(t[2]))
+        return wx.Colour(int(t[0]), int(t[1]), int(t[2]))
     except IndexError, ValueError:
         return tuple_to_color(default)
 

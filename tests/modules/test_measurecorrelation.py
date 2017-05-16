@@ -508,3 +508,31 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             values = m[OBJECTS_NAME, feature]
             self.assertEqual(len(values), 2)
             self.assertTrue(np.isnan(values[1]))
+
+    def test_zero_valued_intensity(self):
+        # https://github.com/CellProfiler/CellProfiler/issues/2680
+        image1 = np.zeros((10, 10), dtype=np.float32)
+
+        image2 = np.random.rand(10, 10).astype(np.float32)
+
+        labels = np.zeros_like(image1, dtype=np.uint8)
+
+        labels[5, 5] = 1
+
+        objects = cpo.Objects()
+
+        objects.segmented = labels
+
+        workspace, module = self.make_workspace(cpi.Image(image1), cpi.Image(image2), objects)
+
+        module.run(workspace)
+
+        m = workspace.measurements
+
+        feature = M.F_CORRELATION_FORMAT % (IMAGE1_NAME, IMAGE2_NAME)
+
+        values = m[OBJECTS_NAME, feature]
+
+        assert len(values) == 1
+
+        assert np.isnan(values[0])

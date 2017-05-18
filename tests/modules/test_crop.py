@@ -1,7 +1,7 @@
 """test_crop.py - test the Crop module
 """
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -345,7 +345,7 @@ class TestCrop(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
         self.assertTrue(all([isinstance(module, cpmc.Crop)
                              for module in pipeline.modules()[1:]]))

@@ -832,7 +832,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             0,
             0,
             workspace.display_data.input_pixel_data,
-            title=u"Original image: {}".format(self.x_name.value),
+            title="Original image: {}".format(self.x_name.value),
             dimensions=dimensions
         )
 
@@ -840,7 +840,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
             1,
             0,
             workspace.display_data.output_pixel_data,
-            title=u"Thresholded image: {}".format(self.y_name.value),
+            title="Thresholded image: {}".format(self.y_name.value),
             dimensions=dimensions
         )
 

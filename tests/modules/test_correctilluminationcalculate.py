@@ -5,7 +5,7 @@ import base64
 import sys
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -324,8 +324,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         #
         for image_name in (
                 OUTPUT_IMAGE_NAME, DILATED_IMAGE_NAME, AVERAGE_IMAGE_NAME):
-            self.assertEqual(len(filter(lambda x: x == image_name,
-                                        image_set.names)), 1)
+            self.assertEqual(len([x for x in image_set.names if x == image_name]), 1)
 
     def test_02_02_Background(self):
         """Test an image with four distinct backgrounds"""

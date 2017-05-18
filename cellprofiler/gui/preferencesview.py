@@ -228,11 +228,11 @@ class PreferencesView(object):
             if sel == WRITE_HDF_FILE_TEXT:
                 cellprofiler.preferences.set_write_MAT_files(cellprofiler.preferences.WRITE_HDF5)
                 if output_filename.lower().endswith('.mat'):
-                    output_filename = output_filename[:-4] + u".h5"
+                    output_filename = output_filename[:-4] + ".h5"
             elif sel == WRITE_MAT_FILE_TEXT:
                 cellprofiler.preferences.set_write_MAT_files(True)
                 if output_filename.lower().endswith('.h5'):
-                    output_filename = output_filename[:-3] + u".mat"
+                    output_filename = output_filename[:-3] + ".mat"
             else:
                 cellprofiler.preferences.set_write_MAT_files(False)
 
@@ -476,7 +476,7 @@ class PreferencesView(object):
             if len(self.__errors) == 0:
                 self.set_message_text(WELCOME_MESSAGE)
             else:
-                self.set_message_text(self.__errors.__iter__().next())
+                self.set_message_text(next(self.__errors.__iter__()))
 
     def set_error_text(self, error_text):
         self.set_message_text(error_text)

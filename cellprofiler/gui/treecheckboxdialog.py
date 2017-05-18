@@ -109,7 +109,7 @@ class TreeCheckboxDialog(wx.Dialog):
             d = self.get_item_data(item_id)
             assert len(d) > 1
             if self.tree_ctrl.GetChildrenCount(item_id, False) == 0:
-                for key in sorted([x for x in d.keys() if x is not None]):
+                for key in sorted([x for x in list(d.keys()) if x is not None]):
                     d1 = d[key]
                     if hasattr(d1, "__call__"):
                         # call function to get real value

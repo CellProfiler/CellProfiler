@@ -210,7 +210,7 @@ class Resize(cellprofiler.module.ImageProcessing):
                     self.specific_height
                 ]
         else:
-            raise ValueError(u"Unsupported size method: {}".format(self.size_method.value))
+            raise ValueError("Unsupported size method: {}".format(self.size_method.value))
 
         visible_settings += [self.interpolation]
 
@@ -394,7 +394,7 @@ class Resize(cellprofiler.module.ImageProcessing):
                 input_image_name,
                 output_image_name,
                 multichannel
-        ) in enumerate(zip(input_images, output_images, input_image_names, output_image_names, multichannel)):
+        ) in enumerate(list(zip(input_images, output_images, input_image_names, output_image_names, multichannel))):
             if multichannel:
                 figure.subplot_imshow(
                     0,

@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 import numpy as np
@@ -54,7 +54,7 @@ class TestGrayToColor(unittest.TestCase):
                 colors = [G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)]
                           for i in range(len(images))]
             for i, (image, color, weight) in enumerate(
-                    zip(images, colors, weights)):
+                    list(zip(images, colors, weights))):
                 image_name = 'image%d' % (i + 1)
                 image_names.append(image_name)
                 module.stack_channels[i].image_name.value = image_name

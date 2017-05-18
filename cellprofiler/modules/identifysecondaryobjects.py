@@ -5,7 +5,7 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 
-import applythreshold
+from . import applythreshold
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
@@ -13,7 +13,7 @@ import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 
-__doc__ = u"""
+__doc__ = """
 <b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using objects identified by another module
 (e.g., nuclei) as a starting point.
 <hr>
@@ -157,7 +157,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
                 M_DISTANCE_B
             ],
             M_PROPAGATION,
-            doc=u"""
+            doc="""
             <p>There are several methods available to find the dividing lines between secondary objects which
             touch each other:</p>
             <ul>
@@ -217,7 +217,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
             "Select the input image",
             cellprofiler.setting.NONE,
-            doc=u"""
+            doc="""
             The selected image will be used to find the edges of the secondary objects.
             For <i>{M_DISTANCE_N:s}</i> this will not affect object identification,
             only the final display.
@@ -236,7 +236,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             "Regularization factor",
             0.05,
             minval=0,
-            doc=u"""
+            doc="""
             <i>(Used only if {M_PROPAGATION:s} method is selected)</i><br>
             The regularization factor &lambda; can be anywhere in the range 0 to infinity. This method takes
             two factors into account when deciding where to draw the dividing line between two touching
@@ -275,7 +275,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.wants_discard_edge = cellprofiler.setting.Binary(
             "Discard secondary objects touching the border of the image?",
             False,
-            doc=u"""
+            doc="""
             Select <i>{YES:s}</i> to discard secondary objects which touch the image border. Select
             <i>{NO:s}</i> to retain objects regardless of whether they touch the image edge or not.
             <p>The objects are discarded with respect to downstream measurement modules, but they are retained
@@ -290,7 +290,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.fill_holes = cellprofiler.setting.Binary(
             "Fill holes in identified objects?",
             True,
-            doc=u"""
+            doc="""
             Select <i>{YES:s}</i> to fill any holes inside objects.
             """.format(**{
                 "YES": cellprofiler.setting.YES
@@ -300,7 +300,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.wants_discard_primary = cellprofiler.setting.Binary(
             "Discard the associated primary objects?",
             False,
-            doc=u"""
+            doc="""
             <i>(Used only if discarding secondary objects touching the image border)</i><br>
             It might be appropriate to discard the primary object for any secondary object that touches the
             edge of the image.
@@ -327,7 +327,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.wants_primary_outlines = cellprofiler.setting.Binary(
             "Retain outlines of the new primary objects?",
             False,
-            doc=u"""
+            doc="""
             <i>(Used only if associated primary objects are discarded)</i><br>
             {RETAINING_OUTLINES_HELP:s}
             """.format(**{
@@ -605,7 +605,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             #
             lookup = scipy.ndimage.maximum(segmented_out,
                                            objects.segmented,
-                                           range(numpy.max(objects.segmented) + 1))
+                                           list(range(numpy.max(objects.segmented) + 1)))
             lookup = centrosome.cpmorphology.fixup_scipy_ndimage_result(lookup)
             lookup[0] = 0
             lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
@@ -795,7 +795,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             segmented_labels, m1 = cellprofiler.object.size_similarly(labels_out, segmented_labels)
             segmented_labels[~m1] = 0
             lookup = scipy.ndimage.maximum(segmented_labels, labels_out,
-                                           range(max_out + 1))
+                                           list(range(max_out + 1)))
             lookup = numpy.array(lookup, int)
             lookup[0] = 0
             segmented_labels_out = lookup[labels_out]

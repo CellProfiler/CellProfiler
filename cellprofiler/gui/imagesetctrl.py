@@ -10,7 +10,7 @@ import cellprofiler.preferences
 import cellprofiler.setting
 import numpy
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import wx
 import wx.combo
 import wx.grid
@@ -108,7 +108,7 @@ class ImageSetCache(object):
     def decimate(self):
         """Reduce the cache size by 1/2"""
         # Get the cache, sorted from low values to high
-        cache_kv = sorted(self.cache.items(), key=lambda x: x[1][1])
+        cache_kv = sorted(list(self.cache.items()), key=lambda x: x[1][1])
         # Take 1/2 of the max size
         self.cache = dict(cache_kv[-int(self.max_size / 2):])
 
@@ -281,7 +281,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         def GetValue(self, row, col):
             if (row >= self.n_rows or col >= len(self.columns) or
                         row >= len(self.image_numbers)):
-                return u""
+                return ""
             image_set = self.image_numbers[row]
             column = self.columns[col]
             value = self.cache[column.feature, image_set]
@@ -289,7 +289,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                         self.display_mode == DISPLAY_MODE_SIMPLE and
                         value is not None):
                 last_slash = value.rfind("/")
-                return urllib.unquote(value[(last_slash + 1):])
+                return urllib.parse.unquote(value[(last_slash + 1):])
             return value
 
         def get_url(self, row, col):
@@ -310,7 +310,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             image_number = self.image_numbers[row]
             metadata_tags = self.metadata_tags
             if len(metadata_tags) > 0:
-                key = [unicode(self.cache[tag, image_number])
+                key = [str(self.cache[tag, image_number])
                        for tag in metadata_tags]
                 return " : ".join(key)
 
@@ -431,7 +431,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.Table.workspace.refresh_image_set()
         n_imagesets = self.Table.workspace.measurements.image_set_count
         if n_imagesets == 0:
-            from help import CREATING_A_PROJECT_CAPTION
+            from .help import CREATING_A_PROJECT_CAPTION
             wx.MessageBox(
                     "Sorry, your pipeline doesn't produce any valid image sets "
                     "as currently configured. Check your Input module settings, "
@@ -768,11 +768,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.ShowModal()
 
     def on_add_column(self):
-        print "Add column pressed"
+        print("Add column pressed")
         self.Table.AppendCols(1)
 
     def on_remove_column(self, col):
-        print "Remove column pressed"
+        print("Remove column pressed")
         self.Table.DeleteCols(col, 1)
 
     ####
@@ -977,7 +977,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if need_column_layout:
                 if self.Table.GetNumberRows() > 0:
                     first_width, _ = self.GridWindow.GetTextExtent(
-                            unicode(self.Table.GetValue(0, i)))
+                            str(self.Table.GetValue(0, i)))
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
                 else:
@@ -1000,7 +1000,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = str(grid.Table.GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1046,7 +1046,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
                     test_size = field_size + increment
                     if len(s) > test_size:
                         half = int(test_size / 2)
-                        stest = s[:half] + u"..." + s[-half:]
+                        stest = s[:half] + "..." + s[-half:]
                     else:
                         stest = s
                     width, _ = dc.GetTextExtent(stest)
@@ -1090,7 +1090,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = str(grid.Table.GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1252,7 +1252,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
-        elif isinstance(bitmap, basestring):
+        elif isinstance(bitmap, str):
             dc.Font = window.Font
             dc.BackgroundMode = wx.TRANSPARENT
             width, height = dc.GetTextExtent(bitmap)

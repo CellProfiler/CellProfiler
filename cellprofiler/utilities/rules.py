@@ -89,7 +89,7 @@ class Rules(object):
                         "\\s*(?P<threshold>[^,]+)"
                         ",\\s*\\[\\s*(?P<true>[^\\]]+)\\s*\\]"
                         ",\\s*\\[\\s*(?P<false>[^\\]]+)\\s*\\]\\s*\\)$")
-        if isinstance(fd_or_file, str) or isinstance(fd_or_file, unicode):
+        if isinstance(fd_or_file, str) or isinstance(fd_or_file, str):
             fd = open(fd_or_file, 'r')
             needs_close = True
         else:

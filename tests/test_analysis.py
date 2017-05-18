@@ -6,11 +6,11 @@ import logging
 logger = logging.getLogger(__name__)
 # logger.addHandler(logging.StreamHandler())
 # logger.setLevel(logging.DEBUG)
-from cStringIO import StringIO
+from io import StringIO
 import inspect
 import numpy as np
 import os
-import Queue
+import queue
 import tempfile
 import threading
 import traceback
@@ -42,8 +42,8 @@ class TestAnalysis(unittest.TestCase):
             threading.Thread.__init__(self, name=name)
             self.setDaemon(True)
             self.zmq_context = zmq.Context()
-            self.queue = Queue.Queue()
-            self.response_queue = Queue.Queue()
+            self.queue = queue.Queue()
+            self.response_queue = queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.notify_addr = "inproc://%s" % uuid.uuid4().hex
@@ -84,12 +84,12 @@ class TestAnalysis(unittest.TestCase):
                                 break
                             fn_and_args = self.queue.get_nowait()
 
-                        except Queue.Empty:
+                        except queue.Empty:
                             break
                         try:
                             response = fn_and_args[0](*fn_and_args[1:])
                             self.response_queue.put((None, response))
-                        except Exception, e:
+                        except Exception as e:
                             traceback.print_exc()
                             self.response_queue.put((e, None))
             except:
@@ -199,7 +199,7 @@ class TestAnalysis(unittest.TestCase):
     def setUp(self):
         fd, self.filename = tempfile.mkstemp(".h5")
         os.close(fd)
-        self.event_queue = Queue.Queue()
+        self.event_queue = queue.Queue()
         self.analysis = None
         self.wants_analysis_finished = False
         self.wants_pipeline_events = False
@@ -561,8 +561,8 @@ class TestAnalysis(unittest.TestCase):
             result = response.dictionaries
             self.assertEqual(len(dictionaries), len(result))
             for ed, d in zip(dictionaries, result):
-                self.assertItemsEqual(ed.keys(), d.keys())
-                for k in ed.keys():
+                self.assertItemsEqual(list(ed.keys()), list(d.keys()))
+                for k in list(ed.keys()):
                     np.testing.assert_almost_equal(ed[k], d[k])
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 

@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import os.path
 import zlib
@@ -948,7 +948,7 @@ def test_load_v1():
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+    pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[1]
     assert module.module_name == 'EnhanceOrSuppressFeatures'
@@ -1009,7 +1009,7 @@ Range of hole sizes:4,11
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 5
     for module, (input_name, output_name, operation, feature_size,
                  feature_type, min_range, max_range) in zip(
@@ -1063,7 +1063,7 @@ Decay:0.99
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
@@ -1119,7 +1119,7 @@ Enhancement method:Line structures
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
@@ -1180,7 +1180,7 @@ Speed and accuracy:Fast / hexagonal
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)

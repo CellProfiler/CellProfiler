@@ -2,7 +2,7 @@
 """
 import base64
 import bz2
-import cStringIO
+import io
 import unittest
 
 import numpy as np
@@ -490,7 +490,7 @@ class TestObjects(unittest.TestCase):
         colors = colors[np.array([i1[0], i2[0], i3[0]])]
         outlines = np.zeros((10, 20, 3), np.float32)
         alpha = np.zeros((10, 20))
-        for i, (color, mask) in enumerate(zip(colors, masks)):
+        for i, (color, mask) in enumerate(list(zip(colors, masks))):
             my_outline = outline(mask)
             outlines[my_outline] += color
             alpha[my_outline] += 1
@@ -613,7 +613,7 @@ class TestObjects(unittest.TestCase):
              'De6/SybK8T9rV90U5O/xI5MgXyH/RCoAXGWIf3s/BLzQhrIjigcqLm2opmGCZcGMA2sAhq67jkkl'
              'yHi9D/Zh1YXpNSuDg3nMuV+zU3OZzbX4YIcrm1mhFDDE04GWL/kNGIbqIbGB6PU7nVrJsrdEwpdC'
              '0586EWcLZ2bTo9dlylZc3P6YeRkHtaKSSX/4u5IpwoSDIuO2gA==')
-        stream = cStringIO.StringIO(bz2.decompress(base64.b64decode(d)))
+        stream = io.StringIO(bz2.decompress(base64.b64decode(d)))
         x = cpo.Objects()
         x.segmented = np.load(stream)
         y = cpo.Objects()
@@ -686,14 +686,14 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in (x_loc, y_loc)])
             radius = r.uniform() * (max_radius - 5) + 5
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(np.ones(np.sum(mask), np.uint32) * (idx + 1))
         ijv = np.core.records.fromarrays([
-                                             np.hstack(x) for x in ii, jj, vv],
+                                             np.hstack(x) for x in (ii, jj, vv)],
                                          [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
@@ -717,7 +717,7 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in (x_loc, y_loc)])
             radius = r.uniform() * (max_radius - 5) + 5
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             dense[idx, 0, 0, 0, mask] = idx + 1

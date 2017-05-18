@@ -9,7 +9,7 @@ import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
 
-import applythreshold
+from . import applythreshold
 import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
@@ -1167,7 +1167,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(numpy.ones(labeled_image.shape),
                                                    labeled_image,
-                                                   numpy.array(range(0, object_count + 1), dtype=numpy.int32))
+                                                   numpy.array(list(range(0, object_count + 1)), dtype=numpy.int32))
             areas = numpy.array(areas, dtype=int)
             min_allowed_area = numpy.pi * (self.size_range.min * self.size_range.min) / 4
             max_allowed_area = numpy.pi * (self.size_range.max * self.size_range.max) / 4

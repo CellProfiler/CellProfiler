@@ -495,7 +495,7 @@ class CPFrame(wx.Frame):
                   (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
         for eyedee in ids:
             d[eyedee] = True
-        for k, v in d.iteritems():
+        for k, v in d.items():
             self.menu_edit.Enable(k, v)
 
     def __add_menu(self):
@@ -747,7 +747,7 @@ class CPFrame(wx.Frame):
             self.__menu_data_tools_help_menu = wx.Menu()
 
             def on_plate_viewer_help(event):
-                import htmldialog
+                from . import htmldialog
                 dlg = htmldialog.HTMLDialog(
                         self, "Help on plate viewer", cellprofiler.gui.help.PLATEVIEWER_HELP)
                 dlg.Show()
@@ -773,7 +773,7 @@ class CPFrame(wx.Frame):
             self.__data_tools_menu = wx.Menu()
 
             def on_data_tool_overview(event):
-                import htmldialog
+                from . import htmldialog
                 from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
                 dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
                 dlg.Show()
@@ -951,7 +951,7 @@ class CPFrame(wx.Frame):
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_help_path_list(self, event):
-        import htmldialog
+        from . import htmldialog
         dlg = htmldialog.HTMLDialog(self, "Help on file list", cellprofiler.gui.help.HELP_ON_FILE_LIST)
         dlg.Show()
 

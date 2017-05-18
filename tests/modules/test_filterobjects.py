@@ -1,5 +1,5 @@
-import StringIO
-import cPickle
+import io
+import pickle
 import contextlib
 import os
 import tempfile
@@ -38,9 +38,9 @@ class TestFilterObjects(unittest.TestCase):
                                                      object_set,
                                                      cellprofiler.measurement.Measurements(),
                                                      image_set_list)
-        for key in image_dict.keys():
+        for key in list(image_dict.keys()):
             image_set.add(key, cellprofiler.image.Image(image_dict[key]))
-        for key in object_dict.keys():
+        for key in list(object_dict.keys()):
             o = cellprofiler.object.Objects()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
@@ -275,7 +275,7 @@ class TestFilterObjects(unittest.TestCase):
         my_min = .3
         my_max = .7
         expected = numpy.zeros(labels.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value >= my_min and value <= my_max:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -305,7 +305,7 @@ class TestFilterObjects(unittest.TestCase):
         idx = 1
         my_min = .3
         expected = numpy.zeros(labels.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value >= my_min:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -334,7 +334,7 @@ class TestFilterObjects(unittest.TestCase):
         idx = 1
         my_max = .7
         expected = numpy.zeros(labels.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value <= my_max:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -364,7 +364,7 @@ class TestFilterObjects(unittest.TestCase):
         idx = 1
         my_max = numpy.array([.7, .5])
         expected = numpy.zeros(labels.shape, int)
-        for i, v1, v2 in zip(range(n), values[:, 0], values[:, 1]):
+        for i, v1, v2 in zip(list(range(n)), values[:, 0], values[:, 1]):
             if v1 <= my_max[0] and v2 <= my_max[1]:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -400,7 +400,7 @@ class TestFilterObjects(unittest.TestCase):
         my_max = .7
         expected = numpy.zeros(labels.shape, int)
         expected_alternates = numpy.zeros(alternates.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value >= my_min and value <= my_max:
                 expected[labels == i + 1] = idx
                 expected_alternates[alternates == i + 1] = idx
@@ -452,7 +452,7 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
@@ -508,7 +508,7 @@ FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:4|show
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
@@ -579,7 +579,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
@@ -652,7 +652,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
@@ -727,7 +727,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
@@ -1210,4 +1210,4 @@ def make_classifier_pickle(answers, classes, class_names, name, feature_names):
     feature_names - the names of the features fed into the classifier
     '''
     classifier = FakeClassifier(answers, classes)
-    return cPickle.dumps([classifier, class_names, name, feature_names])
+    return pickle.dumps([classifier, class_names, name, feature_names])

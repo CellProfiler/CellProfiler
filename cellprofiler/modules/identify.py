@@ -3,6 +3,7 @@ import scipy.ndimage
 
 import cellprofiler.measurement
 import cellprofiler.module
+from functools import reduce
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -82,11 +83,11 @@ class Identify(cellprofiler.module.Module):
         if object_name == cellprofiler.measurement.IMAGE:
             return [cellprofiler.measurement.C_COUNT]
         result = []
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             result += [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER]
             if len(object_dictionary[object_name]) > 0:
                 result += [cellprofiler.measurement.C_PARENT]
-        if object_name in reduce(lambda x, y: x + y, object_dictionary.values()):
+        if object_name in reduce(lambda x, y: x + y, list(object_dictionary.values())):
             result += [cellprofiler.measurement.C_CHILDREN]
         return result
 
@@ -103,7 +104,7 @@ class Identify(cellprofiler.module.Module):
         if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
             return list(object_dictionary.keys())
 
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             if category == cellprofiler.measurement.C_LOCATION:
                 return [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
             elif category == cellprofiler.measurement.C_NUMBER:
@@ -112,7 +113,7 @@ class Identify(cellprofiler.module.Module):
                 return list(object_dictionary[object_name])
         if category == cellprofiler.measurement.C_CHILDREN:
             result = []
-            for child_object_name in object_dictionary.keys():
+            for child_object_name in list(object_dictionary.keys()):
                 if object_name in object_dictionary[child_object_name]:
                     result += ["%s_Count" % child_object_name]
             return result
@@ -139,7 +140,7 @@ def add_object_location_measurements(measurements,
     if object_count:
         centers = scipy.ndimage.center_of_mass(numpy.ones(labels.shape),
                                                labels,
-                                               range(1, object_count + 1))
+                                               list(range(1, object_count + 1)))
         centers = numpy.array(centers)
         centers = centers.reshape((object_count, 2))
         location_center_y = centers[:, 0]

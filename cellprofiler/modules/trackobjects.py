@@ -840,7 +840,7 @@ class TrackObjects(cpm.Module):
         return self.get_dictionary(workspace.image_set_list)
 
     def __get(self, field, workspace, default):
-        if self.get_ws_dictionary(workspace).has_key(field):
+        if field in self.get_ws_dictionary(workspace):
             return self.get_ws_dictionary(workspace)[field]
         return default
 
@@ -852,7 +852,7 @@ class TrackObjects(cpm.Module):
         assert isinstance(m, cpmeas.Measurements)
         d = self.get_ws_dictionary(workspace)
         group_number = m.get_group_number()
-        if not d.has_key("group_number") or d["group_number"] != group_number:
+        if "group_number" not in d or d["group_number"] != group_number:
             d["group_number"] = group_number
             group_indexes = np.array([
                                          (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
@@ -1020,7 +1020,7 @@ class TrackObjects(cpm.Module):
         recolored_labels = indexer[labels]
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0, 0, 0))
-        norm = matplotlib.colors.BoundaryNorm(range(256), 256)
+        norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(numpy.ma.array(recolored_labels, mask=(labels == 0)),
                         cmap=cm, norm=norm)
         if self.display_type == DT_COLOR_AND_NUMBER:
@@ -1427,7 +1427,7 @@ class TrackObjects(cpm.Module):
                                              cpmeas.GROUP_NUMBER, i)
             group_index = m.get_measurement(cpmeas.IMAGE,
                                             cpmeas.GROUP_INDEX, i)
-            if ((not group_numbers.has_key(group_number)) or
+            if ((group_number not in group_numbers) or
                     (group_numbers[group_number][1] > group_index)):
                 group_numbers[group_number] = (i, group_index)
 
@@ -1536,7 +1536,7 @@ class TrackObjects(cpm.Module):
                           np.column_stack((x, y, np.ones(len(x)) * i, np.arange(len(x)),
                                            o, l, area, np.zeros(len(x))))
                           for i, (x, y, o, l, area)
-                          in enumerate(zip(a, b, object_numbers, label, Area))])
+                          in enumerate(list(zip(a, b, object_numbers, label, Area)))])
         count_per_label = np.bincount(P[:, LIDX].astype(int))
         idx = np.hstack([0, np.cumsum(count_per_label)])
         unique_label = np.unique(P[:, LIDX].astype(int))
@@ -1688,7 +1688,7 @@ class TrackObjects(cpm.Module):
                 z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
-                    chunks.append([_[mask] for _ in merge_p1idx, merge_lidx, z])
+                    chunks.append([_[mask] for _ in (merge_p1idx, merge_lidx, z)])
             if len(chunks) > 0:
                 merge_p1idx, merge_lidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1708,7 +1708,7 @@ class TrackObjects(cpm.Module):
             merge_scores = d * rho
             mask = merge_scores <= max_merge_score
             merge_p1idx, merge_lidx, merge_scores = [
-                _[mask] for _ in merge_p1idx, merge_lidx, merge_scores]
+                _[mask] for _ in (merge_p1idx, merge_lidx, merge_scores)]
             merge_len = np.sum(mask)
             if merge_len > 0:
                 #
@@ -1755,7 +1755,7 @@ class TrackObjects(cpm.Module):
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
                     chunks.append(
-                            [_[mask] for _ in split_p2idx, split_fidx, z])
+                            [_[mask] for _ in (split_p2idx, split_fidx, z)])
             if len(chunks) > 0:
                 split_p2idx, split_fidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1774,7 +1774,7 @@ class TrackObjects(cpm.Module):
             split_scores = d * rho
             mask = (split_scores <= max_split_score)
             split_p2idx, split_fidx, split_scores = \
-                [_[mask] for _ in split_p2idx, split_fidx, split_scores]
+                [_[mask] for _ in (split_p2idx, split_fidx, split_scores)]
             split_len = np.sum(mask)
             if split_len > 0:
                 #
@@ -1913,8 +1913,8 @@ class TrackObjects(cpm.Module):
             #
             if x[pidx] == midx + mitosis_off and not \
                     any([y[idx] >= mitosis_off and y[idx] < mitosis_end
-                         for idx in lidx, ridx]):
-                alt_score = sum([score_matrix[y[idx], idx] for idx in lidx, ridx])
+                         for idx in (lidx, ridx)]):
+                alt_score = sum([score_matrix[y[idx], idx] for idx in (lidx, ridx)])
                 #
                 # Taking the alt score would cost us a mitosis alternative
                 # cost, but would remove half of a gap alternative.
@@ -2620,10 +2620,10 @@ class TrackObjects(cpm.Module):
             for this_label, this_lifetime in zip(label[index], lifetimes[index]):
                 age[this_label] = this_lifetime
 
-        all_labels = age.keys()
-        all_ages = age.values()
+        all_labels = list(age.keys())
+        all_ages = list(age.values())
         if self.wants_lifetime_filtering.value:
-            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime or v >= maximum_lifetime]
+            labels_to_filter = [k for k, v in age.items() if v <= minimum_lifetime or v >= maximum_lifetime]
         for image_number in image_numbers:
             index = image_index[image_number]
 
@@ -2986,7 +2986,7 @@ class TrackObjects(cpm.Module):
             else:
                 pg_meas = [
                     self.measurement_name(feature)
-                    for feature in F_LINKING_DISTANCE, F_MOVEMENT_MODEL]
+                    for feature in (F_LINKING_DISTANCE, F_MOVEMENT_MODEL)]
                 result = [
                     c if c[1] not in pg_meas else (c[0], c[1], c[2], attributes)
                     for c in result]

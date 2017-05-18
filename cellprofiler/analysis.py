@@ -1,9 +1,9 @@
 """analysis.py - Run pipelines on imagesets to produce measurements.
 """
-from __future__ import with_statement
 
-import Queue
-import cStringIO as StringIO
+
+import queue
+import io as StringIO
 import collections
 import logging
 import multiprocessing
@@ -185,9 +185,9 @@ class AnalysisRunner(object):
         self.paused = False
         self.cancelled = False
 
-        self.work_queue = Queue.Queue()
-        self.in_process_queue = Queue.Queue()
-        self.finished_queue = Queue.Queue()
+        self.work_queue = queue.Queue()
+        self.in_process_queue = queue.Queue()
+        self.finished_queue = queue.Queue()
 
         # We use a queue size of 10 because we keep measurements in memory (as
         # their HDF5 file contents) until they get merged into the full
@@ -196,7 +196,7 @@ class AnalysisRunner(object):
         # than interface() doing so.  Currently, passing measurements in this
         # way seems like it might be buggy:
         # http://code.google.com/p/h5py/issues/detail?id=244
-        self.received_measurements_queue = Queue.Queue(maxsize=10)
+        self.received_measurements_queue = queue.Queue(maxsize=10)
 
         self.shared_dicts = None
 
@@ -343,9 +343,7 @@ class AnalysisRunner(object):
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
-            image_sets_to_process = filter(
-                    lambda x: x >= image_set_start and x <= image_set_end,
-                    measurements.get_image_numbers())
+            image_sets_to_process = [x for x in measurements.get_image_numbers() if x >= image_set_start and x <= image_set_end]
 
             self.post_event(AnalysisStarted())
             posted_analysis_started = True
@@ -553,7 +551,7 @@ class AnalysisRunner(object):
         # all the requests from workers, of which there might be several.
 
         # start the zmqrequest Boundary
-        request_queue = Queue.Queue()
+        request_queue = queue.Queue()
         boundary = register_analysis(analysis_id,
                                      request_queue)
         #
@@ -584,7 +582,7 @@ class AnalysisRunner(object):
 
             try:
                 req = request_queue.get(timeout=0.25)
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
             if isinstance(req, PipelinePreferencesRequest):
@@ -816,7 +814,7 @@ def find_worker_env(idx):
     if hasattr(sys, 'frozen'):
         if sys.platform == "darwin":
             # http://mail.python.org/pipermail/pythonmac-sig/2005-April/013852.html
-            added_paths += [p for p in sys.path if isinstance(p, basestring)]
+            added_paths += [p for p in sys.path if isinstance(p, str)]
     if 'PYTHONPATH' in newenv:
         added_paths.insert(0, newenv['PYTHONPATH'])
     newenv['PYTHONPATH'] = os.pathsep.join(
@@ -828,7 +826,7 @@ def find_worker_env(idx):
         newenv["CP_JDWP_PORT"] = port
         del newenv["AW_JDWP_PORT"]
     for key in newenv:
-        if isinstance(newenv[key], unicode):
+        if isinstance(newenv[key], str):
             newenv[key] = newenv[key].encode('utf-8')
     return newenv
 

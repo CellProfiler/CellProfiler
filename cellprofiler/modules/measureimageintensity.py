@@ -171,7 +171,7 @@ class MeasureImageIntensity(cpm.Module):
             key = ((im.image_name, im.object_name) if im.wants_objects.value
                    else (im.image_name,))
             dict[key] = im
-        return dict.values()
+        return list(dict.values())
 
     def run(self, workspace):
         '''Perform the measurements on the imageset'''

@@ -1,7 +1,7 @@
 """test_analysisworker.py - test the analysis client framework"""
 
-import Queue
-import cStringIO
+import queue
+import io
 import os
 import tempfile
 import threading
@@ -84,12 +84,12 @@ class TestAnalysisWorker(unittest.TestCase):
         def start(self):
             self.setDaemon(True)
             self.setName("Analysis worker thread")
-            self.up_queue = Queue.Queue()
+            self.up_queue = queue.Queue()
             self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.up_queue_recv_socket = cellprofiler.worker.the_zmq_context.socket(zmq.SUB)
             self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, "")
             self.up_queue_recv_socket.bind(self.notify_addr)
-            self.down_queue = Queue.Queue()
+            self.down_queue = queue.Queue()
             threading.Thread.start(self)
             self.up_queue.get()
 
@@ -109,7 +109,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         result = fn()
                         self.up_queue.put((result, None))
                         up_queue_send_socket.send("OK")
-                    except Exception, e:
+                    except Exception as e:
                         traceback.print_exc()
                         self.up_queue.put((None, e))
                         up_queue_send_socket.send("EXCEPTION")
@@ -139,7 +139,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         raise cellprofiler.pipeline.CancelledException("Unexpected exit during recv")
                 if socket == work_socket and state == zmq.POLLIN:
                     return cellprofiler.utilities.zmqrequest.Communicable.recv(work_socket)
-            raise Queue.Empty
+            raise queue.Empty
 
         def join(self, timeout=None):
             if self.isAlive():
@@ -202,7 +202,7 @@ class TestAnalysisWorker(unittest.TestCase):
                     ((self.analysis_id, self.work_addr),))
             try:
                 return self.awthread.recv(self.work_socket, 250)
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
     def test_01_01_get_announcement(self):
@@ -214,7 +214,7 @@ class TestAnalysisWorker(unittest.TestCase):
             try:
                 result, exception = self.awthread.up_queue.get_nowait()
                 break
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
         self.assertIsNone(exception)
@@ -526,7 +526,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.image_set_number, 1)
         d = req.display_data_dict
         # Possibly, this will break if someone edits FlipAndRotate. Sorry.
-        self.assertItemsEqual(d.keys(),
+        self.assertItemsEqual(list(d.keys()),
                               ['vmax', 'output_image_pixel_data',
                                'image_pixel_data', 'vmin'])
         self.assertIsInstance(d['output_image_pixel_data'], numpy.ndarray)
@@ -1025,6 +1025,6 @@ def get_measurements_for_good_pipeline(nimages=1,
         blob = javabridge.get_env().get_byte_array_elements(jblob)
         m[cellprofiler.measurement.IMAGE, cellprofiler.modules.namesandtypes.M_IMAGE_SET, i, blob.dtype] = blob
     pipeline = cellprofiler.pipeline.Pipeline()
-    pipeline.loadtxt(cStringIO.StringIO(GOOD_PIPELINE))
+    pipeline.loadtxt(io.StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)
     return m

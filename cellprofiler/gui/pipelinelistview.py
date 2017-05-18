@@ -12,7 +12,7 @@ import cellprofiler.preferences
 import logging
 import math
 import os
-import StringIO
+import io
 import sys
 import time
 import wx
@@ -88,7 +88,7 @@ image_index_dictionary = {}
 def get_image_index(name):
     """Return the index of an image in the image list"""
     global image_index_dictionary
-    if not image_index_dictionary.has_key(name):
+    if name not in image_index_dictionary:
         image_index_dictionary[name] = len(image_index_dictionary)
     return image_index_dictionary[name]
 
@@ -308,8 +308,8 @@ class PipelineListView(object):
 
     def set_debug_mode(self, mode):
         if (mode == True) and (self.__pipeline is not None):
-            modules = filter((lambda m: not m.is_input_module()),
-                             self.__pipeline.modules())
+            modules = list(filter((lambda m: not m.is_input_module()),
+                             self.__pipeline.modules()))
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
         self.list_ctrl.set_test_mode(mode)
@@ -590,7 +590,7 @@ class PipelineListView(object):
         if len(modules_to_save) == 0:
             event.Veto()
             return
-        fd = StringIO.StringIO()
+        fd = io.StringIO()
         self.__pipeline.savetxt(fd, modules_to_save,
                                 save_image_plane_details=False)
         pipeline_data_object = PipelineDataObject()
@@ -726,7 +726,7 @@ class PipelineListView(object):
         wx.BeginBusyCursor()
         try:
             pipeline = cellprofiler.gui.pipeline.Pipeline()
-            pipeline.load(StringIO.StringIO(data))
+            pipeline.load(io.StringIO(data))
             n_input_modules = self.get_input_item_count()
             for i, module in enumerate(pipeline.modules(False)):
                 module.module_num = i + index + n_input_modules + 1

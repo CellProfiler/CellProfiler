@@ -94,7 +94,7 @@ class TestHaralick(unittest.TestCase):
     def test_all_01(self):
         h = haralick.Haralick(gray, labels, 0, 1, nlevels=4)
         fv = h.all()
-        self.assertTrue((np.array(map(len, fv)) == 1).all())
+        self.assertTrue((np.array(list(map(len, fv))) == 1).all())
 
     def test_01_01_regression_edge(self):
         '''Test coocurrence with an object smaller than the scal near the edge.

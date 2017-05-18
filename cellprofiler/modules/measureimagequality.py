@@ -73,10 +73,10 @@ from cellprofiler.setting import YES, NO
 import centrosome.threshold as cpthresh
 import itertools
 import centrosome.radial_power_spectrum as rps
-from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
-from identify import O_FOREGROUND, O_BACKGROUND
+from .identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
+from .identify import O_FOREGROUND, O_BACKGROUND
 from centrosome.threshold import TM_MOG, TM_OTSU
-from loadimages import C_FILE_NAME, C_SCALING
+from .loadimages import C_FILE_NAME, C_SCALING
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
@@ -1227,7 +1227,7 @@ class MeasureImageQuality(cpm.Module):
                 threshold_image = setting_values[i + 1]
                 threshold_method = setting_values[i + 2]
                 if saturation_image != cps.DO_NOT_USE:
-                    if not d.has_key(saturation_image):
+                    if saturation_image not in d:
                         d[saturation_image] = {"check_blur": check_blur,
                                                "check_saturation": cps.YES,
                                                "check_threshold": cps.NO,
@@ -1236,7 +1236,7 @@ class MeasureImageQuality(cpm.Module):
                         d[saturation_image]["check_blur"] = check_blur
                         d[saturation_image]["check_saturation"] = cps.YES
                 if threshold_image != cps.DO_NOT_USE:
-                    if not d.has_key(threshold_image):
+                    if threshold_image not in d:
                         d[threshold_image] = {"check_blur": cps.NO,
                                               "check_saturation": cps.NO,
                                               "check_threshold": cps.YES,
@@ -1245,7 +1245,7 @@ class MeasureImageQuality(cpm.Module):
                         d[threshold_image]["check_threshold"] = cps.YES
                         d[threshold_image]["threshold_method"] = threshold_method
             setting_values = []
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 dd = d[image_name]
                 setting_values += [image_name, dd["check_blur"], window_size,
                                    dd["check_saturation"],
@@ -1321,7 +1321,7 @@ class MeasureImageQuality(cpm.Module):
 
             # Uniquify the scales and threshold methods
             import itertools
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 d[image_name]["blur_scales"] = list(set(d[image_name]["blur_scales"]))
                 d[image_name]["threshold_methods"] = [k for k, v in
                                                       itertools.groupby(sorted(d[image_name]["threshold_methods"]))]
@@ -1348,7 +1348,7 @@ class MeasureImageQuality(cpm.Module):
 
         if (not from_matlab) and variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
-            thresh_dict = dict(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS))
+            thresh_dict = dict(list(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS)))
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [thresh_dict[x] if x in cpthresh.TM_GLOBAL_METHODS else x for x in setting_values]
             variable_revision_number = 5

@@ -300,7 +300,7 @@ class CalculateMath(cpm.Module):
                 # ensure that the data can be changed in-place by floating point ops
                 value = value.astype(np.float)
 
-            if isinstance(value, str) or isinstance(value, unicode):
+            if isinstance(value, str) or isinstance(value, str):
                 try:
                     value = float(value)
                 except ValueError:

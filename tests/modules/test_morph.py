@@ -1,7 +1,7 @@
 '''test_morph - test the morphology module
 '''
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -109,7 +109,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         ops = [morph.F_BRANCHPOINTS, morph.F_BRIDGE,
                morph.F_CLEAN, morph.F_CONVEX_HULL,
                morph.F_DIAG, morph.F_DISTANCE,
@@ -157,7 +157,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
 
         pipeline.add_listener(callback)
 
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
 
         module = pipeline.modules()[0]
 
@@ -201,7 +201,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
         return output.pixel_data
 
     def binary_tteesstt(self, function_name, function, gray_out=False, scale=None, custom_repeats=None):
-        np.random.seed(map(ord, function_name))
+        np.random.seed(list(map(ord, function_name)))
         input = np.random.uniform(size=(20, 20)) > .7
         output = self.execute(input, function_name, scale=scale, custom_repeats=custom_repeats)
         if scale is None:

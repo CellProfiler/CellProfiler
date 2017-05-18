@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas

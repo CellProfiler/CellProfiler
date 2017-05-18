@@ -21,7 +21,7 @@ class TestPreferences(unittest.TestCase):
                 (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
                 (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
                 (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder')):
-            self.assertTrue(value in cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys(), "%s not in dictionary" % value)
+            self.assertTrue(value in list(cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys()), "%s not in dictionary" % value)
             self.assertEqual(expected, cpprefs.FOLDER_CHOICE_TRANSLATIONS[value])
 
     def test_01_02_slot_translations(self):
@@ -47,7 +47,7 @@ class TestPreferences(unittest.TestCase):
 
     def test_01_03_unicode_directory(self):
         old = cpprefs.get_default_image_directory()
-        unicode_dir = u'P125 � 144 Crible Chimioth�que HBEC'
+        unicode_dir = 'P125 � 144 Crible Chimioth�que HBEC'
         unicode_dir = tempfile.mkdtemp(prefix=unicode_dir)
         cpprefs.set_default_image_directory(unicode_dir)
         self.assertEqual(cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY),
@@ -89,5 +89,5 @@ class TestPreferences_02(unittest.TestCase):
         cpprefs.__dict__['__headless_config'] = self.old_headless_config
 
     def test_01_01_default_directory_none(self):
-        print cpprefs.get_default_image_directory()
+        print(cpprefs.get_default_image_directory())
         self.assertTrue(True)

@@ -401,7 +401,7 @@ class Groups(cpm.Module):
             order = np.lexsort((group_indexes, group_numbers))
 
             for idx in order:
-                row = [unicode(x[idx]) for x in all_features]
+                row = [str(x[idx]) for x in all_features]
                 self.image_set_list.data.append(row)
 
     def get_groupings(self, workspace):

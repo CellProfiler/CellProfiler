@@ -36,8 +36,8 @@ LEAVE_THIS_BLACK = "Leave this black"
 
 DEFAULT_COLORS = [
     "#%02x%02x%02x" % color for color in
-    (255, 0, 0), (0, 255, 0), (0, 0, 255),
-    (128, 128, 0), (128, 0, 128), (0, 128, 128)]
+    ((255, 0, 0), (0, 255, 0), (0, 0, 255),
+    (128, 128, 0), (128, 0, 128), (0, 128, 128))]
 
 
 class GrayToColor(cpm.Module):
@@ -377,7 +377,7 @@ class GrayToColor(cpm.Module):
             color_subplot = (nsubplots % 4, int(nsubplots / 4))
         figure.set_subplots(subplots)
         for i, (input_image_name, image_pixel_data) in \
-                enumerate(zip(input_image_names, images)):
+                enumerate(list(zip(input_image_names, images))):
             x, y = subplot_indices[i]
             figure.subplot_imshow_grayscale(x, y, image_pixel_data,
                                             title=input_image_name,

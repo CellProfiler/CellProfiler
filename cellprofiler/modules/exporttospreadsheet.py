@@ -452,9 +452,7 @@ class ExportToSpreadsheet(cpm.Module):
                     extension == ".txt" and self.delimiter == DELIMITER_TAB))
                                   for (extension, group) in zip(all_extensions, self.object_groups)]
             if not all(is_valid_extension):
-                raise (cps.ValidationError(
-                        "To avoid formatting problems in Excel, use the extension .csv for comma-delimited files and .txt for tab-delimited..",
-                        self.object_groups[is_valid_extension.index(False)].file_name))
+                raise cps
 
     @property
     def delimiter_char(self):
@@ -694,7 +692,7 @@ class ExportToSpreadsheet(cpm.Module):
         '''
         file_name = self.make_objects_file_name(
                 IMAGE, workspace, image_set_number, settings_group)
-        if any([file_name.lower().endswith(x) for x in ".csv", "txt"]):
+        if any([file_name.lower().endswith(x) for x in (".csv", "txt")]):
             file_name = file_name[:-3] + "gct"
         return file_name
 
@@ -713,7 +711,7 @@ class ExportToSpreadsheet(cpm.Module):
             object_names = set((IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS))
             object_providers = workspace.pipeline.get_provider_dictionary(
                     cps.OBJECT_GROUP, self)
-            object_names.update(object_providers.keys())
+            object_names.update(list(object_providers.keys()))
             metadata_groups = self.get_metadata_groups(workspace)
             for object_name in object_names:
                 for metadata_group in metadata_groups:
@@ -740,7 +738,7 @@ class ExportToSpreadsheet(cpm.Module):
                 #
                 first_in_file = self.last_in_file(i)
 
-        files_to_overwrite = filter(os.path.isfile, files_to_check)
+        files_to_overwrite = list(filter(os.path.isfile, files_to_check))
         if len(files_to_overwrite) > 0:
             if get_headless():
                 logger.error(
@@ -784,7 +782,7 @@ class ExportToSpreadsheet(cpm.Module):
                                 v.dtype == np.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    unicode(v).encode('utf8')
+                    str(v).encode('utf8')
                 writer.writerow((feature_name, v))
         finally:
             fd.close()
@@ -836,15 +834,15 @@ class ExportToSpreadsheet(cpm.Module):
                     if feature_name == IMAGE_NUMBER:
                         row.append(str(img_number))
                     else:
-                        if agg_measurements.has_key(feature_name):
+                        if feature_name in agg_measurements:
                             value = agg_measurements[feature_name]
                         else:
                             value = m[IMAGE, feature_name, img_number]
                         if value is None:
                             row.append('')
-                        elif isinstance(value, unicode):
+                        elif isinstance(value, str):
                             row.append(value.encode('utf8'))
-                        elif isinstance(value, basestring):
+                        elif isinstance(value, str):
                             row.append(value)
                         elif isinstance(value, np.ndarray) and \
                                         value.dtype == np.uint8:
@@ -868,9 +866,9 @@ class ExportToSpreadsheet(cpm.Module):
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from loaddata import is_path_name_feature, is_file_name_feature
-        from loadimages import C_PATH_NAME, C_FILE_NAME, C_URL
-        from loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+        from .loaddata import is_path_name_feature, is_file_name_feature
+        from .loadimages import C_PATH_NAME, C_FILE_NAME, C_URL
+        from .loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         file_name = self.make_gct_file_name(workspace, image_set_numbers[0],
                                             settings_group)
@@ -929,7 +927,7 @@ class ExportToSpreadsheet(cpm.Module):
                     # Count # of actual measurements
                     num_measures = 0
                     for feature_name in image_features:
-                        if not ignore_feature(feature_name) or agg_measurements.has_key(feature_name):
+                        if not ignore_feature(feature_name) or feature_name in agg_measurements:
                             num_measures += 1
 
                     writer.writerow(['#1.2'])
@@ -953,7 +951,7 @@ class ExportToSpreadsheet(cpm.Module):
 
                 # Output all measurements
                 row = [agg_measurements[feature_name]
-                       if agg_measurements.has_key(feature_name)
+                       if feature_name in agg_measurements
                        else m.get_measurement(IMAGE, feature_name, img_number)
                        for feature_name in image_features]
                 row = ['' if x is None
@@ -1026,8 +1024,8 @@ Do you want to save it anyway?""" %
                 object_names[0], workspace, image_set_numbers[0], settings_group)
         features = [(IMAGE, IMAGE_NUMBER),
                     (object_names[0], OBJECT_NUMBER)]
-        columns = map(
-                (lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
+        columns = list(map(
+                (lambda c: c[:2]), workspace.pipeline.get_measurement_columns()))
         if self.add_metadata.value:
             mdfeatures = [
                 (IMAGE, name) for object_name, name in columns

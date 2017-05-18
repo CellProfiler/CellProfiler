@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -418,7 +418,7 @@ class TestRescaleIntensity(unittest.TestCase):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))

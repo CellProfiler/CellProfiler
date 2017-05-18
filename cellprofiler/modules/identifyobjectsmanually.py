@@ -23,7 +23,7 @@ import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
+from . import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"

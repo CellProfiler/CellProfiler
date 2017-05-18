@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -14,6 +14,7 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
+from functools import reduce
 
 cellprofiler.preferences.set_headless()
 
@@ -312,7 +313,7 @@ Subtract:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -347,7 +348,7 @@ Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_windo
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -376,7 +377,7 @@ InvertIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|sh
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -402,7 +403,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -437,7 +438,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         #
         # There are 3 ImageMath modules:
         # 1)
@@ -509,7 +510,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         #
         # Modules:
         # 1) Add, 1
@@ -604,7 +605,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
         self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY)
@@ -696,7 +697,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
         self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM)

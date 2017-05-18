@@ -582,7 +582,7 @@ class NamesAndTypes(cpm.Module):
             if image_name not in all_image_names:
                 return image_name
         else:
-            for i in xrange(1, 1000):
+            for i in range(1, 1000):
                 image_name = "Channel%d" % i
                 if image_name not in all_image_names:
                     return image_name
@@ -596,7 +596,7 @@ class NamesAndTypes(cpm.Module):
             if object_name not in all_object_names:
                 return object_name
         else:
-            for i in xrange(1, 1000):
+            for i in range(1, 1000):
                 object_name = "Object%d" % i
                 if object_name not in all_object_names:
                     return object_name
@@ -863,13 +863,13 @@ class NamesAndTypes(cpm.Module):
             return True
 
         image_set_channel_names = [None] * len(column_names)
-        for name, idx in channel_map.iteritems():
+        for name, idx in channel_map.items():
             image_set_channel_names[idx] = name
 
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
 
-        image_numbers = range(1, len(image_sets) + 1)
+        image_numbers = list(range(1, len(image_sets) + 1))
         if len(image_numbers) == 0:
             return False
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER,
@@ -925,7 +925,7 @@ class NamesAndTypes(cpm.Module):
 
         urls, path_names, file_names, series, index, channel = [
             env.get_object_array_elements(x) for x in
-            urls, path_names, file_names, series, index, channel]
+            (urls, path_names, file_names, series, index, channel)]
         for i, iscd in enumerate(iscds):
             image_set_column_idx = channel_map[column_names[i]]
             if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
@@ -1195,7 +1195,7 @@ class NamesAndTypes(cpm.Module):
         #
         # Make the column filters and joins for the others
         #
-        for i, (group, name) in enumerate(zip(self.assignments, channel_names)):
+        for i, (group, name) in enumerate(list(zip(self.assignments, channel_names))):
             if i == anchor_channel:
                 continue
             cf = self.make_channel_filter(group, name)
@@ -1969,13 +1969,13 @@ class NamesAndTypes(cpm.Module):
                 if len(joins) > 0:
                     for join in joins:
                         best_value = None
-                        for key in join.keys():
+                        for key in list(join.keys()):
                             if key not in self.get_column_names():
                                 del join[key]
                             elif join[key] is not None and best_value is None:
                                 best_value = join[key]
                         for i, column_name in enumerate(self.get_column_names()):
-                            if not join.has_key(column_name):
+                            if column_name not in join:
                                 if best_value in self.metadata_keys:
                                     join[column_name] = best_value
                                 else:
@@ -1988,7 +1988,7 @@ class NamesAndTypes(cpm.Module):
         if self.matching_method == MATCH_BY_METADATA:
             joins = self.join.parse()
             metadata_columns = [
-                " / ".join(set([k for k in join.values() if k is not None]))
+                " / ".join(set([k for k in list(join.values()) if k is not None]))
                 for join in joins]
         else:
             metadata_columns = [cpmeas.IMAGE_NUMBER]
@@ -2019,7 +2019,7 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
                     key,
                     self.display_fmt % key,
                     lambda ipd, match, key=key:
-                    ipd.metadata.has_key(key) and
+                    key in ipd.metadata and
                     ipd.metadata[key] == match,
                     [cps.Filter.LITERAL_PREDICATE])
             for key in keys]
@@ -2134,7 +2134,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
                                              else self.series).Pixels
             nplanes = (pixel_metadata.SizeC * pixel_metadata.SizeZ *
                        pixel_metadata.SizeT)
-            indexes = range(nplanes)
+            indexes = list(range(nplanes))
         elif np.isscalar(self.index):
             indexes = [self.index]
         else:

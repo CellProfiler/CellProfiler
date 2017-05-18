@@ -64,9 +64,9 @@ class PlateData(object):
         # Calculate maximum # of planes per well
         #
         self.max_per_well = 0
-        for pd in self.plate_well_site.values():
-            for wd in pd.values():
-                nplanes = sum([len(x) for x in wd.values()])
+        for pd in list(self.plate_well_site.values()):
+            for wd in list(pd.values()):
+                nplanes = sum([len(x) for x in list(wd.values())])
                 if nplanes > self.max_per_well:
                     self.max_per_well = nplanes
         for registrant in self.registrants:
@@ -94,7 +94,7 @@ class PlateData(object):
         self.has_z_indexes |= z_indexes is not None
         self.has_t_indexes |= t_indexes is not None
         for i, (filename, platename, wellname, site) in enumerate(
-                zip(filenames, platenames, wellnames, sites)):
+                list(zip(filenames, platenames, wellnames, sites))):
             if platename not in self.plate_well_site:
                 self.plate_well_site[platename] = {}
             pd = self.plate_well_site[platename]
@@ -117,7 +117,7 @@ class PlateData(object):
         self.on_update()
 
     def get_plate_names(self):
-        return filter((lambda x: x is not None), self.plate_well_site.keys())
+        return list(filter((lambda x: x is not None), list(self.plate_well_site.keys())))
 
     def get_plate(self, name):
         pd = self.plate_well_site[name]
@@ -125,7 +125,7 @@ class PlateData(object):
         n_cols = 12
         a = numpy.zeros((n_rows, n_cols), object)
         a[:, :] = None
-        for wellname, wd in pd.iteritems():
+        for wellname, wd in pd.items():
             wellname = wellname.lower()
             if wellname[:2].isalpha():
                 row = ord(wellname[0]) * 26 + ord(wellname[1]) - \
@@ -298,7 +298,7 @@ class PlateViewer(object):
             else:
                 text = "%s: %d files" % (
                     well_name,
-                    sum([len(v) for v in well.values()]))
+                    sum([len(v) for v in list(well.values())]))
                 self.plate_panel.SetToolTipString(text)
 
     def on_update(self):
@@ -325,8 +325,8 @@ class PlateViewer(object):
             channel_names = set()
             for well in self.plate_data.flatten():
                 if well is not None:
-                    site_names.update(well.keys())
-                    for sd in well.values():
+                    site_names.update(list(well.keys()))
+                    for sd in list(well.values()):
                         channel_names.update(
                                 [fd[PlateData.D_CHANNEL]
                                  if PlateData.D_CHANNEL in fd else str(i + 1)
@@ -381,7 +381,7 @@ class PlateViewer(object):
                 side * row + side / 2 + self.get_border_height())
 
     def get_fill(self, well):
-        n_files = sum([len(x) for x in well.values()])
+        n_files = sum([len(x) for x in list(well.values())])
         color = self.palette(float(n_files) / float(max(self.data.max_per_well, 1)),
                              bytes=True)
         color = wx.Colour(*color)
@@ -477,7 +477,7 @@ class PlateViewer(object):
             with self.image_dict_lock:
                 generation = self.image_dict_generation
 
-            for k, v in well.iteritems():
+            for k, v in well.items():
                 sd = {}
                 with self.image_dict_lock:
                     if self.image_dict_generation > generation:
@@ -516,7 +516,7 @@ class PlateViewer(object):
         if self.image_dict is None:
             return
         with self.image_dict_lock:
-            image_dict = dict([(x, y.copy()) for x, y in self.image_dict.iteritems()])
+            image_dict = dict([(x, y.copy()) for x, y in self.image_dict.items()])
         channel_dict = {}
         totals = numpy.zeros(4)
         for i in range(self.channel_grid.GetNumberRows()):
@@ -539,7 +539,7 @@ class PlateViewer(object):
         else:
             site_dict[None] = numpy.zeros(2)
         img_size = [0, 0]
-        for sd in image_dict.values():
+        for sd in list(image_dict.values()):
             for channel in sd:
                 img_size = [max(i0, i1) for i0, i1 in zip(
                         sd[channel].shape, img_size)]
@@ -551,10 +551,10 @@ class PlateViewer(object):
             site_dict[k] *= img_size
         img_size = numpy.hstack([numpy.ceil(tile_dims * img_size).astype(int), [3]])
         megapicture = numpy.zeros(img_size, numpy.uint8)
-        for site, sd in image_dict.iteritems():
+        for site, sd in image_dict.items():
             offs = site_dict[site].astype(int)
             # TO_DO - handle images that aren't scaled from 0 to 255
-            for channel, image in sd.iteritems():
+            for channel, image in sd.items():
                 imgmax = numpy.max(image)
                 scale = 1 if imgmax <= 1 else 255 if imgmax < 256 \
                     else 4095 if imgmax < 4096 else 65535

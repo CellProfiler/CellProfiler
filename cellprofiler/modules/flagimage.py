@@ -358,7 +358,7 @@ class FlagImage(cpm.Module):
                 if measurement_setting.source_choice == S_RULES:
                     try:
                         rules = self.get_rules(measurement_setting)
-                    except Exception, instance:
+                    except Exception as instance:
                         logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
                         raise cps.ValidationError(str(instance),
                                                   measurement_setting.rules_file_name)

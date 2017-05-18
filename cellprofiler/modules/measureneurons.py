@@ -481,7 +481,7 @@ class MeasureNeurons(cpm.Module):
         columns = tuple([vertex_graph[f].tolist()
                          for f in self.vertex_file_columns[2:]])
         with open(vertex_path, "at") as fd:
-            for vertex_number, fields in enumerate(zip(*columns)):
+            for vertex_number, fields in enumerate(list(zip(*columns))):
                 fd.write(("%d,%d," % (image_number, vertex_number + 1)) +
                          ("%d,%d,%d,%s\n" % fields))
 

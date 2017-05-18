@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -46,7 +46,7 @@ class TestResize(unittest.TestCase):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
         #
         # 4 modules - first resizes by factor, second resizes to a fixed size
@@ -95,7 +95,7 @@ class TestResize(unittest.TestCase):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertEqual(module.x_name, 'DNA')
@@ -137,7 +137,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.resize.Resize))

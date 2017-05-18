@@ -24,14 +24,14 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
         super(HistogramEqualization, self).create_settings()
 
         self.nbins = cellprofiler.setting.Integer(
-            u"Bins",
+            "Bins",
             value=256,
             minval=0,
             doc="Number of bins for image histogram."
         )
 
         self.kernel_size = cellprofiler.setting.Integer(
-            u"Kernel Size",
+            "Kernel Size",
             value=256,
             minval=1,
             doc="""The image is partitioned into tiles with dimensions specified by the kernel size. Choose a kernel
@@ -40,7 +40,7 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
         )
 
         self.mask = cellprofiler.setting.ImageNameSubscriber(
-            u"Mask",
+            "Mask",
             can_be_blank=True,
             doc="""
             Optional. Mask image must be the same size as "Input". Only unmasked points of the "Input" image are used
@@ -49,7 +49,7 @@ class HistogramEqualization(cellprofiler.module.ImageProcessing):
         )
 
         self.local = cellprofiler.setting.Binary(
-            u"Local",
+            "Local",
             False
         )
 

@@ -7,11 +7,12 @@ import cellprofiler.gui
 import cellprofiler.preferences
 import logging
 import numpy
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import uuid
 import wx
 import wx.lib.scrolledpanel
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 
@@ -327,7 +328,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         For files, the user expects to see a path, not a URL
         """
         if folder.startswith("file:"):
-            return urllib.url2pathname(folder[5:]).decode("utf8")
+            return urllib.request.url2pathname(folder[5:]).decode("utf8")
         return folder
 
     def recalc(self):

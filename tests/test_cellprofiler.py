@@ -8,8 +8,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import urllib
-from cStringIO import StringIO
+import urllib.request, urllib.parse, urllib.error
+from io import StringIO
 
 import dateutil.parser
 
@@ -115,7 +115,7 @@ class TestCellProfiler(unittest.TestCase):
                                   "-p", measurements_file,
                                   m2_file)
             self.assertTrue(os.path.exists(m2_file))
-        except IOError, e:
+        except IOError as e:
             if e.args[0] != 'http error':
                 raise e
 

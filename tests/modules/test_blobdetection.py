@@ -38,11 +38,11 @@ instance = cellprofiler.modules.blobdetection.BlobDetection()
 
 
 def test_run_dog(image, image_set, module, workspace):
-    module.x_name.value = u"example"
+    module.x_name.value = "example"
 
-    module.y_name.value = u"blobs"
+    module.y_name.value = "blobs"
 
-    module.operation.value = u"Difference of Gaussians (DoG)"
+    module.operation.value = "Difference of Gaussians (DoG)"
 
     module.on_setting_changed(module.operation, workspace.pipeline)
 
@@ -101,15 +101,15 @@ def test_run_dog(image, image_set, module, workspace):
 
 
 def test_run_doh_with_linear_scale(image, image_set, module, workspace):
-    module.x_name.value = u"example"
+    module.x_name.value = "example"
 
-    module.y_name.value = u"blobs"
+    module.y_name.value = "blobs"
 
-    module.operation.value = u"Determinant of the Hessian (DoH)"
+    module.operation.value = "Determinant of the Hessian (DoH)"
 
     module.on_setting_changed(module.operation, workspace.pipeline)
 
-    module.scale.value = u"Linear interpolation"
+    module.scale.value = "Linear interpolation"
 
     module.run(workspace)
 
@@ -166,15 +166,15 @@ def test_run_doh_with_linear_scale(image, image_set, module, workspace):
 
 
 def test_run_doh_with_logarithmic_scale(image, image_set, module, workspace):
-    module.x_name.value = u"example"
+    module.x_name.value = "example"
 
-    module.y_name.value = u"blobs"
+    module.y_name.value = "blobs"
 
-    module.operation.value = u"Determinant of the Hessian (DoH)"
+    module.operation.value = "Determinant of the Hessian (DoH)"
 
     module.on_setting_changed(module.operation, workspace.pipeline)
 
-    module.scale.value = u"Logarithm"
+    module.scale.value = "Logarithm"
 
     module.run(workspace)
 
@@ -231,15 +231,15 @@ def test_run_doh_with_logarithmic_scale(image, image_set, module, workspace):
 
 
 def test_run_log_with_linear_scale(image, image_set, module, workspace):
-    module.x_name.value = u"example"
+    module.x_name.value = "example"
 
-    module.y_name.value = u"blobs"
+    module.y_name.value = "blobs"
 
-    module.operation.value = u"Laplacian of Gaussian (LoG)"
+    module.operation.value = "Laplacian of Gaussian (LoG)"
 
     module.on_setting_changed(module.operation, workspace.pipeline)
 
-    module.scale.value = u"Linear interpolation"
+    module.scale.value = "Linear interpolation"
 
     module.run(workspace)
 
@@ -296,15 +296,15 @@ def test_run_log_with_linear_scale(image, image_set, module, workspace):
 
 
 def test_run_log_with_logarithmic_scale(image, image_set, module, workspace):
-    module.x_name.value = u"example"
+    module.x_name.value = "example"
 
-    module.y_name.value = u"blobs"
+    module.y_name.value = "blobs"
 
-    module.operation.value = u"Laplacian of Gaussian (LoG)"
+    module.operation.value = "Laplacian of Gaussian (LoG)"
 
     module.on_setting_changed(module.operation, workspace.pipeline)
 
-    module.scale.value = u"Logarithm"
+    module.scale.value = "Logarithm"
 
     module.run(workspace)
 

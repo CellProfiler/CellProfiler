@@ -5,7 +5,7 @@ import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -196,7 +196,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
-        module.prepare_group(workspace, {}, range(1, len(images_and_masks) + 1))
+        module.prepare_group(workspace, {}, list(range(1, len(images_and_masks) + 1)))
         for i in range(image_count):
             if i > 0:
                 image_set_list.purge_image_set(i - 1)

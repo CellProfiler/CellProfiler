@@ -27,7 +27,7 @@ class EdgeDetection(cellprofiler.module.ImageProcessing):
         super(EdgeDetection, self).create_settings()
 
         self.mask = cellprofiler.setting.ImageNameSubscriber(
-            u"Mask",
+            "Mask",
             can_be_blank=True,
             doc="""
             Optional. A binary image the same shape as "Input". Limit application of the edge filter to unmasked

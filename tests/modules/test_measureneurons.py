@@ -7,7 +7,7 @@ import tempfile
 import traceback
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 import scipy.ndimage
@@ -44,7 +44,7 @@ class TestMeasureNeurons(unittest.TestCase):
                     if os.path.exists(p):
                         os.remove(p)
                 except:
-                    print "Failed to remove %s" % p
+                    print("Failed to remove %s" % p)
                     traceback.print_exc()
             os.rmdir(self.temp_dir)
 

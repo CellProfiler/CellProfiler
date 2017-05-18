@@ -90,13 +90,13 @@ from cellprofiler.setting import YES, NO
 import itertools
 from cellprofiler.measurement import C_COUNT, FTR_CENTER_X, FTR_CENTER_Y
 from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
-from identify import add_object_count_measurements
-from identify import add_object_location_measurements
-from identify import get_object_measurement_columns
-from untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
-from untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
-from untangleworms import read_params
-from untangleworms import recalculate_single_worm_control_points
+from .identify import add_object_count_measurements
+from .identify import add_object_location_measurements
+from .identify import get_object_measurement_columns
+from .untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
+from .untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
+from .untangleworms import read_params
+from .untangleworms import recalculate_single_worm_control_points
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -988,7 +988,7 @@ class StraightenWorms(cpm.Module):
                            for ftr, group, segment
                            in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
-                                      range(nsegments))]
+                                      list(range(nsegments)))]
             if nstripes > 1:
                 result += [(worms_name,
                             "_".join((C_WORM, ftr,
@@ -998,7 +998,7 @@ class StraightenWorms(cpm.Module):
                            for ftr, group, stripe
                            in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
-                                      range(nstripes))]
+                                      list(range(nstripes)))]
             if nsegments > 1 and nstripes > 1:
                 result += [(worms_name,
                             "_".join((C_WORM, ftr,
@@ -1008,8 +1008,8 @@ class StraightenWorms(cpm.Module):
                            for ftr, group, stripe, segment
                            in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
-                                      range(nstripes),
-                                      range(nsegments))]
+                                      list(range(nstripes)),
+                                      list(range(nsegments)))]
         return result
 
     def get_categories(self, pipeline, object_name):
@@ -1058,8 +1058,8 @@ class StraightenWorms(cpm.Module):
             if nstripes > 1 and nsegments > 1:
                 result += [self.get_scale_name(h, v)
                            for h, v in itertools.product(
-                            range(nstripes),
-                            range(nsegments))]
+                            list(range(nstripes)),
+                            list(range(nsegments)))]
         return result
 
     def upgrade_settings(self, setting_values, variable_revision_number,
@@ -1210,7 +1210,7 @@ class StraightenWorms(cpm.Module):
                         if pixel_data.ndim == 3:
                             pixel_data = np.mean(pixel_data, 2)
                         imin, imax = [fn(pixel_data[labels != 0])
-                                      for fn in np.min, np.max]
+                                      for fn in (np.min, np.max)]
                         if imin == imax:
                             pixel_data = np.zeros(labels.shape)
                         else:

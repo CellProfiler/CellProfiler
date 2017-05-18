@@ -71,7 +71,7 @@ import logging
 import os
 import re
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import xml.dom.minidom as DOM
 
 import cellprofiler.measurement
@@ -92,7 +92,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
-import identify as I
+from . import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
 from cellprofiler.preferences import standardize_default_folder_names, \
@@ -2529,7 +2529,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
     path = training_set_directory.get_absolute_path()
     file_name = training_set_file_name.value
-    if d.has_key(file_name):
+    if file_name in d:
         result, timestamp = d[file_name]
         if (timestamp == "URL" or
                     timestamp == os.stat(os.path.join(path, file_name)).st_mtime):
@@ -2537,7 +2537,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
     if training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
         url = file_name
-        fd_or_file = urllib2.urlopen(url)
+        fd_or_file = urllib.request.urlopen(url)
         is_url = True
         timestamp = "URL"
     else:
@@ -2603,10 +2603,10 @@ def read_params(training_set_directory, training_set_file_name, d):
                 result.inv_angles_covariance_matrix[i, j] = float(text.strip())
     except:
         if is_url:
-            fd_or_file = urllib2.urlopen(url)
+            fd_or_file = urllib.request.urlopen(url)
 
         mat_params = loadmat(fd_or_file)["params"][0, 0]
-        field_names = mat_params.dtype.fields.keys()
+        field_names = list(mat_params.dtype.fields.keys())
 
         result = X()
 
@@ -2693,7 +2693,7 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     '''
 
     all_object_numbers = [
-        filter((lambda n: n > 0), np.unique(l)) for l in all_labels]
+        list(filter((lambda n: n > 0), np.unique(l))) for l in all_labels]
     if all([len(object_numbers) == 0 for object_numbers in all_object_numbers]):
         return np.zeros((0, ncontrolpoints, 2), int), np.zeros(0, int)
     module = UntangleWorms()

@@ -123,7 +123,7 @@ class TestHDF5Dict(unittest.TestCase):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.zeros(0)
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = np.arange(5)
         self.assertSequenceEqual(
-                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), range(5))
+                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), list(range(5)))
 
     def test_02_05_01_upgrade_none_multiple(self):
         # Regression test of issue #1011
@@ -138,16 +138,16 @@ class TestHDF5Dict(unittest.TestCase):
 
         self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].dtype.kind, "f")
         self.assertSequenceEqual(
-                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].tolist(), range(5))
+                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].tolist(), list(range(5)))
         self.assertSequenceEqual(
                 self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(),
-                map(lambda x: float(x) / 2, range(5)))
+                [float(x) / 2 for x in range(5)])
 
     def test_02_07_upgrade_float_to_string(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = [2.5]
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = ["alfalfa"]
         data = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
-        self.assertIsInstance(data[0], basestring)
+        self.assertIsInstance(data[0], str)
 
     def test_02_08_write_twice(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2)] = [1.2, 3.4]
@@ -1138,7 +1138,7 @@ class TestHDFCSV(HDF5DictTessstBase):
              "rocks": ["granite", "basalt", "limestone"]}
         csv = H5DICT.HDFCSV(self.hdf_file, "csv")
         csv.set_all(d)
-        for key, strings in d.iteritems():
+        for key, strings in d.items():
             column = csv[key]
             self.assertEqual(len(column), len(strings))
             for s0, s1 in zip(strings, column):
@@ -1153,8 +1153,8 @@ class TestHDFCSV(HDF5DictTessstBase):
         for key in d:
             self.assertIn(key, csv.get_column_names())
             self.assertIn(key, csv)
-            self.assertIn(key, csv.keys())
-            self.assertIn(key, csv.iterkeys())
+            self.assertIn(key, list(csv.keys()))
+            self.assertIn(key, iter(csv.keys()))
 
 
 class TestVStringArray(HDF5DictTessstBase):
@@ -1237,7 +1237,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(a[0], "")
 
     def test_04_04_get_unicode(self):
-        s = u"\u03b4x"
+        s = "\u03b4x"
         a = H5DICT.VStringArray(self.hdf_file)
         a[0] = s
         self.assertEqual(a[0], s)
@@ -1494,7 +1494,7 @@ class TestStringReference(HDF5DictTessstBase):
 
     def test_01_05_unicode(self):
         sr = H5DICT.StringReferencer(self.hdf_file.create_group("test"))
-        s = u'\u03c0r\u00b2'
+        s = '\u03c0r\u00b2'
         result = sr.get_string_refs([s])
         self.assertEqual(len(result), 1)
         rstrings = sr.get_strings(result)

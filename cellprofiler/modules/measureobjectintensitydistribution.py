@@ -570,7 +570,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
         name = (object_name if center_object_name is None
                 else "%s_%s" % (object_name, center_object_name))
-        if dd.has_key(name):
+        if name in dd:
             normalized_distance, i_center, j_center, good_mask = dd[name]
         else:
             d_to_edge = distance_to_edge(labels)
@@ -972,7 +972,7 @@ class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
 
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
         '''Return True if a choice should be displayed'''
@@ -1001,7 +1001,7 @@ class MORDImageNameSubscriber(cps.ImageNameSubscriber):
 
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
         '''Return True if a choice should be displayed'''

@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from cellprofiler.preferences import set_headless
@@ -34,7 +34,7 @@ class TestAlign(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        for index, (pixels, mask) in enumerate(zip(images, masks)):
+        for index, (pixels, mask) in enumerate(list(zip(images, masks))):
             if mask is None:
                 image = cpi.Image(pixels)
             else:

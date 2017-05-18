@@ -1,6 +1,6 @@
 '''test_knime_bridge.py - test the Knime bridge'''
 
-from cStringIO import StringIO
+from io import StringIO
 import json
 import numpy as np
 import unittest

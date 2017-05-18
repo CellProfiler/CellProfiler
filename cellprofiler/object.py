@@ -119,8 +119,8 @@ class Objects(object):
         sparse = self.__segmented.sparse
         return numpy.column_stack(
                 [sparse[axis] for axis in
-                 "y", "x",
-                 "label"])
+                 ("y", "x",
+                 "label")])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -509,7 +509,7 @@ class Segmentation(object):
             else:
                 self.__shape = tuple(
                         [numpy.max(sparse[axis]) + 2
-                         if axis in sparse.dtype.fields.keys() else 1
+                         if axis in list(sparse.dtype.fields.keys()) else 1
                          for axis in ("c", "t", "z", "y", "x")])
         return self.__shape
 
@@ -580,7 +580,7 @@ class Segmentation(object):
         axes = list(("c", "t", "z", "y", "x"))
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in axes, self.shape]
+            for aa in (axes, self.shape)]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping
@@ -635,7 +635,7 @@ class Segmentation(object):
         available_columns = []
         lexsort_columns = []
         for axis in ("c", "t", "z", "y", "x"):
-            if axis in sparse.dtype.fields.keys():
+            if axis in list(sparse.dtype.fields.keys()):
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
                 lexsort_columns.insert(0, sparse[axis])
@@ -808,14 +808,14 @@ class ObjectSet(object):
 
     def add_objects(self, objects, name):
         assert isinstance(objects, Objects), "objects must be an instance of CellProfiler.Objects"
-        assert ((not self.__objects_by_name.has_key(name)) or
+        assert ((name not in self.__objects_by_name) or
                 self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 
     def get_object_names(self):
         """Return the names of all of the objects
         """
-        return self.__objects_by_name.keys()
+        return list(self.__objects_by_name.keys())
 
     object_names = property(get_object_names)
 
@@ -828,7 +828,7 @@ class ObjectSet(object):
     def all_objects(self):
         """Return a list of name / objects tuples
         """
-        return self.__objects_by_name.items()
+        return list(self.__objects_by_name.items())
 
     def get_types(self):
         '''Get then names of types of per-image set "things"
@@ -837,7 +837,7 @@ class ObjectSet(object):
         for instance ImageJ data tables. This function returns the thing types
         defined in the object set at this stage of the pipeline.
         '''
-        return self.__types_and_instances.keys()
+        return list(self.__types_and_instances.keys())
 
     def add_type_instance(self, type_name, instance_name, instance):
         '''Add a named instance of a type

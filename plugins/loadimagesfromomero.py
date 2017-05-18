@@ -164,7 +164,7 @@ def create_omero_gateway(host=DEFAULT_OMERO_HOST, port=DEFAULT_OMERO_PORT,
         omero_client = omero.client(host, port)
         omero_session = omero_client.createSession(username, password)
         omero_gateway = omero_session.createGateway()
-    except Exception, err:
+    except Exception as err:
         raise RuntimeError("Unable to connect to OMERO server %s@%s:%d" %
                            (username, host, int(port)), err)
     return omero_client, omero_session, omero_gateway
@@ -360,10 +360,10 @@ class OmeroLoadImages(cpm.Module):
             return False
 
         if cpp.get_headless():
-            print 'OmeroLoadImages running in headless mode: image directory parameter will be used as omero object id'
+            print('OmeroLoadImages running in headless mode: image directory parameter will be used as omero object id')
             self.omero_object_id.set_value(int(cpp.get_default_image_directory()))
-            print 'omero object id = %d' % self.omero_object_id.value
-            print 'omero object type = %s' % self.omero_object.value
+            print('omero object id = %d' % self.omero_object_id.value)
+            print('omero object type = %s' % self.omero_object.value)
 
         self.create_omero_gateway()
         if self.omero_object == MS_IMAGE:
@@ -412,7 +412,7 @@ class OmeroLoadImages(cpm.Module):
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
         p.map = {}
-        p.map["oid"] = rlong(long(dataset_id))
+        p.map["oid"] = rlong(int(dataset_id))
         if limit is not None:
             f = omero.sys.Filter()
             f.limit = rint(int(limit))
@@ -432,7 +432,7 @@ class OmeroLoadImages(cpm.Module):
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
         p.map = {}
-        p.map["oid"] = rlong(long(plate_id))
+        p.map["oid"] = rlong(int(plate_id))
         if limit is not None:
             f = omero.sys.Filter()
             f.limit = rint(int(limit))
@@ -466,7 +466,7 @@ class OmeroLoadImages(cpm.Module):
     def load_image_set_info(self, image_set):
         '''Loads the image set information, creating the providers'''
         d = self.get_dictionary(image_set)
-        for image_name in d.keys():
+        for image_name in list(d.keys()):
             values = d[image_name]
             provider, version = values[:2]
             if (provider, version) == (P_OMERO, V_OMERO):
@@ -481,10 +481,10 @@ class OmeroLoadImages(cpm.Module):
     def get_dictionary(self, image_set):
         '''Get the module's legacy fields dictionary for this image set'''
         key = "%s:%d" % (self.module_name, self.module_num)
-        if not image_set.legacy_fields.has_key(key):
+        if key not in image_set.legacy_fields:
             image_set.legacy_fields[key] = {}
         d = image_set.legacy_fields[key]
-        if not d.has_key(image_set.image_number):
+        if image_set.image_number not in d:
             d[image_set.image_number] = {}
         return d[image_set.image_number]
 
@@ -553,10 +553,10 @@ class OmeroLoadImages(cpm.Module):
         if cpp.get_headless():  # headless mode
             for channel in self.channels:
                 image_name, channel_number = channel.cpimage_name.value, channel.channel_number.value
-                print "--- image name: %s\tchannel: %s" % (image_name, channel_number)
+                print("--- image name: %s\tchannel: %s" % (image_name, channel_number))
                 (header, row) = workspace.display_data.statistics[channel_number]
                 for i in range(0, len(header)):
-                    print "\t%s: %s" % (header[i], row[i])
+                    print("\t%s: %s" % (header[i], row[i]))
 
     def post_run(self, workspace):
         '''Disconnect from the omero server after the run completes'''
@@ -640,7 +640,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
         '''
         self.__name = name
         self.__gateway = gateway
-        self.__pixels_id = long(pixels_id)
+        self.__pixels_id = int(pixels_id)
         self.__z = int(z)
         self.__c = int(c)
         self.__t = int(t)

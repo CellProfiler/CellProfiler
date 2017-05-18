@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -390,7 +390,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         column_dictionary = {}
         for object_name, feature, coltype in columns:
             key = (object_name, feature)
-            self.assertFalse(column_dictionary.has_key(key))
+            self.assertFalse(key in column_dictionary)
             self.assertEqual(coltype, cpmeas.COLTYPE_FLOAT)
             column_dictionary[key] = (object_name, feature, coltype)
 
@@ -405,7 +405,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                            feature_radial_cv):
                             measurement = feature_fn(bin, bin_count, image_name)
                             key = (object_name, measurement)
-                            self.assertTrue(column_dictionary.has_key(key))
+                            self.assertTrue(key in column_dictionary)
                             del column_dictionary[key]
         self.assertEqual(len(column_dictionary), 0)
 
@@ -719,7 +719,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
 
     def test_03_03_02_half_circle_zernike(self):
         i, j = np.mgrid[-50:50, -50:50]
-        ii, jj = [_.astype(float) + .5 for _ in i, j]
+        ii, jj = [_.astype(float) + .5 for _ in (i, j)]
         labels = (np.sqrt(ii * ii + jj * jj) <= 40).astype(int)
         image = np.zeros(labels.shape)
         image[ii > 0] = 1
@@ -856,7 +856,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
 
     def test_03_07_two_circles(self):
         i, j = np.mgrid[-50:51, -50:51]
-        i, j = [np.hstack((x, x)) for x in i, j]
+        i, j = [np.hstack((x, x)) for x in (i, j)]
         d = np.sqrt(i * i + j * j)
         labels = (d <= 40).astype(int)
         labels[:, (j.shape[1] / 2):] *= 2

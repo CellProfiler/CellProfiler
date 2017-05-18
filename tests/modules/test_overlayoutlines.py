@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -68,7 +68,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
     Select outline color\x3A:Green
 """
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines))
@@ -111,7 +111,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
 """
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines))

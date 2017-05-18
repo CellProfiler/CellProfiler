@@ -54,7 +54,7 @@ class HeadlessConfig(object):
     WriteBool = Write
 
     def Exists(self, kwd):
-        return self.__preferences.has_key(kwd)
+        return kwd in self.__preferences
 
     def GetEntryType(self, kwd):
         '''Get the data type of the registry key.
@@ -100,7 +100,7 @@ def get_awt_headless():
     '''Return True if Java is to be started with AWT headless, False to use AWT'''
     global __awt_headless
     if __awt_headless is None:
-        return get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB")
+        return get_headless() and "CELLPROFILER_USE_XVFB" not in os.environ
     return __awt_headless
 
 
@@ -185,7 +185,7 @@ def config_read(key):
         #
         import wx
         shutup = wx.LogNull()
-    if __cached_values.has_key(key):
+    if key in __cached_values:
         return __cached_values[key]
     if get_config().Exists(key):
         if not __is_headless:
@@ -617,7 +617,7 @@ def tuple_to_color(t, default=(0, 0, 0)):
     import wx
     try:
         return wx.Colour(red=int(t[0]), green=int(t[1]), blue=int(t[2]))
-    except IndexError, ValueError:
+    except IndexError as ValueError:
         return tuple_to_color(default)
 
 
@@ -653,7 +653,7 @@ def get_error_color():
             try:
                 __error_color = tuple_to_color(color_string.split(','))
             except:
-                print "Failed to parse error color string: " + color_string
+                print("Failed to parse error color string: " + color_string)
                 traceback.print_exc()
                 __error_color = default_color
     return __error_color
@@ -913,7 +913,7 @@ def set_data_file(path):
 
 
 def standardize_default_folder_names(setting_values, slot):
-    if setting_values[slot] in FOLDER_CHOICE_TRANSLATIONS.keys():
+    if setting_values[slot] in list(FOLDER_CHOICE_TRANSLATIONS.keys()):
         replacement = FOLDER_CHOICE_TRANSLATIONS[setting_values[slot]]
     elif (setting_values[slot].startswith("Default Image") or
               setting_values[slot].startswith("Default image") or
@@ -1733,7 +1733,7 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
     uid = uuid.uuid4()
     for i in range(0, n_items, freq):
         report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
-        output += map(fn_map, sequence[i:i + freq])
+        output += list(map(fn_map, sequence[i:i + freq]))
     report_progress(uuid, 1, "Done")
     return output
 

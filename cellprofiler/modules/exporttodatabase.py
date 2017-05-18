@@ -273,10 +273,10 @@ def get_results_as_list(cursor):
 
 def get_next_result(cursor):
     try:
-        return cursor.next()
-    except MySQLdb.Error, e:
+        return next(cursor)
+    except MySQLdb.Error as e:
         raise Exception('Error retrieving next result from database: %s' % e)
-    except StopIteration, e:
+    except StopIteration as e:
         return None
 
 
@@ -1516,7 +1516,7 @@ class ExportToDatabase(cpm.Module):
             if self.objects_choice == O_SELECT:
                 selected_objs = self.objects_list.value.rsplit(',')
             elif self.objects_choice == O_ALL:
-                selected_objs = pipeline.get_provider_dictionary(cps.OBJECT_GROUP).keys()
+                selected_objs = list(pipeline.get_provider_dictionary(cps.OBJECT_GROUP).keys())
 
             if len(selected_objs) > 1:
                 # Check whether each selected object comes from an Identify module. If it does, look for its parent.
@@ -1528,15 +1528,15 @@ class ExportToDatabase(cpm.Module):
                             if len(parent) > 0:
                                 d[obj] = parent[0]
                 # For objects with no parents (primary), use the object itself
-                d = dict(zip(d.keys(), [key if value is None else value for (key, value) in d.items()]))
+                d = dict(list(zip(list(d.keys()), [key if value is None else value for (key, value) in list(d.items())])))
 
                 # Only those objects which have parents in common should be written together
                 if len(set(d.values())) > 1:
                     # Pick out the parent with the lowest representation in the selected object list
                     mismatched_parent = \
-                        sorted(zip([d.values().count(item) for item in set(d.values())], set(d.values())))[0][1]
+                        sorted(zip([list(d.values()).count(item) for item in set(d.values())], set(d.values())))[0][1]
                     # Find the objects that this parent goes with
-                    mismatched_objs = [key for (key, value) in d.items() if value == mismatched_parent]
+                    mismatched_objs = [key for (key, value) in list(d.items()) if value == mismatched_parent]
                     msg = "%s is not in a 1:1 relationship with the other objects, which may cause downstream problems.\n " % ",".join(
                             mismatched_objs)
                     msg += "You may want to choose another object container"
@@ -1553,7 +1553,7 @@ class ExportToDatabase(cpm.Module):
                                        self.db_user.value,
                                        self.db_passwd.value,
                                        self.db_name.value)
-        except MySQLdb.Error, error:
+        except MySQLdb.Error as error:
             if error.args[0] == 1045:
                 msg = "Incorrect username or password"
             elif error.args[0] == 1049:
@@ -1746,7 +1746,7 @@ class ExportToDatabase(cpm.Module):
     def run(self, workspace):
         if self.want_image_thumbnails:
             import PIL.Image as Image
-            from StringIO import StringIO
+            from io import StringIO
             measurements = workspace.measurements
             image_set = workspace.image_set
             for name in self.thumbnail_image_names.get_selections():
@@ -1859,7 +1859,7 @@ class ExportToDatabase(cpm.Module):
         '''
         db_file = self.make_full_filename(self.sqlite_file.value)
         with DBContext(self) as (connection, cursor):
-            return self.get_relationship_types(cursor).items()
+            return list(self.get_relationship_types(cursor).items())
 
     def grt_interaction_to_dict(self, json_struct):
         '''Handle the conversion from json mangled structure to dictionary
@@ -2288,8 +2288,8 @@ INSERT INTO %s (name) values ('%s')""" % (
 
         properties = self.get_property_file_text(workspace)
         for p in properties:
-            for k, v in p.properties.iteritems():
-                if isinstance(v, unicode):
+            for k, v in p.properties.items():
+                if isinstance(v, str):
                     v = v.encode('utf-8')
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
@@ -2299,9 +2299,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                     MySQLdb.escape_string(v), T_EXPERIMENT)
                 statements.append(statement)
 
-        experiment_columns = filter(
-                lambda x: x[0] == cpmeas.EXPERIMENT,
-                workspace.pipeline.get_measurement_columns())
+        experiment_columns = [x for x in workspace.pipeline.get_measurement_columns() if x[0] == cpmeas.EXPERIMENT]
         experiment_coldefs = [
             "%s %s" % (x[1],
                        "TEXT" if x[2].startswith(cpmeas.COLTYPE_VARCHAR)
@@ -2325,7 +2323,7 @@ CREATE TABLE %s (
             value = workspace.measurements.get_experiment_measurement(ftr)
 
             if column[2].startswith(cpmeas.COLTYPE_VARCHAR):
-                if isinstance(value, unicode):
+                if isinstance(value, str):
                     value = value.encode('utf-8')
                 if self.db_type != DB_SQLITE:
                     value = MySQLdb.escape_string(value)
@@ -2409,11 +2407,11 @@ CREATE TABLE %s (
 
         # Produce a list of columns from each of the separate tables
         list_of_columns = []
-        all_objects = dict(zip(object_names, [self.get_table_name(object_name) for object_name in object_names]))
+        all_objects = dict(list(zip(object_names, [self.get_table_name(object_name) for object_name in object_names])))
 
         column_defs = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
-        for (current_object, current_table) in all_objects.iteritems():
+        for (current_object, current_table) in all_objects.items():
             list_of_columns.append([])
             for column_def in column_defs:
                 obname, feature, ftype = column_def[:3]
@@ -2430,7 +2428,7 @@ CREATE TABLE %s (
         statement = "CREATE OR REPLACE VIEW " if self.db_type == DB_MYSQL else "CREATE VIEW "
         statement += "%s AS SELECT %s FROM %s" % (object_table, ",".join(all_columns), all_objects[selected_object])
 
-        object_table_pairs = all_objects.items()
+        object_table_pairs = list(all_objects.items())
         object_table_pairs = [x for x in object_table_pairs if x[0] != selected_object]
         for (current_object, current_table) in object_table_pairs:
             statement = " ".join((statement, "INNER JOIN %s ON" % current_table, \
@@ -2461,7 +2459,7 @@ CREATE TABLE %s (
         relationship_table_name = self.get_table_name(T_RELATIONSHIPS)
         statements += [
             "DROP TABLE IF EXISTS %s" % x for x in
-            relationship_table_name, relationship_type_table_name]
+            (relationship_table_name, relationship_type_table_name)]
         #
         # The relationship type table has the module #, relationship name
         # and object names of every relationship reported by
@@ -2811,7 +2809,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if isinstance(value, np.ndarray):
                     value = value[0]
                 if coltype.startswith(cpmeas.COLTYPE_VARCHAR):
-                    if isinstance(value, str) or isinstance(value, unicode):
+                    if isinstance(value, str) or isinstance(value, str):
                         value = '"' + MySQLdb.escape_string(value) + '"'
                     elif value is None:
                         value = "NULL"
@@ -2928,7 +2926,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return not post_group
         if not hasattr(column[3], "has_key"):
             return not post_group
-        if not column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP):
+        if cpmeas.MCA_AVAILABLE_POST_GROUP not in column[3]:
             return not post_group
         return (post_group if column[3][cpmeas.MCA_AVAILABLE_POST_GROUP]
                 else not post_group)
@@ -3259,10 +3257,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
     def write_post_run_measurements(self, workspace):
         '''Write any experiment measurements marked as post-run'''
         columns = workspace.pipeline.get_measurement_columns()
-        columns = filter(
+        columns = list(filter(
                 (lambda c:
                  c[0] == cpmeas.EXPERIMENT and len(c) > 3 and
-                 c[3].get(cpmeas.MCA_AVAILABLE_POST_RUN, False)), columns)
+                 c[3].get(cpmeas.MCA_AVAILABLE_POST_RUN, False)), columns))
         if len(columns) > 0:
             statement = "UPDATE %s SET " % self.get_table_name(cpmeas.EXPERIMENT)
             assignments = []
@@ -3798,13 +3796,13 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                          for name in m.get_all_measurements(cpmeas.IMAGE, feature)
                          if name is not None]
                 if len(names) > 0:
-                    FileNameWidth = max(FileNameWidth, np.max(map(len, names)))
+                    FileNameWidth = max(FileNameWidth, np.max(list(map(len, names))))
             elif feature.startswith(C_PATH_NAME):
                 names = [name
                          for name in m.get_all_measurements(cpmeas.IMAGE, feature)
                          if name is not None]
                 if len(names) > 0:
-                    PathNameWidth = max(PathNameWidth, np.max(map(len, names)))
+                    PathNameWidth = max(PathNameWidth, np.max(list(map(len, names))))
         return FileNameWidth, PathNameWidth
 
     def get_table_prefix(self):
@@ -3822,7 +3820,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
     def get_pipeline_measurement_columns(self, pipeline, image_set_list, remove_postgroup_key=False):
         '''Get the measurement columns for this pipeline, possibly cached'''
         d = self.get_dictionary(image_set_list)
-        if not d.has_key(D_MEASUREMENT_COLUMNS):
+        if D_MEASUREMENT_COLUMNS not in d:
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
             d[D_MEASUREMENT_COLUMNS] = self.filter_measurement_columns(
                     d[D_MEASUREMENT_COLUMNS])
@@ -4237,12 +4235,12 @@ class ColumnNameMapping:
         return self.__dictionary[feature_name]
 
     def keys(self):
-        return self.__dictionary.keys()
+        return list(self.__dictionary.keys())
 
     def values(self):
         if not self.__mapped:
             self.do_mapping()
-        return self.__dictionary.values()
+        return list(self.__dictionary.values())
 
     def do_mapping(self):
         """Scan the dictionary for feature names > max_len and shorten"""
@@ -4263,9 +4261,9 @@ class ColumnNameMapping:
             orig_name = name
             if not re.match(valid_name_regexp, name):
                 name = re.sub("[^0-9a-zA-Z_$]", "_", name)
-                if reverse_dictionary.has_key(name):
+                if name in reverse_dictionary:
                     i = 1
-                    while reverse_dictionary.has_key(name + str(i)):
+                    while name + str(i) in reverse_dictionary:
                         i += 1
                     name = name + str(i)
             starting_name = name
@@ -4292,7 +4290,7 @@ class ColumnNameMapping:
                             break
 
                 rng = None
-                while name in reverse_dictionary.keys():
+                while name in list(reverse_dictionary.keys()):
                     # if, improbably, removing the vowels hit an existing name
                     # try deleting "random" characters. This has to be
                     # done in a very repeatable fashion, so I use a message
@@ -4302,7 +4300,7 @@ class ColumnNameMapping:
                         rng = random_number_generator(starting_name)
                     name = starting_name
                     while len(name) > self.__max_len:
-                        index = rng.next() % len(name)
+                        index = next(rng) % len(name)
                         name = name[:index] + name[index + 1:]
             reverse_dictionary.pop(orig_name)
             reverse_dictionary[name] = key
@@ -4343,7 +4341,7 @@ class SQLiteCommands(object):
     def rollback(self):
         self.commands_and_bindings = []
 
-    def next(self):
+    def __next__(self):
         raise NotImplementedError(
                 "The SQLite interaction handler can only write to the database")
 

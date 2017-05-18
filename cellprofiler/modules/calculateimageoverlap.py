@@ -1,5 +1,6 @@
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
+from functools import reduce
 
 __doc__ = '''
 <b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
@@ -956,7 +957,7 @@ class CalculateImageOverlap(cpm.Module):
         #
         # Filter out all unmasked points
         #
-        ii, jj = [x[labels_mask] for x in ii, jj]
+        ii, jj = [x[labels_mask] for x in (ii, jj)]
         if len(ii) == 0:
             return np.zeros(0, np.int32)
         #

@@ -9,7 +9,7 @@ import cellprofiler.preferences
 import cellprofiler.preferences
 import centrosome.cpmorphology
 import centrosome.outline
-import tools
+from . import tools
 import csv
 import functools
 import javabridge
@@ -130,7 +130,7 @@ def make_1_or_3_channels(im):
     if im.shape[2] == 3:
         return (im * 255).clip(0, 255).astype(numpy.uint8)
     out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.float32)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
+    for chanidx, weights in zip(list(range(im.shape[2])), wraparound(COLOR_VALS)):
         for idx, v in enumerate(weights):
             out[:, :, idx] += v * im[:, :, chanidx]
     return (out * 255).clip(0, 255).astype(numpy.uint8)
@@ -142,7 +142,7 @@ def make_3_channels_float(im):
     if im.ndim == 2:
         return numpy.dstack((im, im, im)).astype(numpy.double).clip(0, 1)
     out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.double)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
+    for chanidx, weights in zip(list(range(im.shape[2])), wraparound(COLOR_VALS)):
         for idx, v in enumerate(weights):
             out[:, :, idx] += v * im[:, :, chanidx]
     return out.clip(0, 1)
@@ -473,7 +473,7 @@ class Figure(wx.Frame):
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
         """
-        if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
+        if any([not hasattr(self, bar) for bar in ("navtoolbar", "status_bar")]):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
@@ -552,7 +552,7 @@ class Figure(wx.Frame):
 
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
-        x, y = [int(round(xy)) for xy in xi, yi]
+        x, y = [int(round(xy)) for xy in (xi, yi)]
         if not self.in_bounds(im, x, y):
             return fields
         if im.dtype.type == numpy.uint8:
@@ -628,7 +628,7 @@ class Figure(wx.Frame):
                     if isinstance(
                             artist, cellprofiler.gui.artist.CPImageArtist):
                         fields += ["%s: %.4f" % (k, v) for k, v in
-                                   artist.get_channel_values(xi, yi).items()]
+                                   list(artist.get_channel_values(xi, yi).items())]
         else:
             fields = []
         return fields
@@ -804,7 +804,7 @@ class Figure(wx.Frame):
         popup = self.get_imshow_menu(subplot_xy)
         self.PopupMenu(popup, pos)
 
-    def get_imshow_menu(self, (x, y)):
+    def get_imshow_menu(self, xxx_todo_changeme):
         """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
@@ -812,6 +812,7 @@ class Figure(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         """
+        (x, y) = xxx_todo_changeme
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
@@ -1272,7 +1273,7 @@ class Figure(wx.Frame):
             else:
                 tick_vmax = image.max()
 
-            if isinstance(colormap, basestring):
+            if isinstance(colormap, str):
                 colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
             # NOTE: We bind this event each time imshow is called to a new closure
@@ -1597,7 +1598,7 @@ class Figure(wx.Frame):
         ctrl.CreateGrid(nrows, ncols)
         if col_labels is not None:
             for i, value in enumerate(col_labels):
-                ctrl.SetColLabelValue(i, unicode(value))
+                ctrl.SetColLabelValue(i, str(value))
         else:
             ctrl.SetColLabelSize(0)
         if row_labels is not None:
@@ -1605,7 +1606,7 @@ class Figure(wx.Frame):
             ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
             max_width = 0
             for i, value in enumerate(row_labels):
-                value = unicode(value)
+                value = str(value)
                 ctrl.SetRowLabelValue(i, value)
                 max_width = max(
                         max_width,
@@ -1616,7 +1617,7 @@ class Figure(wx.Frame):
 
         for i, row in enumerate(statistics):
             for j, value in enumerate(row):
-                ctrl.SetCellValue(i, j, unicode(value))
+                ctrl.SetCellValue(i, j, str(value))
                 ctrl.SetReadOnly(i, j, True)
         ctrl.AutoSize()
         ctrl.Show()
@@ -1898,14 +1899,14 @@ class Figure(wx.Frame):
         plot = axes.imshow(clean_data, cmap=cmap, interpolation='nearest',
                            shape=data.shape)
         axes.set_title(title)
-        axes.set_xticks(range(ncols))
-        axes.set_yticks(range(nrows))
-        axes.set_xticklabels(range(1, ncols + 1), minor=False)
+        axes.set_xticks(list(range(ncols)))
+        axes.set_yticks(list(range(nrows)))
+        axes.set_xticklabels(list(range(1, ncols + 1)), minor=False)
         axes.set_yticklabels(alphabet[:nrows], minor=False)
         axes.axis('image')
 
         if colorbar and not numpy.all(numpy.isnan(data)):
-            if self.colorbar.has_key(axes):
+            if axes in self.colorbar:
                 cb = self.colorbar[axes]
                 cb.set_clim(numpy.min(clean_data), numpy.max(clean_data))
                 cb.update_normal(clean_data)
@@ -1946,7 +1947,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
     data = numpy.zeros(plate_shape)
     data[:] = numpy.nan
     display_error = True
-    for well, val in plate_dict.items():
+    for well, val in list(plate_dict.items()):
         r = alphabet.index(well[0].upper())
         c = int(well[1:]) - 1
         if r >= data.shape[0] or c >= data.shape[1]:
@@ -1978,13 +1979,13 @@ def show_image(url, parent=None, needs_raise_after=True):
         wx.MessageBox('Failed to open file, "%s"' % filename,
                       caption="File open error")
         return
-    except javabridge.JavaException, je:
+    except javabridge.JavaException as je:
         wx.MessageBox(
                 'Could not open "%s" as an image.' % filename,
                 caption="File format error")
         return
 
-    except Exception, e:
+    except Exception as e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None,
                              "Failed to load %s" % url,

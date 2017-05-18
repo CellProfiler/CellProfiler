@@ -385,7 +385,7 @@ class TestFilterSetting(unittest.TestCase):
         f1 = cps.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
                                         [cps.Filter.LITERAL_PREDICATE])
         f = cps.Filter("", [f1])
-        f.build([cps.Filter.OR_PREDICATE, [f1, "bar"], [f1, u"baz"]])
+        f.build([cps.Filter.OR_PREDICATE, [f1, "bar"], [f1, "baz"]])
         self.assertEqual(f.value, 'or (foo "bar") (foo "baz")')
 
     def test_02_04_build_escaped_literal(self):

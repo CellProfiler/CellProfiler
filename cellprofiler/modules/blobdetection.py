@@ -28,15 +28,15 @@ class BlobDetection(cellprofiler.module.Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            u"Input",
+            "Input",
             doc="""
             A image or volume to detect blobs in.
             """
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
-            u"Output",
-            u"BlobDetection",
+            "Output",
+            "BlobDetection",
             doc="""
             Name the output. The output of this module is a binary image, or volume, with a black (zero-valued)
             background and white (one-valued) circles, or spheres, centered at detected blobs. Each circle, or sphere,
@@ -45,13 +45,13 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.operation = cellprofiler.setting.Choice(
-            u"Operation",
+            "Operation",
             [
-                u"Determinant of the Hessian (DoH)",
-                u"Difference of Gaussians (DoG)",
-                u"Laplacian of Gaussian (LoG)"
+                "Determinant of the Hessian (DoH)",
+                "Difference of Gaussians (DoG)",
+                "Laplacian of Gaussian (LoG)"
             ],
-            u"Laplacian of Gaussian (LoG)",
+            "Laplacian of Gaussian (LoG)",
             doc="""
             Select a method for detecting blobs.
             <ul>
@@ -76,7 +76,7 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.minimum = cellprofiler.setting.Float(
-            u"Minimum",
+            "Minimum",
             1.0,
             doc="""
             Set this to a low value to detect smaller blobs. When the Operation is "Difference of Gaussians (DoG)" or
@@ -87,7 +87,7 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.maximum = cellprofiler.setting.Float(
-            u"Maximum",
+            "Maximum",
             50.0,
             doc="""
             Set this to a high value to detect larger blobs. When the Operation is "Difference of Gaussians (DoG)" or
@@ -98,7 +98,7 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.ratio = cellprofiler.setting.Float(
-            u"Ratio",
+            "Ratio",
             1.6,
             doc="""
             Step size for values between "Minimum" and "Maximum".
@@ -106,7 +106,7 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.count = cellprofiler.setting.Integer(
-            u"Count",
+            "Count",
             10,
             doc="""
             Number of intermediate values between "Minimum" and "Maximum".
@@ -114,7 +114,7 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.threshold = cellprofiler.setting.Float(
-            u"Threshold",
+            "Threshold",
             0.2,
             doc="""
             The absolute lower bound for intensity of detectable blobs. Regions with intensity less than this value are
@@ -123,7 +123,7 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.overlap = cellprofiler.setting.Float(
-            u"Overlap",
+            "Overlap",
             0.5,
             minval=0.0,
             maxval=1.0,
@@ -133,12 +133,12 @@ class BlobDetection(cellprofiler.module.Module):
         )
 
         self.scale = cellprofiler.setting.Choice(
-            u"Scale",
+            "Scale",
             [
-                u"Linear interpolation",
-                u"Logarithm"
+                "Linear interpolation",
+                "Logarithm"
             ],
-            u"Linear interpolation",
+            "Linear interpolation",
             doc="""
             Select the method for determining intermediate values between "Minimum" and "Maximum":
             <ul>
@@ -177,12 +177,12 @@ class BlobDetection(cellprofiler.module.Module):
             self.maximum
         ]
 
-        if self.operation.value in [u"Determinant of the Hessian (DoH)", u"Laplacian of Gaussian (LoG)"]:
+        if self.operation.value in ["Determinant of the Hessian (DoH)", "Laplacian of Gaussian (LoG)"]:
             settings = settings + [
                 self.count
             ]
 
-        if self.operation.value == u"Difference of Gaussians (DoG)":
+        if self.operation.value == "Difference of Gaussians (DoG)":
             settings = settings + [
                 self.ratio
             ]
@@ -192,7 +192,7 @@ class BlobDetection(cellprofiler.module.Module):
             self.overlap
         ]
 
-        if self.operation.value in [u"Determinant of the Hessian (DoH)", u"Laplacian of Gaussian (LoG)"]:
+        if self.operation.value in ["Determinant of the Hessian (DoH)", "Laplacian of Gaussian (LoG)"]:
             settings = settings + [
                 self.scale
             ]
@@ -203,7 +203,7 @@ class BlobDetection(cellprofiler.module.Module):
         if not setting == self.operation:
             return
 
-        if setting.value == u"Determinant of the Hessian (DoH)":
+        if setting.value == "Determinant of the Hessian (DoH)":
             self.minimum.value = 1.0
 
             self.maximum.value = 30.0
@@ -214,9 +214,9 @@ class BlobDetection(cellprofiler.module.Module):
 
             self.overlap.value = 0.5
 
-            self.scale.value = u"Linear interpolation"
+            self.scale.value = "Linear interpolation"
 
-        if setting.value == u"Difference of Gaussians (DoG)":
+        if setting.value == "Difference of Gaussians (DoG)":
             self.minimum.value = 1.0
 
             self.maximum.value = 50.0
@@ -227,7 +227,7 @@ class BlobDetection(cellprofiler.module.Module):
 
             self.overlap.value = 0.5
 
-        if setting.value == u"Laplacian of Gaussian (LoG)":
+        if setting.value == "Laplacian of Gaussian (LoG)":
             self.minimum.value = 1.0
 
             self.maximum.value = 50.0
@@ -238,7 +238,7 @@ class BlobDetection(cellprofiler.module.Module):
 
             self.overlap.value = 0.5
 
-            self.scale.value = u"Linear interpolation"
+            self.scale.value = "Linear interpolation"
 
     def run(self, workspace):
         x_name = self.x_name.value
@@ -288,7 +288,7 @@ class BlobDetection(cellprofiler.module.Module):
     def __detect_blobs(self, data):
         operation = self.operation.value
 
-        if operation == u"Difference of Gaussians (DoG)":
+        if operation == "Difference of Gaussians (DoG)":
             return skimage.feature.blob_dog(
                 data,
                 min_sigma=self.minimum.value,
@@ -298,9 +298,9 @@ class BlobDetection(cellprofiler.module.Module):
                 overlap=self.overlap.value
             )
 
-        log_scale = True if self.scale.value == u"Logarithm" else False
+        log_scale = True if self.scale.value == "Logarithm" else False
 
-        if operation == u"Determinant of the Hessian (DoH)":
+        if operation == "Determinant of the Hessian (DoH)":
             return skimage.feature.blob_doh(
                 data,
                 min_sigma=self.minimum.value,
@@ -311,7 +311,7 @@ class BlobDetection(cellprofiler.module.Module):
                 log_scale=log_scale
             )
 
-        if operation == u"Laplacian of Gaussian (LoG)":
+        if operation == "Laplacian of Gaussian (LoG)":
             return skimage.feature.blob_log(
                 data,
                 min_sigma=self.minimum.value,

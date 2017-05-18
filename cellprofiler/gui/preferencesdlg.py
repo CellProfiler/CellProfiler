@@ -102,9 +102,9 @@ class PreferencesDlg(wx.Dialog):
                 ctl = wx.CheckBox(scrollpanel, -1)
                 ctl.Value = getter()
             elif isinstance(ui_info, IntegerPreference):
-                minval = (-sys.maxint if ui_info.minval is None
+                minval = (-sys.maxsize if ui_info.minval is None
                           else ui_info.minval)
-                maxval = (sys.maxint if ui_info.maxval is None
+                maxval = (sys.maxsize if ui_info.maxval is None
                           else ui_info.maxval)
                 ctl = wx.SpinCtrl(scrollpanel,
                                   min=minval,
@@ -132,7 +132,7 @@ class PreferencesDlg(wx.Dialog):
                     if dlg.ShowModal() == wx.ID_OK:
                         ctl.Value = dlg.Path
                         dlg.Destroy()
-            elif (isinstance(ui_info, basestring) and
+            elif (isinstance(ui_info, str) and
                       ui_info.startswith(FILEBROWSE)):
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)

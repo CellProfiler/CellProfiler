@@ -170,9 +170,9 @@ class DisplayPlatemap(cpm.Module):
         if self.show_window:
             m = workspace.get_measurements()
             # Get plates
-            plates = map(
-                    unicode,
-                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value))
+            plates = list(map(
+                    str,
+                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)))
             # Get wells
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)
@@ -195,8 +195,8 @@ class DisplayPlatemap(cpm.Module):
                 else:
                     pm_dict[plate] = {well: [data]}
 
-            for plate, sub_dict in pm_dict.items():
-                for well, vals in sub_dict.items():
+            for plate, sub_dict in list(pm_dict.items()):
+                for well, vals in list(sub_dict.items()):
                     vals = np.hstack(vals)
                     if self.agg_method == AGG_AVG:
                         pm_dict[plate][well] = np.mean(vals)

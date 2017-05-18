@@ -7,7 +7,7 @@ import sys
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 from cellprofiler.preferences import set_headless
 
@@ -167,7 +167,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 image_numbers = measurements.get_image_numbers()
                 self.assertTrue([x == i + 1 for i, x in enumerate(image_numbers)])
                 pipeline.prepare_run(workspace)
-                pipeline.prepare_group(workspace, {}, range(1, 97))
+                pipeline.prepare_group(workspace, {}, list(range(1, 97)))
                 for i in range(96):
                     image_set = image_set_list.get_image_set(i)
                     for image_name in ('DNA', 'Cytoplasm'):

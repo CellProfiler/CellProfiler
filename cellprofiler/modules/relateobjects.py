@@ -472,7 +472,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             perim_idx = pperim[perim_loc.transpose().tolist()]
 
             # Sort the points by label #
-            reverse_column_order = range(children.dimensions)[::-1]
+            reverse_column_order = list(range(children.dimensions))[::-1]
 
             coordinates = perim_loc[:, reverse_column_order].transpose().tolist()
 
@@ -632,7 +632,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
             for group in self.step_parent_names:
                 if group.step_parent_name.value in step_parents:
                     raise cellprofiler.setting.ValidationError(
-                        u"{} has already been chosen".format(
+                        "{} has already been chosen".format(
                             group.step_parent_name.value
                         ),
                         group.step_parent_name
@@ -641,11 +641,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
                 step_parents.add(group.step_parent_name.value)
 
     def get_child_columns(self, pipeline):
-        child_columns = list(filter(
-            lambda column: column[0] == self.y_name.value and self.should_aggregate_feature(column[1]),
-            pipeline.get_measurement_columns(self)
-
-        ))
+        child_columns = list([column for column in pipeline.get_measurement_columns(self) if column[0] == self.y_name.value and self.should_aggregate_feature(column[1])])
 
         child_columns += self.get_child_measurement_columns(pipeline)
 
@@ -739,7 +735,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.x_name.value:
-            if category == u"Mean_{}".format(self.y_name.value):
+            if category == "Mean_{}".format(self.y_name.value):
                 measurements = []
 
                 child_columns = self.get_child_columns(pipeline)
@@ -748,7 +744,7 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
                 return measurements
             elif category == "Children":
-                return [u"{}_Count".format(self.y_name.value)]
+                return ["{}_Count".format(self.y_name.value)]
         elif object_name == self.y_name.value and category == "Parent":
             return [self.x_name.value]
         elif (object_name == self.y_name.value and category == C_DISTANCE):

@@ -607,7 +607,7 @@ class EditObjectsDialog(wx.Dialog):
         """Fix up the labels as we close"""
         if return_code == wx.OK:
             self.EndModal(return_code)
-            open_labels = set([d[self.K_LABEL] for d in self.artists.values()])
+            open_labels = set([d[self.K_LABEL] for d in list(self.artists.values())])
             for l in open_labels:
                 self.close_label(l, False)
             for idx in numpy.argwhere(~self.to_keep).flatten():
@@ -716,7 +716,7 @@ class EditObjectsDialog(wx.Dialog):
         else:
             set_lim = False
         orig_to_show = numpy.ones(len(self.to_keep), bool)
-        for d in self.artists.values():
+        for d in list(self.artists.values()):
             object_number = d[self.K_LABEL]
             if object_number < len(orig_to_show):
                 orig_to_show[object_number] = False
@@ -751,7 +751,7 @@ class EditObjectsDialog(wx.Dialog):
                      3), numpy.float)
         if len(self.to_keep) > 1:
             in_artist = numpy.zeros(len(self.to_keep), bool)
-            for d in self.artists.values():
+            for d in list(self.artists.values()):
                 in_artist[d[self.K_LABEL]] = True
             if self.label_display_mode == self.ID_LABELS_OUTLINES:
                 for k, stipple in ((self.to_keep, False), (~self.to_keep, True)):
@@ -1243,7 +1243,7 @@ class EditObjectsDialog(wx.Dialog):
 
     def join_objects(self, event):
         all_labels = numpy.unique([
-                                   v[self.K_LABEL] for v in self.artists.values()])
+                                   v[self.K_LABEL] for v in list(self.artists.values())])
         if len(all_labels) < 2:
             return
         assert all_labels[0] == numpy.min(all_labels)
@@ -1275,7 +1275,7 @@ class EditObjectsDialog(wx.Dialog):
             return
 
         all_labels = numpy.unique([
-                                   v[self.K_LABEL] for v in self.artists.values()])
+                                   v[self.K_LABEL] for v in list(self.artists.values())])
         for label in all_labels:
             self.close_label(label, display=False)
         object_number = all_labels[0]
@@ -1364,13 +1364,13 @@ class EditObjectsDialog(wx.Dialog):
         artist.remove()
         del self.artists[artist]
         if not any([d[self.K_LABEL] == object_number
-                    for d in self.artists.values()]):
+                    for d in list(self.artists.values())]):
             self.remove_label(object_number)
             self.init_labels()
             self.display()
         else:
             # Mark some other artist as edited.
-            for artist, d in self.artists.iteritems():
+            for artist, d in self.artists.items():
                 if d[self.K_LABEL] == object_number:
                     d[self.K_EDITED] = True
 
@@ -1794,7 +1794,7 @@ class EditObjectsDialog(wx.Dialog):
         if (self.delete_mode_start is not None and
                     event.inaxes == self.orig_axes):
             (xmin, xmax), (ymin, ymax) = [
-                [fn(a, b) for fn in min, max]
+                [fn(a, b) for fn in (min, max)]
                 for a, b in
                 (self.delete_mode_start[0], event.xdata),
                 (self.delete_mode_start[1], event.ydata)]
@@ -1851,7 +1851,7 @@ class EditObjectsDialog(wx.Dialog):
             object_numbers.add(self.artists[artist][self.K_LABEL])
             artist.remove()
             del self.artists[artist]
-        for artist, d in self.artists.iteritems():
+        for artist, d in self.artists.items():
             if d[self.K_LABEL] in object_numbers:
                 d[self.K_EDITED] = True
                 object_numbers.remove(d[self.K_LABEL])
@@ -2032,7 +2032,7 @@ class EditObjectsDialog(wx.Dialog):
 
         If edited, update the labeled pixels.
         """
-        my_artists = [artist for artist, data in self.artists.items()
+        my_artists = [artist for artist, data in list(self.artists.items())
                       if data[self.K_LABEL] == label]
         if any([self.artists[artist][self.K_EDITED]
                 for artist in my_artists]):

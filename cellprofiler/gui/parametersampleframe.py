@@ -403,14 +403,14 @@ class ParameterSampleFrame(wx.Frame):
                 try:
                     setting.set_value(lower_value)
                     setting.test_valid(self.__pipeline)
-                except cellprofiler.setting.ValidationError, instance:
+                except cellprofiler.setting.ValidationError as instance:
                     message += '\'' + str(setting.get_text()) + \
                                '\': lower bound invalid, ' + \
                                '\n\t' + str(instance.message) + '\n'
                 try:
                     setting.set_value(upper_value)
                     setting.test_valid(self.__pipeline)
-                except cellprofiler.setting.ValidationError, instance:
+                except cellprofiler.setting.ValidationError as instance:
                     message += '\'' + str(setting.get_text()) + \
                                '\': upper bound invalid, ' + \
                                '\n\t' + str(instance.message) + '\n'
@@ -560,10 +560,10 @@ class ParameterSampleFrame(wx.Frame):
                                                      self.__frame)
         try:
             if not self.__pipeline.prepare_run(workspace):
-                print 'Error: failed to get image sets'
+                print('Error: failed to get image sets')
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
                     workspace)
-        except ValueError, v:
+        except ValueError as v:
             message = "Error while preparing for run:\n%s" % v
             wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
         self.__grouping_index = 0
@@ -614,7 +614,7 @@ class ParameterSampleFrame(wx.Frame):
             self.__workspace.refresh()
             # ~^~
             failure = 0
-        except Exception, instance:
+        except Exception as instance:
             traceback.print_exc()
             event = cellprofiler.pipeline.RunExceptionEvent(instance, module)
             self.__pipeline.notify_listeners(event)

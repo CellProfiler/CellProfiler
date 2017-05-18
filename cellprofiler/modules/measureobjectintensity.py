@@ -52,7 +52,7 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import identify
+from . import identify
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'

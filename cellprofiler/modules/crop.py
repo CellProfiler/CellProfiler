@@ -401,7 +401,7 @@ class Crop(cpm.Module):
     def ui_crop(self, workspace, orig_image):
         """Crop into a rectangle or ellipse, guided by UI"""
         d = self.get_dictionary(workspace.image_set_list)
-        if ((not d.has_key(self.shape.value)) or
+        if ((self.shape.value not in d) or
                     self.individual_or_once == IO_INDIVIDUALLY):
             d[self.shape.value] = \
                 workspace.interaction_request(self, d.get(self.shape.value, None), orig_image.pixel_data)

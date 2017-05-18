@@ -20,7 +20,7 @@ def get_choice_id(index):
 class MetadataControl(wx.PyControl):
     class MetadataToken(object):
         def __init__(self):
-            self.value = u""
+            self.value = ""
 
     def __init__(self, pipeline, module, *args, **kwargs):
         """Initialize the field
@@ -126,7 +126,7 @@ class MetadataControl(wx.PyControl):
                 if value[index] in ('g', '?'):
                     state = STATE_PRE
                 else:
-                    self.__tokens.append(unicode(value[index]))
+                    self.__tokens.append(str(value[index]))
                     state = STATE_INITIAL
             elif state == STATE_PRE:
                 if value[index] != '<':
@@ -384,7 +384,7 @@ class MetadataControl(wx.PyControl):
 
     def on_char(self, event):
         self.delete_selection()
-        c = unichr(event.GetUnicodeKey())
+        c = chr(event.GetUnicodeKey())
         self.__tokens.insert(self.__cursor_pos, c)
         self.move_cursor_pos(self.__cursor_pos + 1)
         self.on_token_change()

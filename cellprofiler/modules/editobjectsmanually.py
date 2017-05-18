@@ -48,7 +48,7 @@ from centrosome.outline import outline
 from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
-import identify as I
+from . import identify as I
 
 ###########################################
 #

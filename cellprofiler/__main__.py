@@ -11,7 +11,6 @@ import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
 import cStringIO
-import glob
 import h5py
 import json
 import logging
@@ -700,9 +699,19 @@ def run_pipeline_headless(options, args):
     if file_list is not None:
         pipeline.read_file_list(file_list)
     elif options.image_directory is not None:
-        pathname = os.path.join(os.path.abspath(options.image_directory), "*")
+        pathnames = []
 
-        pipeline.add_pathnames_to_file_list(glob.glob(pathname))
+        os.path.walk(
+            os.path.abspath(options.image_directory),
+            lambda pathnames, dirname, fnames: pathnames.append(
+                [os.path.join(dirname, fname) for fname in fnames if os.path.isfile(os.path.join(dirname, fname))]
+            ),
+            pathnames
+        )
+
+        pathnames = sum(pathnames, [])
+
+        pipeline.add_pathnames_to_file_list(pathnames)
 
     #
     # Fixup CreateBatchFiles with any command-line input or output directories

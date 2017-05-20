@@ -6,7 +6,6 @@ TM_MEASUREMENTS = 'Measurements'
 TM_LAP = "LAP"
 TM_FOLLOWNEIGHBORS = "Follow Neighbors"
 TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS, TM_LAP, TM_FOLLOWNEIGHBORS]
-DOC_YEASTTOOLBOX_WEB = "www.cellprofiler.org/yeasttoolbox/"
 
 LT_NONE = 0
 LT_PHASE_1 = 1
@@ -360,8 +359,6 @@ class TrackObjects(cpm.Module):
             as global combinatorial optimization problems whose solution identifies the overall
             most likely set of object trajectories throughout a movie.
 
-            <li><i>%(TM_FOLLOWNEIGHBORS)s:</i> TODO document
-
             <p>Tracks are constructed from an image sequence by detecting objects in each 
             frame and linking objects between consecutive frames as a first step. This step alone
             may result in incompletely tracked objects due to the appearance and disappearance
@@ -414,8 +411,7 @@ class TrackObjects(cpm.Module):
             </p>
 
             <p>This Nearest Neighborhood method of this module was prepared by Filip Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at 
-            <a href="http://www.let-your-data-speak.com/">Scopem, ETH</a> for inquires. For more details related to Yeast segmentation in CellProfiler, 
-            please refer to <a href="http://www.cellprofiler.org/yeasttoolbox/">Yeast Toolbox</a>.
+            <a href="http://www.let-your-data-speak.com/">Scopem, ETH</a> for inquires.
             <p><b>References</b>
             <ul>
             <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
@@ -743,7 +739,7 @@ class TrackObjects(cpm.Module):
             35.0, minval=5, doc ='''\
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
             The average cell diameter is used to scale many %(TM_FOLLOWNEIGHBORS)s algorithm parameters. 
-            Please use e.g. ImageJ to measure the average cell size in pixels.
+            Please use e.g. ImageJ to measure the average cell diameter in pixels.
             '''%globals()
             )
 
@@ -751,7 +747,7 @@ class TrackObjects(cpm.Module):
             'Use advanced configuration parameters', False, doc="""
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
             Do you want to use advanced parameters to configure plugin? They allow for more flexibility,
-            however you need to know what you are doing. Please check <A href="http://www.cellprofiler.org/yeasttoolbox">YeastToolbox online documentation</a> for more details. 
+            however usually the default parameters suffice.
             """%globals()
             )
         
@@ -759,8 +755,8 @@ class TrackObjects(cpm.Module):
             "Cost of cell to empty matching",
             15, minval=1, maxval=200, doc='''\
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
-            The cost of assigning cell as "lost" in transition from t to t+1. Increasing this value leads to more 
-            cells (from t) being matched with cells (from t+1) rather then classified as "lost".
+            The cost of considering cell (from frame t) not present in frame t+1. Increasing this value leads to more 
+            cells (from t) being matched with cells (from t+1) rather then classified as missing.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
@@ -775,7 +771,7 @@ class TrackObjects(cpm.Module):
             "Weight of area difference in function matching cost",
             25, minval=1, doc='''\
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
-            Increasing this value will cause the algorithm to care more about the area consistency and less about distance differences while 
+            Increasing this value will make area difference more important than cells positions while 
             matching objects from different frames.
             '''%globals()
             )
@@ -3164,27 +3160,15 @@ class TrackObjects(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            wants_image = setting_values[10] != cps.DO_NOT_USE
-            measurement = '_'.join(setting_values[2:6])
-            setting_values = [setting_values[0],  # tracking method
-                              setting_values[1],  # object name
-                              measurement,
-                              setting_values[6],  # pixel_radius
-                              setting_values[7],  # display_type
-                              wants_image,
-                              setting_values[10]]
-            variable_revision_number = 1
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
+        if  variable_revision_number == 1:
             setting_values = setting_values + ["100", "100"]
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added phase 2 parameters
             setting_values = setting_values + [
                 "40", "40", "40", "50", "50", "50", "5"]
             variable_revision_number = 3
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Added Kalman choices:
             # Model
             # radius std
@@ -3194,23 +3178,22 @@ class TrackObjects(cpm.Module):
                               setting_values[9:])
             variable_revision_number = 4
 
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Added lifetime filtering: Wants filtering + min/max allowed lifetime
             setting_values = setting_values + [cps.NO, cps.YES, "1", cps.NO, "100"]
             variable_revision_number = 5
 
-        if (not from_matlab) and variable_revision_number == 5:
+        if variable_revision_number == 5:
             # Added mitosis alternative score + mitosis_max_distance
             setting_values = setting_values + ["80", "40"]
             variable_revision_number = 6
 
         # added after integration of FOLLOWNEIGHBORS
-        # TODO Lee: I am not sure if this (not from_matlab) needs to stay there
-        if (not from_matlab) and variable_revision_number == 6:
+        if variable_revision_number == 6:
             # addeing new settings for FOLLOWNEIGHBORS
             setting_values = setting_values + [30., False, 15., 25.]
             # order of params in settings
             # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight
             variable_revision_number = 7
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number, False

@@ -1106,17 +1106,20 @@ class TrackObjects(cpm.Module):
 
     def run_followneighbors(self, workspace, objects):
         '''Track objects based on following neighbors'''
-        cellstar = NeighbourMovementTracking()
-        cellstar.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
-        cellstar.parameters_tracking["max_distance"] = self.pixel_radius.value
-        multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["default_empty_cost"]) / \
-                     NeighbourMovementTrackingParameters.parameters_cost_initial["default_empty_cost"]
-        cellstar.parameters_cost_iteration["default_empty_cost"] = multiplier * self.drop_cost.value
-        cellstar.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
-        multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["area_weight"]) / \
-                     NeighbourMovementTrackingParameters.parameters_cost_initial["area_weight"]
-        cellstar.parameters_cost_iteration["area_weight"] = multiplier * self.area_weight.value
-        cellstar.parameters_cost_initial["area_weight"] = self.area_weight.value
+        def calculate_iteration_value(param, initial_value):
+            iteration_default = NeighbourMovementTrackingParameters.parameters_cost_iteration[param]
+            initial_default = NeighbourMovementTrackingParameters.parameters_cost_initial[param]
+            return float(iteration_default) / initial_default * initial_value
+
+        tracker = NeighbourMovementTracking()
+        tracker.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
+        tracker.parameters_tracking["max_distance"] = self.pixel_radius.value
+
+        tracker.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
+        tracker.parameters_cost_iteration["default_empty_cost"] = calculate_iteration_value("default_empty_cost", self.drop_cost.value)
+
+        tracker.parameters_cost_initial["area_weight"] = self.area_weight.value
+        tracker.parameters_cost_iteration["area_weight"] = calculate_iteration_value("area_weight", self.area_weight.value)
 
         old_labels = self.get_saved_labels(workspace)
         if not old_labels is None:
@@ -1128,7 +1131,7 @@ class TrackObjects(cpm.Module):
 
             new_labels = objects.segmented
             # Matching is (expected to be) a injective function of old labels to new labels so we can inverse it.
-            matching = cellstar.run_tracking(old_labels, new_labels)
+            matching = tracker.run_tracking(old_labels, new_labels)
 
             new_object_numbers = np.zeros(count, int)
             old_object_numbers = np.zeros(old_count, int)

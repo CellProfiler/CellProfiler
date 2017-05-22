@@ -547,7 +547,8 @@ class PipelineController(object):
                     if progress not in (1, None):
                         proceed, skip = dlg.Pulse(message)
                         if not proceed:
-                            raise Exception("User cancelled opening workspace")
+                            wx.MessageBox("You cancelled opening this project.")
+                            raise Exception("You cancelled opening this project.")
                         msg_len = dlg.GetTextExtent(message)[0]
                         if msg_len > dlg.longest_msg_len:
                             dlg.longest_msg_len = msg_len

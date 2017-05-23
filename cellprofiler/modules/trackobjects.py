@@ -339,14 +339,14 @@ class TrackObjects(cpm.Module):
             that the measurement values can be used to track the objects.</li>
 
             <li><i>%(TM_FOLLOWNEIGHBORS)s:</i> Uses the multiobject tracking approach described by
-            <i> Delgado-Gonzalo et al., 2010</i>. This approch is assuming that objects move in coordinated
-            way (contrary to LAP). An object movement direction is more likely to be in the agreement with 
+            <i> Delgado-Gonzalo et al., 2010</i>. This approach assumes objects move in a coordinated
+            way (contrary to LAP). An object's movement direction is more likely to be in agreement with
             the movement directions of its "neighbors". The problem is formulated as an optimization problem 
             and solved using LAP algorithm (same as in LAP method).
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            Recommended for cases where the objects are moving in synchronized way. In this cases
-            it may work better then <i>%(TM_LAP)s</i>. This approach works
+            Recommended for cases where the objects are moving in synchronized way. In this case
+            it may work better than <i>%(TM_LAP)s</i>. This approach works
             well for yeast colonies grown on agar. </dd>
             </dl></li>
 
@@ -746,8 +746,9 @@ class TrackObjects(cpm.Module):
         self.advanced_parameters = cps.Binary(
             'Use advanced configuration parameters', False, doc="""
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
-            Do you want to use advanced parameters to configure plugin? They allow for more flexibility,
-            however usually the default parameters suffice.
+            Do you want to use advanced parameters to configure plugin? The default values should be sufficient
+            in most cases. You may want to use advanced parameters when cells are incorrectly marked missing between
+            frames or cells of different sizes are falsely matched.
             """ % globals()
         )
 
@@ -760,8 +761,8 @@ class TrackObjects(cpm.Module):
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
-            <li>Too high value might cause incorrect cells to match between the frames. </li>
-            <li>Too low value might make the algorithm not to match cells between the frames.</li>
+            <li>A value which is too high might cause incorrect cells to match between the frames. </li>
+            <li>A value which is too low might make the algorithm not to match cells between the frames.</li>
             </ul></dd>
             </dl>
             ''' % globals()
@@ -771,8 +772,8 @@ class TrackObjects(cpm.Module):
             "Weight of area difference in function matching cost",
             25, minval=1, doc='''\
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
-            Increasing this value will make area difference more important than cells positions while 
-            matching objects from different frames.
+            Increasing this value will make differences in position favored over differences in area when 
+            identifying objects between frames.
             ''' % globals()
         )
 
@@ -1122,7 +1123,12 @@ class TrackObjects(cpm.Module):
         tracker.parameters_cost_iteration["area_weight"] = calculate_iteration_value("area_weight", self.area_weight.value)
 
         old_labels = self.get_saved_labels(workspace)
-        if not old_labels is None:
+        if old_labels is None:
+            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+            count = len(i)
+            self.map_objects(workspace, np.zeros((0,), int),
+                             np.zeros(count, int), i, j)
+        else:
             old_i, old_j = (centers_of_labels(old_labels) + .5).astype(int)
             old_count = len(old_i)
 
@@ -1143,11 +1149,6 @@ class TrackObjects(cpm.Module):
                              old_object_numbers,
                              new_object_numbers,
                              i, j)
-        else:
-            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
-            count = len(i)
-            self.map_objects(workspace, np.zeros((0,), int),
-                             np.zeros(count, int), i, j)
         self.set_saved_labels(workspace, objects.segmented)
 
     def run_distance(self, workspace, objects):

@@ -10,9 +10,10 @@ import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules import trackobjects
-
+from cellprofiler.setting import MeasurementMultiChoiceForCategory
 # todo: make sure coherent error message is produced when num timepoints is < MIN_TRAM_LENGTH
 # todo: see if you can access the class attribute MIN_TRAM_LENGTH instead of 6 for the below __doc__ string
+
 __doc__ = """
 <b>TrackQuality</b> provides tracking quality metrics. TrAM (Tracking
 Aberration Measure) is based on temporal smoothness of features measured
@@ -33,7 +34,7 @@ are complete and without splitting events.
 <ul>
 <li><i>TrAM:</i> The TrAM value for the trajectory. Values near 1 are typical
 for a good trajectory. Large values (typically 3 or higher) are more likely
-to correspond to aberrant tracks. The value <i>nan</i> is assigned to objects
+to correspond to aberrant tracks. The value <i>None</i> is assigned to objects
 with partial tracks or those for whom <i>Is_Parent</i> is 1. A histogram of
 all computed TrAM values is displayed to help define a cutoff.</li>
 <li><i>Labels:</i> Each tracked item that has a lineage from the first to the
@@ -155,7 +156,12 @@ class MeasureTrackQuality(cpm.Module):
 
         measurements = workspace.measurements
         obj_name = self.object_name.value # the object the user has selected
-        img_numbers = measurements.get_image_numbers()
+
+        # get the image numbers
+        group_number = grouping["Group_Number"]
+        groupings = workspace.measurements.get_groupings(grouping)
+        img_numbers = sum([numbers for group, numbers in groupings if int(group["Group_Number"]) == group_number], [])
+
         num_images = len(img_numbers)
 
         # get vector of tracking label for each data point
@@ -232,6 +238,7 @@ class MeasureTrackQuality(cpm.Module):
                                    for index, obj_num in enumerate(obj_nums)}
 
         last_image_num = img_numbers[-1]
+        # todo: why is the below variable no longer needed?
         last_frame_label_to_object_num =\
             {object_num : label for object_num, label, image_num in zip(object_nums_flattened, label_vals_flattened,
                                                                         image_vals_flattened)
@@ -264,7 +271,7 @@ class MeasureTrackQuality(cpm.Module):
             indices = [i for i, lab in enumerate(label_vals_flattened) if lab == label]
 
             if len(indices) < self.MIN_TRAM_LENGTH: # not enough data points
-                tram = numpy.nan
+                tram = None
             else:
                 tram = self.compute_TrAM(tram_feature_names, normalized_all_data_array,
                                          image_vals_flattened, indices, isotropic_pairs)
@@ -319,7 +326,7 @@ class MeasureTrackQuality(cpm.Module):
                     result_dict.update({self.LABELS_KEY:[tram_label]})
                 else: # if there is already a TRAM_KEY then we are a parent and don't have a valid TrAM
                     result_dict.update({self.PARENT_KEY:1})
-                    result_dict.update({self.TRAM_KEY:numpy.nan})
+                    result_dict.update({self.TRAM_KEY:None})
                     previous_list = result_dict[self.LABELS_KEY]
                     previous_list.append(tram_label)
 
@@ -332,9 +339,9 @@ class MeasureTrackQuality(cpm.Module):
         label_values_to_save = list()
 
         for img_num, vec in results_to_store_by_img.iteritems():
-            tram_values_to_save.append([get_element_or_default_for_None(v, self.TRAM_KEY, numpy.nan) for v in vec])
-            parent_values_to_save.append([get_element_or_default_for_None(v, self.PARENT_KEY, numpy.nan) for v in vec])
-            split_values_to_save.append([get_element_or_default_for_None(v, self.SPLIT_KEY, numpy.nan) for v in vec])
+            tram_values_to_save.append([get_element_or_default_for_None(v, self.TRAM_KEY, None) for v in vec])
+            parent_values_to_save.append([get_element_or_default_for_None(v, self.PARENT_KEY, None) for v in vec])
+            split_values_to_save.append([get_element_or_default_for_None(v, self.SPLIT_KEY, None) for v in vec])
             label_values_to_save.append([get_element_or_default_for_None(v, self.LABELS_KEY, None) for v in vec])
 
         img_nums = results_to_store_by_img.keys()
@@ -343,8 +350,9 @@ class MeasureTrackQuality(cpm.Module):
         workspace.measurements.add_measurement(obj_name, self.FULL_SPLIT_MEAS_NAME, split_values_to_save, image_set_number=img_nums)
         workspace.measurements.add_measurement(obj_name, self.FULL_LABELS_MEAS_NAME, label_values_to_save, image_set_number=img_nums)
 
-        # store the non-nan TrAM values for the histogram display
-        workspace.display_data.tram_values = [d.get(self.TRAM_KEY) for d in tram_dict.values() if not numpy.isnan(d.get(self.TRAM_KEY))]
+        # store the existing TrAM values for the histogram display
+        workspace.display_data.tram_values = [d.get(self.TRAM_KEY)
+                                              for d in tram_dict.values() if d.get(self.TRAM_KEY) is not None]
 
 
     def compute_TrAM(self, tram_feature_names, normalized_data_array, image_vals_flattened, indices, isotropic_pairs):
@@ -602,33 +610,4 @@ class MeasureTrackQuality(cpm.Module):
         TrackObjects, MakeProjection and CorrectIllumination_Calculate.
         """
         return True
-
-class MeasurementMultiChoiceForCategory(cps.MeasurementMultiChoice):
-    '''A multi-choice setting for selecting multiple measurements within a given category'''
-
-    def __init__(self, text, category_chooser, value='', *args, **kwargs):
-        '''Initialize the measurement multi-choice
-
-        At initialization, the choices are empty because the measurements
-        can't be fetched here. It's done (bit of a hack) in test_valid.
-        '''
-        super(cps.MeasurementMultiChoice, self).__init__(text, [], value, *args, **kwargs)
-        self.category_chooser = category_chooser
-
-    def populate_choices(self, pipeline):
-        #
-        # Find our module
-        #
-        for module in pipeline.modules():
-            for setting in module.visible_settings():
-                if id(setting) == id(self):
-                    break
-        columns = pipeline.get_measurement_columns(module)
-
-        def valid_mc(c):
-            '''Disallow any measurement column with "," or "|" in its names. Must be from specified category.'''
-            return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"]) and c[0] == self.category_chooser.get_value()
-
-        self.set_choices([self.make_measurement_choice(c[0], c[1])
-                          for c in columns if valid_mc(c)])
 

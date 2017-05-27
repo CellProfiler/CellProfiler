@@ -533,13 +533,13 @@ class MeasureCorrelation(cpm.Module):
             tff = (self.thr.value / 100) * fix(scind.maximum(first_pixels, labels, lrange))
             tss = (self.thr.value / 100) * fix(scind.maximum(second_pixels, labels, lrange))
 
-            combined_thresh = (first_pixels > tff[labels - 1]) & (second_pixels > tss[labels - 1])
+            combined_thresh = (first_pixels >= tff[labels - 1]) & (second_pixels >= tss[labels - 1])
             fi_thresh = first_pixels[combined_thresh]
             si_thresh = second_pixels[combined_thresh]
-            tot_fi_thr = scind.sum(first_pixels[first_pixels > tff[labels - 1]], labels[first_pixels > tff[labels - 1]],
+            tot_fi_thr = scind.sum(first_pixels[first_pixels >= tff[labels - 1]], labels[first_pixels >= tff[labels - 1]],
                                    lrange)
-            tot_si_thr = scind.sum(second_pixels[second_pixels > tss[labels - 1]],
-                                   labels[second_pixels > tss[labels - 1]], lrange)
+            tot_si_thr = scind.sum(second_pixels[second_pixels >= tss[labels - 1]],
+                                   labels[second_pixels >= tss[labels - 1]], lrange)
 
             nonZero = (fi > 0) | (si > 0)
             xvar = np.var(fi[nonZero], axis=0, ddof=1)
@@ -575,11 +575,11 @@ class MeasureCorrelation(cpm.Module):
             fi_thresh_c = first_pixels[combined_thresh_c]
             si_thresh_c = second_pixels[combined_thresh_c]
             if np.any(fi_above_thr):
-                tot_fi_thr_c = scind.sum(first_pixels[first_pixels > thr_fi_c], labels[first_pixels > thr_fi_c], lrange)
+                tot_fi_thr_c = scind.sum(first_pixels[first_pixels >= thr_fi_c], labels[first_pixels >= thr_fi_c], lrange)
             else:
                 tot_fi_thr_c = np.zeros(len(lrange))
             if np.any(si_above_thr):
-                tot_si_thr_c = scind.sum(second_pixels[second_pixels > thr_si_c], labels[second_pixels > thr_si_c],
+                tot_si_thr_c = scind.sum(second_pixels[second_pixels >= thr_si_c], labels[second_pixels >= thr_si_c],
                                          lrange)
             else:
                 tot_si_thr_c = np.zeros(len(lrange))

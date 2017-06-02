@@ -618,7 +618,8 @@ class MeasureCorrelation(cpm.Module):
             Di = abs(Rank_im1 - Rank_im2)
             weight = (R - Di) * 1.0 / R
             weight_thresh = weight[combined_thresh]
-            if np.any(combined_thresh_c):
+
+            if np.any(combined_thresh):
                 RWC1 = np.array(scind.sum(fi_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
                         tot_fi_thr)
                 RWC2 = np.array(scind.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
@@ -651,11 +652,11 @@ class MeasureCorrelation(cpm.Module):
                        ]
 
             # Overlap Coefficient
-            fpsq = scind.sum(first_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
-            spsq = scind.sum(second_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
-            pdt = np.sqrt(np.array(fpsq) * np.array(spsq))
-
             if np.any(combined_thresh):
+                fpsq = scind.sum(first_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
+                spsq = scind.sum(second_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
+                pdt = np.sqrt(np.array(fpsq) * np.array(spsq))
+
                 overlap = fix(
                         scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
                                   labels[combined_thresh],

@@ -536,3 +536,28 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         assert len(values) == 1
 
         assert np.isnan(values[0])
+
+    def test_non_overlapping_object_intensity(self):
+        # https://github.com/CellProfiler/CellProfiler/issues/2764
+        image1 = np.random.rand(10, 10)
+        image1[:5, :] = 0
+
+        image2 = np.random.rand(10, 10)
+        image2[5:, :] = 0
+
+        objects = cpo.Objects()
+        objects.segmented = np.ones_like(image1, dtype=np.uint8)
+
+        workspace, module = self.make_workspace(cpi.Image(image1), cpi.Image(image2), objects)
+
+        module.run(workspace)
+
+        m = workspace.measurements
+
+        feature = M.F_OVERLAP_FORMAT % (IMAGE1_NAME, IMAGE2_NAME)
+
+        values = m[OBJECTS_NAME, feature]
+
+        assert len(values) == 1
+
+        assert values[0] == 0.0

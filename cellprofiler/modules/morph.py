@@ -19,7 +19,11 @@ The following operations are available:<br>
         <td><i>Branchpoints</i></td>
         <td>
             Removes all pixels except those that are the branchpoints of a skeleton. This operation should be applied
-            to an image after skeletonizing. It leaves only those pixels that are at the intersection of branches.<br>
+            to an image after skeletonizing. It leaves only those pixels that are at the intersection of branches.
+            Note that shown here is a window into a hypothetical larger image; the “?” symbols reflect that in this
+            small window those values cannot be calculated because the values necessary are outside the window. In
+            reality, pixels at the border are handled by padding the image with zeros for almost all operations
+            (except it is padded with 1 for hole filling).<br>
             <table>
                 <tr>
                     <td>
@@ -285,7 +289,12 @@ The following operations are available:<br>
     <tr>
         <td><i>Endpoints</i></td>
         <td>
-            Removes all pixels except the ones that are at the end of a skeleton:<br>
+            Removes all pixels except the ones that are at the end of a skeleton.
+            Note that shown here is a window into a hypothetical larger image; the “?” symbols reflect that in this
+            small window those values cannot be calculated because the values necessary are outside the window. In
+            reality, pixels at the border are handled by padding the image with zeros for almost all operations
+            (except it is padded with 1 for hole filling).<br>
+<br>
             <table>
                 <tr>
                     <td>

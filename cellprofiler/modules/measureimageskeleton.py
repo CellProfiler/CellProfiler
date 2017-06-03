@@ -81,7 +81,7 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
             "Skeleton",
             doc="""
             The name of a morphological skeleton image. You can create a morphological skeleton with the
-            MorphologicalSkeleton module from the Mathmatical Morphology category.
+            MorphologicalSkeleton module from the Mathematical Morphology category.
             """
         )
 

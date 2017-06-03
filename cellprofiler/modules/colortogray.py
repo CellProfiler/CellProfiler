@@ -354,12 +354,12 @@ class ColorToGray(cpm.Module):
             for index, name, title in self.channels_and_image_names():
                 output_image = input_image[:, :, index]
                 workspace.image_set.add(name, cpi.Image(output_image, parent_image=image))
-                disp_collection.append([output_image, title])
+                disp_collection.append([output_image, name])
         elif self.rgb_or_channels == CH_HSV:
             output_image = matplotlib.colors.rgb_to_hsv(input_image)
             for index, name, title in self.channels_and_image_names():
                 workspace.image_set.add(name, cpi.Image(output_image[:, :, index], parent_image=image))
-                disp_collection.append([output_image[:, :, index], title])
+                disp_collection.append([output_image[:, :, index], name])
 
         workspace.display_data.input_image = input_image
         workspace.display_data.disp_collection = disp_collection
@@ -370,25 +370,18 @@ class ColorToGray(cpm.Module):
         input_image = workspace.display_data.input_image
         disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)
-        if ndisp == 1:
-            subplots = (1, 2)
-        else:
-            subplots = (2, 2)
+        ncols = int(np.ceil((ndisp+1)**0.5))
+        subplots = (ncols, (ndisp/ncols)+1)
         figure.set_subplots(subplots)
         figure.subplot_imshow(0, 0, input_image,
                               title="Original image")
-
-        if ndisp == 1:
-            layout = [(0, 1)]
-        elif ndisp == 2:
-            layout = [(1, 0), (0, 1)]
-        else:
-            layout = [(1, 0), (0, 1), (1, 1)]
-        for xy, disp in zip(layout, disp_collection):
-            figure.subplot_imshow(xy[0], xy[1], disp[0],
-                                  title="%s image" % (disp[1]),
-                                  colormap=matplotlib.cm.Greys_r,
-                                  sharexy=figure.subplot(0, 0))
+        
+        for eachplot in range(ndisp):
+             placenum = eachplot +1
+             figure.subplot_imshow(placenum%ncols, placenum/ncols, disp_collection[eachplot][0], 
+                                   title="%s" % (disp_collection[eachplot][1]), 
+                                   colormap=matplotlib.cm.Greys_r, 
+                                   sharexy=figure.subplot(0, 0))
 
     def prepare_settings(self, setting_values):
         '''Prepare the module to receive the settings

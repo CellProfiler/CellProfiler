@@ -103,6 +103,17 @@ class Image(object):
         self.__spacing = spacing
 
     @property
+    def spacing(self):
+        if self.__spacing is None and self.has_parent_image:
+            return self.parent_image.spacing
+
+        return self.__spacing
+
+    @spacing.setter
+    def spacing(self, spacing):
+        self.__spacing = spacing
+
+    @property
     def multichannel(self):
         return True if self.pixel_data.ndim == self.dimensions + 1 else False
 

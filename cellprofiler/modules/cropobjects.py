@@ -29,6 +29,11 @@ class CropObjects(cellprofiler.module.Module):
             doc="Select the objects you want to export per-object crops of."
         )
 
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+            "Image",
+            doc="Select image to crop"
+        )
+
         self.directory = cellprofiler.setting.DirectoryPath(
             "Directory",
             doc="Enter the directory where object crops are saved."
@@ -41,6 +46,7 @@ class CropObjects(cellprofiler.module.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.objects_name.value)
+        orig_image = workspace.image_set.get_image(self.image_name.value)
 
         labels = objects.segmented
 
@@ -52,15 +58,16 @@ class CropObjects(cellprofiler.module.Module):
         filenames = []
 
         for label in unique_labels:
-            mask = labels == label
+            cropped_image = numpy.copy(orig_image.get_image())
+            top, bot, left, right = self.find_bounds(labels == label)
+            cropped_image = cropped_image[top:bot+1, left:right+1]
 
             filename = os.path.join(
                 self.directory.get_absolute_path(),
                 "{}_{:04d}_{}.tiff".format(self.objects_name.value, label, int(time.time()))
             )
 
-            skimage.io.imsave(filename, skimage.img_as_ubyte(mask))
-
+            skimage.io.imsave(filename, skimage.img_as_ubyte(cropped_image))
             filenames.append(filename)
 
         if self.show_window:
@@ -69,6 +76,7 @@ class CropObjects(cellprofiler.module.Module):
     def settings(self):
         settings = [
             self.objects_name,
+            self.image_name,
             self.directory
         ]
 
@@ -76,3 +84,8 @@ class CropObjects(cellprofiler.module.Module):
 
     def volumetric(self):
         return True
+
+    def find_bounds(self, array):
+        top, bot = numpy.where(numpy.max(array, 1) == 1)[0][[0, -1]]
+        left, right = numpy.where(numpy.max(array, 0) == 1)[0][[0, -1]]
+        return top, bot, left, right

@@ -1,11 +1,9 @@
 import unittest
 
-import centrosome.outline
 import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
 import cellprofiler.modules.measureimageareaoccupied
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -49,7 +47,7 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), 0)
+        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), None)
         self.assertEqual(m.get_current_measurement("Image", mn("TotalArea")), 100)
 
         columns = module.get_measurement_columns(workspace.pipeline)
@@ -80,9 +78,9 @@ class TestMeasureImageArea(unittest.TestCase):
         mask = numpy.zeros((10, 10), bool)
         mask[1:9, 1:9] = True
         image = cellprofiler.image.Image(numpy.zeros((10, 10)), mask=mask)
-        area_occupied = numpy.sum(labels[mask])
-        perimeter = numpy.sum(centrosome.outline.outline(numpy.logical_and(labels, mask)))
-        total_area = numpy.sum(mask)
+        area_occupied = [30]
+        perimeter = [18]
+        total_area = 64
         workspace = self.make_workspace(labels, image)
         module = workspace.module
         module.operands[0].operand_choice.value = "Objects"
@@ -111,3 +109,77 @@ class TestMeasureImageArea(unittest.TestCase):
         for column in columns:
             self.assertTrue(any([all([cf == ef for cf, ef in zip(column, ex)])
                                  for ex in expected]))
+
+    def test_objects_volume(self):
+        labels = numpy.zeros((5, 10, 10), dtype=numpy.uint8)
+        labels[:2, :2, :2] = 1
+        labels[3:, 8:, 8:] = 2
+
+        expected_area = [8, 8]
+        expected_perimeter = [8, 8]
+        expected_total_area = 500
+
+        workspace = self.make_workspace(labels)
+
+        module = workspace.module
+        module.operands[0].operand_choice.value = "Objects"
+
+        module.run(workspace)
+
+        def mn(x):
+            return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+
+        numpy.testing.assert_array_equal(
+            workspace.measurements.get_current_measurement("Image", mn("AreaOccupied")),
+            expected_area
+        )
+
+        numpy.testing.assert_array_almost_equal(
+            workspace.measurements.get_current_measurement("Image", mn("Perimeter")),
+            expected_perimeter,
+            decimal=0
+        )
+
+        numpy.testing.assert_array_equal(
+            workspace.measurements.get_current_measurement("Image", mn("TotalArea")),
+            expected_total_area
+        )
+
+    def test_image_volume(self):
+        pixel_data = numpy.zeros((5, 10, 10), dtype=numpy.bool)
+        pixel_data[:2, :2, :2] = True
+        pixel_data[3:, 8:, 8:] = True
+
+        image = cellprofiler.image.Image(pixel_data, dimensions=3)
+
+        expected_area = [16]
+        expected_perimeter = [16]
+        expected_total_area = 500
+
+        workspace = self.make_workspace(numpy.zeros_like(pixel_data), parent_image=image)
+        workspace.image_set.add("MyBinaryImage", image)
+
+        module = workspace.module
+        module.operands[0].operand_choice.value = "Binary Image"
+        module.operands[0].binary_name.value = "MyBinaryImage"
+
+        module.run(workspace)
+
+        def mn(x):
+            return "AreaOccupied_%s_%s" % (x, module.operands[0].binary_name.value)
+
+        numpy.testing.assert_array_equal(
+            workspace.measurements.get_current_measurement("Image", mn("AreaOccupied")),
+            expected_area
+        )
+
+        numpy.testing.assert_array_almost_equal(
+            workspace.measurements.get_current_measurement("Image", mn("Perimeter")),
+            expected_perimeter,
+            decimal=0
+        )
+
+        numpy.testing.assert_array_equal(
+            workspace.measurements.get_current_measurement("Image", mn("TotalArea")),
+            expected_total_area
+        )

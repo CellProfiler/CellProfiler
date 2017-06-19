@@ -16,8 +16,8 @@ this module.</p>
 </ul>See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>
 """
 
-import centrosome.outline
 import numpy
+import skimage.measure
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -277,23 +277,37 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
         figure.subplot_table(0, 0, workspace.display_data.statistics, col_labels=workspace.display_data.col_labels)
 
     def measure_objects(self, operand, workspace):
-        '''Performs the measurements on the requested objects'''
         objects = workspace.get_objects(operand.operand_objects.value)
 
+        label_image = objects.segmented
+
         if objects.has_parent_image:
-            area_occupied = numpy.sum(objects.segmented[objects.parent_image.mask] > 0)
+            mask = objects.parent_image.mask
 
-            perimeter = numpy.sum(
-                centrosome.outline.outline(numpy.logical_and(objects.segmented != 0, objects.parent_image.mask))
-            )
+            label_image[~mask] = 0
 
-            total_area = numpy.sum(objects.parent_image.mask)
+            total_area = numpy.sum(mask)
         else:
-            area_occupied = numpy.sum(objects.segmented > 0)
+            total_area = numpy.product(label_image.shape)
 
-            perimeter = numpy.sum(centrosome.outline.outline(objects.segmented) > 0)
+        region_properties = skimage.measure.regionprops(label_image)
 
-            total_area = numpy.product(objects.segmented.shape)
+        area_occupied = [region["area"] for region in region_properties]
+
+        if objects.volumetric:
+            spacing = None
+
+            if objects.has_parent_image:
+                spacing = objects.parent_image.spacing
+
+            labels = numpy.unique(label_image)
+
+            if labels[0] == 0:
+                labels = labels[1:]
+
+            perimeter = surface_area(label_image, spacing=spacing, index=labels)
+        else:
+            perimeter = [region["perimeter"] for region in region_properties]
 
         m = workspace.measurements
 
@@ -313,7 +327,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
         )
 
         if operand.should_save_image.value:
-            binary_pixels = objects.segmented > 0
+            binary_pixels = label_image > 0
 
             output_image = cellprofiler.image.Image(binary_pixels, parent_image=objects.parent_image)
 
@@ -327,12 +341,14 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
         ]]
 
     def measure_images(self, operand, workspace):
-        '''Performs measurements on the requested images'''
         image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
 
         area_occupied = numpy.sum(image.pixel_data > 0)
 
-        perimeter = numpy.sum(centrosome.outline.outline(image.pixel_data) > 0)
+        if image.volumetric:
+            perimeter = surface_area(image.pixel_data > 0, spacing=image.spacing)
+        else:
+            perimeter = skimage.measure.perimeter(image.pixel_data > 0)
 
         total_area = numpy.prod(numpy.shape(image.pixel_data))
 
@@ -436,3 +452,21 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
             variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
+
+
+def surface_area(label_image, spacing=None, index=None):
+    if spacing is None:
+        spacing = (1.0,) * label_image.ndim
+
+    if index is None:
+        verts, faces, _, _ = skimage.measure.marching_cubes(label_image, spacing=spacing, level=0)
+
+        return skimage.measure.mesh_surface_area(verts, faces)
+
+    return [_label_surface_area(label_image, label, spacing) for label in index]
+
+
+def _label_surface_area(label_image, label, spacing):
+    verts, faces, _, _ = skimage.measure.marching_cubes(label_image == label, spacing=spacing, level=0)
+
+    return skimage.measure.mesh_surface_area(verts, faces)

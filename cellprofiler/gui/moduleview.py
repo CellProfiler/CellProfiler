@@ -694,7 +694,8 @@ class ModuleView(object):
             )
 
             def on_set_size(event):
-                v.size = int(event.GetString())
+                size = event.GetString()
+                v.size = int(size) if size else ""
                 new_value = v.value_text
                 self.notify(SettingEditedEvent(v, self.__module, new_value, event))
 

@@ -1709,11 +1709,23 @@ class StructuringElement(Setting):
 
     @property
     def size(self):
-        return int(self.value_text.split(",")[1])
+        _, size = self.value_text.split(",")
+
+        return int(size) if size else None
 
     @size.setter
     def size(self, value):
         self.value_text = ",".join((self.shape, str(value)))
+
+    def test_valid(self, pipeline):
+        if self.size is None:
+            raise ValidationError("Missing structuring element size. Please enter a positive integer.", self)
+
+        if self.size <= 0:
+            raise ValidationError(
+                "Structuring element size must be a positive integer. You provided {}.".format(self.size),
+                self
+            )
 
 
 class CustomChoice(Choice):

@@ -221,7 +221,8 @@ class TestConvertObjectsToImage(unittest.TestCase):
         ijv = numpy.column_stack((i, j, v))
         ijv = ijv[order, :]
         same = numpy.all(ijv[:-1, :] == ijv[1:, :], 1)
-        ijv = ijv[~same, :]
+
+        ijv = ijv[:numpy.prod(shape) - 1][~same, :]
 
         pipeline = cellprofiler.pipeline.Pipeline()
         object_set = cellprofiler.object.ObjectSet()

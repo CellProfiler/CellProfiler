@@ -10,11 +10,11 @@ relative weights.
 
 <p>See also <b>ColorToGray</b>.'''
 
-import numpy as np
+import numpy
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
 
 OFF_RED_IMAGE_NAME = 0
 OFF_GREEN_IMAGE_NAME = 1
@@ -40,13 +40,13 @@ DEFAULT_COLORS = [
     (128, 128, 0), (128, 0, 128), (0, 128, 128)]
 
 
-class GrayToColor(cpm.Module):
+class GrayToColor(cellprofiler.module.Module):
     module_name = 'GrayToColor'
     variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
-        self.scheme_choice = cps.Choice(
+        self.scheme_choice = cellprofiler.setting.Choice(
                 "Select a color scheme",
                 [SCHEME_RGB, SCHEME_CMYK, SCHEME_STACK, SCHEME_COMPOSITE],
                 doc="""
@@ -72,22 +72,22 @@ class GrayToColor(cpm.Module):
         # RGB settings
         #
         # # # # # # # # # # # # # # # #
-        self.red_image_name = cps.ImageNameSubscriber(
+        self.red_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image to be colored red",
                 can_be_blank=True, blank_text=LEAVE_THIS_BLACK)
 
-        self.green_image_name = cps.ImageNameSubscriber(
+        self.green_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image to be colored green",
                 can_be_blank=True, blank_text=LEAVE_THIS_BLACK)
 
-        self.blue_image_name = cps.ImageNameSubscriber(
+        self.blue_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image to be colored blue",
                 can_be_blank=True, blank_text=LEAVE_THIS_BLACK)
 
-        self.rgb_image_name = cps.ImageNameProvider(
+        self.rgb_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "ColorImage")
 
-        self.red_adjustment_factor = cps.Float(
+        self.red_adjustment_factor = cellprofiler.setting.Float(
                 "Relative weight for the red image",
                 value=1, minval=0, doc='''
             <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
@@ -95,7 +95,7 @@ class GrayToColor(cpm.Module):
             colors contribute equally in the final image. To weight colors relative to each other,
             increase or decrease the relative weights.''' % globals())
 
-        self.green_adjustment_factor = cps.Float(
+        self.green_adjustment_factor = cellprofiler.setting.Float(
                 "Relative weight for the green image",
                 value=1, minval=0, doc='''
             <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
@@ -103,7 +103,7 @@ class GrayToColor(cpm.Module):
             colors contribute equally in the final image. To weight colors relative to each other,
             increase or decrease the relative weights.''' % globals())
 
-        self.blue_adjustment_factor = cps.Float(
+        self.blue_adjustment_factor = cellprofiler.setting.Float(
                 "Relative weight for the blue image",
                 value=1, minval=0, doc='''
             <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
@@ -115,23 +115,23 @@ class GrayToColor(cpm.Module):
         # CYMK settings
         #
         # # # # # # # # # # # # # #
-        self.cyan_image_name = cps.ImageNameSubscriber(
+        self.cyan_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image to be colored cyan", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK)
 
-        self.magenta_image_name = cps.ImageNameSubscriber(
+        self.magenta_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image to be colored magenta", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK)
 
-        self.yellow_image_name = cps.ImageNameSubscriber(
+        self.yellow_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image to be colored yellow", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK)
 
-        self.gray_image_name = cps.ImageNameSubscriber(
+        self.gray_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image that determines brightness", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK)
 
-        self.cyan_adjustment_factor = cps.Float(
+        self.cyan_adjustment_factor = cellprofiler.setting.Float(
                 "Relative weight for the cyan image",
                 value=1, minval=0, doc='''
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
@@ -139,7 +139,7 @@ class GrayToColor(cpm.Module):
             colors contribute equally in the final image. To weight colors relative to each other,
             increase or decrease the relative weights.''' % globals())
 
-        self.magenta_adjustment_factor = cps.Float(
+        self.magenta_adjustment_factor = cellprofiler.setting.Float(
                 "Relative weight for the magenta image",
                 value=1, minval=0, doc='''
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
@@ -147,7 +147,7 @@ class GrayToColor(cpm.Module):
             colors contribute equally in the final image. To weight colors relative to each other,
             increase or decrease the relative weights.''' % globals())
 
-        self.yellow_adjustment_factor = cps.Float(
+        self.yellow_adjustment_factor = cellprofiler.setting.Float(
                 "Relative weight for the yellow image",
                 value=1, minval=0, doc='''
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
@@ -155,7 +155,7 @@ class GrayToColor(cpm.Module):
             colors contribute equally in the final image. To weight colors relative to each other,
             increase or decrease the relative weights.''' % globals())
 
-        self.gray_adjustment_factor = cps.Float(
+        self.gray_adjustment_factor = cellprofiler.setting.Float(
                 "Relative weight for the brightness image",
                 value=1, minval=0, doc='''
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
@@ -170,28 +170,31 @@ class GrayToColor(cpm.Module):
         # # # # # # # # # # # # # #
 
         self.stack_channels = []
-        self.stack_channel_count = cps.HiddenCount(self.stack_channels)
+
+        self.stack_channel_count = cellprofiler.setting.HiddenCount(self.stack_channels)
+
         self.add_stack_channel_cb(can_remove=False)
-        self.add_stack_channel = cps.DoSomething("", "Add another channel", self.add_stack_channel_cb)
+
+        self.add_stack_channel = cellprofiler.setting.DoSomething("", "Add another channel", self.add_stack_channel_cb)
 
     def add_stack_channel_cb(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         default_color = DEFAULT_COLORS[
             len(self.stack_channels) % len(DEFAULT_COLORS)]
-        group.append("image_name", cps.ImageNameSubscriber(
-                "Image name", cps.NONE,
+        group.append("image_name", cellprofiler.setting.ImageNameSubscriber(
+                "Image name", cellprofiler.setting.NONE,
                 doc=
                 """
                 <i>Used only if %(SCHEME_STACK)s or %(SCHEME_COMPOSITE)s is
                 chosen</i><br>
                 Select the input image to add to the stacked image""" % globals()))
-        group.append("color", cps.Color(
+        group.append("color", cellprofiler.setting.Color(
                 "Color", default_color,
                 doc="""
             <i>Used only if %(SCHEME_COMPOSITE)s is chosen</i>
             <br>The color to be assigned to the above image.
             """ % globals()))
-        group.append("weight", cps.Float(
+        group.append("weight", cellprofiler.setting.Float(
                 "Weight", 1.0, minval=.5 / 255,
                 doc="""
             <i>Used only if %(SCHEME_COMPOSITE)s is chosen</i>
@@ -201,44 +204,52 @@ class GrayToColor(cpm.Module):
             """ % globals()))
 
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.stack_channels, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.stack_channels, group))
+
         self.stack_channels.append(group)
 
     @property
     def color_scheme_settings(self):
         if self.scheme_choice == SCHEME_RGB:
-            return [ColorSchemeSettings(self.red_image_name,
-                                        self.red_adjustment_factor, 1, 0, 0),
-                    ColorSchemeSettings(self.green_image_name,
-                                        self.green_adjustment_factor, 0, 1, 0),
-                    ColorSchemeSettings(self.blue_image_name,
-                                        self.blue_adjustment_factor, 0, 0, 1)]
+            return [
+                ColorSchemeSettings(self.red_image_name, self.red_adjustment_factor, 1, 0, 0),
+                ColorSchemeSettings(self.green_image_name, self.green_adjustment_factor, 0, 1, 0),
+                ColorSchemeSettings(self.blue_image_name, self.blue_adjustment_factor, 0, 0, 1)
+            ]
         elif self.scheme_choice == SCHEME_CMYK:
-            return [ColorSchemeSettings(self.cyan_image_name,
-                                        self.cyan_adjustment_factor, 0, .5, .5),
-                    ColorSchemeSettings(self.magenta_image_name,
-                                        self.magenta_adjustment_factor, .5, .5, 0),
-                    ColorSchemeSettings(self.yellow_image_name,
-                                        self.yellow_adjustment_factor, .5, 0, .5),
-                    ColorSchemeSettings(self.gray_image_name,
-                                        self.gray_adjustment_factor,
-                                        1. / 3., 1. / 3., 1. / 3.)]
+            return [
+                ColorSchemeSettings(self.cyan_image_name, self.cyan_adjustment_factor, 0, .5, .5),
+                ColorSchemeSettings(self.magenta_image_name, self.magenta_adjustment_factor, .5, .5, 0),
+                ColorSchemeSettings(self.yellow_image_name, self.yellow_adjustment_factor, .5, 0, .5),
+                ColorSchemeSettings(self.gray_image_name, self.gray_adjustment_factor, 1. / 3., 1. / 3., 1. / 3.)
+            ]
         else:
             return []
 
     def settings(self):
-        result = [self.scheme_choice,
-                  self.red_image_name, self.green_image_name, self.blue_image_name,
-                  self.rgb_image_name, self.red_adjustment_factor,
-                  self.green_adjustment_factor, self.blue_adjustment_factor,
-                  self.cyan_image_name, self.magenta_image_name,
-                  self.yellow_image_name, self.gray_image_name,
-                  self.cyan_adjustment_factor, self.magenta_adjustment_factor,
-                  self.yellow_adjustment_factor, self.gray_adjustment_factor,
-                  self.stack_channel_count]
+        result = [
+            self.scheme_choice,
+            self.red_image_name,
+            self.green_image_name,
+            self.blue_image_name,
+            self.rgb_image_name,
+            self.red_adjustment_factor,
+            self.green_adjustment_factor,
+            self.blue_adjustment_factor,
+            self.cyan_image_name,
+            self.magenta_image_name,
+            self.yellow_image_name,
+            self.gray_image_name,
+            self.cyan_adjustment_factor,
+            self.magenta_adjustment_factor,
+            self.yellow_adjustment_factor,
+            self.gray_adjustment_factor,
+            self.stack_channel_count
+        ]
+
         for stack_channel in self.stack_channels:
-            result += [stack_channel.image_name, stack_channel.color,
-                       stack_channel.weight]
+            result += [stack_channel.image_name, stack_channel.color, stack_channel.weight]
+
         return result
 
     def prepare_settings(self, setting_values):
@@ -246,27 +257,36 @@ class GrayToColor(cpm.Module):
             num_stack_images = int(setting_values[OFF_STACK_CHANNEL_COUNT])
         except ValueError:
             num_stack_images = 1
+
         del self.stack_channels[num_stack_images:]
+
         while len(self.stack_channels) < num_stack_images:
             self.add_stack_channel_cb()
 
     def visible_settings(self):
         result = [self.scheme_choice]
-        result += [color_scheme_setting.image_name
-                   for color_scheme_setting in self.color_scheme_settings]
+
+        result += [color_scheme_setting.image_name for color_scheme_setting in self.color_scheme_settings]
+
         result += [self.rgb_image_name]
+
         for color_scheme_setting in self.color_scheme_settings:
             if not color_scheme_setting.image_name.is_blank:
                 result.append(color_scheme_setting.adjustment_factor)
+
         if self.scheme_choice in (SCHEME_STACK, SCHEME_COMPOSITE):
             for sc_group in self.stack_channels:
                 result.append(sc_group.image_name)
+
                 if self.scheme_choice == SCHEME_COMPOSITE:
                     result.append(sc_group.color)
                     result.append(sc_group.weight)
+
                 if hasattr(sc_group, "remover"):
                     result.append(sc_group.remover)
+
             result += [self.add_stack_channel]
+
         return result
 
     def validate_module(self, pipeline):
@@ -275,88 +295,108 @@ class GrayToColor(cpm.Module):
         We need at least one image name to be filled in
         """
         if self.scheme_choice not in (SCHEME_STACK, SCHEME_COMPOSITE):
-            if all([color_scheme_setting.image_name.is_blank
-                    for color_scheme_setting in self.color_scheme_settings]):
-                raise cps.ValidationError(
-                        "At least one of the images must not be blank",
-                        self.color_scheme_settings[0].image_name)
+            if all([color_scheme_setting.image_name.is_blank for color_scheme_setting in self.color_scheme_settings]):
+                raise cellprofiler.setting.ValidationError("At least one of the images must not be blank", self.color_scheme_settings[0].image_name)
 
     def run(self, workspace):
         parent_image = None
+
         parent_image_name = None
+
         imgset = workspace.image_set
+
         rgb_pixel_data = None
+
         input_image_names = []
+
         channel_names = []
+
         if self.scheme_choice not in (SCHEME_STACK, SCHEME_COMPOSITE):
             for color_scheme_setting in self.color_scheme_settings:
                 if color_scheme_setting.image_name.is_blank:
                     channel_names.append("Blank")
+
                     continue
+
                 image_name = color_scheme_setting.image_name.value
+
                 input_image_names.append(image_name)
+
                 channel_names.append(image_name)
-                image = imgset.get_image(image_name,
-                                         must_be_grayscale=True)
-                multiplier = (color_scheme_setting.intensities *
-                              color_scheme_setting.adjustment_factor.value)
+
+                image = imgset.get_image(image_name, must_be_grayscale=True)
+
+                multiplier = (color_scheme_setting.intensities * color_scheme_setting.adjustment_factor.value)
+
                 pixel_data = image.pixel_data
+
                 if parent_image is not None:
                     if parent_image.pixel_data.shape != pixel_data.shape:
-                        raise ValueError("The %s image and %s image have different sizes (%s vs %s)" %
-                                         (parent_image_name,
-                                          color_scheme_setting.image_name.value,
-                                          parent_image.pixel_data.shape,
-                                          image.pixel_data.shape))
-                    rgb_pixel_data += np.dstack([pixel_data] * 3) * multiplier
+                        message = "The {} image and {} image have different sizes ({} vs {})".format(parent_image_name, color_scheme_setting.image_name.value, parent_image.pixel_data.shape, image.pixel_data.shape)
+
+                        raise ValueError(message)
+
+                    rgb_pixel_data += numpy.stack([pixel_data] * 3, -1) * multiplier
                 else:
                     parent_image = image
+
                     parent_image_name = color_scheme_setting.image_name.value
-                    rgb_pixel_data = np.dstack([pixel_data] * 3) * multiplier
+
+                    rgb_pixel_data = numpy.stack([pixel_data] * 3, -1) * multiplier
         else:
             input_image_names = [sc.image_name.value for sc in self.stack_channels]
+
             channel_names = input_image_names
-            source_channels = [imgset.get_image(name, must_be_grayscale=True).pixel_data
-                               for name in input_image_names]
+
+            source_channels = [imgset.get_image(name, must_be_grayscale=True).pixel_data for name in input_image_names]
+
             parent_image = imgset.get_image(input_image_names[0])
+
             for idx, pd in enumerate(source_channels):
                 if pd.shape != source_channels[0].shape:
-                    raise ValueError("The %s image and %s image have different sizes (%s vs %s)" %
-                                     (self.stack_channels[0].image_name.value,
-                                      self.stack_channels[idx].image_name.value,
-                                      source_channels[0].shape,
-                                      pd.pixel_data.shape))
+                    values = (
+                        self.stack_channels[0].image_name.value,
+                        self.stack_channels[idx].image_name.value,
+                        source_channels[0].shape, pd.pixel_data.shape
+                    )
+
+                    raise ValueError("The %s image and %s image have different sizes (%s vs %s)" % values)
+
             if self.scheme_choice == SCHEME_STACK:
-                rgb_pixel_data = np.dstack(source_channels)
+                rgb_pixel_data = numpy.dstack(source_channels)
             else:
                 colors = []
+
                 for sc in self.stack_channels:
                     color_tuple = sc.color.to_rgb()
-                    color = sc.weight.value * np.array(color_tuple).astype(
-                            parent_image.pixel_data.dtype) / 255
-                    colors.append(color[np.newaxis, np.newaxis, :])
-                rgb_pixel_data = \
-                    parent_image.pixel_data[:, :, np.newaxis] * colors[0]
-                for image, color in zip(source_channels[1:], colors[1:]):
-                    rgb_pixel_data = rgb_pixel_data + \
-                                     image[:, :, np.newaxis] * color
 
-        ##############
-        # Save image #
-        ##############
-        rgb_image = cpi.Image(rgb_pixel_data, parent_image=parent_image)
+                    color = sc.weight.value * numpy.array(color_tuple).astype(parent_image.pixel_data.dtype) / 255
+
+                    colors.append(color[numpy.newaxis, numpy.newaxis, :])
+
+                rgb_pixel_data = parent_image.pixel_data[:, :, numpy.newaxis] * colors[0]
+
+                for image, color in zip(source_channels[1:], colors[1:]):
+                    rgb_pixel_data = rgb_pixel_data + image[:, :, numpy.newaxis] * color
+
+        rgb_image = cellprofiler.image.Image(
+            rgb_pixel_data,
+            dimensions=parent_image.dimensions,
+            parent_image=parent_image
+        )
+
         rgb_image.channel_names = channel_names
+
         imgset.add(self.rgb_image_name.value, rgb_image)
 
-        ##################
-        # Display images #
-        ##################
         if self.show_window:
             workspace.display_data.input_image_names = input_image_names
+
+            workspace.display_data.dimensions = rgb_image.dimensions
+
             workspace.display_data.rgb_pixel_data = rgb_pixel_data
-            workspace.display_data.images = \
-                [imgset.get_image(name, must_be_grayscale=True).pixel_data
-                 for name in input_image_names]
+
+            workspace.display_data.images = [imgset.get_image(name, must_be_grayscale=True).pixel_data for name in input_image_names]
 
     def display(self, workspace, figure):
         input_image_names = workspace.display_data.input_image_names
@@ -375,23 +415,38 @@ class GrayToColor(cpm.Module):
             subplots = (min(nsubplots + 1, 4), int(nsubplots / 4) + 1)
             subplot_indices = [(i % 4, int(i / 4)) for i in range(nsubplots)]
             color_subplot = (nsubplots % 4, int(nsubplots / 4))
-        figure.set_subplots(subplots)
-        for i, (input_image_name, image_pixel_data) in \
-                enumerate(zip(input_image_names, images)):
-            x, y = subplot_indices[i]
-            figure.subplot_imshow_grayscale(x, y, image_pixel_data,
-                                            title=input_image_name,
-                                            sharexy=figure.subplot(0, 0))
-            figure.subplot(x, y).set_visible(True)
-        for x, y in subplot_indices[len(input_image_names):]:
-            figure.subplot(x, y).set_visible(False)
-        figure.subplot_imshow(color_subplot[0], color_subplot[1],
-                              workspace.display_data.rgb_pixel_data[:, :, :3],
-                              title=self.rgb_image_name.value,
-                              sharexy=figure.subplot(0, 0))
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+        figure.set_subplots(subplots)
+
+        import IPython
+        IPython.embed()
+
+        for i, (input_image_name, image_pixel_data) in enumerate(zip(input_image_names, images)):
+            x, y = subplot_indices[i]
+
+            figure.subplot_imshow(
+                x,
+                y,
+                image_pixel_data,
+                title=input_image_name,
+                dimensions=workspace.display_data.dimensions,
+                sharexy=figure.subplot(0, 0)
+            )
+
+            figure.subplot(x, y).set_visible(True)
+
+        for x, y in subplot_indices[len(input_image_names):]: figure.subplot(x, y).set_visible(False)
+
+        figure.subplot_imshow(
+            color_subplot[0],
+            color_subplot[1],
+            workspace.display_data.rgb_pixel_data,
+            dimensions=workspace.display_data.dimensions,
+            title=self.rgb_image_name.value,
+            sharexy=figure.subplot(0, 0)
+        )
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:
             # Blue and red were switched: it was BGR
             temp = list(setting_values)
@@ -401,68 +456,80 @@ class GrayToColor(cpm.Module):
             temp[OFF_BLUE_ADJUSTMENT_FACTOR] = setting_values[OFF_RED_ADJUSTMENT_FACTOR]
             setting_values = temp
             variable_revision_number = 2
+
         if from_matlab and variable_revision_number == 2:
             from_matlab = False
             variable_revision_number = 1
+
         if from_matlab and variable_revision_number == 3:
-            image_names = [LEAVE_THIS_BLACK if value == cps.DO_NOT_USE
-                           else value
-                           for value in setting_values[:4]]
+            image_names = [LEAVE_THIS_BLACK if value == cellprofiler.setting.DO_NOT_USE else value for value in setting_values[:4]]
+
             rgb_image_name = setting_values[4]
+
             adjustment_factors = setting_values[5:]
+
             if image_names[3] == LEAVE_THIS_BLACK:
                 #
                 # RGB color scheme
                 #
                 setting_values = (
                     [SCHEME_RGB] + image_names[:3] + [rgb_image_name] +
-                    adjustment_factors[:3] + [cps.NONE] * 4 + [1] * 4)
+                    adjustment_factors[:3] + [cellprofiler.setting.NONE] * 4 + [1] * 4)
             else:
                 #
                 # CYMK color scheme
                 #
                 setting_values = (
-                    [SCHEME_CMYK] + [cps.NONE] * 3 + [rgb_image_name] +
+                    [SCHEME_CMYK] + [cellprofiler.setting.NONE] * 3 + [rgb_image_name] +
                     [1] * 3 + image_names + adjustment_factors)
+
             from_matlab = False
+
             variable_revision_number = 2
+
         if (not from_matlab) and variable_revision_number == 1:
             #
             # Was RGB-only. Convert values to CYMK-style
             #
             setting_values = (
                 [SCHEME_CMYK] + setting_values +
-                [cps.NONE] * 4 + [1] * 4)
+                [cellprofiler.setting.NONE] * 4 + [1] * 4)
             variable_revision_number = 2
+
         if (not from_matlab) and variable_revision_number == 2:
             #
             # Added composite mode
             #
             n_stacked = len(setting_values) - OFF_STACK_CHANNELS_V2
+
             new_setting_values = list(setting_values[:OFF_STACK_CHANNELS_V2])
+
             new_setting_values.append(str(n_stacked))
+
             for i, image_name in enumerate(
                     setting_values[OFF_STACK_CHANNELS_V2:]):
                 new_setting_values += \
                     [image_name, DEFAULT_COLORS[i % len(DEFAULT_COLORS)], "1.0"]
+
             setting_values = new_setting_values
+
             variable_revision_number = 3
+
         return setting_values, variable_revision_number, from_matlab
 
 
 class ColorSchemeSettings(object):
-    '''Collect all of the details for one color in one place'''
+    """Collect all of the details for one color in one place"""
 
-    def __init__(self, image_name_setting, adjustment_setting,
-                 red_intensity, green_intensity, blue_intensity):
-        '''Initialize with settings and multipliers
+    def __init__(self, image_name_setting, adjustment_setting, red_intensity, green_intensity, blue_intensity):
+        """Initialize with settings and multipliers
 
         image_name_setting - names the image to use for the color
         adjustment_setting - weights the image
         red_intensity - indicates how much it contributes to the red channel
         green_intensity - indicates how much it contributes to the green channel
         blue_intensity - indicates how much it contributes to the blue channel
-        '''
+        """
         self.image_name = image_name_setting
         self.adjustment_factor = adjustment_setting
         self.red_intensity = red_intensity
@@ -471,7 +538,5 @@ class ColorSchemeSettings(object):
 
     @property
     def intensities(self):
-        '''The intensities in RGB order as a numpy array'''
-        return np.array((self.red_intensity,
-                         self.green_intensity,
-                         self.blue_intensity))
+        """The intensities in RGB order as a numpy array"""
+        return numpy.array((self.red_intensity, self.green_intensity, self.blue_intensity))

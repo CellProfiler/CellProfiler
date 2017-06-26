@@ -14,7 +14,7 @@ import cellprofiler.object
 import cellprofiler.setting
 
 
-class ClearBorder(cellprofiler.module.ImageSegmentation):
+class ClearBorder(cellprofiler.module.ObjectProcessing):
     module_name = "ClearBorder"
 
     variable_revision_number = 1
@@ -47,33 +47,6 @@ class ClearBorder(cellprofiler.module.ImageSegmentation):
         ]
 
     def run(self, workspace):
-        x_name = self.x_name.value
+        self.function = skimage.segmentation.clear_border
 
-        y_name = self.y_name.value
-
-        images = workspace.image_set
-
-        x = images.get_image(x_name)
-
-        dimensions = x.dimensions
-
-        x_data = x.pixel_data
-
-        y_data = skimage.segmentation.clear_border(x_data)
-
-        y_data = skimage.measure.label(y_data)
-
-        objects = cellprofiler.object.Objects()
-
-        objects.segmented = y_data
-
-        objects.parent_image = x
-
-        workspace.object_set.add_objects(objects, y_name)
-
-        if self.show_window:
-            workspace.display_data.x_data = x.pixel_data
-
-            workspace.display_data.y_data = y_data
-
-            workspace.display_data.dimensions = dimensions
+        super(ClearBorder, self).run(workspace)

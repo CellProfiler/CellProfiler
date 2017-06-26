@@ -1,27 +1,31 @@
 import numpy
 import numpy.testing
-import skimage.color
-import skimage.feature
-import skimage.filters
-import skimage.filters.rank
-import skimage.measure
-import skimage.morphology
-import skimage.segmentation
-import skimage.transform
-import skimage.util
+import pytest
 
 import cellprofiler.image
 import cellprofiler.modules.clearborder
+import cellprofiler.measurement
+import cellprofiler.object
 
 instance = cellprofiler.modules.clearborder.ClearBorder()
 
 
-def test_run(image, module, image_set, workspace):
-    module.x_name.value = "segmentation"
+@pytest.fixture(scope="function")
+def object_set(objects):
+    object_set = cellprofiler.object.ObjectSet()
 
-    module.y_name.value = "clearborder"
+    object_set.add_objects(objects, "InputObjects")
 
-    segmentation = numpy.array(
+    return object_set
+
+
+@pytest.fixture(scope="function")
+def objects():
+    return cellprofiler.object.Objects()
+
+
+def test_run(module, object_set, objects, workspace):
+    x = numpy.array(
         [[0, 0, 0, 0, 0, 0, 0, 1, 0],
          [0, 0, 0, 0, 1, 0, 0, 0, 0],
          [1, 0, 0, 1, 0, 1, 0, 0, 0],
@@ -30,18 +34,15 @@ def test_run(image, module, image_set, workspace):
          [0, 0, 0, 0, 0, 0, 0, 0, 0]]
     )
 
-    image_set.add(
-        "segmentation",
-        cellprofiler.image.Image(
-            convert=False,
-            dimensions=image.dimensions,
-            image=segmentation
-        )
-    )
+    objects.segmented = x
+
+    module.x_name.value = "InputObjects"
 
     module.run(workspace)
 
-    expected = numpy.array(
+    x = object_set.get_objects("ClearBorder").segmented
+
+    y = numpy.array(
         [[0, 0, 0, 0, 0, 0, 0, 0, 0],
          [0, 0, 0, 0, 1, 0, 0, 0, 0],
          [0, 0, 0, 1, 0, 1, 0, 0, 0],
@@ -50,8 +51,4 @@ def test_run(image, module, image_set, workspace):
          [0, 0, 0, 0, 0, 0, 0, 0, 0]]
     )
 
-    expected = skimage.measure.label(expected)
-
-    actual = workspace.get_objects("clearborder")
-
-    numpy.testing.assert_array_equal(expected, actual.segmented)
+    numpy.testing.assert_array_equal(x, y)

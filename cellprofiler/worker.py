@@ -168,7 +168,7 @@ def main():
     if sys.platform == "darwin":
         from cellprofiler.icons import get_builtin_images_path
 
-        icon_path = os.path.join(get_builtin_images_path(), "artwork/CellProfilerIcon.png")
+        icon_path = os.path.join(get_builtin_images_path(), "data/CellProfilerIcon.png")
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
 

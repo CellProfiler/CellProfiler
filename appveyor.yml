@@ -8,5 +8,6 @@ install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
   - "%PYTHON%\\python.exe -m pip install --upgrade wheel"
   - "%PYTHON%\\python.exe -m pip install --upgrade cython"
+  - "%PYTHON%\\python.exe -m pip install --upgrade numpy"
 test_script:
   - "%PYTHON%\\python.exe setup.py test"

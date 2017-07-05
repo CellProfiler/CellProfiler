@@ -1,4 +1,6 @@
 build: off
+build_script:
+  - "%PYTHON%\\python.exe -m pip install --editable ."
 environment:
   matrix:
   - PYTHON: "C:\\Python27"

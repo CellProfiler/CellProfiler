@@ -5,6 +5,8 @@ environment:
   matrix:
   - PYTHON: "C:\\Python27"
 install:
-  - "%PYTHON%\\python.exe -m pip install wheel"
+  - "%PYTHON%\\python.exe -m pip install --upgrade pip"
+  - "%PYTHON%\\python.exe -m pip install --upgrade wheel"
+  - "%PYTHON%\\python.exe -m pip install --upgrade cython"
 test_script:
   - "%PYTHON%\\python.exe setup.py test"

@@ -22,6 +22,6 @@ language: python
 notifications:
   email: false
 python: 2.7.12
-script: python setup.py test -a -x
+script: pytest
 services: mysql
 sudo: required

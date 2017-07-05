@@ -8,6 +8,23 @@ import skimage.data
 import pytest
 
 
+@pytest.fixture(autouse=True, scope="session")
+def setup_and_teardown():
+    import cellprofiler.__main__
+    import cellprofiler.utilities.cpjvm
+    import cellprofiler.preferences
+
+    cellprofiler.preferences.set_headless()
+
+    cellprofiler.utilities.cpjvm.cp_start_vm()
+
+    print("setup")
+
+    yield
+
+    cellprofiler.__main__.stop_cellprofiler()
+
+
 @pytest.fixture(
     scope="module",
     params=[

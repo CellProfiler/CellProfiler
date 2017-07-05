@@ -16,11 +16,7 @@ class Test(setuptools.Command):
         pass
 
     def run(self):
-        try:
-            import pytest
-            import unittest
-        except ImportError:
-            raise ImportError
+        import pytest
 
         import cellprofiler.utilities.cpjvm
         import cellprofiler.preferences

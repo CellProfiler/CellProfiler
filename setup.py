@@ -299,61 +299,38 @@ if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
-version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
-version = version_file.read().strip()
 
 setuptools.setup(
-        app=[
-            "CellProfiler.py"
-        ],
-        author="cellprofiler-dev",
+        author="CellProfiler contributors",
         author_email="cellprofiler-dev@broadinstitute.org",
         classifiers=[
             "Development Status :: 5 - Production/Stable",
             "Intended Audience :: Science/Research",
             "License :: OSI Approved :: BSD License",
             "Operating System :: OS Independent",
-            "Programming Language :: C",
-            "Programming Language :: C++",
-            "Programming Language :: Cython",
             "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.6",
             "Programming Language :: Python :: 2.7",
             "Topic :: Scientific/Engineering :: Bio-Informatics",
             "Topic :: Scientific/Engineering :: Image Recognition",
             "Topic :: Scientific/Engineering"
         ],
         cmdclass=cmdclass,
-        console=[
-            {
-                "icon_resources": [
-                    (1, "cellprofiler/data/images/CellProfilerIcon.ico")
-                ],
-                "script": "CellProfiler.py"
-            }
-        ],
-        description="",
         entry_points={
             "console_scripts": [
                 "cellprofiler=cellprofiler.__main__:main"
             ]
         },
-        include_package_data=True,
         install_requires=[
-            "cellh5",
             "centrosome",
             "h5py",
             "inflect",
             "javabridge",
             "joblib",
-            "libtiff",
             "mahotas",
             "matplotlib",
             "MySQL-python",
             "numpy",
-            "prokaryote>=1.0.11",
-            "pyamg==3.1.1",
-            "pytest",
+            "prokaryote",
             "python-bioformats",
             "pyzmq",
             "raven",
@@ -362,19 +339,18 @@ setuptools.setup(
             "scikit-learn",
             "scipy"
         ],
-        keywords="",
         license="BSD",
-        long_description="",
         name="CellProfiler",
         package_data={
-            "data": glob.glob(os.path.join("data", "images", "*"))
+            "images": os.path.join("data", "images", "*")
         },
         packages=setuptools.find_packages(exclude=[
             "tests",
         ]),
+        python_requires=">=2.7, <3",
         setup_requires=[
             "pytest"
         ],
-        url="https://github.com/CellProfiler/CellProfiler",
+        url="http://cellprofiler.org",
         version="3.0.0rc2"
 )

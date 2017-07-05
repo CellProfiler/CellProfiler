@@ -1319,8 +1319,8 @@ class MyClassForTest1101(cpm.Module):
         return True
 
     def run(self, *args):
-        import MySQLdb
-        raise MySQLdb.OperationalError("Bogus error")
+        import pymysql
+        raise pymysql.OperationalError("Bogus error")
 
 
 class GroupModule(cpm.Module):

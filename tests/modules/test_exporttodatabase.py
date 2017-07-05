@@ -117,8 +117,8 @@ class TestExportToDatabase(unittest.TestCase):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, no DB configured.")
         if self.__connection is None:
-            import MySQLdb
-            self.__connection = MySQLdb.connect(
+            import pymysql
+            self.__connection = pymysql.connect(
                     host=MYSQL_HOST,
                     user=MYSQL_USER,
                     passwd=MYSQL_PASSWORD,
@@ -138,8 +138,8 @@ class TestExportToDatabase(unittest.TestCase):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, database not configured.")
         if self.__cursor is None:
-            import MySQLdb
-            from MySQLdb.cursors import SSCursor
+            import pymysql
+            from pymysql.cursors import SSCursor
             self.__cursor = SSCursor(self.connection)
             try:
                 self.__cursor.execute("use " + MYSQL_DATABASE)

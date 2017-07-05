@@ -2,7 +2,6 @@ addons:
   apt:
     packages:
       - libhdf5-serial-dev
-      - python-mysqldb
       - python-pip
   apt: true
   directories: $HOME/.cache/pip
@@ -22,6 +21,6 @@ language: python
 notifications:
   email: false
 python: 2.7.12
-script: python setup.py test -a -x
+script: pytest
 services: mysql
 sudo: required

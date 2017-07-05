@@ -1373,8 +1373,8 @@ class PipelineController(object):
             error_msg = None
             self.__pipeline_list_view.select_one_module(event.module.module_num)
             try:
-                import MySQLdb
-                if (isinstance(event.error, MySQLdb.OperationalError) and
+                import pymysql
+                if (isinstance(event.error, pymysql.OperationalError) and
                             len(event.error.args) > 1):
                     #
                     # The informative error is in args[1] for MySQL
@@ -2302,7 +2302,7 @@ class PipelineController(object):
         ##################################
 
         if cellprofiler.preferences.get_wants_pony():
-            wx.Sound(os.path.join(cellprofiler.icons.path, "HorseWhinnying.wav")).Play()
+            wx.Sound(os.path.join(cellprofiler.icons.resources, "HorseWhinnying.wav")).Play()
 
         ok, reason = self.__frame.preferences_view.check_preferences()
 

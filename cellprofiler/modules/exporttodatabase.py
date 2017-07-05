@@ -72,8 +72,8 @@ import traceback
 
 logger = logging.getLogger(__name__)
 try:
-    import MySQLdb
-    from MySQLdb.cursors import SSCursor
+    import pymysql
+    from pymysql.cursors import SSCursor
 
     HAS_MYSQL_DB = True
 except:
@@ -274,7 +274,7 @@ def get_results_as_list(cursor):
 def get_next_result(cursor):
     try:
         return cursor.next()
-    except MySQLdb.Error, e:
+    except pymysql.Error, e:
         raise Exception('Error retrieving next result from database: %s' % e)
     except StopIteration, e:
         return None
@@ -282,7 +282,7 @@ def get_next_result(cursor):
 
 def connect_mysql(host, user, pw, db):
     '''Creates and returns a db connection and cursor.'''
-    connection = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
+    connection = pymysql.connect(host=host, user=user, passwd=pw, db=db)
     cursor = SSCursor(connection)
     #
     # Use utf-8 encoding for strings
@@ -663,7 +663,7 @@ class ExportToDatabase(cpm.Module):
                                                                 self.add_workspace_measurement_group)
 
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False,
-                                               doc="""The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
+                                               doc="""The pymysql python module could not be loaded.  pymysql is necessary for direct export.""")
 
         self.db_host = cps.Text("Database host", "")
 
@@ -1553,7 +1553,7 @@ class ExportToDatabase(cpm.Module):
                                        self.db_user.value,
                                        self.db_passwd.value,
                                        self.db_name.value)
-        except MySQLdb.Error, error:
+        except pymysql.Error, error:
             if error.args[0] == 1045:
                 msg = "Incorrect username or password"
             elif error.args[0] == 1049:
@@ -2283,7 +2283,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
         statements.append(create_experiment_properties)
         insert_into_experiment_statement = """
 INSERT INTO %s (name) values ('%s')""" % (
-            T_EXPERIMENT, MySQLdb.escape_string(self.experiment_name.value))
+            T_EXPERIMENT, pymysql.escape_string(self.experiment_name.value))
         statements.append(insert_into_experiment_statement)
 
         properties = self.get_property_file_text(workspace)
@@ -2295,8 +2295,8 @@ INSERT INTO %s (name) values ('%s')""" % (
 INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                     T_EXPERIMENT_PROPERTIES, p.object_name,
-                    MySQLdb.escape_string(k),
-                    MySQLdb.escape_string(v), T_EXPERIMENT)
+                    pymysql.escape_string(k),
+                    pymysql.escape_string(v), T_EXPERIMENT)
                 statements.append(statement)
 
         experiment_columns = filter(
@@ -2328,7 +2328,7 @@ CREATE TABLE %s (
                 if isinstance(value, unicode):
                     value = value.encode('utf-8')
                 if self.db_type != DB_SQLITE:
-                    value = MySQLdb.escape_string(value)
+                    value = pymysql.escape_string(value)
                 else:
                     value = value.replace("'", "''")
                 value = "'" + value + "'"
@@ -2812,11 +2812,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     value = value[0]
                 if coltype.startswith(cpmeas.COLTYPE_VARCHAR):
                     if isinstance(value, str) or isinstance(value, unicode):
-                        value = '"' + MySQLdb.escape_string(value) + '"'
+                        value = '"' + pymysql.escape_string(value) + '"'
                     elif value is None:
                         value = "NULL"
                     else:
-                        value = '"' + MySQLdb.escape_string(value) + '"'
+                        value = '"' + pymysql.escape_string(value) + '"'
                 elif np.isnan(value) or np.isinf(value):
                     value = "NULL"
 

@@ -2,7 +2,6 @@ addons:
   apt:
     packages:
       - libhdf5-serial-dev
-      - python-mysqldb
       - python-pip
   apt: true
   directories: $HOME/.cache/pip

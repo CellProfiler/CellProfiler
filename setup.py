@@ -23,22 +23,6 @@ class Test(setuptools.Command):
             raise ImportError
 
         import cellprofiler.utilities.cpjvm
-
-        #
-        # Monkey-patch pytest.Function
-        # See https://github.com/pytest-dev/pytest/issues/1169
-        #
-        try:
-            from _pytest.unittest import TestCaseFunction
-
-            def runtest(self):
-                setattr(self._testcase, "__name__", self.name)
-                self._testcase(result=self)
-
-            TestCaseFunction.runtest = runtest
-        except:
-            pass
-
         import cellprofiler.preferences
 
         cellprofiler.preferences.set_headless()
@@ -102,9 +86,6 @@ setuptools.setup(
             "tests",
         ]),
         python_requires=">=2.7, <3",
-        setup_requires=[
-            "pytest"
-        ],
         url="http://cellprofiler.org",
         version="3.0.0rc2"
 )

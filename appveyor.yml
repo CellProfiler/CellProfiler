@@ -1,0 +1,8 @@
+build: off
+environment:
+install:
+  - "%PYTHON%\\python.exe -m pip install wheel"
+matrix:
+  - PYTHON: "C:\\Python27"
+test_script:
+  - "%PYTHON%\\python.exe setup.py test"

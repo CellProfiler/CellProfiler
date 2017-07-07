@@ -9,6 +9,25 @@ import setuptools.command.build_py
 import setuptools.command.sdist
 import setuptools.dist
 import sys
+import re
+import codecs
+
+
+def read(*directories):
+    pathname = os.path.abspath(os.path.dirname(__file__))
+
+    return codecs.open(os.path.join(pathname, *directories), "r").read()
+
+
+def find_version(*pathnames):
+    data = read(*pathnames)
+
+    matched = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", data, re.M)
+
+    if matched:
+        return matched.group(1)
+
+    raise RuntimeError("Unable to find version string.")
 
 # Recipe needed to get real distutils if virtualenv.
 # Error message is "ImportError: cannot import name dist"
@@ -82,55 +101,6 @@ if sys.platform.startswith("win"):
     # See http://www.py2exe.org/index.cgi/Py2exeAndzmq
     # Recipe needed for py2exe to package libzmq.dll
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
-
-
-class Test(setuptools.Command):
-    user_options = [
-        ("pytest-args=", "a", "arguments to pass to py.test")
-    ]
-
-    def initialize_options(self):
-        self.pytest_args = []
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        try:
-            import pytest
-            import unittest
-        except ImportError:
-            raise ImportError
-
-        import cellprofiler.__main__
-        import cellprofiler.preferences
-        import cellprofiler.utilities.cpjvm
-
-        #
-        # Monkey-patch pytest.Function
-        # See https://github.com/pytest-dev/pytest/issues/1169
-        #
-        try:
-            from _pytest.unittest import TestCaseFunction
-
-            def runtest(self):
-                setattr(self._testcase, "__name__", self.name)
-                self._testcase(result=self)
-
-            TestCaseFunction.runtest = runtest
-        except:
-            pass
-
-        cellprofiler.preferences.set_headless()
-
-        cellprofiler.utilities.cpjvm.cp_start_vm()
-
-        errno = pytest.main(self.pytest_args)
-
-        cellprofiler.__main__.stop_cellprofiler()
-
-        sys.exit(errno)
-
 
 if has_py2exe:
     class CPPy2Exe(py2exe.build_exe.py2exe):
@@ -291,16 +261,11 @@ if has_py2exe:
                     "HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\" + \
                     "Compile\\command"
 
-cmdclass = {
-    "test": Test
-}
+cmdclass = {}
 
 if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
-
-version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
-version = version_file.read().strip()
 
 setuptools.setup(
         app=[
@@ -338,6 +303,11 @@ setuptools.setup(
                 "cellprofiler=cellprofiler.__main__:main"
             ]
         },
+        extras_require={
+            "test": [
+                "pytest"
+            ]
+        },
         include_package_data=True,
         install_requires=[
             "centrosome",
@@ -350,7 +320,6 @@ setuptools.setup(
             "MySQL-python",
             "numpy",
             "prokaryote",
-            "pytest",
             "python-bioformats",
             "pyzmq",
             "raven",
@@ -367,11 +336,11 @@ setuptools.setup(
             "data": glob.glob(os.path.join("data", "images", "*"))
         },
         packages=setuptools.find_packages(exclude=[
-            "tests",
+            "tests"
         ]),
         setup_requires=[
             "pytest"
         ],
         url="https://github.com/CellProfiler/CellProfiler",
-        version="3.0.0rc1"
+        version=find_version("cellprofiler", "__init__.py")
 )

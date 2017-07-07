@@ -9,6 +9,25 @@ import setuptools.command.build_py
 import setuptools.command.sdist
 import setuptools.dist
 import sys
+import re
+import codecs
+
+
+def read(*directories):
+    pathname = os.path.abspath(os.path.dirname(__file__))
+
+    return codecs.open(os.path.join(pathname, *directories), "r").read()
+
+
+def find_version(*pathnames):
+    data = read(*pathnames)
+
+    matched = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", data, re.M)
+
+    if matched:
+        return matched.group(1)
+
+    raise RuntimeError("Unable to find version string.")
 
 # Recipe needed to get real distutils if virtualenv.
 # Error message is "ImportError: cannot import name dist"
@@ -248,9 +267,6 @@ if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
-version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
-version = version_file.read().strip()
-
 setuptools.setup(
         app=[
             "CellProfiler.py"
@@ -329,5 +345,5 @@ setuptools.setup(
             "pytest"
         ],
         url="https://github.com/CellProfiler/CellProfiler",
-        version="3.0.0rc1"
+        version=find_version("cellprofiler", "__init__.py")
 )

@@ -16,12 +16,12 @@ install:
   - pip install --upgrade joblib
   - pip install --upgrade numpy
   - pip install --upgrade scipy
-  - pip install --upgrade --editable .
+  - pip install --upgrade --editable .[test]
   - pip freeze
 language: python
 notifications:
   email: false
 python: 2.7.12
-script: python setup.py test -a -x
+script: pytest
 services: mysql
 sudo: required

@@ -83,55 +83,6 @@ if sys.platform.startswith("win"):
     # Recipe needed for py2exe to package libzmq.dll
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
 
-
-class Test(setuptools.Command):
-    user_options = [
-        ("pytest-args=", "a", "arguments to pass to py.test")
-    ]
-
-    def initialize_options(self):
-        self.pytest_args = []
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        try:
-            import pytest
-            import unittest
-        except ImportError:
-            raise ImportError
-
-        import cellprofiler.__main__
-        import cellprofiler.preferences
-        import cellprofiler.utilities.cpjvm
-
-        #
-        # Monkey-patch pytest.Function
-        # See https://github.com/pytest-dev/pytest/issues/1169
-        #
-        try:
-            from _pytest.unittest import TestCaseFunction
-
-            def runtest(self):
-                setattr(self._testcase, "__name__", self.name)
-                self._testcase(result=self)
-
-            TestCaseFunction.runtest = runtest
-        except:
-            pass
-
-        cellprofiler.preferences.set_headless()
-
-        cellprofiler.utilities.cpjvm.cp_start_vm()
-
-        errno = pytest.main(self.pytest_args)
-
-        cellprofiler.__main__.stop_cellprofiler()
-
-        sys.exit(errno)
-
-
 if has_py2exe:
     class CPPy2Exe(py2exe.build_exe.py2exe):
         user_options = py2exe.build_exe.py2exe.user_options + [
@@ -291,9 +242,7 @@ if has_py2exe:
                     "HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\" + \
                     "Compile\\command"
 
-cmdclass = {
-    "test": Test
-}
+cmdclass = {}
 
 if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
@@ -338,6 +287,11 @@ setuptools.setup(
                 "cellprofiler=cellprofiler.__main__:main"
             ]
         },
+        extras_require={
+            "test": [
+                "pytest"
+            ]
+        },
         include_package_data=True,
         install_requires=[
             "cellh5",
@@ -353,7 +307,6 @@ setuptools.setup(
             "numpy",
             "prokaryote>=1.0.11",
             "pyamg==3.1.1",
-            "pytest",
             "python-bioformats",
             "pyzmq",
             "raven",
@@ -370,7 +323,7 @@ setuptools.setup(
             "data": glob.glob(os.path.join("data", "images", "*"))
         },
         packages=setuptools.find_packages(exclude=[
-            "tests",
+            "tests"
         ]),
         setup_requires=[
             "pytest"

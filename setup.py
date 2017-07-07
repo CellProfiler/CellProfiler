@@ -119,8 +119,14 @@ if has_py2exe:
             #
             if self.distribution.data_files is None:
                 self.distribution.data_files = []
+
             self.distribution.data_files.append(
-                    ("artwork", glob.glob("artwork/*")))
+                (
+                    "cellprofiler/data/images",
+                    glob.glob("cellprofiler/data/images/*")
+                )
+            )
+
             #
             # javabridge's jars
             #
@@ -270,7 +276,7 @@ setuptools.setup(
         console=[
             {
                 "icon_resources": [
-                    (1, "artwork/CellProfilerIcon.ico")
+                    (1, "cellprofiler/data/images/CellProfilerIcon.ico")
                 ],
                 "script": "CellProfiler.py"
             }
@@ -314,15 +320,14 @@ setuptools.setup(
         long_description="",
         name="CellProfiler",
         package_data={
-            "artwork": glob.glob(os.path.join("artwork", "*"))
+            "data": glob.glob(os.path.join("data", "images", "*"))
         },
         packages=setuptools.find_packages(exclude=[
-            "*.tests",
-            "*.tests.*",
-            "tests.*",
-            "tests",
-            "tutorial"
-        ]) + ["artwork"],
+            "tests"
+        ]),
+        setup_requires=[
+            "pytest"
+        ],
         url="https://github.com/CellProfiler/CellProfiler",
         version="3.0.0rc1"
 )

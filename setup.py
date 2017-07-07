@@ -318,9 +318,6 @@ if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
-version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
-version = version_file.read().strip()
-
 setuptools.setup(
         app=[
             "CellProfiler.py"

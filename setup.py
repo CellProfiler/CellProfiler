@@ -9,6 +9,26 @@ import setuptools.command.build_py
 import setuptools.command.sdist
 import setuptools.dist
 import sys
+import re
+import codecs
+
+
+def read(*directories):
+    pathname = os.path.abspath(os.path.dirname(__file__))
+
+    return codecs.open(os.path.join(pathname, *directories), "r").read()
+
+
+def find_version(*pathnames):
+    data = read(*pathnames)
+
+    matched = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", data, re.M)
+
+    if matched:
+        return matched.group(1)
+
+    raise RuntimeError("Unable to find version string.")
+
 
 # Recipe needed to get real distutils if virtualenv.
 # Error message is "ImportError: cannot import name dist"
@@ -147,15 +167,15 @@ if has_py2exe:
             if self.msvcrt_redist is None:
                 try:
                     key = _winreg.OpenKey(
-                            _winreg.HKEY_LOCAL_MACHINE,
-                            r"SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0" +
-                            r"\Setup\VC")
+                        _winreg.HKEY_LOCAL_MACHINE,
+                        r"SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0" +
+                        r"\Setup\VC")
                     product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]
                     self.msvcrt_redist = os.path.join(
-                            product_dir, "redist", "amd64", "Microsoft.VC90.CRT")
+                        product_dir, "redist", "amd64", "Microsoft.VC90.CRT")
                 except WindowsError:
                     self.announce(
-                            "Package will not include MSVCRT redistributables", 3)
+                        "Package will not include MSVCRT redistributables", 3)
 
         def run(self):
             #
@@ -181,14 +201,14 @@ if has_py2exe:
             #
             import javabridge
             self.distribution.data_files.append(
-                    ("javabridge/jars", javabridge.JARS))
+                ("javabridge/jars", javabridge.JARS))
             #
             # prokaryote's jar
             #
             import prokaryote
             prokaryote_glob = os.path.dirname(prokaryote.__file__) + "/*.jar"
             self.distribution.data_files.append(
-                    ("prokaryote", glob.glob(prokaryote_glob)))
+                ("prokaryote", glob.glob(prokaryote_glob)))
             #
             # py2exe recipe for matplotlib
             #
@@ -200,7 +220,8 @@ if has_py2exe:
             if zmq_version >= (14, 0, 0):
                 # Backends are new in 14.x
                 self.includes += [
-                    "zmq.backend", "zmq.backend.cython", "zmq.backend.cython.*",
+                    "zmq.backend", "zmq.backend.cython",
+                    "zmq.backend.cython.*",
                     "zmq.backend.cffi", "zmq.backend.cffi.*"]
                 #
                 # Must include libzmq.pyd without renaming because it's
@@ -210,7 +231,7 @@ if has_py2exe:
                 #
                 if zmq_version >= (14, 0, 0):
                     self.distribution.data_files.append(
-                            (".", [zmq.libzmq.__file__]))
+                        (".", [zmq.libzmq.__file__]))
                     self.dll_excludes.append("libzmq.pyd")
 
             if self.msvcrt_redist is not None:
@@ -218,7 +239,7 @@ if has_py2exe:
                     os.path.join(self.msvcrt_redist, filename)
                     for filename in os.listdir(self.msvcrt_redist)]
                 self.distribution.data_files.append(
-                        ("./Microsoft.VC90.CRT", sources))
+                    ("./Microsoft.VC90.CRT", sources))
 
             py2exe.build_exe.py2exe.run(self)
 
@@ -238,7 +259,7 @@ if has_py2exe:
 
         def finalize_options(self):
             self.set_undefined_options(
-                    "py2exe", ("dist_dir", "py2exe_dist_dir"))
+                "py2exe", ("dist_dir", "py2exe_dist_dir"))
             if self.output_dir is None:
                 self.output_dir = ".\\output"
             if self.msi_name is None:
@@ -266,10 +287,10 @@ if has_py2exe:
             compile_command = compile_command.replace("%1", cell_profiler_iss)
             compile_command = shlex.split(compile_command)
             self.make_file(
-                    required_files,
-                    os.path.join(self.output_dir, self.msi_name + ".msi"),
-                    self.spawn, [compile_command],
-                    "Compiling %s" % cell_profiler_iss)
+                required_files,
+                os.path.join(self.output_dir, self.msi_name + ".msi"),
+                self.spawn, [compile_command],
+                "Compiling %s" % cell_profiler_iss)
             os.remove("version.iss")
 
         def __compile_command(self):
@@ -277,8 +298,8 @@ if has_py2exe:
             """
             try:
                 key = _winreg.OpenKey(
-                        _winreg.HKEY_CLASSES_ROOT,
-                        "InnoSetupScriptFile\\shell\\Compile\\command")
+                    _winreg.HKEY_CLASSES_ROOT,
+                    "InnoSetupScriptFile\\shell\\Compile\\command")
                 result = _winreg.QueryValueEx(key, None)[0]
                 key.Close()
                 return result
@@ -299,82 +320,79 @@ if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
-version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
-version = version_file.read().strip()
-
 setuptools.setup(
-        app=[
-            "CellProfiler.py"
-        ],
-        author="cellprofiler-dev",
-        author_email="cellprofiler-dev@broadinstitute.org",
-        classifiers=[
-            "Development Status :: 5 - Production/Stable",
-            "Intended Audience :: Science/Research",
-            "License :: OSI Approved :: BSD License",
-            "Operating System :: OS Independent",
-            "Programming Language :: C",
-            "Programming Language :: C++",
-            "Programming Language :: Cython",
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.6",
-            "Programming Language :: Python :: 2.7",
-            "Topic :: Scientific/Engineering :: Bio-Informatics",
-            "Topic :: Scientific/Engineering :: Image Recognition",
-            "Topic :: Scientific/Engineering"
-        ],
-        cmdclass=cmdclass,
-        console=[
-            {
-                "icon_resources": [
-                    (1, "cellprofiler/data/images/CellProfilerIcon.ico")
-                ],
-                "script": "CellProfiler.py"
-            }
-        ],
-        description="",
-        entry_points={
-            "console_scripts": [
-                "cellprofiler=cellprofiler.__main__:main"
-            ]
-        },
-        include_package_data=True,
-        install_requires=[
-            "cellh5",
-            "centrosome",
-            "h5py",
-            "inflect",
-            "javabridge",
-            "joblib",
-            "libtiff",
-            "mahotas",
-            "matplotlib",
-            "MySQL-python",
-            "numpy",
-            "prokaryote>=1.0.11",
-            "pyamg==3.1.1",
-            "pytest",
-            "python-bioformats",
-            "pyzmq",
-            "raven",
-            "requests",
-            "scikit-image",
-            "scikit-learn",
-            "scipy"
-        ],
-        keywords="",
-        license="BSD",
-        long_description="",
-        name="CellProfiler",
-        package_data={
-            "data": glob.glob(os.path.join("data", "images", "*"))
-        },
-        packages=setuptools.find_packages(exclude=[
-            "tests",
-        ]),
-        setup_requires=[
-            "pytest"
-        ],
-        url="https://github.com/CellProfiler/CellProfiler",
-        version="3.0.0rc1"
+    app=[
+        "CellProfiler.py"
+    ],
+    author="cellprofiler-dev",
+    author_email="cellprofiler-dev@broadinstitute.org",
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Programming Language :: C",
+        "Programming Language :: C++",
+        "Programming Language :: Cython",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Topic :: Scientific/Engineering :: Image Recognition",
+        "Topic :: Scientific/Engineering"
+    ],
+    cmdclass=cmdclass,
+    console=[
+        {
+            "icon_resources": [
+                (1, "cellprofiler/data/images/CellProfilerIcon.ico")
+            ],
+            "script": "CellProfiler.py"
+        }
+    ],
+    description="",
+    entry_points={
+        "console_scripts": [
+            "cellprofiler=cellprofiler.__main__:main"
+        ]
+    },
+    include_package_data=True,
+    install_requires=[
+        "cellh5",
+        "centrosome",
+        "h5py",
+        "inflect",
+        "javabridge",
+        "joblib",
+        "libtiff",
+        "mahotas",
+        "matplotlib",
+        "MySQL-python",
+        "numpy",
+        "prokaryote>=1.0.11",
+        "pyamg==3.1.1",
+        "pytest",
+        "python-bioformats",
+        "pyzmq",
+        "raven",
+        "requests",
+        "scikit-image",
+        "scikit-learn",
+        "scipy"
+    ],
+    keywords="",
+    license="BSD",
+    long_description="",
+    name="CellProfiler",
+    package_data={
+        "data": glob.glob(os.path.join("data", "images", "*"))
+    },
+    packages=setuptools.find_packages(exclude=[
+        "tests",
+    ]),
+    setup_requires=[
+        "pytest"
+    ],
+    url="https://github.com/CellProfiler/CellProfiler",
+    version=find_version("cellprofiler", "__init__.py")
 )

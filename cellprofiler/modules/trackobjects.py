@@ -289,8 +289,8 @@ class TrackObjects(cpm.Module):
 
     def create_settings(self):
         self.tracking_method = cps.Choice(
-                'Choose a tracking method',
-                TM_ALL, doc="""
+            'Choose a tracking method',
+            TM_ALL, doc="""
             When trying to track an object in an image,
             <b>TrackObjects</b> will search within a maximum
             specified distance (see the <i>distance within which to search</i> setting)
@@ -404,12 +404,12 @@ class TrackObjects(cpm.Module):
             </ul>""" % globals())
 
         self.object_name = cps.ObjectNameSubscriber(
-                'Select the objects to track', cps.NONE, doc="""
+            'Select the objects to track', cps.NONE, doc="""
             Select the objects to be tracked by this module.""")
 
         self.measurement = cps.Measurement(
-                'Select object measurement to use for tracking',
-                lambda: self.object_name.value, doc="""
+            'Select object measurement to use for tracking',
+            lambda: self.object_name.value, doc="""
             <i>(Used only if Measurements is the tracking method)</i><br>
             Select which type of measurement (category) and which specific feature from the
             <b>Measure</b> module will be used for tracking. Select the feature name from
@@ -419,14 +419,14 @@ class TrackObjects(cpm.Module):
             image from which the measurements originated or the measurement scale.""")
 
         self.pixel_radius = cps.Integer(
-                'Maximum pixel distance to consider matches', 50, minval=1, doc="""
+            'Maximum pixel distance to consider matches', 50, minval=1, doc="""
             Objects in the subsequent frame will be considered potential matches if
             they are within this distance. To determine a suitable pixel distance, you can look
             at the axis increments on each image (shown in pixel units) or
             use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
 
         self.model = cps.Choice(
-                "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""
+            "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             This setting controls how to predict an object's position in
             the next frame, assuming that each object moves randomly with
@@ -458,7 +458,7 @@ class TrackObjects(cpm.Module):
             </ul>""" % globals())
 
         self.radius_std = cps.Float(
-                RADIUS_STD_SETTING_TEXT, 3, minval=1, doc="""
+            RADIUS_STD_SETTING_TEXT, 3, minval=1, doc="""
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i>
             <br>
             <b>TrackObjects</b> derives a search radius from an error
@@ -480,7 +480,7 @@ class TrackObjects(cpm.Module):
             </dl>""" % globals())
 
         self.radius_limit = cps.FloatRange(
-                RADIUS_LIMIT_SETTING_TEXT, (2, 10), minval=0, doc="""
+            RADIUS_LIMIT_SETTING_TEXT, (2, 10), minval=0, doc="""
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             <b>TrackObjects</b> derives a search radius from an error
             estimation based on (a) the standard deviation of the movement and
@@ -514,7 +514,7 @@ class TrackObjects(cpm.Module):
             </dl>""" % globals())
 
         self.wants_second_phase = cps.Binary(
-                "Run the second phase of the LAP algorithm?", True, doc="""
+            "Run the second phase of the LAP algorithm?", True, doc="""
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             Select <i>%(YES)s</i> to run the second phase of the LAP algorithm
             after processing all images. Select <i>%(NO)s</i> to omit the
@@ -531,7 +531,7 @@ class TrackObjects(cpm.Module):
             the settings.</p>""" % globals())
 
         self.gap_cost = cps.Integer(
-                'Gap closing cost', 40, minval=1, doc='''
+            'Gap closing cost', 40, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting assigns a cost to keeping a gap caused
             when an object is missing from one of the frames of a track (the
@@ -551,7 +551,7 @@ class TrackObjects(cpm.Module):
             </dl></p>''' % globals())
 
         self.split_cost = cps.Integer(
-                'Split alternative cost', 40, minval=1, doc='''
+            'Split alternative cost', 40, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of keeping two tracks distinct
             when the alternative is to make them into one track that
@@ -579,7 +579,7 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.merge_cost = cps.Integer(
-                'Merge alternative cost', 40, minval=1, doc='''
+            'Merge alternative cost', 40, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of keeping two tracks
             distinct when the alternative is to merge them into one.
@@ -608,7 +608,7 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.mitosis_cost = cps.Integer(
-                'Mitosis alternative cost', 80, minval=1, doc='''
+            'Mitosis alternative cost', 80, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of not linking a parent and two daughters
             via the mitosis model. the %(TM_LAP)s tracking method weighs this
@@ -633,14 +633,14 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.mitosis_max_distance = cps.Integer(
-                'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''
+            'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the maximum allowed distance in pixels of either
             of the daughter candidate centroids after mitosis from the parent candidate.
             ''' % globals())
 
         self.max_gap_score = cps.Integer(
-                'Maximum gap displacement, in pixel units', 5, minval=1, doc='''
+            'Maximum gap displacement, in pixel units', 5, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase.
@@ -660,7 +660,7 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.max_merge_score = cps.Integer(
-                'Maximum merge score', 50, minval=1, doc='''
+            'Maximum merge score', 50, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large
             merge scores. The merge score has two components:
@@ -678,7 +678,7 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.max_split_score = cps.Integer(
-                'Maximum split score', 50, minval=1, doc='''
+            'Maximum split score', 50, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large split scores. The split score has two components:
             <ul>
@@ -695,7 +695,7 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.max_frame_distance = cps.Integer(
-                'Maximum temporal gap, in frames', 5, minval=1, doc='''
+            'Maximum temporal gap, in frames', 5, minval=1, doc='''
             %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
             This setting controls the maximum number of frames that can
@@ -713,7 +713,7 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.wants_lifetime_filtering = cps.Binary(
-                'Filter objects by lifetime?', False, doc='''
+            'Filter objects by lifetime?', False, doc='''
             Select <i>%(YES)s</i> if you want objects to be filtered by their
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
@@ -731,27 +731,27 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.wants_minimum_lifetime = cps.Binary(
-                'Filter using a minimum lifetime?', True, doc='''
+            'Filter using a minimum lifetime?', True, doc='''
             <i>(Used only if objects are filtered by lifetime)</i><br>
             Select <i>%(YES)s</i> to filter the object on the basis of a minimum number of frames.''' % globals())
 
         self.min_lifetime = cps.Integer(
-                'Minimum lifetime', 1, minval=1, doc="""
+            'Minimum lifetime', 1, minval=1, doc="""
             Enter the minimum number of frames an object is permitted to persist. Objects
             which last this number of frames or lower are filtered out.""")
 
         self.wants_maximum_lifetime = cps.Binary(
-                'Filter using a maximum lifetime?', False, doc='''
+            'Filter using a maximum lifetime?', False, doc='''
             <i>(Used only if objects are filtered by lifetime)</i><br>
             Select <i>%(YES)s</i> to filter the object on the basis of a maximum number of frames.''' % globals())
 
         self.max_lifetime = cps.Integer(
-                'Maximum lifetime', 100, doc="""
+            'Maximum lifetime', 100, doc="""
             Enter the maximum number of frames an object is permitted to persist. Objects
             which last this number of frames or more are filtered out.""")
 
         self.display_type = cps.Choice(
-                'Select display option', DT_ALL, doc="""
+            'Select display option', DT_ALL, doc="""
             The output image can be saved as:
             <ul>
             <li><i>%(DT_COLOR_ONLY)s:</i> A color-labeled image, with each tracked
@@ -761,7 +761,7 @@ class TrackObjects(cpm.Module):
             </ul>""" % globals())
 
         self.wants_image = cps.Binary(
-                "Save color-coded image?", False, doc="""
+            "Save color-coded image?", False, doc="""
             Select <i>%(YES)s</i> to retain the image showing the tracked objects
             for later use in the pipeline. For example, a common use is for quality control purposes
             saving the image with the <b>SaveImages</b> module.
@@ -771,7 +771,7 @@ class TrackObjects(cpm.Module):
             will only show the penultimate result and not the final product.</p>.""" % globals())
 
         self.image_name = cps.ImageNameProvider(
-                "Name the output image", "TrackedCells", doc='''
+            "Name the output image", "TrackedCells", doc='''
             <i>(Used only if saving the color-coded image)</i><br>
             Enter a name to give the color-coded image of tracked labels.''')
 
@@ -794,8 +794,8 @@ class TrackObjects(cpm.Module):
                 self.wants_lifetime_filtering.value and
                 (self.wants_minimum_lifetime.value == False and self.wants_minimum_lifetime.value == False)):
             raise cps.ValidationError(
-                    'Please enter a minimum and/or maximum lifetime limit',
-                    self.wants_lifetime_filtering)
+                'Please enter a minimum and/or maximum lifetime limit',
+                self.wants_lifetime_filtering)
 
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
@@ -855,10 +855,10 @@ class TrackObjects(cpm.Module):
         if not d.has_key("group_number") or d["group_number"] != group_number:
             d["group_number"] = group_number
             group_indexes = np.array([
-                                         (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
-                                         for i in m.get_image_numbers()
-                                         if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i) ==
-                                         group_number], int)
+                (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
+                for i in m.get_image_numbers()
+                if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i) ==
+                   group_number], int)
             order = np.lexsort([group_indexes[:, 0]])
             d["group_image_numbers"] = group_indexes[order, 1]
         return d["group_image_numbers"]
@@ -946,9 +946,9 @@ class TrackObjects(cpm.Module):
         values - one value per object
         '''
         workspace.measurements.add_measurement(
-                self.object_name.value,
-                self.measurement_name(feature),
-                values)
+            self.object_name.value,
+            self.measurement_name(feature),
+            values)
 
     def add_image_measurement(self, workspace, feature, value):
         measurement_name = self.image_measurement_name(feature)
@@ -1056,8 +1056,8 @@ class TrackObjects(cpm.Module):
             i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
             old_labels = self.get_saved_labels(workspace)
             distances, (old_i, old_j) = distance_transform_edt(
-                    old_labels == 0,
-                    return_indices=True)
+                old_labels == 0,
+                return_indices=True)
             old_object_numbers = old_labels[old_i[i, j],
                                             old_j[i, j]]
             old_object_numbers[distances[i, j] > self.pixel_radius.value] = 0
@@ -1092,12 +1092,12 @@ class TrackObjects(cpm.Module):
             if self.velocity_model:
                 kalman_states.append(cpfilter.velocity_kalman_model())
         areas = fix(scipy.ndimage.sum(
-                np.ones(objects.segmented.shape), objects.segmented,
-                np.arange(1, np.max(objects.segmented) + 1, dtype=np.int32)))
+            np.ones(objects.segmented.shape), objects.segmented,
+            np.arange(1, np.max(objects.segmented) + 1, dtype=np.int32)))
         areas = areas.astype(int)
         model_types = np.array(
-                [m for m, s in ((KM_NO_VEL, self.static_model),
-                                (KM_VEL, self.velocity_model)) if s], int)
+            [m for m, s in ((KM_NO_VEL, self.static_model),
+                            (KM_VEL, self.velocity_model)) if s], int)
 
         if n_old > 0:
             new_i, new_j = centers_of_labels(objects.segmented)
@@ -1229,10 +1229,10 @@ class TrackObjects(cpm.Module):
                     q[new_idx[i], j, j] = \
                         kalman_state.noise_var[matching_idx[i], j]
                 new_kalman_state = cpfilter.kalman_filter(
-                        kalman_state,
-                        old_idx,
-                        np.column_stack((new_i, new_j)),
-                        q, r)
+                    kalman_state,
+                    old_idx,
+                    np.column_stack((new_i, new_j)),
+                    q, r)
                 new_kalman_states.append(new_kalman_state)
             self.set_kalman_states(workspace, new_kalman_states)
 
@@ -1256,8 +1256,8 @@ class TrackObjects(cpm.Module):
             for kalman_state in kalman_states:
                 q = np.zeros((count, kalman_state.state_len, kalman_state.state_len))
                 new_kalman_state = cpfilter.kalman_filter(
-                        kalman_state, -np.ones(count),
-                        np.column_stack((i, j)), q, r)
+                    kalman_state, -np.ones(count),
+                    np.column_stack((i, j)), q, r)
                 new_kalman_states.append(new_kalman_state)
             self.set_kalman_states(workspace, new_kalman_states)
 
@@ -1309,26 +1309,26 @@ class TrackObjects(cpm.Module):
                 # a bunch of -1 values so every object will have a "-1"
                 # index.
                 last_idx = scipy.ndimage.maximum(
-                        np.hstack((
-                            -np.ones(nobjs),
-                            np.arange(len(kalman_state.state_noise_idx)))),
-                        np.hstack((
-                            np.arange(nobjs), kalman_state.state_noise_idx)),
-                        np.arange(nobjs))
+                    np.hstack((
+                        -np.ones(nobjs),
+                        np.arange(len(kalman_state.state_noise_idx)))),
+                    np.hstack((
+                        np.arange(nobjs), kalman_state.state_noise_idx)),
+                    np.arange(nobjs))
                 last_idx = last_idx.astype(int)
             for i, element in enumerate(elements):
                 #
                 # state_vec
                 #
                 mname = self.measurement_name(
-                        kalman_feature(model, F_STATE, element))
+                    kalman_feature(model, F_STATE, element))
                 values = np.zeros(0) if nobjs == 0 else kalman_state.state_vec[:, i]
                 m.add_measurement(object_name, mname, values)
                 #
                 # state_noise
                 #
                 mname = self.measurement_name(
-                        kalman_feature(model, F_NOISE, element))
+                    kalman_feature(model, F_NOISE, element))
                 values = np.zeros(nobjs)
                 if nobjs > 0:
                     values[last_idx == -1] = np.NaN
@@ -1339,7 +1339,7 @@ class TrackObjects(cpm.Module):
                 #
                 for j, el2 in enumerate(elements):
                     mname = self.measurement_name(
-                            kalman_feature(model, F_COV, element, el2))
+                        kalman_feature(model, F_COV, element, el2))
                     values = kalman_state.state_cov[:, i, j]
                     m.add_measurement(object_name, mname, values)
 
@@ -1367,8 +1367,8 @@ class TrackObjects(cpm.Module):
                 cur = current_labels[mask]
                 old = old_labels[mask]
                 histogram = scipy.sparse.coo_matrix(
-                        (np.ones(count), (cur, old)),
-                        shape=(cur_count + 1, old_count + 1)).toarray()
+                    (np.ones(count), (cur, old)),
+                    shape=(cur_count + 1, old_count + 1)).toarray()
                 old_of_new = np.argmax(histogram, 1)[1:]
                 new_of_old = np.argmax(histogram, 0)[1:]
                 #
@@ -1388,8 +1388,8 @@ class TrackObjects(cpm.Module):
     def run_measurements(self, workspace, objects):
         current_labels = objects.segmented
         new_measurements = workspace.measurements.get_current_measurement(
-                self.object_name.value,
-                self.measurement.value)
+            self.object_name.value,
+            self.measurement.value)
         old_measurements = self.get_saved_measurements(workspace)
         old_labels = self.get_saved_labels(workspace)
         i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
@@ -1533,10 +1533,10 @@ class TrackObjects(cpm.Module):
         AIDX = 6
         PIDX = 7
         P = np.vstack([
-                          np.column_stack((x, y, np.ones(len(x)) * i, np.arange(len(x)),
-                                           o, l, area, np.zeros(len(x))))
-                          for i, (x, y, o, l, area)
-                          in enumerate(zip(a, b, object_numbers, label, Area))])
+            np.column_stack((x, y, np.ones(len(x)) * i, np.arange(len(x)),
+                             o, l, area, np.zeros(len(x))))
+            for i, (x, y, o, l, area)
+            in enumerate(zip(a, b, object_numbers, label, Area))])
         count_per_label = np.bincount(P[:, LIDX].astype(int))
         idx = np.hstack([0, np.cumsum(count_per_label)])
         unique_label = np.unique(P[:, LIDX].astype(int))
@@ -1703,7 +1703,7 @@ class TrackObjects(cpm.Module):
             AreaBeforeMerge = P[P1[merge_p1idx, PIDX].astype(int) - 1, AIDX]
             AreaAtMerge = P1[merge_p1idx, AIDX]
             rho = self.calculate_area_penalty(
-                    AreaLast + AreaBeforeMerge, AreaAtMerge)
+                AreaLast + AreaBeforeMerge, AreaAtMerge)
             d = np.sqrt(np.sum((L[merge_lidx, :2] - P2[merge_p1idx, :2]) ** 2, 1))
             merge_scores = d * rho
             mask = merge_scores <= max_merge_score
@@ -1755,7 +1755,7 @@ class TrackObjects(cpm.Module):
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
                     chunks.append(
-                            [_[mask] for _ in split_p2idx, split_fidx, z])
+                        [_[mask] for _ in split_p2idx, split_fidx, z])
             if len(chunks) > 0:
                 split_p2idx, split_fidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1770,7 +1770,7 @@ class TrackObjects(cpm.Module):
             AreaAtSplit = P2[split_p2idx, AIDX]
             d = np.sqrt(np.sum((F[split_fidx, :2] - P2[split_p2idx, :2]) ** 2, 1))
             rho = self.calculate_area_penalty(
-                    AreaFirst + AreaAfterSplit, AreaAtSplit)
+                AreaFirst + AreaAfterSplit, AreaAtSplit)
             split_scores = d * rho
             mask = (split_scores <= max_split_score)
             split_p2idx, split_fidx, split_scores = \
@@ -1892,7 +1892,7 @@ class TrackObjects(cpm.Module):
             with open(path, "w") as fd:
                 fd.write("digraph trackobjects {\n")
                 graph_idx = np.where(
-                        (x != np.arange(len(x))) & (y != np.arange(len(y))))[0]
+                    (x != np.arange(len(x))) & (y != np.arange(len(y))))[0]
                 for idx in graph_idx:
                     fd.write(desc(idx) + ";\n")
                 for idx in graph_idx:
@@ -2017,7 +2017,7 @@ class TrackObjects(cpm.Module):
         # Discard starts linked to self = "do nothing"
         #
         start_idxs = np.where(
-                y[:start_end_end] != np.arange(gap_off, gap_end))[0]
+            y[:start_end_end] != np.arange(gap_off, gap_end))[0]
         for i in start_idxs:
             my_image_index = int(F[i, IIDX])
             my_image_number = image_numbers[my_image_index]
@@ -2044,8 +2044,8 @@ class TrackObjects(cpm.Module):
                 parent_object_numbers[my_image_index][my_object_index] = \
                     parent_object_number
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (my_image_index, my_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
                           LT_GAP)
                 add_fixup(F_GAP_LENGTH, my_image_number, my_object_number,
@@ -2082,8 +2082,8 @@ class TrackObjects(cpm.Module):
                 parent_object_numbers[my_image_index][my_object_index] = \
                     parent_object_number
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (my_image_index, my_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
                           LT_SPLIT)
                 add_fixup(F_SPLIT_SCORE, my_image_number, my_object_number,
@@ -2106,7 +2106,7 @@ class TrackObjects(cpm.Module):
         # Process ends (parents)
         #
         end_idxs = np.where(
-                x[:start_end_end] != np.arange(gap_off, gap_end))[0]
+            x[:start_end_end] != np.arange(gap_off, gap_end))[0]
         for i in end_idxs:
             if x[i] < start_end_end:
                 a[i + 1] = x[i] + 1
@@ -2128,8 +2128,8 @@ class TrackObjects(cpm.Module):
                 child_image_index = int(P1[p1_idx, IIDX])
                 child_object_number = int(P1[p1_idx, ONIDX])
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (child_image_index, child_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (child_image_index, child_object_number)))
                 add_fixup(F_MERGE_SCORE, parent_image_number,
                           parent_object_number,
                           merge_scores[x[i] - merge_off])
@@ -2171,8 +2171,8 @@ class TrackObjects(cpm.Module):
                 parent_object_numbers[my_image_index][my_object_index] = \
                     parent_object_number
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (my_image_index, my_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
                           LT_MITOSIS)
                 add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number,
@@ -2275,9 +2275,9 @@ class TrackObjects(cpm.Module):
             parent_object_numbers = relationships[:, 0, 1]
             child_object_numbers = relationships[:, 1, 1]
             m.add_relate_measurement(
-                    self.module_num, R_PARENT, object_name, object_name,
-                    parent_image_numbers, parent_object_numbers,
-                    child_image_numbers, child_object_numbers)
+                self.module_num, R_PARENT, object_name, object_name,
+                parent_image_numbers, parent_object_numbers,
+                child_image_numbers, child_object_numbers)
 
         self.recalculate_group(workspace, image_numbers)
 
@@ -2443,7 +2443,7 @@ class TrackObjects(cpm.Module):
             return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
 
         rho = self.calculate_area_penalty(
-                F[i[ij], AIDX] + F[j[ij], AIDX], L[k, AIDX])
+            F[i[ij], AIDX] + F[j[ij], AIDX], L[k, AIDX])
         return np.column_stack((i[ij], j[ij], k)), d * rho
 
     def recalculate_group(self, workspace, image_numbers):
@@ -2464,8 +2464,8 @@ class TrackObjects(cpm.Module):
 
         parent_image_numbers, parent_object_numbers = [
             [m.get_measurement(
-                    object_name, self.measurement_name(feature), image_number)
-             for image_number in image_numbers]
+                object_name, self.measurement_name(feature), image_number)
+                for image_number in image_numbers]
             for feature in (F_PARENT_IMAGE_NUMBER, F_PARENT_OBJECT_NUMBER)]
 
         #
@@ -2522,8 +2522,8 @@ class TrackObjects(cpm.Module):
             def __init__(self, feature_name):
                 self.feature_name = feature_name
                 self.backing_store = np.hstack([
-                                                   m.get_measurement(object_name, feature_name, i)
-                                                   for i in image_numbers])
+                    m.get_measurement(object_name, feature_name, i)
+                    for i in image_numbers])
 
             def __getitem__(self, index):
                 return self.backing_store[slyce(index)]
@@ -2791,14 +2791,14 @@ class TrackObjects(cpm.Module):
             r_child_object_numbers = r_child_object_numbers[to_keep]
             r_parent_object_numbers = r_parent_object_numbers[to_keep]
             r_image_numbers = np.ones(
-                    r_parent_object_numbers.shape[0],
-                    r_parent_object_numbers.dtype) * image_number
+                r_parent_object_numbers.shape[0],
+                r_parent_object_numbers.dtype) * image_number
             if len(r_child_object_numbers) > 0:
                 m.add_relate_measurement(
-                        self.module_num, R_PARENT,
-                        self.object_name.value, self.object_name.value,
-                        r_image_numbers - 1, r_parent_object_numbers,
-                        r_image_numbers, r_child_object_numbers)
+                    self.module_num, R_PARENT,
+                    self.object_name.value, self.object_name.value,
+                    r_image_numbers - 1, r_parent_object_numbers,
+                    r_image_numbers, r_child_object_numbers)
 
     def recalculate_kalman_filters(self, workspace, image_numbers):
         '''Rerun the kalman filters to improve the motion models'''
@@ -2823,29 +2823,29 @@ class TrackObjects(cpm.Module):
         x = np.hstack(x)
         y = np.hstack(m[object_name, M_LOCATION_CENTER_Y, image_numbers])
         area = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_AREA),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_AREA),
+              image_numbers])
         parent_image_number = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_PARENT_IMAGE_NUMBER),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_PARENT_IMAGE_NUMBER),
+              image_numbers])
         parent_object_number = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_PARENT_OBJECT_NUMBER),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_PARENT_OBJECT_NUMBER),
+              image_numbers])
         link_type = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_LINK_TYPE),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_LINK_TYPE),
+              image_numbers])
         link_distance = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_LINKING_DISTANCE),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_LINKING_DISTANCE),
+              image_numbers])
         movement_model = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_MOVEMENT_MODEL),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_MOVEMENT_MODEL),
+              image_numbers])
 
         models = self.get_kalman_models()
         kalman_models = [
@@ -2869,15 +2869,27 @@ class TrackObjects(cpm.Module):
             ii = y[this_slice]
             jj = x[this_slice]
             new_kalman_states = []
-            r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
-                     np.zeros(n_objects), area[this_slice].astype(float))) \
+
+            import pdb
+            pdb.set_trace()
+
+            # try:
+            r1 = np.column_stack(
+                (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                 np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
+
+            # except:
+            import pdb
+            pdb.set_trace()
+            # import IPython
+            # IPython.embed()
+
             for kalman_state in kalman_states:
                 new_kalman_states.append(cpfilter.kalman_filter(
-                        kalman_state, -np.ones(n_objects, int),
-                        np.column_stack((ii, jj)),
-                        np.zeros(n_objects), r))
+                    kalman_state, -np.ones(n_objects, int),
+                    np.column_stack((ii, jj)),
+                    np.zeros(n_objects), r1))
             kalman_states = new_kalman_states
         else:
             this_slice = slice(idx.fwd_idx[-1], idx.fwd_idx[-1])
@@ -2904,8 +2916,8 @@ class TrackObjects(cpm.Module):
             ii = y[this_slice]
             jj = x[this_slice]
             r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
-                     np.zeros(n_objects), area[this_slice].astype(float))) \
+                (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                 np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
             new_kalman_states = []
             errors = link_distance[next_slice]
@@ -2928,8 +2940,8 @@ class TrackObjects(cpm.Module):
                     for j in range(n_elements):
                         q[has_child, j, j] = kalman_state.noise_var[kid_idx, j]
                 updated_state = cpfilter.kalman_filter(
-                        kalman_state, child_object_number - 1,
-                        np.column_stack((ii, jj)), q, r)
+                    kalman_state, child_object_number - 1,
+                    np.column_stack((ii, jj)), q, r)
                 new_kalman_states.append(updated_state)
             if np.any(has_child):
                 # fix child linking distances and models
@@ -2943,13 +2955,13 @@ class TrackObjects(cpm.Module):
         if self.tracking_method != TM_LAP:
             return []
         return sum(
-                [sum(
-                        [[kalman_feature(model, F_STATE, element),
-                          kalman_feature(model, F_NOISE, element)] +
-                         [kalman_feature(model, F_COV, element, e2)
-                          for e2 in elements]
-                         for element in elements], [])
-                 for model, elements in self.get_kalman_models()], [])
+            [sum(
+                [[kalman_feature(model, F_STATE, element),
+                  kalman_feature(model, F_NOISE, element)] +
+                 [kalman_feature(model, F_COV, element, e2)
+                  for e2 in elements]
+                 for element in elements], [])
+                for model, elements in self.get_kalman_models()], [])
 
     def get_measurement_columns(self, pipeline):
         result = [(self.object_name.value,

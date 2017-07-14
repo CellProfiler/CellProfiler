@@ -1,68 +1,105 @@
+# coding=utf-8
+
+"""
+**Calculate Image Overlap** calculates how much overlap occurs between
+the white portions of two black and white images
+
+--------------
+
+This module calculates overlap by determining a set of statistics that
+measure the closeness of an image or object to its’ true value. One
+image/object is considered the “ground truth” (possibly the result of
+hand-segmentation) and the other is the “test” image/object; the images
+are determined to overlap most completely when the test image matches
+the ground truth perfectly. If using images, the module requires binary
+(black and white) input, where the foreground is white and the
+background is black. If you segment your images in CellProfiler using
+**IdentifyPrimaryObjects**, you can create such an image using
+**ConvertObjectsToImage** by selecting *Binary* as the color type. If
+your images have been segmented using other image processing software,
+or you have hand-segmented them in software such as Photoshop, you may
+need to use one or more of the following to prepare the images for this
+module:
+
+-  **ImageMath**: If the objects are black and the background is white,
+   you must invert the intensity using this module.
+
+-  **ApplyThreshold**: If the image is grayscale, you must make it
+   binary using this module, or alternately use an **Identify** module
+   followed by **ConvertObjectsToImage** as described above.
+
+-  **ColorToGray**: If the image is in color, you must first convert it
+   to grayscale using this module, and then use **ApplyThreshold** to
+   generate a binary image.
+
+In the test image, any foreground (white) pixels that overlap with the
+foreground of the ground truth will be considered “true positives”,
+since they are correctly labeled as foreground. Background (black)
+pixels that overlap with the background of the ground truth image are
+considered “true negatives”, since they are correctly labeled as
+background. A foreground pixel in the test image that overlaps with the
+background in the ground truth image will be considered a “false
+positive” (since it should have been labeled as part of the background),
+while a background pixel in the test image that overlaps with foreground
+in the ground truth will be considered a “false negative” (since it was
+labeled as part of the background, but should not be).
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  **For images and objects:**
+
+   -  *True positive rate:* Total number of true positive pixels / total
+      number of actual positive pixels.
+
+   -  *False positive rate:* Total number of false positive pixels /
+      total number of actual negative pixels
+
+   -  *True negative rate:* Total number of true negative pixels / total
+      number of actual negative pixels.
+
+   -  *False negative rate:* Total number of false negative pixels /
+      total number of actual postive pixels
+
+   -  *Precision:* Number of true positive pixels / (number of true
+      positive pixels + number of false positive pixels)
+
+   -  *Recall:* Number of true positive pixels/ (number of true positive
+      pixels + number of false negative pixels)
+
+   -  *F-factor:* 2 × (precision × recall)/(precision + recall). Also
+      known as F\ :sub:`1` score, F-score or F-measure.
+
+   -  *Earth mover’s distance:*\ The minimum distance required to move
+      each foreground pixel in the test image to some corresponding
+      foreground pixel in the reference image.
+
+-  **For objects:**
+
+   -  *Rand index:* A measure of the similarity between two data
+      clusterings. Perfectly random clustering returns the minimum score
+      of 0, perfect clustering returns the maximum score of 1.
+
+   -  *Adjusted Rand index:* A variation of the Rand index which takes
+      into account the fact that random chance will cause some objects
+      to occupy the same clusters, so the Rand Index will never actually
+      be zero. Can return a value between -1 and +1.
+
+References
+^^^^^^^^^^
+
+-  Collins LM, Dent CW (1998) “Omega: A general formulation of the Rand
+   Index of cluster recovery suitable for non-disjoint solutions”,
+   *Multivariate Behavioral Research*, 23, 231-242 `(link)`_
+
+-  Pele O, Werman M (2009) “Fast and Robust Earth Mover’s Distances”,
+   *2009 IEEE 12th International Conference on Computer Vision*
+
+.. _(link): http://dx.doi.org/10.1207/s15327906mbr2302_6
+"""
+
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
-
-__doc__ = '''
-<b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
-<hr>
-This module calculates overlap by determining a set of statistics that measure the closeness of an image or object
-to its' true value.  One image/object is considered the "ground truth" (possibly the result of hand-segmentation) and the other
-is the "test" image/object; the images are determined to overlap most completely when the test image matches the ground
-truth perfectly.  If using images, the module requires binary (black and white) input, where the foreground is white and
-the background is black.  If you segment your images in CellProfiler using <b>IdentifyPrimaryObjects</b>,
-you can create such an image using <b>ConvertObjectsToImage</b> by selecting <i>Binary</i> as the color type.
-
-If your images have been segmented using other image processing software, or you have hand-segmented them in software
-such as Photoshop, you may need to use one or more of the following to prepare the images for this module:
-<ul>
-<li> <b>ImageMath</b>: If the objects are black and the background is white, you must invert the intensity using this module.</li>
-<li> <b>ApplyThreshold</b>: If the image is grayscale, you must make it binary using this module, or alternately use an <b>Identify</b> module followed by <b>ConvertObjectsToImage</b> as described above. </li>
-<li> <b>ColorToGray</b>: If the image is in color, you must first convert it to grayscale using this module, and then use <b>ApplyThreshold</b> to generate a binary image. </li>
-</ul>
-
-In the test image, any foreground (white) pixels that overlap with the foreground of the ground
-truth will be considered "true positives", since they are correctly labeled as foreground.  Background (black)
-pixels that overlap with the background of the ground truth image are considered "true negatives",
-since they are correctly labeled as background.  A foreground pixel in the test image that overlaps with the background in the ground truth image will
-be considered a "false positive" (since it should have been labeled as part of the background),
-while a background pixel in the test image that overlaps with foreground in the ground truth will be considered a "false negative"
-(since it was labeled as part of the background, but should not be).
-
-<h4>Available measurements</h4>
-<ul>
-<li><b>For images and objects:</b>
-<ul>
-<li><i>True positive rate:</i> Total number of true positive pixels / total number of actual positive pixels.</li>
-<li><i>False positive rate:</i> Total number of false positive pixels / total number of actual negative pixels </li>
-<li><i>True negative rate:</i> Total number of true negative pixels / total number of actual negative pixels.</li>
-<li><i>False negative rate:</i> Total number of false negative pixels / total number of actual postive pixels </li>
-<li><i>Precision:</i> Number of true positive pixels / (number of true positive pixels + number of false positive pixels) </li>
-<li><i>Recall:</i> Number of true positive pixels/ (number of true positive pixels + number of false negative pixels) </li>
-<li><i>F-factor:</i> 2 &times; (precision &times; recall)/(precision + recall). Also known as F<sub>1</sub> score, F-score or F-measure.</li>
-<li><i>Earth mover's distance:</i>The minimum distance required to move each
-foreground pixel in the test image to some corresponding foreground pixel in the
-reference image.</li>
-</ul>
-</li>
-<li><b>For objects:</b>
-<ul>
-<li><i>Rand index:</i> A measure of the similarity between two data clusterings. Perfectly random clustering returns the minimum
-score of 0, perfect clustering returns the maximum score of 1.</li>
-<li><i>Adjusted Rand index:</i> A variation of the Rand index which takes into account the fact that random chance will cause some
-objects to occupy the same clusters, so the Rand Index will never actually be zero. Can return a value between -1 and +1.</li>
-</ul>
-</li>
-</ul>
-
-<h4>References</h4>
-<ul>
-<li>Collins LM, Dent CW (1998) "Omega: A general formulation of the Rand Index of cluster
-recovery suitable for non-disjoint solutions", <i>Multivariate Behavioral
-Research</i>, 23, 231-242 <a href="http://dx.doi.org/10.1207/s15327906mbr2302_6">(link)</a></li>
-<li>Pele O, Werman M (2009) "Fast and Robust Earth Mover's Distances",
-<i>2009 IEEE 12th International Conference on Computer Vision</i></li>
-</ul>
-'''
-
 import numpy as np
 
 from scipy.ndimage import label, distance_transform_edt

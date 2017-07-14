@@ -1,11 +1,16 @@
-'''<b>Display Data On Image</b>
-produces an image with measured data on top of identified objects.
-<hr>
+# coding=utf-8
+
+"""
+**Display Data On Image** produces an image with measured data on top of
+identified objects.
+
+--------------
+
 This module displays either a single image measurement on an image of
-your choosing, or one object measurement per object on top
-of every object in an image. The display itself is an image which you
-can save to a file using <b>SaveImages</b>.
-'''
+your choosing, or one object measurement per object on top of every
+object in an image. The display itself is an image which you can save to
+a file using **SaveImages**.
+"""
 
 import numpy as np
 

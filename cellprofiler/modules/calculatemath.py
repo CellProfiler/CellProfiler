@@ -1,33 +1,43 @@
-'''<b>Calculate Math</b> takes measurements produced by previous modules and
+# coding=utf-8
+
+"""
+**Calculate Math** takes measurements produced by previous modules and
 performs basic arithmetic operations.
-<hr>
+
+--------------
+
 The arithmetic operations available in this module include addition,
 subtraction, multiplication, and division. The result can be
 log-transformed or raised to a power and can be used in further
-calculations if another <b>CalculateMath</b> module is added to the pipeline.
+calculations if another **CalculateMath** module is added to the
+pipeline.
 
-<p>The module can make its calculations on a per-image basis (for example, multiplying the area occupied by a stain
-in the image by the total intensity in the image) or on an object-by-object basis (for example, dividing the intensity
-in the nucleus by the intensity in the cytoplasm for each cell).
+The module can make its calculations on a per-image basis (for example,
+multiplying the area occupied by a stain in the image by the total
+intensity in the image) or on an object-by-object basis (for example,
+dividing the intensity in the nucleus by the intensity in the cytoplasm
+for each cell).
 
-<h4>Available measurements</h4>
-<ul>
-<li><b>Image measurements:</b> If both input measurements are whole-image
-measurements, then the result will also be a whole-image measurement. </li>
-<li><b>Object measurements:</b> Object measurements can be produced in two ways:
-<ul>
-<li>If both input measurements are individual object measurements, then the
-result will also be an object measurement. In these cases, the measurement will
-be associated with <i>both</i> objects that were involved in the measurement.</li>
-<li>If one measure is object-based and one image-based, then the result will be
-an object measurement.</li>
-</ul>
-</li>
-</ul>
-The result of these calculations is a new measurement in the "Math" category.
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-See also all <b>Measure</b> modules.
-'''
+-  **Image measurements:** If both input measurements are whole-image
+   measurements, then the result will also be a whole-image measurement.
+
+-  **Object measurements:** Object measurements can be produced in two
+   ways:
+
+   -  If both input measurements are individual object measurements,
+      then the result will also be an object measurement. In these
+      cases, the measurement will be associated with *both* objects that
+      were involved in the measurement.
+
+   -  If one measure is object-based and one image-based, then the
+      result will be an object measurement.
+
+The result of these calculations is a new measurement in the “Math”
+category. See also all **Measure** modules.
+"""
 
 import logging
 

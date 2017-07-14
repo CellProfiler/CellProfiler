@@ -1,16 +1,20 @@
-'''
-<b> Color to Gray</b> converts an image with three color channels to a set of individual
-grayscale images.
-<hr>
+# coding=utf-8
 
-This module converts RGB (Red, Green, Blue) color images to grayscale. All channels
-can be merged into one grayscale image (<i>Combine</i>), or each channel
-can be extracted into a separate grayscale image (<i>Split</i>). If you use <i>Combine</i>,
-the relative weights will adjust the contribution of the colors relative to each other.<br>
-<br>
-<i>Note:</i>All <b>Identify</b> modules require grayscale images.
-<p>See also <b>GrayToColor</b>.
-'''
+"""
+**Color to Gray** converts an image with three color channels to a set
+of individual grayscale images.
+
+--------------
+
+| This module converts RGB (Red, Green, Blue) color images to grayscale.
+  All channels can be merged into one grayscale image (*Combine*), or
+  each channel can be extracted into a separate grayscale image
+  (*Split*). If you use *Combine*, the relative weights will adjust the
+  contribution of the colors relative to each other.
+| *Note:*\ All **Identify** modules require grayscale images.
+
+See also **GrayToColor**.
+"""
 
 import re
 

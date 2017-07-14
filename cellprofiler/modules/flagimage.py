@@ -1,28 +1,28 @@
-'''<b>Flag Image</b> allows you to flag an image based on properties
-that you specify, for example, quality control measurements.
-<hr>
+# coding=utf-8
 
-This module allows you to assign a flag if
-an image meets certain measurement criteria that you specify (for
-example, if the image fails a quality control measurement).  The
-value of the flag is 1 if the image meets the selected criteria (for
-example, if it fails QC), and 0 if it does not meet the criteria (if
-it passes QC). The flag can be used in post-processing to filter out
-images you do not want to analyze, e.g., in CellProfiler Analyst. In
-addition, you can use <b>ExportToSpreadsheet</b> to generate a file
-that includes the flag as a metadata measurement associated with the
-images. The <b>Metadata</b> module can then use this flag
-to put images that pass QC into one group and images that fail
-into another.
+"""
+**Flag Image** allows you to flag an image based on properties that you
+specify, for example, quality control measurements.
 
-A flag can be based on one or more measurements. If you create a flag
-based on more than one measurement, you can choose between setting the
-flag if all measurements are outside the bounds or if one of the
-measurements is outside of the bounds.
+--------------
 
-This module must be placed in the pipeline after the relevant measurement
+This module allows you to assign a flag if an image meets certain
+measurement criteria that you specify (for example, if the image fails a
+quality control measurement). The value of the flag is 1 if the image
+meets the selected criteria (for example, if it fails QC), and 0 if it
+does not meet the criteria (if it passes QC). The flag can be used in
+post-processing to filter out images you do not want to analyze, e.g.,
+in CellProfiler Analyst. In addition, you can use
+**ExportToSpreadsheet** to generate a file that includes the flag as a
+metadata measurement associated with the images. The **Metadata** module
+can then use this flag to put images that pass QC into one group and
+images that fail into another. A flag can be based on one or more
+measurements. If you create a flag based on more than one measurement,
+you can choose between setting the flag if all measurements are outside
+the bounds or if one of the measurements is outside of the bounds. This
+module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
-'''
+"""
 
 import logging
 import os

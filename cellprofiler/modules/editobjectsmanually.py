@@ -1,30 +1,37 @@
-'''<b>Edit Objects Manually</b> allows you create, remove and edit objects previously defined.
-<hr>
-The interface will show the image that you selected as the
-guiding image, overlaid with colored outlines of the selected objects (or filled
-objects if you choose). This module allows you to remove or edit specific objects
-by pointing and clicking to select objects for removal or editing. Once
-editing is complete, the module displays the objects as originally identified (left)
-and the objects that remain after this module (right).
+# coding=utf-8
 
-More detailed Help is provided in the editing window via the '?' button.
+"""
+**Edit Objects Manually** allows you create, remove and edit objects
+previously defined.
 
-The pipeline pauses once per processed image when it reaches this module.
-You must press the <i>Done</i> button to accept the selected objects
-and continue the pipeline.
+--------------
 
-<h4>Available measurements</h4>
-<b>Image measurements:</b>
-<ul>
-<li><i>Count:</i> The number of edited objects in the image.</li>
-</ul>
-<b>Object measurements:</b>
-<ul>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the edited objects.</li>
-</ul>
+The interface will show the image that you selected as the guiding
+image, overlaid with colored outlines of the selected objects (or filled
+objects if you choose). This module allows you to remove or edit
+specific objects by pointing and clicking to select objects for removal
+or editing. Once editing is complete, the module displays the objects as
+originally identified (left) and the objects that remain after this
+module (right). More detailed Help is provided in the editing window via
+the ‘?’ button. The pipeline pauses once per processed image when it
+reaches this module. You must press the *Done* button to accept the
+selected objects and continue the pipeline.
 
-See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
-'''
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Image measurements:**
+
+-  *Count:* The number of edited objects in the image.
+
+**Object measurements:**
+
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+   of mass of the edited objects.
+
+See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
+**ConvertToImage**.
+"""
 
 import logging
 

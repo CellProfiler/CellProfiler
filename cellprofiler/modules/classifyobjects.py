@@ -1,56 +1,58 @@
-'''<b>Classify Objects</b> classifies objects into different classes according
+# coding=utf-8
+
+"""
+*Classify Objects** classifies objects into different classes according
 to the value of measurements you choose.
-<hr>
-This module classifies objects into a number of different bins
-according to the value of a measurement (e.g., by size, intensity, shape).
-It reports how many objects fall into each class as well as the
-percentage of objects that fall into each class. The module asks you to
-select the measurement feature to be used to classify your objects and
-specify the bins to use. It also requires you to have run a measurement or
-<b>CalculateMath</b> previous to this module in the pipeline so that the measurement
-values can be used to classify the objects.
 
-<p>There are two flavors of classification:
-<ul>
-<li>The first classifies each object
-according to the measurements you choose and assigns each object to one
-class per measurement. You may specify more than two classification bins per
-measurement. </li>
-<li>The second classifies each object according to two measurements and two
-threshold values. The module classifies each object once per measurement
-resulting in four possible object classes. The module then stores one
-measurement per object, based on the object's class.</li>
-</ul>
-</p>
-<p>Note that objects without a measurement are not counted as belonging in a
-classification bin and will not show up in the output image (shown in the
-module display window); in the object classification they will have a value of False
-for all bins. However, they are still counted in the total number of objects
-and hence are reflected in the classification percentages.</p>
+--------------
 
-<h4>Available measurements</h4>
-<ul>
-<li><b>Image measurements:</b>
-<ul>
-<li><i>NumObjectsPerBin:</i> The number of objects that are classified
-into each bin.</li>
-<li><i>PctObjectsPerBin:</i> The percentage of total objects that are
-classified into each bin.</li>
-</ul>
-</li>
-<li><b>Object measurements:</b>
-<ul>
-<li>Single measurement: Classification (true/false) of the N<sup>th</sup>
-bin for the M<sup>th</sup> measurement.</li>
-<li>Two measurement: Classification (true/false) of the 1<sup>st</sup>
-measurement versus the 2<sup>nd</sup> measurement
-binned into bins above ("high") and below ("low") the cutoff.</li>
-</ul>
-</li>
-</ul>
+This module classifies objects into a number of different bins according
+to the value of a measurement (e.g., by size, intensity, shape). It
+reports how many objects fall into each class as well as the percentage
+of objects that fall into each class. The module asks you to select the
+measurement feature to be used to classify your objects and specify the
+bins to use. It also requires you to have run a measurement or
+**CalculateMath** previous to this module in the pipeline so that the
+measurement values can be used to classify the objects.
 
-See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
-'''
+There are two flavors of classification:
+
+-  The first classifies each object according to the measurements you
+   choose and assigns each object to one class per measurement. You may
+   specify more than two classification bins per measurement.
+-  The second classifies each object according to two measurements and
+   two threshold values. The module classifies each object once per
+   measurement resulting in four possible object classes. The module
+   then stores one measurement per object, based on the object’s class.
+
+Note that objects without a measurement are not counted as belonging in
+a classification bin and will not show up in the output image (shown in
+the module display window); in the object classification they will have
+a value of False for all bins. However, they are still counted in the
+total number of objects and hence are reflected in the classification
+percentages.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  **Image measurements:**
+
+   -  *NumObjectsPerBin:* The number of objects that are classified into
+      each bin.
+   -  *PctObjectsPerBin:* The percentage of total objects that are
+      classified into each bin.
+
+-  **Object measurements:**
+
+   -  Single measurement: Classification (true/false) of the
+      N\ :sup:`th` bin for the M\ :sup:`th` measurement.
+   -  Two measurement: Classification (true/false) of the 1\ :sup:`st`
+      measurement versus the 2\ :sup:`nd` measurement binned into bins
+      above (“high”) and below (“low”) the cutoff.
+
+See also **CalculateMath** and any of the modules in the **Measure**
+category.
+"""
 
 import numpy as np
 

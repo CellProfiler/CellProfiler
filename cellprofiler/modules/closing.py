@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
-
-<strong>Closing</strong> is the erosion of the dilation of an image. It’s used to remove pepper noise.
-
+**Closing** is the erosion of the dilation of an image. It’s used to
+remove pepper noise.
 """
 
 import numpy

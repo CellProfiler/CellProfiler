@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF
 
 __doc__ = '''

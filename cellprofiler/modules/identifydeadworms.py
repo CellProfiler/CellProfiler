@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>IdentifyDeadWorms</b> identifies dead worms by their shape.
 <hr>
 Dead <i>C. elegans</i> worms most often have a straight shape in an image whereas

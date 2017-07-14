@@ -1,21 +1,30 @@
-'''<b>Display Density Plot </b> plots measurements as a two-dimensional density plot.
-<hr>
-A density plot displays the relationship between two measurements (that is, features)
-but instead of showing each data point as a dot, as in a scatter plot, the data
-points are binned into an equally-spaced
-grid of points, where the color of each point in the grid represents the tabulated frequency
-of the measurements within that region of the grid. A density plot is also known as a 2-D histogram;
-in a conventional histogram the height of a bar indicates how many data points fall
-in that region. By contrast, in a density plot (2-D histogram), the color of a portion of the plot
-indicates the number of data points in that region.
+# coding=utf-8
 
-<p>The module shows the values generated for the current cycle. However,
-this module can also be run as a Data Tool, in which case you will first be asked
-for the output file produced by the analysis run. The resultings plot is
-created from all the measurements collected during the run.</p>
+"""
+**Display Density Plot** plots measurements as a two-dimensional density
+plot.
 
-See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>.
-'''
+--------------
+
+A density plot displays the relationship between two measurements (that
+is, features) but instead of showing each data point as a dot, as in a
+scatter plot, the data points are binned into an equally-spaced grid of
+points, where the color of each point in the grid represents the
+tabulated frequency of the measurements within that region of the grid.
+A density plot is also known as a 2-D histogram; in a conventional
+histogram the height of a bar indicates how many data points fall in
+that region. By contrast, in a density plot (2-D histogram), the color
+of a portion of the plot indicates the number of data points in that
+region.
+
+The module shows the values generated for the current cycle. However,
+this module can also be run as a Data Tool, in which case you will first
+be asked for the output file produced by the analysis run. The
+resultings plot is created from all the measurements collected during
+the run.
+
+See also **DisplayScatterPlot**, **DisplayHistogram**.
+"""
 
 import matplotlib.cm
 import numpy as np

@@ -1,24 +1,41 @@
+# coding=utf-8
+
 """
-<b>Filter Objects</b> eliminates objects based on their measurements (e.g., area, shape, texture, intensity).
-<hr>
-This module removes selected objects based on measurements produced by another module (e.g.,
-<b>MeasureObjectSizeShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>, etc). All objects that do not
-satisfy the specified parameters will be discarded.
-<p>This module also may remove objects touching the image border or edges of a mask. This is useful if you would like
-to unify images via <b>ReassignObjectNumbers</b> before deciding to discard these objects.</p>
-<p>Please note that the objects that pass the filtering step comprise a new object set, and hence do not inherit the
-measurements associated with the original objects. Any measurements on the new object set will need to be made
-post-filtering by the desired measurement modules.</p>
-<h4>Available measurements</h4><b>Image measurements:</b>
-<ul>
-    <li><i>Count:</i> The number of objects remaining after filtering.</li>
-</ul><b>Object measurements:</b>
-<ul>
-    <li><i>Parent:</i> The identity of the input object associated with each filtered object.</li>
-    <li><i>Location_X, Location_Y, Location_Z:</i> The pixel (Z,X,Y) coordinates of the center of mass of the remaining
-    objects.</li>
-</ul>See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>, <b>MeasureCorrelation</b>, and
-<b>CalculateRatios</b>.
+**Filter Objects** eliminates objects based on their measurements (e.g.,
+area, shape, texture, intensity).
+
+--------------
+
+This module removes selected objects based on measurements produced by
+another module (e.g., **MeasureObjectSizeShape**,
+**MeasureObjectIntensity**, **MeasureTexture**, etc). All objects that
+do not satisfy the specified parameters will be discarded.
+
+This module also may remove objects touching the image border or edges
+of a mask. This is useful if you would like to unify images via
+**ReassignObjectNumbers** before deciding to discard these objects.
+
+Please note that the objects that pass the filtering step comprise a new
+object set, and hence do not inherit the measurements associated with
+the original objects. Any measurements on the new object set will need
+to be made post-filtering by the desired measurement modules.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Image measurements:**
+
+-  *Count:* The number of objects remaining after filtering.
+
+**Object measurements:**
+
+-  *Parent:* The identity of the input object associated with each
+   filtered object.
+-  *Location\_X, Location\_Y, Location\_Z:* The pixel (Z,X,Y)
+   coordinates of the center of mass of the remaining objects.
+
+See also any of the **MeasureObject** modules, **MeasureTexture**,
+**MeasureCorrelation**, and **CalculateRatios**.
 """
 
 import logging

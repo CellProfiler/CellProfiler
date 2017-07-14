@@ -1,63 +1,71 @@
 # coding=utf-8
 
-'''<b>Measure Image Quality</b> measures features that indicate image quality.
-<hr>
-This module can collect measurements indicating possible image abberations,
-e.g. blur (poor focus), intensity, saturation (i.e., the percentage
-of pixels in the image that are minimal and maximal). Details and guidance for
-each of these measures is provided in the settings help.
+"""
+**Measure Image Quality** measures features that indicate image quality.
 
-<p>Please note that for best results, this module should be applied to the
-original raw images, as opposed to images that have already been corrected for
-illumination.</p>
+--------------
 
-<h4>Available measurements</h4>
-<ul>
-<li><b>Blur metrics</b>
-<ul>
-<li><i>FocusScore:</i> A measure of the intensity variance across the image.</li>
-<li><i>LocalFocusScore:</i> A measure of the intensity variance between image sub-regions.</li>
-<li><i>Correlation:</i> A measure of the correlation of the image for a given spatial scale.</li>
-<li><i>PowerLogLogSlope:</i> The slope of the image log-log power spectrum.</li>
-</ul>
-</li>
+This module can collect measurements indicating possible image
+abberations, e.g. blur (poor focus), intensity, saturation (i.e., the
+percentage of pixels in the image that are minimal and maximal). Details
+and guidance for each of these measures is provided in the settings
+help.
 
-<li><b>Saturation metrics</b>
-<ul>
-<li><i>PercentMaximal:</i> Percent of pixels at the maximum intensity value of the image.</li>
-<li><i>PercentMinimal:</i> Percent of pixels at the minimum intensity value of the image.</li>
-</ul>
-</li>
+Please note that for best results, this module should be applied to the
+original raw images, as opposed to images that have already been
+corrected for illumination.
 
-<li><b>Intensity metrics</b>
-<ul>
-<li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
-<li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
-<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation (MAD) of pixel intensity values.</li>
-<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>TotalArea:</i> Number of pixels measured.</li>
-</ul>
-</li>
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<li><b>Threshold metrics:</b>
-<ul>
-<li><i>Threshold:</i> The automatically calculated threshold for each image for the
-thresholding method of choice.
-<p>Please note that these thresholds are recorded individually for each image and as an aggregate
-statistic for all images. The mean, median and standard deviation of the threshold values are
-computed for each of the threshold methods selected and recorded as a measurement in the
-per-experiment table.</p></li>
-</ul>
-</li>
-</ul>
+-  **Blur metrics**
 
-<h4>References</h4>
-<ul>
-<li>Bray MA, Fraser AN, Hasaka TP, Carpenter AE (2012) "Workflow and metrics for image quality
-control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-74.
-<a href="http://dx.doi.org/10.1177/1087057111420292">(link)</a></li>
-</ul>
-'''
+   -  *FocusScore:* A measure of the intensity variance across the
+      image.
+   -  *LocalFocusScore:* A measure of the intensity variance between
+      image sub-regions.
+   -  *Correlation:* A measure of the correlation of the image for a
+      given spatial scale.
+   -  *PowerLogLogSlope:* The slope of the image log-log power spectrum.
+
+-  **Saturation metrics**
+
+   -  *PercentMaximal:* Percent of pixels at the maximum intensity value
+      of the image.
+   -  *PercentMinimal:* Percent of pixels at the minimum intensity value
+      of the image.
+
+-  **Intensity metrics**
+
+   -  *TotalIntensity:* Sum of all pixel intensity values.
+   -  *MeanIntensity, MedianIntensity:* Mean and median of pixel
+      intensity values.
+   -  *StdIntensity, MADIntensity:* Standard deviation and median
+      absolute deviation (MAD) of pixel intensity values.
+   -  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel
+      intensity values.
+   -  *TotalArea:* Number of pixels measured.
+
+-  **Threshold metrics:**
+
+   -  *Threshold:* The automatically calculated threshold for each image
+      for the thresholding method of choice.
+
+      Please note that these thresholds are recorded individually for
+      each image and as an aggregate statistic for all images. The mean,
+      median and standard deviation of the threshold values are computed
+      for each of the threshold methods selected and recorded as a
+      measurement in the per-experiment table.
+
+References
+^^^^^^^^^^
+
+-  Bray MA, Fraser AN, Hasaka TP, Carpenter AE (2012) “Workflow and
+   metrics for image quality control in large-scale high-content
+   screens.” *J Biomol Screen* 17(2):266-74. `(link)`_
+
+.. _(link): http://dx.doi.org/10.1177/1087057111420292
+"""
 
 import logging
 

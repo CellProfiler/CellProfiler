@@ -1,93 +1,134 @@
 # coding=utf-8
 
 """
-<b>Measure Texture</b> measures the degree and nature of textures within objects (versus smoothness).
-<hr>
-This module measures the variations in grayscale images. An object (or entire image) without much texture has a smooth
-appearance; an object or image with a lot of texture will appear rough and show a wide variety of pixel intensities.
-<p>This module can also measure textures of objects against grayscale images. Any input objects specified will have
-their texture measured against <i>all</i> input images specified, which may lead to image-object texture combinations
-that are unneccesary. If you do not want this behavior, use multiple <b>MeasureTexture</b> modules to specify the
-particular image-object measures that you want.</p>
-<h4>Available measurements</h4>
-<ul>
-    <li>
-        <i>Haralick Features:</i> Haralick texture features are derived from the co-occurrence matrix, which contains
-        information about how image intensities in pixels with a certain position in relation to each other occur
-        together. <b>MeasureTexture</b> can measure textures at different scales; the scale you choose determines how
-        the co-occurrence matrix is constructed. For example, if you choose a scale of 2, each pixel in the image
-        (excluding some border pixels) will be compared against the one that is two pixels to the right.
-        <b>MeasureTexture</b> quantizes the image into eight intensity levels. There are then 8x8 possible ways to
-        categorize a pixel with its scale-neighbor. <b>MeasureTexture</b> forms the 8x8 co-occurrence matrix by
-        counting how many pixels and neighbors have each of the 8x8 intensity combinations.
-        <p>Thirteen measurements are then calculated for the image by performing mathematical operations on the
-        co-occurrence matrix (the formulas can be found <a href=
-        "http://murphylab.web.cmu.edu/publications/boland/boland_node26.html">here</a>):</p>
-        <ul>
-            <li><i>AngularSecondMoment:</i> Measure of image homogeneity. A higher value of this feature indicates that
-            the intensity varies less in an image. Has a value of 1 for a uniform image.</li>
-            <li><i>Contrast:</i> Measure of local variation in an image. A high contrast value indicates a high degree
-            of local variation, and is 0 for a uniform image.</li>
-            <li><i>Correlation:</i> Measure of linear dependency of intensity values in an image. For an image with
-            large areas of similar intensities, correlation is much higher than for an image with noisier, uncorrelated
-            intensities. Has a value of 1 or -1 for a perfectly positively or negatively correlated image.</li>
-            <li><i>Variance:</i> Measure of the variation of image intensity values. For an image with uniform
-            intensity, the texture variance would be zero.</li>
-            <li><i>InverseDifferenceMoment:</i> Another feature to represent image contrast. Has a low value for
-            inhomogeneous images, and a relatively higher value for homogeneous images.</li>
-            <li><i>SumAverage:</i> The average of the normalized grayscale image in the spatial domain.</li>
-            <li><i>SumVariance:</i> The variance of the normalized grayscale image in the spatial domain.</li>
-            <li><i>SumEntropy:</i> A measure of randomness within an image.</li>
-            <li><i>Entropy:</i> An indication of the complexity within an image. A complex image produces a high
-            entropy value.</li>
-            <li><i>DifferenceVariance:</i> The image variation in a normalized co-occurance matrix.</li>
-            <li><i>DifferenceEntropy:</i> Another indication of the amount of randomness in an image.</li>
-            <li><i>InfoMeas1</i></li>
-            <li><i>InfoMeas2</i></li>
-        </ul>Each measurement is suffixed with the direction of the offset used between pixels in the co-occurrence
-        matrix:
-        <ul>
-            <li><i>0:</i> Horizontal</li>
-            <li><i>90:</i> Vertical</li>
-            <li><i>45:</i> Diagonal</li>
-            <li><i>135:</i> Anti-diagonal</li>
-        </ul>
-        <p></p>
-    </li>
-    <li><i>Gabor "wavelet" features:</i> These features are similar to wavelet features, and they are obtained by
-    applying so-called Gabor filters to the image. The Gabor filters measure the frequency content in different
-    orientations. They are very similar to wavelets, and in the current context they work exactly as wavelets, but they
-    are not wavelets by a strict mathematical definition. The Gabor features detect correlated bands of intensities,
-    for instance, images of Venetian blinds would have high scores in the horizontal orientation.</li>
-</ul>
-<h4>Technical notes</h4>To calculate the Haralick features, <b>MeasureTexture</b> normalizes the co-occurence matrix at
-the per-object level by basing the intensity levels of the matrix on the maximum and minimum intensity observed within
-each object. This is beneficial for images in which the maximum intensities of the objects vary substantially because
-each object will have the full complement of levels.
-<p><b>MeasureTexture</b> performs a vectorized calculation of the Gabor filter, properly scaled to the size of the
-object being measured and covering all pixels in the object. The Gabor filter can be calculated at a user-selected
-number of angles by using the following algorithm to compute a score at each scale using the Gabor filter:</p>
-<ul>
-    <li>Divide the half-circle from 0 to 180&deg; by the number of desired angles. For instance, if the user chooses
-    two angles, <b>MeasureTexture</b> uses 0 and 90 &deg; (horizontal and vertical) for the filter orientations. This
-    is the &theta; value from the reference paper.</li>
-    <li>For each angle, compute the Gabor filter for each object in the image at two phases separated by 90&deg; in
-    order to account for texture features whose peaks fall on even or odd quarter-wavelengths.</li>
-    <li>Multiply the image times each Gabor filter and sum over the pixels in each object.</li>
-    <li>Take the square root of the sum of the squares of the two filter scores. This results in one score per
-    &theta;.</li>
-    <li>Save the maximum score over all &theta; as the score at the desired scale.</li>
-</ul>
-<p></p>
-<h4>References</h4>
-<ul>
-    <li>Haralick RM, Shanmugam K, Dinstein I. (1973), "Textural Features for Image Classification" <i>IEEE Transaction
-    on Systems Man, Cybernetics</i>, SMC-3(6):610-621. <a href="http://dx.doi.org/10.1109/TSMC.1973.4309314">(link)</a>
-    </li>
-    <li>Gabor D. (1946). "Theory of communication" <i>Journal of the Institute of Electrical Engineers</i> 93:429-441.
-    <a href="http://dx.doi.org/10.1049/ji-3-2.1946.0074">(link)</a>
-    </li>
-</ul>
+**Measure Texture** measures the degree and nature of textures within
+objects (versus smoothness).
+
+--------------
+
+This module measures the variations in grayscale images. An object (or
+entire image) without much texture has a smooth appearance; an object or
+image with a lot of texture will appear rough and show a wide variety of
+pixel intensities.
+
+This module can also measure textures of objects against grayscale
+images. Any input objects specified will have their texture measured
+against *all* input images specified, which may lead to image-object
+texture combinations that are unneccesary. If you do not want this
+behavior, use multiple **MeasureTexture** modules to specify the
+particular image-object measures that you want.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Haralick Features:* Haralick texture features are derived from the
+   co-occurrence matrix, which contains information about how image
+   intensities in pixels with a certain position in relation to each
+   other occur together. **MeasureTexture** can measure textures at
+   different scales; the scale you choose determines how the
+   co-occurrence matrix is constructed. For example, if you choose a
+   scale of 2, each pixel in the image (excluding some border pixels)
+   will be compared against the one that is two pixels to the right.
+   **MeasureTexture** quantizes the image into eight intensity levels.
+   There are then 8x8 possible ways to categorize a pixel with its
+   scale-neighbor. **MeasureTexture** forms the 8x8 co-occurrence matrix
+   by counting how many pixels and neighbors have each of the 8x8
+   intensity combinations.
+
+   Thirteen measurements are then calculated for the image by performing
+   mathematical operations on the co-occurrence matrix (the formulas can
+   be found `here`_):
+
+   -  *AngularSecondMoment:* Measure of image homogeneity. A higher
+      value of this feature indicates that the intensity varies less in
+      an image. Has a value of 1 for a uniform image.
+   -  *Contrast:* Measure of local variation in an image. A high
+      contrast value indicates a high degree of local variation, and is
+      0 for a uniform image.
+   -  *Correlation:* Measure of linear dependency of intensity values in
+      an image. For an image with large areas of similar intensities,
+      correlation is much higher than for an image with noisier,
+      uncorrelated intensities. Has a value of 1 or -1 for a perfectly
+      positively or negatively correlated image.
+   -  *Variance:* Measure of the variation of image intensity values.
+      For an image with uniform intensity, the texture variance would be
+      zero.
+   -  *InverseDifferenceMoment:* Another feature to represent image
+      contrast. Has a low value for inhomogeneous images, and a
+      relatively higher value for homogeneous images.
+   -  *SumAverage:* The average of the normalized grayscale image in the
+      spatial domain.
+   -  *SumVariance:* The variance of the normalized grayscale image in
+      the spatial domain.
+   -  *SumEntropy:* A measure of randomness within an image.
+   -  *Entropy:* An indication of the complexity within an image. A
+      complex image produces a high entropy value.
+   -  *DifferenceVariance:* The image variation in a normalized
+      co-occurance matrix.
+   -  *DifferenceEntropy:* Another indication of the amount of
+      randomness in an image.
+   -  *InfoMeas1*
+   -  *InfoMeas2*
+
+   Each measurement is suffixed with the direction of the offset used
+   between pixels in the co-occurrence matrix:
+
+   -  *0:* Horizontal
+   -  *90:* Vertical
+   -  *45:* Diagonal
+   -  *135:* Anti-diagonal
+
+-  *Gabor “wavelet” features:* These features are similar to wavelet
+   features, and they are obtained by applying so-called Gabor filters
+   to the image. The Gabor filters measure the frequency content in
+   different orientations. They are very similar to wavelets, and in the
+   current context they work exactly as wavelets, but they are not
+   wavelets by a strict mathematical definition. The Gabor features
+   detect correlated bands of intensities, for instance, images of
+   Venetian blinds would have high scores in the horizontal orientation.
+
+.. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+To calculate the Haralick features, **MeasureTexture** normalizes the
+co-occurence matrix at the per-object level by basing the intensity
+levels of the matrix on the maximum and minimum intensity observed
+within each object. This is beneficial for images in which the maximum
+intensities of the objects vary substantially because each object will
+have the full complement of levels.
+
+**MeasureTexture** performs a vectorized calculation of the Gabor
+filter, properly scaled to the size of the object being measured and
+covering all pixels in the object. The Gabor filter can be calculated at
+a user-selected number of angles by using the following algorithm to
+compute a score at each scale using the Gabor filter:
+
+-  Divide the half-circle from 0 to 180° by the number of desired
+   angles. For instance, if the user chooses two angles,
+   **MeasureTexture** uses 0 and 90 ° (horizontal and vertical) for the
+   filter orientations. This is the θ value from the reference paper.
+-  For each angle, compute the Gabor filter for each object in the image
+   at two phases separated by 90° in order to account for texture
+   features whose peaks fall on even or odd quarter-wavelengths.
+-  Multiply the image times each Gabor filter and sum over the pixels in
+   each object.
+-  Take the square root of the sum of the squares of the two filter
+   scores. This results in one score per θ.
+-  Save the maximum score over all θ as the score at the desired scale.
+
+References
+^^^^^^^^^^
+
+-  Haralick RM, Shanmugam K, Dinstein I. (1973), “Textural Features for
+   Image Classification” *IEEE Transaction on Systems Man, Cybernetics*,
+   SMC-3(6):610-621. `(link)`_
+-  Gabor D. (1946). “Theory of communication” *Journal of the Institute
+   of Electrical Engineers* 93:429-441.
+   `(link) <http://dx.doi.org/10.1049/ji-3-2.1946.0074>`__
+
+.. _(link): http://dx.doi.org/10.1109/TSMC.1973.4309314
 """
 
 import centrosome.cpmorphology

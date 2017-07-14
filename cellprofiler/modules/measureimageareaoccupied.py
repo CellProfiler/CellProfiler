@@ -1,21 +1,34 @@
 # coding=utf-8
 
 """
-<b>Measure Image Area Occupied</b> measures the total area in an image that is occupied by objects.
-<hr>
-This module reports the sum of the areas and perimeters of the objects defined by one of the <b>Identify</b> modules,
-or the area of the foreground in a binary image. If the input image has a mask (for example, created by the
-<b>MaskImage</b> module), the measurements made by this module will take the mask into account by ignoring the pixels
+**Measure Image Area Occupied** measures the total area in an image that
+is occupied by objects.
+
+--------------
+
+This module reports the sum of the areas and perimeters of the objects
+defined by one of the **Identify** modules, or the area of the
+foreground in a binary image. If the input image has a mask (for
+example, created by the **MaskImage** module), the measurements made by
+this module will take the mask into account by ignoring the pixels
 outside the mask.
-<p>You can use this module to measure the number of pixels above a given threshold if you precede it with thresholding
-performed by <b>ApplyThreshold</b>, and then select the binary image output by <b>ApplyThreshold</b> to be measured by
-this module.</p>
-<h4>Available measurements</h4>
-<ul>
-    <li><i>AreaOccupied:</i> The total area occupied by the input objects or binary image.</li>
-    <li><i>Perimeter:</i> The total length of the perimeter of the input objects/binary image.</li>
-    <li><i>TotalImageArea:</i> The total pixel area of the image.</li>
-</ul>See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>
+
+You can use this module to measure the number of pixels above a given
+threshold if you precede it with thresholding performed by
+**ApplyThreshold**, and then select the binary image output by
+**ApplyThreshold** to be measured by this module.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *AreaOccupied:* The total area occupied by the input objects or
+   binary image.
+-  *Perimeter:* The total length of the perimeter of the input
+   objects/binary image.
+-  *TotalImageArea:* The total pixel area of the image.
+
+See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
+**IdentifyTertiaryObjects**
 """
 
 import numpy

@@ -1,21 +1,24 @@
 # coding=utf-8
 
+"""
+Upsize or downsize an object’s label matrix by a factor or by specifying
+the final dimensions in pixels. ResizeObjects uses nearest neighbor
+interpolation to preserve object labels after the resizing operation.
+When resizing 3D data, ResizeObjects resizes the height and width and
+keeps the original depth (or z-dimension).
+
+ResizeObjects is useful for processing very large or 3D data. A user
+might downsize a 3D image to generate a segmentation. She can then use
+ResizeObjects to stretch the segmented objects to their original size
+before computing measurements with the original 3D image.
+"""
+
 import numpy
 import scipy.ndimage
 import skimage.transform
 
 import cellprofiler.module
 import cellprofiler.setting
-
-
-__doc__ = """
-<p>Upsize or downsize an object's label matrix by a factor or by specifying the final dimensions in pixels. ResizeObjects
-uses nearest neighbor interpolation to preserve object labels after the resizing operation. When resizing 3D data,
-ResizeObjects resizes the height and width and keeps the original depth (or z-dimension).</p>
-<p>ResizeObjects is useful for processing very large or 3D data. A user might downsize a 3D image to generate a
-segmentation. She can then use ResizeObjects to stretch the segmented objects to their original size before
-computing measurements with the original 3D image.</p>
-"""
 
 
 class ResizeObjects(cellprofiler.module.ObjectProcessing):

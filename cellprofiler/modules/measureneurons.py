@@ -1,42 +1,45 @@
 # coding=utf-8
 
-'''<b>Measure Neurons</b> measures branching information for neurons or
-any skeleton objects with seed points.
-<hr>
-<p>This module measures the number of trunks and branches for each neuron in
-an image. The module takes a skeletonized image of the neuron plus previously
-identified seed objects (for instance, the neuron soma) and finds the number of
-axon or dendrite trunks that emerge from the soma and the number of branches along the
-axons and dendrites. Note that the seed objects must be both smaller than, and touching
-the skeleton in order to be counted.</p>
+"""
+**Measure Neurons** measures branching information for neurons or any
+skeleton objects with seed points.
 
-<p>The typical approach for this module is the following:
-<ul>
-<li>Identify a seed object. This object is typically a nucleus, identified with a
-module such as <b>IdentifyPrimaryObjects</b>. </li>
-<li>Identify a larger object that touches or encloses this seed object.
-For example, the neuron cell can be grown outwards from the initial seed nuclei
-using <b>IdentifySecondaryObjects</b>. </li>
-<li>Use the <b>Morph</b> module to skeletonize the secondary objects.</li>
-<li>Finally, the primary objects and the skeleton objects
-are used as inputs to <b>MeasureNeurons</b>.</li>
-</ul>
-</p>
+--------------
 
-<p>The module determines distances from the seed objects along the axons and dendrites
-and assigns branchpoints based on distance to the closest seed object when two seed objects
-appear to be attached to the same dendrite or axon.</p>
+This module measures the number of trunks and branches for each neuron
+in an image. The module takes a skeletonized image of the neuron plus
+previously identified seed objects (for instance, the neuron soma) and
+finds the number of axon or dendrite trunks that emerge from the soma
+and the number of branches along the axons and dendrites. Note that the
+seed objects must be both smaller than, and touching the skeleton in
+order to be counted.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>NumberTrunks:</i> The number of trunks. Trunks are branchpoints that lie
-within the seed objects</li>
-<li><i>NumberNonTrunkBranches:</i> The number of non-trunk branches. Branches are
-the branchpoints that lie outside the seed objects.</li>
-<li><i>NumberBranchEnds</i>: The number of branch end-points, i.e, termini.</li>
-<li><i>TotalNeuriteLength</i>: The length of all skeleton segments per neuron.</li>
-</ul>
-'''
+The typical approach for this module is the following:
+
+-  Identify a seed object. This object is typically a nucleus,
+   identified with a module such as **IdentifyPrimaryObjects**.
+-  Identify a larger object that touches or encloses this seed object.
+   For example, the neuron cell can be grown outwards from the initial
+   seed nuclei using **IdentifySecondaryObjects**.
+-  Use the **Morph** module to skeletonize the secondary objects.
+-  Finally, the primary objects and the skeleton objects are used as
+   inputs to **MeasureNeurons**.
+
+The module determines distances from the seed objects along the axons
+and dendrites and assigns branchpoints based on distance to the closest
+seed object when two seed objects appear to be attached to the same
+dendrite or axon.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *NumberTrunks:* The number of trunks. Trunks are branchpoints that
+   lie within the seed objects
+-  *NumberNonTrunkBranches:* The number of non-trunk branches. Branches
+   are the branchpoints that lie outside the seed objects.
+-  *NumberBranchEnds*: The number of branch end-points, i.e, termini.
+-  *TotalNeuriteLength*: The length of all skeleton segments per neuron.
+"""
 
 import os
 

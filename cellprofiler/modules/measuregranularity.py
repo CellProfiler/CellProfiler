@@ -1,36 +1,41 @@
 # coding=utf-8
 
-'''<b>Measure Granularity</b> outputs spectra of size measurements
-of the textures in the image.
-<hr>
-Image granularity is a texture measurement that tries a series of structure elements
-of increasing size and outputs a spectrum of measures of how well these structure
-elements fit in the texture of the image. Granularity is measured as described by
-Ilya Ravkin (references below). The size of the starting structure element as well
-as the range of the spectrum is given as input.
+"""
+**Measure Granularity** outputs spectra of size measurements of the
+textures in the image.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Granularity:</i> The module returns one measurement for each instance of the granularity spectrum.</li>
-</ul>
+--------------
 
-<h4>References</h4>
-<ul>
-<li>Serra J. (1989) <i>Image Analysis and Mathematical Morphology</i>, Vol. 1. Academic
-Press, London </li>
-<li>Maragos P. "Pattern spectrum and multiscale shape
-representation", <i>IEEE Transactions on Pattern Analysis and Machine
-Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
-<li>Vincent L. (2000) "Granulometries and Opening Trees", <i>Fundamenta Informaticae</i>,
-41, No. 1-2, pp. 57-90, IOS Press, 2000.</li>
-<li>Vincent L. (1992) "Morphological Area Opening and Closing for Grayscale Images",
-<i>Proc. NATO Shape in Picture Workshop</i>, Driebergen, The Netherlands, pp.
-197-208.</li>
-<li>Ravkin I, Temov V. (1988) "Bit representation techniques and image processing",
-<i>Applied Informatics</i>, v.14, pp. 41-90, Finances and Statistics, Moskow,
-(in Russian)</li>
-</ul>
-'''
+Image granularity is a texture measurement that tries a series of
+structure elements of increasing size and outputs a spectrum of measures
+of how well these structure elements fit in the texture of the image.
+Granularity is measured as described by Ilya Ravkin (references below).
+The size of the starting structure element as well as the range of the
+spectrum is given as input.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Granularity:* The module returns one measurement for each instance
+   of the granularity spectrum.
+
+References
+^^^^^^^^^^
+
+-  Serra J. (1989) *Image Analysis and Mathematical Morphology*, Vol. 1.
+   Academic Press, London
+-  Maragos P. “Pattern spectrum and multiscale shape representation”,
+   *IEEE Transactions on Pattern Analysis and Machine Intelligence*, 11,
+   N 7, pp. 701-716, 1989
+-  Vincent L. (2000) “Granulometries and Opening Trees”, *Fundamenta
+   Informaticae*, 41, No. 1-2, pp. 57-90, IOS Press, 2000.
+-  Vincent L. (1992) “Morphological Area Opening and Closing for
+   Grayscale Images”, *Proc. NATO Shape in Picture Workshop*,
+   Driebergen, The Netherlands, pp. 197-208.
+-  Ravkin I, Temov V. (1988) “Bit representation techniques and image
+   processing”, *Applied Informatics*, v.14, pp. 41-90, Finances and
+   Statistics, Moskow, (in Russian)
+"""
 
 import centrosome.cpmorphology as morph
 import numpy as np

@@ -1,8 +1,6 @@
 # coding=utf-8
 
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF
-
-__doc__ = '''
+"""
 <b>Export To Spreadsheet</b> exports measurements into one or more files that can be
 opened in Excel or other spreadsheet programs.
 <hr>
@@ -20,7 +18,14 @@ in separate directories. You can do this by specifying metadata tags for the fol
 file name:
 <ul>
 <li>Choose <i>Elsewhere...</i> or <i>Default Input/Output Folder sub-folder</i> for the output file location.</li>
-<li>Insert the metadata tag of choice into the output path. %(USING_METADATA_TAGS_REF)s In this instance,
+<li>Insert the metadata tag of choice into the output path. You can insert a previously defined metadata tag by either using:
+<ul><li>The insert key</li>
+<li>A right mouse button click inside the control</li>
+<li>In Windows, the Context menu key, which is between the Windows key and Ctrl key </li></ul>
+The inserted metadata tag will appear in green. To change a previously inserted metadata tag,
+navigate the cursor to just before the tag and either:
+<ul><li>Use the up and down arrows to cycle through possible values.</li>
+<li>Right-click on the tag to display and select the available values.</li></ul> In this instance,
 you would select the metadata tag "Treatment1"</li>
 <li>Uncheck "Export all measurements?"</li>
 <li>Uncheck <i>Use the object name for the file name?</i>.</li>
@@ -41,8 +46,9 @@ For details on the nomenclature used by CellProfiler for the exported measuremen
 see <i>Help > General Help > How Measurements Are Named</i>.
 
 See also <b>ExportToDatabase</b>.
-''' % globals()
+"""
 
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF
 import logging
 
 logger = logging.getLogger(__name__)

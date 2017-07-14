@@ -1,6 +1,6 @@
 # coding=utf-8
 
-'''
+"""
 <b>Invert For Printing</b> inverts fluorescent images into
 brightfield-looking images for printing.
 <hr>
@@ -14,7 +14,7 @@ already a color image. The module can produce either three grayscale
 images or one color image as output.
 
 If you want to invert the grayscale intensities of an image, use <b>ImageMath</b>.
-'''
+"""
 
 import numpy as np
 

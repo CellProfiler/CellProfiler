@@ -1,10 +1,6 @@
 # coding=utf-8
 
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
-    IMAGES_FILELIST_FILLED
-
-__doc__ = """
+"""
 The <b>Images</b> module specifies the location of image files to be analyzed by your pipeline.
 <hr>
 The <b>Images</b> module allows you to specify the location of files to be analyzed by the pipeline;
@@ -34,7 +30,7 @@ For image analysis purposes, a lossless format like TIF or PNG is recommended.</
 The most straightforward way to provide image files to the <b>Images</b> module is to simply drag-and-drop
 them on the file list panel (the blank space indicated by the text "Drop files and folders here").
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_BLANK)s"></td></tr>
+<tr align="center"><td><img src="memory:Images_FilelistPanel_Blank.png"></td></tr>
 </table>
 
 <p>Using the file explorer tool of your choice (e.g., Explorer in Windows, Finder in Mac), you can drag-and-drop
@@ -42,7 +38,7 @@ individual files and/or entire folders into this panel. You can also right-click
 bring up a file selection window to browse for individual files; on the Mac, folders can be drag-and-dropped
 from this window and you can select multiple files using Ctrl-A (Windows) or Cmd-A (Mac).
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_FILLED)s"></td></tr>
+<tr align="center"><td><img src="memory:Images_FilelistPanel_Filled.png"></td></tr>
 </table>
 Right-clicking on the file list panel will provide a context menu with options to modify the file list:
 <ul>
@@ -87,7 +83,11 @@ further processing have been removed, whether manually or using filtering. This 
 collecting metadata (if desired) and when assembling the image sets in NamesAndTypes. The list can be
 filtered further in NamesAndTypes to specify, for example, that a subset of these images represents a
 particular wavelength.
-""" % globals()
+"""
+
+import cellprofiler.icons
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
+    IMAGES_FILELIST_FILLED
 
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp

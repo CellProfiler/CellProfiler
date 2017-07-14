@@ -1,6 +1,6 @@
 # coding=utf-8
 
-'''
+"""
 <b>Identify Objects In Grid</b> identifies objects within each section of a grid
 that has been defined by the <b>DefineGrid</b> module.
 <hr>
@@ -39,7 +39,7 @@ according to the arrangement order specified by the user.</li>
 </ul>
 
 <p>See also <b>DefineGrid</b>.
-'''
+"""
 
 import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel

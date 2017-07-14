@@ -1,9 +1,6 @@
 # coding=utf-8
 
-import cellprofiler.icons
-from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
-
-__doc__ = '''
+"""
 <b>Measure Object Size Shape </b> measures several area and shape
 features of identified objects.
 <hr>
@@ -49,7 +46,7 @@ value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
 eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
 is 1 is a line segment.)
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(MEASUREOBJSIZESHAPE_ECCENTRICITY)s"></td></tr>
+<tr align="center"><td><img src="memory:MeasureObjectSizeShape_Eccentricity.png"></td></tr>
 </table></li>
 <li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
 the ellipse that has the same normalized second central moments as the
@@ -110,7 +107,10 @@ vol 3, p. 30 </li>
 </ul>
 
 See also <b>MeasureImageAreaOccupied</b>.
-''' % globals()
+"""
+
+import cellprofiler.icons
+from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
 
 import numpy as np
 import scipy.ndimage as scind

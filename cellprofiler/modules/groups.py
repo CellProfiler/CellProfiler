@@ -1,9 +1,6 @@
 # coding=utf-8
 
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
-
-__doc__ = """
+"""
 The <b>Groups</b> module organizes sets of images into groups.
 <hr>
 Once the images have been identified with the <b>Images</b> module, have had metadata associated with
@@ -74,7 +71,7 @@ in a given group; this is useful as a "sanity check" to make sure that the expec
 comprise the groups.</li>
 </ul>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(GROUPS_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:Groups_ExampleDisplayTable.png"></td></tr>
 </table>
 </p>
 
@@ -90,8 +87,10 @@ These are written to the per-image table.</li>
 To perform grouping, only one analysis worker (i.e., copy of CellProfiler) will be allocated to handle each group.
 This means that you may have multiple workers created (as set under the Preferences), but only a subset of them
 may actually be active, depending on the number of groups you have.
-""" % globals()
+"""
 
+import cellprofiler.icons
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
 import logging
 
 logger = logging.getLogger(__name__)

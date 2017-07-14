@@ -1,6 +1,6 @@
-from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
+# coding=utf-8
 
-__doc__ = '''
+"""
 <b>Create Batch Files</b> produces files that allow individual batches of images to be processed
 separately on a cluster of computers.
 <hr>
@@ -20,11 +20,11 @@ both, the local root path is the portion prior, i.e., <tt>Z:\</tt> and similarly
 the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 </p>
 
-For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
-''' % globals()
+For more details on batch processing, please see <i>Help > Batch Processing</i>.
+"""
 
+from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 import logging
-
 logger = logging.getLogger(__name__)
 import httplib
 import numpy as np

@@ -1,8 +1,6 @@
 # coding=utf-8
 
-from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
-
-__doc__ = '''
+"""
 <b>Make Projection</b> combines several two-dimensional images of
 the same field of view together, either by performing a mathematical operation
 upon the pixel values at each pixel position.
@@ -12,7 +10,7 @@ choice at each pixel position; please refer to the settings help for more inform
 operations. The process of averaging or summing a Z-stack (3D image stack) is known as making a projection.
 
 <p>This module will create a projection of all images specified in the Input modules. For more
-information on loading image stacks and movies, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.
+information on loading image stacks and movies, see <i>Help > Creating a Project > Loading Image Stacks and Movies</i>.
 To achieve per-folder projections
 i.e., creating a projection for each set of images in a folder, for all input folders,
 make the following setting specifications:
@@ -29,7 +27,7 @@ output of this module is not complete until all image processing cycles have com
 the projection should be created with a dedicated pipeline.</p>
 
 See also the help for the <b>Input</b> modules.
-''' % globals()
+"""
 
 import numpy as np
 

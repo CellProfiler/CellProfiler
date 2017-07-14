@@ -1,9 +1,7 @@
 # coding=utf-8
 
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-
-__doc__ = '''<b>Export To Database</b> exports data directly to a database, or in
+'''
+<b>Export To Database</b> exports data directly to a database, or in
 database readable format, including an imported file
 with column names and a CellProfiler Analyst properties file, if desired.
 <hr>
@@ -58,9 +56,10 @@ For details on the nomenclature used by CellProfiler for the exported measuremen
 see <i>Help > General Help > How Measurements Are Named</i>.
 
 See also <b>ExportToSpreadsheet</b>.
-
 '''
 
+import cellprofiler.icons
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 import csv
 import datetime
 import hashlib

@@ -1,21 +1,6 @@
 # coding=utf-8
 
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import numpy
-import scipy.ndimage
-import skimage.morphology
-
-import applythreshold
-import cellprofiler.gui.help
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
-
-u"""
+"""
 <b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using objects identified by another module
 (e.g., nuclei) as a starting point.
 <hr>
@@ -48,11 +33,11 @@ performs two tasks:
 <h4>What do the settings mean?</h4>See below for help on the individual settings. The following icons are used to call
 attention to key items:
 <ul>
-    <li><img src="memory:{PROTIP_RECOMEND_ICON:s}">&nbsp;Our recommendation or example use case for which a particular
+    <li><img src="memory:thumb-up.png">&nbsp;Our recommendation or example use case for which a particular
     setting is best used.</li>
-    <li><img src="memory:{PROTIP_AVOID_ICON:s}">&nbsp;Indicates a condition under which a particular setting may not
+    <li><img src="memory:thumb-down.png">&nbsp;Indicates a condition under which a particular setting may not
     work well.</li>
-    <li><img src="memory:{TECH_NOTE_ICON:s}">&nbsp;Technical note. Provides more detailed information on the setting,
+    <li><img src="memory:gear.png">&nbsp;Technical note. Provides more detailed information on the setting,
     if interested.</li>
 </ul>
 <h4>What do I get as output?</h4>A set of secondary objects are produced by this module, which can be used in
@@ -103,11 +88,22 @@ details. Propagation of secondary object labels is by the shortest path to an ad
 ("seeding") primary object. The seed-to-pixel distances are calculated as the sum of absolute differences in a 3x3
 (8-connected) image neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
 <p>See also the other <b>Identify</b> modules.</p></a>
-""".format(**{
-    "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
-    "PROTIP_AVOID_ICON": cellprofiler.gui.help.PROTIP_AVOID_ICON,
-    "TECH_NOTE_ICON": cellprofiler.gui.help.TECH_NOTE_ICON
-})
+"""
+
+import centrosome.cpmorphology
+import centrosome.outline
+import centrosome.propagate
+import numpy
+import scipy.ndimage
+import skimage.morphology
+
+import applythreshold
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.setting
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"

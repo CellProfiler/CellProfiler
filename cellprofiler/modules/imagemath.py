@@ -1,6 +1,6 @@
 # coding=utf-8
 
-'''
+"""
 <b>Image Math</b> performs simple mathematical operations on image intensities.
 <hr>
 This module can perform addition, subtraction, multiplication, division, or averaging
@@ -15,7 +15,7 @@ display purposes, so additional rescaling may be needed. Please see the
 <b>RescaleIntensity</b> module for more scaling options.</p>
 
 See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
-'''
+"""
 
 import inflect
 import numpy

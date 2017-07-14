@@ -1,6 +1,6 @@
 # coding=utf-8
 
-'''
+"""
 <b>IdentifyDeadWorms</b> identifies dead worms by their shape.
 <hr>
 Dead <i>C. elegans</i> worms most often have a straight shape in an image whereas
@@ -37,7 +37,7 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 <p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
-'''
+"""
 
 import cellprofiler.measurement
 import numpy as np

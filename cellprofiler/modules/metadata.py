@@ -1,10 +1,6 @@
 # coding=utf-8
 
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
-    IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
-
-__doc__ = """
+"""
 The <b>Metadata</b> module connects information about the images (i.e., metadata)
 to your list of images for processing in CellProfiler.
 <hr>
@@ -72,7 +68,7 @@ divider to display a table of results using the current settings. Each row corre
 the <b>Images</b> module, and the columns display the metadata obtained for each tag specified.
 You can press this button as many times as needed to display the most current metadata obtained.</p>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(METADATA_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:Metadata_ExampleDisplayTable.png"></td></tr>
 </table>
 
 <p>Some downstream use cases for metadata include the following:
@@ -95,8 +91,9 @@ module for more details.</p>
 <ul>
 <li><i>Metadata:</i> The prefix of each metadata tag in the per-image table.</li>
 </ul>
-""" % globals()
+"""
 
+import cellprofiler.icons
 import numpy as np
 import logging
 
@@ -258,7 +255,7 @@ class Metadata(cpm.Module):
             text patterns in the file name or path, and then assign this text as metadata for the images
             you specify. The tag for each metadata is assigned a name that is meaningful to you.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             <i>When would you want to use this option?</i> If you want to take advantage of the fact that
             acquisition software often automatically assigns a regular nomenclature to the filenames or
             the containing folders. Alternately, the researcher acquiring the images may also have a
@@ -269,7 +266,7 @@ class Metadata(cpm.Module):
             to specify the location of the CSV file. You can create such a file using a spreadsheet program
             such as Microsoft Excel.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             <i>When would you want to use this option?</i> You have information curated in software that allows for
             export to a spreadsheet. This is commonly the case for laboratories that use data management systems
             that track samples and acquisition.</dd>
@@ -296,7 +293,7 @@ class Metadata(cpm.Module):
             illumination sources.</li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             <i>When would you want to use this option?</i> You want to analyze images that are contained as
             file stacks, i.e., the images that are related to each other in some way, such as by time
             (temporal), space (spatial), or color (spectral).</dd>
@@ -467,14 +464,14 @@ class Metadata(cpm.Module):
             different images. Set the drop-downs to pair the metadata tags of the images and the
             CSV, such that each row contains the corresponding tags. This can be done for as many
             metadata correspondences as you may have for each source; press
-            <img src="memory:%(MODULE_ADD_BUTTON)s"> to add more rows.</p>""" % globals()))
+            <img src="memory:module_add.png"> to add more rows.</p>""" % globals()))
 
         group.append("wants_case_insensitive", cps.Binary(
                 "Use case insensitive matching?", False, doc="""
             This setting controls whether row matching takes the metadata case
             into account when matching.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             If you note that your CSV metadata is not being
             applied, your choice on this setting may be the culprit.</dd>
             </dl>

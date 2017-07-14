@@ -1,6 +1,7 @@
 # coding=utf-8
 
-'''<b>Invert For Printing</b> inverts fluorescent images into
+'''
+<b>Invert For Printing</b> inverts fluorescent images into
 brightfield-looking images for printing.
 <hr>
 This module turns a single or multi-channel immunofluorescent-stained image

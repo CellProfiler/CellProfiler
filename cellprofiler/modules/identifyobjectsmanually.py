@@ -1,6 +1,7 @@
 # coding=utf-8
 
-'''<b>Identify Objects Manually</b> allows you to identify objects
+"""
+<b>Identify Objects Manually</b> allows you to identify objects
 in an image by hand rather than automatically.
 <hr>
 This module lets you outline the objects in an image using the mouse. The
@@ -13,7 +14,7 @@ you release the left mouse button.</li>
 display to within that rectangle.</li>
 <li><i>Zoom out:</i> Reverses the effect of the last zoom-in.</li>
 <li><i>Erase:</i> Erases an object if you click on it.</li></ul>
-'''
+"""
 
 import numpy as np
 from centrosome.cpmorphology import draw_line

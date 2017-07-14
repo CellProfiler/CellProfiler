@@ -1,9 +1,7 @@
 # coding=utf-8
 
 """
-
 Laplacian of Gaussian filter.
-
 """
 
 import cellprofiler.image

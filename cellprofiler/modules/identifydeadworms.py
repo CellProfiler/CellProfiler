@@ -1,6 +1,7 @@
 # coding=utf-8
 
-'''<b>IdentifyDeadWorms</b> identifies dead worms by their shape.
+'''
+<b>IdentifyDeadWorms</b> identifies dead worms by their shape.
 <hr>
 Dead <i>C. elegans</i> worms most often have a straight shape in an image whereas
 live worms assume a sinusoidal shape. This module identifies dead worms
@@ -37,6 +38,7 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
+
 import cellprofiler.measurement
 import numpy as np
 from centrosome.cpmorphology import all_connected_components

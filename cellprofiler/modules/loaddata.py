@@ -1,6 +1,7 @@
 # coding=utf-8
 
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and
+"""
+<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
 This module loads a file that supplies text or numerical data associated with
@@ -150,7 +151,7 @@ image loading was requested by the user.</li>
 </ul>
 
 See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics</b>.
-'''
+"""
 
 import csv
 import hashlib

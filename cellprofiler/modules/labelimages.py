@@ -1,6 +1,7 @@
 # coding=utf-8
 
-'''<b>LabelImages</b> assigns plate metadata to image sets.
+'''
+<b>LabelImages</b> assigns plate metadata to image sets.
 <hr>
 <b>LabelImages</b> assigns a plate number, well and site number to each image
 set based on the order in which they are processed. You can use <b>Label

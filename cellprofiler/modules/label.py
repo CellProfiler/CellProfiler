@@ -38,7 +38,7 @@ class Label(cellprofiler.module.ImageSegmentation):
 
         x_data = x.pixel_data
 
-        y_data = skimage.measure.label(skimage.img_as_uint(x_data))
+        y_data = skimage.measure.label(skimage.img_as_int(x_data))
 
         objects = cellprofiler.object.Objects()
 

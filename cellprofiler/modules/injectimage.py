@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 InjectImage.py - for testing, this module injects a single image into the image set
 """

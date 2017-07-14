@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>StraightenWorms</b> straightens untangled worms.
 <hr>
 <b>StraightenWorms</b> uses the objects produced by <b>UntangleWorms</b>

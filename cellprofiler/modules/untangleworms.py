@@ -1,4 +1,7 @@
-'''<b>UntangleWorms</b> untangles overlapping worms.
+# coding=utf-8
+
+'''
+<b>UntangleWorms</b> untangles overlapping worms.
 <hr>
 This module either assembles a training set of sample worms in order to create a worm
 model, or takes a binary image and the results of worm training and

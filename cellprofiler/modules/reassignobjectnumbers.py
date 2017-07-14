@@ -1,4 +1,7 @@
-'''<b>Reassign Object Numbers</b> renumbers previously identified objects.
+# coding=utf-8
+
+'''
+<b>Reassign Object Numbers</b> renumbers previously identified objects.
 <hr>
 Objects and their measurements are associated
 with each other based on their object numbers (also known as <i>labels</i>). Typically,

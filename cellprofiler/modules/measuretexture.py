@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 <b>Measure Texture</b> measures the degree and nature of textures within objects (versus smoothness).
 <hr>

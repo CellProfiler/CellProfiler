@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 <b>Measure Image Area Occupied</b> measures the total area in an image that is occupied by objects.
 <hr>

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Mask Objects</b> removes objects outside of a specified region or regions.
 <hr>
 This module allows you to delete the objects or portions of objects that are

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
     IMAGES_FILELIST_FILLED

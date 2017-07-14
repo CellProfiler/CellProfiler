@@ -1,4 +1,6 @@
-'''<b>Identify Objects Manually</b> allows you to identify objects 
+# coding=utf-8
+
+'''<b>Identify Objects Manually</b> allows you to identify objects
 in an image by hand rather than automatically.
 <hr>
 This module lets you outline the objects in an image using the mouse. The

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Smooth</b> smooths (i.e., blurs) images.
 <hr>
 This module allows you to smooth (blur) images, which can be helpful to

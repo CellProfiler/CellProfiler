@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """<b>Save Images </b> saves image or movie files.
 <hr>
 Because CellProfiler usually performs many image analysis steps on many

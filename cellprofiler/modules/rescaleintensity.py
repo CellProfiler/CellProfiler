@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>RescaleIntensity</b> changes the intensity range of an image to your
 desired specifications.
 <hr>

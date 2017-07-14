@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Measure Neurons</b> measures branching information for neurons or
 any skeleton objects with seed points.
 <hr>

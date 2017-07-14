@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
 which order.
 <hr>

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 <b>Measure Object Intensity</b> measures several intensity features for identified objects.
 <hr>

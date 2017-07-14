@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import cellprofiler.icons
 from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
 

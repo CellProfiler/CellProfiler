@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, \
     EXAMPLE_DAPI_PIC, EXAMPLE_GFP_PIC

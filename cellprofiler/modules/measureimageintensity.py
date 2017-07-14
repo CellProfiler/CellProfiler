@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Measure Image Intensity</b> measures the total intensity in an image
 by summing all of the pixel intensities (excluding masked pixels).
 <hr>

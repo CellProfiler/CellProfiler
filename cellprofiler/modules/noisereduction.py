@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 
 Noise reduction performs non-local means noise reduction.

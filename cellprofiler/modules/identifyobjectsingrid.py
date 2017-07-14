@@ -1,4 +1,6 @@
-'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid 
+# coding=utf-8
+
+'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid
 that has been defined by the <b>DefineGrid</b> module.
 <hr>
 This module identifies objects that are contained within in a grid pattern, allowing

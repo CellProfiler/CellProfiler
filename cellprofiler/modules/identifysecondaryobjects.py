@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate

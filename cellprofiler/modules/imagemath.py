@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Image Math</b> performs simple mathematical operations on image intensities.
 <hr>
 This module can perform addition, subtraction, multiplication, division, or averaging

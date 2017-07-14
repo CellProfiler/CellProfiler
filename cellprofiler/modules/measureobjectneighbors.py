@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Measure Object Neighbors</b> calculates how many neighbors each
 object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.

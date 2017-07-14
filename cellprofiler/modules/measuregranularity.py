@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Measure Granularity</b> outputs spectra of size measurements
 of the textures in the image.
 <hr>

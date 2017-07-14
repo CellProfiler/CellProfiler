@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """<b>Measure Object Intensity Distribution</b> measures the distribution
 of intensities within each object.
 <hr>

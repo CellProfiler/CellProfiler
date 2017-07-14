@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>

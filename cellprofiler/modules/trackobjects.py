@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
 
 TM_OVERLAP = 'Overlap'

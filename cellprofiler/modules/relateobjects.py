@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 <b>Relate Objects</b> assigns relationships; all objects (e.g. speckles) within a parent object (e.g. nucleus) become
 its children.

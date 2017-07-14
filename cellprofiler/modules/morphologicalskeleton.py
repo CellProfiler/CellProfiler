@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 
 Morphological skeleton thins an image into a single-pixel wide skeleton.

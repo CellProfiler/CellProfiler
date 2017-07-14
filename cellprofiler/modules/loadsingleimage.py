@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """<b>Load Single Image</b> loads a single image for use in all image cycles.
 <hr>
 <p>This module tells CellProfiler where to retrieve a single image and gives the image a

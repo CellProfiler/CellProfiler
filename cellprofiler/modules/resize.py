@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """<b>Resize</b> resizes images (changes their resolution).
 <hr>
 Images are resized (made smaller or larger) based on user input. You

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Measure Image Quality</b> measures features that indicate image quality.
 <hr>
 This module can collect measurements indicating possible image abberations,

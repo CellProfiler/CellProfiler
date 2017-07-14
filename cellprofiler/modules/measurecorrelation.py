@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>Measure Correlation</b> measures the colocalization and correlation between intensities in different images (e.g., different color channels) on a pixel-by-pixel basis, within identified
 objects or across an entire image.
 <hr>

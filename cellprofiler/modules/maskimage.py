@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """<b>Mask Image</b> hides certain portions of an image (based on previously identified
 objects or a binary image) so they are ignored by subsequent mask-respecting modules
 in the pipeline.

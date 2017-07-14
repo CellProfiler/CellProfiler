@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 <b>Overlay Outlines</b> places outlines produced by an <b>Identify</b> module over a desired image.
 <hr>

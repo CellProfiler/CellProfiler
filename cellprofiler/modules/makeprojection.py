@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
 
 __doc__ = '''

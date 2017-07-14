@@ -1,4 +1,7 @@
-'''<b>Tile</b> tiles images together to form large montage images.
+# coding=utf-8
+
+'''
+<b>Tile</b> tiles images together to form large montage images.
 <hr>
 This module allows more than one image to be placed next to each other in a
 grid layout you specify. It might be helpful, for example, to place images adjacent to

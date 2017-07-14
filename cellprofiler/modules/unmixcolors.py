@@ -1,4 +1,7 @@
-'''<b>Unmix Colors</b> creates separate images per dye stain for histologically
+# coding=utf-8
+
+'''
+<b>Unmix Colors</b> creates separate images per dye stain for histologically
 stained images.
 <hr>
 This module creates separate grayscale images from a color image stained

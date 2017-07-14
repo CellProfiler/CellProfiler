@@ -1,3 +1,5 @@
+# coding=utf-8
+
 '''<b>MergeOutputFiles</b> merges several output .mat files into one.
 <hr>
 This data tool lets you collect the output .mat files from several runs, for instance,

@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+
 """
 <b>Morph</b> performs low-level morphological operations on binary or grayscale images
 <hr>

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 
 <p>The <strong>template matching</strong> module uses <a href="https://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation">normalized cross-correlation</a> to match a template to a single-channel two-or-three dimensional image or multi-channel two-dimensional image. The output of the module is an image where each pixel corresponds to the <a href="https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient">Pearson product-moment correlation coefficient</a> between the image and the template.</p>

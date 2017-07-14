@@ -1,19 +1,22 @@
 # coding=utf-8
 
 """
-<b>Identify Objects Manually</b> allows you to identify objects
-in an image by hand rather than automatically.
-<hr>
-This module lets you outline the objects in an image using the mouse. The
-user interface has several mouse tools:<br>
-<ul><li><i>Outline:</i> Lets you draw an outline around an
-object. Press the left mouse button at the start of the outline and draw
-the outline around your object. The tool will close your outline when
-you release the left mouse button.</li>
-<li><i>Zoom in:</i> Lets you draw a rectangle and zoom the
-display to within that rectangle.</li>
-<li><i>Zoom out:</i> Reverses the effect of the last zoom-in.</li>
-<li><i>Erase:</i> Erases an object if you click on it.</li></ul>
+**Identify Objects Manually** allows you to identify objects in an image
+by hand rather than automatically.
+
+--------------
+
+| This module lets you outline the objects in an image using the mouse.
+  The user interface has several mouse tools:
+
+-  *Outline:* Lets you draw an outline around an object. Press the left
+   mouse button at the start of the outline and draw the outline around
+   your object. The tool will close your outline when you release the
+   left mouse button.
+-  *Zoom in:* Lets you draw a rectangle and zoom the display to within
+   that rectangle.
+-  *Zoom out:* Reverses the effect of the last zoom-in.
+-  *Erase:* Erases an object if you click on it.
 """
 
 import numpy as np

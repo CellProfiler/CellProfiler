@@ -1,42 +1,47 @@
 # coding=utf-8
 
 """
-<b>IdentifyDeadWorms</b> identifies dead worms by their shape.
-<hr>
-Dead <i>C. elegans</i> worms most often have a straight shape in an image whereas
-live worms assume a sinusoidal shape. This module identifies dead worms
-by fitting a straight shape to a binary image at many different angles
-to identify the regions where the shape could fit. Each placement point
-has a x and y location and an angle associated with the fitted shape's
-placement. Conceptually, these can be visualized in three dimensions with
-the z direction being the angle (and with the angle, 0, being adjacent to
-the largest angle as well as the smallest angle greater than zero). The
-module labels the resulting 3-D volume. It records the X, Y and angle of
-the centers of each of the found objects and creates objects by collapsing
-the 3-D volume to 2-D. These objects can then be used as seeds for
-<b>IdentifySecondaryObjects</b>.
+**IdentifyDeadWorms** identifies dead worms by their shape.
 
-<p><b>IdentifyDeadWorms</b> fits a diamond shape to the image. The shape is
+--------------
+
+Dead *C. elegans* worms most often have a straight shape in an image
+whereas live worms assume a sinusoidal shape. This module identifies
+dead worms by fitting a straight shape to a binary image at many
+different angles to identify the regions where the shape could fit. Each
+placement point has a x and y location and an angle associated with the
+fitted shape’s placement. Conceptually, these can be visualized in three
+dimensions with the z direction being the angle (and with the angle, 0,
+being adjacent to the largest angle as well as the smallest angle
+greater than zero). The module labels the resulting 3-D volume. It
+records the X, Y and angle of the centers of each of the found objects
+and creates objects by collapsing the 3-D volume to 2-D. These objects
+can then be used as seeds for **IdentifySecondaryObjects**.
+
+**IdentifyDeadWorms** fits a diamond shape to the image. The shape is
 defined by its width and length. The length is the distance in pixels
-along the long axis of the diamond and should be less than the length
-of the shortest dead worm to be detected. The width is the distance
-in pixels along the short axis of the diamond and should be less than
-the width of the worm.</p>
+along the long axis of the diamond and should be less than the length of
+the shortest dead worm to be detected. The width is the distance in
+pixels along the short axis of the diamond and should be less than the
+width of the worm.
 
-<h4>References</h4>
-<ul>
-<li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
-<i>Bioinformatics</i>, 24(2):234-42.<a href="http://dx.doi.org/10.1093/bioinformatics/btm569">(link)</a></li>
-<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ,
-Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
-Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
-<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.
-<a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
-</ul>
+References
+^^^^^^^^^^
 
-<p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
-Toolbox</a> page for sample images and pipelines, as well
-as video tutorials.</p>
+-  Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening
+   *Caenorhabditis elegans* images." *Bioinformatics*,
+   24(2):234-42.\ `(link)`_
+-  Wählby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O’Rourke
+   EJ, Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P,
+   Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
+   for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
+   714-716. `(link) <http://dx.doi.org/10.1038/nmeth.1984>`__
+
+See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
+well as video tutorials.
+
+.. _(link): http://dx.doi.org/10.1093/bioinformatics/btm569
+.. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
 import cellprofiler.measurement

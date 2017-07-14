@@ -1,93 +1,151 @@
 # coding=utf-8
 
 """
-<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using objects identified by another module
-(e.g., nuclei) as a starting point.
-<hr>
-<h4>What is a secondary object?</h4>In CellProfiler, we use the term <i>object</i> as a generic term to refer to an
-identifed feature in an image, usually a cellular subcompartment of some kind (for example, nuclei, cells, colonies,
-worms). We define an object as <i>secondary</i> when it can be found in an image by using another cellular feature as a
-reference for guiding detection.
-<p>For densely-packed cells (such as those in a confluent monolayer), determining the cell borders using a cell body
-stain can be quite difficult since they often have irregular intensity patterns and are lower-contrast with more
-diffuse staining. In addition, cells often touch their neighbors making it harder to delineate the cell borders. It is
-often easier to identify an organelle which is well separated spatially (such as the nucleus) as an object first and
-then use that object to guide the detection of the cell borders. See the <b>IdentifyPrimaryObjects</b> module for
-details on how to identify a primary object.</p>In order to identify the edges of secondary objects, this module
+**Identify Secondary Objects** identifies objects (e.g., cell edges)
+using objects identified by another module (e.g., nuclei) as a starting
+point.
+
+--------------
+
+What is a secondary object?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In CellProfiler, we use the term *object* as a generic term to refer to
+an identifed feature in an image, usually a cellular subcompartment of
+some kind (for example, nuclei, cells, colonies, worms). We define an
+object as *secondary* when it can be found in an image by using another
+cellular feature as a reference for guiding detection.
+
+For densely-packed cells (such as those in a confluent monolayer),
+determining the cell borders using a cell body stain can be quite
+difficult since they often have irregular intensity patterns and are
+lower-contrast with more diffuse staining. In addition, cells often
+touch their neighbors making it harder to delineate the cell borders. It
+is often easier to identify an organelle which is well separated
+spatially (such as the nucleus) as an object first and then use that
+object to guide the detection of the cell borders. See the
+**IdentifyPrimaryObjects** module for details on how to identify a
+primary object.
+
+In order to identify the edges of secondary objects, this module
 performs two tasks:
-<ol>
-    <li>Finds the dividing lines between secondary objects which touch each other.</li>
-    <li>Finds the dividing lines between the secondary objects and the background of the image. In most cases, this is
-    done by thresholding the image stained for the secondary objects.</li>
-</ol>
-<h4>What do I need as input?</h4>This module identifies secondary objects based on two types of input:
-<ol>
-    <li>An <i>object</i> (e.g., nuclei) identified from a prior module. These are typically produced by an
-    <b>IdentifyPrimaryObjects</b> module, but any object produced by another module may be selected for this
-    purpose.</li>
-    <li>An <i>image</i> highlighting the image features defining the cell edges. This is typically a fluorescent stain
-    for the cell body, membrane or cytoskeleton (e.g., phalloidin staining for actin). However, any image which
-    produces these features can be used for this purpose. For example, an image processing module might be used to
-    transform a brightfield image into one which captures the characteristics of a cell body flourescent stain.</li>
-</ol>
-<h4>What do the settings mean?</h4>See below for help on the individual settings. The following icons are used to call
-attention to key items:
-<ul>
-    <li><img src="memory:thumb-up.png">&nbsp;Our recommendation or example use case for which a particular
-    setting is best used.</li>
-    <li><img src="memory:thumb-down.png">&nbsp;Indicates a condition under which a particular setting may not
-    work well.</li>
-    <li><img src="memory:gear.png">&nbsp;Technical note. Provides more detailed information on the setting,
-    if interested.</li>
-</ul>
-<h4>What do I get as output?</h4>A set of secondary objects are produced by this module, which can be used in
-downstream modules for measurement purposes or other operations. Because each primary object is used as the starting
-point for producing a corresponding secondary object, keep in mind the following points:
-<ul>
-    <li>The primary object will always be completely contained within a secondary object. For example, nuclei are
-    completely enclosed within identified cells stained for actin.</li>
-    <li>There will always be at most one secondary object for each primary object.</li>
-</ul>See the section <a href="#Available_measurements">"Available measurements"</a> below for the measurements that are
-produced by this module. Once the module has finished processing, the module display window will show the following
-panels:
-<ul>
-    <li><i>Upper left:</i> The raw, original image.</li>
-    <li><i>Upper right:</i> The identified objects shown as a color image where connected pixels that belong to the
-    same object are assigned the same color (<i>label image</i>). It is important to note that assigned colors are
-    arbitrary; they are used simply to help you distingush the various objects.</li>
-    <li>
-        <i>Lower left:</i> The raw image overlaid with the colored outlines of the identified secondary objects. The
-        objects are shown with the following colors:
-        <ul>
-            <li>Magenta: Secondary objects</li>
-            <li>Green: Primary objects</li>
-        </ul>If you need to change the color defaults, you can make adjustments in <i>File &gt; Preferences</i>.
-    </li>
-    <li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as those calculated by
-    the module in order to produce the objects shown.</li>
-</ul><a id="Available_measurements" name="Available_measurements">
-<h4>Available measurements</h4><b>Image measurements:</b>
-<ul>
-    <li><i>Count:</i> The number of secondary objects identified.</li>
-    <li><i>OriginalThreshold:</i> The global threshold for the image.</li>
-    <li><i>FinalThreshold:</i> For the global threshold methods, this value is the same as <i>OriginalThreshold</i>.
-    For the adaptive or per-object methods, this value is the mean of the local thresholds.</li>
-    <li><i>WeightedVariance:</i> The sum of the log-transformed variances of the foreground and background pixels,
-    weighted by the number of pixels in each distribution.</li>
-    <li><i>SumOfEntropies:</i> The sum of entropies computed from the foreground and background distributions.</li>
-</ul><b>Object measurements:</b>
-<ul>
-    <li><i>Parent:</i> The identity of the primary object associated with each secondary object.</li>
-    <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the identified secondary
-    objects.</li>
-</ul>
-<h4>Technical notes</h4>The <i>Propagation</i> algorithm is the default approach for secondary object creation,
-creating each primary object as a "seed" guided by the input image and limited to the foreground region as determined
-by the chosen thresholding method. &lambda; is a regularization parameter; see the help for the setting for more
-details. Propagation of secondary object labels is by the shortest path to an adjacent primary object from the starting
-("seeding") primary object. The seed-to-pixel distances are calculated as the sum of absolute differences in a 3x3
-(8-connected) image neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
-<p>See also the other <b>Identify</b> modules.</p></a>
+
+#. Finds the dividing lines between secondary objects which touch each
+   other.
+#. Finds the dividing lines between the secondary objects and the
+   background of the image. In most cases, this is done by thresholding
+   the image stained for the secondary objects.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+This module identifies secondary objects based on two types of input:
+
+#. An *object* (e.g., nuclei) identified from a prior module. These are
+   typically produced by an **IdentifyPrimaryObjects** module, but any
+   object produced by another module may be selected for this purpose.
+#. An *image* highlighting the image features defining the cell edges.
+   This is typically a fluorescent stain for the cell body, membrane or
+   cytoskeleton (e.g., phalloidin staining for actin). However, any
+   image which produces these features can be used for this purpose. For
+   example, an image processing module might be used to transform a
+   brightfield image into one which captures the characteristics of a
+   cell body flourescent stain.
+
+What do the settings mean?
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See below for help on the individual settings. The following icons are
+used to call attention to key items:
+
+-  |image0| Our recommendation or example use case for which a
+   particular setting is best used.
+-  |image1| Indicates a condition under which a particular setting may
+   not work well.
+-  |image2| Technical note. Provides more detailed information on the
+   setting, if interested.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of secondary objects are produced by this module, which can be
+used in downstream modules for measurement purposes or other operations.
+Because each primary object is used as the starting point for producing
+a corresponding secondary object, keep in mind the following points:
+
+-  The primary object will always be completely contained within a
+   secondary object. For example, nuclei are completely enclosed within
+   identified cells stained for actin.
+-  There will always be at most one secondary object for each primary
+   object.
+
+See the section `“Available measurements”`_ below for the measurements
+that are produced by this module. Once the module has finished
+processing, the module display window will show the following panels:
+
+-  *Upper left:* The raw, original image.
+-  *Upper right:* The identified objects shown as a color image where
+   connected pixels that belong to the same object are assigned the same
+   color (*label image*). It is important to note that assigned colors
+   are arbitrary; they are used simply to help you distingush the
+   various objects.
+-  *Lower left:* The raw image overlaid with the colored outlines of the
+   identified secondary objects. The objects are shown with the
+   following colors:
+
+   -  Magenta: Secondary objects
+   -  Green: Primary objects
+
+   If you need to change the color defaults, you can make adjustments in
+   *File > Preferences*.
+-  *Lower right:* A table showing some of the settings selected by the
+   user, as well as those calculated by the module in order to produce
+   the objects shown.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Image measurements:**
+
+-  *Count:* The number of secondary objects identified.
+-  *OriginalThreshold:* The global threshold for the image.
+-  *FinalThreshold:* For the global threshold methods, this value is the
+   same as *OriginalThreshold*. For the adaptive or per-object methods,
+   this value is the mean of the local thresholds.
+-  *WeightedVariance:* The sum of the log-transformed variances of the
+   foreground and background pixels, weighted by the number of pixels in
+   each distribution.
+-  *SumOfEntropies:* The sum of entropies computed from the foreground
+   and background distributions.
+
+**Object measurements:**
+
+-  *Parent:* The identity of the primary object associated with each
+   secondary object.
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+   of mass of the identified secondary objects.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+The *Propagation* algorithm is the default approach for secondary object
+creation, creating each primary object as a “seed” guided by the input
+image and limited to the foreground region as determined by the chosen
+thresholding method. λ is a regularization parameter; see the help for
+the setting for more details. Propagation of secondary object labels is
+by the shortest path to an adjacent primary object from the starting
+(“seeding”) primary object. The seed-to-pixel distances are calculated
+as the sum of absolute differences in a 3x3 (8-connected) image
+neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
+λ\ :sup:`2`).
+
+See also the other **Identify** modules.
+
+.. _“Available measurements”: #Available_measurements
+
+.. |image0| image:: memory:thumb-up.png
+.. |image1| image:: memory:thumb-down.png
+.. |image2| image:: memory:gear.png
 """
 
 import centrosome.cpmorphology

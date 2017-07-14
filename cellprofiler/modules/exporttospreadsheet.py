@@ -1,51 +1,71 @@
 # coding=utf-8
 
 """
-<b>Export To Spreadsheet</b> exports measurements into one or more files that can be
-opened in Excel or other spreadsheet programs.
-<hr>
+**Export To Spreadsheet** exports measurements into one or more files
+that can be opened in Excel or other spreadsheet programs.
+
+--------------
+
 This module will convert the measurements to a comma-, tab-, or other
-character-delimited text format and
-save them to the hard drive in one or several files, as requested.
-<h2>Using metadata tags for output</h2>
-<b>ExportToSpreadsheet</b> can write out separate files for groups of images based
-on their metadata tags. This is controlled by the directory and file names
-that you enter. For instance, you might have applied two treatments
-to each of your samples and labeled them with the metadata names "Treatment1"
-and "Treatment2", and you might want to create separate files for each
-combination of treatments, storing all measurements with a given "Treatment1"
-in separate directories. You can do this by specifying metadata tags for the folder name and
-file name:
-<ul>
-<li>Choose <i>Elsewhere...</i> or <i>Default Input/Output Folder sub-folder</i> for the output file location.</li>
-<li>Insert the metadata tag of choice into the output path. You can insert a previously defined metadata tag by either using:
-<ul><li>The insert key</li>
-<li>A right mouse button click inside the control</li>
-<li>In Windows, the Context menu key, which is between the Windows key and Ctrl key </li></ul>
-The inserted metadata tag will appear in green. To change a previously inserted metadata tag,
-navigate the cursor to just before the tag and either:
-<ul><li>Use the up and down arrows to cycle through possible values.</li>
-<li>Right-click on the tag to display and select the available values.</li></ul> In this instance,
-you would select the metadata tag "Treatment1"</li>
-<li>Uncheck "Export all measurements?"</li>
-<li>Uncheck <i>Use the object name for the file name?</i>.</li>
-<li>Using the same approach as above, select the metadata tag "Treatment2", and complete
-the filename by appending the text ".csv". </li>
-</ul>
-Here's an example table of the files that would be generated:<br><br><tt>
-<table border="1"><tr><th>Treatment1</th><th>Treatment2</th><th>Path</th></tr>
+character-delimited text format and save them to the hard drive in one
+or several files, as requested.
 
-<tr><td>1M_NaCl</td><td>20uM_DMSO</td><td>1M_NaCl/20uM_DMSO.csv</td></tr>
-<tr><td>1M_NaCl</td><td>40uM_DMSO</td><td>1M_NaCl/40uM_DMSO.csv</td></tr>
-<tr><td>2M_NaCl</td><td>20uM_DMSO</td><td>2M_NaCl/20uM_DMSO.csv</td></tr>
-<tr><td>2M_NaCl</td><td>40uM_DMSO</td><td>2M_NaCl/40uM_DMSO.csv</td></tr>\
-</table></tt>
+Using metadata tags for output
+------------------------------
 
-<h4>Available measurements</h4>
-For details on the nomenclature used by CellProfiler for the exported measurements,
-see <i>Help > General Help > How Measurements Are Named</i>.
+**ExportToSpreadsheet** can write out separate files for groups of
+images based on their metadata tags. This is controlled by the directory
+and file names that you enter. For instance, you might have applied two
+treatments to each of your samples and labeled them with the metadata
+names “Treatment1” and “Treatment2”, and you might want to create
+separate files for each combination of treatments, storing all
+measurements with a given “Treatment1” in separate directories. You can
+do this by specifying metadata tags for the folder name and file name:
 
-See also <b>ExportToDatabase</b>.
+-  Choose *Elsewhere…* or *Default Input/Output Folder sub-folder* for
+   the output file location.
+-  Insert the metadata tag of choice into the output path. You can
+   insert a previously defined metadata tag by either using:
+
+   -  The insert key
+   -  A right mouse button click inside the control
+   -  In Windows, the Context menu key, which is between the Windows key
+      and Ctrl key
+
+   The inserted metadata tag will appear in green. To change a
+   previously inserted metadata tag, navigate the cursor to just before
+   the tag and either:
+
+   -  Use the up and down arrows to cycle through possible values.
+   -  Right-click on the tag to display and select the available values.
+
+   In this instance, you would select the metadata tag “Treatment1”
+-  Uncheck “Export all measurements?”
+-  Uncheck *Use the object name for the file name?*.
+-  Using the same approach as above, select the metadata tag
+   “Treatment2”, and complete the filename by appending the text “.csv”.
+
+| Here’s an example table of the files that would be generated:
+| ````\\
+
++--------------+--------------+---------------------------+
+| Treatment1   | Treatment2   | Path                      |
++==============+==============+===========================+
+| 1M\_NaCl     | 20uM\_DMSO   | 1M\_NaCl/20uM\_DMSO.csv   |
++--------------+--------------+---------------------------+
+| 1M\_NaCl     | 40uM\_DMSO   | 1M\_NaCl/40uM\_DMSO.csv   |
++--------------+--------------+---------------------------+
+| 2M\_NaCl     | 20uM\_DMSO   | 2M\_NaCl/20uM\_DMSO.csv   |
++--------------+--------------+---------------------------+
+| 2M\_NaCl     | 40uM\_DMSO   | 2M\_NaCl/40uM\_DMSO.csv   |
++--------------+--------------+---------------------------+
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+For details on the nomenclature used by CellProfiler for the exported
+measurements, see *Help > General Help > How Measurements Are Named*.
+See also **ExportToDatabase**.
 """
 
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF

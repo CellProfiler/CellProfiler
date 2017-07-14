@@ -1,10 +1,8 @@
 # coding=utf-8
 
 """
-
 Gamma correction is a non-linear operation used to encode and decode luminance
 values in images.
-
 """
 
 import cellprofiler.module

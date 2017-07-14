@@ -1,11 +1,14 @@
 # coding=utf-8
 
-'''<b>Smooth</b> smooths (i.e., blurs) images.
-<hr>
+"""
+**Smooth** smooths (i.e., blurs) images.
+
+--------------
+
 This module allows you to smooth (blur) images, which can be helpful to
-remove artifacts of a particular size.
-Note that smoothing can be a time-consuming process.
-'''
+remove artifacts of a particular size. Note that smoothing can be a
+time-consuming process.
+"""
 
 import numpy as np
 import scipy.ndimage as scind

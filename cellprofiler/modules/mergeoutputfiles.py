@@ -1,50 +1,47 @@
 # coding=utf-8
 
-'''<b>MergeOutputFiles</b> merges several output .mat files into one.
-<hr>
-This data tool lets you collect the output .mat files from several runs, for instance,
-as might be created by running CellProfiler in batch mode.
+"""
+**MergeOutputFiles** merges several output .mat files into one.
 
-<p><b>MergeOutputFiles</b> is a pure data tool; <i>you cannot use it as a module</i>,
-and it will generate an error if you try to do so. To use it as a data tool,
-choose it from the <i>Data Tools</i> menu to bring up the <b>MergeOutputFiles</b> dialog.</p>
+--------------
 
-<p>The dialog has the following parts:
-<ul>
-<li><i>Destination file:</i> This is the name of the file that will be
-created. The file will contain all merged input data files in MATLAB format.</li>
-<li><i>File list:</i> The file list is the box with the columns, "Folder" and
-"File". It will be empty until you add files using the "Add..." button.
-Measurement files are written out to the destination file in the order they
-appear in this list.
-You can select multiple files in this box to move them up or down or to
-remove them.</li>
-<li><i>Add button:</i> Brings up a file chooser when you press
-it. You can select multiple files from the file chooser and they will be
-added in alphabetical order to the bottom of the current list of files.</li>
-<li><i>Remove button:</i> Removes all currently selected
-files from the list.</li>
-<li><i>Up button:</i> Moves the currently selected files up in
-the list.</li>
-<li><i>Down button:</i> Mves the currently selected files
-down in the list.</li>
-<li><i>OK button:</i>Accepts the file list and writes it to
-the output.</li>
-<li><i>Cancel button:</i> Closes the dialog without
-performing any operation.</li>
-</ul>
-</p>
+This data tool lets you collect the output .mat files from several runs,
+for instance, as might be created by running CellProfiler in batch mode.
 
-<p>Once merged, this output file will be compatible with other data tools.
-Output files can be quite large, so prior to merging,
-be sure that the total size of the merged output file is of a reasonable
-size to be opened on your computer (based on the amount of memory
-available on your computer). It may be preferable instead to import data
-from individual output files directly into a database using <b>ExportDatabase</b>
-as a data tool.</p>
+**MergeOutputFiles** is a pure data tool; *you cannot use it as a
+module*, and it will generate an error if you try to do so. To use it as
+a data tool, choose it from the *Data Tools* menu to bring up the
+**MergeOutputFiles** dialog.
 
-<p>See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.</p>
-'''
+The dialog has the following parts:
+
+-  *Destination file:* This is the name of the file that will be
+   created. The file will contain all merged input data files in MATLAB
+   format.
+-  *File list:* The file list is the box with the columns, “Folder” and
+   “File”. It will be empty until you add files using the “Add…” button.
+   Measurement files are written out to the destination file in the
+   order they appear in this list. You can select multiple files in this
+   box to move them up or down or to remove them.
+-  *Add button:* Brings up a file chooser when you press it. You can
+   select multiple files from the file chooser and they will be added in
+   alphabetical order to the bottom of the current list of files.
+-  *Remove button:* Removes all currently selected files from the list.
+-  *Up button:* Moves the currently selected files up in the list.
+-  *Down button:* Mves the currently selected files down in the list.
+-  *OK button:*\ Accepts the file list and writes it to the output.
+-  *Cancel button:* Closes the dialog without performing any operation.
+
+Once merged, this output file will be compatible with other data tools.
+Output files can be quite large, so prior to merging, be sure that the
+total size of the merged output file is of a reasonable size to be
+opened on your computer (based on the amount of memory available on your
+computer). It may be preferable instead to import data from individual
+output files directly into a database using **ExportDatabase** as a data
+tool.
+
+See also **CreateBatchFiles**, **ExportToDatabase**.
+"""
 
 import os
 import sys

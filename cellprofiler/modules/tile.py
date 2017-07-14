@@ -1,40 +1,50 @@
 # coding=utf-8
 
-'''
-<b>Tile</b> tiles images together to form large montage images.
-<hr>
-This module allows more than one image to be placed next to each other in a
-grid layout you specify. It might be helpful, for example, to place images adjacent to
-each other when multiple fields of view have been imaged for the same sample.
-Images can be tiled either across cycles (multiple fields of view, for example)
-or within a cycle (multiple channels of the same field of view, for example).
-<p>
-Tiling images to create a montage with this module generates an
-image that is roughly the size of all the images' sizes added together.  For large
-numbers of images,
-this may cause memory errors, which might be avoided by the following suggestions:
-<ul>
-<li>Resize the images to a fraction of their original size, using the <b>Resize</b>
-module prior to this module in the pipeline.</li>
-<li>Rescale the images to 8-bit using the <b>RescaleIntensity</b> module, which
-diminished image quality by decreasing the number of graylevels in the image (that is, bit depth)
-but also decreases the size of the image. </li>
-<li>
-Place this module prior to the <b>Tile</b> module (and maybe also afterwards) and
-set it to retain only those images that are needed for downstream modules. </li>
-</ul>
+"""
+**Tile** tiles images together to form large montage images.
 
-<p>Please also note that this module does not perform <i>image stitching</i>
-(i.e., intelligent adjustment of the alignment between adjacent images). For
-image stitching, you may find the following list of software packages useful:
-<ul>
-<li><a href="http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm">Photomerge Feature in Photoshop CS</a></li>
-<li><a href="http://www.ptgui.com/">PTGui</a></li>
-<li><a href="http://cvlab.epfl.ch/~brown/autostitch/autostitch.html">Autostitch</a></li>
-<li><a href="http://bigwww.epfl.ch/thevenaz/mosaicj/">ImageJ with the MosaicJ plugin</a></li>
-</ul>
-Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm">here</a></p>
-'''
+--------------
+
+This module allows more than one image to be placed next to each other
+in a grid layout you specify. It might be helpful, for example, to place
+images adjacent to each other when multiple fields of view have been
+imaged for the same sample. Images can be tiled either across cycles
+(multiple fields of view, for example) or within a cycle (multiple
+channels of the same field of view, for example).
+
+Tiling images to create a montage with this module generates an image
+that is roughly the size of all the images’ sizes added together. For
+large numbers of images, this may cause memory errors, which might be
+avoided by the following suggestions:
+
+-  Resize the images to a fraction of their original size, using the
+   **Resize** module prior to this module in the pipeline.
+-  Rescale the images to 8-bit using the **RescaleIntensity** module,
+   which diminished image quality by decreasing the number of graylevels
+   in the image (that is, bit depth) but also decreases the size of the
+   image.
+-  Place this module prior to the **Tile** module (and maybe also
+   afterwards) and set it to retain only those images that are needed
+   for downstream modules.
+
+Please also note that this module does not perform *image stitching*
+(i.e., intelligent adjustment of the alignment between adjacent images).
+For image stitching, you may find the following list of software
+packages useful:
+
+-  `Photomerge Feature in Photoshop CS`_
+-  `PTGui`_
+-  `Autostitch`_
+-  `ImageJ with the MosaicJ plugin`_
+
+Other packages are referenced `here`_
+
+.. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
+.. _PTGui: http://www.ptgui.com/
+.. _Autostitch: http://cvlab.epfl.ch/~brown/autostitch/autostitch.html
+.. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/
+.. _here: http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm
+"""
 
 import logging
 import sys

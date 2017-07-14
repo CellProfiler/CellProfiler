@@ -1,9 +1,8 @@
 # coding=utf-8
 
 """
-
-<strong>Opening</strong> is the dilation of the erosion of an image. It’s used to remove salt noise.
-
+**Opening** is the dilation of the erosion of an image. It’s used to
+remove salt noise.
 """
 
 import numpy

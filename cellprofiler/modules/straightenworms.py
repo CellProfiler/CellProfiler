@@ -1,74 +1,78 @@
 # coding=utf-8
 
-'''<b>StraightenWorms</b> straightens untangled worms.
-<hr>
-<b>StraightenWorms</b> uses the objects produced by <b>UntangleWorms</b>
-to create images and objects of straight worms from the angles and control
-points as computed by <b>UntangleWorms</b>. The resulting images can then
+"""
+**StraightenWorms** straightens untangled worms.
+
+--------------
+
+**StraightenWorms** uses the objects produced by **UntangleWorms** to
+create images and objects of straight worms from the angles and control
+points as computed by **UntangleWorms**. The resulting images can then
 be uniformly analyzed to find features that correlate with position in
 an ideal representation of the worm, such as the head or gut.
+**StraightenWorms** works by calculating a transform on the image that
+translates points in the image to points on the ideal worm.
+**UntangleWorms** idealizes a worm as a series of control points that
+define the worm’s shape and length. The training set contains
+measurements of the width of an ideal worm at each control point.
+Together, these can be used to reconstruct the worm’s shape and
+correlate between the worm’s location and points on the body of an ideal
+worm. **StraightenWorms** produces objects representing the straight
+worms and images representing the intensity values of a source image
+mapped onto the straight worms. The objects and images can then be used
+to compute measurements using any of the object measurement modules, for
+instance, **MeasureTexture**. The module can be configured to make
+intensity measurements on parts of the worm, dividing the worm up into
+pieces of equal width and/or height. Measurements are made longitudally
+in stripes from head to tail and transversely in segments across the
+width of the worm. Longitudinal stripes are numbered from left to right
+and transverse segments are numbered from top to bottom. The module will
+divide the worm into a checkerboard of sections if configured to measure
+more than one longitudinal stripe and transverse segment. These are
+numbered by longitudinal stripe number, then transverse segment number.
+For instance, “Worm\_MeanIntensity\_GFP\_L2of3\_T1of4”, is a measurement
+of the mean GFP intensity of the center stripe (second of 3 stripes) of
+the topmost band (first of four bands). Measurements of longitudinal
+stripes are designated as “T1of1” indicating that the whole worm is one
+transverse segment. Likewise measurements of transverse segments are
+designated as “L1of1” indicating that there is only one longitudinal
+stripe. Both mean intensity and standard deviation of intensity are
+measured per worm sub-area. While **StraightenWorms** can straighten a
+color image, the module needs a grayscale image to make its intensity
+measurements. For a color image, the red, green and blue channels are
+averaged to yield a grayscale image. The intensity measurements are then
+made on that grayscale image.
 
-<b>StraightenWorms</b> works by calculating a transform on the image that
-translates points in the image to points on the ideal worm. <b>UntangleWorms</b>
-idealizes a worm as a series of control points that define the worm's shape
-and length. The training set contains measurements of the width of an ideal
-worm at each control point. Together, these can be used to reconstruct the
-worm's shape and correlate between the worm's location and points on
-the body of an ideal worm.
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<b>StraightenWorms</b> produces objects representing
-the straight worms and images representing the intensity values of a source
-image mapped onto the straight worms. The objects and images can then be
-used to compute measurements using any of the object measurement modules,
-for instance, <b>MeasureTexture</b>.
+**Object measurements:**
 
-The module can be configured to make intensity measurements on parts of the
-worm, dividing the worm up into pieces of equal width and/or height.
-Measurements are made longitudally in stripes from head to tail and transversely
-in segments across the width of the worm. Longitudinal stripes are numbered
-from left to right and transverse segments are numbered from top to bottom.
-The module will divide the worm into a checkerboard of sections if configured
-to measure more than one longitudinal stripe and transverse segment. These
-are numbered by longitudinal stripe number, then transverse segment number. For
-instance, "Worm_MeanIntensity_GFP_L2of3_T1of4", is a measurement of the
-mean GFP intensity of the center stripe (second of 3 stripes) of the topmost band
-(first of four bands). Measurements of longitudinal stripes are designated as
-"T1of1" indicating that the whole worm is one transverse segment. Likewise
-measurements of transverse segments are designated as "L1of1" indicating that
-there is only one longitudinal stripe. Both mean intensity and standard
-deviation of intensity are measured per worm sub-area.
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the
+   primary object centroids. The centroid is calculated as the center of
+   mass of the binary representation of the object.
+-  *Worm\_MeanIntensity:* The average pixel intensity within a worm.
+-  *Worm\_StdIntensity:* The standard deviation of the pixel intensities
+   within a worm.
 
-While <b>StraightenWorms</b> can straighten a color image, the module needs a
-grayscale image to make its intensity measurements. For a color image, the
-red, green and blue channels are averaged to yield a grayscale image. The
-intensity measurements are then made on that grayscale image.
+References
+^^^^^^^^^^
 
-<h4>Available measurements</h4>
+-  Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening
+   *Caenorhabditis elegans* images." *Bioinformatics*,
+   24(2):234-42.\ `(link)`_
+-  Wählby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O’Rourke
+   EJ, Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P,
+   Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
+   for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
+   714-716. `(link) <http://dx.doi.org/10.1038/nmeth.1984>`__
 
-<b>Object measurements:</b>
-<ul>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary
-object centroids. The centroid is calculated as the center of mass of the binary
-representation of the object.</li>
-<li><i>Worm_MeanIntensity:</i> The average pixel intensity within a worm.</li>
-<li><i>Worm_StdIntensity:</i> The standard deviation of the pixel intensities within a worm.</li>
-</ul>
+See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
+well as video tutorials.
 
-<h4>References</h4>
-<ul>
-<li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
-<i>Bioinformatics</i>, 24(2):234-42.<a href="http://dx.doi.org/10.1093/bioinformatics/btm569">(link)</a></li>
-<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ,
-Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
-Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
-<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.
-<a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
-</ul>
-
-<p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
-Toolbox</a> page for sample images and pipelines, as well
-as video tutorials.</p>
-'''
+.. _(link): http://dx.doi.org/10.1093/bioinformatics/btm569
+.. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
+"""
 
 import os
 

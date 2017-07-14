@@ -1,9 +1,7 @@
 # coding=utf-8
 
 """
-
 Remove holes
-
 """
 
 import numpy

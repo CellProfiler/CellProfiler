@@ -1,10 +1,10 @@
 # coding=utf-8
 
 """
+Perform a black or white top-hat transform on grayscale pixel data.
 
-<p>Perform a black or white top-hat transform on grayscale pixel data.</p>
-<p>Top-hat transforms are useful for extracting small elements and details from images and volumes.</p>
-
+Top-hat transforms are useful for extracting small elements and details
+from images and volumes.
 """
 
 import skimage.morphology

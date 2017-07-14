@@ -1,11 +1,10 @@
 # coding=utf-8
 
 """
-
 Noise reduction performs non-local means noise reduction.
 
-Single-channel images can be two-or-three-dimensional and multichannel images can be two-dimensional.
-
+Single-channel images can be two-or-three-dimensional and multichannel
+images can be two-dimensional.
 """
 
 import cellprofiler.image

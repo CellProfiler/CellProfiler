@@ -1,24 +1,39 @@
 # coding=utf-8
 
 """
-<b>Relate Objects</b> assigns relationships; all objects (e.g. speckles) within a parent object (e.g. nucleus) become
-its children.
-<hr>
-This module allows you to associate <i>child</i> objects with <i>parent</i> objects. This is useful for counting the
-number of children associated with each parent, and for calculating mean measurement values for all children that are
-associated with each parent.
-<p>An object will be considered a child even if the edge is the only part touching a parent object. If an child object
-is touching multiple parent objects, the object will be assigned to the parent with maximal overlap. For an alternate
-approach to assigning parent/child relationships, consider using the <b>MaskObjects</b> module.</p>
-<h4>Available measurements</h4><b>Parent object measurements:</b>
-<ul>
-    <li><i>Count:</i> The number of child sub-objects for each parent object.</li>
-    <li><i>Mean measurements:</i> The mean of the child object measurements, calculated for each parent object.</li>
-    <li><i>Distances:</i> The distance of each child object to its respective parent.</li>
-</ul><b>Child object measurements:</b>
-<ul>
-    <li><i>Parent:</i> The label number of the parent object, as assigned by an <b>Identify</b> module.</li>
-</ul>See also: <b>ReassignObjectNumbers</b>, <b>MaskObjects</b>.
+**Relate Objects** assigns relationships; all objects (e.g. speckles)
+within a parent object (e.g. nucleus) become its children.
+
+--------------
+
+This module allows you to associate *child* objects with *parent*
+objects. This is useful for counting the number of children associated
+with each parent, and for calculating mean measurement values for all
+children that are associated with each parent.
+
+An object will be considered a child even if the edge is the only part
+touching a parent object. If an child object is touching multiple parent
+objects, the object will be assigned to the parent with maximal overlap.
+For an alternate approach to assigning parent/child relationships,
+consider using the **MaskObjects** module.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Parent object measurements:**
+
+-  *Count:* The number of child sub-objects for each parent object.
+-  *Mean measurements:* The mean of the child object measurements,
+   calculated for each parent object.
+-  *Distances:* The distance of each child object to its respective
+   parent.
+
+**Child object measurements:**
+
+-  *Parent:* The label number of the parent object, as assigned by an
+   **Identify** module.
+
+See also: **ReassignObjectNumbers**, **MaskObjects**.
 """
 
 import re

@@ -10,7 +10,11 @@ Welcome to CellProfiler's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+.. automodule:: cellprofiler.image
 
+.. autoclass:: cellprofiler.image.Image
+
+.. automodule:: cellprofiler.modules
 
 Indices and tables
 ==================

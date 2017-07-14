@@ -1,22 +1,8 @@
 # coding=utf-8
 
-import math
-
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import centrosome.threshold
-import numpy
-import scipy.ndimage
-import scipy.sparse
-import skimage.morphology
-
-import applythreshold
 import cellprofiler.gui.help
-import cellprofiler.object
-import cellprofiler.setting
 
-__doc__ = """
+"""
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images containing bright
 objects on a dark background.
 <hr>
@@ -140,6 +126,22 @@ where nuclei are the primary objects:</p>
     "protip_avoid_icon": cellprofiler.gui.help.PROTIP_AVOID_ICON,
     "tech_note_icon": cellprofiler.gui.help.TECH_NOTE_ICON
 })
+
+import math
+
+import centrosome.cpmorphology
+import centrosome.outline
+import centrosome.propagate
+import centrosome.threshold
+import numpy
+import scipy.ndimage
+import scipy.sparse
+import skimage.morphology
+
+import applythreshold
+import cellprofiler.gui.help
+import cellprofiler.object
+import cellprofiler.setting
 
 #################################################
 #

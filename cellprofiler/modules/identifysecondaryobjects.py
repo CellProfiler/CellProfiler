@@ -15,7 +15,7 @@ import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 
-__doc__ = u"""
+u"""
 <b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using objects identified by another module
 (e.g., nuclei) as a starting point.
 <hr>

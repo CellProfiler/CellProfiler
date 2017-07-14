@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 **Align** aligns images relative to each other, for example, to correct
 shifts in the optical path of a microscope in each channel of a

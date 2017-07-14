@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 **Apply Threshold** sets pixel intensities below or above a certain
 threshold to zero

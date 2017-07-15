@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Calculate Image Overlap
+=======================
+
 **Calculate Image Overlap** calculates how much overlap occurs between
 the white portions of two black and white images
 

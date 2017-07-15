@@ -3,8 +3,6 @@
 """
 **Reassign Object Numbers** renumbers previously identified objects.
 
---------------
-
 Objects and their measurements are associated with each other based on
 their object numbers (also known as *labels*). Typically, each object is
 assigned a single unique number, such that the exported measurements are

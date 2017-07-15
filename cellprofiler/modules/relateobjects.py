@@ -4,8 +4,6 @@
 **Relate Objects** assigns relationships; all objects (e.g. speckles)
 within a parent object (e.g. nucleus) become its children.
 
---------------
-
 This module allows you to associate *child* objects with *parent*
 objects. This is useful for counting the number of children associated
 with each parent, and for calculating mean measurement values for all

@@ -1,11 +1,12 @@
 # coding=utf-8
 
 """
+Calculate Statistics
+====================
+
 **Calculate Statistics** calculates measures of assay quality (V and Z’
 factors) and dose response data (EC50) for all measured features made
 from images.
-
---------------
 
 The V and Z’ factors are statistical measures of assay quality and are
 calculated for each per-image measurement and for each average

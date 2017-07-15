@@ -4,8 +4,6 @@
 **Mask Objects** removes objects outside of a specified region or
 regions.
 
---------------
-
 This module allows you to delete the objects or portions of objects that
 are outside of a region (mask) you specify. For example, after
 identifying nuclei and tissue regions in previous **Identify** modules,

@@ -5,8 +5,6 @@
 identified objects or a binary image) so they are ignored by subsequent
 mask-respecting modules in the pipeline.
 
---------------
-
 This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
 masking object or image that is selected. If using a masking image, the

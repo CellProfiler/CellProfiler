@@ -5,8 +5,6 @@
 database readable format, including an imported file with column names
 and a CellProfiler Analyst properties file, if desired.
 
---------------
-
 This module exports measurements directly to a database or to a
 SQL-compatible format. It allows you to create and import MySQL and
 associated data files into a database and gives you the option of

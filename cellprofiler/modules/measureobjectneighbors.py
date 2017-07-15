@@ -6,8 +6,6 @@ has and records various properties about the neighbors’ relationships,
 including the percentage of an object’s edge pixels that touch a
 neighbor.
 
---------------
-
 Given an image with objects identified (e.g., nuclei or cells), this
 module determines how many neighbors each object has. You can specify
 the distance within which objects should be considered neighbors, or

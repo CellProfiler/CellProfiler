@@ -3,8 +3,6 @@
 """
 **StraightenWorms** straightens untangled worms.
 
---------------
-
 **StraightenWorms** uses the objects produced by **UntangleWorms** to
 create images and objects of straight worms from the angles and control
 points as computed by **UntangleWorms**. The resulting images can then

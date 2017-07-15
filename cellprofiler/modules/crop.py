@@ -3,8 +3,6 @@
 """
 **Crop** crops or masks an image.
 
---------------
-
 This module crops images into a rectangle, ellipse, an arbitrary shape
 provided by you, the shape of object(s) identified by an **Identify**
 module, or a shape created using a previous **Crop** module in the

@@ -4,8 +4,6 @@
 **Unmix Colors** creates separate images per dye stain for
 histologically stained images.
 
---------------
-
 This module creates separate grayscale images from a color image stained
 with light-absorbing dyes. Dyes are assumed to absorb an amount of light
 in the red, green and blue channels that increases proportionally in

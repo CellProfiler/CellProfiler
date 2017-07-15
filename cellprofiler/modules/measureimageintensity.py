@@ -4,8 +4,6 @@
 **Measure Image Intensity** measures the total intensity in an image by
 summing all of the pixel intensities (excluding masked pixels).
 
---------------
-
 This module will sum all pixel values to measure the total image
 intensity. The user can measure all pixels in the image or can restrict
 the measurement to pixels within objects. If the image has a mask, only
@@ -341,4 +339,3 @@ class MeasureImageIntensity(cpm.Module):
         if variable_revision_number == 1:
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
-

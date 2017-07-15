@@ -4,8 +4,6 @@
 **Gray to Color** takes grayscale images and and produces a color image
 from them.
 
---------------
-
 This module takes grayscale images as input and assigns them to colors
 in a red, green, blue (RGB) image or a cyan, magenta, yellow, black
 (CMYK) image. Each color’s brightness can be adjusted independently by

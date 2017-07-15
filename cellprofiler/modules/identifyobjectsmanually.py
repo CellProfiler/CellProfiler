@@ -4,8 +4,6 @@
 **Identify Objects Manually** allows you to identify objects in an image
 by hand rather than automatically.
 
---------------
-
 | This module lets you outline the objects in an image using the mouse.
   The user interface has several mouse tools:
 

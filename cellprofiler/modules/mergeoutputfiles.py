@@ -3,8 +3,6 @@
 """
 **MergeOutputFiles** merges several output .mat files into one.
 
---------------
-
 This data tool lets you collect the output .mat files from several runs,
 for instance, as might be created by running CellProfiler in batch mode.
 

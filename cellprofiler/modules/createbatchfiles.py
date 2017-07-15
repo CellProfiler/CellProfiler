@@ -4,8 +4,6 @@
 **Create Batch Files** produces files that allow individual batches of
 images to be processed separately on a cluster of computers.
 
---------------
-
 This module creates files that can be submitted in parallel to a cluster
 for faster processing. It should be placed at the end of an image
 processing pipeline.

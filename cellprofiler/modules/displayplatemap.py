@@ -3,8 +3,6 @@
 """
 **Display Platemap** displays a desired measurement in a plate map view.
 
---------------
-
 **Display Platemap** is a tool for browsing image-based data laid out on
 multi-well plates common to high-throughput biological screens. The
 display window for this module shows a plate map with each well

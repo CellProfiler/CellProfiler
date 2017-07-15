@@ -1,9 +1,10 @@
 # coding=utf-8
 
 """
-The **Groups** module organizes sets of images into groups.
+Groups
+------
 
---------------
+The **Groups** module organizes sets of images into groups.
 
 Once the images have been identified with the **Images** module, have
 had metadata associated with them using the **Metadata** module, and

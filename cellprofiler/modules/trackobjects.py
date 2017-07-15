@@ -5,8 +5,6 @@
 of a series of images, so that from frame to frame each object maintains
 a unique identity in the output measurements
 
---------------
-
 This module must be placed downstream of a module that identifies
 objects (e.g., **IdentifyPrimaryObjects**). **TrackObjects** will
 associate each object with the same object in the frames before and

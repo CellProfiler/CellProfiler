@@ -4,8 +4,6 @@
 **Export To Spreadsheet** exports measurements into one or more files
 that can be opened in Excel or other spreadsheet programs.
 
---------------
-
 This module will convert the measurements to a comma-, tab-, or other
 character-delimited text format and save them to the hard drive in one
 or several files, as requested.

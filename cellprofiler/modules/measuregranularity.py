@@ -4,8 +4,6 @@
 **Measure Granularity** outputs spectra of size measurements of the
 textures in the image.
 
---------------
-
 Image granularity is a texture measurement that tries a series of
 structure elements of increasing size and outputs a spectrum of measures
 of how well these structure elements fit in the texture of the image.

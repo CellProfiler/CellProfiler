@@ -4,8 +4,6 @@
 **Image Math** performs simple mathematical operations on image
 intensities.
 
---------------
-
 This module can perform addition, subtraction, multiplication, division,
 or averaging of two or more image intensities, as well as inversion, log
 transform, or scaling by a constant for individual image intensities.

@@ -4,8 +4,6 @@
 The **Images** module specifies the location of image files to be
 analyzed by your pipeline.
 
---------------
-
 The **Images** module allows you to specify the location of files to be
 analyzed by the pipeline; setting this module correctly is the first
 step in creating a new project in CellProfiler. These files can be

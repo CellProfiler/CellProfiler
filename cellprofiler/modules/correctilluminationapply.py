@@ -5,8 +5,6 @@
 usually created by **CorrectIlluminationCalculate**, to an image in
 order to correct for uneven illumination (uneven shading).
 
---------------
-
 This module applies a previously created illumination correction
 function, either loaded by **LoadSingleImage** or created by
 **CorrectIlluminationCalculate**. This module corrects each image in the

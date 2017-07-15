@@ -4,8 +4,6 @@
 **Invert For Printing** inverts fluorescent images into
 brightfield-looking images for printing.
 
---------------
-
 This module turns a single or multi-channel immunofluorescent-stained
 image into an image that resembles a brightfield image stained with
 similarly colored stains, which generally prints better. You can operate

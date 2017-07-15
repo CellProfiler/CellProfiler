@@ -4,8 +4,6 @@
 **Enhance Edges** enhances or identifies edges in an image, which can
 improve object identification or other downstream image processing.
 
---------------
-
 This module enhances the edges (gradients) in a grayscale image. All
 methods other than Canny produce a grayscale image that can be used in
 an **Identify** module or thresholded using the **ApplyThreshold**

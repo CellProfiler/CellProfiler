@@ -5,8 +5,6 @@
 using objects identified by another module (e.g., nuclei) as a starting
 point.
 
---------------
-
 What is a secondary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

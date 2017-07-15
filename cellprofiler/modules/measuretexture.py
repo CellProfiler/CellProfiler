@@ -4,8 +4,6 @@
 **Measure Texture** measures the degree and nature of textures within
 objects (versus smoothness).
 
---------------
-
 This module measures the variations in grayscale images. An object (or
 entire image) without much texture has a smooth appearance; an object or
 image with a lot of texture will appear rough and show a wide variety of

@@ -3,8 +3,6 @@
 """
 **IdentifyDeadWorms** identifies dead worms by their shape.
 
---------------
-
 Dead *C. elegans* worms most often have a straight shape in an image
 whereas live worms assume a sinusoidal shape. This module identifies
 dead worms by fitting a straight shape to a binary image at many

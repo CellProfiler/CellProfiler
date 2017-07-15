@@ -3,8 +3,6 @@
 """
 **Display Histogram** plots a histogram of the desired measurement.
 
---------------
-
 A histogram is a plot of tabulated data frequencies (each of which is
 shown as a bar) created by binning measurement data for a set of
 objects. A two-dimensional histogram can be created using the

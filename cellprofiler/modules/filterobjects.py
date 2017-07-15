@@ -4,8 +4,6 @@
 **Filter Objects** eliminates objects based on their measurements (e.g.,
 area, shape, texture, intensity).
 
---------------
-
 This module removes selected objects based on measurements produced by
 another module (e.g., **MeasureObjectSizeShape**,
 **MeasureObjectIntensity**, **MeasureTexture**, etc). All objects that

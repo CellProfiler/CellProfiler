@@ -3,8 +3,6 @@
 """
 **Flip and rotate** flips (mirror image) and/or rotates an image
 
---------------
-
 Available measurements
 ^^^^^^^^^^^^^^^^^^^^^^
 

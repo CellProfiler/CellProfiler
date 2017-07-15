@@ -3,8 +3,6 @@
 """
 **Measure Image Quality** measures features that indicate image quality.
 
---------------
-
 This module can collect measurements indicating possible image
 abberations, e.g. blur (poor focus), intensity, saturation (i.e., the
 percentage of pixels in the image that are minimal and maximal). Details

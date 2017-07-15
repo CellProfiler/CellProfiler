@@ -1,10 +1,11 @@
 # coding=utf-8
 
 """
+CalculateMath
+=============
+
 **Calculate Math** takes measurements produced by previous modules and
 performs basic arithmetic operations.
-
---------------
 
 The arithmetic operations available in this module include addition,
 subtraction, multiplication, and division. The result can be

@@ -4,8 +4,6 @@
 **Display Density Plot** plots measurements as a two-dimensional density
 plot.
 
---------------
-
 A density plot displays the relationship between two measurements (that
 is, features) but instead of showing each data point as a dot, as in a
 scatter plot, the data points are binned into an equally-spaced grid of

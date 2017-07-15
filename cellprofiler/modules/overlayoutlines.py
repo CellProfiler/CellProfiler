@@ -4,8 +4,6 @@
 **Overlay Outlines** places outlines produced by an **Identify** module
 over a desired image.
 
---------------
-
 This module places outlines (in a special format produced by an
 **Identify** module) on any desired image (grayscale, color, or blank).
 The resulting image can be saved using the **SaveImages** module. See

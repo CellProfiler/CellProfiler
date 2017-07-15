@@ -3,8 +3,6 @@
 """
 **Tile** tiles images together to form large montage images.
 
---------------
-
 This module allows more than one image to be placed next to each other
 in a grid layout you specify. It might be helpful, for example, to place
 images adjacent to each other when multiple fields of view have been

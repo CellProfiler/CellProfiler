@@ -4,8 +4,6 @@
 **Expand Or Shrink Objects** expands or shrinks objects by a defined
 distance.
 
---------------
-
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be added or
 removed, expand objects until they are almost touching or shrink objects

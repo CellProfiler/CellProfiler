@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Closing
+=======
+
 **Closing** is the erosion of the dilation of an image. It’s used to
 remove pepper noise.
 """

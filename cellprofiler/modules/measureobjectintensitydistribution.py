@@ -4,8 +4,6 @@
 **Measure Object Intensity Distribution** measures the distribution of
 intensities within each object.
 
---------------
-
 Given an image with objects identified, this module measures the
 intensity distribution from each object’s center to its boundary within
 a user-controlled number of bins, i.e. rings.

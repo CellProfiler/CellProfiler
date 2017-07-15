@@ -4,8 +4,6 @@
 **Measure Image Area Occupied** measures the total area in an image that
 is occupied by objects.
 
---------------
-
 This module reports the sum of the areas and perimeters of the objects
 defined by one of the **Identify** modules, or the area of the
 foreground in a binary image. If the input image has a mask (for

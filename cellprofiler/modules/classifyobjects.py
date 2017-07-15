@@ -1,10 +1,11 @@
 # coding=utf-8
 
 """
+ClassifyObjects
+===============
+
 *Classify Objects** classifies objects into different classes according
 to the value of measurements you choose.
-
---------------
 
 This module classifies objects into a number of different bins according
 to the value of a measurement (e.g., by size, intensity, shape). It

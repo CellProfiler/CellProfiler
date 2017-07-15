@@ -4,8 +4,6 @@
 **Load Images** allows you to specify which images or movies are to be
 loaded and in which order.
 
---------------
-
 This module tells CellProfiler where to retrieve images and gives each
 image a meaningful name by which other modules can access it. You can
 also use **LoadImages** to extract or define the relationships between

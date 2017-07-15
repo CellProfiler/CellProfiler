@@ -5,8 +5,6 @@
 that is used to correct uneven illumination/lighting/shading or to
 reduce uneven background in images.
 
---------------
-
 This module calculates an illumination function that can either be saved
 to the hard drive for later use or immediately applied to images later
 in the pipeline. This function will correct for the uneven illumination
@@ -158,12 +156,12 @@ class CorrectIlluminationCalculate(cpm.Module):
             <ul>
             <li><i>%(YES)s:</i> Rescaling is recommended if you plan to
             use the <i>%(IC_REGULAR)s</i> method (and hence, the <i>%(DOS_DIVIDE)s</i> option in
-            <b>CorrectIlluminationApply</b>). Rescaling the illumination function to >1 ensures 
+            <b>CorrectIlluminationApply</b>). Rescaling the illumination function to >1 ensures
             that the values in your corrected image will stay between 0-1 after division. </li>
             <li><i>%(NO)s:</i> Rescaling is not recommended if you plan to use the <i>%(IC_BACKGROUND)s</i>
-            method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>.  
-            Because rescaling causes the illumination function to have values from 1 to infinity, 
-            subtracting those values from your image would cause the corrected images to be very dark, 
+            method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>.
+            Because rescaling causes the illumination function to have values from 1 to infinity,
+            subtracting those values from your image would cause the corrected images to be very dark,
             even negative.
             </li>
             <li>%(RE_MEDIAN)s<i>:</i> This option chooses the median value in the

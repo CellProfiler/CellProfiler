@@ -3,8 +3,6 @@
 """
 **Save Images** saves image or movie files.
 
---------------
-
 Because CellProfiler usually performs many image analysis steps on many
 groups of images, it does *not* save any of the resulting images to the
 hard drive unless you specifically choose to do so with the

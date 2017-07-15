@@ -4,8 +4,6 @@
 **Define Grid** produces a grid of desired specifications either
 manually, or automatically based on previously identified objects.
 
---------------
-
 This module defines the location of a grid that can be used by modules
 downstream. You can use it in combination with **IdentifyObjectsInGrid**
 to measure the size, shape, intensity and texture of each object or

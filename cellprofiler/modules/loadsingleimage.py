@@ -3,8 +3,6 @@
 """
 **Load Single Image** loads a single image for use in all image cycles.
 
---------------
-
 This module tells CellProfiler where to retrieve a single image and
 gives the image a meaningful name by which the other modules can access
 it. The module executes only the first time through the pipeline;

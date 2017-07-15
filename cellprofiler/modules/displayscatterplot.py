@@ -3,8 +3,6 @@
 """
 **Display Scatter Plot** plots the values for two measurements.
 
---------------
-
 A scatter plot displays the relationship between two measurements (that
 is, features) as a collection of points. If there are too many data
 points on the plot, you should consider using **DisplayDensityPlot**

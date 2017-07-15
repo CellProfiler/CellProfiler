@@ -6,8 +6,6 @@ between intensities in different images (e.g., different color channels)
 on a pixel-by-pixel basis, within identified objects or across an entire
 image.
 
---------------
-
 Given two or more images, this module calculates the correlation &
 colocalization (Overlap, Manders, Costes’ Automated Threshold & Rank
 Weighted Colocalization) between the pixel intensities. The correlation

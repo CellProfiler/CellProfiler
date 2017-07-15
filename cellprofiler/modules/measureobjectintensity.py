@@ -4,8 +4,6 @@
 **Measure Object Intensity** measures several intensity features for
 identified objects.
 
---------------
-
 Given an image with objects identified (e.g. nuclei or cells), this
 module extracts intensity features for each object based on one or more
 corresponding grayscale images. Measurements are recorded for each

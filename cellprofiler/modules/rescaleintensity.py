@@ -4,8 +4,6 @@
 **RescaleIntensity** changes the intensity range of an image to your
 desired specifications.
 
---------------
-
 This module lets you rescale the intensity of the input images by any of
 several methods. You should use caution when interpreting intensity and
 texture measurements derived from images that have been rescaled because

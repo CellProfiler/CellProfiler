@@ -4,8 +4,6 @@
 **Edit Objects Manually** allows you create, remove and edit objects
 previously defined.
 
---------------
-
 The interface will show the image that you selected as the guiding
 image, overlaid with colored outlines of the selected objects (or filled
 objects if you choose). This module allows you to remove or edit

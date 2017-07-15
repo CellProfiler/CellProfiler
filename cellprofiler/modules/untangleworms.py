@@ -3,8 +3,6 @@
 """
 **UntangleWorms** untangles overlapping worms.
 
---------------
-
 This module either assembles a training set of sample worms in order to
 create a worm model, or takes a binary image and the results of worm
 training and labels the worms in the image, untangling them and

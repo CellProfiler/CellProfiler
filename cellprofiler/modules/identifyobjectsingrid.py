@@ -4,8 +4,6 @@
 **Identify Objects In Grid** identifies objects within each section of a
 grid that has been defined by the **DefineGrid** module.
 
---------------
-
 This module identifies objects that are contained within in a grid
 pattern, allowing you to measure the objects using **Measure** modules.
 It requires you to have defined a grid earlier in the pipeline, using

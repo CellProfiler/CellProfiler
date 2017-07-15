@@ -1,10 +1,11 @@
 # coding=utf-8
 
 """
+ColorToGray
+===========
+
 **Color to Gray** converts an image with three color channels to a set
 of individual grayscale images.
-
---------------
 
 | This module converts RGB (Red, Green, Blue) color images to grayscale.
   All channels can be merged into one grayscale image (*Combine*), or
@@ -379,12 +380,12 @@ class ColorToGray(cpm.Module):
         figure.set_subplots(subplots)
         figure.subplot_imshow(0, 0, input_image,
                               title="Original image")
-        
+
         for eachplot in range(ndisp):
              placenum = eachplot +1
-             figure.subplot_imshow(placenum%ncols, placenum/ncols, disp_collection[eachplot][0], 
-                                   title="%s" % (disp_collection[eachplot][1]), 
-                                   colormap=matplotlib.cm.Greys_r, 
+             figure.subplot_imshow(placenum%ncols, placenum/ncols, disp_collection[eachplot][0],
+                                   title="%s" % (disp_collection[eachplot][1]),
+                                   colormap=matplotlib.cm.Greys_r,
                                    sharexy=figure.subplot(0, 0))
 
     def prepare_settings(self, setting_values):

@@ -4,8 +4,6 @@
 **Measure Neurons** measures branching information for neurons or any
 skeleton objects with seed points.
 
---------------
-
 This module measures the number of trunks and branches for each neuron
 in an image. The module takes a skeletonized image of the neuron plus
 previously identified seed objects (for instance, the neuron soma) and

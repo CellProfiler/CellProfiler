@@ -1,8 +1,8 @@
 # coding=utf-8
 
 """
-Calculate Statistics
-====================
+CalculateStatistics
+===================
 
 **Calculate Statistics** calculates measures of assay quality (V and Z’
 factors) and dose response data (EC50) for all measured features made

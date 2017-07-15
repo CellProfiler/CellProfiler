@@ -1,112 +1,123 @@
 # coding=utf-8
 
 """
-<b>Measure Object Size Shape </b> measures several area and shape
-features of identified objects.
-<hr>
+**Measure Object Size Shape** measures several area and shape features
+of identified objects.
+
 Given an image with identified objects (e.g. nuclei or cells), this
 module extracts area and shape features of each one. Note that these
 features are only reliable for objects that are completely inside the
 image borders, so you may wish to exclude objects touching the edge of
-the image using <b>IdentifyPrimaryObjects</b>.
+the image using **IdentifyPrimaryObjects**.
 
-<p>Please note that the display window for this module shows per-image aggregates for the per-object
-measurements. If you want to view the per-object measurements themselves, you will need to use
-<b>ExportToSpreadsheet</b> to export them, or use <b>DisplayDataOnImage</b> to display the
-object measurements of choice overlaid on an image of choice.</p>
+Please note that the display window for this module shows per-image
+aggregates for the per-object measurements. If you want to view the
+per-object measurements themselves, you will need to use
+**ExportToSpreadsheet** to export them, or use **DisplayDataOnImage** to
+display the object measurements of choice overlaid on an image of
+choice.
 
-<h4>Available measurements</h4>
-See the <i>Technical Notes</i> below for an explanation of creating an ellipse with the
-same second-moments as an object region.
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<ul>
-<li><i>Area:</i> The actual number of pixels in the region.</li>
-<li><i>Perimeter:</i> The total number of pixels around the boundary of each
-region in the image.</li>
-<li><i>FormFactor:</i> Calculated as 4*&pi;*Area/Perimeter<sup>2</sup>. Equals 1 for a
-perfectly circular object.</li>
-<li><i>Solidity:</i> The proportion of the pixels in the convex hull that
-are also in the object, i.e. <i>ObjectArea/ConvexHullArea</i>. Equals 1 for a solid object
-(i.e., one with no holes or has a concave boundary), or &lt;1 for an object
-with holes or possessing a convex/irregular boundary.</li>
-<li><i>Extent:</i> The proportion of the pixels in the bounding box that
-are also in the region. Computed as the Area divided by the area of the
-bounding box.</li>
-<li><i>EulerNumber:</i> The number of objects in the region
-minus the number of holes in those objects, assuming 8-connectivity.</li>
-<li><i>Center_X, Center_Y:</i> The <i>x</i>- and <i>y</i>-coordinates of the
-point farthest away from any object edge. Note that this is not the same as the
-<i>Location-X</i> and <i>-Y</i> measurements produced by the <b>Identify</b>
-modules.
-</li>
-<li><i>Eccentricity:</i> The eccentricity of the ellipse that has the
-same second-moments as the region. The eccentricity is the ratio of the
-distance between the foci of the ellipse and its major axis length. The
-value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
-eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
-is 1 is a line segment.)
-<table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:MeasureObjectSizeShape_Eccentricity.png"></td></tr>
-</table></li>
-<li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
-the ellipse that has the same normalized second central moments as the
-region.</li>
-<li><i>MinorAxisLength:</i> The length (in pixels) of the minor axis of
-the ellipse that has the same normalized second central moments as the
-region.</li>
-<li><i>Orientation:</i> The angle (in degrees ranging from -90 to 90
-degrees) between the x-axis and the major axis of the ellipse that has the
-same second-moments as the region.</li>
-<li><i>Compactness:</i> The mean squared distance of the object's
-pixels from the centroid divided by the area. A filled circle will have
-a compactness of 1, with irregular objects or objects with holes having
-a value greater than 1.</li>
-<li><i>MaximumRadius:</i> The maximum distance of any pixel in the object
-to the closest pixel outside of the object. For skinny objects, this
-is 1/2 of the maximum width of the object.</li>
-<li><i>MedianRadius:</i> The median distance of any pixel in the object
-to the closest pixel outside of the object.</li>
-<li><i>MeanRadius:</i> The mean distance of any pixel in the object
-to the closest pixel outside of the object.</li>
-<li><i>MinFeretDiameter, MaxFeretDiameter:</i> The Feret diameter is the
-distance between two parallel lines tangent on either side of the object
-(imagine taking a caliper and measuring the object at various angles).
-The minimum and maximum Feret diameters are the smallest and largest possible
-diameters, rotating the calipers along all possible angles.</li>
-<li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
-more precisely, a patch with background and an object in the center) in a
-basis of Zernike polynomials, using the coefficients as features (<i>Boland
-et al., 1998</i>). Currently, Zernike polynomials from order 0 to order 9 are
-calculated, giving in total 30 measurements. While there is no limit to
-the order which can be calculated (and indeed users could add more by
-adjusting the code), the higher order polynomials carry less information.</li>
-</ul>
+See the *Technical Notes* below for an explanation of creating an
+ellipse with the same second-moments as an object region.
 
-<h4>Technical notes</h4>
-A number of the object measurements are generated by creating an ellipse with the
-same second-moments as the original object region. This is essentially the
-best-fitting ellipse for a given object with the same statistical properties.
-Furthermore, they are not affected by the translation or uniform scaling of a region.
+-  *Area:* The actual number of pixels in the region.
+-  *Perimeter:* The total number of pixels around the boundary of each
+   region in the image.
+-  *FormFactor:* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
+   for a perfectly circular object.
+-  *Solidity:* The proportion of the pixels in the convex hull that are
+   also in the object, i.e. *ObjectArea/ConvexHullArea*. Equals 1 for a
+   solid object (i.e., one with no holes or has a concave boundary), or
+   <1 for an object with holes or possessing a convex/irregular
+   boundary.
+-  *Extent:* The proportion of the pixels in the bounding box that are
+   also in the region. Computed as the Area divided by the area of the
+   bounding box.
+-  *EulerNumber:* The number of objects in the region minus the number
+   of holes in those objects, assuming 8-connectivity.
+-  *Center\_X, Center\_Y:* The *x*- and *y*-coordinates of the point
+   farthest away from any object edge. Note that this is not the same as
+   the *Location-X* and *-Y* measurements produced by the **Identify**
+   modules.
+-  *Eccentricity:* The eccentricity of the ellipse that has the same
+   second-moments as the region. The eccentricity is the ratio of the
+   distance between the foci of the ellipse and its major axis length.
+   The value is between 0 and 1. (0 and 1 are degenerate cases; an
+   ellipse whose eccentricity is 0 is actually a circle, while an
+   ellipse whose eccentricity is 1 is a line segment.)
+   +------------+
+   | |image0|   |
+   +------------+
 
-<p>The Zernike features are computed within the minimum enclosing circle
-of the object, i.e., the circle of the smallest diameter that contains all of the
-object's pixels.</p>
+-  *MajorAxisLength:* The length (in pixels) of the major axis of the
+   ellipse that has the same normalized second central moments as the
+   region.
+-  *MinorAxisLength:* The length (in pixels) of the minor axis of the
+   ellipse that has the same normalized second central moments as the
+   region.
+-  *Orientation:* The angle (in degrees ranging from -90 to 90 degrees)
+   between the x-axis and the major axis of the ellipse that has the
+   same second-moments as the region.
+-  *Compactness:* The mean squared distance of the object’s pixels from
+   the centroid divided by the area. A filled circle will have a
+   compactness of 1, with irregular objects or objects with holes having
+   a value greater than 1.
+-  *MaximumRadius:* The maximum distance of any pixel in the object to
+   the closest pixel outside of the object. For skinny objects, this is
+   1/2 of the maximum width of the object.
+-  *MedianRadius:* The median distance of any pixel in the object to the
+   closest pixel outside of the object.
+-  *MeanRadius:* The mean distance of any pixel in the object to the
+   closest pixel outside of the object.
+-  *MinFeretDiameter, MaxFeretDiameter:* The Feret diameter is the
+   distance between two parallel lines tangent on either side of the
+   object (imagine taking a caliper and measuring the object at various
+   angles). The minimum and maximum Feret diameters are the smallest and
+   largest possible diameters, rotating the calipers along all possible
+   angles.
+-  *Zernike shape features:* Measure shape by describing a binary object
+   (or more precisely, a patch with background and an object in the
+   center) in a basis of Zernike polynomials, using the coefficients as
+   features (*Boland et al., 1998*). Currently, Zernike polynomials from
+   order 0 to order 9 are calculated, giving in total 30 measurements.
+   While there is no limit to the order which can be calculated (and
+   indeed users could add more by adjusting the code), the higher order
+   polynomials carry less information.
 
-<h4>References</h4>
-<ul>
-<li>Rocha L, Velho L, Carvalho PCP, "Image moments-based structuring and tracking of objects",
-Proceedings from XV Brazilian Symposium on Computer Graphics and Image Processing, 2002.
-<a href="http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf">(pdf)</a>
-</li>
-<li>Principles of Digital Image Processing: Core Algorithms (Undergraduate Topics in Computer Science):
-<a href="http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49">Section 2.4.3 - Statistical shape properties</a>
-</li>
-<li>Chrystal P (1885), "On the problem to construct the minimum circle enclosing n
-given points in a plane", <i>Proceedings of the Edinburgh Mathematical Society</i>,
-vol 3, p. 30 </li>
-</ul>
+Technical notes
+^^^^^^^^^^^^^^^
 
-See also <b>MeasureImageAreaOccupied</b>.
+A number of the object measurements are generated by creating an ellipse
+with the same second-moments as the original object region. This is
+essentially the best-fitting ellipse for a given object with the same
+statistical properties. Furthermore, they are not affected by the
+translation or uniform scaling of a region.
+
+The Zernike features are computed within the minimum enclosing circle of
+the object, i.e., the circle of the smallest diameter that contains all
+of the object’s pixels.
+
+References
+^^^^^^^^^^
+
+-  Rocha L, Velho L, Carvalho PCP, “Image moments-based structuring and
+   tracking of objects”, Proceedings from XV Brazilian Symposium on
+   Computer Graphics and Image Processing, 2002. `(pdf)`_
+-  Principles of Digital Image Processing: Core Algorithms
+   (Undergraduate Topics in Computer Science): `Section 2.4.3 -
+   Statistical shape properties`_
+-  Chrystal P (1885), “On the problem to construct the minimum circle
+   enclosing n given points in a plane”, *Proceedings of the Edinburgh
+   Mathematical Society*, vol 3, p. 30
+
+See also **MeasureImageAreaOccupied**.
+
+.. _(pdf): http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
+.. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49
+.. |image0| image:: memory:MeasureObjectSizeShape_Eccentricity.png
 """
 
 import cellprofiler.icons

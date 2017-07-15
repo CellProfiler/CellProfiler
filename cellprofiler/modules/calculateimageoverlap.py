@@ -7,8 +7,6 @@ Calculate Image Overlap
 **Calculate Image Overlap** calculates how much overlap occurs between
 the white portions of two black and white images
 
---------------
-
 This module calculates overlap by determining a set of statistics that
 measure the closeness of an image or object to its’ true value. One
 image/object is considered the “ground truth” (possibly the result of

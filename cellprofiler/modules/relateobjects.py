@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Relate Objects
+==============
+
 **Relate Objects** assigns relationships; all objects (e.g. speckles)
 within a parent object (e.g. nucleus) become its children.
 

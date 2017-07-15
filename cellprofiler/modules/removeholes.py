@@ -2,6 +2,7 @@
 
 """
 Remove holes
+============
 """
 
 import numpy

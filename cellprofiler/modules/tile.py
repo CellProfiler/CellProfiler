@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Tile
+====
+
 **Tile** tiles images together to form large montage images.
 
 This module allows more than one image to be placed next to each other

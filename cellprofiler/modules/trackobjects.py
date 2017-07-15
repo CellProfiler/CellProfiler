@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Track Objects
+=============
+
 **Track Objects** allows tracking objects throughout sequential frames
 of a series of images, so that from frame to frame each object maintains
 a unique identity in the output measurements

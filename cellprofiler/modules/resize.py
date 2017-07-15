@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Resize
+======
+
 **Resize** resizes images (changes their resolution).
 
 Images are resized (made smaller or larger) based on user input. You can

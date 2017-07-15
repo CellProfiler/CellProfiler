@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+UnmixColors
+===========
+
 **Unmix Colors** creates separate images per dye stain for
 histologically stained images.
 

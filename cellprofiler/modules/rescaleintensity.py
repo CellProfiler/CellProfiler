@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+RescaleIntensity
+================
+
 **RescaleIntensity** changes the intensity range of an image to your
 desired specifications.
 

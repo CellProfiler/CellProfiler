@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Smooth
+======
+
 **Smooth** smooths (i.e., blurs) images.
 
 --------------

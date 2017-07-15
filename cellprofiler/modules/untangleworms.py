@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+UntangleWorms
+=============
+
 **UntangleWorms** untangles overlapping worms.
 
 This module either assembles a training set of sample worms in order to

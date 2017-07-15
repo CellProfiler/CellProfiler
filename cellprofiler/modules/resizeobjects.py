@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+ResizeObjects
+=============
+
 Upsize or downsize an object’s label matrix by a factor or by specifying
 the final dimensions in pixels. ResizeObjects uses nearest neighbor
 interpolation to preserve object labels after the resizing operation.

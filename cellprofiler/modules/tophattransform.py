@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Top-hat transform
+=================
+
 Perform a black or white top-hat transform on grayscale pixel data.
 
 Top-hat transforms are useful for extracting small elements and details

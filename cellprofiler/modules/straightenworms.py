@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+StraightenWorms
+===============
+
 **StraightenWorms** straightens untangled worms.
 
 **StraightenWorms** uses the objects produced by **UntangleWorms** to

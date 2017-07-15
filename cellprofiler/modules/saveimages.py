@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Save Images
+===========
+
 **Save Images** saves image or movie files.
 
 Because CellProfiler usually performs many image analysis steps on many

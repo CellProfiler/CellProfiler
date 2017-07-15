@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+Watershed
+=========
+
 **Watershed** is a segmentation algorithm. It is used to separate
 different objects in an image.
 """

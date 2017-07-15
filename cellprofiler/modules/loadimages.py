@@ -1,43 +1,56 @@
-'''<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
-which order.
-<hr>
-This module tells CellProfiler where to retrieve images and gives each image a
-meaningful name by which other modules can access it. You can also use <b>LoadImages</b> to extract
-or define the relationships between images and their associated
-metadata. For example, you could load a group of images (such as three channels that represent the same field
-of view) together for processing in a single CellProfiler cycle. Finally, you can use
-this module to retrieve a label matrix and give the collection
-of objects a meaningful name.
+# coding=utf-8
 
-<p><i>Disclaimer:</i> Please note that the Input modues (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
-and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into
-CellProfiler that contain this module will provide the option of preserving them;
-these pipelines will operate exactly as before.</p>
+"""
+**Load Images** allows you to specify which images or movies are to be
+loaded and in which order.
 
-<p>When used in combination with a <b>SaveImages</b> module, you can load images in one file format and
-save them in another, using CellProfiler as a file format converter.</p>
+This module tells CellProfiler where to retrieve images and gives each
+image a meaningful name by which other modules can access it. You can
+also use **LoadImages** to extract or define the relationships between
+images and their associated metadata. For example, you could load a
+group of images (such as three channels that represent the same field of
+view) together for processing in a single CellProfiler cycle. Finally,
+you can use this module to retrieve a label matrix and give the
+collection of objects a meaningful name.
 
-<h5>Using metadata in LoadImages</h5>
+*Disclaimer:* Please note that the Input modues (i.e., **Images**,
+**Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
+module. However, old pipelines loaded into CellProfiler that contain
+this module will provide the option of preserving them; these pipelines
+will operate exactly as before.
 
-<p>If you would like to use the metadata-specific settings, please see <i>Help > General help > Using
-metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadImages</b> can
-extract metadata from the image filename using pattern-matching strings, for grouping similar images
-together for the analysis run and for metadata-specfic options in other modules; see the settings help for
-<a href='#where_to_extract'><i>Where to extract metadata</i></a>, and if an option for that setting is
-selected, <a href='#regular_expression'><i>Regular expression
-that finds metadata in the file name</i></a> for the necessary syntax.</p>
+When used in combination with a **SaveImages** module, you can load
+images in one file format and save them in another, using CellProfiler
+as a file format converter.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Pathname, Filename:</i> The full path and the filename of each image.</li>
-<li><i>Metadata:</i> The metadata information extracted from the path and/or
-filename, if requested.</li>
-<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li>
-<li><i>Height, Width:</i> The height and width of the current image.</li>
-</ul>
+Using metadata in LoadImages
+''''''''''''''''''''''''''''
 
-See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
-'''
+If you would like to use the metadata-specific settings, please see
+*Help > General help > Using metadata in CellProfiler* for more details
+on metadata usage and syntax. Briefly, **LoadImages** can extract
+metadata from the image filename using pattern-matching strings, for
+grouping similar images together for the analysis run and for
+metadata-specfic options in other modules; see the settings help for
+`*Where to extract metadata*`_, and if an option for that setting is
+selected, `*Regular expression that finds metadata in the file name*`_
+for the necessary syntax.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Pathname, Filename:* The full path and the filename of each image.
+-  *Metadata:* The metadata information extracted from the path and/or
+   filename, if requested.
+-  *Scaling:* The maximum possible intensity value for the image format.
+-  *Height, Width:* The height and width of the current image.
+
+See also the **Input** modules, **LoadData**, **LoadSingleImage**,
+**SaveImages**.
+
+.. _*Where to extract metadata*: #where_to_extract
+.. _*Regular expression that finds metadata in the file name*: #regular_expression
+"""
 
 import cgi
 import hashlib

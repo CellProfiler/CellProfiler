@@ -1,10 +1,12 @@
 # coding=utf-8
 
 """
+BlobDetection
+=============
 
-Find blobs in an image or volume. Blobs are bright on dark or dark on bright regions in an image. The output of this
-module is a binary image of white circles or spheres centered around found blobs on a black background.
-
+Find blobs in an image or volume. Blobs are bright on dark or dark on
+bright regions in an image. The output of this module is a binary image of
+white circles or spheres centered around found blobs on a black background.
 """
 
 import cellprofiler.image

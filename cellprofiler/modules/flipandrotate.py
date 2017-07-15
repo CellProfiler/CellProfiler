@@ -1,10 +1,13 @@
-'''<b>Flip and rotate</b> flips (mirror image) and/or rotates an image
-<hr>
-<h4>Available measurements</h4>
-<ul>
-<li><i>Rotation:</i> Angle of rotation for the input image.</li>
-</ul>
-'''
+# coding=utf-8
+
+"""
+**Flip and rotate** flips (mirror image) and/or rotates an image
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Rotation:* Angle of rotation for the input image.
+"""
 
 import numpy as np
 import scipy.ndimage as scind

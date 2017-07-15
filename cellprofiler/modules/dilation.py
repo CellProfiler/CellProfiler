@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
-
-<strong>Dilation</strong> expands shapes in an image.
-
+**Dilation** expands shapes in an image.
 """
 
 import numpy

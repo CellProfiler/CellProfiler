@@ -1,64 +1,72 @@
+# coding=utf-8
+
+"""
+**Export To Database** exports data directly to a database, or in
+database readable format, including an imported file with column names
+and a CellProfiler Analyst properties file, if desired.
+
+This module exports measurements directly to a database or to a
+SQL-compatible format. It allows you to create and import MySQL and
+associated data files into a database and gives you the option of
+creating a properties file for use with CellProfiler Analyst.
+Optionally, you can create an SQLite database file if you do not have a
+server on which to run MySQL itself. This module must be run at the end
+of a pipeline, or second to last if you are using the
+**CreateBatchFiles** module. If you forget this module, you can also run
+the *ExportDatabase* data tool after processing is complete; its
+functionality is the same. The database is set up with two primary
+tables. These tables are the *Per\_Image* table and the *Per\_Object*
+table (which may have a prefix if you specify):
+
+-  The Per\_Image table consists of all the per-image measurements made
+   during the pipeline, plus per-image population statistics (such as
+   mean, median, and standard deviation) of the object measurements.
+   There is one per\_image row for every “cycle” that CellProfiler
+   processes (a cycle is usually a single field of view, and a single
+   cycle usually contains several image files, each representing a
+   different channel of the same field of view).
+-  The Per\_Object table contains all the measurements for individual
+   objects. There is one row of object measurements per object
+   identified. The two tables are connected with the primary key column
+   *ImageNumber*, which indicates the image to which each object
+   belongs. The Per\_Object table has another primary key called
+   *ObjectNumber*, which is unique to each image.
+
+Typically, if multiple types of objects are identified and measured in a
+pipeline, the numbers of those objects are equal to each other. For
+example, in most pipelines, each nucleus has exactly one cytoplasm, so
+the first row of the Per-Object table contains all of the information
+about object #1, including both nucleus- and cytoplasm-related
+measurements. If this one-to-one correspondence is *not* the case for
+all objects in the pipeline (for example, if dozens of speckles are
+identified and measured for each nucleus), then you must configure
+**ExportToDatabase** to export only objects that maintain the one-to-one
+correspondence (for example, export only *Nucleus* and *Cytoplasm*, but
+omit *Speckles*). If you have extracted “Plate” and “Well” metadata from
+image filenames or loaded “Plate” and “Well” metadata via the
+**Metadata** or **LoadData** modules, you can ask CellProfiler to create
+a “Per\_Well” table, which aggregates object measurements across wells.
+This option will output a SQL file (regardless of whether you choose to
+write directly to the database) that can be used to create the Per\_Well
+table. At the secure shell where you normally log in to MySQL, type the
+following, replacing the italics with references to your database and
+files:
+``mysql -h hostname -u username -p databasename < pathtoimages/perwellsetupfile.SQL``
+The commands written by CellProfiler to create the Per\_Well table will
+be executed. Oracle is not fully supported at present; you can create
+your own Oracle DB using the .csv output option and writing a simple
+script to upload to the database.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+For details on the nomenclature used by CellProfiler for the exported
+measurements, see *Help > General Help > How Measurements Are Named*.
+See also **ExportToSpreadsheet**.
+"""
+
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-
-__doc__ = '''<b>Export To Database</b> exports data directly to a database, or in
-database readable format, including an imported file
-with column names and a CellProfiler Analyst properties file, if desired.
-<hr>
-This module exports measurements directly to a database or to a SQL-compatible format.
-It allows you to create and import MySQL and associated data files into a
-database and gives you the option of creating
-a properties file for use with CellProfiler Analyst. Optionally, you can create
-an SQLite database file if you do not have a server on which to run MySQL itself.
-
-This module must be run at the end of a pipeline, or second to last if
-you are using the <b>CreateBatchFiles</b> module. If you forget this module, you
-can also run the <i>ExportDatabase</i> data tool after processing is complete;
-its functionality is the same.
-
-The database is set up with two primary tables. These tables are the
-<i>Per_Image</i> table and the <i>Per_Object</i> table (which may have a prefix if you
-specify):
-<ul>
-<li>The Per_Image table consists of all the per-image measurements made during the pipeline, plus
-per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
-per_image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle
-usually contains several image files, each representing a different channel of the same field of view). </li>
-<li>The Per_Object table contains all the
-measurements for individual objects. There is one row of object
-measurements per object identified. The two tables are connected with the
-primary key column <i>ImageNumber</i>, which indicates the image to which each object belongs. The Per_Object table has another primary
-key called <i>ObjectNumber</i>, which is unique to each image. </li>
-</ul>
-
-Typically, if multiple types of objects are identified and measured in a pipeline,
-the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row
-of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this
-one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and
-measured for each nucleus), then you must configure <b>ExportToDatabase</b> to export only objects that maintain the one-to-one correspondence
-(for example, export only <i>Nucleus</i> and <i>Cytoplasm</i>, but omit <i>Speckles</i>).
-
-If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via the <b>Metadata</b>
-or <b>LoadData</b> modules, you can ask CellProfiler to create a "Per_Well" table, which aggregates object measurements across wells.
-This option will output a SQL file (regardless of whether you choose to write directly to the database)
-that can be used to create the Per_Well table. At the secure shell where you normally log in to MySQL, type
-the following, replacing the italics with references to your database and files:
-
-<tt>mysql -h <i>hostname</i> -u <i>username</i> -p <i>databasename</i> &lt <i>pathtoimages/perwellsetupfile.SQL</i></tt>
-
-The commands written by CellProfiler to create the Per_Well table will be executed.
-
-Oracle is not fully supported at present; you can create your own Oracle DB using
-the .csv output option and writing a simple script to upload to the database.
-
-<h4>Available measurements</h4>
-For details on the nomenclature used by CellProfiler for the exported measurements,
-see <i>Help > General Help > How Measurements Are Named</i>.
-
-See also <b>ExportToSpreadsheet</b>.
-
-'''
-
 import csv
 import datetime
 import hashlib

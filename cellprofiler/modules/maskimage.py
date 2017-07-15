@@ -1,19 +1,20 @@
-"""<b>Mask Image</b> hides certain portions of an image (based on previously identified
-objects or a binary image) so they are ignored by subsequent mask-respecting modules
-in the pipeline.
-<hr>
+# coding=utf-8
+
+"""
+**Mask Image** hides certain portions of an image (based on previously
+identified objects or a binary image) so they are ignored by subsequent
+mask-respecting modules in the pipeline.
+
 This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
-masking object or image that is selected. If using a masking image, the mask is
-composed of the foreground (white portions); if using a masking object, the mask
-is composed of the area within the object.
-
-Note that the image created by this module for further processing
-downstream is grayscale. If a binary mask is desired in subsequent modules, use
-the <b>ApplyThreshold</b> module instead of <b>MaskImage</b>.
-
-See also <b>ApplyThreshold</b>, <b>IdentifyPrimaryObjects</b>, <b>IdentifyObjectsManually</b>.
-
+masking object or image that is selected. If using a masking image, the
+mask is composed of the foreground (white portions); if using a masking
+object, the mask is composed of the area within the object. Note that
+the image created by this module for further processing downstream is
+grayscale. If a binary mask is desired in subsequent modules, use the
+**ApplyThreshold** module instead of **MaskImage**. See also
+**ApplyThreshold**, **IdentifyPrimaryObjects**,
+**IdentifyObjectsManually**.
 """
 
 import numpy as np

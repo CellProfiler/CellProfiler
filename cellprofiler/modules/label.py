@@ -1,7 +1,7 @@
+# coding=utf-8
+
 """
-
 <strong>Label</strong>
-
 """
 
 import mahotas

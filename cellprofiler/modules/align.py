@@ -1,25 +1,32 @@
-'''<b>Align</b> aligns images relative to each other, for example, to correct 
-shifts in the optical path of a microscope in each channel of a multi-channel
-set of images.
-<hr>
-For two or more input images, this module determines the optimal alignment
-among them. Aligning images is useful to obtain proper measurements of the
-intensities in one channel based on objects identified in another channel,
-for example. Alignment is often needed when the microscope is not perfectly
-calibrated. It can also be useful to align images in a time-lapse series of
-images.  The module stores the amount of shift between images as a
-measurement, which can be useful for quality control purposes.
+# coding=utf-8
 
-<p>Note that the second image (and others following) is always aligned
-with respect to the first image. That is, the X/Y offsets indicate how much
-the second image needs to be shifted by to match the first.</p>
+"""
+Align
+=====
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>XShift, Yshift:</i> The pixel shift in X and Y of the
-aligned image with respect to the original image.</li>
-</ul>
-'''
+**Align** aligns images relative to each other, for example, to correct
+shifts in the optical path of a microscope in each channel of a
+multi-channel set of images.
+
+For two or more input images, this module determines the optimal
+alignment among them. Aligning images is useful to obtain proper
+measurements of the intensities in one channel based on objects
+identified in another channel, for example. Alignment is often needed
+when the microscope is not perfectly calibrated. It can also be useful
+to align images in a time-lapse series of images. The module stores the
+amount of shift between images as a measurement, which can be useful for
+quality control purposes.
+
+Note that the second image (and others following) is always aligned with
+respect to the first image. That is, the X/Y offsets indicate how much
+the second image needs to be shifted by to match the first.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *XShift, Yshift:* The pixel shift in X and Y of the aligned image
+   with respect to the original image.
+"""
 
 import numpy as np
 import scipy.ndimage as scind

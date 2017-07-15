@@ -1,20 +1,6 @@
-import math
+# coding=utf-8
 
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import centrosome.threshold
-import numpy
-import scipy.ndimage
-import scipy.sparse
-import skimage.morphology
-
-import applythreshold
-import cellprofiler.gui.help
-import cellprofiler.object
-import cellprofiler.setting
-
-__doc__ = """
+"""
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images containing bright
 objects on a dark background.
 <hr>
@@ -48,11 +34,11 @@ form:
 <h4>What do the settings mean?</h4>See below for help on the individual settings. The following icons are used to call
 attention to key items:
 <ul>
-    <li><img src="memory:{protip_recommend_icon}">&nbsp;Our recommendation or example use case for which a particular
+    <li><img src="memory:thumb-up.png">&nbsp;Our recommendation or example use case for which a particular
     setting is best used.</li>
-    <li><img src="memory:{protip_avoid_icon}">&nbsp;Indicates a condition under which a particular setting may not work
+    <li><img src="memory:thumb-down.png">&nbsp;Indicates a condition under which a particular setting may not work
     well.</li>
-    <li><img src="memory:{tech_note_icon}">&nbsp;Technical note. Provides more detailed information on the
+    <li><img src="memory:gear.png">&nbsp;Technical note. Provides more detailed information on the
     setting.</li>
 </ul>
 <h4>What do I get as output?</h4>A set of primary objects are produced by this module, which can be used in downstream
@@ -133,11 +119,25 @@ where nuclei are the primary objects:</p>
 </ul>
 <p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, <b>IdentifyObjectsManually</b> and
 <b>ClassifyPixels</b></p></a>
-""".format(**{
-    "protip_recommend_icon": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
-    "protip_avoid_icon": cellprofiler.gui.help.PROTIP_AVOID_ICON,
-    "tech_note_icon": cellprofiler.gui.help.TECH_NOTE_ICON
-})
+"""
+
+import cellprofiler.gui.help
+
+import math
+
+import centrosome.cpmorphology
+import centrosome.outline
+import centrosome.propagate
+import centrosome.threshold
+import numpy
+import scipy.ndimage
+import scipy.sparse
+import skimage.morphology
+
+import applythreshold
+import cellprofiler.gui.help
+import cellprofiler.object
+import cellprofiler.setting
 
 #################################################
 #
@@ -350,7 +350,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                         </tr>
                     </table>
                     <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; The object centers are defined as local
+                        <dd><img src="memory:gear.png">&nbsp; The object centers are defined as local
                         intensity maxima in the smoothed image.</dd>
                     </dl>
                 </li>
@@ -374,7 +374,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                         </tr>
                     </table>
                     <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; The binary thresholded image is
+                        <dd><img src="memory:gear.png">&nbsp; The binary thresholded image is
                         distance-transformed and object centers are defined as peaks in this image. A
                         distance-transform gives each pixel a value equal to the distance to the nearest pixel
                         below a certain threshold, so it indicates the <i>{UN_SHAPE}</i> of the object.</dd>

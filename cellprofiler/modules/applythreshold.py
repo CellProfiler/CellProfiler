@@ -1,8 +1,15 @@
+# coding=utf-8
+
 """
-<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero
-<hr>
-<b>ApplyThreshold</b> produces a grayscale image based on a threshold which can be
-pre-selected or calculated automatically using one of many methods.
+Apply Threshold
+===============
+
+**Apply Threshold** sets pixel intensities below or above a certain
+threshold to zero
+
+**ApplyThreshold** produces a grayscale image based on a threshold which
+can be pre-selected or calculated automatically using one of many
+methods.
 """
 
 import centrosome.threshold

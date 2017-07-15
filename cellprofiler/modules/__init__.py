@@ -1,4 +1,7 @@
-"""Modules - pipeline processing modules for CellProfiler
+# coding=utf-8
+
+"""
+Modules - pipeline processing modules for CellProfiler
 """
 
 import logging

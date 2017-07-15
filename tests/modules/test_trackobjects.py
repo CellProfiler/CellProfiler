@@ -65,7 +65,7 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         pipeline.load(StringIO(data))
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, T.TrackObjects))
-        self.assertEqual(module.tracking_method, T.TM_LAP)
+        self.assertEqual(module.tracking_method, "LAP")
         self.assertEqual(module.object_name.value, "Nuclei")
         self.assertEqual(module.pixel_radius.value, 80)
         self.assertEqual(module.display_type.value, "Color and Number")
@@ -155,7 +155,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertEqual(len(pipeline.modules()), 3)
         for module, tracking_method, model, save_img, phase2, meas, dop in zip(
                 pipeline.modules(),
-                (T.TM_MEASUREMENTS, T.TM_OVERLAP, T.TM_DISTANCE),
+                ("Measurements", "Overlap", "Distance"),
                 (T.M_BOTH, T.M_RANDOM, T.M_VELOCITY),
                 (True, False, True), (True, False, True),
                 ("Slothfulness", "Prescience", "Trepidation"),
@@ -223,7 +223,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|sh
         self.assertEqual(len(pipeline.modules()), 1)
         m = pipeline.modules()[0]
         assert isinstance(m, T.TrackObjects)
-        self.assertEqual(m.tracking_method, T.TM_LAP)
+        self.assertEqual(m.tracking_method, "LAP")
         self.assertEqual(m.object_name, "Turtles")
         self.assertEqual(m.measurement, "Steadiness")
         self.assertEqual(m.pixel_radius, 44)
@@ -289,7 +289,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(len(pipeline.modules()), 1)
         m = pipeline.modules()[0]
         assert isinstance(m, T.TrackObjects)
-        self.assertEqual(m.tracking_method, T.TM_LAP)
+        self.assertEqual(m.tracking_method, "LAP")
         self.assertEqual(m.object_name, "Turtles")
         self.assertEqual(m.measurement, "Steadiness")
         self.assertEqual(m.pixel_radius, 44)
@@ -421,7 +421,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 1
-                module.tracking_method.value = T.TM_DISTANCE
+                module.tracking_method.value = "Distance"
 
         measurements = self.runTrackObjects((labels, labels), fn)
 
@@ -466,7 +466,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 3
-                module.tracking_method.value = T.TM_DISTANCE
+                module.tracking_method.value = "Distance"
 
         measurements = self.runTrackObjects(labels_list, fn)
 
@@ -511,7 +511,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 5
-                module.tracking_method.value = T.TM_DISTANCE
+                module.tracking_method.value = "Distance"
 
         measurements = self.runTrackObjects((labels1, labels2, labels2), fn)
 
@@ -553,7 +553,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 1
-                module.tracking_method.value = T.TM_DISTANCE
+                module.tracking_method.value = "Distance"
 
         measurements = self.runTrackObjects((labels1, labels2), fn)
 
@@ -586,7 +586,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 20
-                module.tracking_method.value = T.TM_DISTANCE
+                module.tracking_method.value = "Distance"
 
         measurements = self.runTrackObjects((labels1, labels2), fn)
 
@@ -609,7 +609,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 2
-                module.tracking_method.value = T.TM_OVERLAP
+                module.tracking_method.value = "Overlap"
 
         measurements = self.runTrackObjects((labels1, labels2), fn)
 
@@ -632,7 +632,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 2
-                module.tracking_method.value = T.TM_OVERLAP
+                module.tracking_method.value = "Overlap"
 
         measurements = self.runTrackObjects((labels1, labels2), fn)
 
@@ -656,7 +656,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 2
-                module.tracking_method.value = T.TM_OVERLAP
+                module.tracking_method.value = "Overlap"
 
         measurements = self.runTrackObjects((labels1, labels2), fn)
 
@@ -679,7 +679,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 2
-                module.tracking_method.value = T.TM_MEASUREMENTS
+                module.tracking_method.value = "Measurements"
 
         measurements = self.runTrackObjects((labels1, labels2), fn, [[1], [1]])
 
@@ -702,7 +702,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 2
-                module.tracking_method.value = T.TM_MEASUREMENTS
+                module.tracking_method.value = "Measurements"
 
         measurements = self.runTrackObjects((labels1, labels2), fn, [[1], [1]])
 
@@ -726,7 +726,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 4
-                module.tracking_method.value = T.TM_MEASUREMENTS
+                module.tracking_method.value = "Measurements"
 
         measurements = self.runTrackObjects((labels1, labels2), fn, [[1, 10], [9]])
 
@@ -748,7 +748,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
 
         def fn(module, workspace, idx):
             if idx == 0:
-                module.tracking_method.value = T.TM_LAP
+                module.tracking_method.value = "LAP"
 
         measurements = self.runTrackObjects([np.array(p)[labels] for p in pp], fn)
 
@@ -779,7 +779,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         '''Test get_measurement_columns function'''
         module = T.TrackObjects()
         module.object_name.value = OBJECT_NAME
-        module.tracking_method.value = T.TM_DISTANCE
+        module.tracking_method.value = "Distance"
         module.pixel_radius.value = 10
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), len(T.F_ALL) + len(T.F_IMAGE_ALL))
@@ -800,7 +800,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         '''Test get_measurement_columns function for LAP'''
         module = T.TrackObjects()
         module.object_name.value = OBJECT_NAME
-        module.tracking_method.value = T.TM_LAP
+        module.tracking_method.value = "LAP"
         module.model.value = T.M_BOTH
         second_phase = [T.F_LINKING_DISTANCE, T.F_MOVEMENT_MODEL]
         for wants in (True, False):
@@ -916,7 +916,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         module = T.TrackObjects()
         module.module_num = 1
         module.object_name.value = OBJECT_NAME
-        module.tracking_method.value = T.TM_LAP
+        module.tracking_method.value = "LAP"
         module.wants_second_phase.value = True
         module.wants_lifetime_filtering.value = False
         module.wants_minimum_lifetime.value = False

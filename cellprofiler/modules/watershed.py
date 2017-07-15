@@ -1,9 +1,11 @@
+# coding=utf-8
+
 """
+Watershed
+=========
 
-<strong>Watershed</strong>
-
-Watershed is a segmentation algorithm. It is used to separate different objects in an image.
-
+**Watershed** is a segmentation algorithm. It is used to separate
+different objects in an image.
 """
 
 import mahotas

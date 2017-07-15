@@ -1,13 +1,14 @@
+# coding=utf-8
+
+"""
+Create an RGB image with color-coded labels overlaid on a grayscale image.
+"""
+
 import numpy
 import skimage.color
 
 import cellprofiler.module
 import cellprofiler.setting
-
-
-__doc__ = """
-Create an RGB image with color-coded labels overlaid on a grayscale image.
-"""
 
 
 class OverlayObjects(cellprofiler.module.ImageProcessing):

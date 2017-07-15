@@ -1,140 +1,203 @@
 # coding=utf-8
 
 """
-<b>Track Objects</b> allows tracking objects throughout sequential
-frames of a series of images, so that from frame to frame
-each object maintains a unique identity in the output measurements
-<hr>
-This module must be placed downstream of a module that identifies objects
-(e.g., <b>IdentifyPrimaryObjects</b>). <b>TrackObjects</b> will associate each
-object with the same object in the frames before and after. This allows the study
-of objects' lineages and the timing and characteristics of dynamic events in
-movies.
+**Track Objects** allows tracking objects throughout sequential frames
+of a series of images, so that from frame to frame each object maintains
+a unique identity in the output measurements
 
-<p>Images in CellProfiler are processed sequentially by frame (whether loaded as a
-series of images or a movie file). To process a collection of images/movies,
-you will need to do the following:
-<ul>
-<li>Define each individual movie using metadata
-either contained within the image file itself or as part of the images nomenclature
-or folder structure. Please see the <b>Metadata</b> module for more details on metadata collection and usage.</li>
-<li>Group the movies to make sure
-that each image sequence is handled individually. Please see the <b>Groups</b> module for more details on the proper use of metadata for grouping.
-</li>
-</ul>
-For complete details, see <i>Help > Creating a Project > Loading Image Stacks and Movies</i>.</p>
+--------------
 
-<p>For an example pipeline using TrackObjects, see the CellProfiler
-<a href="http://www.cellprofiler.org/examples.html#Tracking">Examples</a> webpage.</p>
+This module must be placed downstream of a module that identifies
+objects (e.g., **IdentifyPrimaryObjects**). **TrackObjects** will
+associate each object with the same object in the frames before and
+after. This allows the study of objects’ lineages and the timing and
+characteristics of dynamic events in movies.
 
-<h4>Available measurements</h4>
-<b>Object measurements</b>
-<ul>
-<li><i>Label:</i> Each tracked object is assigned a unique identifier (label).
-Child objects resulting from a split or merge are assigned the label of the ancestor.</li>
-<li><i>ParentImageNumber, ParentObjectNumber:</i> The <i>ImageNumber</i> and
-<i>ObjectNumber</i> of the parent object in the prior frame. For a split, each
-child object will have the label of the object it split from. For a merge,
-the child will have the label of the closest parent.</li>
-<li><i>TrajectoryX, TrajectoryY:</i> The direction of motion (in x and y coordinates) of the
-object from the previous frame to the current frame.</li>
-<li><i>DistanceTraveled:</i> The distance traveled by the object from the
-previous frame to the current frame (calculated as the magnitude of
-the trajectory vectors).</li>
-<li><i>Displacement:</i> The shortest distance traveled by the object from its
-initial starting position to the position in the current frame. That is, it is
-the straight-line path between the two points.</li>
-<li><i>IntegratedDistance:</i> The total distance traveled by the object during
-the lifetime of the object.</li>
-<li><i>Linearity:</i> A measure of how linear the object trajectity is during the
-object lifetime. Calculated as (displacement from initial to final
-location)/(integrated object distance). Value is in range of [0,1].</li>
-<li><i>Lifetime:</i> The number of frames an objects has existed. The lifetime starts
-at 1 at the frame when an object appears, and is incremented with each frame that the
-object persists. At the final frame of the image set/movie, the
-lifetimes of all remaining objects are output.</li>
-<li><i>FinalAge:</i> Similar to <i>LifeTime</i> but is only output at the final
-frame of the object's life (or the movie ends, whichever comes first). At this point,
-the final age of the object is output; no values are stored for earlier frames.
-<dl>
-<dd><img src="memory:thumb-up.png">&nbsp;This value
-is useful if you want to plot a histogram of the object lifetimes; all but the final age
-can be ignored or filtered out.</dd>
-</dl></li>
-</ul>
-The following object measurements are specific to the LAP tracking method:
-<ul>
-<li><i>LinkType:</i> The linking method used to link the object to its parent.
-Possible values are
-<ul>
-<li><b>0</b>: The object was not linked to a parent.</li>
-<li><b>1</b>: The object was linked to a parent in the previous frame.</li>
-<li><b>2</b>: The object is linked as the start of a split path.</li>
-<li><b>3</b>: The object was linked to its parent as a daughter of
-a mitotic pair.</li>
-<li><b>4</b>: The object was linked to a parent in a frame prior to the
-previous frame (a gap).</li>
-</ul>
-Under some circumstances, multiple linking methods may apply to a given object, e.g, an
-object may be both the beginning of a split path and not have a parent. However, only
-one linking method is assigned.</li>
-<li><i>MovementModel:</i>The movement model used to track the object.
-<ul>
-<li><b>0</b>: The <i>Random</i> model was used.</li>
-<li><b>1</b>: The <i>Velocity</i> model was used.</li>
-<li><b>-1</b>: Neither model was used. This can occur under two circumstances:
-<ul>
-<li>At the beginning of a trajectory, when there is no data to determine the model as
-yet.</li>
-<li>At the beginning of a closed gap, since a model was not actually applied to make
-the link in the first phase.</li>
-</ul></li>
-</ul>
-</li>
-<li><i>LinkingDistance:</i>The difference between the propagated position of an
-object and the object to which it is matched.
-<dl>
-<dd><img src="memory:thumb-up.png">&nbsp;A slowly decaying histogram of
-these distances indicates that the search radius is large enough. A cut-off histogram
-is a sign that the search radius is too small.</dd>
-</dl></li>
-<li><i>StandardDeviation:</i>The Kalman filter maintains a running estimate
-of the variance of the error in estimated position for each model.
-This measurement records the linking distance divided by the standard deviation
-of the error when linking the object with its parent.
-<dl>
-<dd><img src="memory:thumb-up.png">&nbsp; This value is multiplied by
-the <i>"Number of standard deviations for search radius"</i> setting to constrain the search distance.
-A histogram of this value can help determine if the <i>"Search radius limit, in pixel units (Min,Max)"</i>
-setting is appropriate.</dd>
-</dl>
-</li>
-<li><i>GapLength:</i> The number of frames between an object and its parent.
-For instance, an object in frame 3 with a parent in frame 1 has a gap length of
-2.</li>
-<li><i>GapScore:</i> If an object is linked to its parent by bridging a gap,
-this value is the score for the gap.</li>
-<li><i>SplitScore:</i> If an object linked to its parent via a split, this
-value is the score for the split.</li>
-<li><i>MergeScore:</i> If an object linked to a child via a merge, this value is
-the score for the merge.</li>
-<li><i>MitosisScore:</i> If an object linked to two children via a mitosis,
-this value is the score for the mitosis.</li>
-</ul>
+Images in CellProfiler are processed sequentially by frame (whether
+loaded as a series of images or a movie file). To process a collection
+of images/movies, you will need to do the following:
 
-<b>Image measurements</b>
-<ul>
-<li><i>LostObjectCount:</i> Number of objects that appear in the previous frame
-but have no identifiable child in the current frame.</li>
-<li><i>NewObjectCount:</i> Number of objects that appear in the current frame but
-have no identifiable parent in the previous frame. </li>
-<li><i>SplitObjectCount:</i> Number of objects in the current frame that
-resulted from a split from a parent object in the previous frame.</li>
-<li><i>MergedObjectCount:</i> Number of objects in the current frame that
-resulted from the merging of child objects in the previous frame.</li>
-</ul>
+-  Define each individual movie using metadata either contained within
+   the image file itself or as part of the images nomenclature or folder
+   structure. Please see the **Metadata** module for more details on
+   metadata collection and usage.
+-  Group the movies to make sure that each image sequence is handled
+   individually. Please see the **Groups** module for more details on
+   the proper use of metadata for grouping.
 
-See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>Groups</b>.
+For complete details, see *Help > Creating a Project > Loading Image
+Stacks and Movies*.
+
+For an example pipeline using TrackObjects, see the CellProfiler
+`Examples`_ webpage.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Object measurements**
+
+-  *Label:* Each tracked object is assigned a unique identifier (label).
+   Child objects resulting from a split or merge are assigned the label
+   of the ancestor.
+-  *ParentImageNumber, ParentObjectNumber:* The *ImageNumber* and
+   *ObjectNumber* of the parent object in the prior frame. For a split,
+   each child object will have the label of the object it split from.
+   For a merge, the child will have the label of the closest parent.
+-  *TrajectoryX, TrajectoryY:* The direction of motion (in x and y
+   coordinates) of the object from the previous frame to the current
+   frame.
+-  *DistanceTraveled:* The distance traveled by the object from the
+   previous frame to the current frame (calculated as the magnitude of
+   the trajectory vectors).
+-  *Displacement:* The shortest distance traveled by the object from its
+   initial starting position to the position in the current frame. That
+   is, it is the straight-line path between the two points.
+-  *IntegratedDistance:* The total distance traveled by the object
+   during the lifetime of the object.
+-  *Linearity:* A measure of how linear the object trajectity is during
+   the object lifetime. Calculated as (displacement from initial to
+   final location)/(integrated object distance). Value is in range of
+   [0,1].
+-  *Lifetime:* The number of frames an objects has existed. The lifetime
+   starts at 1 at the frame when an object appears, and is incremented
+   with each frame that the object persists. At the final frame of the
+   image set/movie, the lifetimes of all remaining objects are output.
+-  *FinalAge:* Similar to *LifeTime* but is only output at the final
+   frame of the object’s life (or the movie ends, whichever comes
+   first). At this point, the final age of the object is output; no
+   values are stored for earlier frames.
+
+   .. raw:: html
+
+      <dl>
+
+   .. raw:: html
+
+      <dd>
+
+   |image0| This value is useful if you want to plot a histogram of the
+   object lifetimes; all but the final age can be ignored or filtered
+   out.
+
+   .. raw:: html
+
+      </dd>
+
+   .. raw:: html
+
+      </dl>
+
+The following object measurements are specific to the LAP tracking
+method:
+
+-  *LinkType:* The linking method used to link the object to its parent.
+   Possible values are
+
+   -  **0**: The object was not linked to a parent.
+   -  **1**: The object was linked to a parent in the previous frame.
+   -  **2**: The object is linked as the start of a split path.
+   -  **3**: The object was linked to its parent as a daughter of a
+      mitotic pair.
+   -  **4**: The object was linked to a parent in a frame prior to the
+      previous frame (a gap).
+
+   Under some circumstances, multiple linking methods may apply to a
+   given object, e.g, an object may be both the beginning of a split
+   path and not have a parent. However, only one linking method is
+   assigned.
+-  *MovementModel:*\ The movement model used to track the object.
+
+   -  **0**: The *Random* model was used.
+   -  **1**: The *Velocity* model was used.
+   -  **-1**: Neither model was used. This can occur under two
+      circumstances:
+
+      -  At the beginning of a trajectory, when there is no data to
+         determine the model as yet.
+      -  At the beginning of a closed gap, since a model was not
+         actually applied to make the link in the first phase.
+
+-  *LinkingDistance:*\ The difference between the propagated position of
+   an object and the object to which it is matched.
+
+   .. raw:: html
+
+      <dl>
+
+   .. raw:: html
+
+      <dd>
+
+   |image1| A slowly decaying histogram of these distances indicates
+   that the search radius is large enough. A cut-off histogram is a sign
+   that the search radius is too small.
+
+   .. raw:: html
+
+      </dd>
+
+   .. raw:: html
+
+      </dl>
+
+-  *StandardDeviation:*\ The Kalman filter maintains a running estimate
+   of the variance of the error in estimated position for each model.
+   This measurement records the linking distance divided by the standard
+   deviation of the error when linking the object with its parent.
+
+   .. raw:: html
+
+      <dl>
+
+   .. raw:: html
+
+      <dd>
+
+   |image2|  This value is multiplied by the *“Number of standard
+   deviations for search radius”* setting to constrain the search
+   distance. A histogram of this value can help determine if the
+   *“Search radius limit, in pixel units (Min,Max)”* setting is
+   appropriate.
+
+   .. raw:: html
+
+      </dd>
+
+   .. raw:: html
+
+      </dl>
+
+-  *GapLength:* The number of frames between an object and its parent.
+   For instance, an object in frame 3 with a parent in frame 1 has a gap
+   length of 2.
+-  *GapScore:* If an object is linked to its parent by bridging a gap,
+   this value is the score for the gap.
+-  *SplitScore:* If an object linked to its parent via a split, this
+   value is the score for the split.
+-  *MergeScore:* If an object linked to a child via a merge, this value
+   is the score for the merge.
+-  *MitosisScore:* If an object linked to two children via a mitosis,
+   this value is the score for the mitosis.
+
+**Image measurements**
+
+-  *LostObjectCount:* Number of objects that appear in the previous
+   frame but have no identifiable child in the current frame.
+-  *NewObjectCount:* Number of objects that appear in the current frame
+   but have no identifiable parent in the previous frame.
+-  *SplitObjectCount:* Number of objects in the current frame that
+   resulted from a split from a parent object in the previous frame.
+-  *MergedObjectCount:* Number of objects in the current frame that
+   resulted from the merging of child objects in the previous frame.
+
+See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
+**Groups**.
+
+.. _Examples: http://www.cellprofiler.org/examples.html#Tracking
+
+.. |image0| image:: memory:thumb-up.png
+.. |image1| image:: memory:thumb-up.png
+.. |image2| image:: memory:thumb-up.png
 """
 
 LT_NONE = 0

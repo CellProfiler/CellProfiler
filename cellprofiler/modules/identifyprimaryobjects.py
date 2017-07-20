@@ -530,7 +530,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.fill_holes = cellprofiler.setting.Choice(
             'Fill holes in identified objects?',
             FH_ALL,
-            value=FH_DECLUMP,
+            value=FH_THRESHOLDING,
             doc="""
             This option controls how holes are filled in:
             <ul>
@@ -856,17 +856,12 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         # Relabel the image
         labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
 
-        if self.advanced:
-            new_labeled_image, new_object_count = self.limit_object_count(labeled_image, object_count)
-            if new_object_count < object_count:
-                # Add the labels that were filtered out into the border
-                # image.
-                border_excluded_mask = (border_excluded_labeled_image > 0) | (
-                    (labeled_image > 0) & (new_labeled_image == 0)
-                )
-                border_excluded_labeled_image = scipy.ndimage.label(border_excluded_mask, numpy.ones((3, 3), bool))[0]
-                object_count = new_object_count
-                labeled_image = new_labeled_image
+        if self.advanced and self.limit_choice.value == LIMIT_ERASE:
+            if object_count > self.maximum_object_count.value:
+                labeled_image = numpy.zeros(labeled_image.shape, int)
+                border_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+                size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+                object_count = 0
 
         # Make an outline image
         outline_image = centrosome.outline.outline(labeled_image)
@@ -946,20 +941,6 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         )
 
         return binary_image, global_threshold, sigma
-
-    def limit_object_count(self, labeled_image, object_count):
-        '''Limit the object count according to the rules
-
-        labeled_image - image to be limited
-        object_count - check to see if this exceeds the maximum
-
-        returns a new labeled_image and object count
-        '''
-        if object_count > self.maximum_object_count.value:
-            labeled_image = numpy.zeros(labeled_image.shape, int)
-            object_count = 0
-
-        return labeled_image, object_count
 
     def smooth_image(self, image, mask):
         """Apply the smoothing filter to the image"""

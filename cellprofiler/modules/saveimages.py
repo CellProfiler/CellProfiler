@@ -49,7 +49,7 @@ IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
-BIT_DEPTH_FLOAT = "64-bit floating point"
+BIT_DEPTH_FLOAT = "32-bit floating point"
 
 FN_FROM_IMAGE = "From image filename"
 FN_SEQUENTIAL = "Sequential numbers"
@@ -72,7 +72,7 @@ WS_LAST_CYCLE = "Last cycle"
 class SaveImages(cellprofiler.module.Module):
     module_name = "SaveImages"
 
-    variable_revision_number = 12
+    variable_revision_number = 13
 
     category = "File Processing"
 
@@ -264,12 +264,12 @@ class SaveImages(cellprofiler.module.Module):
                 BIT_DEPTH_FLOAT
             ],
             doc="""
-            Select the bit-depth at which you want to save the images.
-            <i>{BIT_DEPTH_FLOAT}</i> saves the image as floating-point decimals
-            with 64-bit precision in its raw form, typically scaled between
-            0 and 1.
-            <b>{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only
-            for TIFF formats. Currently, saving images in 12-bit is not supported.</b>
+            <p>Select the bit-depth at which you want to save the images.</p>
+            <p><i>{BIT_DEPTH_FLOAT}</i> saves the image as floating-point decimals
+            with 32-bit precision. When the input data is integer or binary type, pixel values are
+            scaled within the range (0, 1). Floating point data is not rescaled.</p>
+            <p><b>{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only
+            for TIFF formats. Currently, saving images in 12-bit is not supported.</b></p>
             """.format(**{
                 "BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT,
                 "BIT_DEPTH_16": BIT_DEPTH_16
@@ -567,7 +567,7 @@ class SaveImages(cellprofiler.module.Module):
         elif self.get_bit_depth() == BIT_DEPTH_16:
             pixels = skimage.util.img_as_uint(pixels)
         elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-            pixels = skimage.util.img_as_float(pixels)
+            pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
 
         filename = self.get_filename(workspace)
 
@@ -758,6 +758,12 @@ class SaveImages(cellprofiler.module.Module):
             setting_values = new_setting_values
 
             variable_revision_number = 12
+
+        if variable_revision_number == 12:
+            if setting_values[10] == "64-bit floating point":
+                setting_values[10] = BIT_DEPTH_FLOAT
+
+            variable_revision_number = 13
 
         return setting_values, variable_revision_number, False
 

@@ -254,7 +254,7 @@ def test_save_image_jpeg_8(tmpdir, image, module, workspace):
     # TODO: How best to test lossy format?
 
 
-def test_save_image_tiff_8(tmpdir, image, module, workspace):
+def test_save_image_tiff_uint8(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
     module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
@@ -282,7 +282,7 @@ def test_save_image_tiff_8(tmpdir, image, module, workspace):
     numpy.testing.assert_array_equal(data, skimage.util.img_as_ubyte(image.pixel_data))
 
 
-def test_save_image_tiff_16(tmpdir, image, module, workspace):
+def test_save_image_tiff_uint16(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
     module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
@@ -310,7 +310,7 @@ def test_save_image_tiff_16(tmpdir, image, module, workspace):
     numpy.testing.assert_array_equal(data, skimage.util.img_as_uint(image.pixel_data))
 
 
-def test_save_image_tiff_float(tmpdir, image, module, workspace):
+def test_save_image_tiff_float32(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
     module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
@@ -333,12 +333,12 @@ def test_save_image_tiff_float(tmpdir, image, module, workspace):
 
     data = skimage.io.imread(os.path.join(directory, "example.tiff"))
 
-    assert data.dtype == numpy.float64
+    assert data.dtype == numpy.float32
 
     numpy.testing.assert_array_equal(data, skimage.util.img_as_float(image.pixel_data))
 
 
-def test_save_volume_tiff_8(tmpdir, volume, module, workspace):
+def test_save_volume_tiff_uint8(tmpdir, volume, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
     workspace.image_set.add("example_volume", volume)
@@ -368,7 +368,7 @@ def test_save_volume_tiff_8(tmpdir, volume, module, workspace):
     numpy.testing.assert_array_equal(data, skimage.util.img_as_ubyte(volume.pixel_data))
 
 
-def test_save_volume_tiff_16(tmpdir, volume, module, workspace):
+def test_save_volume_tiff_uint16(tmpdir, volume, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
     workspace.image_set.add("example_volume", volume)
@@ -398,7 +398,7 @@ def test_save_volume_tiff_16(tmpdir, volume, module, workspace):
     numpy.testing.assert_array_equal(data, skimage.util.img_as_uint(volume.pixel_data))
 
 
-def test_save_volume_tiff_float(tmpdir, volume, module, workspace):
+def test_save_volume_tiff_float32(tmpdir, volume, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
     workspace.image_set.add("example_volume", volume)
@@ -423,6 +423,6 @@ def test_save_volume_tiff_float(tmpdir, volume, module, workspace):
 
     data = skimage.io.imread(os.path.join(directory, "example_volume.tiff"))
 
-    assert data.dtype == numpy.float64
+    assert data.dtype == numpy.float32
 
     numpy.testing.assert_array_equal(data, skimage.util.img_as_float(volume.pixel_data))

@@ -1,5 +1,20 @@
+import json
+import logging
+import logging.config
+import optparse
+import os
+import os.path
+import re
+import sys
+import tempfile
+
 import bioformats.formatreader
-import ctypes
+import h5py
+import matplotlib
+import numpy
+import pkg_resources
+import six
+
 import cellprofiler
 import cellprofiler.measurement
 import cellprofiler.object
@@ -10,21 +25,6 @@ import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
-import cStringIO
-import h5py
-import json
-import logging
-import logging.config
-import matplotlib
-import numpy
-import optparse
-import os
-import os.path
-import pkg_resources
-import re
-import site
-import sys
-import tempfile
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -499,8 +499,6 @@ def print_measurements(options):
     if options.pipeline_filename is None:
         raise ValueError("Can't print measurements, no pipeline file")
 
-    import cellprofiler.pipeline
-
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(pipeline, event):
@@ -674,7 +672,7 @@ def run_pipeline_headless(options, args):
 
         pipeline_text = pipeline_text.encode('us-ascii')
 
-        pipeline.load(cStringIO.StringIO(pipeline_text))
+        pipeline.load(six.StringIO.StringIO(pipeline_text))
 
         if not pipeline.in_batch_mode():
             #

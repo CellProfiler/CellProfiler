@@ -1,8 +1,10 @@
-"""hdf5_dict -- HDF5-backed dictionary for Measurements.
+"""
+hdf5_dict -- HDF5-backed dictionary for Measurements.
 
 This module implements the HDF5Dict class, which provides a dict-like
 interface for measurements, backed by an HDF5 file.
 """
+
 from __future__ import with_statement
 
 import bisect

@@ -2,14 +2,16 @@
 cpjvm.py - CellProfiler-specific JVM utilities
 """
 
-import bioformats.formatreader
-import cellprofiler.preferences
-import javabridge
 import logging
 import os
-import prokaryote
 import sys
 import tempfile
+
+import bioformats.formatreader
+import javabridge
+import prokaryote
+
+import cellprofiler.preferences
 
 logger = logging.getLogger(__name__)
 

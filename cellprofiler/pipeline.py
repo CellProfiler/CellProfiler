@@ -34,9 +34,6 @@ import urllib
 import urllib2
 import re
 import numpy
-
-logger = logging.getLogger(__name__)
-pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler
 import cellprofiler.preferences as cpprefs
 import cellprofiler.image as cpi
@@ -48,6 +45,9 @@ from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from bioformats.omexml import OMEXML
 from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
+
+logger = logging.getLogger(__name__)
+pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cpmeas.IMAGE_NUMBER

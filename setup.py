@@ -51,7 +51,6 @@ setuptools.setup(
         ]
     },
     install_requires=[
-        "cellh5",
         "centrosome",
         "h5py",
         "inflect",
@@ -63,7 +62,6 @@ setuptools.setup(
         "MySQL-python",
         "numpy",
         "prokaryote>=1.0.11",
-        "pyamg==3.1.1",
         "python-bioformats",
         "pyzmq",
         "raven",

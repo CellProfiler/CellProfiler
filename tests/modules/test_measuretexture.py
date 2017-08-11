@@ -92,8 +92,6 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             self.assertEqual(module.scale_groups[1].scale, 5)
             self.assertEqual(len(module.scale_groups[1].angles.get_selections()), 1)
             self.assertEqual(module.scale_groups[1].angles.get_selections()[0], cellprofiler.modules.measuretexture.H_HORIZONTAL)
-            self.assertEqual(module.wants_gabor, wants_gabor)
-            self.assertEqual(module.gabor_angles, 6)
 
     def test_01_03_load_v3(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
@@ -160,8 +158,6 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
             self.assertTrue(cellprofiler.modules.measuretexture.H_ANTIDIAGONAL in angles)
 
             self.assertEqual(module.scale_groups[1].scale, 5)
-            self.assertEqual(module.wants_gabor, wants_gabor)
-            self.assertEqual(module.gabor_angles, 6)
             self.assertEqual(module.images_or_objects, cellprofiler.modules.measuretexture.IO_BOTH)
 
     def test_01_04_load_v4(self):
@@ -253,8 +249,6 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertTrue(cellprofiler.modules.measuretexture.H_ANTIDIAGONAL in angles)
 
             self.assertEqual(module.scale_groups[1].scale, 5)
-            self.assertEqual(module.wants_gabor, wants_gabor)
-            self.assertEqual(module.gabor_angles, 6)
 
     def test_02_02_many_objects(self):
         '''Regression test for IMG-775'''
@@ -295,58 +289,6 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 self.assertTrue(numpy.all(values != 0))
                 self.assertTrue("%d_%s" % (2, cellprofiler.modules.measuretexture.H_TO_A[angle]) in all_scales)
 
-    def test_03_01_gabor_null(self):
-        '''Test for no score on a uniform image'''
-        image = numpy.ones((10, 10)) * .5
-        labels = numpy.ones((10, 10), int)
-        workspace, module = self.make_workspace(image, labels)
-        module.scale_groups[0].scale.value = 2
-        module.run(workspace)
-        mname = '%s_%s_%s_%d' % (cellprofiler.modules.measuretexture.TEXTURE, cellprofiler.modules.measuretexture.F_GABOR, INPUT_IMAGE_NAME, 2)
-        m = workspace.measurements.get_current_measurement(INPUT_OBJECTS_NAME,
-                                                           mname)
-        self.assertEqual(len(m), 1)
-        self.assertAlmostEqual(m[0], 0)
-
-    def test_03_02_gabor_horizontal(self):
-        '''Compare the Gabor score on the horizontal with the one on the diagonal'''
-        i, j = numpy.mgrid[0:10, 0:10]
-        labels = numpy.ones((10, 10), int)
-        himage = numpy.cos(numpy.pi * i) * .5 + .5
-        dimage = numpy.cos(numpy.pi * (i - j) / numpy.sqrt(2)) * .5 + .5
-
-        def run_me(image, angles):
-            workspace, module = self.make_workspace(image, labels)
-            module.scale_groups[0].scale.value = 2
-            module.gabor_angles.value = angles
-            module.run(workspace)
-            mname = '%s_%s_%s_%d' % (cellprofiler.modules.measuretexture.TEXTURE, cellprofiler.modules.measuretexture.F_GABOR, INPUT_IMAGE_NAME, 2)
-            m = workspace.measurements.get_current_measurement(INPUT_OBJECTS_NAME,
-                                                               mname)
-            self.assertEqual(len(m), 1)
-            return m[0]
-
-        himage_2, himage_4, dimage_2, dimage_4 = [run_me(image, angles)
-                                                  for image, angles in
-                                                  ((himage, 2), (himage, 4),
-                                                   (dimage, 2), (dimage, 4))]
-        self.assertAlmostEqual(himage_2, himage_4)
-        self.assertAlmostEqual(dimage_2, 0)
-        self.assertNotAlmostEqual(dimage_4, 0)
-
-    def test_03_02_01_gabor_off(self):
-        '''Make sure we can run MeasureTexture without gabor feature'''
-        workspace, module = self.make_workspace(numpy.zeros((10, 10)),
-                                                numpy.zeros((10, 10), int))
-        self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
-        module.wants_gabor.value = False
-        module.run(workspace)
-        m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
-        for object_name in (cellprofiler.measurement.IMAGE, INPUT_OBJECTS_NAME):
-            features = m.get_feature_names(object_name)
-            self.assertTrue(all([f.find(cellprofiler.modules.measuretexture.F_GABOR) == -1 for f in features]))
-
     # def test_03_03_measurement_columns(self):
     #     '''Check that results of get_measurement_columns match the actual column names output'''
     #     data = 'eJztW91u2zYUph0naFqgSHexBesNd9d2iSA7SZcEQ2vPXjcPsRs0Xn8wbJgi0TEHWjQkKrU39N32GHuEXe4RJtqyJXFyJMuSJ6cSQEiH5seP5/DwHEqyWrXOWe0beCTJsFXr7HcxQfCcKKxLjf4pHFATD/dg3UAKQxqk+ilsUR3+YBFYPoDlw1P55PTgEFZk+QTEOArN1n37tHsMwJZ9vmOXovPTpiMXPIXLF4gxrF+Zm6AEdp36P+3yWjGwcknQa4VYyHQppvVNvUs7o8HspxbVLILaSt/b2D7aVv8SGebL7hTo/HyOh4hc4N+RoMK02St0jU1MdQfv9C/WzngpE3i5HXqfu3YoCHYo2eWhp563/x647UsBdnvgab/jyFjX8DXWLIVA3FeuZqPg/ckh/W34+tsAjXZtjDsOwW0J49ga21klCEfjLfjwBVBxxlsNwe0IvLx00JDtfztUVAb7ClN7SYw/DL8p4LlcR4SYEe0+T/9FcQcRcSUfrgSe7h3KUey9LejJ5Td24DDMHtKc+mX0jWPn5tnZj62IvKJ/v7NXR1y96yNGB0Qx+wvoPW99heGKPlwRtGk0vnm4MH3vCfpy+SUzLfgdoZcKmemblN3C4txnQj9cbqCuYhEGmzzIwQY2kMqoMVrKDxbFlSU58fi4JeCnxxS/7bFbNYQ36jzGyTOyJI+PvbJz4RlX2vEy6flbNF7aupfTjM/z9Et6nhaNH2U5Xnw/WlLvtOYnAHcUR7+nIJrf3wH++eFyvafoOiKVuPG0qTOkm5iNnPoo/dwV+uFyg0KdMmiZyO0nblyKmweT0n9RfjkgDiSpr+gv5Yi4uOtP9Os21VGaeSZoXl7wG03dvv1awk5fxbRT0P5oEX3fhvB9IejL5V+kJ/uPnp9//Yq+fyZ9+Xh8Xafk2U/y/snPf1Q+PF7ADnH3qUH5vvOeQtXeb5nOneAydumF8B8L/FzmdniHFMMxxOGHiWlaVGc91zjjuoYycmuSjGNx8uYbhK96/JnINX8AoKvz/HgR+y2RHyLls7h+E2THF9RAVwa1dG15vcP407q/Cto/xI3raeaDqPf7WdGvGjLOpPJBmnl6nfJB0vl8XeL/qvN+1uJEVtb7qvSTpaP/fZxpP39Jcj+2alxW9lFZm+e0909xcX/turiCgAt637RK+4xfTnEDDaL3E7Se6OVvSGVuR+uyLjzjhljX0CDF/tZlnd12XBWsZp1E7edjs9tt0TercTDXN8fluOzgwvYRnwD/uuIytRjBOvrPRiLN9b0jjIMXN35PRrFOds9a/Lxt+THHZQOXlfiS4/K4m+M+XlwV3Oznef7LcTkux+W424X7u+DixPcbXPa+N+ftf/XwBOWJJ8CfJ7isIkIGBuXfTRlSf/xxjykRqmiTr2ukM/uy6fnQhvMMQniqAk91Hg/WkM5wdzQwbDaL0b7CsCo1ndpzu7Y2reW8vRDeoPfzN/KaSKW6phijGefFtCYKX0Xgq8zj6yPFtAzE0JDZJ6k1ETsT0bWr10+2A/i88120pU8fPrh7k38B4Pcr19/+eR6Hb2OjWLgP/P/zuheCKwG/n4/9Gizm149uaD/VMavt/wXhfSus'
@@ -366,19 +308,6 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
     #         for m in measurements.get_feature_names(obname):
     #             if m.startswith(M.TEXTURE):
     #                 assert (obname, m, 'float') in module.get_measurement_columns(pipeline), 'no entry matching %s in get_measurement_columns.'%((obname, m, 'float'))
-
-    def test_03_04_measurement_columns_with_and_without_gabor(self):
-        workspace, module = self.make_workspace(numpy.zeros((10, 10)),
-                                                numpy.zeros((10, 10), int))
-        self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
-        module.wants_gabor.value = True
-        columns = module.get_measurement_columns(None)
-        ngabor = len(['x' for c in columns if c[1].find(cellprofiler.modules.measuretexture.F_GABOR) >= 0])
-        self.assertEqual(ngabor, 2)
-        module.wants_gabor.value = False
-        columns = module.get_measurement_columns(None)
-        ngabor = len(['x' for c in columns if c[1].find(cellprofiler.modules.measuretexture.F_GABOR) >= 0])
-        self.assertEqual(ngabor, 0)
 
     def test_03_05_categories(self):
         workspace, module = self.make_workspace(numpy.zeros((10, 10)),
@@ -406,22 +335,15 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 workspace.pipeline, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
 
-    def test_03_06_measuremements(self):
+    def test_03_06_measurements(self):
         workspace, module = self.make_workspace(numpy.zeros((10, 10)),
                                                 numpy.zeros((10, 10), int))
         self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
-        for wants_gabor in (False, True):
-            module.wants_gabor.value = wants_gabor
-            for object_name in (cellprofiler.measurement.IMAGE, INPUT_OBJECTS_NAME):
-                features = module.get_measurements(workspace.pipeline,
-                                                   object_name, cellprofiler.modules.measuretexture.TEXTURE)
-                self.assertTrue(all([f in cellprofiler.modules.measuretexture.F_HARALICK + [cellprofiler.modules.measuretexture.F_GABOR]
-                                     for f in features]))
-                self.assertTrue(all([f in features for f in cellprofiler.modules.measuretexture.F_HARALICK]))
-                if wants_gabor:
-                    self.assertTrue(cellprofiler.modules.measuretexture.F_GABOR in features)
-                else:
-                    self.assertFalse(cellprofiler.modules.measuretexture.F_GABOR in features)
+        for object_name in (cellprofiler.measurement.IMAGE, INPUT_OBJECTS_NAME):
+            features = module.get_measurements(workspace.pipeline,
+                                               object_name, cellprofiler.modules.measuretexture.TEXTURE)
+            self.assertTrue(all([f in cellprofiler.modules.measuretexture.F_HARALICK for f in features]))
+            self.assertTrue(all([f in features for f in cellprofiler.modules.measuretexture.F_HARALICK]))
 
     def test_04_01_zeros(self):
         '''Make sure the module can run on an empty labels matrix'''

@@ -1,11 +1,18 @@
-'''<b>RescaleIntensity</b> changes the intensity range of an image to your
+# coding=utf-8
+
+"""
+RescaleIntensity
+================
+
+**RescaleIntensity** changes the intensity range of an image to your
 desired specifications.
-<hr>
-This module lets you rescale the intensity of the input images by any of several
-methods. You should use caution when interpreting intensity and texture measurements
-derived from images that have been rescaled because certain options for this module
-do not preserve the relative intensities from image to image.
-'''
+
+This module lets you rescale the intensity of the input images by any of
+several methods. You should use caution when interpreting intensity and
+texture measurements derived from images that have been rescaled because
+certain options for this module do not preserve the relative intensities
+from image to image.
+"""
 
 import numpy
 import skimage.exposure

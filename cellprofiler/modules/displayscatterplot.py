@@ -1,16 +1,21 @@
-'''<b>Display Scatter Plot </b> plots the values for two measurements.
-<hr>
-A scatter plot displays the relationship between two measurements (that is, features) as a
-collection of points.  If there are too many data points on the plot, you should consider
-using <b>DisplayDensityPlot</b> instead.
+# coding=utf-8
 
-<p>The module will show a plot shows the values generated for the current cycle. However,
-this module can also be run as a Data Tool, in which you will first be asked
-for the output file produced by the analysis run. The resultant plot is
-created from all the measurements collected during the run.</p>
+"""
+**Display Scatter Plot** plots the values for two measurements.
 
-See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>.
-'''
+A scatter plot displays the relationship between two measurements (that
+is, features) as a collection of points. If there are too many data
+points on the plot, you should consider using **DisplayDensityPlot**
+instead.
+
+The module will show a plot shows the values generated for the current
+cycle. However, this module can also be run as a Data Tool, in which you
+will first be asked for the output file produced by the analysis run.
+The resultant plot is created from all the measurements collected during
+the run.
+
+See also **DisplayDensityPlot**, **DisplayHistogram**.
+"""
 
 import numpy as np
 

@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
-
-<strong>Erosion</strong> shrinks shapes in an image.
-
+**Erosion** shrinks shapes in an image.
 """
 
 import numpy

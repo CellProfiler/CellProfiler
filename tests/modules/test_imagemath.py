@@ -4,6 +4,7 @@ import unittest
 import zlib
 
 import numpy
+import numpy.testing
 import pytest
 
 import cellprofiler.image
@@ -754,20 +755,20 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
     def check_expected(self, image, expected, mask=None, ignore=False):
         if mask is None and not image.has_crop_mask:
-            self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected <
-                                                numpy.sqrt(numpy.finfo(numpy.float32).eps))))
+            numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
+
             self.assertFalse(image.has_mask)
-        elif mask is not None and ignore == True:
-            self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected <
-                                                numpy.sqrt(numpy.finfo(numpy.float32).eps))))
+        elif mask is not None and ignore:
+            numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
+
             self.assertTrue(image.has_mask)
-        elif mask is not None and ignore == False:
+        elif mask is not None and not ignore:
             self.assertTrue(image.has_mask)
+
             if not image.has_crop_mask:
                 self.assertTrue(numpy.all(mask == image.mask))
-            self.assertTrue(numpy.all(numpy.abs(image.pixel_data[image.mask] -
-                                                expected[image.mask]) <
-                                      numpy.sqrt(numpy.finfo(numpy.float32).eps)))
+
+            numpy.testing.assert_array_almost_equal(image.pixel_data[image.mask], expected[image.mask])
 
     def test_02_01_exponent(self):
         '''Test exponentiation of an image'''
@@ -1002,6 +1003,9 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             images = [{'pixel_data': numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
                       for i in range(n)]
             expected = reduce(numpy.divide, [x['pixel_data'] for x in images])
+            expected[expected < 0] = 0
+            expected[expected > 1] = 1
+
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
@@ -1046,7 +1050,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
-        expected = 1 - image
+        expected = image.max() - image
         output = self.run_imagemath([{'pixel_data': image}], fn)
         self.check_expected(output, expected)
 

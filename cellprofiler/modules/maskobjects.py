@@ -1,30 +1,37 @@
-'''<b>Mask Objects</b> removes objects outside of a specified region or regions.
-<hr>
-This module allows you to delete the objects or portions of objects that are
-outside of a region (mask) you specify. For example, after
-identifying nuclei and tissue regions in previous <b>Identify</b> modules, you might
-want to exclude all nuclei that are outside of a tissue region.
+# coding=utf-8
 
-<p>If using a masking image, the mask is composed of the foreground (white portions);
-if using a masking object, the mask is composed of the area within the object.
-You can choose to remove only the portion of each object that is outside of
-the region, remove the whole object if it is partially or fully
-outside of the region, or retain the whole object unless it is fully outside
-of the region. </p>
+"""
+**Mask Objects** removes objects outside of a specified region or
+regions.
 
-<h4>Available measurements</h4>
-<b>Parent object measurements:</b>
-<ul>
-<li><i>Count:</i> The number of new masked objects created from each parent object.</li>
-</ul>
+This module allows you to delete the objects or portions of objects that
+are outside of a region (mask) you specify. For example, after
+identifying nuclei and tissue regions in previous **Identify** modules,
+you might want to exclude all nuclei that are outside of a tissue
+region.
 
-<b>Masked object measurements:</b>
-<ul>
-<li><i>Parent:</i> The label number of the parent object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
-mass of the masked objects.</li>
-</ul>
-'''
+If using a masking image, the mask is composed of the foreground (white
+portions); if using a masking object, the mask is composed of the area
+within the object. You can choose to remove only the portion of each
+object that is outside of the region, remove the whole object if it is
+partially or fully outside of the region, or retain the whole object
+unless it is fully outside of the region.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Parent object measurements:**
+
+-  *Count:* The number of new masked objects created from each parent
+   object.
+
+**Masked object measurements:**
+
+-  *Parent:* The label number of the parent object.
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+   of mass of the masked objects.
+"""
+
 import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage as scind

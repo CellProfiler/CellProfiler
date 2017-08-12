@@ -1,25 +1,39 @@
+# coding=utf-8
+
 """
-<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
-<hr>
-The module expands or shrinks objects by adding or removing border pixels. You can specify a certain number of border
-pixels to be added or removed, expand objects until they are almost touching or shrink objects down to a point. Objects
-are never lost using this module (shrinking stops when an object becomes a single pixel). The module can separate
+**Expand Or Shrink Objects** expands or shrinks objects by a defined
+distance.
+
+The module expands or shrinks objects by adding or removing border
+pixels. You can specify a certain number of border pixels to be added or
+removed, expand objects until they are almost touching or shrink objects
+down to a point. Objects are never lost using this module (shrinking
+stops when an object becomes a single pixel). The module can separate
 touching objects without otherwise shrinking the objects.
-<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that remove pixels without
-completely removing an object. See the Settings help (below) for more detail.</p>
-<p><i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along to the
-module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. You can also pass the identified
-objects themselves along to the object processing module <b>ConvertToImage</b> and then save them with the
-<b>SaveImages</b> module.</p>
-<h4>Available measurements</h4><b>Image measurements:</b>
-<ul>
-    <li><i>Count:</i> Number of expanded/shrunken objects in the image.</li>
-</ul><b>Object measurements:</b>
-<ul>
-    <li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of the expanded/shrunken
-    objects.</li>
-</ul>
-<p>See also <b>Identify</b> modules.</p>
+
+**ExpandOrShrinkObjects** can perform some specialized morphological
+operations that remove pixels without completely removing an object. See
+the Settings help (below) for more detail.
+
+*Special note on saving images:* You can use the settings in this module
+to pass object outlines along to the module **OverlayOutlines** and then
+save them with the **SaveImages** module. You can also pass the
+identified objects themselves along to the object processing module
+**ConvertToImage** and then save them with the **SaveImages** module.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Image measurements:**
+
+-  *Count:* Number of expanded/shrunken objects in the image.
+
+**Object measurements:**
+
+-  *Location\_X, Location\_Y:* Pixel (*X,Y*) coordinates of the center
+   of mass of the expanded/shrunken objects.
+
+See also **Identify** modules.
 """
 
 import centrosome.cpmorphology

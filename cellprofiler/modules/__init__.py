@@ -1,4 +1,7 @@
-"""Modules - pipeline processing modules for CellProfiler
+# coding=utf-8
+
+"""
+Modules - pipeline processing modules for CellProfiler
 """
 
 import logging
@@ -61,6 +64,7 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'imagemath': 'ImageMath',
                         'images': 'Images',
                         'invertforprinting': 'InvertForPrinting',
+                        'label': 'Label',
                         'labelimages': 'LabelImages',
                         'laplacianofgaussian': 'LaplacianOfGaussian',
                         'loadimages': 'LoadImages',
@@ -164,6 +168,7 @@ builtin_modules = ['align',
                    'imagemath',
                    'images',
                    'invertforprinting',
+                   'label',
                    'labelimages',
                    'laplacianofgaussian',
                    'loadimages',

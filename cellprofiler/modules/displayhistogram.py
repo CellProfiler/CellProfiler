@@ -1,17 +1,20 @@
-'''<b>Display Histogram </b> plots a histogram of the desired measurement.
-<hr>
+# coding=utf-8
+
+"""
+**Display Histogram** plots a histogram of the desired measurement.
+
 A histogram is a plot of tabulated data frequencies (each of which is
-shown as a bar) created by binning measurement data for a set of objects.
-A two-dimensional histogram can be created using the <b>DisplayDensityPlot</b>
-module.
+shown as a bar) created by binning measurement data for a set of
+objects. A two-dimensional histogram can be created using the
+**DisplayDensityPlot** module.
 
-<p>The module shows the values generated for the current cycle. However,
-this module can also be run as a Data Tool, in which you will first be asked
-for the output file produced by the analysis run. The resultant plot is
-created from all the measurements collected during the run.</p>
+The module shows the values generated for the current cycle. However,
+this module can also be run as a Data Tool, in which you will first be
+asked for the output file produced by the analysis run. The resultant
+plot is created from all the measurements collected during the run.
 
-See also <b>DisplayDensityPlot</b>, <b>DisplayScatterPlot</b>.
-'''
+See also **DisplayDensityPlot**, **DisplayScatterPlot**.
+"""
 
 import numpy as np
 

@@ -1,44 +1,68 @@
+# coding=utf-8
+
 """
-<b>Measure Object Intensity</b> measures several intensity features for identified objects.
-<hr>
-Given an image with objects identified (e.g. nuclei or cells), this module extracts intensity features for each object
-based on one or more corresponding grayscale images. Measurements are recorded for each object.
-<p>Intensity measurements are made for all combinations of the images and objects entered. If you want only specific
-image/object measurements, you can use multiple MeasureObjectIntensity modules for each group of measurements
-desired.</p>
-<p>Note that for publication purposes, the units of intensity from microscopy images are usually described as
-"Intensity units" or "Arbitrary intensity units" since microscopes are not calibrated to an absolute scale. Also, it is
-important to note whether you are reporting either the mean or the integrated intensity, so specify "Mean intensity
-units" or "Integrated intensity units" accordingly.</p>
-<p>Keep in mind that the default behavior in CellProfiler is to rescale the image intensity from 0 to 1 by dividing all
-pixels in the image by the maximum possible intensity value. This "maximum possible" value is defined by the "Set
-intensity range from" setting in <b>NamesAndTypes</b>; see the help for that setting for more details.</p>
-<h4>Available measurements</h4>
-<ul>
-    <li><i>IntegratedIntensity:</i> The sum of the pixel intensities within an object.</li>
-    <li><i>MeanIntensity:</i> The average pixel intensity within an object.</li>
-    <li><i>StdIntensity:</i> The standard deviation of the pixel intensities within an object.</li>
-    <li><i>MaxIntensity:</i> The maximal pixel intensity within an object.</li>
-    <li><i>MinIntensity:</i> The minimal pixel intensity within an object.</li>
-    <li><i>IntegratedIntensityEdge:</i> The sum of the edge pixel intensities of an object.</li>
-    <li><i>MeanIntensityEdge:</i> The average edge pixel intensity of an object.</li>
-    <li><i>StdIntensityEdge:</i> The standard deviation of the edge pixel intensities of an object.</li>
-    <li><i>MaxIntensityEdge:</i> The maximal edge pixel intensity of an object.</li>
-    <li><i>MinIntensityEdge:</i> The minimal edge pixel intensity of an object.</li>
-    <li><i>MassDisplacement:</i> The distance between the centers of gravity in the gray-level representation of the
-    object and the binary representation of the object.</li>
-    <li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25% of the pixels in the object have
-    lower values.</li>
-    <li><i>MedianIntensity:</i> The median intensity value within the object</li>
-    <li><i>MADIntensity:</i> The median absolute deviation (MAD) value of the intensities within the object. The MAD is
-    defined as the median(|x<sub>i</sub> - median(x)|).</li>
-    <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75% of the pixels in the object have
-    lower values.</li>
-    <li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The pixel (X,Y) coordinates of the
-    intensity weighted centroid (= center of mass = first moment) of all pixels within the object.</li>
-    <li><i>Location_MaxIntensity_X, Location_MaxIntensity_Y:</i> The pixel (X,Y) coordinates of the pixel with the
-    maximum intensity within the object.</li>
-</ul>See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
+**Measure Object Intensity** measures several intensity features for
+identified objects.
+
+Given an image with objects identified (e.g. nuclei or cells), this
+module extracts intensity features for each object based on one or more
+corresponding grayscale images. Measurements are recorded for each
+object.
+
+Intensity measurements are made for all combinations of the images and
+objects entered. If you want only specific image/object measurements,
+you can use multiple MeasureObjectIntensity modules for each group of
+measurements desired.
+
+Note that for publication purposes, the units of intensity from
+microscopy images are usually described as “Intensity units” or
+“Arbitrary intensity units” since microscopes are not calibrated to an
+absolute scale. Also, it is important to note whether you are reporting
+either the mean or the integrated intensity, so specify “Mean intensity
+units” or “Integrated intensity units” accordingly.
+
+Keep in mind that the default behavior in CellProfiler is to rescale the
+image intensity from 0 to 1 by dividing all pixels in the image by the
+maximum possible intensity value. This “maximum possible” value is
+defined by the “Set intensity range from” setting in **NamesAndTypes**;
+see the help for that setting for more details.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *IntegratedIntensity:* The sum of the pixel intensities within an
+   object.
+-  *MeanIntensity:* The average pixel intensity within an object.
+-  *StdIntensity:* The standard deviation of the pixel intensities
+   within an object.
+-  *MaxIntensity:* The maximal pixel intensity within an object.
+-  *MinIntensity:* The minimal pixel intensity within an object.
+-  *IntegratedIntensityEdge:* The sum of the edge pixel intensities of
+   an object.
+-  *MeanIntensityEdge:* The average edge pixel intensity of an object.
+-  *StdIntensityEdge:* The standard deviation of the edge pixel
+   intensities of an object.
+-  *MaxIntensityEdge:* The maximal edge pixel intensity of an object.
+-  *MinIntensityEdge:* The minimal edge pixel intensity of an object.
+-  *MassDisplacement:* The distance between the centers of gravity in
+   the gray-level representation of the object and the binary
+   representation of the object.
+-  *LowerQuartileIntensity:* The intensity value of the pixel for which
+   25% of the pixels in the object have lower values.
+-  *MedianIntensity:* The median intensity value within the object
+-  *MADIntensity:* The median absolute deviation (MAD) value of the
+   intensities within the object. The MAD is defined as the
+   median(\|x\ :sub:`i` - median(x)\|).
+-  *UpperQuartileIntensity:* The intensity value of the pixel for which
+   75% of the pixels in the object have lower values.
+-  *Location\_CenterMassIntensity\_X, Location\_CenterMassIntensity\_Y:*
+   The pixel (X,Y) coordinates of the intensity weighted centroid (=
+   center of mass = first moment) of all pixels within the object.
+-  *Location\_MaxIntensity\_X, Location\_MaxIntensity\_Y:* The pixel
+   (X,Y) coordinates of the pixel with the maximum intensity within the
+   object.
+
+See also **NamesAndTypes**, **MeasureImageIntensity**.
 """
 
 import centrosome.cpmorphology

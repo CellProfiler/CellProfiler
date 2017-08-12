@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
-
 Remove holes
-
+============
 """
 
 import numpy

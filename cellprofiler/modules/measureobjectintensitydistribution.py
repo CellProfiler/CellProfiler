@@ -1,36 +1,41 @@
-"""<b>Measure Object Intensity Distribution</b> measures the distribution 
-of intensities within each object.
-<hr>
+# coding=utf-8
+
+"""
+**Measure Object Intensity Distribution** measures the distribution of
+intensities within each object.
+
 Given an image with objects identified, this module measures the
-intensity distribution from each object's center to its boundary
-within a user-controlled number of bins, i.e. rings.
+intensity distribution from each object’s center to its boundary within
+a user-controlled number of bins, i.e. rings.
 
-<p>The distribution is measured from the center of the object, where
-the center is defined as the point farthest from any edge.  The numbering
-is from 1 (innermost) to <i>N</i> (outermost), where <i>N</i> is the
-number of bins specified by the user.
-Alternatively, if primary objects exist within the object of interest
-(e.g. nuclei within cells), you can choose the center of the primary
-objects as the center from which to measure the radial distribution.
-This might be useful in cytoplasm-to-nucleus translocation experiments,
-for example.  Note that the ring widths are normalized per-object,
-i.e., not necessarily a constant width across objects.</p>
+The distribution is measured from the center of the object, where the
+center is defined as the point farthest from any edge. The numbering is
+from 1 (innermost) to *N* (outermost), where *N* is the number of bins
+specified by the user. Alternatively, if primary objects exist within
+the object of interest (e.g. nuclei within cells), you can choose the
+center of the primary objects as the center from which to measure the
+radial distribution. This might be useful in cytoplasm-to-nucleus
+translocation experiments, for example. Note that the ring widths are
+normalized per-object, i.e., not necessarily a constant width across
+objects.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>FracAtD:</i> Fraction of total stain in an object at a given radius.</li>
-<li><i>MeanFrac:</i> Mean fractional intensity at a given radius; calculated
-as fraction of total intensity normalized by fraction of pixels at a given radius.</li>
-<li><i>RadialCV:</i> Coefficient of variation of intensity within a ring, calculated
-over 8 slices.</li>
-<li><i>Zernike:</i> The Zernike features characterize the distribution of
-intensity across the object. For instance, Zernike 1,1 has a high value if the
-intensity is low on one side of the object and high on the other. The
-ZernikeMagnitude feature holds the rotationally invariant degree magnitude
-of the moment and the ZernikePhase feature gives the moment's orientation.</li>
-</ul>
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-See also <b>MeasureObjectIntensity</b>.
+-  *FracAtD:* Fraction of total stain in an object at a given radius.
+-  *MeanFrac:* Mean fractional intensity at a given radius; calculated
+   as fraction of total intensity normalized by fraction of pixels at a
+   given radius.
+-  *RadialCV:* Coefficient of variation of intensity within a ring,
+   calculated over 8 slices.
+-  *Zernike:* The Zernike features characterize the distribution of
+   intensity across the object. For instance, Zernike 1,1 has a high
+   value if the intensity is low on one side of the object and high on
+   the other. The ZernikeMagnitude feature holds the rotationally
+   invariant degree magnitude of the moment and the ZernikePhase feature
+   gives the moment’s orientation.
+
+See also **MeasureObjectIntensity**.
 """
 
 import sys
@@ -614,11 +619,10 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                 missing_labels = np.unique(labels[missing_mask])
                 if len(missing_labels):
                     all_centers = centers_of_labels(labels)
-                    missing_i_centers, missing_j_centers = \
-                        all_centers[:, missing_labels - 1]
+                    missing_i_centers, missing_j_centers = all_centers[:, missing_labels - 1]
                     di = missing_i_centers[:, np.newaxis] - ig[np.newaxis, :]
                     dj = missing_j_centers[:, np.newaxis] - jg[np.newaxis, :]
-                    missing_best = lg[np.argsort((di * di + dj * dj,))[:, 0]]
+                    missing_best = lg[np.argsort(di * di + dj * dj)[:, 0]]
                     best = np.zeros(np.max(labels) + 1, int)
                     best[missing_labels] = missing_best
                     cl[missing_mask] = best[labels[missing_mask]]

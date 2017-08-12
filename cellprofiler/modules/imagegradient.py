@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
-
-<strong>Image gradient</strong>
-
-Compute the local gradient of the image. The image gradient is useful for finding boundaries of objects. In a gradient
-image, pixels at the edges of bright regions of interest have the brightest intensities. Pixels in the background or
-in the centers of regions of interest have zero or dimmer intensity.
-
+**Image gradient** computes the local gradient of the image. The image
+gradient is useful for finding boundaries of objects. In a gradient
+image, pixels at the edges of bright regions of interest have the
+brightest intensities. Pixels in the background or in the centers of
+regions of interest have zero or dimmer intensity.
 """
 
 import cellprofiler.image

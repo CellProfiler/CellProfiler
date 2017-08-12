@@ -1,30 +1,32 @@
+# coding=utf-8
+
+"""
+**Create Batch Files** produces files that allow individual batches of
+images to be processed separately on a cluster of computers.
+
+This module creates files that can be submitted in parallel to a cluster
+for faster processing. It should be placed at the end of an image
+processing pipeline.
+
+| If your computer mounts the file system differently than the cluster
+  computers, **CreateBatchFiles** can replace the necessary parts of the
+  paths to the image and output files. For instance, a Windows machine
+  might access files images by mounting the file system using a drive
+  letter, like this:
+| ``Z:\your_data\images``
+| and the cluster computers access the same file system like this:
+| ``/server_name/your_name/your_data/images``
+| In this case, since the ``your_data\images`` portion of the path is
+  the same for both, the local root path is the portion prior, i.e.,
+  ``Z:\`` and similarly for the cluster root path, i.e.,
+  ``/server_name/your_name/``.
+
+For more details on batch processing, please see *Help > Batch
+Processing*.
+"""
+
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
-
-__doc__ = '''
-<b>Create Batch Files</b> produces files that allow individual batches of images to be processed
-separately on a cluster of computers.
-<hr>
-This module creates files that can be submitted in parallel to a
-cluster for faster processing. It should be placed at the end of
-an image processing pipeline.
-
-<p>If your computer mounts the file system differently than the cluster computers,
-<b>CreateBatchFiles</b> can replace the necessary parts of the paths to the
-image and output files. For instance, a Windows machine might
-access files images by mounting the file system using a drive letter, like this:<br><br>
-<tt>Z:\your_data\images</tt><br><br>
-and the cluster computers access the same file system like this:<br><br>
-<tt>/server_name/your_name/your_data/images</tt><br><br>
-In this case, since the <tt>your_data\images</tt> portion of the path is the same for
-both, the local root path is the portion prior, i.e., <tt>Z:\</tt> and similarly for
-the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
-</p>
-
-For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
-''' % globals()
-
 import logging
-
 logger = logging.getLogger(__name__)
 import httplib
 import numpy as np

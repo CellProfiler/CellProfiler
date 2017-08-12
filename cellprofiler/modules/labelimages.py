@@ -1,4 +1,7 @@
-'''<b>LabelImages</b> assigns plate metadata to image sets.
+# coding=utf-8
+
+"""
+<b>LabelImages</b> assigns plate metadata to image sets.
 <hr>
 <b>LabelImages</b> assigns a plate number, well and site number to each image
 set based on the order in which they are processed. You can use <b>Label
@@ -21,7 +24,7 @@ number of images per plate is the same. </li>
 </ul>
 
 See also the <b>Metadata</b> module.
-'''
+"""
 
 import numpy as np
 

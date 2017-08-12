@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+CropObjects crops objects into masks. Each object is saved as a mask
+where the object is labeled as “255” and the background is labeled as “0.”
+The dimensions of the mask are the same as the parent image. The filename
+for a mask is formatted like “{object name}_{label index}_{timestamp}.tiff”
+"""
+
 import numpy
 import os.path
 import skimage.io
@@ -7,13 +14,6 @@ import time
 
 import cellprofiler.module
 import cellprofiler.setting
-
-
-__doc__ = """
-CropObjects crops objects into masks. Each object is saved as a mask where the object is labeled as “255” and the
-background is labeled as “0.” The dimensions of the mask are the same as the parent image. The filename for a mask is
-formatted like “{object name}_{label index}_{timestamp}.tiff”
-"""
 
 
 class CropObjects(cellprofiler.module.Module):

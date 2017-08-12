@@ -1,19 +1,25 @@
+# coding=utf-8
+
 """
-<b>Overlay Outlines</b> places outlines produced by an <b>Identify</b> module over a desired image.
-<hr>
-This module places outlines (in a special format produced by an <b>Identify</b> module) on any
-desired image (grayscale, color, or blank). The resulting image can be saved using the
-<b>SaveImages</b> module. See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects,
-IdentifyTertiaryObjects</b>.
+**Overlay Outlines** places outlines produced by an **Identify** module
+over a desired image.
+
+This module places outlines (in a special format produced by an
+**Identify** module) on any desired image (grayscale, color, or blank).
+The resulting image can be saved using the **SaveImages** module. See
+also **IdentifyPrimaryObjects, IdentifySecondaryObjects,
+IdentifyTertiaryObjects**.
 """
 
 import numpy
 import skimage.color
 import skimage.segmentation
+import skimage.util
 
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
+import cellprofiler.object
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"
@@ -310,8 +316,10 @@ class OverlayOutlines(cellprofiler.module.Module):
 
     def draw_outlines(self, pixel_data, objects, color):
         for labels, _ in objects.get_labels():
+            resized_labels = self.resize(pixel_data, labels)
+
             if objects.volumetric:
-                for index, plane in enumerate(labels):
+                for index, plane in enumerate(resized_labels):
                     pixel_data[index] = skimage.segmentation.mark_boundaries(
                         pixel_data[index],
                         plane,
@@ -321,12 +329,34 @@ class OverlayOutlines(cellprofiler.module.Module):
             else:
                 pixel_data = skimage.segmentation.mark_boundaries(
                     pixel_data,
-                    labels,
+                    resized_labels,
                     color=color,
                     mode=self.line_mode.value.lower()
                 )
 
         return pixel_data
+
+    def resize(self, pixel_data, labels):
+        initial_shape = labels.shape
+
+        final_shape = pixel_data.shape
+
+        if pixel_data.ndim > labels.ndim:  # multichannel
+            final_shape = final_shape[:-1]
+
+        adjust = numpy.subtract(final_shape, initial_shape)
+
+        cropped = skimage.util.crop(
+            labels,
+            [(0, dim_adjust) for dim_adjust in numpy.abs(numpy.minimum(adjust, numpy.zeros_like(adjust)))]
+        )
+
+        return numpy.pad(
+            cropped,
+            [(0, dim_adjust) for dim_adjust in numpy.maximum(adjust, numpy.zeros_like(adjust))],
+            mode="constant",
+            constant_values=(0)
+        )
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

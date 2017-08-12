@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
-
-Increase the global contrast of a low-contrast image or volume. A low contrast image has a background and
-foreground that are both dark, or both light. Histogram equalization redistributes intensities such that the most
-common frequencies are more distinct, increasing contrast.
-
+Increase the global contrast of a low-contrast image or volume. A low
+contrast image has a background and foreground that are both dark, or
+both light. Histogram equalization redistributes intensities such that
+the most common frequencies are more distinct, increasing contrast.
 """
 
 import cellprofiler.image

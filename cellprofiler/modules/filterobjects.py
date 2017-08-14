@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+FilterObjects
+=============
+
 **Filter Objects** eliminates objects based on their measurements (e.g.,
 area, shape, texture, intensity).
 

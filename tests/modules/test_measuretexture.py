@@ -80,18 +80,14 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             module = pipeline.modules()[i]
             self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
             self.assertEqual(len(module.image_groups), 2)
-            self.assertEqual(module.image_groups[0].image_name, "rawDNA")
-            self.assertEqual(module.image_groups[1].image_name, "rawGFP")
+            self.assertEqual(module.image_groups[0].image_name.value, "rawDNA")
+            self.assertEqual(module.image_groups[1].image_name.value, "rawGFP")
             self.assertEqual(len(module.object_groups), 2)
-            self.assertEqual(module.object_groups[0].object_name, "Cells")
-            self.assertEqual(module.object_groups[1].object_name, "Nuclei")
+            self.assertEqual(module.object_groups[0].object_name.value, "Cells")
+            self.assertEqual(module.object_groups[1].object_name.value, "Nuclei")
             self.assertEqual(len(module.scale_groups), 2)
             self.assertEqual(module.scale_groups[0].scale, 3)
-            self.assertEqual(len(module.scale_groups[0].angles.get_selections()), 1)
-            self.assertEqual(module.scale_groups[0].angles.get_selections()[0], cellprofiler.modules.measuretexture.H_HORIZONTAL)
             self.assertEqual(module.scale_groups[1].scale, 5)
-            self.assertEqual(len(module.scale_groups[1].angles.get_selections()), 1)
-            self.assertEqual(module.scale_groups[1].angles.get_selections()[0], cellprofiler.modules.measuretexture.H_HORIZONTAL)
 
     def test_01_03_load_v3(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
@@ -140,23 +136,13 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
             module = pipeline.modules()[i]
             self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
             self.assertEqual(len(module.image_groups), 2)
-            self.assertEqual(module.image_groups[0].image_name, "rawDNA")
-            self.assertEqual(module.image_groups[1].image_name, "rawGFP")
+            self.assertEqual(module.image_groups[0].image_name.value, "rawDNA")
+            self.assertEqual(module.image_groups[1].image_name.value, "rawGFP")
             self.assertEqual(len(module.object_groups), 2)
-            self.assertEqual(module.object_groups[0].object_name, "Cells")
-            self.assertEqual(module.object_groups[1].object_name, "Nuclei")
+            self.assertEqual(module.object_groups[0].object_name.value, "Cells")
+            self.assertEqual(module.object_groups[1].object_name.value, "Nuclei")
             self.assertEqual(len(module.scale_groups), 2)
             self.assertEqual(module.scale_groups[0].scale, 3)
-            angles = module.scale_groups[0].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_HORIZONTAL in angles)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_VERTICAL in angles)
-
-            angles = module.scale_groups[1].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_DIAGONAL in angles)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_ANTIDIAGONAL in angles)
-
             self.assertEqual(module.scale_groups[1].scale, 5)
             self.assertEqual(module.images_or_objects, cellprofiler.modules.measuretexture.IO_BOTH)
 
@@ -231,23 +217,13 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             module = pipeline.modules()[i]
             self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
             self.assertEqual(len(module.image_groups), 2)
-            self.assertEqual(module.image_groups[0].image_name, "rawDNA")
-            self.assertEqual(module.image_groups[1].image_name, "rawGFP")
+            self.assertEqual(module.image_groups[0].image_name.value, "rawDNA")
+            self.assertEqual(module.image_groups[1].image_name.value, "rawGFP")
             self.assertEqual(len(module.object_groups), 2)
-            self.assertEqual(module.object_groups[0].object_name, "Cells")
-            self.assertEqual(module.object_groups[1].object_name, "Nuclei")
+            self.assertEqual(module.object_groups[0].object_name.value, "Cells")
+            self.assertEqual(module.object_groups[1].object_name.value, "Nuclei")
             self.assertEqual(len(module.scale_groups), 2)
             self.assertEqual(module.scale_groups[0].scale, 3)
-            angles = module.scale_groups[0].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_HORIZONTAL in angles)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_VERTICAL in angles)
-
-            angles = module.scale_groups[1].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_DIAGONAL in angles)
-            self.assertTrue(cellprofiler.modules.measuretexture.H_ANTIDIAGONAL in angles)
-
             self.assertEqual(module.scale_groups[1].scale, 5)
 
     def test_02_02_many_objects(self):
@@ -259,7 +235,6 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
         module.scale_groups[0].scale.value = 2
-        module.scale_groups[0].angles.value = ",".join(cellprofiler.modules.measuretexture.H_ALL)
         module.run(workspace)
         m = workspace.measurements
         all_measurements = module.get_measurements(
@@ -281,13 +256,18 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             all_scales = module.get_measurement_scales(
                     workspace.pipeline, INPUT_OBJECTS_NAME, cellprofiler.modules.measuretexture.TEXTURE,
                     measurement, INPUT_IMAGE_NAME)
-            for angle in cellprofiler.modules.measuretexture.H_ALL:
-                mname = '%s_%s_%s_%d_%s' % (
-                    cellprofiler.modules.measuretexture.TEXTURE, measurement, INPUT_IMAGE_NAME, 2, cellprofiler.modules.measuretexture.H_TO_A[angle])
+            for angle in range(4):
+                mname = '{}_{}_{}_{:d}_{:02d}'.format(
+                    cellprofiler.modules.measuretexture.TEXTURE,
+                    measurement,
+                    INPUT_IMAGE_NAME,
+                    2,
+                    angle
+                )
                 self.assertTrue(mname in all_column_features)
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
                 self.assertTrue(numpy.all(values != 0))
-                self.assertTrue("%d_%s" % (2, cellprofiler.modules.measuretexture.H_TO_A[angle]) in all_scales)
+                self.assertTrue("{:d}_{:02d}".format(2, angle) in all_scales)
 
     # def test_03_03_measurement_columns(self):
     #     '''Check that results of get_measurement_columns match the actual column names output'''
@@ -404,11 +384,11 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         self.assertFalse(
                 m.has_feature(
                         cellprofiler.measurement.IMAGE,
-                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                        "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME))
         self.assertTrue(
                 m.has_feature(
                         INPUT_OBJECTS_NAME,
-                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                        "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME))
 
     def test_04_05_no_object_measurements(self):
         image = numpy.ones((10, 10)) * .5
@@ -422,8 +402,8 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         self.assertTrue(
                 m.has_feature(
                         cellprofiler.measurement.IMAGE,
-                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                        "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME))
         self.assertFalse(
                 m.has_feature(
                         INPUT_OBJECTS_NAME,
-                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                        "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME))

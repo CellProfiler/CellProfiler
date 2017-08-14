@@ -68,14 +68,6 @@ Available measurements
    -  *InfoMeas1*
    -  *InfoMeas2*
 
-   Each measurement is suffixed with the direction of the offset used
-   between pixels in the co-occurrence matrix:
-
-   -  *0:* Horizontal
-   -  *90:* Vertical
-   -  *45:* Diagonal
-   -  *135:* Anti-diagonal
-
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 
 Technical notes
@@ -101,8 +93,10 @@ References
 import centrosome.cpmorphology
 import centrosome.filter
 import centrosome.haralick
+import mahotas.features
 import numpy
 import scipy.ndimage
+import skimage.util
 
 import cellprofiler.measurement
 import cellprofiler.module
@@ -120,26 +114,9 @@ InverseDifferenceMoment SumAverage SumVariance SumEntropy Entropy
 DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
 
 H_HORIZONTAL = "Horizontal"
-A_HORIZONTAL = "0"
 H_VERTICAL = "Vertical"
-A_VERTICAL = "90"
 H_DIAGONAL = "Diagonal"
-A_DIAGONAL = "45"
 H_ANTIDIAGONAL = "Anti-diagonal"
-A_ANTIDIAGONAL = "135"
-H_ALL = [
-    H_HORIZONTAL,
-    H_VERTICAL,
-    H_DIAGONAL,
-    H_ANTIDIAGONAL
-]
-
-H_TO_A = {
-    H_HORIZONTAL: A_HORIZONTAL,
-    H_VERTICAL: A_VERTICAL,
-    H_DIAGONAL: A_DIAGONAL,
-    H_ANTIDIAGONAL: A_ANTIDIAGONAL
-}
 
 IO_IMAGES = "Images"
 IO_OBJECTS = "Objects"
@@ -236,7 +213,7 @@ class MeasureTexture(cellprofiler.module.Module):
         elements = [
             ["image_name"],
             ["object_name"],
-            ["scale", "angles"]
+            ["scale"]
         ]
 
         for groups, elements in zip(groups, elements):
@@ -407,36 +384,6 @@ class MeasureTexture(cellprofiler.module.Module):
 
         group.append("scale", scale)
 
-        angles = cellprofiler.setting.MultiChoice(
-            choices=H_ALL,
-            doc="""
-            <p>The Haralick texture measurements are based on the correlation between pixels offset by the scale
-            in one of four directions:</p>
-
-            <ul>
-                <li><i>{H_HORIZONTAL}</i> - the correlated pixel is "scale" pixels to the right of the pixel
-                of interest.</li>
-                <li><i>{H_VERTICAL}</i> - the correlated pixel is "scale" pixels below the pixel of
-                interest.</li>
-                <li><i>{H_DIAGONAL}</i> - the correlated pixel is "scale" pixels to the right and "scale"
-                pixels below the pixel of interest.</li>
-                <li><i>{H_ANTIDIAGONAL}</i> - the correlated pixel is "scale" pixels to the left and "scale"
-                pixels below the pixel of interest.</li>
-            </ul>
-
-            <p>Choose one or more directions to measure.</p>
-            """.format(**{
-                "H_ANTIDIAGONAL": H_ANTIDIAGONAL,
-                "H_DIAGONAL": H_DIAGONAL,
-                "H_HORIZONTAL": H_HORIZONTAL,
-                "H_VERTICAL": H_VERTICAL
-            }),
-            text="Angles to measure",
-            value=H_ALL
-        )
-
-        group.append("angles", angles)
-
         if removable:
             remove_setting = cellprofiler.setting.RemoveSettingButton(
                 entry=group,
@@ -515,10 +462,10 @@ class MeasureTexture(cellprofiler.module.Module):
     def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
         def format_measurement(scale_group):
             return [
-                "{:d}_{}".format(
+                "{:d}_{:02d}".format(
                     scale_group.scale.value,
-                    H_TO_A[angle]
-                ) for angle in scale_group.angles.get_selections()
+                    angle
+                ) for angle in range(4)
             ]
 
         if len(self.get_measurement_images(pipeline, object_name, category, measurement)) > 0:
@@ -534,16 +481,16 @@ class MeasureTexture(cellprofiler.module.Module):
             for feature in self.get_features():
                 for image_group in self.image_groups:
                     for scale_group in self.scale_groups:
-                        for angle in scale_group.angles.get_selections():
+                        for angle in range(4):
                             columns += [
                                 (
                                     cellprofiler.measurement.IMAGE,
-                                    "{}_{}_{}_{:d}_{}".format(
+                                    "{}_{}_{}_{:d}_{:02d}".format(
                                         TEXTURE,
                                         feature,
                                         image_group.image_name.value,
                                         scale_group.scale.value,
-                                        H_TO_A[angle]
+                                        angle
                                     ),
                                     cellprofiler.measurement.COLTYPE_FLOAT
                                 )
@@ -554,16 +501,16 @@ class MeasureTexture(cellprofiler.module.Module):
                 for feature in self.get_features():
                     for image_group in self.image_groups:
                         for scale_group in self.scale_groups:
-                            for angle in scale_group.angles.get_selections():
+                            for angle in range(4):
                                 columns += [
                                     (
                                         object_group.object_name.value,
-                                        "{}_{}_{}_{:d}_{}".format(
+                                        "{}_{}_{}_{:d}_{:02d}".format(
                                             TEXTURE,
                                             feature,
                                             image_group.image_name.value,
                                             scale_group.scale.value,
-                                            H_TO_A[angle]
+                                            angle
                                         ),
                                         cellprofiler.measurement.COLTYPE_FLOAT
                                     )
@@ -589,15 +536,13 @@ class MeasureTexture(cellprofiler.module.Module):
                 scale = scale_group.scale.value
 
                 if self.wants_image_measurements():
-                    for angle in scale_group.angles.get_selections():
-                        statistics += self.run_image(image_name, scale, angle, workspace)
+                    statistics += self.run_image(image_name, scale, workspace)
 
                 if self.wants_object_measurements():
                     for object_group in self.object_groups:
                         object_name = object_group.object_name.value
 
-                        for angle in scale_group.angles.get_selections():
-                            statistics += self.run_one(image_name, object_name, scale, angle, workspace)
+                        statistics += self.run_one(image_name, object_name, scale, workspace)
 
         if self.show_window:
             workspace.display_data.statistics = statistics
@@ -607,91 +552,97 @@ class MeasureTexture(cellprofiler.module.Module):
 
         figure.subplot_table(0, 0, workspace.display_data.statistics, col_labels=workspace.display_data.col_labels)
 
-    def run_one(self, image_name, object_name, scale, angle, workspace):
+    def run_one(self, image_name, object_name, scale, workspace):
         statistics = []
 
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
         objects = workspace.get_objects(object_name)
-
-        pixel_data = image.pixel_data
-
-        if image.has_mask:
-            mask = image.mask
-        else:
-            mask = None
-
         labels = objects.segmented
 
+        unique_labels = numpy.unique(labels)
+        if unique_labels[0] == 0:
+            unique_labels = unique_labels[1:]
+
+        if len(unique_labels) == 0:
+            for direction in range(4):
+                for feature_name in F_HARALICK:
+                    statistics += self.record_measurement(
+                        image=image_name,
+                        feature=feature_name,
+                        obj=object_name,
+                        result=numpy.zeros((0,)),
+                        scale="{:d}_{:02d}".format(scale, direction),
+                        workspace=workspace
+                    )
+
+            return statistics
+
+        # IMG-961: Ensure image and objects have the same shape.
         try:
-            pixel_data = objects.crop_image_similarly(pixel_data)
+            mask = image.mask if image.has_mask else numpy.ones_like(image.pixel_data, dtype=numpy.bool)
+            pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:
-            pixel_data, m1 = cellprofiler.object.size_similarly(labels, pixel_data)
+            pixel_data, m1 = cellprofiler.object.size_similarly(labels, image.pixel_data)
 
             if numpy.any(~m1):
-                if mask is None:
-                    mask = m1
-                else:
-                    mask, m2 = cellprofiler.object.size_similarly(labels, mask)
-
+                if image.has_mask:
+                    mask, m2 = cellprofiler.object.size_similarly(labels, image.mask)
                     mask[~m2] = False
+                else:
+                    mask = m1
 
-        if numpy.all(labels == 0):
-            for name in F_HARALICK:
-                statistics += self.record_measurement(
-                    workspace,
-                    image_name,
-                    object_name,
-                    str(scale) + "_" + H_TO_A[angle], name, numpy.zeros((0,))
-                )
-        else:
-            scale_i, scale_j = self.get_angle_ij(angle, scale)
+        pixel_data[~mask] = 0
+        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+        pixel_data = skimage.util.img_as_ubyte(pixel_data)
 
-            for name, value in zip(F_HARALICK, centrosome.haralick.Haralick(pixel_data, labels, scale_i, scale_j, mask=mask).all()):
+        features = numpy.empty((4, 13, len(unique_labels)))
+
+        for index, label in enumerate(unique_labels):
+            # TODO: Catch error (record NaN?)
+            label_data = numpy.zeros_like(pixel_data)
+            label_data[labels == label] = pixel_data[labels == label]
+
+            features[:, :, index] = mahotas.features.haralick(
+                label_data,
+                distance=scale,
+                ignore_zeros=True
+            )
+
+        for direction, direction_features in enumerate(features):
+            for feature_name, feature in zip(F_HARALICK, direction_features):
                 statistics += self.record_measurement(
-                    workspace,
-                    image_name,
-                    object_name,
-                    str(scale) + "_" + H_TO_A[angle],
-                    name,
-                    value
+                    image=image_name,
+                    feature=feature_name,
+                    obj=object_name,
+                    result=feature,
+                    scale="{:d}_{:02d}".format(scale, direction),
+                    workspace=workspace
                 )
 
         return statistics
 
-    def get_angle_ij(self, angle, scale):
-        if angle == H_VERTICAL:
-            return scale, 0
-
-        if angle == H_HORIZONTAL:
-            return 0, scale
-
-        if angle == H_DIAGONAL:
-            return scale, scale
-
-        if angle == H_ANTIDIAGONAL:
-            return scale, -scale
-
-    def run_image(self, image_name, scale, angle, workspace):
+    def run_image(self, image_name, scale, workspace):
         statistics = []
 
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        pixel_data = image.pixel_data
+        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+        pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
 
-        image_labels = numpy.ones(pixel_data.shape, int)
+        features = mahotas.features.haralick(pixel_data, distance=scale)
 
-        if image.has_mask:
-            image_labels[~ image.mask] = 0
+        for direction, direction_features in enumerate(features):
+            object_name = "{:d}_{:02d}".format(scale, direction)
 
-        scale_i, scale_j = self.get_angle_ij(angle, scale)
-
-        names_and_values = zip(F_HARALICK, centrosome.haralick.Haralick(pixel_data, image_labels, scale_i, scale_j).all())
-
-        for name, value in names_and_values:
-            object_name = str(scale) + "_" + H_TO_A[angle]
-
-            statistics += self.record_image_measurement(workspace, image_name, object_name, name, value)
+            for feature_name, feature in zip(F_HARALICK, direction_features):
+                statistics += self.record_image_measurement(
+                    feature_name=feature_name,
+                    image_name=image_name,
+                    result=feature,
+                    scale=object_name,
+                    workspace=workspace
+                )
 
         return statistics
 
@@ -784,10 +735,19 @@ class MeasureTexture(cellprofiler.module.Module):
 
         if variable_revision_number == 4:
             #
+            #  Removed angles
+            #
+            image_count, object_count, scale_count = setting_values[:3]
+            scale_offset = 3 + int(image_count) + int(object_count)
+            scales = setting_values[scale_offset::2][:int(scale_count)]
+            new_setting_values = setting_values[:scale_offset] + scales
+
+            #
             # Removed "wants_gabor", and "gabor_angles"
             #
-            setting_values = setting_values[:-3] + setting_values[-1:]
+            new_setting_values += setting_values[-1:]
 
+            setting_values = new_setting_values
             variable_revision_number = 5
 
         return setting_values, variable_revision_number, False

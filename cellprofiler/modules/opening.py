@@ -50,7 +50,9 @@ class Opening(cellprofiler.module.ImageProcessing):
             raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
         else:
             if x.pixel_data.dtype == numpy.bool:
-                self.function = skimage.morphology.binary_opening
+                # issue #2837
+                # self.function = skimage.morphology.binary_opening
+                self.function = skimage.morphology.opening
             else:
                 self.function = skimage.morphology.opening
 
@@ -62,7 +64,9 @@ def planewise_morphology_opening(x_data, structuring_element):
 
     for index, plane in enumerate(x_data):
         if x_data.dtype == numpy.bool:
-            y_data[index] = skimage.morphology.binary_opening(plane, structuring_element)
+            # issue #2837
+            # y_data[index] = skimage.morphology.binary_opening(plane, structuring_element)
+            y_data[index] = skimage.morphology.opening(plane, structuring_element)
         else:
             y_data[index] = skimage.morphology.opening(plane, structuring_element)
 

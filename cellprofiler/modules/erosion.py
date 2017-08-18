@@ -49,7 +49,9 @@ class Erosion(cellprofiler.module.ImageProcessing):
             raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
         else:
             if x.pixel_data.dtype == numpy.bool:
-                self.function = skimage.morphology.binary_erosion
+                # issue #2837
+                # self.function = skimage.morphology.binary_erosion
+                self.function = skimage.morphology.erosion
             else:
                 self.function = skimage.morphology.erosion
 
@@ -61,7 +63,9 @@ def planewise_morphology_erosion(x_data, structuring_element):
 
     for index, plane in enumerate(x_data):
         if x_data.dtype == numpy.bool:
-            y_data[index] = skimage.morphology.binary_erosion(plane, structuring_element)
+            # issue #2837
+            # y_data[index] = skimage.morphology.binary_erosion(plane, structuring_element)
+            y_data[index] = skimage.morphology.erosion(plane, structuring_element)
         else:
             y_data[index] = skimage.morphology.erosion(plane, structuring_element)
 

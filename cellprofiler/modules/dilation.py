@@ -49,7 +49,9 @@ class Dilation(cellprofiler.module.ImageProcessing):
             raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
         else:
             if x.pixel_data.dtype == numpy.bool:
-                self.function = skimage.morphology.binary_dilation
+                # issue #2837
+                # self.function = skimage.morphology.binary_dilation
+                self.function = skimage.morphology.dilation
             else:
                 self.function = skimage.morphology.dilation
 
@@ -61,7 +63,9 @@ def planewise_morphology_dilation(x_data, structuring_element):
 
     for index, plane in enumerate(x_data):
         if x_data.dtype == numpy.bool:
-            y_data[index] = skimage.morphology.binary_dilation(plane, structuring_element)
+            # issue #2837
+            # y_data[index] = skimage.morphology.binary_dilation(plane, structuring_element)
+            y_data[index] = skimage.morphology.dilation(plane, structuring_element)
         else:
             y_data[index] = skimage.morphology.dilation(plane, structuring_element)
 

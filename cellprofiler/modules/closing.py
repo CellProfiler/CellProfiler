@@ -54,7 +54,9 @@ class Closing(cellprofiler.module.ImageProcessing):
             raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
         else:
             if x.pixel_data.dtype == numpy.bool:
-                self.function = skimage.morphology.binary_closing
+                # issue #2837
+                # self.function = skimage.morphology.binary_closing
+                self.function = skimage.morphology.closing
             else:
                 self.function = skimage.morphology.closing
 
@@ -66,7 +68,9 @@ def planewise_morphology_closing(x_data, structuring_element):
 
     for index, plane in enumerate(x_data):
         if x_data.dtype == numpy.bool:
-            y_data[index] = skimage.morphology.binary_closing(plane, structuring_element)
+            # issue #2837
+            # y_data[index] = skimage.morphology.binary_closing(plane, structuring_element)
+            y_data[index] = skimage.morphology.closing(plane, structuring_element)
         else:
             y_data[index] = skimage.morphology.closing(plane, structuring_element)
 

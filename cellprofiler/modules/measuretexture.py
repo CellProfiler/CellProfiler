@@ -599,15 +599,17 @@ class MeasureTexture(cellprofiler.module.Module):
         features = numpy.empty((4, 13, len(unique_labels)))
 
         for index, label in enumerate(unique_labels):
-            # TODO: Catch error (record NaN?)
             label_data = numpy.zeros_like(pixel_data)
             label_data[labels == label] = pixel_data[labels == label]
 
-            features[:, :, index] = mahotas.features.haralick(
-                label_data,
-                distance=scale,
-                ignore_zeros=True
-            )
+            try:
+                features[:, :, index] = mahotas.features.haralick(
+                    label_data,
+                    distance=scale,
+                    ignore_zeros=True
+                )
+            except ValueError:
+                features[:, :, index] = numpy.nan
 
         for direction, direction_features in enumerate(features):
             for feature_name, feature in zip(F_HARALICK, direction_features):

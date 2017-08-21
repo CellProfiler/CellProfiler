@@ -407,3 +407,20 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 m.has_feature(
                         INPUT_OBJECTS_NAME,
                         "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME))
+
+    def test_missing_direction(self):
+        image = numpy.random.rand(10, 10)
+
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+        labels[2:6, 3] = 1
+
+        workspace, module = self.make_workspace(image, labels)
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        for feature_name in measurements.get_feature_names(INPUT_OBJECTS_NAME):
+            if feature_name.startswith(cellprofiler.modules.measuretexture.TEXTURE):
+                values = measurements.get_current_measurement(INPUT_OBJECTS_NAME, feature_name)
+                assert numpy.all(values == 0)

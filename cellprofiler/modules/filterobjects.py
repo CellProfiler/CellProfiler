@@ -838,7 +838,7 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
         '''
         labels = src_objects.segmented
 
-        interior_pixels = skimage.morphology.erosion(numpy.ones_like(labels))
+        interior_pixels = skimage.morphology.binary_erosion(numpy.ones_like(labels))
 
         border_pixels = numpy.logical_not(interior_pixels)
 
@@ -854,7 +854,7 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
             # is the border + formerly masked-out pixels.
             mask = src_objects.parent_image.mask
 
-            interior_pixels = skimage.morphology.erosion(mask)
+            interior_pixels = skimage.morphology.binary_erosion(mask)
 
             border_pixels = numpy.logical_not(interior_pixels)
 

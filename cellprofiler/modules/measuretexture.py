@@ -465,7 +465,7 @@ class MeasureTexture(cellprofiler.module.Module):
                 "{:d}_{:02d}".format(
                     scale_group.scale.value,
                     angle
-                ) for angle in range(4)
+                ) for angle in range(13 if pipeline.volumetric() else 4)
             ]
 
         if len(self.get_measurement_images(pipeline, object_name, category, measurement)) > 0:
@@ -481,7 +481,7 @@ class MeasureTexture(cellprofiler.module.Module):
             for feature in self.get_features():
                 for image_group in self.image_groups:
                     for scale_group in self.scale_groups:
-                        for angle in range(4):
+                        for angle in range(13 if pipeline.volumetric() else 4):
                             columns += [
                                 (
                                     cellprofiler.measurement.IMAGE,
@@ -501,7 +501,7 @@ class MeasureTexture(cellprofiler.module.Module):
                 for feature in self.get_features():
                     for image_group in self.image_groups:
                         for scale_group in self.scale_groups:
-                            for angle in range(4):
+                            for angle in range(13 if pipeline.volumetric() else 4):
                                 columns += [
                                     (
                                         object_group.object_name.value,
@@ -564,8 +564,10 @@ class MeasureTexture(cellprofiler.module.Module):
         if unique_labels[0] == 0:
             unique_labels = unique_labels[1:]
 
+        n_directions = 13 if objects.volumetric else 4
+
         if len(unique_labels) == 0:
-            for direction in range(4):
+            for direction in range(n_directions):
                 for feature_name in F_HARALICK:
                     statistics += self.record_measurement(
                         image=image_name,
@@ -596,7 +598,7 @@ class MeasureTexture(cellprofiler.module.Module):
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         pixel_data = skimage.util.img_as_ubyte(pixel_data)
 
-        features = numpy.empty((4, 13, len(unique_labels)))
+        features = numpy.empty((n_directions, 13, len(unique_labels)))
 
         for index, label in enumerate(unique_labels):
             label_data = numpy.zeros_like(pixel_data)

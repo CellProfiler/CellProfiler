@@ -30,8 +30,12 @@ class TestMeasureTexture(unittest.TestCase):
                                                      object_set,
                                                      cellprofiler.measurement.Measurements(),
                                                      image_set_list)
-        image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, convert=convert,
-                                                                 mask=mask))
+        image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(
+            image,
+            convert=convert,
+            dimensions=image.ndim,
+            mask=mask
+        ))
         objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -424,3 +428,119 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             if feature_name.startswith(cellprofiler.modules.measuretexture.TEXTURE):
                 values = measurements.get_current_measurement(INPUT_OBJECTS_NAME, feature_name)
                 assert numpy.all(values == 0)
+
+    def test_volume_image_measurements(self):
+        image = numpy.random.rand(10, 10, 10)
+
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+
+        workspace, module = self.make_workspace(image, labels)
+
+        module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
+
+        module.scale_groups[0].scale.value = 2
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        for direction in range(13):
+            assert measurements.has_feature(
+                cellprofiler.measurement.IMAGE,
+                "Texture_AngularSecondMoment_{}_2_{:02d}".format(INPUT_IMAGE_NAME, direction)
+            )
+
+    def test_volume_object_measurements_no_objects(self):
+        image = numpy.random.rand(10, 10, 10)
+
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+
+        workspace, module = self.make_workspace(image, labels)
+
+        module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
+
+        module.scale_groups[0].scale.value = 2
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        for direction in range(13):
+            assert measurements.has_feature(
+                INPUT_OBJECTS_NAME,
+                "Texture_AngularSecondMoment_{}_2_{:02d}".format(INPUT_IMAGE_NAME, direction)
+            )
+
+    def test_volume_object_measurements(self):
+        image = numpy.random.rand(10, 10, 10)
+
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+        labels[2:6, 4:8, 2:6] = 1
+
+        workspace, module = self.make_workspace(image, labels)
+
+        module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
+
+        module.scale_groups[0].scale.value = 2
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        for direction in range(13):
+            assert measurements.has_feature(
+                INPUT_OBJECTS_NAME,
+                "Texture_AngularSecondMoment_{}_2_{:02d}".format(INPUT_IMAGE_NAME, direction)
+            )
+
+    def test_get_measurement_scales_image(self):
+        image = numpy.random.rand(10, 10)
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+        workspace, module = self.make_workspace(image, labels)
+        workspace.pipeline.set_volumetric(False)
+
+        measurement_scales = module.get_measurement_scales(
+            workspace.pipeline,
+            INPUT_OBJECTS_NAME,
+            cellprofiler.modules.measuretexture.TEXTURE,
+            "AngularSecondMoment",
+            INPUT_IMAGE_NAME
+        )
+
+        assert len(measurement_scales) == 4
+
+    def test_get_measurement_scales_volume(self):
+        image = numpy.random.rand(10, 10, 10)
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+        workspace, module = self.make_workspace(image, labels)
+        workspace.pipeline.set_volumetric(True)
+
+        measurement_scales = module.get_measurement_scales(
+            workspace.pipeline,
+            INPUT_OBJECTS_NAME,
+            cellprofiler.modules.measuretexture.TEXTURE,
+            "AngularSecondMoment",
+            INPUT_IMAGE_NAME
+        )
+
+        assert len(measurement_scales) == 13
+
+    def test_get_measurement_columns_image(self):
+        image = numpy.random.rand(10, 10)
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+        workspace, module = self.make_workspace(image, labels)
+        workspace.pipeline.set_volumetric(False)
+
+        measurement_columns = module.get_measurement_columns(workspace.pipeline)
+
+        assert len(measurement_columns) == 2 * 4 * 13
+
+    def test_get_measurement_columns_volume(self):
+        image = numpy.random.rand(10, 10, 10)
+        labels = numpy.zeros_like(image, dtype=numpy.uint8)
+        workspace, module = self.make_workspace(image, labels)
+        workspace.pipeline.set_volumetric(True)
+
+        measurement_columns = module.get_measurement_columns(workspace.pipeline)
+
+        assert len(measurement_columns) == 2 * 13 * 13

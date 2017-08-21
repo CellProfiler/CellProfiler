@@ -37,7 +37,7 @@ class TestMeasureTexture(unittest.TestCase):
         object_set.add_objects(objects, INPUT_OBJECTS_NAME)
         return workspace, module
 
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10865
@@ -89,7 +89,7 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             self.assertEqual(module.scale_groups[0].scale, 3)
             self.assertEqual(module.scale_groups[1].scale, 5)
 
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10865
@@ -146,7 +146,7 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
             self.assertEqual(module.scale_groups[1].scale, 5)
             self.assertEqual(module.images_or_objects, cellprofiler.modules.measuretexture.IO_BOTH)
 
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20141017202435
@@ -226,7 +226,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertEqual(module.scale_groups[0].scale, 3)
             self.assertEqual(module.scale_groups[1].scale, 5)
 
-    def test_02_02_many_objects(self):
+    def test_many_objects(self):
         '''Regression test for IMG-775'''
         numpy.random.seed(22)
         image = numpy.random.uniform(size=(100, 100))
@@ -289,7 +289,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
     #             if m.startswith(M.TEXTURE):
     #                 assert (obname, m, 'float') in module.get_measurement_columns(pipeline), 'no entry matching %s in get_measurement_columns.'%((obname, m, 'float'))
 
-    def test_03_05_categories(self):
+    def test_categories(self):
         workspace, module = self.make_workspace(numpy.zeros((10, 10)),
                                                 numpy.zeros((10, 10), int))
         self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
@@ -315,7 +315,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 workspace.pipeline, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
 
-    def test_03_06_measurements(self):
+    def test_measurements(self):
         workspace, module = self.make_workspace(numpy.zeros((10, 10)),
                                                 numpy.zeros((10, 10), int))
         self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
@@ -325,7 +325,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertTrue(all([f in cellprofiler.modules.measuretexture.F_HARALICK for f in features]))
             self.assertTrue(all([f in features for f in cellprofiler.modules.measuretexture.F_HARALICK]))
 
-    def test_04_01_zeros(self):
+    def test_zeros(self):
         '''Make sure the module can run on an empty labels matrix'''
         workspace, module = self.make_workspace(numpy.zeros((10, 10)),
                                                 numpy.zeros((10, 10), int))
@@ -337,7 +337,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
                 self.assertEqual(len(values), 0)
 
-    def test_04_02_wrong_size(self):
+    def test_wrong_size(self):
         '''Regression test for IMG-961: objects & image different size'''
         numpy.random.seed(42)
         image = numpy.random.uniform(size=(10, 30))
@@ -354,7 +354,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 expected = me.get_current_measurement(INPUT_OBJECTS_NAME, f)
                 self.assertEqual(values, expected)
 
-    def test_04_03_mask(self):
+    def test_mask(self):
         numpy.random.seed(42)
         image = numpy.random.uniform(size=(10, 30))
         mask = numpy.zeros(image.shape, bool)
@@ -372,7 +372,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 expected = me.get_current_measurement(INPUT_OBJECTS_NAME, f)
                 self.assertEqual(values, expected)
 
-    def test_04_04_no_image_measurements(self):
+    def test_no_image_measurements(self):
         image = numpy.ones((10, 10)) * .5
         labels = numpy.ones((10, 10), int)
         workspace, module = self.make_workspace(image, labels)
@@ -390,7 +390,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                         INPUT_OBJECTS_NAME,
                         "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME))
 
-    def test_04_05_no_object_measurements(self):
+    def test_no_object_measurements(self):
         image = numpy.ones((10, 10)) * .5
         labels = numpy.ones((10, 10), int)
         workspace, module = self.make_workspace(image, labels)

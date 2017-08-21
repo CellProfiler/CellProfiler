@@ -101,18 +101,9 @@ import cellprofiler.setting
 
 TEXTURE = "Texture"
 
-OG_NAME = "name"
-
-OG_REMOVE = "remove"
-
 F_HARALICK = """AngularSecondMoment Contrast Correlation Variance
 InverseDifferenceMoment SumAverage SumVariance SumEntropy Entropy
 DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
-
-H_HORIZONTAL = "Horizontal"
-H_VERTICAL = "Vertical"
-H_DIAGONAL = "Diagonal"
-H_ANTIDIAGONAL = "Anti-diagonal"
 
 IO_IMAGES = "Images"
 IO_OBJECTS = "Objects"
@@ -714,7 +705,7 @@ class MeasureTexture(cellprofiler.module.Module):
             for scale in setting_values[scale_offset:scale_offset + scale_count]:
                 new_setting_values += [
                     scale,
-                    H_HORIZONTAL
+                    "Horizontal"
                 ]
 
             new_setting_values += setting_values[scale_offset + scale_count:]

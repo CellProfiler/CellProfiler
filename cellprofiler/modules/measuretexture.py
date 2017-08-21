@@ -90,12 +90,8 @@ References
 .. _(link): http://dx.doi.org/10.1109/TSMC.1973.4309314
 """
 
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.haralick
 import mahotas.features
 import numpy
-import scipy.ndimage
 import skimage.util
 
 import cellprofiler.measurement
@@ -651,14 +647,12 @@ class MeasureTexture(cellprofiler.module.Module):
         return statistics
 
     def record_measurement(self, workspace, image, obj, scale, feature, result):
-        data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
-
-        data[~numpy.isfinite(data)] = 0
+        result[~numpy.isfinite(result)] = 0
 
         workspace.add_measurement(
             obj,
             "{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale)),
-            data
+            result
         )
 
         # TODO: get outta crazee towne
@@ -675,7 +669,7 @@ class MeasureTexture(cellprofiler.module.Module):
             [
                 image,
                 obj,
-                "{} {}".format(aggregate, feature), scale, "{:.2}".format(fn(data)) if len(data) else "-"
+                "{} {}".format(aggregate, feature), scale, "{:.2}".format(fn(result)) if len(result) else "-"
             ] for aggregate, fn in functions
         ]
 

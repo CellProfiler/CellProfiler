@@ -339,3 +339,6 @@ class MeasureImageIntensity(cpm.Module):
         if variable_revision_number == 1:
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

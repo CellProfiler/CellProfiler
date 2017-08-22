@@ -740,3 +740,6 @@ class MeasureTexture(cellprofiler.module.Module):
             variable_revision_number = 5
 
         return setting_values, variable_revision_number, False
+
+    def volumetric(self):
+        return True

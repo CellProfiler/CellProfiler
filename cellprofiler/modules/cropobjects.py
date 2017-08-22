@@ -6,7 +6,7 @@ each object is saved as a mask where the object is labeled as “255” and the 
 The dimensions of the mask are the same as the parent image.
 In the case of crops from the original image, an image is saved for each object based on its bounding box (the dimensions
 of the resulting images are the same as the ones of the bounding boxes)
-The filename for a crop is formatted like “{object name}_{label index}_{timestamp}.tiff”
+The filename for a crop or mask is formatted like “{object name}_{label index}_{timestamp}.tiff”
 """
 
 import numpy
@@ -18,7 +18,7 @@ import time
 import cellprofiler.module
 import cellprofiler.setting
 
-SAVE_PER_OBJECT= "Objects"
+SAVE_PER_OBJECT = "Objects"
 SAVE_MASK = "Masks"
 
 
@@ -32,14 +32,23 @@ class CropObjects(cellprofiler.module.Module):
     def create_settings(self):
 
         self.export_option = cellprofiler.setting.Choice(
-                "Export option", [SAVE_PER_OBJECT, SAVE_MASK], doc="""
+            "Export option",
+            [
+                SAVE_PER_OBJECT,
+                SAVE_MASK
+            ],
+            doc="""
             Choose the way you want the per-object crops to be exported.
             <p>The choices are:<br>
-            <ul><li><i>%(SAVE_PER_OBJECT)s</i>: Save a per-object crop from the original image based on the object's 
+            <ul><li><i>{SAVE_PER_OBJECT}</i>: Save a per-object crop from the original image based on the object's
             bounding box.</li>
-            <li><i>%(SAVE_MASK)s</i>: Export a per-object mask.</li>
+            <li><i>{SAVE_MASK}</i>: Export a per-object mask.</li>
             </ul></p>
-            """ % globals())
+            """.format(**{
+                "SAVE_PER_OBJECT": SAVE_PER_OBJECT,
+                "SAVE_MASK": SAVE_MASK
+            })
+        )
 
         self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
             "Objects",

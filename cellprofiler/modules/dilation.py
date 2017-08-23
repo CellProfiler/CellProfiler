@@ -56,13 +56,7 @@ class Dilation(cellprofiler.module.ImageProcessing):
 
         else:
 
-            if x.pixel_data.dtype == numpy.bool:
-
-                self.function = skimage.morphology.dilation
-
-            else:
-
-                self.function = skimage.morphology.dilation
+            self.function = skimage.morphology.dilation
 
         super(Dilation, self).run(workspace)
 

@@ -57,13 +57,7 @@ class Opening(cellprofiler.module.ImageProcessing):
 
         else:
 
-            if x.pixel_data.dtype == numpy.bool:
-
-                self.function = skimage.morphology.opening
-
-            else:
-
-                self.function = skimage.morphology.opening
+            self.function = skimage.morphology.opening
 
         super(Opening, self).run(workspace)
 

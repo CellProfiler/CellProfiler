@@ -56,13 +56,7 @@ class Erosion(cellprofiler.module.ImageProcessing):
 
         else:
 
-            if x.pixel_data.dtype == numpy.bool:
-
-                self.function = skimage.morphology.erosion
-
-            else:
-
-                self.function = skimage.morphology.erosion
+            self.function = skimage.morphology.erosion
 
         super(Erosion, self).run(workspace)
 

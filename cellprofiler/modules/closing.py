@@ -60,13 +60,7 @@ class Closing(cellprofiler.module.ImageProcessing):
 
         else:
 
-            if x.pixel_data.dtype == numpy.bool:
-
-                self.function = skimage.morphology.closing
-
-            else:
-
-                self.function = skimage.morphology.closing
+            self.function = skimage.morphology.closing
 
         super(Closing, self).run(workspace)
 

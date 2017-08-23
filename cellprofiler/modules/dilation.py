@@ -67,12 +67,6 @@ def planewise_morphology_dilation(x_data, structuring_element):
 
     for index, plane in enumerate(x_data):
 
-        if x_data.dtype == numpy.bool:
-
-            y_data[index] = skimage.morphology.dilation(plane, structuring_element)
-
-        else:
-
-            y_data[index] = skimage.morphology.dilation(plane, structuring_element)
+        y_data[index] = skimage.morphology.dilation(plane, structuring_element)
 
     return y_data

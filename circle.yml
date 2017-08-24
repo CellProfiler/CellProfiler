@@ -3,9 +3,7 @@ dependencies:
     - brew update
     - brew install mysql
     - brew install wxpython
-    - pip install --upgrade cython
-    - pip install --upgrade numpy
-    - pip install --upgrade scipy
+    - pip install --upgrade cython numpy scipy
   override:
     - pip install --editable .[test] --upgrade
 deployment:
@@ -17,6 +15,3 @@ deployment:
 machine:
   xcode:
     version: 8.3
-test:
-  override:
-    - echo "foo"

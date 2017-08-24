@@ -1,18 +1,23 @@
-'''<b>Image Math</b> performs simple mathematical operations on image intensities.
-<hr>
-This module can perform addition, subtraction, multiplication, division, or averaging
-of two or more image intensities, as well as inversion, log transform, or scaling by
-a constant for individual image intensities.
+# coding=utf-8
 
-<p>Keep in mind that after the requested operations are carried out, the final image
-may have a substantially different range of pixel
-intensities than the original. CellProfiler
-assumes that the image is scaled from 0 &ndash; 1 for object identification and
-display purposes, so additional rescaling may be needed. Please see the
-<b>RescaleIntensity</b> module for more scaling options.</p>
+"""
+**Image Math** performs simple mathematical operations on image
+intensities.
 
-See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
-'''
+This module can perform addition, subtraction, multiplication, division,
+or averaging of two or more image intensities, as well as inversion, log
+transform, or scaling by a constant for individual image intensities.
+
+Keep in mind that after the requested operations are carried out, the
+final image may have a substantially different range of pixel
+intensities than the original. CellProfiler assumes that the image is
+scaled from 0 – 1 for object identification and display purposes, so
+additional rescaling may be needed. Please see the **RescaleIntensity**
+module for more scaling options.
+
+See also **ApplyThreshold**, **RescaleIntensity**,
+**CorrectIlluminationCalculate**.
+"""
 
 import inflect
 import numpy

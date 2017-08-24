@@ -1,19 +1,26 @@
-"""<b>Save Images </b> saves image or movie files.
-<hr>
+# coding=utf-8
+
+"""
+Save Images
+===========
+
+**Save Images** saves image or movie files.
+
 Because CellProfiler usually performs many image analysis steps on many
-groups of images, it does <i>not</i> save any of the resulting images to the
-hard drive unless you specifically choose to do so with the <b>SaveImages</b>
-module. You can save any of the
-processed images created by CellProfiler during the analysis using this module.
+groups of images, it does *not* save any of the resulting images to the
+hard drive unless you specifically choose to do so with the
+**SaveImages** module. You can save any of the processed images created
+by CellProfiler during the analysis using this module.
 
-<p>You can choose from many different image formats for saving your files. This
-allows you to use the module as a file format converter, by loading files
-in their original format and then saving them in an alternate format.</p>
+You can choose from many different image formats for saving your files.
+This allows you to use the module as a file format converter, by loading
+files in their original format and then saving them in an alternate
+format.
 
-<p>Note that saving images in 12-bit format is not supported, and 16-bit format
-is supported for TIFF only.</p>
+Note that saving images in 12-bit format is not supported, and 16-bit
+format is supported for TIFF only.
 
-See also <b>NamesAndTypes</b>.
+See also **NamesAndTypes**.
 """
 
 import os

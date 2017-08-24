@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
+Remove objects
+==============
 
 Remove objects smaller or larger than the specified diameter.
-
 """
 
 import numpy

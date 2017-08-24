@@ -1,10 +1,14 @@
+# coding=utf-8
+
 """
-<b>Overlay Outlines</b> places outlines produced by an <b>Identify</b> module over a desired image.
-<hr>
-This module places outlines (in a special format produced by an <b>Identify</b> module) on any
-desired image (grayscale, color, or blank). The resulting image can be saved using the
-<b>SaveImages</b> module. See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects,
-IdentifyTertiaryObjects</b>.
+**Overlay Outlines** places outlines produced by an **Identify** module
+over a desired image.
+
+This module places outlines (in a special format produced by an
+**Identify** module) on any desired image (grayscale, color, or blank).
+The resulting image can be saved using the **SaveImages** module. See
+also **IdentifyPrimaryObjects, IdentifySecondaryObjects,
+IdentifyTertiaryObjects**.
 """
 
 import numpy

@@ -217,7 +217,7 @@ class Module(object):
         if self.__doc__ is None:
             doc = "<i>No help available for module</i>\n"
         else:
-            doc = self.__doc__
+            doc = self.__doc__.decode("utf-8")
         doc = doc.replace("\r", "").replace("\n\n", "<p>")
         doc = doc.replace("\n", " ")
         result = "<html style=""font-family:arial""><head><title>%s</title></head>" % self.module_name
@@ -232,8 +232,9 @@ class Module(object):
                     if first_setting_doc:
                         result = result + "</div><div><h2>Settings:</h2>"
                         first_setting_doc = False
-                    result = (result + "<h4>" + setting.text + "</h4><div>" +
-                              setting.doc + "</div>")
+                    setting_text = setting.text.decode("utf-8")
+                    setting_doc = setting.doc.decode("utf-8")
+                    result += "<h4>" + setting_text + "</h4><div>" + setting_doc + "</div>"
         result += "</div>"
         result += "</body></html>"
         return result

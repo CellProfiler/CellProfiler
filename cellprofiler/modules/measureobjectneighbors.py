@@ -1,43 +1,51 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each
-object has and records various properties about the neighbors' relationships,
-including the percentage of an object's edge pixels that touch a neighbor.
-<hr>
+# coding=utf-8
+
+"""
+**Measure Object Neighbors** calculates how many neighbors each object
+has and records various properties about the neighbors’ relationships,
+including the percentage of an object’s edge pixels that touch a
+neighbor.
+
 Given an image with objects identified (e.g., nuclei or cells), this
 module determines how many neighbors each object has. You can specify
 the distance within which objects should be considered neighbors, or
-that objects are only considered neighbors if they are directly touching.
+that objects are only considered neighbors if they are directly
+touching.
 
-<h4>Available measurements</h4>
-<b>Object measurements</b>
-<ul>
-<li><i>NumberOfNeighbors:</i> Number of neighbor objects.</li>
-<li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch
-neighbors, after the objects have been expanded to the specified distance.
-Note: This measurement is only available if you use the same set of objects
-for both objects and neighbors.</li>
-<li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
-<li><i>FirstClosestDistance:</i> The distance to the closest object.</li>
-<li><i>SecondClosestObjectNumber:</i> The index of the second closest object.</li>
-<li><i>SecondClosestDistance:</i> The distance to the second closest object.</li>
-<li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the
-vertex and the first and second closest object centers along the vectors.</li>
-</ul>
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<b>Object relationships:</b> The identity of the neighboring objects, for
-each object. Since per-object output is one-to-one and neighbors relationships
-are often many-to-one, they may be saved as a separate file in
-<b>ExportToSpreadsheet</b> by selecting <i>Object
-relationships</i> from the list of objects to export.
+**Object measurements**
 
-<h4>Technical notes</h4>
-Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or
-<b>IdentifySecondaryObjects</b> will still register as a neighbors for the purposes
-of accurate measurement. For instance, if an object touches a single object and
-that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but
-there will not be a corresponding <i>ClosestObjectNumber</i>.
+-  *NumberOfNeighbors:* Number of neighbor objects.
+-  *PercentTouching:* Percent of the object’s boundary pixels that touch
+   neighbors, after the objects have been expanded to the specified
+   distance. Note: This measurement is only available if you use the
+   same set of objects for both objects and neighbors.
+-  *FirstClosestObjectNumber:* The index of the closest object.
+-  *FirstClosestDistance:* The distance to the closest object.
+-  *SecondClosestObjectNumber:* The index of the second closest object.
+-  *SecondClosestDistance:* The distance to the second closest object.
+-  *AngleBetweenNeighbors:* The angle formed with the object center as
+   the vertex and the first and second closest object centers along the
+   vectors.
 
-See also the <b>Identify</b> modules.
-'''
+**Object relationships:** The identity of the neighboring objects, for
+each object. Since per-object output is one-to-one and neighbors
+relationships are often many-to-one, they may be saved as a separate
+file in **ExportToSpreadsheet** by selecting *Object relationships* from
+the list of objects to export.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+Objects discarded via modules such as **IdentifyPrimaryObjects** or
+**IdentifySecondaryObjects** will still register as a neighbors for the
+purposes of accurate measurement. For instance, if an object touches a
+single object and that object had been discarded, *NumberOfNeighbors*
+will be positive, but there will not be a corresponding
+*ClosestObjectNumber*. See also the **Identify** modules.
+"""
 
 import matplotlib.cm
 import numpy as np

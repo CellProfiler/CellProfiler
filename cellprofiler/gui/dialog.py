@@ -45,7 +45,9 @@ class Telemetry(wx.MessageDialog):
 
         extended_message = "Allow limited and anonymous usage statistics and " \
                            "exception reports to be sent to the CellProfiler " \
-                           "team to help improve CellProfiler. "
+                           "team to help improve CellProfiler.\n\n" \
+                           "(You can always update this setting in your " \
+                           "CellProfiler preferences.)"
 
         self.SetExtendedMessage(extended_message)
 

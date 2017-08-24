@@ -1,13 +1,16 @@
-'''<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
-<b>CorrectIlluminationCalculate</b>, to an image in order to correct for uneven
-illumination (uneven shading).
-<hr>
+# coding=utf-8
 
-This module applies a previously created illumination correction function,
-either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalculate</b>.
-This module corrects each image in the pipeline using the function specified.
+"""
+**Correct Illumination - Apply** applies an illumination function,
+usually created by **CorrectIlluminationCalculate**, to an image in
+order to correct for uneven illumination (uneven shading).
 
-See also <b>CorrectIlluminationCalculate</b>.'''
+This module applies a previously created illumination correction
+function, either loaded by **LoadSingleImage** or created by
+**CorrectIlluminationCalculate**. This module corrects each image in the
+pipeline using the function specified. See also
+**CorrectIlluminationCalculate**.
+"""
 
 import numpy as np
 

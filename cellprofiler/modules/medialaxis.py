@@ -1,10 +1,9 @@
 # coding=utf-8
 
 """
-
-Medial axis computes the medial axis of a binary image. A medial axis is a grayscale rather than binary morphological
-skeleton where each pixel’s intensity corresponds to a distance to a boundary.
-
+Medial axis computes the medial axis of a binary image. A medial axis is a
+grayscale rather than binary morphological skeleton where each pixel’s
+intensity corresponds to a distance to a boundary.
 """
 
 import cellprofiler.image

@@ -1,11 +1,11 @@
 # coding=utf-8
 
 """
-
-Detect edges in an image or volume using the Sobel transform. Multi-channel images are converted to grayscale before
-the transform is applied. An edge is a region in which intensity changes dramatically. For example, an edge is the line
-between a dark background and a bright foreground.
-
+Detect edges in an image or volume using the Sobel transform.
+Multi-channel images are converted to grayscale before the transform is
+applied. An edge is a region in which intensity changes dramatically.
+For example, an edge is the line between a dark background and a bright
+foreground.
 """
 
 import cellprofiler.image

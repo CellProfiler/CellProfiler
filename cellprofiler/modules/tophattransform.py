@@ -1,10 +1,13 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
+Top-hat transform
+=================
 
-<p>Perform a black or white top-hat transform on grayscale pixel data.</p>
-<p>Top-hat transforms are useful for extracting small elements and details from images and volumes.</p>
+Perform a black or white top-hat transform on grayscale pixel data.
 
+Top-hat transforms are useful for extracting small elements and details
+from images and volumes.
 """
 
 import skimage.morphology
@@ -46,7 +49,8 @@ class TopHatTransform(cellprofiler.module.ImageProcessing):
         __settings__ = super(TopHatTransform, self).settings()
 
         return __settings__ + [
-            self.structuring_element
+            self.structuring_element,
+            self.operation_name
         ]
 
     def visible_settings(self):
@@ -58,9 +62,13 @@ class TopHatTransform(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        if self.operation_name.value == "Black top-hat transform":
-            self.function = skimage.morphology.black_tophat
-        else:
-            self.function = skimage.morphology.white_tophat
+        self.function = tophat_transform
 
         super(TopHatTransform, self).run(workspace)
+
+
+def tophat_transform(image, structuring_element, operation):
+    if operation == "Black top-hat transform":
+        return skimage.morphology.black_tophat(image, selem=structuring_element)
+
+    return skimage.morphology.white_tophat(image, selem=structuring_element)

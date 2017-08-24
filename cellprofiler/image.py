@@ -18,41 +18,38 @@ logger = logging.getLogger(__name__)
 
 
 class Image(object):
-    """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
+    """
+    An image composed of a Numpy array plus secondary attributes such as mask and label matrices
 
     The secondary attributes:
-    mask - a binary image indicating the points of interest in the image.
-           The mask is the same size as the child image.
-    crop_mask - the binary image used to crop the parent image to the
-                dimensions of the child (this) image. The crop_mask is
-                the same size as the parent image.
-    parent_image - for derived images, the parent that was used to create
-                   this image. This image may inherit attributes from
-                   the parent image, such as the masks used to create the
-                   parent
-    masking_objects - the labels matrix from these objects is used to
-                      mask and crop the parent image to make this image.
-                      The labels are available as mask_labels and crop_labels.
-    convert - true to try to coerce whatever dtype passed (other than bool
-               or float) to a scaled image.
-    path_name - the path name to the file holding the image or None
-                for a derived image
-    file_name - the file name of the file holding the image or None for a
-                derived image
-    scale - the scaling suggested by the initial image format (e.g. 4095 for
-            a 12-bit a/d converter).
+
+    mask - a binary image indicating the points of interest in the image. The mask is the same size as the child image.
+
+    crop_mask - the binary image used to crop the parent image to the dimensions of the child (this) image. The crop_mask is the same size as the parent image.
+
+    parent_image - for derived images, the parent that was used to create this image. This image may inherit attributes from the parent image, such as the masks used to create the parent
+
+    masking_objects - the labels matrix from these objects is used to mask and crop the parent image to make this image. The labels are available as mask_labels and crop_labels.
+
+    convert - true to try to coerce whatever dtype passed (other than bool or float) to a scaled image.
+
+    path_name - the path name to the file holding the image or None for a derived image
+
+    file_name - the file name of the file holding the image or None for a derived image
+
+    scale - the scaling suggested by the initial image format (e.g. 4095 for a 12-bit a/d converter).
 
     Resolution of mask and cropping_mask properties:
-    The Image class looks for the mask and cropping_mask in the following
-    places:
+
+    The Image class looks for the mask and cropping_mask in the following places:
+
     * self: if set using the properties or specified in the initializer
-    * masking_objects: if set using the masking_object property or
-                       specified in the initializer. The crop_mask and
-                       mask are composed of all of the labeled points.
-    * parent_image: if set using the initializer. The child image inherits
-                    the mask and cropping mask of the parent.
-    Otherwise, the image has no mask or cropping mask and all pixels are
-    significant.
+
+    * masking_objects: if set using the masking_object property or specified in the initializer. The crop_mask and mask are composed of all of the labeled points.
+
+    * parent_image: if set using the initializer. The child image inherits the mask and cropping mask of the parent.
+
+    Otherwise, the image has no mask or cropping mask and all pixels are significant.
     """
 
     def __init__(self,

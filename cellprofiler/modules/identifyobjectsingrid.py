@@ -1,42 +1,45 @@
-'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid 
-that has been defined by the <b>DefineGrid</b> module.
-<hr>
-This module identifies objects that are contained within in a grid pattern, allowing
-you to measure the objects using <b>Measure</b> modules. It requires you to have
-defined a grid earlier in the pipeline, using the <b>DefineGrid</b> module.
+# coding=utf-8
 
-For several of the automatic options, you will need to enter the names of previously
-identified objects. Typically, this module is used to refine locations and/or
-shapes of objects of interest that you roughly identified in a previous <b>Identify</b>
-module. Within this module, objects are re-numbered according to the grid definitions
-rather than their original numbering from the earlier <b>Identify</b> module.
+"""
+**Identify Objects In Grid** identifies objects within each section of a
+grid that has been defined by the **DefineGrid** module.
 
-If placing the objects within the grid is impossible for some reason (the
-grid compartments are too close together to fit the proper sized circles,
-for example) the grid will fail and processing will be canceled unless
-you choose to re-use a grid from a previous successful image cycle.
+This module identifies objects that are contained within in a grid
+pattern, allowing you to measure the objects using **Measure** modules.
+It requires you to have defined a grid earlier in the pipeline, using
+the **DefineGrid** module. For several of the automatic options, you
+will need to enter the names of previously identified objects.
+Typically, this module is used to refine locations and/or shapes of
+objects of interest that you roughly identified in a previous
+**Identify** module. Within this module, objects are re-numbered
+according to the grid definitions rather than their original numbering
+from the earlier **Identify** module. If placing the objects within the
+grid is impossible for some reason (the grid compartments are too close
+together to fit the proper sized circles, for example) the grid will
+fail and processing will be canceled unless you choose to re-use a grid
+from a previous successful image cycle. *Special note on saving images:*
+You can use the settings in this module to pass object outlines along to
+the **OverlayOutlines**\ module and then save them with the
+**SaveImages** module. You can also pass along objects themselves to the
+object processing module **ConvertToImage** and then save them with the
+**SaveImages** module.
 
-<i>Special note on saving images:</i> You can use the settings in this module to
-pass object outlines along to the <b>OverlayOutlines</b>module and then
-save them with the <b>SaveImages</b> module. You can also pass along objects themselves
-to the object processing module <b>ConvertToImage</b> and then save them with the
-<b>SaveImages</b> module.
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<h4>Available measurements</h4>
-<b>Image measurements:</b>
-<ul>
-<li><i>Count:</i> The number of objects identified.</li>
-</ul>
-<b>Object measurements:</b>
-<ul>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
-mass of the identified objects.</li>
-<li><i>Number:</i> The numeric label assigned to each identified object
-according to the arrangement order specified by the user.</li>
-</ul>
+**Image measurements:**
 
-<p>See also <b>DefineGrid</b>.
-'''
+-  *Count:* The number of objects identified.
+
+**Object measurements:**
+
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+   of mass of the identified objects.
+-  *Number:* The numeric label assigned to each identified object
+   according to the arrangement order specified by the user.
+
+See also **DefineGrid**.
+"""
 
 import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel

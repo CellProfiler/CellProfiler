@@ -36,7 +36,9 @@ a = Analysis(
     binaries=[],
     cipher=block_cipher,
     datas=datas,
-    excludes=[],
+    excludes=[
+        "zmq.libzmq"
+    ],
     hiddenimports=hiddenimports,
     hookspath=[],
     pathex=[
@@ -46,6 +48,8 @@ a = Analysis(
     win_no_prefer_redirects=False,
     win_private_assemblies=False
 )
+
+a.binaries = [x for x in a.binaries if not x[0].startswith("libzmq.pyd")]
 
 pyz = PYZ(
     a.pure,

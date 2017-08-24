@@ -489,6 +489,8 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             self.outlines_name
         ]
 
+        return help_settings
+
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab:
             raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")

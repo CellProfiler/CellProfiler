@@ -1,16 +1,22 @@
-"""workspace.py - the workspace for an imageset
+"""
+workspace.py - the workspace for an imageset
 """
 
 import logging
+import os
+import shutil
+
+import h5py
+import six
+
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.utilities.hdf5_dict
 
 logger = logging.getLogger(__name__)
-from cStringIO import StringIO
-import numpy as np
-import h5py
-import os
 
-from cellprofiler.grid import Grid
-from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline
 
@@ -40,9 +46,9 @@ def is_workspace_file(path):
         return False
     h5file = h5py.File(path, mode="r")
     try:
-        if not HDF5FileList.has_file_list(h5file):
+        if not cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(h5file):
             return False
-        return HDF5Dict.has_hdf5_dict(h5file)
+        return cellprofiler.utilities.hdf5_dict.HDF5Dict.has_hdf5_dict(h5file)
     finally:
         h5file.close()
 
@@ -93,7 +99,7 @@ class Workspace(object):
         self.__file_list = None
         self.__loading = False
         if measurements is not None:
-            self.set_file_list(HDF5FileList(measurements.hdf5_dict.hdf5_file))
+            self.set_file_list(cellprofiler.utilities.hdf5_dict.HDF5FileList(measurements.hdf5_dict.hdf5_file))
         self.__notification_callbacks = []
 
         self.interaction_handler = None
@@ -272,7 +278,6 @@ class Workspace(object):
         # See also:
         # main().interaction_handler() in worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
-        import cellprofiler.preferences as cpprefs
         if "headless_ok" in kwargs:
             tmp = kwargs.copy()
             del tmp["headless_ok"]
@@ -281,7 +286,7 @@ class Workspace(object):
         else:
             headless_ok = False
         if self.interaction_handler is None:
-            if cpprefs.get_headless() and not headless_ok:
+            if cellprofiler.preferences.get_headless() and not headless_ok:
                 raise self.NoInteractionException()
             else:
                 return module.handle_interaction(*args, **kwargs)
@@ -362,13 +367,6 @@ class Workspace(object):
         load_pipeline - true to load the pipeline from the file, false to
                         use the current pipeline.
         '''
-        import shutil
-        from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
-            M_DEFAULT_OUTPUT_FOLDER
-        import cellprofiler.measurement as cpmeas
-        from cellprofiler.preferences import set_default_image_directory, \
-            set_default_output_directory
-
         image_set_and_measurements_are_same = False
         if self.__measurements is not None:
             image_set_and_measurements_are_same = (
@@ -379,36 +377,36 @@ class Workspace(object):
             #
             # Copy the file to a temporary location before opening
             #
-            fd, self.__filename = cpmeas.make_temporary_file()
+            fd, self.__filename = cellprofiler.measurement.make_temporary_file()
             os.close(fd)
 
             shutil.copyfile(filename, self.__filename)
 
-            self.__measurements = cpmeas.Measurements(
+            self.__measurements = cellprofiler.measurement.Measurements(
                     filename=self.__filename, mode="r+")
             if self.__file_list is not None:
                 self.__file_list.remove_notification_callback(
                         self.__on_file_list_changed)
-            self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+            self.__file_list = cellprofiler.utilities.hdf5_dict.HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
             self.__file_list.add_notification_callback(self.__on_file_list_changed)
             if load_pipeline and self.__measurements.has_feature(
-                    cpmeas.EXPERIMENT, M_PIPELINE):
+                    cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.M_PIPELINE):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
-                        M_PIPELINE).encode("utf-8")
-                self.pipeline.load(StringIO(pipeline_txt))
+                        cellprofiler.pipeline.M_PIPELINE).encode("utf-8")
+                self.pipeline.load(six.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()
             else:
-                fd = StringIO()
+                fd = six.StringIO()
                 self.pipeline.savetxt(fd, save_image_plane_details=False)
                 self.__measurements.add_experiment_measurement(
-                        M_PIPELINE, fd.getvalue())
+                        cellprofiler.pipeline.M_PIPELINE, fd.getvalue())
 
             for feature, function in (
-                    (M_DEFAULT_INPUT_FOLDER, set_default_image_directory),
-                    (M_DEFAULT_OUTPUT_FOLDER, set_default_output_directory)):
-                if self.measurements.has_feature(cpmeas.EXPERIMENT, feature):
-                    path = self.measurements[cpmeas.EXPERIMENT, feature]
+                    (cellprofiler.pipeline.M_DEFAULT_INPUT_FOLDER, cellprofiler.preferences.set_default_image_directory),
+                    (cellprofiler.pipeline.M_DEFAULT_OUTPUT_FOLDER, cellprofiler.preferences.set_default_output_directory)):
+                if self.measurements.has_feature(cellprofiler.measurement.EXPERIMENT, feature):
+                    path = self.measurements[cellprofiler.measurement.EXPERIMENT, feature]
                     if os.path.isdir(path):
                         function(path)
             if image_set_and_measurements_are_same:
@@ -423,18 +421,17 @@ class Workspace(object):
 
         filename - name of the workspace file
         '''
-        from .measurement import Measurements, make_temporary_file
-        if isinstance(self.measurements, Measurements):
+        if isinstance(self.measurements, cellprofiler.measurement.Measurements):
             self.close()
 
-        fd, self.__filename = make_temporary_file()
-        self.__measurements = Measurements(
+        fd, self.__filename = cellprofiler.measurement.make_temporary_file()
+        self.__measurements = cellprofiler.measurement.Measurements(
                 filename=self.__filename, mode="w")
         os.close(fd)
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(
                     self.__on_file_list_changed)
-        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        self.__file_list = cellprofiler.utilities.hdf5_dict.HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
         self.__file_list.add_notification_callback(self.__on_file_list_changed)
         self.notify(self.WorkspaceCreatedEvent(self))
 
@@ -474,22 +471,16 @@ class Workspace(object):
             os.unlink(self.__filename)
 
     def save_pipeline_to_measurements(self):
-        from cellprofiler.pipeline import M_PIPELINE
-        fd = StringIO()
+        fd = six.StringIO()
         self.pipeline.savetxt(fd, save_image_plane_details=False)
-        self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
+        self.measurements.add_experiment_measurement(cellprofiler.pipeline.M_PIPELINE, fd.getvalue())
         self.measurements.flush()
 
     def save_default_folders_to_measurements(self):
-        from cellprofiler.pipeline import M_DEFAULT_INPUT_FOLDER
-        from cellprofiler.pipeline import M_DEFAULT_OUTPUT_FOLDER
-        from cellprofiler.preferences import get_default_image_directory
-        from cellprofiler.preferences import get_default_output_directory
-
         self.measurements.add_experiment_measurement(
-                M_DEFAULT_INPUT_FOLDER, get_default_image_directory())
+                cellprofiler.pipeline.M_DEFAULT_INPUT_FOLDER, cellprofiler.preferences.get_default_image_directory())
         self.measurements.add_experiment_measurement(
-                M_DEFAULT_OUTPUT_FOLDER, get_default_output_directory())
+                cellprofiler.pipeline.M_DEFAULT_OUTPUT_FOLDER, cellprofiler.preferences.get_default_output_directory())
 
     def invalidate_image_set(self):
         if not self.__loading:
@@ -507,7 +498,6 @@ class Workspace(object):
         assume that the cache reflects pipeline + file list unless "force"
         is true.
         '''
-        import cellprofiler.measurement as cpmeas
         if len(self.measurements.get_image_numbers()) == 0 or force:
             self.measurements.clear()
             self.save_pipeline_to_measurements()
@@ -523,8 +513,7 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.image import ImageSetList
-                self.__image_set_list = ImageSetList()
+                self.__image_set_list = cellprofiler.image.ImageSetList()
             try:
                 result = self.pipeline.prepare_run(self, stop_module)
                 return result

@@ -1,5 +1,6 @@
-'''utf16encode.py - encode unicode strings as escaped utf16
-'''
+"""
+utf16encode.py - encode unicode strings as escaped utf16
+"""
 
 
 def utf16encode(x):

@@ -1,7 +1,5 @@
 import errno
 import logging
-
-logger = logging.getLogger(__name__)
 import json
 import os
 import socket
@@ -12,6 +10,8 @@ import zmq
 import Queue
 import numpy as np
 import cellprofiler.grid as cpg
+
+logger = logging.getLogger(__name__)
 
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 SD_KEY_DICT = "__keydict__"

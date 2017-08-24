@@ -17,3 +17,6 @@ deployment:
 machine:
   xcode:
     version: 8.3
+test:
+  override:
+    - echo "foo"

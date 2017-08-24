@@ -4,11 +4,8 @@
 Create an RGB image with color-coded labels overlaid on a grayscale image.
 """
 
-import matplotlib.cm
-import numpy
-import skimage.color
-
 import cellprofiler.module
+import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
 
@@ -64,9 +61,9 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
         return visible_settings
 
     def run(self, workspace):
-        self.function = lambda pixel_data, objects_name, opacity: overlay_objects(
+        self.function = lambda pixel_data, objects_name, opacity: cellprofiler.object.overlay_labels(
             pixel_data,
-            workspace.object_set.get_objects(objects_name),
+            workspace.object_set.get_objects(objects_name).segmented,
             opacity
         )
 
@@ -74,55 +71,3 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
 
     def display(self, workspace, figure, cmap=["gray", None]):
         super(OverlayObjects, self).display(workspace, figure, cmap=["gray", None])
-
-
-def overlay_objects(pixel_data, objects, opacity):
-    labels = objects.segmented
-
-    colors = _colors(labels)
-
-    if objects.volumetric:
-        overlay = numpy.zeros(labels.shape + (3,), dtype=numpy.float32)
-
-        for index, plane in enumerate(pixel_data):
-            unique_labels = numpy.unique(labels[index])
-
-            if unique_labels[0] == 0:
-                unique_labels = unique_labels[1:]
-
-            overlay[index] = skimage.color.label2rgb(
-                labels[index],
-                alpha=opacity,
-                bg_color=[0, 0, 0],
-                bg_label=0,
-                colors=colors[unique_labels - 1],
-                image=plane
-            )
-
-        return overlay
-
-    return skimage.color.label2rgb(
-        labels,
-        alpha=opacity,
-        bg_color=[0, 0, 0],
-        bg_label=0,
-        colors=colors,
-        image=pixel_data
-    )
-
-
-def _colors(labels):
-    unique_labels = numpy.unique(labels)
-
-    if unique_labels[0] == 0:
-        unique_labels = unique_labels[1:]
-
-    mappable = matplotlib.cm.ScalarMappable(
-        cmap=matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-    )
-
-    colors = mappable.to_rgba(numpy.unique(labels)[1:])[:, :3]
-
-    numpy.random.shuffle(colors)
-
-    return colors

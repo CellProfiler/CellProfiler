@@ -7,6 +7,7 @@ import cellprofiler.gui.artist
 import cellprofiler.gui.help
 import cellprofiler.preferences
 import cellprofiler.preferences
+import cellprofiler.object
 import centrosome.cpmorphology
 import centrosome.outline
 import tools
@@ -1370,31 +1371,39 @@ class Figure(wx.Frame):
                 x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
 
     @allow_sharexy
-    def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
-                              sharex=None, sharey=None,
-                              use_imshow=False, dimensions=2):
-        """Show a labels matrix using the default color map
-
-        x,y - the subplot's coordinates
-        image - the binary image to show
-        title - the caption for the image
-        clear - clear the axis before showing
-        sharex, sharey - the coordinates of the subplot that dictates
-                panning and zooming, if any
-        use_imshow - Use matplotlib's imshow to display instead of creating
-                     our own artist.
+    def subplot_imshow_labels(self, x, y, image,
+                              title=None,
+                              clear=True,
+                              sharex=None,
+                              sharey=None,
+                              use_imshow=False,
+                              dimensions=2,
+                              background_image=None):
         """
-        cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+        Show a labels matrix using the default color map
 
-        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+        :param x: the subplot's row coordinate
+        :param y: the subplot's column coordinate
+        :param image: the segmentation to display
+        :param title: the caption for the image
+        :param clear: clear the axis before showing
+        :param sharex: the row coordinate of the subplot that dictates panning and zooming, if any
+        :param sharey: the column coordinate of the subplot that dictates panning and zooming, if any
+        :param use_imshow: use matplotlib's imshow to display, instead of creating our own artist
+        :param dimensions: dimensions of the data to display (2 or 3)
+        :param background_image: a base image to overlay label data on, or None for blank
+        :return:
+        """
+        if background_image is None:
+            background_image = numpy.zeros_like(labels, dtype=numpy.float32)
 
-        colors = mappable.to_rgba(numpy.unique(labels))[:, :3]
+        label_image = cellprofiler.object.overlay_labels(
+            labels=image,
+            opacity=0.7,
+            pixel_data=background_image
+        )
 
-        numpy.random.shuffle(colors)
-
-        image = skimage.color.label2rgb(labels, bg_label=0, colors=colors)
-
-        return self.subplot_imshow(x, y, image, title, clear,
+        return self.subplot_imshow(x, y, label_image, title, clear,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow=use_imshow, dimensions=dimensions)

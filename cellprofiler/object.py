@@ -1,11 +1,12 @@
-""" CellProfiler.Objects.py - represents a labelling of objects in an image
-"""
-
 import centrosome.index
 import centrosome.outline
+import matplotlib.cm
 import numpy
 import scipy.ndimage
 import scipy.sparse
+import skimage.color
+
+import cellprofiler.preferences
 
 OBJECT_TYPE_NAME = "objects"
 
@@ -950,3 +951,53 @@ def size_similarly(labels, secondary):
     mask = numpy.zeros(labels.shape, bool)
     mask[:i_max, :j_max] = 1
     return result, mask
+
+
+def overlay_labels(pixel_data, labels, opacity=0.7):
+    colors = _colors(labels)
+
+    if labels.ndim == 3:
+        overlay = numpy.zeros(labels.shape + (3,), dtype=numpy.float32)
+
+        for index, plane in enumerate(pixel_data):
+            unique_labels = numpy.unique(labels[index])
+
+            if unique_labels[0] == 0:
+                unique_labels = unique_labels[1:]
+
+            overlay[index] = skimage.color.label2rgb(
+                labels[index],
+                alpha=opacity,
+                bg_color=[0, 0, 0],
+                bg_label=0,
+                colors=colors[unique_labels - 1],
+                image=plane
+            )
+
+        return overlay
+
+    return skimage.color.label2rgb(
+        labels,
+        alpha=opacity,
+        bg_color=[0, 0, 0],
+        bg_label=0,
+        colors=colors,
+        image=pixel_data
+    )
+
+
+def _colors(labels):
+    unique_labels = numpy.unique(labels)
+
+    if unique_labels[0] == 0:
+        unique_labels = unique_labels[1:]
+
+    mappable = matplotlib.cm.ScalarMappable(
+        cmap=matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+    )
+
+    colors = mappable.to_rgba(numpy.unique(labels)[1:])[:, :3]
+
+    numpy.random.shuffle(colors)
+
+    return colors

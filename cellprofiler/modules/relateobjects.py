@@ -34,7 +34,7 @@ Available measurements
 -  *Parent:* The label number of the parent object, as assigned by an
    **Identify** module.
 
-See also: **ReassignObjectNumbers**, **MaskObjects**.
+See also: **SplitOrMergeObjects**, **MaskObjects**.
 """
 
 import re

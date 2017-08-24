@@ -1,30 +1,27 @@
 # -*- mode: python -*-
 
-import glob
 import os.path
 
-import cellprofiler
 import PyInstaller.utils.hooks
-import bioformats
-import javabridge
-import prokaryote
 
-datas = PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
+datas = []
 
-hiddenimports = PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
+datas += PyInstaller.utils.hooks.collect_data_files("bioformats")
+datas += PyInstaller.utils.hooks.collect_data_files("cellprofiler")
+datas += PyInstaller.utils.hooks.collect_data_files("javabridge")
+datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
+datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
-options = [('v', None, 'OPTION'), ('W ignore', None, 'OPTION')]
+datas += [("cellprofiler/data/images/*", "cellprofiler/data/images")]
+
+hiddenimports = []
+
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
+
+options = [("v", None, "OPTION"), ("W ignore", None, "OPTION")]
 
 block_cipher = None
-
-pattern = os.path.join(os.path.dirname(cellprofiler.__file__), "modules", "*.py")
-
-for pathname in glob.glob(pattern):
-    name, _ = os.path.splitext(os.path.basename(pathname))
-
-    module = "cellprofiler.modules." + name
-
-    hiddenimports.append(module)
 
 hiddenimports += [
     "imageio",
@@ -36,26 +33,25 @@ hiddenimports += [
 
 a = Analysis(
     [
-        'CellProfiler.py'
+        "CellProfiler.py"
     ],
     binaries=[],
     cipher=block_cipher,
-    datas=datas + [
-        (os.path.dirname(bioformats.__file__), "bioformats"),
-        (os.path.dirname(cellprofiler.__file__), "cellprofiler"),
-        (os.path.dirname(javabridge.__file__), "javabridge"),
-        (os.path.dirname(prokaryote.__file__), "prokaryote")
+    datas=datas,
+    excludes=[
+        "zmq.libzmq"
     ],
-    excludes=[],
     hiddenimports=hiddenimports,
     hookspath=[],
     pathex=[
-        '.'
+        "."
     ],
     runtime_hooks=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False
 )
+
+a.binaries = [x for x in a.binaries if not x[0].startswith("libzmq.pyd")]
 
 pyz = PYZ(
     a.pure,
@@ -67,11 +63,11 @@ exe = EXE(
     pyz,
     a.scripts,
     # options,
-    console=False,
+    console=True,
     debug=False,
     exclude_binaries=True,
-    icon=os.path.join("cellprofiler", "data", "CellProfilerIcon.ico"),
-    name='CellProfiler-App',
+    icon=os.path.join("cellprofiler", "data", "images", "CellProfilerIcon.ico"),
+    name="cp",
     strip=False,
     upx=True
 )
@@ -81,7 +77,7 @@ coll = COLLECT(
     a.binaries,
     a.zipfiles,
     a.datas,
-    name='CellProfiler',
+    name="CellProfiler",
     strip=False,
     upx=True
 )
@@ -89,6 +85,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     bundle_identifier=None,
-    icon=None,
-    name='CellProfiler.app'
+    icon=os.path.join("cellprofiler", "data", "images", "CellProfilerIcon.ico"),
+    name="CellProfiler.app"
 )

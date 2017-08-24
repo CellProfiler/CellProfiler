@@ -40,7 +40,7 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     pathex=[
-        '.'
+        "."
     ],
     runtime_hooks=[],
     win_no_prefer_redirects=False,

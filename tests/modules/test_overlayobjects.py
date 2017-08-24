@@ -4,6 +4,7 @@ import skimage.color
 import skimage.filters
 import skimage.measure
 
+import cellprofiler.image
 import cellprofiler.modules.overlayobjects
 import cellprofiler.object
 
@@ -44,22 +45,58 @@ def test_run(image, module, image_set, object_set, workspace):
 
     actual_image = image_set.get_image("OverlayObjects")
 
-    if image.volumetric:
-        expected_image = numpy.zeros(objects.segmented.shape + (3,), dtype=numpy.float32)
+    assert actual_image.pixel_data.shape == objects.shape + (3,)
 
-        for index, plane in enumerate(image.pixel_data):
-            expected_image[index] = skimage.color.label2rgb(
-                objects.segmented[index],
-                image=plane,
-                alpha=0.3,
-                bg_label=0
-            )
-    else:
-        expected_image = skimage.color.label2rgb(
-            objects.segmented,
-            image=image.pixel_data,
-            alpha=0.3,
-            bg_label=0
-        )
 
-    numpy.testing.assert_array_almost_equal(actual_image.pixel_data, expected_image)
+# https://github.com/CellProfiler/CellProfiler/issues/2751
+def test_run_issues_2751(image_set_list, measurements, module, object_set, pipeline):
+    data = numpy.zeros((9, 9, 9))
+
+    labels = numpy.zeros_like(data, dtype=numpy.uint8)
+    labels[:3, :3, :3] = 1
+    labels[:, 3:-3, 3:-3] = 2
+    labels[-3:, -3:, -3:] = 3
+
+    image = cellprofiler.image.Image(
+        data,
+        dimensions=3
+    )
+
+    image_set = image_set_list.get_image_set(0)
+    image_set.add("example", image)
+
+    objects = cellprofiler.object.Objects()
+    objects.segmented = labels
+
+    object_set.add_objects(objects, "DNA")
+
+    workspace = cellprofiler.workspace.Workspace(
+        image_set=image_set,
+        image_set_list=image_set_list,
+        measurements=measurements,
+        module=module,
+        object_set=object_set,
+        pipeline=pipeline
+    )
+
+    module.x_name.value = "example"
+    module.y_name.value = "OverlayObjects"
+    module.objects.value = "DNA"
+
+    module.run(workspace)
+
+    overlay_image = image_set.get_image("OverlayObjects")
+    overlay_pixel_data = overlay_image.pixel_data
+
+    overlay_region_1 = overlay_pixel_data[:3, :3, :3]
+    assert numpy.all(overlay_region_1 == overlay_region_1[0, 0, 0])
+
+    overlay_region_2 = overlay_pixel_data[:, 3:-3, 3:-3]
+    assert numpy.all(overlay_region_2 == overlay_region_2[0, 0, 0])
+
+    overlay_region_3 = overlay_pixel_data[-3:, -3:, -3:]
+    assert numpy.all(overlay_region_3 == overlay_region_3[0, 0, 0])
+
+    assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_2[0, 0, 0])
+    assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_3[0, 0, 0])
+    assert not numpy.all(overlay_region_2[0, 0, 0] == overlay_region_3[0, 0, 0])

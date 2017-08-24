@@ -12,7 +12,7 @@ dependencies:
     - pip install --upgrade cython numpy scipy
 deployment:
   master:
-    branch: master
+    branch: features/circle
     commands:
       - pip install --upgrade pyinstaller
       - pyinstaller CellProfiler.spec

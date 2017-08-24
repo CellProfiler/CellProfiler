@@ -31,7 +31,7 @@ hiddenimports += [
 
 a = Analysis(
     [
-        'CellProfiler.py'
+        "CellProfiler.py"
     ],
     binaries=[],
     cipher=block_cipher,
@@ -61,7 +61,7 @@ exe = EXE(
     debug=False,
     exclude_binaries=True,
     icon=os.path.join("cellprofiler", "data", "images", "CellProfilerIcon.ico"),
-    name='CellProfiler-App',
+    name="cp",
     strip=False,
     upx=True
 )
@@ -71,7 +71,7 @@ coll = COLLECT(
     a.binaries,
     a.zipfiles,
     a.datas,
-    name='CellProfiler',
+    name="CellProfiler",
     strip=False,
     upx=True
 )
@@ -79,6 +79,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     bundle_identifier=None,
-    icon=None,
-    name='CellProfiler.app'
+    icon=os.path.join("cellprofiler", "data", "images", "CellProfilerIcon.ico"),
+    name="CellProfiler.app"
 )

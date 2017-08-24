@@ -62,7 +62,7 @@ Available measurements
 ^^^^^^^^^^^^^^^^^^^^^^
 
 For details on the nomenclature used by CellProfiler for the exported
-measurements, see *Help > General Help > How Measurements Are Named*.
+measurements, see *Help > Using Your Output > How Measurements Are Named*.
 See also **ExportToDatabase**.
 """
 

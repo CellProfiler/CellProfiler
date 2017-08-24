@@ -1,6 +1,9 @@
+database:
+  pre:
+    - brew services start mysql
 dependencies:
   cache_directories:
-    - "/usr/local/lib/python2.7/site-packages"
+    - /usr/local/lib/python2.7/site-packages
   override:
     - pip install --editable .[test] --upgrade
   pre:
@@ -16,3 +19,6 @@ deployment:
 machine:
   xcode:
     version: 8.3
+test:
+  override:
+    - echo "foo"

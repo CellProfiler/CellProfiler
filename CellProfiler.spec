@@ -3,6 +3,7 @@
 import glob
 import os.path
 
+import cellprofiler
 import PyInstaller.utils.hooks
 import bioformats
 import javabridge
@@ -16,12 +17,14 @@ options = [('v', None, 'OPTION'), ('W ignore', None, 'OPTION')]
 
 block_cipher = None
 
-for pathname in glob.glob("cellprofiler/modules/*.py"):
-  name = os.path.splitext(os.path.basename(pathname))[0]
+pattern = os.path.join(os.path.dirname(cellprofiler.__file__), "modules", "*.py")
 
-  hiddenimport = "cellprofiler.modules." + name
+for pathname in glob.glob(pattern):
+  name, _ = os.path.splitext(os.path.basename(pathname))
 
-  hiddenimports.append(hiddenimport)
+  module = "cellprofiler.modules." + name
+
+  hiddenimports.append(module)
 
 hiddenimports += [
   "pywt._extensions._cwt"
@@ -34,10 +37,10 @@ a = Analysis(
   binaries=[],
   cipher=block_cipher,
   datas=datas + [
-    ('cellprofiler', 'cellprofiler'),
-    (os.path.dirname(prokaryote.__file__), "prokaryote"),
     (os.path.dirname(bioformats.__file__), "bioformats"),
-    (os.path.dirname(javabridge.__file__), "javabridge")
+    (os.path.dirname(cellprofiler.__file__), "cellprofiler"),
+    (os.path.dirname(javabridge.__file__), "javabridge"),
+    (os.path.dirname(prokaryote.__file__), "prokaryote")
   ],
   excludes=[],
   hiddenimports=hiddenimports,

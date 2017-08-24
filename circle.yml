@@ -16,6 +16,8 @@ deployment:
     commands:
       - pip install --upgrade pyinstaller
       - pyinstaller CellProfiler.spec
+      - cp /usr/local/Cellar/libpng/1.6.31/lib/libpng16.16.dylib dist/CellProfiler.app/Contents/MacOS
+      - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
 machine:
   xcode:
     version: 8.3

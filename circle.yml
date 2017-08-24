@@ -1,10 +1,13 @@
 dependencies:
   pre:
+    - brew update
+    - brew install mysql
+    - brew install wxpython
     - pip install --upgrade cython
     - pip install --upgrade numpy
     - pip install --upgrade scipy
   override:
-    - pip install --editable . --upgrade
+    - pip install --editable .[test] --upgrade
 machine:
   xcode:
     version: 8.3

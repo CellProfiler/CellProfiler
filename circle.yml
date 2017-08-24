@@ -1,11 +1,12 @@
 dependencies:
-  pre:
-    - brew update
-    - brew install mysql
-    - brew install wxpython
-    - pip install --upgrade cython numpy scipy
+  cache_directories:
+    - "/usr/local/lib/python2.7/site-packages"
   override:
     - pip install --editable .[test] --upgrade
+  pre:
+    - brew update
+    - brew install mysql wxpython
+    - pip install --upgrade cython numpy scipy
 deployment:
   master:
     branch: master

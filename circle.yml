@@ -1,5 +1,5 @@
 dependencies:
-  override:
+  pre:
     - pip install --upgrade cython
     - pip install --upgrade numpy
 machine:

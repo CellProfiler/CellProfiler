@@ -22,7 +22,7 @@ class Erosion(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Erosion, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement()
+        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
 
     def settings(self):
         __settings__ = super(Erosion, self).settings()

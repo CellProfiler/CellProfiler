@@ -22,7 +22,7 @@ class Dilation(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Dilation, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement()
+        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
 
     def settings(self):
         __settings__ = super(Dilation, self).settings()

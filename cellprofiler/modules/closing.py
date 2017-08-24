@@ -26,7 +26,7 @@ class Closing(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Closing, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement()
+        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
 
     def settings(self):
         __settings__ = super(Closing, self).settings()

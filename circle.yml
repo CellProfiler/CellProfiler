@@ -1,3 +1,7 @@
+dependencies:
+  override:
+    - pip install --upgrade cython
+    - pip install --upgrade numpy
 machine:
   xcode:
     version: 8.3

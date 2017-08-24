@@ -14,7 +14,7 @@ do not satisfy the specified parameters will be discarded.
 
 This module also may remove objects touching the image border or edges
 of a mask. This is useful if you would like to unify images via
-**ReassignObjectNumbers** before deciding to discard these objects.
+**SplitOrMergeObjects** before deciding to discard these objects.
 
 Please note that the objects that pass the filtering step comprise a new
 object set, and hence do not inherit the measurements associated with

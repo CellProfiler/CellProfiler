@@ -12,6 +12,8 @@ datas += PyInstaller.utils.hooks.collect_data_files("javabridge")
 datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
 datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
+datas += [("cellprofiler/data/images/*", "cellprofiler/data/images")]
+
 hiddenimports = []
 
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
@@ -61,7 +63,7 @@ exe = EXE(
     pyz,
     a.scripts,
     # options,
-    console=False,
+    console=True,
     debug=False,
     exclude_binaries=True,
     icon=os.path.join("cellprofiler", "data", "images", "CellProfilerIcon.ico"),

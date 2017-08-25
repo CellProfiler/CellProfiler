@@ -21,8 +21,8 @@ Note that the second image (and others following) is always aligned with
 respect to the first image. That is, the X/Y offsets indicate how much
 the second image needs to be shifted by to match the first.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *XShift, Yshift:* The pixel shift in X and Y of the aligned image
    with respect to the original image.

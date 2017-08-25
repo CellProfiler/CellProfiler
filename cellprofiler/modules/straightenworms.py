@@ -44,8 +44,8 @@ measurements. For a color image, the red, green and blue channels are
 averaged to yield a grayscale image. The intensity measurements are then
 made on that grayscale image.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements:**
 

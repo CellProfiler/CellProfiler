@@ -24,8 +24,8 @@ the **OverlayOutlines**\ module and then save them with the
 object processing module **ConvertToImage** and then save them with the
 **SaveImages** module.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 

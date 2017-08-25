@@ -114,20 +114,22 @@ class MeasureCorrelation(cpm.Module):
         self.spacer_2 = cps.Divider()
         self.thr = cps.Float(
                 "Set threshold as percentage of maximum intensity for the images",
-                15, minval=0, maxval=99, doc='''\
-            Select the threshold as a percentage of the maximum intensity of the above image [0-99].''')
+                15, minval=0, maxval=99, doc='''
+                \\ Select the threshold as a percentage of the maximum intensity of the
+                above image [0-99].''')
 
         self.images_or_objects = cps.Choice(
                 'Select where to measure correlation',
-                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''
-            You can measure the correlation in several ways:
-            <ul>
-            <li><i>%(M_OBJECTS)s:</i> Measure correlation only in those pixels previously
-            identified as an object. You will be asked to specify which object to measure from.</li>
-            <li><i>%(M_IMAGES)s:</i> Measure the correlation across all pixels in the images.</li>
-            <li><i>%(M_IMAGES_AND_OBJECTS)s:</i> Calculate both measurements above.</li>
-            </ul>
-            All methods measure correlation on a pixel by pixel basis.''' % globals())
+                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''You can measure the correlation in several ways:
+
+                -  *%(M\_OBJECTS)s:* Measure correlation only in those pixels previously
+                   identified as an object. You will be asked to specify which object to
+                   measure from.
+                -  *%(M\_IMAGES)s:* Measure the correlation across all pixels in the
+                   images.
+                -  *%(M\_IMAGES\_AND\_OBJECTS)s:* Calculate both measurements above.
+
+                All methods measure correlation on a pixel by pixel basis.''' % globals())
 
         self.object_groups = []
         self.add_object(can_delete=False)

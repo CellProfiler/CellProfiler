@@ -4,7 +4,7 @@
 ExportToSpreadsheet
 ===================
 
-**Export To Spreadsheet** exports measurements into one or more files
+**ExportToSpreadsheet** exports measurements into one or more files
 that can be opened in Excel or other spreadsheet programs.
 
 This module will convert the measurements to a comma-, tab-, or other

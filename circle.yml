@@ -11,13 +11,14 @@ dependencies:
     - brew install mysql wxpython
     - pip install --upgrade cython numpy scipy
 deployment:
-  master:
+  nightly:
     branch: features/circle
     commands:
       - pip install --upgrade pyinstaller
       - pyinstaller CellProfiler.spec
       - cp /usr/local/Cellar/libpng/1.6.31/lib/libpng16.16.dylib dist/CellProfiler.app/Contents/MacOS
       - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
+      - hdiutil create -srcfolder dist/CellProfiler.app -volname CellProfiler -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 500000k dist/CellProfiler.dmg
 general:
   artifacts:
     - dist/CellProfiler.app

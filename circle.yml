@@ -18,7 +18,8 @@ deployment:
       - pyinstaller CellProfiler.spec
       - cp /usr/local/Cellar/libpng/1.6.31/lib/libpng16.16.dylib dist/CellProfiler.app/Contents/MacOS
       - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
-      - hdiutil create -srcfolder dist/CellProfiler.app -volname CellProfiler -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 500000k dist/CellProfiler.dmg
+      - hdiutil create -srcfolder dist/CellProfiler.app -volname CellProfiler -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 500000k dist/CellProfiler-nightly.dmg
+      - aws s3 sync dist/CellProfiler.dmg s3://cellprofiler-releases --delete
 general:
   artifacts:
     - dist/CellProfiler.app

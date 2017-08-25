@@ -1,46 +1,59 @@
-'''<b>Measure Correlation</b> measures the colocalization and correlation between intensities in different images (e.g., different color channels) on a pixel-by-pixel basis, within identified
-objects or across an entire image.
-<hr>
-Given two or more images, this module calculates the correlation & colocalization (Overlap, Manders, Costes' Automated Threshold & Rank Weighted Colocalization) between the
-pixel intensities. The correlation / colocalization can be measured for entire
-images, or a correlation measurement can be made within each individual object.
+# coding=utf-8
 
-Correlations / Colocalizations will be calculated between all pairs of images that are selected in
-the module, as well as between selected objects. For example, if correlations
-are to be measured for a set of red, green, and blue images containing identified nuclei,
-measurements will be made between the following:
-<ul>
-<li>The blue and green, red and green, and red and blue images. </li>
-<li>The nuclei in each of the above image pairs.</li>
-</ul>
+"""
+**Measure Correlation** measures the colocalization and correlation
+between intensities in different images (e.g., different color channels)
+on a pixel-by-pixel basis, within identified objects or across an entire
+image.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Correlation:</i> The correlation between a pair of images <i>I</i> and <i>J</i>,
-calculated as Pearson's correlation coefficient. The formula is
-covariance(<i>I</i> ,<i>J</i>)/[std(<i>I</i> ) &times; std(<i>J</i>)].</li>
-<li><i>Slope:</i> The slope of the least-squares regression between a pair of images
-I and J. Calculated using the model <i>A</i> &times; <i>I</i> + <i>B</i> = <i>J</i>, w
-here <i>A</i> is the slope.</li>
-<li><i>Overlap coefficient:</i> The overlap coefficient is a modification of Pearson's correlation
-where average intesity values of the pixels are not subtracted from the original intesity values. For
-a pair of images R and G, the overlap coefficient is measured as
-r = sum(Ri * Gi) / sqrt (sum(Ri*Ri)*sum(Gi*Gi)).</li>
-<li><i>Manders coefficient:</i> The Manders coefficient for a pair of images R and G is measured as
-M1 = sum(Ri_coloc)/sum(Ri) and M2 = sum(Gi_coloc)/sum(Gi), where Ri_coloc = Ri when Gi > 0, 0 otherwise and
-Gi_coloc =  Gi when Ri >0, 0 otherwise.</li>
-<li><i>Manders coefficient (Costes Automated Threshold):</i> Costes' automated threshold estimates
-maximum threshold of intensity for each image based on correlation. Manders coefficient is applied
-on thresholded images as Ri_coloc = Ri when Gi > Gthr and Gi_coloc = Gi when Ri > Rthr where
-Gthr and Rthr are thresholds calculed using Costes' authomated threshold method.</li>
-<li><i>Rank Weighted Colocalization coefficient:</i> The RWC coefficient for a pair of images R and G is measured as
-RWC1 = sum(Ri_coloc*Wi)/sum(Ri) and RWC2 = sum(Gi_coloc*Wi)/sum(Gi), where Wi is Weight defined as
-Wi = (Rmax - Di)/Rmax where Rmax is the maximum of Ranks among R and G based on the max intensity, and
-Di = abs(Rank(Ri) - Rank(Gi)) (absolute difference in ranks between R and G) and Ri_coloc = Ri when Gi > 0, 0 otherwise
-and Gi_coloc =  Gi when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics 12:407).
-</li></ul>
+Given two or more images, this module calculates the correlation &
+colocalization (Overlap, Manders, Costes’ Automated Threshold & Rank
+Weighted Colocalization) between the pixel intensities. The correlation
+/ colocalization can be measured for entire images, or a correlation
+measurement can be made within each individual object. Correlations /
+Colocalizations will be calculated between all pairs of images that are
+selected in the module, as well as between selected objects. For
+example, if correlations are to be measured for a set of red, green, and
+blue images containing identified nuclei, measurements will be made
+between the following:
 
-'''
+-  The blue and green, red and green, and red and blue images.
+-  The nuclei in each of the above image pairs.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Correlation:* The correlation between a pair of images *I* and *J*,
+   calculated as Pearson’s correlation coefficient. The formula is
+   covariance(\ *I* ,\ *J*)/[std(\ *I* ) × std(\ *J*)].
+-  *Slope:* The slope of the least-squares regression between a pair of
+   images I and J. Calculated using the model *A* × *I* + *B* = *J*, w
+   here *A* is the slope.
+-  *Overlap coefficient:* The overlap coefficient is a modification of
+   Pearson’s correlation where average intesity values of the pixels are
+   not subtracted from the original intesity values. For a pair of
+   images R and G, the overlap coefficient is measured as r = sum(Ri \*
+   Gi) / sqrt (sum(Ri\*Ri)\*sum(Gi\*Gi)).
+-  *Manders coefficient:* The Manders coefficient for a pair of images R
+   and G is measured as M1 = sum(Ri\_coloc)/sum(Ri) and M2 =
+   sum(Gi\_coloc)/sum(Gi), where Ri\_coloc = Ri when Gi > 0, 0 otherwise
+   and Gi\_coloc = Gi when Ri >0, 0 otherwise.
+-  *Manders coefficient (Costes Automated Threshold):* Costes’ automated
+   threshold estimates maximum threshold of intensity for each image
+   based on correlation. Manders coefficient is applied on thresholded
+   images as Ri\_coloc = Ri when Gi > Gthr and Gi\_coloc = Gi when Ri >
+   Rthr where Gthr and Rthr are thresholds calculed using Costes’
+   authomated threshold method.
+-  *Rank Weighted Colocalization coefficient:* The RWC coefficient for a
+   pair of images R and G is measured as RWC1 =
+   sum(Ri\_coloc\*Wi)/sum(Ri) and RWC2 = sum(Gi\_coloc\*Wi)/sum(Gi),
+   where Wi is Weight defined as Wi = (Rmax - Di)/Rmax where Rmax is the
+   maximum of Ranks among R and G based on the max intensity, and Di =
+   abs(Rank(Ri) - Rank(Gi)) (absolute difference in ranks between R and
+   G) and Ri\_coloc = Ri when Gi > 0, 0 otherwise and Gi\_coloc = Gi
+   when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics
+   12:407).
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -533,13 +546,13 @@ class MeasureCorrelation(cpm.Module):
             tff = (self.thr.value / 100) * fix(scind.maximum(first_pixels, labels, lrange))
             tss = (self.thr.value / 100) * fix(scind.maximum(second_pixels, labels, lrange))
 
-            combined_thresh = (first_pixels > tff[labels - 1]) & (second_pixels > tss[labels - 1])
+            combined_thresh = (first_pixels >= tff[labels - 1]) & (second_pixels >= tss[labels - 1])
             fi_thresh = first_pixels[combined_thresh]
             si_thresh = second_pixels[combined_thresh]
-            tot_fi_thr = scind.sum(first_pixels[first_pixels > tff[labels - 1]], labels[first_pixels > tff[labels - 1]],
+            tot_fi_thr = scind.sum(first_pixels[first_pixels >= tff[labels - 1]], labels[first_pixels >= tff[labels - 1]],
                                    lrange)
-            tot_si_thr = scind.sum(second_pixels[second_pixels > tss[labels - 1]],
-                                   labels[second_pixels > tss[labels - 1]], lrange)
+            tot_si_thr = scind.sum(second_pixels[second_pixels >= tss[labels - 1]],
+                                   labels[second_pixels >= tss[labels - 1]], lrange)
 
             nonZero = (fi > 0) | (si > 0)
             xvar = np.var(fi[nonZero], axis=0, ddof=1)
@@ -575,11 +588,11 @@ class MeasureCorrelation(cpm.Module):
             fi_thresh_c = first_pixels[combined_thresh_c]
             si_thresh_c = second_pixels[combined_thresh_c]
             if np.any(fi_above_thr):
-                tot_fi_thr_c = scind.sum(first_pixels[first_pixels > thr_fi_c], labels[first_pixels > thr_fi_c], lrange)
+                tot_fi_thr_c = scind.sum(first_pixels[first_pixels >= thr_fi_c], labels[first_pixels >= thr_fi_c], lrange)
             else:
                 tot_fi_thr_c = np.zeros(len(lrange))
             if np.any(si_above_thr):
-                tot_si_thr_c = scind.sum(second_pixels[second_pixels > thr_si_c], labels[second_pixels > thr_si_c],
+                tot_si_thr_c = scind.sum(second_pixels[second_pixels >= thr_si_c], labels[second_pixels >= thr_si_c],
                                          lrange)
             else:
                 tot_si_thr_c = np.zeros(len(lrange))
@@ -618,7 +631,8 @@ class MeasureCorrelation(cpm.Module):
             Di = abs(Rank_im1 - Rank_im2)
             weight = (R - Di) * 1.0 / R
             weight_thresh = weight[combined_thresh]
-            if np.any(combined_thresh_c):
+
+            if np.any(combined_thresh):
                 RWC1 = np.array(scind.sum(fi_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
                         tot_fi_thr)
                 RWC2 = np.array(scind.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
@@ -651,11 +665,11 @@ class MeasureCorrelation(cpm.Module):
                        ]
 
             # Overlap Coefficient
-            fpsq = scind.sum(first_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
-            spsq = scind.sum(second_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
-            pdt = np.sqrt(np.array(fpsq) * np.array(spsq))
-
             if np.any(combined_thresh):
+                fpsq = scind.sum(first_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
+                spsq = scind.sum(second_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
+                pdt = np.sqrt(np.array(fpsq) * np.array(spsq))
+
                 overlap = fix(
                         scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
                                   labels[combined_thresh],
@@ -884,3 +898,6 @@ class MeasureCorrelation(cpm.Module):
             variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

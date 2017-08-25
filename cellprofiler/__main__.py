@@ -1,12 +1,12 @@
 import bioformats.formatreader
 import ctypes
+import cellprofiler
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
-import cellprofiler.utilities.version
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
@@ -19,6 +19,7 @@ import matplotlib
 import numpy
 import optparse
 import os
+import os.path
 import pkg_resources
 import re
 import site
@@ -53,11 +54,8 @@ def main(args=None):
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         cellprofiler.preferences.set_headless()
-
         cellprofiler.worker.aw_parse_args()
-
         cellprofiler.worker.main()
-
         sys.exit(exit_code)
 
     options, args = parse_args(args)
@@ -70,13 +68,23 @@ def main(args=None):
 
         options.run_pipeline = True
 
+    if options.batch_commands_file:
+        cellprofiler.preferences.set_headless()
+        options.run_pipeline = False
+        options.show_gui = False
+
     set_log_level(options)
 
     if options.print_groups_file is not None:
         print_groups(options.print_groups_file)
 
     if options.batch_commands_file is not None:
-        get_batch_commands(options.batch_commands_file)
+        try:
+            nr_per_batch = int(options.images_per_batch)
+        except(ValueError):
+            logging.warning("non-integer argument to --images-per-batch. Defaulting to 1.")
+            nr_per_batch = 1
+        get_batch_commands(options.batch_commands_file, nr_per_batch)
 
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
@@ -107,7 +115,8 @@ def main(args=None):
     if options.data_file is not None:
         cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
 
-    cellprofiler.utilities.cpjvm.cp_start_vm()
+    if not options.show_gui:
+        cellprofiler.utilities.cpjvm.cp_start_vm()
 
     if options.image_set_file is not None:
         cellprofiler.preferences.set_image_set_file(options.image_set_file)
@@ -151,7 +160,8 @@ def main(args=None):
     elif options.run_pipeline:
         run_pipeline_headless(options, args)
 
-    stop_cellprofiler()
+    if not options.show_gui:
+        stop_cellprofiler()
 
 
 def __version__(exit_code):
@@ -162,6 +172,12 @@ def __version__(exit_code):
 
 def stop_cellprofiler():
     cellprofiler.utilities.zmqrequest.join_to_the_boundary()
+
+    # Bioformats readers have to be properly closed.
+    # This is especially important when using OmeroReaders as leaving the
+    # readers open leaves the OMERO.server services open which in turn leads to
+    # high memory consumption.
+    bioformats.formatreader.clear_image_reader_cache()
 
     cellprofiler.utilities.cpjvm.cp_stop_vm()
 
@@ -299,7 +315,14 @@ def parse_args(args):
         "--get-batch-commands",
         dest="batch_commands_file",
         default=None,
-        help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" ' "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh")
+        help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" ' "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline.")
+
+    parser.add_option(
+        "--images-per-batch",
+        dest="images_per_batch",
+        default="1",
+        help='For pipelines that do not use image grouping this option specifies the number of images that should be processed in each batch if --get-batch-commands is used. Defaults to 1.'
+    )
 
     parser.add_option(
         "--data-file",
@@ -522,7 +545,7 @@ def print_groups(filename):
     json.dump(groupings, sys.stdout)
 
 
-def get_batch_commands(filename):
+def get_batch_commands(filename, n_per_job=1):
     """Print the commands needed to run the given batch data file headless
 
     filename - the name of a Batch_data.h5 file. The file should group image sets.
@@ -563,18 +586,23 @@ def get_batch_commands(filename):
                 print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off)
 
                 prev = off
+    else:
+        metadata_tags = m.get_grouping_tags()
 
-            return
+        if len(metadata_tags) == 1 and metadata_tags[0] == 'ImageNumber':
+            for i in range(0, len(image_numbers), n_per_job):
+                first = image_numbers[i]
+                last = image_numbers[min(i+n_per_job-1, len(image_numbers)-1)]
+                print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, first, last)
+        else:
+            # LoadData w/ images grouped by metadata tags
+            groupings = m.get_groupings(metadata_tags)
 
-    metadata_tags = m.get_grouping_tags()
+            for grouping in groupings:
+                group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
 
-    groupings = m.get_groupings(metadata_tags)
-
-    for grouping in groupings:
-        group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
-
-        print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
-
+                print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
+    return
 
 def write_schema(pipeline_filename):
     if pipeline_filename is None:
@@ -605,7 +633,6 @@ def run_pipeline_headless(options, args):
     """
     Run a CellProfiler pipeline in headless mode
     """
-
     if options.first_image_set is not None:
         if not options.first_image_set.isdigit():
             raise ValueError("The --first-image-set option takes a numeric argument")
@@ -671,6 +698,20 @@ def run_pipeline_headless(options, args):
 
     if file_list is not None:
         pipeline.read_file_list(file_list)
+    elif options.image_directory is not None:
+        pathnames = []
+
+        os.path.walk(
+            os.path.abspath(options.image_directory),
+            lambda pathnames, dirname, fnames: pathnames.append(
+                [os.path.join(dirname, fname) for fname in fnames if os.path.isfile(os.path.join(dirname, fname))]
+            ),
+            pathnames
+        )
+
+        pathnames = sum(pathnames, [])
+
+        pipeline.add_pathnames_to_file_list(pathnames)
 
     #
     # Fixup CreateBatchFiles with any command-line input or output directories

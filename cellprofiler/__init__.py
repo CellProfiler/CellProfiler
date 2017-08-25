@@ -1,4 +1,3 @@
-"""CellProfiler - base directory for CellProfiler code
-"""
-
 __test__ = False
+
+__version__ = "3.0.0rc1"

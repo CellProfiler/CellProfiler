@@ -1,10 +1,205 @@
-from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
+# coding=utf-8
 
-TM_OVERLAP = 'Overlap'
-TM_DISTANCE = 'Distance'
-TM_MEASUREMENTS = 'Measurements'
-TM_LAP = "LAP"
-TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS, TM_LAP]
+"""
+Track Objects
+=============
+
+**Track Objects** allows tracking objects throughout sequential frames
+of a series of images, so that from frame to frame each object maintains
+a unique identity in the output measurements
+
+This module must be placed downstream of a module that identifies
+objects (e.g., **IdentifyPrimaryObjects**). **TrackObjects** will
+associate each object with the same object in the frames before and
+after. This allows the study of objects’ lineages and the timing and
+characteristics of dynamic events in movies.
+
+Images in CellProfiler are processed sequentially by frame (whether
+loaded as a series of images or a movie file). To process a collection
+of images/movies, you will need to do the following:
+
+-  Define each individual movie using metadata either contained within
+   the image file itself or as part of the images nomenclature or folder
+   structure. Please see the **Metadata** module for more details on
+   metadata collection and usage.
+-  Group the movies to make sure that each image sequence is handled
+   individually. Please see the **Groups** module for more details on
+   the proper use of metadata for grouping.
+
+For complete details, see *Help > Creating a Project > Loading Image
+Stacks and Movies*.
+
+For an example pipeline using TrackObjects, see the CellProfiler
+`Examples`_ webpage.
+
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Object measurements**
+
+-  *Label:* Each tracked object is assigned a unique identifier (label).
+   Child objects resulting from a split or merge are assigned the label
+   of the ancestor.
+-  *ParentImageNumber, ParentObjectNumber:* The *ImageNumber* and
+   *ObjectNumber* of the parent object in the prior frame. For a split,
+   each child object will have the label of the object it split from.
+   For a merge, the child will have the label of the closest parent.
+-  *TrajectoryX, TrajectoryY:* The direction of motion (in x and y
+   coordinates) of the object from the previous frame to the current
+   frame.
+-  *DistanceTraveled:* The distance traveled by the object from the
+   previous frame to the current frame (calculated as the magnitude of
+   the trajectory vectors).
+-  *Displacement:* The shortest distance traveled by the object from its
+   initial starting position to the position in the current frame. That
+   is, it is the straight-line path between the two points.
+-  *IntegratedDistance:* The total distance traveled by the object
+   during the lifetime of the object.
+-  *Linearity:* A measure of how linear the object trajectity is during
+   the object lifetime. Calculated as (displacement from initial to
+   final location)/(integrated object distance). Value is in range of
+   [0,1].
+-  *Lifetime:* The number of frames an objects has existed. The lifetime
+   starts at 1 at the frame when an object appears, and is incremented
+   with each frame that the object persists. At the final frame of the
+   image set/movie, the lifetimes of all remaining objects are output.
+-  *FinalAge:* Similar to *LifeTime* but is only output at the final
+   frame of the object’s life (or the movie ends, whichever comes
+   first). At this point, the final age of the object is output; no
+   values are stored for earlier frames.
+
+   .. raw:: html
+
+      <dl>
+
+   .. raw:: html
+
+      <dd>
+
+   |image0| This value is useful if you want to plot a histogram of the
+   object lifetimes; all but the final age can be ignored or filtered
+   out.
+
+   .. raw:: html
+
+      </dd>
+
+   .. raw:: html
+
+      </dl>
+
+The following object measurements are specific to the LAP tracking
+method:
+
+-  *LinkType:* The linking method used to link the object to its parent.
+   Possible values are
+
+   -  **0**: The object was not linked to a parent.
+   -  **1**: The object was linked to a parent in the previous frame.
+   -  **2**: The object is linked as the start of a split path.
+   -  **3**: The object was linked to its parent as a daughter of a
+      mitotic pair.
+   -  **4**: The object was linked to a parent in a frame prior to the
+      previous frame (a gap).
+
+   Under some circumstances, multiple linking methods may apply to a
+   given object, e.g, an object may be both the beginning of a split
+   path and not have a parent. However, only one linking method is
+   assigned.
+-  *MovementModel:*\ The movement model used to track the object.
+
+   -  **0**: The *Random* model was used.
+   -  **1**: The *Velocity* model was used.
+   -  **-1**: Neither model was used. This can occur under two
+      circumstances:
+
+      -  At the beginning of a trajectory, when there is no data to
+         determine the model as yet.
+      -  At the beginning of a closed gap, since a model was not
+         actually applied to make the link in the first phase.
+
+-  *LinkingDistance:*\ The difference between the propagated position of
+   an object and the object to which it is matched.
+
+   .. raw:: html
+
+      <dl>
+
+   .. raw:: html
+
+      <dd>
+
+   |image1| A slowly decaying histogram of these distances indicates
+   that the search radius is large enough. A cut-off histogram is a sign
+   that the search radius is too small.
+
+   .. raw:: html
+
+      </dd>
+
+   .. raw:: html
+
+      </dl>
+
+-  *StandardDeviation:*\ The Kalman filter maintains a running estimate
+   of the variance of the error in estimated position for each model.
+   This measurement records the linking distance divided by the standard
+   deviation of the error when linking the object with its parent.
+
+   .. raw:: html
+
+      <dl>
+
+   .. raw:: html
+
+      <dd>
+
+   |image2|  This value is multiplied by the *“Number of standard
+   deviations for search radius”* setting to constrain the search
+   distance. A histogram of this value can help determine if the
+   *“Search radius limit, in pixel units (Min,Max)”* setting is
+   appropriate.
+
+   .. raw:: html
+
+      </dd>
+
+   .. raw:: html
+
+      </dl>
+
+-  *GapLength:* The number of frames between an object and its parent.
+   For instance, an object in frame 3 with a parent in frame 1 has a gap
+   length of 2.
+-  *GapScore:* If an object is linked to its parent by bridging a gap,
+   this value is the score for the gap.
+-  *SplitScore:* If an object linked to its parent via a split, this
+   value is the score for the split.
+-  *MergeScore:* If an object linked to a child via a merge, this value
+   is the score for the merge.
+-  *MitosisScore:* If an object linked to two children via a mitosis,
+   this value is the score for the mitosis.
+
+**Image measurements**
+
+-  *LostObjectCount:* Number of objects that appear in the previous
+   frame but have no identifiable child in the current frame.
+-  *NewObjectCount:* Number of objects that appear in the current frame
+   but have no identifiable parent in the previous frame.
+-  *SplitObjectCount:* Number of objects in the current frame that
+   resulted from a split from a parent object in the previous frame.
+-  *MergedObjectCount:* Number of objects in the current frame that
+   resulted from the merging of child objects in the previous frame.
+
+See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
+**Groups**.
+
+.. _Examples: http://www.cellprofiler.org/examples.html#Tracking
+
+.. |image0| image:: memory:thumb-up.png
+.. |image1| image:: memory:thumb-up.png
+.. |image2| image:: memory:thumb-up.png
+"""
 
 LT_NONE = 0
 LT_PHASE_1 = 1
@@ -15,156 +210,9 @@ KM_VEL = 1
 KM_NO_VEL = 0
 KM_NONE = -1
 
-'''Random motion model, for instance Brownian motion'''
 M_RANDOM = "Random"
-'''Velocity motion model, object position depends on prior velocity'''
 M_VELOCITY = "Velocity"
-'''Random and velocity models'''
 M_BOTH = "Both"
-
-RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
-RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
-ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>''' % globals()
-
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-
-__doc__ = """
-<b>Track Objects</b> allows tracking objects throughout sequential
-frames of a series of images, so that from frame to frame
-each object maintains a unique identity in the output measurements
-<hr>
-This module must be placed downstream of a module that identifies objects
-(e.g., <b>IdentifyPrimaryObjects</b>). <b>TrackObjects</b> will associate each
-object with the same object in the frames before and after. This allows the study
-of objects' lineages and the timing and characteristics of dynamic events in
-movies.
-
-<p>Images in CellProfiler are processed sequentially by frame (whether loaded as a
-series of images or a movie file). To process a collection of images/movies,
-you will need to do the following:
-<ul>
-<li>Define each individual movie using metadata
-either contained within the image file itself or as part of the images nomenclature
-or folder structure. %(USING_METADATA_HELP_REF)s.</li>
-<li>Group the movies to make sure
-that each image sequence is handled individually. %(USING_METADATA_GROUPING_HELP_REF)s.
-</li>
-</ul>
-For complete details, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.</p>
-
-<p>For an example pipeline using TrackObjects, see the CellProfiler
-<a href="http://www.cellprofiler.org/examples.html#Tracking">Examples</a> webpage.</p>
-
-<h4>Available measurements</h4>
-<b>Object measurements</b>
-<ul>
-<li><i>Label:</i> Each tracked object is assigned a unique identifier (label).
-Child objects resulting from a split or merge are assigned the label of the ancestor.</li>
-<li><i>ParentImageNumber, ParentObjectNumber:</i> The <i>ImageNumber</i> and
-<i>ObjectNumber</i> of the parent object in the prior frame. For a split, each
-child object will have the label of the object it split from. For a merge,
-the child will have the label of the closest parent.</li>
-<li><i>TrajectoryX, TrajectoryY:</i> The direction of motion (in x and y coordinates) of the
-object from the previous frame to the current frame.</li>
-<li><i>DistanceTraveled:</i> The distance traveled by the object from the
-previous frame to the current frame (calculated as the magnitude of
-the trajectory vectors).</li>
-<li><i>Displacement:</i> The shortest distance traveled by the object from its
-initial starting position to the position in the current frame. That is, it is
-the straight-line path between the two points.</li>
-<li><i>IntegratedDistance:</i> The total distance traveled by the object during
-the lifetime of the object.</li>
-<li><i>Linearity:</i> A measure of how linear the object trajectity is during the
-object lifetime. Calculated as (displacement from initial to final
-location)/(integrated object distance). Value is in range of [0,1].</li>
-<li><i>Lifetime:</i> The number of frames an objects has existed. The lifetime starts
-at 1 at the frame when an object appears, and is incremented with each frame that the
-object persists. At the final frame of the image set/movie, the
-lifetimes of all remaining objects are output.</li>
-<li><i>FinalAge:</i> Similar to <i>LifeTime</i> but is only output at the final
-frame of the object's life (or the movie ends, whichever comes first). At this point,
-the final age of the object is output; no values are stored for earlier frames.
-<dl>
-<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;This value
-is useful if you want to plot a histogram of the object lifetimes; all but the final age
-can be ignored or filtered out.</dd>
-</dl></li>
-</ul>
-The following object measurements are specific to the %(TM_LAP)s tracking method:
-<ul>
-<li><i>LinkType:</i> The linking method used to link the object to its parent.
-Possible values are
-<ul>
-<li><b>%(LT_NONE)d</b>: The object was not linked to a parent.</li>
-<li><b>%(LT_PHASE_1)d</b>: The object was linked to a parent in the previous frame.</li>
-<li><b>%(LT_SPLIT)d</b>: The object is linked as the start of a split path.</li>
-<li><b>%(LT_MITOSIS)s</b>: The object was linked to its parent as a daughter of
-a mitotic pair.</li>
-<li><b>%(LT_GAP)d</b>: The object was linked to a parent in a frame prior to the
-previous frame (a gap).</li>
-</ul>
-Under some circumstances, multiple linking methods may apply to a given object, e.g, an
-object may be both the beginning of a split path and not have a parent. However, only
-one linking method is assigned.</li>
-<li><i>MovementModel:</i>The movement model used to track the object.
-<ul>
-<li><b>%(KM_NO_VEL)d</b>: The <i>%(M_RANDOM)s</i> model was used.</li>
-<li><b>%(KM_VEL)d</b>: The <i>%(M_VELOCITY)s</i> model was used.</li>
-<li><b>-1</b>: Neither model was used. This can occur under two circumstances:
-<ul>
-<li>At the beginning of a trajectory, when there is no data to determine the model as
-yet.</li>
-<li>At the beginning of a closed gap, since a model was not actually applied to make
-the link in the first phase.</li>
-</ul></li>
-</ul>
-</li>
-<li><i>LinkingDistance:</i>The difference between the propagated position of an
-object and the object to which it is matched.
-<dl>
-<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;A slowly decaying histogram of
-these distances indicates that the search radius is large enough. A cut-off histogram
-is a sign that the search radius is too small.</dd>
-</dl></li>
-<li><i>StandardDeviation:</i>The Kalman filter maintains a running estimate
-of the variance of the error in estimated position for each model.
-This measurement records the linking distance divided by the standard deviation
-of the error when linking the object with its parent.
-<dl>
-<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; This value is multiplied by
-the <i>"%(RADIUS_STD_SETTING_TEXT)s"</i> setting to constrain the search distance.
-A histogram of this value can help determine if the <i>"%(RADIUS_LIMIT_SETTING_TEXT)s"</i>
-setting is appropriate.</dd>
-</dl>
-</li>
-<li><i>GapLength:</i> The number of frames between an object and its parent.
-For instance, an object in frame 3 with a parent in frame 1 has a gap length of
-2.</li>
-<li><i>GapScore:</i> If an object is linked to its parent by bridging a gap,
-this value is the score for the gap.</li>
-<li><i>SplitScore:</i> If an object linked to its parent via a split, this
-value is the score for the split.</li>
-<li><i>MergeScore:</i> If an object linked to a child via a merge, this value is
-the score for the merge.</li>
-<li><i>MitosisScore:</i> If an object linked to two children via a mitosis,
-this value is the score for the mitosis.</li>
-</ul>
-
-<b>Image measurements</b>
-<ul>
-<li><i>LostObjectCount:</i> Number of objects that appear in the previous frame
-but have no identifiable child in the current frame.</li>
-<li><i>NewObjectCount:</i> Number of objects that appear in the current frame but
-have no identifiable parent in the previous frame. </li>
-<li><i>SplitObjectCount:</i> Number of objects in the current frame that
-resulted from a split from a parent object in the previous frame.</li>
-<li><i>MergedObjectCount:</i> Number of objects in the current frame that
-resulted from the merging of child objects in the previous frame.</li>
-</ul>
-
-See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>Groups</b>.
-""" % globals()
 
 import logging
 
@@ -188,8 +236,16 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
-from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
+
+# if neighmovetrack is not available remove it from options
+TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
+
+try:
+    from centrosome.neighmovetrack import NeighbourMovementTracking, NeighbourMovementTrackingParameters
+except:
+    TM_ALL.remove("Follow Neighbors")
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
 DT_COLOR_ONLY = 'Color Only'
@@ -285,12 +341,12 @@ F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 class TrackObjects(cpm.Module):
     module_name = 'TrackObjects'
     category = "Object Processing"
-    variable_revision_number = 6
+    variable_revision_number = 7
 
     def create_settings(self):
         self.tracking_method = cps.Choice(
-                'Choose a tracking method',
-                TM_ALL, doc="""
+            'Choose a tracking method',
+            TM_ALL, doc="""
             When trying to track an object in an image,
             <b>TrackObjects</b> will search within a maximum
             specified distance (see the <i>distance within which to search</i> setting)
@@ -301,27 +357,27 @@ class TrackObjects(cpm.Module):
             among these options based on which is most consistent from frame
             to frame of your movie.
             <ul>
-            <li><i>%(TM_OVERLAP)s:</i> Compares the amount of spatial overlap between identified objects in
+            <li><i>Overlap:</i> Compares the amount of spatial overlap between identified objects in
             the previous frame with those in the current frame. The object with the
             greatest amount of spatial overlap will be assigned the same number (label).
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             Recommended when there is a high degree of overlap of an object from one frame to the next,
             which is the case for movies with high frame rates relative to object motion.</dd>
             </dl></li>
 
-            <li><i>%(TM_DISTANCE)s:</i> Compares the distance between each identified
+            <li><i>Distance:</i> Compares the distance between each identified
             object in the previous frame with that of the current frame. The
             closest objects to each other will be assigned the same number (label).
             Distances are measured from the perimeter of each object.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             Recommended for cases where the objects are not very crowded but where
-            <i>%(TM_OVERLAP)s</i> does not work sufficiently well, which is the case
+            <i>Overlap</i> does not work sufficiently well, which is the case
             for movies with low frame rates relative to object motion.</dd>
             </dl></li>
 
-            <li><i>%(TM_MEASUREMENTS)s:</i> Compares each object in the
+            <li><i>Measurements:</i> Compares each object in the
             current frame with objects in the previous frame based on a particular
             feature you have measured for the objects (for example, a particular intensity
             or shape measurement that can distinguish nearby objects). The object
@@ -330,7 +386,18 @@ class TrackObjects(cpm.Module):
             specified <b>Measure</b> module previous to this module in the pipeline so
             that the measurement values can be used to track the objects.</li>
 
-            <li><i>%(TM_LAP)s:</i> Uses the linear assignment problem (LAP) framework. The
+            <li><i>Follow Neighbors:</i> Uses the multiobject tracking approach described by
+            <i> Delgado-Gonzalo et al., 2010</i>. This approach assumes objects move in a coordinated
+            way (contrary to LAP). An object's movement direction is more likely to be in agreement with
+            the movement directions of its "neighbors". The problem is formulated as an optimization problem
+            and solved using LAP algorithm (same as in LAP method).
+            <dl>
+            <dd><img src="memory:thumb-up.png">&nbsp;
+            Recommended for cases where the objects are moving in synchronized way. In this case
+            it may work better than <i>LAP</i>. This approach works well for yeast colonies grown on agar. </dd>
+            </dl></li>
+
+            <li><i>LAP:</i> Uses the linear assignment problem (LAP) framework. The
             linear assignment problem (LAP) algorithm (<i>Jaqaman et al., 2008</i>)
             addresses the challenges of high object density, motion heterogeneity,
             temporary disappearances, and object merging and splitting.
@@ -347,7 +414,7 @@ class TrackObjects(cpm.Module):
             between tracked objects and captures merging and splitting events. This step takes
             place at the end of the analysis run.</p>
 
-            <p><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Some recommendations on optimizing
+            <p><img src="memory:thumb-up.png">&nbsp; Some recommendations on optimizing
             the LAP settings<br>
             <ul>
             <li><i>Work with a minimal subset of your data:</i> Attempting to optimize these settings
@@ -376,7 +443,7 @@ class TrackObjects(cpm.Module):
             of standard deviations for the search radius and/or the radius limits (most likely
             the maximum limit). See the help for these settings for details.</li>
             </ul></li>
-            <li><i>Use any visualization tools at your disposal:</i>Visualizing the data often allows for
+            <li><i>Use any visualization tools at your disposal:</i> Visualizing the data often allows for
             easier decision making as opposed to sorting through tabular data alone.
             <ul>
             <li>The <a href="http://cran.r-project.org/">R</a> open-source software package has
@@ -390,6 +457,8 @@ class TrackObjects(cpm.Module):
             </ul>
             </p>
 
+            <p>This Nearest Neighborhood method of this module was prepared by Filip Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at
+            <a href="http://www.let-your-data-speak.com/">Scopem, ETH</a> for inquires.
             <p><b>References</b>
             <ul>
             <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
@@ -401,15 +470,15 @@ class TrackObjects(cpm.Module):
             <a href="http://dx.doi.org/10.1101/pdb.top65">(link)</a></li>
             </ul></p>
             </li>
-            </ul>""" % globals())
+            </ul>""")
 
         self.object_name = cps.ObjectNameSubscriber(
-                'Select the objects to track', cps.NONE, doc="""
+            'Select the objects to track', cps.NONE, doc="""
             Select the objects to be tracked by this module.""")
 
         self.measurement = cps.Measurement(
-                'Select object measurement to use for tracking',
-                lambda: self.object_name.value, doc="""
+            'Select object measurement to use for tracking',
+            lambda: self.object_name.value, doc="""
             <i>(Used only if Measurements is the tracking method)</i><br>
             Select which type of measurement (category) and which specific feature from the
             <b>Measure</b> module will be used for tracking. Select the feature name from
@@ -419,15 +488,15 @@ class TrackObjects(cpm.Module):
             image from which the measurements originated or the measurement scale.""")
 
         self.pixel_radius = cps.Integer(
-                'Maximum pixel distance to consider matches', 50, minval=1, doc="""
+            'Maximum pixel distance to consider matches', 50, minval=1, doc="""
             Objects in the subsequent frame will be considered potential matches if
             they are within this distance. To determine a suitable pixel distance, you can look
             at the axis increments on each image (shown in pixel units) or
             use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
 
         self.model = cps.Choice(
-                "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
+            "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""
+            <i>(Used only if the LAP tracking method is applied)</i><br>
             This setting controls how to predict an object's position in
             the next frame, assuming that each object moves randomly with
             a frame-to-frame variance in position that follows a Gaussian
@@ -437,29 +506,29 @@ class TrackObjects(cpm.Module):
             Brownian Motion or a similar process where the variance in position
             differs between objects.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             Use this model if the objects move with some
             random jitter around a stationary location.</dd>
             </dl></li>
-            <li><i>%(M_VELOCITY)s:</i> A model in which the object moves with
+            <li><i>Velocity:</i> A model in which the object moves with
             a velocity. Both velocity and position (after correcting for
             velocity) vary following a Gaussian distribution.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Use this model if
+            <dd><img src="memory:thumb-up.png">&nbsp;Use this model if
             the objects move along a spatial trajectory in some direction over time.</dd>
             </dl></li>
-            <li><i>%(M_BOTH)s:</i> <b>TrackObjects</b> will predict each
+            <li><i>Both:</i> <b>TrackObjects</b> will predict each
             object's position using both models and use the model with the
             lowest penalty to join an object in one frame with one in another.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Use this
+            <dd><img src="memory:thumb-up.png">&nbsp;Use this
             option if both models above are applicable over time.</dd>
             </dl></li>
             </ul>""" % globals())
 
         self.radius_std = cps.Float(
-                RADIUS_STD_SETTING_TEXT, 3, minval=1, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i>
+            "Number of standard deviations for search radius", 3, minval=1, doc="""
+            <i>(Used only if the LAP tracking method is applied)</i>
             <br>
             <b>TrackObjects</b> derives a search radius from an error
             estimation based on (a) the standard deviation of the movement and
@@ -470,7 +539,7 @@ class TrackObjects(cpm.Module):
             of the error times the number of standard
             deviations that you enter here.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp;Recommendations:
             <ul>
             <li>If the standard deviation is quite small, but the object makes a
             large spatial jump, this value may need to be set higher in order
@@ -480,8 +549,8 @@ class TrackObjects(cpm.Module):
             </dl>""" % globals())
 
         self.radius_limit = cps.FloatRange(
-                RADIUS_LIMIT_SETTING_TEXT, (2, 10), minval=0, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
+            "Search radius limit, in pixel units (Min,Max)", (2, 10), minval=0, doc="""
+            <i>(Used only if the LAP tracking method is applied)</i><br>
             <b>TrackObjects</b> derives a search radius from an error
             estimation based on (a) the standard deviation of the movement and
             (b) the diameter of the object. Potentially, the module can make an erroneous assignment
@@ -491,7 +560,7 @@ class TrackObjects(cpm.Module):
             that does not track the object in a subsequent frame. The radius
             limit constrains the search radius to reasonable values.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp;Recommendations:
             <ul>
             <li>Special care must be taken to adjust the upper limit appropriate
             to the data.</li>
@@ -514,8 +583,8 @@ class TrackObjects(cpm.Module):
             </dl>""" % globals())
 
         self.wants_second_phase = cps.Binary(
-                "Run the second phase of the LAP algorithm?", True, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
+            "Run the second phase of the LAP algorithm?", True, doc="""
+            <i>(Used only if the LAP tracking method is applied)</i><br>
             Select <i>%(YES)s</i> to run the second phase of the LAP algorithm
             after processing all images. Select <i>%(NO)s</i> to omit the
             second phase or to perform the second phase when running the module
@@ -531,8 +600,8 @@ class TrackObjects(cpm.Module):
             the settings.</p>""" % globals())
 
         self.gap_cost = cps.Integer(
-                'Gap closing cost', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Gap closing cost', 40, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting assigns a cost to keeping a gap caused
             when an object is missing from one of the frames of a track (the
             alternative to keeping the gap is to bridge it by connecting
@@ -540,7 +609,7 @@ class TrackObjects(cpm.Module):
             The cost of bridging a gap is the distance, in pixels, of the
             displacement of the object between frames.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>Set the gap closing cost higher if tracks from objects in previous
             frames are being erroneously joined, across a gap, to tracks from
@@ -551,8 +620,8 @@ class TrackObjects(cpm.Module):
             </dl></p>''' % globals())
 
         self.split_cost = cps.Integer(
-                'Split alternative cost', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Split alternative cost', 40, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting is the cost of keeping two tracks distinct
             when the alternative is to make them into one track that
             splits. A split occurs when an object in one frame is assigned
@@ -567,7 +636,7 @@ class TrackObjects(cpm.Module):
             The split cost is roughly measured in pixels. The split alternative cost is
             (conceptually) subtracted from the cost of making the split.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>The split cost should be set lower if objects are being split
             that should not be split. </li>
@@ -579,8 +648,8 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.merge_cost = cps.Integer(
-                'Merge alternative cost', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Merge alternative cost', 40, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting is the cost of keeping two tracks
             distinct when the alternative is to merge them into one.
             A merge occurs when two objects in one frame are assigned to
@@ -596,7 +665,7 @@ class TrackObjects(cpm.Module):
             alternative cost is (conceptually) subtracted from the
             cost of making the merge.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>Set the merge alternative cost lower if objects are being
             merged when they should otherwise be kept separate. </li>
@@ -608,10 +677,10 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.mitosis_cost = cps.Integer(
-                'Mitosis alternative cost', 80, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Mitosis alternative cost', 80, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting is the cost of not linking a parent and two daughters
-            via the mitosis model. the %(TM_LAP)s tracking method weighs this
+            via the mitosis model. the LAP tracking method weighs this
             cost against the score of a potential mitosis. The model expects
             the daughters to be equidistant from the parent after mitosis,
             so the parent location is expected to be midway between the daughters.
@@ -621,7 +690,7 @@ class TrackObjects(cpm.Module):
             daughters (the larger of Area(daughters) / Area(parent) and
             Area(parent) / Area(daughters)).<br>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>An accepted mitosis closes two gaps, so all things being equal,
             the mitosis alternative cost should be approximately double the
@@ -633,19 +702,19 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.mitosis_max_distance = cps.Integer(
-                'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting is the maximum allowed distance in pixels of either
             of the daughter candidate centroids after mitosis from the parent candidate.
             ''' % globals())
 
         self.max_gap_score = cps.Integer(
-                'Maximum gap displacement, in pixel units', 5, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Maximum gap displacement, in pixel units', 5, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>The maximum gap displacement should be set to roughly
             the maximum displacement of an object's center from frame to frame. An object that makes large
@@ -660,8 +729,8 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.max_merge_score = cps.Integer(
-                'Maximum merge score', 50, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Maximum merge score', 50, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             merge scores. The merge score has two components:
             <ul>
@@ -670,7 +739,7 @@ class TrackObjects(cpm.Module):
             <li>The distances between the objects to be merged and the resulting object. </li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
             <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
@@ -678,8 +747,8 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.max_split_score = cps.Integer(
-                'Maximum split score', 50, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Maximum split score', 50, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large split scores. The split score has two components:
             <ul>
             <li>The area of the initial object relative to the area of the
@@ -687,7 +756,7 @@ class TrackObjects(cpm.Module):
             <li>The distances between the original and resulting objects. </li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
             <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
@@ -695,15 +764,15 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.max_frame_distance = cps.Integer(
-                'Maximum temporal gap, in frames', 5, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            'Maximum temporal gap, in frames', 5, minval=1, doc='''
+            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
             This setting controls the maximum number of frames that can
             be skipped when merging a temporal gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
             fails to find an object in one or more frames.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>Set the maximum gap higher in order to have more chance of correctly recapturing an object after
             erroneously losing the original for a few frames.</li>
@@ -712,14 +781,57 @@ class TrackObjects(cpm.Module):
             </ul></dd>
             </dl>''' % globals())
 
+        self.average_cell_diameter = cps.Float(
+            "Average cell diameter in pixels",
+            35.0, minval=5, doc='''\
+            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
+            The average cell diameter is used to scale many Follow Neighbors algorithm parameters.
+            Please use e.g. ImageJ to measure the average cell diameter in pixels.
+            '''
+        )
+
+        self.advanced_parameters = cps.Binary(
+            'Use advanced configuration parameters', False, doc="""
+            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
+            Do you want to use advanced parameters to configure plugin? The default values should be sufficient
+            in most cases. You may want to use advanced parameters when cells are incorrectly marked missing between
+            frames or cells of different sizes are falsely matched.
+            """
+        )
+
+        self.drop_cost = cps.Float(
+            "Cost of cell to empty matching",
+            15, minval=1, maxval=200, doc='''\
+            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
+            The cost of considering cell (from frame t) not present in frame t+1. Increasing this value leads to more
+            cells (from t) being matched with cells (from t+1) rather then classified as missing.
+            <dl>
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
+            <ul>
+            <li>A value which is too high might cause incorrect cells to match between the frames. </li>
+            <li>A value which is too low might make the algorithm not to match cells between the frames.</li>
+            </ul></dd>
+            </dl>
+            '''
+        )
+
+        self.area_weight = cps.Float(
+            "Weight of area difference in function matching cost",
+            25, minval=1, doc='''\
+            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
+            Increasing this value will make differences in position favored over differences in area when
+            identifying objects between frames.
+            '''
+        )
+
         self.wants_lifetime_filtering = cps.Binary(
-                'Filter objects by lifetime?', False, doc='''
+            'Filter objects by lifetime?', False, doc='''
             Select <i>%(YES)s</i> if you want objects to be filtered by their
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
             as the results of a mis-segmentation. <br>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
             <ul>
             <li>This operation does not actually delete the filtered object,
             but merely removes its label from the tracked object list;
@@ -731,27 +843,27 @@ class TrackObjects(cpm.Module):
             </dl>''' % globals())
 
         self.wants_minimum_lifetime = cps.Binary(
-                'Filter using a minimum lifetime?', True, doc='''
+            'Filter using a minimum lifetime?', True, doc='''
             <i>(Used only if objects are filtered by lifetime)</i><br>
             Select <i>%(YES)s</i> to filter the object on the basis of a minimum number of frames.''' % globals())
 
         self.min_lifetime = cps.Integer(
-                'Minimum lifetime', 1, minval=1, doc="""
+            'Minimum lifetime', 1, minval=1, doc="""
             Enter the minimum number of frames an object is permitted to persist. Objects
             which last this number of frames or lower are filtered out.""")
 
         self.wants_maximum_lifetime = cps.Binary(
-                'Filter using a maximum lifetime?', False, doc='''
+            'Filter using a maximum lifetime?', False, doc='''
             <i>(Used only if objects are filtered by lifetime)</i><br>
             Select <i>%(YES)s</i> to filter the object on the basis of a maximum number of frames.''' % globals())
 
         self.max_lifetime = cps.Integer(
-                'Maximum lifetime', 100, doc="""
+            'Maximum lifetime', 100, doc="""
             Enter the maximum number of frames an object is permitted to persist. Objects
             which last this number of frames or more are filtered out.""")
 
         self.display_type = cps.Choice(
-                'Select display option', DT_ALL, doc="""
+            'Select display option', DT_ALL, doc="""
             The output image can be saved as:
             <ul>
             <li><i>%(DT_COLOR_ONLY)s:</i> A color-labeled image, with each tracked
@@ -761,17 +873,17 @@ class TrackObjects(cpm.Module):
             </ul>""" % globals())
 
         self.wants_image = cps.Binary(
-                "Save color-coded image?", False, doc="""
+            "Save color-coded image?", False, doc="""
             Select <i>%(YES)s</i> to retain the image showing the tracked objects
             for later use in the pipeline. For example, a common use is for quality control purposes
             saving the image with the <b>SaveImages</b> module.
-            <p>Please note that if you are using the second phase of the %(TM_LAP)s method,
+            <p>Please note that if you are using the second phase of the LAP method,
             the final labels are not assigned until <i>after</i> the pipeline has
             completed the analysis run. That means that saving the color-coded image
             will only show the penultimate result and not the final product.</p>.""" % globals())
 
         self.image_name = cps.ImageNameProvider(
-                "Name the output image", "TrackedCells", doc='''
+            "Name the output image", "TrackedCells", doc='''
             <i>(Used only if saving the color-coded image)</i><br>
             Enter a name to give the color-coded image of tracked labels.''')
 
@@ -786,22 +898,23 @@ class TrackObjects(cpm.Module):
                 self.max_merge_score, self.max_frame_distance,
                 self.wants_lifetime_filtering, self.wants_minimum_lifetime,
                 self.min_lifetime, self.wants_maximum_lifetime,
-                self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance]
+                self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance,
+                self.average_cell_diameter, self.advanced_parameters, self.drop_cost, self.area_weight]
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
-        if (self.tracking_method == TM_LAP and
+        if (self.tracking_method == "LAP" and
                 self.wants_lifetime_filtering.value and
                 (self.wants_minimum_lifetime.value == False and self.wants_minimum_lifetime.value == False)):
             raise cps.ValidationError(
-                    'Please enter a minimum and/or maximum lifetime limit',
-                    self.wants_lifetime_filtering)
+                'Please enter a minimum and/or maximum lifetime limit',
+                self.wants_lifetime_filtering)
 
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
-        if self.tracking_method == TM_MEASUREMENTS:
+        if self.tracking_method == "Measurements":
             result += [self.measurement]
-        if self.tracking_method == TM_LAP:
+        if self.tracking_method == "LAP":
             result += [self.model, self.radius_std, self.radius_limit]
             result += [self.wants_second_phase]
             if self.wants_second_phase:
@@ -814,7 +927,12 @@ class TrackObjects(cpm.Module):
         else:
             result += [self.pixel_radius]
 
+        if self.tracking_method == "Follow Neighbors":
+            result += [self.average_cell_diameter, self.advanced_parameters]
+            if self.advanced_parameters:
+                result += [self.drop_cost, self.area_weight]
         result += [self.wants_lifetime_filtering]
+
         if self.wants_lifetime_filtering:
             result += [self.wants_minimum_lifetime]
             if self.wants_minimum_lifetime:
@@ -855,10 +973,10 @@ class TrackObjects(cpm.Module):
         if not d.has_key("group_number") or d["group_number"] != group_number:
             d["group_number"] = group_number
             group_indexes = np.array([
-                                         (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
-                                         for i in m.get_image_numbers()
-                                         if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i) ==
-                                         group_number], int)
+                (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
+                for i in m.get_image_numbers()
+                if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i) ==
+                   group_number], int)
             order = np.lexsort([group_indexes[:, 0]])
             d["group_image_numbers"] = group_indexes[order, 1]
         return d["group_image_numbers"]
@@ -927,13 +1045,13 @@ class TrackObjects(cpm.Module):
 
     def measurement_name(self, feature):
         '''Return a measurement name for the given feature'''
-        if self.tracking_method == TM_LAP:
+        if self.tracking_method == "LAP":
             return "%s_%s" % (F_PREFIX, feature)
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
 
     def image_measurement_name(self, feature):
         '''Return a measurement name for an image measurement'''
-        if self.tracking_method == TM_LAP:
+        if self.tracking_method == "LAP":
             return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
         return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
                                 str(self.pixel_radius.value))
@@ -946,9 +1064,9 @@ class TrackObjects(cpm.Module):
         values - one value per object
         '''
         workspace.measurements.add_measurement(
-                self.object_name.value,
-                self.measurement_name(feature),
-                values)
+            self.object_name.value,
+            self.measurement_name(feature),
+            values)
 
     def add_image_measurement(self, workspace, feature, value):
         measurement_name = self.image_measurement_name(feature)
@@ -956,14 +1074,16 @@ class TrackObjects(cpm.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        if self.tracking_method == TM_DISTANCE:
+        if self.tracking_method == "Distance":
             self.run_distance(workspace, objects)
-        elif self.tracking_method == TM_OVERLAP:
+        elif self.tracking_method == "Overlap":
             self.run_overlap(workspace, objects)
-        elif self.tracking_method == TM_MEASUREMENTS:
+        elif self.tracking_method == "Measurements":
             self.run_measurements(workspace, objects)
-        elif self.tracking_method == TM_LAP:
+        elif self.tracking_method == "LAP":
             self.run_lapdistance(workspace, objects)
+        elif self.tracking_method == "Follow Neighbors":
+            self.run_followneighbors(workspace, objects)
         else:
             raise NotImplementedError("Unimplemented tracking method: %s" %
                                       self.tracking_method.value)
@@ -1032,6 +1152,52 @@ class TrackObjects(cpm.Module):
                 ax.annotate(str(n), xy=(x, y), color='white',
                             arrowprops=dict(visible=False))
 
+    def run_followneighbors(self, workspace, objects):
+        '''Track objects based on following neighbors'''
+        def calculate_iteration_value(param, initial_value):
+            iteration_default = NeighbourMovementTrackingParameters.parameters_cost_iteration[param]
+            initial_default = NeighbourMovementTrackingParameters.parameters_cost_initial[param]
+            return float(iteration_default) / initial_default * initial_value
+
+        tracker = NeighbourMovementTracking()
+        tracker.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
+        tracker.parameters_tracking["max_distance"] = self.pixel_radius.value
+
+        tracker.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
+        tracker.parameters_cost_iteration["default_empty_cost"] = calculate_iteration_value("default_empty_cost", self.drop_cost.value)
+
+        tracker.parameters_cost_initial["area_weight"] = self.area_weight.value
+        tracker.parameters_cost_iteration["area_weight"] = calculate_iteration_value("area_weight", self.area_weight.value)
+
+        old_labels = self.get_saved_labels(workspace)
+        if old_labels is None:
+            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+            count = len(i)
+            self.map_objects(workspace, np.zeros((0,), int),
+                             np.zeros(count, int), i, j)
+        else:
+            old_i, old_j = (centers_of_labels(old_labels) + .5).astype(int)
+            old_count = len(old_i)
+
+            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+            count = len(i)
+
+            new_labels = objects.segmented
+            # Matching is (expected to be) a injective function of old labels to new labels so we can inverse it.
+            matching = tracker.run_tracking(old_labels, new_labels)
+
+            new_object_numbers = np.zeros(count, int)
+            old_object_numbers = np.zeros(old_count, int)
+            for old, new in matching:
+                new_object_numbers[new - 1] = old
+                old_object_numbers[old - 1] = new
+
+            self.map_objects(workspace,
+                             old_object_numbers,
+                             new_object_numbers,
+                             i, j)
+        self.set_saved_labels(workspace, objects.segmented)
+
     def run_distance(self, workspace, objects):
         '''Track objects based on distance'''
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -1056,8 +1222,8 @@ class TrackObjects(cpm.Module):
             i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
             old_labels = self.get_saved_labels(workspace)
             distances, (old_i, old_j) = distance_transform_edt(
-                    old_labels == 0,
-                    return_indices=True)
+                old_labels == 0,
+                return_indices=True)
             old_object_numbers = old_labels[old_i[i, j],
                                             old_j[i, j]]
             old_object_numbers[distances[i, j] > self.pixel_radius.value] = 0
@@ -1092,12 +1258,12 @@ class TrackObjects(cpm.Module):
             if self.velocity_model:
                 kalman_states.append(cpfilter.velocity_kalman_model())
         areas = fix(scipy.ndimage.sum(
-                np.ones(objects.segmented.shape), objects.segmented,
-                np.arange(1, np.max(objects.segmented) + 1, dtype=np.int32)))
+            np.ones(objects.segmented.shape), objects.segmented,
+            np.arange(1, np.max(objects.segmented) + 1, dtype=np.int32)))
         areas = areas.astype(int)
         model_types = np.array(
-                [m for m, s in ((KM_NO_VEL, self.static_model),
-                                (KM_VEL, self.velocity_model)) if s], int)
+            [m for m, s in ((KM_NO_VEL, self.static_model),
+                            (KM_VEL, self.velocity_model)) if s], int)
 
         if n_old > 0:
             new_i, new_j = centers_of_labels(objects.segmented)
@@ -1229,10 +1395,10 @@ class TrackObjects(cpm.Module):
                     q[new_idx[i], j, j] = \
                         kalman_state.noise_var[matching_idx[i], j]
                 new_kalman_state = cpfilter.kalman_filter(
-                        kalman_state,
-                        old_idx,
-                        np.column_stack((new_i, new_j)),
-                        q, r)
+                    kalman_state,
+                    old_idx,
+                    np.column_stack((new_i, new_j)),
+                    q, r)
                 new_kalman_states.append(new_kalman_state)
             self.set_kalman_states(workspace, new_kalman_states)
 
@@ -1256,8 +1422,8 @@ class TrackObjects(cpm.Module):
             for kalman_state in kalman_states:
                 q = np.zeros((count, kalman_state.state_len, kalman_state.state_len))
                 new_kalman_state = cpfilter.kalman_filter(
-                        kalman_state, -np.ones(count),
-                        np.column_stack((i, j)), q, r)
+                    kalman_state, -np.ones(count),
+                    np.column_stack((i, j)), q, r)
                 new_kalman_states.append(new_kalman_state)
             self.set_kalman_states(workspace, new_kalman_states)
 
@@ -1309,26 +1475,26 @@ class TrackObjects(cpm.Module):
                 # a bunch of -1 values so every object will have a "-1"
                 # index.
                 last_idx = scipy.ndimage.maximum(
-                        np.hstack((
-                            -np.ones(nobjs),
-                            np.arange(len(kalman_state.state_noise_idx)))),
-                        np.hstack((
-                            np.arange(nobjs), kalman_state.state_noise_idx)),
-                        np.arange(nobjs))
+                    np.hstack((
+                        -np.ones(nobjs),
+                        np.arange(len(kalman_state.state_noise_idx)))),
+                    np.hstack((
+                        np.arange(nobjs), kalman_state.state_noise_idx)),
+                    np.arange(nobjs))
                 last_idx = last_idx.astype(int)
             for i, element in enumerate(elements):
                 #
                 # state_vec
                 #
                 mname = self.measurement_name(
-                        kalman_feature(model, F_STATE, element))
+                    kalman_feature(model, F_STATE, element))
                 values = np.zeros(0) if nobjs == 0 else kalman_state.state_vec[:, i]
                 m.add_measurement(object_name, mname, values)
                 #
                 # state_noise
                 #
                 mname = self.measurement_name(
-                        kalman_feature(model, F_NOISE, element))
+                    kalman_feature(model, F_NOISE, element))
                 values = np.zeros(nobjs)
                 if nobjs > 0:
                     values[last_idx == -1] = np.NaN
@@ -1339,7 +1505,7 @@ class TrackObjects(cpm.Module):
                 #
                 for j, el2 in enumerate(elements):
                     mname = self.measurement_name(
-                            kalman_feature(model, F_COV, element, el2))
+                        kalman_feature(model, F_COV, element, el2))
                     values = kalman_state.state_cov[:, i, j]
                     m.add_measurement(object_name, mname, values)
 
@@ -1367,8 +1533,8 @@ class TrackObjects(cpm.Module):
                 cur = current_labels[mask]
                 old = old_labels[mask]
                 histogram = scipy.sparse.coo_matrix(
-                        (np.ones(count), (cur, old)),
-                        shape=(cur_count + 1, old_count + 1)).toarray()
+                    (np.ones(count), (cur, old)),
+                    shape=(cur_count + 1, old_count + 1)).toarray()
                 old_of_new = np.argmax(histogram, 1)[1:]
                 new_of_old = np.argmax(histogram, 0)[1:]
                 #
@@ -1388,8 +1554,8 @@ class TrackObjects(cpm.Module):
     def run_measurements(self, workspace, objects):
         current_labels = objects.segmented
         new_measurements = workspace.measurements.get_current_measurement(
-                self.object_name.value,
-                self.measurement.value)
+            self.object_name.value,
+            self.measurement.value)
         old_measurements = self.get_saved_measurements(workspace)
         old_labels = self.get_saved_labels(workspace)
         i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
@@ -1455,7 +1621,7 @@ class TrackObjects(cpm.Module):
         # If any tracking method other than LAP, recalculate measurements
         # (Really, only the final age needs to be re-done)
         image_numbers = self.get_group_image_numbers(workspace)
-        if self.tracking_method != TM_LAP:
+        if self.tracking_method != "LAP":
             m = workspace.measurements
             assert (isinstance(m, cpmeas.Measurements))
             self.recalculate_group(workspace, image_numbers)
@@ -1533,10 +1699,10 @@ class TrackObjects(cpm.Module):
         AIDX = 6
         PIDX = 7
         P = np.vstack([
-                          np.column_stack((x, y, np.ones(len(x)) * i, np.arange(len(x)),
-                                           o, l, area, np.zeros(len(x))))
-                          for i, (x, y, o, l, area)
-                          in enumerate(zip(a, b, object_numbers, label, Area))])
+            np.column_stack((x, y, np.ones(len(x)) * i, np.arange(len(x)),
+                             o, l, area, np.zeros(len(x))))
+            for i, (x, y, o, l, area)
+            in enumerate(zip(a, b, object_numbers, label, Area))])
         count_per_label = np.bincount(P[:, LIDX].astype(int))
         idx = np.hstack([0, np.cumsum(count_per_label)])
         unique_label = np.unique(P[:, LIDX].astype(int))
@@ -1703,7 +1869,7 @@ class TrackObjects(cpm.Module):
             AreaBeforeMerge = P[P1[merge_p1idx, PIDX].astype(int) - 1, AIDX]
             AreaAtMerge = P1[merge_p1idx, AIDX]
             rho = self.calculate_area_penalty(
-                    AreaLast + AreaBeforeMerge, AreaAtMerge)
+                AreaLast + AreaBeforeMerge, AreaAtMerge)
             d = np.sqrt(np.sum((L[merge_lidx, :2] - P2[merge_p1idx, :2]) ** 2, 1))
             merge_scores = d * rho
             mask = merge_scores <= max_merge_score
@@ -1755,7 +1921,7 @@ class TrackObjects(cpm.Module):
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
                     chunks.append(
-                            [_[mask] for _ in split_p2idx, split_fidx, z])
+                        [_[mask] for _ in split_p2idx, split_fidx, z])
             if len(chunks) > 0:
                 split_p2idx, split_fidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1770,7 +1936,7 @@ class TrackObjects(cpm.Module):
             AreaAtSplit = P2[split_p2idx, AIDX]
             d = np.sqrt(np.sum((F[split_fidx, :2] - P2[split_p2idx, :2]) ** 2, 1))
             rho = self.calculate_area_penalty(
-                    AreaFirst + AreaAfterSplit, AreaAtSplit)
+                AreaFirst + AreaAfterSplit, AreaAtSplit)
             split_scores = d * rho
             mask = (split_scores <= max_split_score)
             split_p2idx, split_fidx, split_scores = \
@@ -1892,7 +2058,7 @@ class TrackObjects(cpm.Module):
             with open(path, "w") as fd:
                 fd.write("digraph trackobjects {\n")
                 graph_idx = np.where(
-                        (x != np.arange(len(x))) & (y != np.arange(len(y))))[0]
+                    (x != np.arange(len(x))) & (y != np.arange(len(y))))[0]
                 for idx in graph_idx:
                     fd.write(desc(idx) + ";\n")
                 for idx in graph_idx:
@@ -2017,7 +2183,7 @@ class TrackObjects(cpm.Module):
         # Discard starts linked to self = "do nothing"
         #
         start_idxs = np.where(
-                y[:start_end_end] != np.arange(gap_off, gap_end))[0]
+            y[:start_end_end] != np.arange(gap_off, gap_end))[0]
         for i in start_idxs:
             my_image_index = int(F[i, IIDX])
             my_image_number = image_numbers[my_image_index]
@@ -2044,8 +2210,8 @@ class TrackObjects(cpm.Module):
                 parent_object_numbers[my_image_index][my_object_index] = \
                     parent_object_number
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (my_image_index, my_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
                           LT_GAP)
                 add_fixup(F_GAP_LENGTH, my_image_number, my_object_number,
@@ -2082,8 +2248,8 @@ class TrackObjects(cpm.Module):
                 parent_object_numbers[my_image_index][my_object_index] = \
                     parent_object_number
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (my_image_index, my_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
                           LT_SPLIT)
                 add_fixup(F_SPLIT_SCORE, my_image_number, my_object_number,
@@ -2106,7 +2272,7 @@ class TrackObjects(cpm.Module):
         # Process ends (parents)
         #
         end_idxs = np.where(
-                x[:start_end_end] != np.arange(gap_off, gap_end))[0]
+            x[:start_end_end] != np.arange(gap_off, gap_end))[0]
         for i in end_idxs:
             if x[i] < start_end_end:
                 a[i + 1] = x[i] + 1
@@ -2128,8 +2294,8 @@ class TrackObjects(cpm.Module):
                 child_image_index = int(P1[p1_idx, IIDX])
                 child_object_number = int(P1[p1_idx, ONIDX])
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (child_image_index, child_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (child_image_index, child_object_number)))
                 add_fixup(F_MERGE_SCORE, parent_image_number,
                           parent_object_number,
                           merge_scores[x[i] - merge_off])
@@ -2171,8 +2337,8 @@ class TrackObjects(cpm.Module):
                 parent_object_numbers[my_image_index][my_object_index] = \
                     parent_object_number
                 relationships.append(
-                        ((parent_image_index, parent_object_number),
-                         (my_image_index, my_object_number)))
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
                           LT_MITOSIS)
                 add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number,
@@ -2180,7 +2346,7 @@ class TrackObjects(cpm.Module):
                 new_object_count[my_image_index] -= 1
             logger.debug("Mitosis: %d:%d to %d:%d and %d, score=%f" %
                          (parent_image_number, parent_object_number,
-                          image_numbers[F[mlidx, IIDX]],
+                          image_numbers[int(F[int(mlidx), int(IIDX)])],
                           F[mlidx, ONIDX],
                           F[mridx, ONIDX],
                           score))
@@ -2275,9 +2441,9 @@ class TrackObjects(cpm.Module):
             parent_object_numbers = relationships[:, 0, 1]
             child_object_numbers = relationships[:, 1, 1]
             m.add_relate_measurement(
-                    self.module_num, R_PARENT, object_name, object_name,
-                    parent_image_numbers, parent_object_numbers,
-                    child_image_numbers, child_object_numbers)
+                self.module_num, R_PARENT, object_name, object_name,
+                parent_image_numbers, parent_object_numbers,
+                child_image_numbers, child_object_numbers)
 
         self.recalculate_group(workspace, image_numbers)
 
@@ -2443,7 +2609,7 @@ class TrackObjects(cpm.Module):
             return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
 
         rho = self.calculate_area_penalty(
-                F[i[ij], AIDX] + F[j[ij], AIDX], L[k, AIDX])
+            F[i[ij], AIDX] + F[j[ij], AIDX], L[k, AIDX])
         return np.column_stack((i[ij], j[ij], k)), d * rho
 
     def recalculate_group(self, workspace, image_numbers):
@@ -2464,8 +2630,8 @@ class TrackObjects(cpm.Module):
 
         parent_image_numbers, parent_object_numbers = [
             [m.get_measurement(
-                    object_name, self.measurement_name(feature), image_number)
-             for image_number in image_numbers]
+                object_name, self.measurement_name(feature), image_number)
+                for image_number in image_numbers]
             for feature in (F_PARENT_IMAGE_NUMBER, F_PARENT_OBJECT_NUMBER)]
 
         #
@@ -2522,8 +2688,8 @@ class TrackObjects(cpm.Module):
             def __init__(self, feature_name):
                 self.feature_name = feature_name
                 self.backing_store = np.hstack([
-                                                   m.get_measurement(object_name, feature_name, i)
-                                                   for i in image_numbers])
+                    m.get_measurement(object_name, feature_name, i)
+                    for i in image_numbers])
 
             def __getitem__(self, index):
                 return self.backing_store[slyce(index)]
@@ -2791,14 +2957,14 @@ class TrackObjects(cpm.Module):
             r_child_object_numbers = r_child_object_numbers[to_keep]
             r_parent_object_numbers = r_parent_object_numbers[to_keep]
             r_image_numbers = np.ones(
-                    r_parent_object_numbers.shape[0],
-                    r_parent_object_numbers.dtype) * image_number
+                r_parent_object_numbers.shape[0],
+                r_parent_object_numbers.dtype) * image_number
             if len(r_child_object_numbers) > 0:
                 m.add_relate_measurement(
-                        self.module_num, R_PARENT,
-                        self.object_name.value, self.object_name.value,
-                        r_image_numbers - 1, r_parent_object_numbers,
-                        r_image_numbers, r_child_object_numbers)
+                    self.module_num, R_PARENT,
+                    self.object_name.value, self.object_name.value,
+                    r_image_numbers - 1, r_parent_object_numbers,
+                    r_image_numbers, r_child_object_numbers)
 
     def recalculate_kalman_filters(self, workspace, image_numbers):
         '''Rerun the kalman filters to improve the motion models'''
@@ -2823,29 +2989,29 @@ class TrackObjects(cpm.Module):
         x = np.hstack(x)
         y = np.hstack(m[object_name, M_LOCATION_CENTER_Y, image_numbers])
         area = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_AREA),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_AREA),
+              image_numbers])
         parent_image_number = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_PARENT_IMAGE_NUMBER),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_PARENT_IMAGE_NUMBER),
+              image_numbers])
         parent_object_number = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_PARENT_OBJECT_NUMBER),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_PARENT_OBJECT_NUMBER),
+              image_numbers])
         link_type = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_LINK_TYPE),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_LINK_TYPE),
+              image_numbers])
         link_distance = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_LINKING_DISTANCE),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_LINKING_DISTANCE),
+              image_numbers])
         movement_model = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_MOVEMENT_MODEL),
-                  image_numbers])
+            m[object_name,
+              self.measurement_name(F_MOVEMENT_MODEL),
+              image_numbers])
 
         models = self.get_kalman_models()
         kalman_models = [
@@ -2870,14 +3036,14 @@ class TrackObjects(cpm.Module):
             jj = x[this_slice]
             new_kalman_states = []
             r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
-                     np.zeros(n_objects), area[this_slice].astype(float))) \
+                (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                 np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
             for kalman_state in kalman_states:
                 new_kalman_states.append(cpfilter.kalman_filter(
-                        kalman_state, -np.ones(n_objects, int),
-                        np.column_stack((ii, jj)),
-                        np.zeros(n_objects), r))
+                    kalman_state, -np.ones(n_objects, int),
+                    np.column_stack((ii, jj)),
+                    np.zeros(n_objects), r))
             kalman_states = new_kalman_states
         else:
             this_slice = slice(idx.fwd_idx[-1], idx.fwd_idx[-1])
@@ -2904,8 +3070,8 @@ class TrackObjects(cpm.Module):
             ii = y[this_slice]
             jj = x[this_slice]
             r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
-                     np.zeros(n_objects), area[this_slice].astype(float))) \
+                (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                 np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
             new_kalman_states = []
             errors = link_distance[next_slice]
@@ -2928,8 +3094,8 @@ class TrackObjects(cpm.Module):
                     for j in range(n_elements):
                         q[has_child, j, j] = kalman_state.noise_var[kid_idx, j]
                 updated_state = cpfilter.kalman_filter(
-                        kalman_state, child_object_number - 1,
-                        np.column_stack((ii, jj)), q, r)
+                    kalman_state, child_object_number - 1,
+                    np.column_stack((ii, jj)), q, r)
                 new_kalman_states.append(updated_state)
             if np.any(has_child):
                 # fix child linking distances and models
@@ -2940,16 +3106,16 @@ class TrackObjects(cpm.Module):
             kalman_states = new_kalman_states
 
     def get_kalman_feature_names(self):
-        if self.tracking_method != TM_LAP:
+        if self.tracking_method != "LAP":
             return []
         return sum(
-                [sum(
-                        [[kalman_feature(model, F_STATE, element),
-                          kalman_feature(model, F_NOISE, element)] +
-                         [kalman_feature(model, F_COV, element, e2)
-                          for e2 in elements]
-                         for element in elements], [])
-                 for model, elements in self.get_kalman_models()], [])
+            [sum(
+                [[kalman_feature(model, F_STATE, element),
+                  kalman_feature(model, F_NOISE, element)] +
+                 [kalman_feature(model, F_COV, element, e2)
+                  for e2 in elements]
+                 for element in elements], [])
+                for model, elements in self.get_kalman_models()], [])
 
     def get_measurement_columns(self, pipeline):
         result = [(self.object_name.value,
@@ -2959,7 +3125,7 @@ class TrackObjects(cpm.Module):
         result += [(cpmeas.IMAGE, self.image_measurement_name(feature), coltype)
                    for feature, coltype in F_IMAGE_COLTYPE_ALL]
         attributes = {cpmeas.MCA_AVAILABLE_POST_GROUP: True}
-        if self.tracking_method == TM_LAP:
+        if self.tracking_method == "LAP":
             result += [(self.object_name.value,
                         self.measurement_name(name),
                         coltype) for name, coltype in (
@@ -2996,7 +3162,7 @@ class TrackObjects(cpm.Module):
     def get_object_relationships(self, pipeline):
         '''Return the object relationships produced by this module'''
         object_name = self.object_name.value
-        if self.wants_second_phase and self.tracking_method == TM_LAP:
+        if self.wants_second_phase and self.tracking_method == "LAP":
             when = cpmeas.MCA_AVAILABLE_POST_GROUP
         else:
             when = cpmeas.MCA_AVAILABLE_EACH_CYCLE
@@ -3013,7 +3179,7 @@ class TrackObjects(cpm.Module):
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name.value and category == F_PREFIX:
             result = list(F_ALL)
-            if self.tracking_method == TM_LAP:
+            if self.tracking_method == "LAP":
                 result += [F_AREA, F_LINKING_DISTANCE, F_STANDARD_DEVIATION,
                            F_LINK_TYPE, F_MOVEMENT_MODEL]
                 if self.wants_second_phase:
@@ -3036,7 +3202,7 @@ class TrackObjects(cpm.Module):
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
-        if self.tracking_method == TM_LAP:
+        if self.tracking_method == "LAP":
             return []
 
         if feature in self.get_measurements(pipeline, object_name, category):
@@ -3045,27 +3211,15 @@ class TrackObjects(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            wants_image = setting_values[10] != cps.DO_NOT_USE
-            measurement = '_'.join(setting_values[2:6])
-            setting_values = [setting_values[0],  # tracking method
-                              setting_values[1],  # object name
-                              measurement,
-                              setting_values[6],  # pixel_radius
-                              setting_values[7],  # display_type
-                              wants_image,
-                              setting_values[10]]
-            variable_revision_number = 1
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             setting_values = setting_values + ["100", "100"]
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added phase 2 parameters
             setting_values = setting_values + [
                 "40", "40", "40", "50", "50", "50", "5"]
             variable_revision_number = 3
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Added Kalman choices:
             # Model
             # radius std
@@ -3075,14 +3229,22 @@ class TrackObjects(cpm.Module):
                               setting_values[9:])
             variable_revision_number = 4
 
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Added lifetime filtering: Wants filtering + min/max allowed lifetime
             setting_values = setting_values + [cps.NO, cps.YES, "1", cps.NO, "100"]
             variable_revision_number = 5
 
-        if (not from_matlab) and variable_revision_number == 5:
+        if variable_revision_number == 5:
             # Added mitosis alternative score + mitosis_max_distance
             setting_values = setting_values + ["80", "40"]
             variable_revision_number = 6
 
-        return setting_values, variable_revision_number, from_matlab
+        # added after integration of FOLLOWNEIGHBORS
+        if variable_revision_number == 6:
+            # addeing new settings for FOLLOWNEIGHBORS
+            setting_values = setting_values + [30., False, 15., 25.]
+            # order of params in settings
+            # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight
+            variable_revision_number = 7
+
+        return setting_values, variable_revision_number, False

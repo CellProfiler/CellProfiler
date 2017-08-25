@@ -5,6 +5,7 @@
 import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
+import cellprofiler.gui.pipeline
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -256,7 +257,7 @@ class PipelineListView(object):
         self.input_list_ctrl.Enable(show)
         if not show:
             self.input_list_ctrl.DeleteAllItems()
-            fake_pipeline = cellprofiler.pipeline.Pipeline()
+            fake_pipeline = cellprofiler.gui.pipeline.Pipeline()
             fake_pipeline.init_modules()
             for i, module in enumerate(fake_pipeline.modules(False)):
                 item = PipelineListCtrl.PipelineListCtrlItem(module)
@@ -565,14 +566,15 @@ class PipelineListView(object):
 
         menu = wx.Menu()
         try:
+            module = self.get_active_module()
             if self.list_ctrl.active_item is not None:
                 sub_menu = wx.Menu()
                 self.__controller.populate_edit_menu(sub_menu)
                 menu.AppendSubMenu(sub_menu, "&Add")
-                menu.Append(ID_EDIT_DELETE, "&Delete")
-                menu.Append(ID_EDIT_DUPLICATE, "Duplicate")
-                menu.Append(ID_EDIT_ENABLE_MODULE, "Enable")
-                menu.Append(ID_HELP_MODULE, "&Help")
+                menu.Append(ID_EDIT_DELETE, "&Delete module {}".format(module.module_num))
+                menu.Append(ID_EDIT_DUPLICATE, "Duplicate module {}".format(module.module_num))
+                menu.Append(ID_EDIT_ENABLE_MODULE, "Enable module {}".format(module.module_num))
+                menu.Append(ID_HELP_MODULE, "&Help for module {}".format(module.module_num))
             else:
                 self.__controller.populate_edit_menu(menu)
             self.__frame.PopupMenu(menu)
@@ -697,7 +699,6 @@ class PipelineListView(object):
 
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
-            logger.info("Processing %s" % filename)
             _, ext = os.path.splitext(filename)
             if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PROJECT_CHOICES:
                 self.__frame.Raise()
@@ -724,7 +725,7 @@ class PipelineListView(object):
         #
         wx.BeginBusyCursor()
         try:
-            pipeline = cellprofiler.pipeline.Pipeline()
+            pipeline = cellprofiler.gui.pipeline.Pipeline()
             pipeline.load(StringIO.StringIO(data))
             n_input_modules = self.get_input_item_count()
             for i, module in enumerate(pipeline.modules(False)):
@@ -749,7 +750,7 @@ class PipelineListView(object):
         """Reset the list view and repopulate the list items"""
         self.list_ctrl.DeleteAllItems()
         self.input_list_ctrl.DeleteAllItems()
-        assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
+        assert isinstance(pipeline, cellprofiler.gui.pipeline.Pipeline)
 
         for module in pipeline.modules(False):
             self.__populate_row(module)

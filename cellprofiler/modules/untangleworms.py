@@ -1,78 +1,94 @@
-'''<b>UntangleWorms</b> untangles overlapping worms.
-<hr>
-This module either assembles a training set of sample worms in order to create a worm
-model, or takes a binary image and the results of worm training and
-labels the worms in the image, untangling them and associating all of a
-worm's pieces together.
+# coding=utf-8
 
-The results of untangling the input image will be an object set that can be used with
-downstream measurment modules. If using the <i>overlapping</i> style of objects, these
-can be saved as images using <b>SaveImages</b> to create a multi-page TIF file by
-specifying "Objects" as the type of image to save.
+"""
+UntangleWorms
+=============
 
-<h4>Available measurements</h4>
+**UntangleWorms** untangles overlapping worms.
 
-<b>Object measurements (for "Untangle" mode only)</b>:
-<ul>
-<li><i>Length:</i> The length of the worm skeleton. </li>
-<li><i>Angle:</i> The angle at each of the control points</li>
-<li><i>ControlPointX_N, ControlPointY_N:</i> The X,Y coordinate of a control point <i>N</i>.
-A control point is a sampled location along the worm shape used to construct the model.</li>
-</ul>
+This module either assembles a training set of sample worms in order to
+create a worm model, or takes a binary image and the results of worm
+training and labels the worms in the image, untangling them and
+associating all of a worm’s pieces together. The results of untangling
+the input image will be an object set that can be used with downstream
+measurment modules. If using the *overlapping* style of objects, these
+can be saved as images using **SaveImages** to create a multi-page TIF
+file by specifying “Objects” as the type of image to save.
 
-<h4>Technical notes</h4>
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<i>Training</i> involves extracting morphological information from the sample objects
-provided from the previous steps. Using the default training set weights is recommended.
-Proper creation of the model is dependent on providing a binary image as input consisting
-of single, separated objects considered to be worms. You can the <b>Identify</b> modules
-to find the tentative objects and then filter these objects to get individual worms, whether
-by using <b>FilterObjects</b>, <b>EditObjectsManually</b> or the size criteria in
-<b>IdentifyPrimaryObjects</b>. A binary image can be obtained from an object set by using
-<b>ConvertObjectsToImage</b>.
+**Object measurements (for “Untangle” mode only)**:
 
-<p>At the end of the training run, a final display window is shown displaying the following
-statistical data:
-<ul>
-<li>A boxplot of the direction angle shape costs. The direction angles (which are between -&pi; and &pi;)
-are the angles between lines joining consective control points. The angle 0 corresponds to
-the case when two adjacent line segments are parallel (and thus belong to the same line).</li>
-<li>A cumulative boxplot of the worm lengths as determined by the model.</li>
-<li>A cumulative boxplot of the worm angles as determined by the model.</li>
-<li>A heatmap of the covariance matrix of the feature vectors. For <i>N</i> control points,
-the feature vector is of length <i>N</i>-1 and contains <i>N</i>-2 elements for each of the
-angles between them, plus an element representing the worm length.</li>
-</ul></p>
+-  *Length:* The length of the worm skeleton.
+-  *Angle:* The angle at each of the control points
+-  *ControlPointX\_N, ControlPointY\_N:* The X,Y coordinate of a control
+   point *N*. A control point is a sampled location along the worm shape
+   used to construct the model.
 
-<p><i>Untangling</i> involves untangles the worms using a provided worm model, built
-from a large number of samples of single worms. If the result of the untangling is
-not satisfactory (e.g., it is unable to detect long worms or is too stringent about
-shape variation) and you do not wish to re-train, you can adjust the provided worm model
-manually by opening the .xml file in a text editor
-and changing the values for the fields defining worm length, area etc. You may also want to adjust the
-"Maximum Complexity" module setting which controls how complex clusters the untangling will handle.
-Large clusters (&gt; 6 worms) may be slow to process.</p>
+Technical notes
+^^^^^^^^^^^^^^^
 
-<h4>References</h4>
-<ul>
-<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ,
-Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
-Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
-<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.
-<a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
-</ul>
+*Training* involves extracting morphological information from the sample
+objects provided from the previous steps. Using the default training set
+weights is recommended. Proper creation of the model is dependent on
+providing a binary image as input consisting of single, separated
+objects considered to be worms. You can the **Identify** modules to find
+the tentative objects and then filter these objects to get individual
+worms, whether by using **FilterObjects**, **EditObjectsManually** or
+the size criteria in **IdentifyPrimaryObjects**. A binary image can be
+obtained from an object set by using **ConvertObjectsToImage**.
 
-<p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
-Toolbox</a> page for sample images and pipelines, as well
-as video tutorials.</p>
-'''
+At the end of the training run, a final display window is shown
+displaying the following statistical data:
+
+-  A boxplot of the direction angle shape costs. The direction angles
+   (which are between -π and π) are the angles between lines joining
+   consective control points. The angle 0 corresponds to the case when
+   two adjacent line segments are parallel (and thus belong to the same
+   line).
+-  A cumulative boxplot of the worm lengths as determined by the model.
+-  A cumulative boxplot of the worm angles as determined by the model.
+-  A heatmap of the covariance matrix of the feature vectors. For *N*
+   control points, the feature vector is of length *N*-1 and contains
+   *N*-2 elements for each of the angles between them, plus an element
+   representing the worm length.
+
+*Untangling* involves untangles the worms using a provided worm model,
+built from a large number of samples of single worms. If the result of
+the untangling is not satisfactory (e.g., it is unable to detect long
+worms or is too stringent about shape variation) and you do not wish to
+re-train, you can adjust the provided worm model manually by opening the
+.xml file in a text editor and changing the values for the fields
+defining worm length, area etc. You may also want to adjust the “Maximum
+Complexity” module setting which controls how complex clusters the
+untangling will handle. Large clusters (> 6 worms) may be slow to
+process.
+
+References
+^^^^^^^^^^
+
+-  Wählby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O’Rourke
+   EJ, Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P,
+   Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
+   for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
+   714-716. `(link)`_
+
+See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
+well as video tutorials.
+
+.. _(link): http://dx.doi.org/10.1038/nmeth.1984
+.. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
+"""
 
 import logging
 import os
+import re
 import sys
 import urllib2
 import xml.dom.minidom as DOM
 
+import cellprofiler.measurement
 import matplotlib.mlab as mlab
 import numpy as np
 import scipy.ndimage as scind
@@ -81,6 +97,7 @@ from scipy.io import loadmat
 from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
+import cellprofiler
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
@@ -671,7 +688,6 @@ class UntangleWorms(cpm.Module):
     def post_group(self, workspace, grouping):
         '''Write the training data file as we finish grouping.'''
         if self.mode == MODE_TRAIN:
-            from cellprofiler.utilities.version import version_number
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
             #
             # Either get weights from our instance or instantiate
@@ -741,7 +757,7 @@ class UntangleWorms(cpm.Module):
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
             for tag, value in (
-                    (T_VERSION, version_number),
+                    (T_VERSION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))),
                     (T_MIN_AREA, min_area),
                     (T_MAX_AREA, max_area),
                     (T_COST_THRESHOLD, max_cost),
@@ -870,9 +886,9 @@ class UntangleWorms(cpm.Module):
             else:
                 center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
                 center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
-            measurements.add_measurement(name, I.M_LOCATION_CENTER_X, center_x)
-            measurements.add_measurement(name, I.M_LOCATION_CENTER_Y, center_y)
-            measurements.add_measurement(name, I.M_NUMBER_OBJECT_NUMBER, o.indices)
+            measurements.add_measurement(name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x)
+            measurements.add_measurement(name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y)
+            measurements.add_measurement(name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, o.indices)
             #
             # Save outlines
             #
@@ -1789,12 +1805,13 @@ class UntangleWorms(cpm.Module):
             # Find all segments from the end branch
             #
             direction = graph.incidence_directions[end_branch_area, last_segment]
-            last_coord = graph.segments[last_segment][direction][-1]
+
+            last_coord = graph.segments[last_segment][int(direction)][-1]
             for j in graph.incident_segments[end_branch_area]:
                 if j in unfinished_segment:
                     continue  # segment already in the path
                 direction = not graph.incidence_directions[end_branch_area, j]
-                first_coord = graph.segments[j][direction][0]
+                first_coord = graph.segments[j][int(direction)][0]
                 gap_length = np.sqrt(np.sum((last_coord - first_coord) ** 2))
                 next_length = current_length + gap_length + graph.segment_lengths[j]
                 if next_length > max_length:
@@ -2393,29 +2410,29 @@ class UntangleWorms(cpm.Module):
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [I.C_COUNT]
+            return [cellprofiler.measurement.C_COUNT]
         if ((object_name == self.overlap_objects.value and
                      self.overlap in (OO_BOTH, OO_WITH_OVERLAP)) or
                 (object_name == self.nonoverlapping_objects.value and
                          self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP))):
-            return [I.C_LOCATION, I.C_NUMBER, C_WORM]
+            return [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER, C_WORM]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if object_name == cpmeas.IMAGE and category == I.C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.C_COUNT:
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
                 result += [self.nonoverlapping_objects.value]
         if ((wants_overlapping and object_name == self.overlap_objects) or
                 (wants_nonoverlapping and object_name == self.nonoverlapping_objects)):
-            if category == I.C_LOCATION:
-                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
-            elif category == I.C_NUMBER:
-                result += [I.FTR_OBJECT_NUMBER]
+            if category == cellprofiler.measurement.C_LOCATION:
+                result += [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
+            elif category == cellprofiler.measurement.C_NUMBER:
+                result += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
             elif category == C_WORM:
                 result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result

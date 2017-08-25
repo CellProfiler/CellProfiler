@@ -47,12 +47,6 @@ class TestImage(unittest.TestCase):
             y = (x.image == one_target)
             self.assertTrue((x.image == one_target).all(), msg="Failed setting %s to max" % (repr(dtype)))
 
-    def test_04_01_image_mask_missize(self):
-        x = cpi.Image()
-        x.image = np.ones((10, 10))
-        with self.assertRaises(AssertionError):
-            x.mask = np.ones((5, 5))
-
     def test_05_01_mask_of3D(self):
         """The mask of a 3-d image should be 2-d"""
         x = cpi.Image()
@@ -69,6 +63,82 @@ class TestImage(unittest.TestCase):
         test = i + j * 10
         test_out = x.crop_image_similarly(test)
         self.assertTrue(np.all(test_out == test[2:-1, 1:-2]))
+
+    def test_init_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertTrue(np.all(x.pixel_data == data))
+
+        self.assertEqual(x.dimensions, 3)
+
+    def test_multichannel_grayscale_image(self):
+        data = np.ones((10, 10))
+
+        x = cpi.Image(image=data)
+
+        self.assertFalse(x.multichannel)
+
+    def test_multichannel_rgb_image(self):
+        data = np.ones((10, 10, 3))
+
+        x = cpi.Image(image=data)
+
+        self.assertTrue(x.multichannel)
+
+    def test_multichannel_grayscale_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertFalse(x.multichannel)
+
+    def test_spacing_image_default(self):
+        data = np.ones((5, 5))
+
+        x = cpi.Image(image=data)
+
+        self.assertEqual(x.spacing, (1.0, 1.0))
+
+    def test_spacing_image(self):
+        data = np.ones((5, 5))
+
+        x = cpi.Image(image=data, spacing=(0.33, 0.33))
+
+        self.assertEqual(x.spacing, (1.0, 1.0))
+
+    def test_spacing_parent_image(self):
+        data = np.ones((5, 5))
+
+        px = cpi.Image(image=data, spacing=(0.33, 0.33))
+
+        x = cpi.Image(image=data, parent_image=px)
+
+        self.assertEqual(x.spacing, (1.0, 1.0))
+
+    def test_spacing_volume_default(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertEqual(x.spacing, (1.0, 1.0, 1.0))
+
+    def test_spacing_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+
+        self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
+
+    def test_spacing_volume_parent_image(self):
+        data = np.ones((5, 10, 10))
+
+        px = cpi.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+
+        x = cpi.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
+
+        self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
 
 
 IMAGE_NAME = "image"

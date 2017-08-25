@@ -375,7 +375,9 @@ class HDF5Dict(object):
             return result if result is None else result[0]
 
         feature_exists = self.has_feature(object_name, feature_name)
-        assert feature_exists
+
+        assert feature_exists, "Feature {} for {} does not exist".format(feature_name, object_name)
+
         with self.lock:
             indices = self.get_indices(object_name, feature_name)
             dataset = self.get_dataset(object_name, feature_name)

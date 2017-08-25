@@ -1,27 +1,33 @@
-'''<b>Image Math</b> performs simple mathematical operations on image intensities.
-<hr>
-This module can perform addition, subtraction, multiplication, division, or averaging
-of two or more image intensities, as well as inversion, log transform, or scaling by
-a constant for individual image intensities.
+# coding=utf-8
 
-<p>Keep in mind that after the requested operations are carried out, the final image
-may have a substantially different range of pixel
-intensities than the original. CellProfiler
-assumes that the image is scaled from 0 &ndash; 1 for object identification and
-display purposes, so additional rescaling may be needed. Please see the
-<b>RescaleIntensity</b> module for more scaling options.</p>
+"""
+**Image Math** performs simple mathematical operations on image
+intensities.
 
-See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
-'''
+This module can perform addition, subtraction, multiplication, division,
+or averaging of two or more image intensities, as well as inversion, log
+transform, or scaling by a constant for individual image intensities.
 
-import numpy as np
+Keep in mind that after the requested operations are carried out, the
+final image may have a substantially different range of pixel
+intensities than the original. CellProfiler assumes that the image is
+scaled from 0 – 1 for object identification and display purposes, so
+additional rescaling may be needed. Please see the **RescaleIntensity**
+module for more scaling options.
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+See also **ApplyThreshold**, **RescaleIntensity**,
+**CorrectIlluminationCalculate**.
+"""
+
 import inflect
+import numpy
+
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+
+from cellprofiler.setting import YES, NO
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
@@ -57,9 +63,9 @@ FIXED_SETTING_COUNT_1 = 7
 FIXED_SETTING_COUNT = 8
 
 
-class ImageMath(cpm.Module):
-    category = "Image Processing"
+class ImageMath(cellprofiler.module.ImageProcessing):
     variable_revision_number = 4
+
     module_name = "ImageMath"
 
     def create_settings(self):
@@ -70,7 +76,7 @@ class ImageMath(cpm.Module):
         self.add_image(False)
 
         # other settings
-        self.operation = cps.Choice(
+        self.operation = cellprofiler.setting.Choice(
                 "Operation",
                 [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE,
                  O_MINIMUM, O_MAXIMUM, O_INVERT,
@@ -121,50 +127,50 @@ class ImageMath(cpm.Module):
             </ul>
             <p>Note that <i>%(O_INVERT)s</i>, <i>%(O_LOG_TRANSFORM)s</i>, <i>%(O_LOG_TRANSFORM_LEGACY)s</i> and <i>%(O_NONE)s</i> operate on only a single image.</p>
             """ % globals())
-        self.divider_top = cps.Divider(line=False)
+        self.divider_top = cellprofiler.setting.Divider(line=False)
 
-        self.exponent = cps.Float(
+        self.exponent = cellprofiler.setting.Float(
                 "Raise the power of the result by", 1, doc="""
             Enter an exponent to raise the result to *after* the chosen operation""")
 
-        self.after_factor = cps.Float(
+        self.after_factor = cellprofiler.setting.Float(
                 "Multiply the result by", 1, doc="""
             Enter a factor to multiply the result by *after* the chosen operation""")
 
-        self.addend = cps.Float(
+        self.addend = cellprofiler.setting.Float(
                 "Add to result", 0, doc="""
             Enter a number to add to the result *after* the chosen operation""")
 
-        self.truncate_low = cps.Binary(
+        self.truncate_low = cellprofiler.setting.Binary(
                 "Set values less than 0 equal to 0?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
             Select <i>%(YES)s</i> to set negative values to 0.""" % globals())
 
-        self.truncate_high = cps.Binary(
+        self.truncate_high = cellprofiler.setting.Binary(
                 "Set values greater than 1 equal to 1?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
             Select <i>%(YES)s</i> to set values greater than 1 to a maximum value of 1.""" % globals())
 
-        self.ignore_mask = cps.Binary(
+        self.ignore_mask = cellprofiler.setting.Binary(
                 "Ignore the image masks?", False, doc="""
             Usually, the smallest mask of all image operands is applied after
             image math has been completed. Select <i>%(YES)s</i> to set
             equal to zero all previously masked pixels and operate on the masked
             images as if no mask had been applied.""" % globals())
 
-        self.output_image_name = cps.ImageNameProvider(
+        self.output_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "ImageAfterMath", doc="""
             Enter a name for the resulting image.""")
 
-        self.add_button = cps.DoSomething("", "Add another image", self.add_image)
+        self.add_button = cellprofiler.setting.DoSomething("", "Add another image", self.add_image)
 
-        self.divider_bottom = cps.Divider(line=False)
+        self.divider_bottom = cellprofiler.setting.Divider(line=False)
 
     def add_image(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         group.removable = removable
-        group.append("image_or_measurement", cps.Choice(
+        group.append("image_or_measurement", cellprofiler.setting.Choice(
                 "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT], doc="""
             You can perform math operations using two images or you
             can use a measurement for one of the operands. For instance,
@@ -175,22 +181,22 @@ class ImageMath(cpm.Module):
             select <i>%(IM_MEASUREMENT)s</i> and use the median intensity measurement as
             the denominator""" % globals()))
 
-        group.append("image_name", cps.ImageNameSubscriber("", "", doc="""
+        group.append("image_name", cellprofiler.setting.ImageNameSubscriber("", "", doc="""
             Selec the image that you want to use for this operation."""))
 
-        group.append("measurement", cps.Measurement(
-                "Measurement", lambda: cpmeas.IMAGE, "", doc="""
+        group.append("measurement", cellprofiler.setting.Measurement(
+                "Measurement", lambda: cellprofiler.measurement.IMAGE, "", doc="""
             This is a measurement made on the image. The value of the
             measurement is used for the operand for all of the pixels of the
             other operand's image."""))
 
-        group.append("factor", cps.Float("", 1, doc="""
+        group.append("factor", cellprofiler.setting.Float("", 1, doc="""
             Enter the number that you would like to multiply the above image by. This multiplication
             is applied before other operations."""))
 
         if removable:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
-        group.append("divider", cps.Divider())
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.images, group))
+        group.append("divider", cellprofiler.setting.Divider())
         self.images.append(group)
 
     def renumber_settings(self):
@@ -285,7 +291,7 @@ class ImageMath(cpm.Module):
         #
         # Crop all of the images similarly
         #
-        smallest = np.argmin([np.product(pd.shape) for pd in pixel_data])
+        smallest = numpy.argmin([numpy.product(pd.shape) for pd in pixel_data])
         smallest_image = images[smallest]
         for i in [x for x in range(len(images)) if x != smallest]:
             pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
@@ -294,13 +300,13 @@ class ImageMath(cpm.Module):
         # weave in the measurements
         idx = 0
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cellprofiler.measurement.Measurements)
         for i in range(self.operand_count):
             if not wants_image[i]:
                 value = measurements.get_current_image_measurement(
                         self.images[i].measurement.value)
                 if value is None:
-                    value = np.NaN
+                    value = numpy.NaN
                 else:
                     value = float(value)
                 pixel_data.insert(i, value)
@@ -320,38 +326,38 @@ class ImageMath(cpm.Module):
                      O_AVERAGE, O_MAXIMUM, O_MINIMUM, O_AND, O_OR, O_EQUALS):
             # Binary operations
             if opval in (O_ADD, O_AVERAGE):
-                op = np.add
+                op = numpy.add
             elif opval == O_SUBTRACT:
-                op = np.subtract
+                op = numpy.subtract
             elif opval == O_DIFFERENCE:
-                op = lambda x, y: np.abs(np.subtract(x, y))
+                op = lambda x, y: numpy.abs(numpy.subtract(x, y))
             elif opval == O_MULTIPLY:
-                if all([pd.dtype == np.bool for pd in pixel_data
-                        if not np.isscalar(pd)]):
-                    op = np.logical_and
+                if all([pd.dtype == numpy.bool for pd in pixel_data
+                        if not numpy.isscalar(pd)]):
+                    op = numpy.logical_and
                 else:
-                    op = np.multiply
+                    op = numpy.multiply
             elif opval == O_MINIMUM:
-                op = np.minimum
+                op = numpy.minimum
             elif opval == O_MAXIMUM:
-                op = np.maximum
+                op = numpy.maximum
             elif opval == O_AND:
-                op = np.logical_and
+                op = numpy.logical_and
             elif opval == O_OR:
-                op = np.logical_or
+                op = numpy.logical_or
             elif opval == O_EQUALS:
-                output_pixel_data = np.ones(pixel_data[0].shape, bool)
+                output_pixel_data = numpy.ones(pixel_data[0].shape, bool)
                 comparitor = pixel_data[0]
             else:
-                op = np.divide
+                op = numpy.divide
             for pd, mask in zip(pixel_data[1:], masks[1:]):
-                if not np.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
+                if not numpy.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
                     if output_pixel_data.ndim == 2:
-                        output_pixel_data = output_pixel_data[:, :, np.newaxis]
-                        if opval == O_EQUALS and not np.isscalar(comparitor):
-                            comparitor = comparitor[:, :, np.newaxis]
+                        output_pixel_data = output_pixel_data[:, :, numpy.newaxis]
+                        if opval == O_EQUALS and not numpy.isscalar(comparitor):
+                            comparitor = comparitor[:, :, numpy.newaxis]
                     if pd.ndim == 2:
-                        pd = pd[:, :, np.newaxis]
+                        pd = pd[:, :, numpy.newaxis]
                 if opval == O_EQUALS:
                     output_pixel_data = output_pixel_data & (comparitor == pd)
                 else:
@@ -366,13 +372,13 @@ class ImageMath(cpm.Module):
             if opval == O_AVERAGE:
                 output_pixel_data /= sum(image_factors)
         elif opval == O_INVERT:
-            output_pixel_data = 1 - output_pixel_data
+            output_pixel_data = output_pixel_data.max() - output_pixel_data
         elif opval == O_NOT:
-            output_pixel_data = ~ output_pixel_data
+            output_pixel_data = numpy.logical_not(output_pixel_data)
         elif opval == O_LOG_TRANSFORM:
-            output_pixel_data = np.log2(output_pixel_data + 1)
+            output_pixel_data = numpy.log2(output_pixel_data + 1)
         elif opval == O_LOG_TRANSFORM_LEGACY:
-            output_pixel_data = np.log2(output_pixel_data)
+            output_pixel_data = numpy.log2(output_pixel_data)
         elif opval == O_NONE:
             output_pixel_data = output_pixel_data.copy()
         else:
@@ -380,7 +386,7 @@ class ImageMath(cpm.Module):
 
         # Check to see if there was a measurement & image w/o mask. If so
         # set mask to none
-        if np.isscalar(output_mask):
+        if numpy.isscalar(output_mask):
             output_mask = None
         if opval not in BINARY_OUTPUT_OPS:
             #
@@ -408,36 +414,53 @@ class ImageMath(cpm.Module):
                      if smallest_image.has_crop_mask else None)
         masking_objects = (smallest_image.masking_objects
                            if smallest_image.has_masking_objects else None)
-        output_image = cpi.Image(output_pixel_data,
-                                 mask=output_mask,
-                                 crop_mask=crop_mask,
-                                 parent_image=images[0],
-                                 masking_objects=masking_objects,
-                                 convert=False)
+        output_image = cellprofiler.image.Image(output_pixel_data,
+                                                mask=output_mask,
+                                                crop_mask=crop_mask,
+                                                parent_image=images[0],
+                                                masking_objects=masking_objects,
+                                                convert=False,
+                                                dimensions=images[0].dimensions)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         #
         # Display results
         #
         if self.show_window:
-            workspace.display_data.pixel_data = \
-                [image.pixel_data for image in images] + [output_pixel_data]
-            workspace.display_data.display_names = \
-                image_names + [self.output_image_name.value]
+            workspace.display_data.pixel_data = [image.pixel_data for image in images] + [output_pixel_data]
+
+            workspace.display_data.display_names = image_names + [self.output_image_name.value]
+
+            workspace.display_data.dimensions = output_image.dimensions
 
     def display(self, workspace, figure):
+        import matplotlib.cm
+
         pixel_data = workspace.display_data.pixel_data
+
         display_names = workspace.display_data.display_names
+
         columns = (len(pixel_data) + 1) / 2
-        figure.set_subplots((columns, 2))
+
+        figure.set_subplots((columns, 2), dimensions=workspace.display_data.dimensions)
+
         for i in range(len(pixel_data)):
-            show = figure.subplot_imshow if pixel_data[i].ndim == 3 else \
-                figure.subplot_imshow_bw if pixel_data[i].dtype.kind == 'b' \
-                    else figure.subplot_imshow_grayscale
-            show(i % columns, int(i / columns),
-                 pixel_data[i],
-                 title=display_names[i],
-                 sharexy=figure.subplot(0, 0))
+            if pixel_data[i].shape[-1] in (3, 4):
+                cmap = None
+            elif pixel_data[i].dtype.kind == 'b':
+                cmap = matplotlib.cm.binary_r
+            else:
+                cmap = matplotlib.cm.Greys_r
+
+            figure.subplot_imshow(
+                i % columns,
+                int(i / columns),
+                pixel_data[i],
+                title=display_names[i],
+                # sharexy=figure.subplot(0, 0),
+                colormap=cmap,
+                dimensions=workspace.display_data.dimensions
+            )
 
     def validate_module(self, pipeline):
         '''Guarantee that at least one operand is an image'''
@@ -445,8 +468,8 @@ class ImageMath(cpm.Module):
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:
                 return
-        raise cps.ValidationError("At least one of the operands must be an image",
-                                  op.image_or_measurement)
+        raise cellprofiler.setting.ValidationError("At least one of the operands must be an image",
+                                                   op.image_or_measurement)
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
@@ -459,7 +482,7 @@ class ImageMath(cpm.Module):
                               1,  # post-multiply factor
                               0,  # addend
                               truncate,  # truncate low
-                              cps.NO,  # truncate high
+                              cellprofiler.setting.NO,  # truncate high
                               resulting_image_name,
                               basic_image_name,
                               multiply_factor_2,
@@ -474,7 +497,7 @@ class ImageMath(cpm.Module):
                 (name, weight)
                 for name, weight in zip(setting_values[:3],
                                         setting_values[4:])
-                if name.lower() != cps.DO_NOT_USE.lower()]
+                if name.lower() != cellprofiler.setting.DO_NOT_USE.lower()]
 
             multiplier = 1.0 / sum([float(weight)
                                     for name, weight in names_and_weights])
@@ -483,8 +506,8 @@ class ImageMath(cpm.Module):
                               "1",  # Exponent
                               str(multiplier),  # Post-operation multiplier
                               "0",  # Post-operation offset
-                              cps.NO,  # Truncate low
-                              cps.NO,  # Truncate high
+                              cellprofiler.setting.NO,  # Truncate low
+                              cellprofiler.setting.NO,  # Truncate high
                               output_image]
             for name, weight in names_and_weights:
                 setting_values += [name, weight]
@@ -494,16 +517,16 @@ class ImageMath(cpm.Module):
         if (from_matlab and module_name == 'InvertIntensity' and
                     variable_revision_number == 1):
             image_name, output_image = setting_values
-            setting_values = [image_name, cps.DO_NOT_USE, cps.DO_NOT_USE,
+            setting_values = [image_name, cellprofiler.setting.DO_NOT_USE, cellprofiler.setting.DO_NOT_USE,
                               'Invert',
-                              1, 1, 1, 1, 1, cps.NO, cps.NO, output_image]
+                              1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO, output_image]
             module_name = 'ImageMath'
             variable_revision_number = 2
         if (from_matlab and module_name == 'Multiply' and
                     variable_revision_number == 1):
             image1, image2, output_image = setting_values
-            setting_values = [image1, image2, cps.DO_NOT_USE,
-                              'Multiply', 1, 1, 1, 1, 1, cps.NO, cps.NO,
+            setting_values = [image1, image2, cellprofiler.setting.DO_NOT_USE,
+                              'Multiply', 1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO,
                               output_image]
             module_name = 'ImageMath'
             variable_revision_number = 2
@@ -519,7 +542,7 @@ class ImageMath(cpm.Module):
                 factors += [float(setting_values[2]) *
                             float(setting_values[5])]
             except:
-                if setting_values[2] != cps.DO_NOT_USE:
+                if setting_values[2] != cellprofiler.setting.DO_NOT_USE:
                     image_names += [setting_values[2]]
                     input_factors += [float(setting_values[5])]
             exponent = 1.0
@@ -530,13 +553,13 @@ class ImageMath(cpm.Module):
             output_image_name = setting_values[0]
             old_operation = operation
             if operation == O_DIVIDE and len(factors):
-                multiplier /= np.product(factors)
+                multiplier /= numpy.product(factors)
             elif operation == O_MULTIPLY and len(factors):
-                multiplier *= np.product(factors)
+                multiplier *= numpy.product(factors)
             elif operation == O_ADD and len(factors):
-                addend = np.sum(factors)
+                addend = numpy.sum(factors)
             elif operation == O_SUBTRACT:
-                addend = -np.sum(factors)
+                addend = -numpy.sum(factors)
             setting_values = [operation, exponent, multiplier, addend,
                               wants_truncate_low, wants_truncate_high,
                               output_image_name]
@@ -566,7 +589,7 @@ class ImageMath(cpm.Module):
                                 float(setting_values[i + 4])]
 
                 except:
-                    if setting_values[i] != cps.DO_NOT_USE:
+                    if setting_values[i] != cellprofiler.setting.DO_NOT_USE:
                         image_names += [setting_values[i]]
                         input_factors += [float(setting_values[i + 4])]
 
@@ -578,16 +601,16 @@ class ImageMath(cpm.Module):
             output_image_name = setting_values[11]
             old_operation = operation
             if operation == O_COMBINE:
-                addend = np.sum(factors)
+                addend = numpy.sum(factors)
                 operation = O_ADD
             elif operation == O_DIVIDE and len(factors):
-                multiplier /= np.product(factors)
+                multiplier /= numpy.product(factors)
             elif operation == O_MULTIPLY and len(factors):
-                multiplier *= np.product(factors)
+                multiplier *= numpy.product(factors)
             elif operation == O_ADD and len(factors):
-                addend = np.sum(factors)
+                addend = numpy.sum(factors)
             elif operation == O_SUBTRACT:
-                addend = -np.sum(factors)
+                addend = -numpy.sum(factors)
             setting_values = [operation, exponent, multiplier, addend,
                               wants_truncate_low, wants_truncate_high,
                               output_image_name]

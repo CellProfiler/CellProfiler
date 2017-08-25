@@ -21,6 +21,7 @@ from cellprofiler.preferences import \
 import cellprofiler.measurement
 
 from cellprofiler.utilities.utf16encode import utf16encode
+import skimage.morphology
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
@@ -744,7 +745,7 @@ class Number(Text):
             self.__default = self.str_to_value(value_text)
         except:
             logger.debug("Number set to illegal value: %s" % value_text)
-            
+
     def set_min_value(self, minval):
         '''Programatically set the minimum value allowed'''
         self.__minval = minval
@@ -752,15 +753,15 @@ class Number(Text):
     def set_max_value(self, minval):
         '''Programatically set the maximum value allowed'''
         self.__maxval = maxval
-        
+
     def get_min_value(self):
         '''The minimum value (inclusive) that can legally be entered'''
         return self.__minval
-    
+
     def get_max_value(self):
         '''The maximum value (inclusive) that can legally be entered'''
         return self.__maxval
-    
+
     min_value = property(get_min_value, set_min_value)
     max_value = property(get_max_value, set_max_value)
 
@@ -800,6 +801,16 @@ class Integer(Number):
 
     def value_to_str(self, value):
         return u"%d" % value
+
+
+class OddInteger(Integer):
+    def test_valid(self, pipeline):
+        super(self.__class__, self).test_valid(pipeline)
+
+        value = self.str_to_value(self.value_text)
+
+        if value % 2 == 0:
+            raise ValidationError("Must be odd, was even", self)
 
 
 class Range(Setting):
@@ -1185,8 +1196,7 @@ class FloatRange(Range):
         maxval - the maximum acceptable value of either
         """
         smin, smax = [(u"%f" % v).rstrip("0") for v in value]
-        text_value = ",".join([x + "0" if x.endswith(".") else ""
-                               for x in smin, smax])
+        text_value = ",".join([x + "0" if x.endswith(".") else x for x in smin, smax])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
@@ -1578,13 +1588,14 @@ class Binary(Setting):
     for historical reasons.
     """
 
-    def __init__(self, text, value, *args, **kwargs):
+    def __init__(self, text, value, callback=None, *args, **kwargs):
         """Initialize the binary setting with the module, explanatory
         text and value. The value for a binary setting is True or
         False.
         """
         str_value = (value and YES) or NO
         super(Binary, self).__init__(text, str_value, *args, **kwargs)
+        self.callback = callback
 
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
@@ -1608,6 +1619,10 @@ class Binary(Setting):
     def __nonzero__(self):
         '''Return the value when testing for True / False'''
         return self.value
+
+    def on_event_fired(self, selection):
+        if self.callback is not None:
+            self.callback(selection)
 
 
 class Choice(Setting):
@@ -1660,6 +1675,74 @@ class Choice(Setting):
             raise ValidationError(
                     "%s is not one of %s" %
                     (self.value, ",".join(self.choices)), self)
+
+
+class StructuringElement(Setting):
+    def __init__(self, text="Structuring element", value="disk,1", doc=None, allow_planewise=False):
+        self.__allow_planewise = allow_planewise
+
+        super(StructuringElement, self).__init__(text, value, doc=doc)
+
+    @staticmethod
+    def get_choices():
+        return [
+            "ball",
+            "cube",
+            "diamond",
+            "disk",
+            "octahedron",
+            "square",
+            "star"
+        ]
+
+    def get_value(self):
+        return getattr(skimage.morphology, self.shape)(self.size)
+
+    def set_value(self, value):
+        self.value_text = value
+
+    @property
+    def shape(self):
+        return str(self.value_text.split(",")[0])
+
+    @shape.setter
+    def shape(self, value):
+        self.value_text = ",".join((value, str(self.size)))
+
+    @property
+    def size(self):
+        _, size = self.value_text.split(",")
+
+        return int(size) if size else None
+
+    @size.setter
+    def size(self, value):
+        self.value_text = ",".join((self.shape, str(value)))
+
+    def test_valid(self, pipeline):
+        if self.size is None:
+            raise ValidationError("Missing structuring element size. Please enter a positive integer.", self)
+
+        if self.size <= 0:
+            raise ValidationError(
+                "Structuring element size must be a positive integer. You provided {}.".format(self.size),
+                self
+            )
+
+        if pipeline.volumetric():
+            if self.shape in ["diamond", "disk", "square", "star"] and not self.__allow_planewise:
+                raise ValidationError(
+                    "A 3 dimensional struturing element is required. You selected {}."
+                    " Please select one of \"ball\", \"cube\", or \"octahedron\".".format(self.shape),
+                    self
+                )
+        else:
+            if self.shape in ["ball", "cube", "octahedron"]:
+                raise ValidationError(
+                    "A 2 dimensional structuring element is required. You selected {}."
+                    " Please select one of \"diamond\", \"disk\", \"square\", \"star\".".format(self.shape),
+                    self
+                )
 
 
 class CustomChoice(Choice):

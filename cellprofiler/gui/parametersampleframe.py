@@ -12,7 +12,7 @@ import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler.gui.workspace
 import numpy
 import os
 import skimage.io
@@ -555,7 +555,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__measurements = cellprofiler.measurement.Measurements(can_overwrite=True)
         self.__object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__image_set_list = cellprofiler.image.ImageSetList()
-        workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
+        workspace = cellprofiler.gui.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__measurements, self.__image_set_list,
                                                      self.__frame)
         try:
@@ -587,14 +587,14 @@ class ParameterSampleFrame(wx.Frame):
         failure = 1
         try:
             # ~*~
-            # workspace = cellprofiler.workspace.Workspace(
+            # workspace = cellprofiler.gui.workspace.Workspace(
             #    self.__pipeline, module, image_set, self.__object_set,
             #    self.__measurements, self.__image_set_list,
             #    # Uncomment next line to display results in UI
             #    #self.__frame if module.show_window else None,
             #    None,
             #    outlines = self.__outlines)
-            self.__workspace = cellprofiler.workspace.Workspace(
+            self.__workspace = cellprofiler.gui.workspace.Workspace(
                     self.__pipeline, module, self.__measurements, self.__object_set,
                     self.__measurements, self.__image_set_list,
                     # Uncomment next line to display results in UI

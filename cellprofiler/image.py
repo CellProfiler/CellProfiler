@@ -18,44 +18,52 @@ logger = logging.getLogger(__name__)
 
 
 class Image(object):
-    """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
+    """
+    An image composed of a Numpy array plus secondary attributes such as mask and label matrices
 
     The secondary attributes:
-    mask - a binary image indicating the points of interest in the image.
-           The mask is the same size as the child image.
-    crop_mask - the binary image used to crop the parent image to the
-                dimensions of the child (this) image. The crop_mask is
-                the same size as the parent image.
-    parent_image - for derived images, the parent that was used to create
-                   this image. This image may inherit attributes from
-                   the parent image, such as the masks used to create the
-                   parent
-    masking_objects - the labels matrix from these objects is used to
-                      mask and crop the parent image to make this image.
-                      The labels are available as mask_labels and crop_labels.
-    convert - true to try to coerce whatever dtype passed (other than bool
-               or float) to a scaled image.
-    path_name - the path name to the file holding the image or None
-                for a derived image
-    file_name - the file name of the file holding the image or None for a
-                derived image
-    scale - the scaling suggested by the initial image format (e.g. 4095 for
-            a 12-bit a/d converter).
+
+    mask - a binary image indicating the points of interest in the image. The mask is the same size as the child image.
+
+    crop_mask - the binary image used to crop the parent image to the dimensions of the child (this) image. The crop_mask is the same size as the parent image.
+
+    parent_image - for derived images, the parent that was used to create this image. This image may inherit attributes from the parent image, such as the masks used to create the parent
+
+    masking_objects - the labels matrix from these objects is used to mask and crop the parent image to make this image. The labels are available as mask_labels and crop_labels.
+
+    convert - true to try to coerce whatever dtype passed (other than bool or float) to a scaled image.
+
+    path_name - the path name to the file holding the image or None for a derived image
+
+    file_name - the file name of the file holding the image or None for a derived image
+
+    scale - the scaling suggested by the initial image format (e.g. 4095 for a 12-bit a/d converter).
 
     Resolution of mask and cropping_mask properties:
-    The Image class looks for the mask and cropping_mask in the following
-    places:
+
+    The Image class looks for the mask and cropping_mask in the following places:
+
     * self: if set using the properties or specified in the initializer
-    * masking_objects: if set using the masking_object property or
-                       specified in the initializer. The crop_mask and
-                       mask are composed of all of the labeled points.
-    * parent_image: if set using the initializer. The child image inherits
-                    the mask and cropping mask of the parent.
-    Otherwise, the image has no mask or cropping mask and all pixels are
-    significant.
+
+    * masking_objects: if set using the masking_object property or specified in the initializer. The crop_mask and mask are composed of all of the labeled points.
+
+    * parent_image: if set using the initializer. The child image inherits the mask and cropping mask of the parent.
+
+    Otherwise, the image has no mask or cropping mask and all pixels are significant.
     """
 
-    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
+    def __init__(self,
+                 image=None,
+                 mask=None,
+                 crop_mask=None,
+                 parent_image=None,
+                 masking_objects=None,
+                 convert=True,
+                 path_name=None,
+                 file_name=None,
+                 scale=None,
+                 dimensions=2,
+                 spacing=None):
         self.__image = None
 
         self.__mask = None
@@ -86,6 +94,35 @@ class Image(object):
         self.__path_name = path_name
 
         self.channel_names = None
+
+        self.dimensions = dimensions
+
+        self.__spacing = spacing
+
+    @property
+    def multichannel(self):
+        return True if self.pixel_data.ndim == self.dimensions + 1 else False
+
+    @property
+    def volumetric(self):
+        if self.dimensions == 3:
+            return True
+
+        return False
+
+    @property
+    def spacing(self):
+        if self.__spacing is not None:
+            return tuple(numpy.divide(self.__spacing, self.__spacing[1]))
+
+        if self.parent_image is None:
+            return (1.0,) * self.dimensions
+
+        return self.parent_image.spacing
+
+    @spacing.setter
+    def spacing(self, spacing):
+        self.__spacing = spacing
 
     def get_image(self):
         """Return the primary image"""
@@ -145,7 +182,6 @@ class Image(object):
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
             numpy.clip(img, 0, 1, out=img)
-        check_consistency(img, self.__mask)
         self.__image = img
 
     image = property(get_image, set_image)
@@ -197,12 +233,10 @@ class Image(object):
         #
         # Exclude channel, if present, from shape
         #
-        if image.ndim == 2:
-            shape = image.shape
-        elif image.ndim == 3:
-            shape = image.shape[:2]
-        else:
-            shape = image.shape[1:]
+        shape = image.shape
+
+        if self.multichannel:
+            shape = shape[:-1]
 
         return numpy.ones(shape, dtype=numpy.bool)
 
@@ -218,7 +252,6 @@ class Image(object):
         if not (m.dtype.type is numpy.bool):
             m = (m != 0)
 
-        check_consistency(self.image, m)
         self.__mask = m
         self.__has_mask = True
 
@@ -369,9 +402,11 @@ def crop_image(image, crop_mask, crop_internal=False):
         j_first = numpy.argwhere(j_cumsum == 1)[0]
         j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
+
         if image.ndim == 3:
-            return image[i_first:i_end, j_first:j_end, :].copy()
-        return image[i_first:i_end, j_first:j_end].copy()
+            return image[i_first[0]:i_end[0], j_first[0]:j_end[0], :].copy()
+
+        return image[i_first[0]:i_end[0], j_first[0]:j_end[0]].copy()
 
 
 class GrayscaleImage(object):
@@ -413,14 +448,6 @@ class RGBImage(object):
     def pixel_data(self):
         '''Return the pixel data without the alpha channel'''
         return self.__image.pixel_data[:, :, :3]
-
-
-def check_consistency(image, mask):
-    """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
-    assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
-    assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
-    assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
 
 
 class AbstractImageProvider(object):
@@ -531,31 +558,44 @@ class ImageSet(object):
 
         else:
             image = self.__images[name]
-        if must_be_binary and image.pixel_data.ndim == 3:
-            raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != numpy.bool:
+
+        if image.multichannel:
+            if must_be_binary:
+                raise ValueError("Image must be binary, but it was color")
+
+            if must_be_grayscale:
+                pd = image.pixel_data
+
+                pd = pd.transpose(-1, *range(pd.ndim - 1))
+
+                if pd.shape[-1] >= 3 and numpy.all(pd[0] == pd[1]) and numpy.all(pd[0] == pd[2]):
+                    return GrayscaleImage(image)
+
+                raise ValueError("Image must be grayscale, but it was color")
+
+            if must_be_rgb:
+                if image.pixel_data.shape[-1] not in (3, 4):
+                    raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[-1])
+
+                if image.pixel_data.shape[-1] == 4:
+                    logger.warning("Discarding alpha channel.")
+
+                    return RGBImage(image)
+
+            return image
+
+        if must_be_binary and image.pixel_data.dtype != bool:
             raise ValueError("Image was not binary")
-        if must_be_color and image.pixel_data.ndim != 3:
-            raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
-            pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
-            raise ValueError("Image must be grayscale, but it was color")
+
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
+
         if must_be_rgb:
-            if image.pixel_data.ndim != 3:
-                raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3, 4):
-                raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
-            elif image.pixel_data.shape[2] == 4:
-                logger.warning("Discarding alpha channel.")
-                return RGBImage(image)
+            raise ValueError("Image must be RGB, but it was grayscale")
+
+        if must_be_color:
+            raise ValueError("Image must be color, but it was grayscale")
+
         return image
 
     @property
@@ -760,50 +800,3 @@ def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
     return u", ".join([u":".join([unicode(y) for y in x])
                        for x in sorted(key.iteritems())])
-
-
-def readc01(fname):
-    '''Read a Cellomics file into an array
-
-    fname - the name of the file
-    '''
-
-    def readint(f):
-        return struct.unpack("<l", f.read(4))[0]
-
-    def readshort(f):
-        return struct.unpack("<h", f.read(2))[0]
-
-    f = open(fname, "rb")
-
-    # verify it's a c01 format, and skip the first four bytes
-    assert readint(f) == 16 << 24
-
-    # decompress
-    g = StringIO.StringIO(zlib.decompress(f.read()))
-
-    # skip four bytes
-    g.seek(4, 1)
-
-    x = readint(g)
-    y = readint(g)
-
-    nplanes = readshort(g)
-    nbits = readshort(g)
-
-    compression = readint(g)
-    assert compression == 0, "can't read compressed pixel data"
-
-    # skip 4 bytes
-    g.seek(4, 1)
-
-    pixelwidth = readint(g)
-    pixelheight = readint(g)
-    colors = readint(g)
-    colors_important = readint(g)
-
-    # skip 12 bytes
-    g.seek(12, 1)
-
-    data = numpy.fromstring(g.read(), numpy.uint16 if nbits == 16 else numpy.uint8, x * y)
-    return data.reshape(x, y).T

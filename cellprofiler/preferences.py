@@ -328,6 +328,8 @@ MODULEDIRECTORY = 'ModuleDirectory'
 SKIPVERSION = 'SkipVersion2.1'
 FF_RECENTFILES = 'RecentFile%d'
 STARTUPBLURB = 'StartupBlurb'
+TELEMETRY = "Telemetry"
+TELEMETRY_PROMPT = "Telemetry prompt"
 RECENT_FILE_COUNT = 10
 PRIMARY_OUTLINE_COLOR = 'PrimaryOutlineColor'
 SECONDARY_OUTLINE_COLOR = 'SecondaryOutlineColor'
@@ -422,7 +424,7 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR,
              PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
              SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG,
              SHOW_EXITING_TEST_MODE_DLG, WORKSPACE_CHOICE,
-             SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
+             SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB, TELEMETRY, TELEMETRY_PROMPT,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
              WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
@@ -963,6 +965,27 @@ def update_cpfigure_position():
         # These offsets could be set in the preferences UI
         __cpfigure_position = (__cpfigure_position[0] + 120,
                                __cpfigure_position[1] + 24)
+
+def get_telemetry():
+    if not config_exists(TELEMETRY):
+        return True
+
+    return get_config().ReadBool(TELEMETRY)
+
+
+def set_telemetry(val):
+    get_config().WriteBool(TELEMETRY, val)
+
+
+def get_telemetry_prompt():
+    if not config_exists(TELEMETRY_PROMPT):
+        return True
+
+    return get_config().ReadBool(TELEMETRY_PROMPT)
+
+
+def set_telemetry_prompt(val):
+    get_config().WriteBool(TELEMETRY_PROMPT, val)
 
 
 def get_startup_blurb():

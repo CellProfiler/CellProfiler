@@ -1,27 +1,32 @@
-'''<b>Crop</b> crops or masks an image.
-<hr>
-This module crops images into a rectangle, ellipse, an arbitrary shape provided by
-you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created
-using a previous <b>Crop</b> module in the pipeline.
+# coding=utf-8
 
-<p>Keep in mind that cropping changes the size of your images, which may
+"""
+**Crop** crops or masks an image.
+
+This module crops images into a rectangle, ellipse, an arbitrary shape
+provided by you, the shape of object(s) identified by an **Identify**
+module, or a shape created using a previous **Crop** module in the
+pipeline.
+
+Keep in mind that cropping changes the size of your images, which may
 have unexpected consequences. For example, identifying objects in a
 cropped image and then trying to measure their intensity in the
-<i>original</i> image will not work because the two images are not the same
-size.</p>
+*original* image will not work because the two images are not the same
+size.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>AreaRetainedAfterCropping:</i> The area of the image left after cropping.</li>
-<li><i>OriginalImageArea:</i> The area of the original input image.</li>
-</ul>
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<i>Special note on saving images:</i> You can save the cropping shape that you have
-defined in this module (e.g., an ellipse
-you drew) so that you can use the <i>Image</i> option in future analyses. To do
-this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b>
-module help for more information on saving cropping shapes.
-'''
+-  *AreaRetainedAfterCropping:* The area of the image left after
+   cropping.
+-  *OriginalImageArea:* The area of the original input image.
+
+*Special note on saving images:* You can save the cropping shape that
+you have defined in this module (e.g., an ellipse you drew) so that you
+can use the *Image* option in future analyses. To do this, save either
+the mask or cropping in **SaveImages**. See the **SaveImages** module
+help for more information on saving cropping shapes.
+"""
 
 import logging
 import math
@@ -79,7 +84,6 @@ OFF_VERTICAL_LIMITS = 6
 OFF_CENTER = 7
 OFF_X_RADIUS = 8
 OFF_Y_RADIUS = 9
-OFF_PLATE_FIX = 10
 OFF_REMOVE_ROWS_AND_COLUMNS = 11
 OFF_IMAGE_MASK_SOURCE = 12
 OFF_CROPPING_MASK_SOURCE = 13
@@ -91,7 +95,7 @@ D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 class Crop(cpm.Module):
     module_name = "Crop"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
@@ -225,34 +229,6 @@ class Crop(cpm.Module):
             <i>(Used only if %(SH_OBJECTS)s selected as cropping shape)</i><br>
             Select the objects that are to be used as a cropping mask.""" % globals())
 
-        self.use_plate_fix = cps.Binary(
-                "Use Plate Fix?", False, doc="""
-            <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
-            Select <i>%(YES)s</i> to attempt to regularize the edges around a previously-identified
-            plate object.
-            <p>When attempting to crop based on a previously identified object
-            such as a rectangular plate, the plate may not have
-            precisely straight edges: there might be a tiny, almost unnoticeable
-            "appendage" sticking out. Without Plate Fix, the <b>Crop</b>
-            module would not crop the image tightly enough: it would retain the tiny appendage, leaving a lot
-            of blank space around the plate and potentially causing problems with later
-            modules (especially ones involving illumination correction). </p>
-            <p>Plate Fix takes the
-            identified object and crops to exclude any minor appendages (technically,
-            any horizontal or vertical line where the object covers less than 50%% of
-            the image). It also sets pixels around the edge of the object (for
-            regions greater than 50%% but less than 100%%) that otherwise would be 0 to the
-            background pixel value of your image, thus avoiding problems with
-            other modules. </p>
-            <p><i>Important note:</i> Plate Fix uses the coordinates
-            entered in the boxes normally used for rectangle cropping (Top, Left and
-            Bottom, Right) to tighten the edges around your identified plate. This
-            is done because in the majority of plate identifications you do not want
-            to include the sides of the plate. If you would like the entire plate to
-            be shown, you should enter "1:end" for both coordinates. If, for example, you would like
-            to crop 80 pixels from each edge of the plate, you could enter Top, Left and Bottom,
-            Right values of 80 and select <i>%(FROM_EDGE)s</i>.</p>""" % globals())
-
         self.remove_rows_and_columns = cps.Choice(
                 "Remove empty rows and columns?",
                 [RM_NO, RM_EDGES, RM_ALL],
@@ -272,7 +248,7 @@ class Crop(cpm.Module):
                 self.crop_method, self.individual_or_once,
                 self.horizontal_limits, self.vertical_limits,
                 self.ellipse_center, self.ellipse_x_radius,
-                self.ellipse_y_radius, self.use_plate_fix,
+                self.ellipse_y_radius,
                 self.remove_rows_and_columns, self.image_mask_source,
                 self.cropping_mask_source, self.objects_source]
 
@@ -287,9 +263,9 @@ class Crop(cpm.Module):
                     result += [self.ellipse_center, self.ellipse_x_radius,
                                self.ellipse_y_radius]
         elif self.shape == SH_IMAGE:
-            result += [self.image_mask_source, self.use_plate_fix]
-            if self.use_plate_fix.value:
-                result += [self.horizontal_limits, self.vertical_limits]
+            result += [
+                self.image_mask_source
+            ]
         elif self.shape == SH_CROPPING:
             result.append(self.cropping_mask_source)
         elif self.shape == SH_OBJECTS:
@@ -330,8 +306,7 @@ class Crop(cpm.Module):
         elif self.shape == SH_IMAGE:
             source_image = workspace.image_set.get_image \
                 (self.image_mask_source.value).pixel_data
-            if self.use_plate_fix.value:
-                source_image = self.plate_fixup(source_image)
+
             cropping = source_image > 0
         elif self.shape == SH_OBJECTS:
             masking_objects = workspace.get_objects(self.objects_source.value)
@@ -805,54 +780,6 @@ class Crop(cpm.Module):
             cropping[bottom:, :] = False
         return cropping
 
-    def plate_fixup(self, pixel_data):
-        """Fix up the cropping image based on the plate fixup rules
-
-        The rules:
-        * Trim rows and columns off of the edges if less than 50%
-        * Use the horizontal and vertical trim to trim the image further
-        """
-        pixel_data = pixel_data.copy()
-        i_histogram = pixel_data.sum(axis=1)
-        i_cumsum = np.cumsum(i_histogram > pixel_data.shape[0] / 2)
-        j_histogram = pixel_data.sum(axis=0)
-        j_cumsum = np.cumsum(j_histogram > pixel_data.shape[1] / 2)
-        i_first = np.argwhere(i_cumsum == 1)[0]
-        i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
-        i_end = i_last + 1
-        j_first = np.argwhere(j_cumsum == 1)[0]
-        j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
-        j_end = j_last + 1
-        if not self.horizontal_limits.unbounded_min:
-            j_first = max(j_first, self.horizontal_limits.min)
-        if not self.horizontal_limits.unbounded_max:
-            j_end = min(j_end, self.horizontal_limits.max)
-        if not self.vertical_limits.unbounded_min:
-            i_first = max(i_first, self.vertical_limits.min)
-        if not self.vertical_limits.unbounded_max:
-            i_end = min(i_end, self.vertical_limits.max)
-        if i_first > 0:
-            if pixel_data.ndim == 3:
-                pixel_data[:i_first, :, :] = 0
-            else:
-                pixel_data[:i_first, :] = 0
-        if i_end < pixel_data.shape[0]:
-            if pixel_data.ndim == 3:
-                pixel_data[i_end:, :, :] = 0
-            else:
-                pixel_data[i_end:, :] = 0
-        if j_first > 0:
-            if pixel_data.ndim == 3:
-                pixel_data[:, :j_first, :] = 0
-            else:
-                pixel_data[:, :j_first] = 0
-        if j_end < pixel_data.shape[1]:
-            if pixel_data.ndim == 3:
-                pixel_data[:, j_end:, :] = 0
-            else:
-                pixel_data[:, j_end:] = 0
-        return pixel_data
-
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
@@ -899,4 +826,9 @@ class Crop(cpm.Module):
             #
             if setting_values[OFF_INDIVIDUAL_OR_ONCE] == "Individually":
                 setting_values[OFF_INDIVIDUAL_OR_ONCE] = IO_INDIVIDUALLY
+
+            setting_values = setting_values[:10] + setting_values[11:]
+
+            variable_revision_number = 3
+
         return setting_values, variable_revision_number, from_matlab

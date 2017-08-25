@@ -128,7 +128,6 @@ from weakref import WeakSet
 import cellprofiler.workspace as cpw
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
-from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
     NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
@@ -154,6 +153,10 @@ DEADMAN_START_MSG = "STARTED"
 NOTIFY_ADDR = "inproc://notify"
 NOTIFY_STOP = "STOP"
 
+ED_STOP = "Stop"
+ED_CONTINUE = "Continue"
+ED_SKIP = "Skip"
+
 the_zmq_context = zmq.Context.instance()
 
 
@@ -165,7 +168,7 @@ def main():
     if sys.platform == "darwin":
         from cellprofiler.icons import get_builtin_images_path
 
-        icon_path = os.path.join(get_builtin_images_path(), "artwork/CellProfilerIcon.png")
+        icon_path = os.path.join(get_builtin_images_path(), "data/CellProfilerIcon.png")
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
 

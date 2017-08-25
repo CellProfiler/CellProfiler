@@ -73,17 +73,12 @@ class TestCellProfiler(unittest.TestCase):
         self.assertTrue(found_lines_of_code)
 
     def test_01_03_version(self):
-        import cellprofiler.utilities.version as V
+        import cellprofiler
         output = self.run_cellprofiler("--version")
         version = dict([tuple(line.strip().split(" "))
                         for line in output.split("\n")
                         if " " in line])
-        self.assertEqual(version["CellProfiler"], V.dotted_version)
-        self.assertEqual(version["Git"], V.git_hash)
-        self.assertEqual(int(version["Version"][:8]),
-                         int(V.version_number / 1000000))
-        built = dateutil.parser.parse(version["Built"])
-        self.assertLessEqual(built.date(), datetime.date.today())
+        self.assertEqual(version["CellProfiler"], cellprofiler.__version__)
 
     def test_02_01_run_headless(self):
         output_directory = tempfile.mkdtemp()

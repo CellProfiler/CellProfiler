@@ -4,6 +4,7 @@
 import centrosome.index
 import centrosome.outline
 import numpy
+import scipy.ndimage
 import scipy.sparse
 
 OBJECT_TYPE_NAME = "objects"
@@ -40,23 +41,59 @@ class Objects(object):
         self.__parent_image = None
 
     @property
+    def dimensions(self):
+        if self.__parent_image:
+            return self.__parent_image.dimensions
+
+        shape = self.shape
+
+        return len(shape)
+
+    @property
+    def volumetric(self):
+        return self.dimensions == 3
+
+    @property
+    def masked(self):
+        mask = self.parent_image.mask
+
+        return numpy.logical_and(self.segmented, mask)
+
+    @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
-        assert isinstance(self.__segmented, Segmentation), \
-            "Operation failed because objects were not initialized"
-        dense, indices = self.__segmented.get_dense()
-        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
-        assert numpy.all(numpy.array(dense.shape[1:-2]) == 1), \
-            "Operation failed because the segmentation was not 2D"
-        return dense.reshape(dense.shape[-2:])
+        return self.__segmentation_to_labels(self.__segmented)
 
     @segmented.setter
     def segmented(self, labels):
+        self.__segmented = self.__labels_to_segmentation(labels)
+
+    def __labels_to_segmentation(self, labels):
         dense = downsample_labels(labels)
-        dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
-        self.__segmented = Segmentation(dense=dense)
+
+        if dense.ndim == 3:
+            z, x, y = dense.shape
+        else:
+            x, y = dense.shape
+            z = 1
+
+        dense = dense.reshape((1, 1, 1, z, x, y))
+
+        return Segmentation(dense=dense)
+
+    def __segmentation_to_labels(self, segmentation):
+        assert isinstance(segmentation, Segmentation), "Operation failed because objects were not initialized"
+
+        dense, indices = segmentation.get_dense()
+
+        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
+
+        if dense.shape[3] == 1:
+            return dense.reshape(dense.shape[-2:])
+
+        return dense.reshape(dense.shape[-3:])
 
     def set_ijv(self, ijv, shape=None):
         '''Set the segmentation to an IJV object format
@@ -89,11 +126,15 @@ class Objects(object):
 
     @property
     def shape(self):
-        '''The i and j extents of the labels'''
-        return self.__segmented.shape[-2:]
+        dense, _ = self.__segmented.get_dense()
+
+        if dense.shape[3] == 1:
+            return dense.shape[-2:]
+
+        return dense.shape[-3:]
 
     def get_labels(self):
-        '''Get a set of labels matrices consisting of non-overlapping labels
+        """Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you
         want to use a labels matrix, you have an ambiguous situation and the
@@ -101,10 +142,13 @@ class Objects(object):
         non-overlapping labels.
 
         returns a list of label matrixes and the indexes in each
-        '''
+        """
         dense, indices = self.__segmented.get_dense()
-        return [
-            (dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
+        if dense.shape[3] == 1:
+            return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
+        return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""
@@ -119,15 +163,13 @@ class Objects(object):
         segmented labeling.
         """
         if self.__unedited_segmented is not None:
-            dense, indices = self.__unedited_segmented.get_dense()
-            return dense[0, 0, 0, 0]
+            return self.__segmentation_to_labels(self.__unedited_segmented)
+
         return self.segmented
 
     @unedited_segmented.setter
     def unedited_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
-        self.__unedited_segmented = Segmentation(dense=dense)
+        self.__unedited_segmented = self.__labels_to_segmentation(labels)
 
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""
@@ -142,15 +184,13 @@ class Objects(object):
         or the image mask still present.
         """
         if self.__small_removed_segmented is not None:
-            dense, indices = self.__small_removed_segmented.get_dense()
-            return dense[0, 0, 0, 0]
+            return self.__segmentation_to_labels(self.__small_removed_segmented)
+
         return self.unedited_segmented
 
     @small_removed_segmented.setter
     def small_removed_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
-        self.__small_removed_segmented = Segmentation(dense=dense)
+        self.__small_removed_segmented = self.__labels_to_segmentation(labels)
 
     @property
     def parent_image(self):
@@ -240,7 +280,11 @@ class Objects(object):
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
-        histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+        if self.volumetric:
+            histogram = self.histogram_from_labels(self.segmented, children.segmented)
+        else:
+            histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+
         return self.relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
@@ -293,21 +337,28 @@ class Objects(object):
         # If the labels are different shapes, crop to shared shape.
         #
         common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
-        parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
-        child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+
+        if parent_labels.ndim == 3:
+            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
+            child_labels = child_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
+        else:
+            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
+            child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+
         #
         # Only look at points that are labeled in parent and child
         #
         not_zero = (parent_labels > 0) & (child_labels > 0)
         not_zero_count = numpy.sum(not_zero)
+
         #
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
         #
-        return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
-                                        (parent_labels[not_zero],
-                            child_labels[not_zero])),
-                                       shape=(parent_count + 1, child_count + 1)).toarray()
+        return scipy.sparse.coo_matrix(
+            (numpy.ones((not_zero_count,)), (parent_labels[not_zero], child_labels[not_zero])),
+            shape=(parent_count + 1, child_count + 1)
+        ).toarray()
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):
@@ -392,6 +443,16 @@ class Objects(object):
         a center or an area
         """
         return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
+
+    def center_of_mass(self):
+        labels = self.segmented
+
+        index = numpy.unique(labels)
+
+        if index[0] == 0:
+            index = index[1:]
+
+        return numpy.array(scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels, index))
 
 
 class Segmentation(object):
@@ -823,14 +884,33 @@ def crop_labels_and_image(labels, image):
 
     Assumes that points outside of the common boundary should be masked.
     '''
-    min_height = min(labels.shape[0], image.shape[0])
-    min_width = min(labels.shape[1], image.shape[1])
-    if image.ndim == 2:
-        return (labels[:min_height, :min_width],
-                image[:min_height, :min_width])
-    else:
-        return (labels[:min_height, :min_width],
-                image[:min_height, :min_width, :])
+    min_dim1 = min(labels.shape[0], image.shape[0])
+    min_dim2 = min(labels.shape[1], image.shape[1])
+
+    if labels.ndim == 3:  # volume
+        min_dim3 = min(labels.shape[2], image.shape[2])
+
+        if image.ndim == 4:  # multichannel volume
+            return (
+                labels[:min_dim1, :min_dim2, :min_dim3],
+                image[:min_dim1, :min_dim2, :min_dim3, :],
+            )
+
+        return (
+            labels[:min_dim1, :min_dim2, :min_dim3],
+            image[:min_dim1, :min_dim2, :min_dim3],
+        )
+
+    if image.ndim == 3:  # multichannel image
+        return (
+            labels[:min_dim1, :min_dim2],
+            image[:min_dim1, :min_dim2, :]
+        )
+
+    return (
+        labels[:min_dim1, :min_dim2],
+        image[:min_dim1, :min_dim2]
+    )
 
 
 def size_similarly(labels, secondary):

@@ -9,3 +9,4 @@ build/
 dist/
 frozen_version.py
 plugins/
+src/

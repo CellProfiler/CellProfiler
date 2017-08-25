@@ -456,7 +456,7 @@ class MeasurementTemplate(cpm.Module):
     #
     #
     # get_measurement_columns gets the measurements for use in the database
-    # or in a spreadsheet. Some modules need the pipeline because they
+    # or in a spreadsheet. Some modules need this because they
     # might make measurements of measurements and need those names.
     #
     def get_measurement_columns(self, pipeline):

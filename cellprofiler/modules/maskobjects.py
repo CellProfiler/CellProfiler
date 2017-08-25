@@ -1,31 +1,38 @@
-'''<b>Mask Objects</b> removes objects outside of a specified region or regions.
-<hr>
-This module allows you to delete the objects or portions of objects that are
-outside of a region (mask) you specify. For example, after
-identifying nuclei and tissue regions in previous <b>Identify</b> modules, you might
-want to exclude all nuclei that are outside of a tissue region.
+# coding=utf-8
 
-<p>If using a masking image, the mask is composed of the foreground (white portions);
-if using a masking object, the mask is composed of the area within the object.
-You can choose to remove only the portion of each object that is outside of
-the region, remove the whole object if it is partially or fully
-outside of the region, or retain the whole object unless it is fully outside
-of the region. </p>
+"""
+**Mask Objects** removes objects outside of a specified region or
+regions.
 
-<h4>Available measurements</h4>
-<b>Parent object measurements:</b>
-<ul>
-<li><i>Count:</i> The number of new masked objects created from each parent object.</li>
-</ul>
+This module allows you to delete the objects or portions of objects that
+are outside of a region (mask) you specify. For example, after
+identifying nuclei and tissue regions in previous **Identify** modules,
+you might want to exclude all nuclei that are outside of a tissue
+region.
 
-<b>Masked object measurements:</b>
-<ul>
-<li><i>Parent:</i> The label number of the parent object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
-mass of the masked objects.</li>
-</ul>
-'''
+If using a masking image, the mask is composed of the foreground (white
+portions); if using a masking object, the mask is composed of the area
+within the object. You can choose to remove only the portion of each
+object that is outside of the region, remove the whole object if it is
+partially or fully outside of the region, or retain the whole object
+unless it is fully outside of the region.
 
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Parent object measurements:**
+
+-  *Count:* The number of new masked objects created from each parent
+   object.
+
+**Masked object measurements:**
+
+-  *Parent:* The label number of the parent object.
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+   of mass of the masked objects.
+"""
+
+import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -301,7 +308,7 @@ class MaskObjects(I.Identify):
         #
         m = workspace.measurements
         m.add_measurement(remaining_object_name,
-                          I.FF_PARENT % object_name,
+                          cellprofiler.measurement.FF_PARENT % object_name,
                           parent_objects)
         if np.max(original_objects.segmented) == 0:
             child_count = np.array([], int)
@@ -310,7 +317,7 @@ class MaskObjects(I.Identify):
                                         np.arange(1, nobjects + 1, dtype=np.int32)))
             child_count = (child_count > 0).astype(int)
         m.add_measurement(object_name,
-                          I.FF_CHILDREN_COUNT % remaining_object_name,
+                          cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
                           child_count)
         if self.retain_or_renumber == R_RETAIN:
             remaining_object_count = nobjects
@@ -381,9 +388,9 @@ class MaskObjects(I.Identify):
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
         columns = I.get_object_measurement_columns(self.remaining_objects.value)
-        columns += [(object_name, I.FF_CHILDREN_COUNT % remaining_object_name,
+        columns += [(object_name, cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
                      cpmeas.COLTYPE_INTEGER),
-                    (remaining_object_name, I.FF_PARENT % object_name,
+                    (remaining_object_name, cellprofiler.measurement.FF_PARENT % object_name,
                      cpmeas.COLTYPE_INTEGER)]
         return columns
 

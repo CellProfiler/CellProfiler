@@ -1,61 +1,69 @@
-'''<b>Measure Image Quality</b> measures features that indicate image quality.
-<hr>
-This module can collect measurements indicative of possible image abberations,
-e.g. blur (poor focus), intensity, saturation (i.e., the percentage
-of pixels in the image that are minimal and maximal). Details and guidance for
-each of these measures is provided in the settings help.
+# coding=utf-8
 
-<p>Please note that for best results, this module should be applied to the
-original raw images, as opposed to images that have already been corrected for
-illumination.</p>
+"""
+**Measure Image Quality** measures features that indicate image quality.
 
-<h4>Available measurements</h4>
-<ul>
-<li><b>Blur metrics</b>
-<ul>
-<li><i>FocusScore:</i> A measure of the intensity variance across the image.</li>
-<li><i>LocalFocusScore:</i> A measure of the intensity variance between image sub-regions.</li>
-<li><i>Correlation:</i> A measure of the correlation of the image for a given spatial scale.</li>
-<li><i>PowerLogLogSlope:</i> The slope of the image log-log power spectrum.</li>
-</ul>
-</li>
+This module can collect measurements indicating possible image
+abberations, e.g. blur (poor focus), intensity, saturation (i.e., the
+percentage of pixels in the image that are minimal and maximal). Details
+and guidance for each of these measures is provided in the settings
+help.
 
-<li><b>Saturation metrics</b>
-<ul>
-<li><i>PercentMaximal:</i> Percent of pixels at the maximum intensity value of the image.</li>
-<li><i>PercentMinimal:</i> Percent of pixels at the minimum intensity value of the image.</li>
-</ul>
-</li>
+Please note that for best results, this module should be applied to the
+original raw images, as opposed to images that have already been
+corrected for illumination.
 
-<li><b>Intensity metrics</b>
-<ul>
-<li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
-<li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
-<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation (MAD) of pixel intensity values.</li>
-<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>TotalArea:</i> Number of pixels measured.</li>
-</ul>
-</li>
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-<li><b>Threshold metrics:</b>
-<ul>
-<li><i>Threshold:</i> The automatically calculated threshold for each image for the
-thresholding method of choice.
-<p>Please note that these thresholds are recorded individually for each image and as an aggregate
-statistic for all images. The mean, median and standard deviation of the threshold values are
-computed for each of the threshold methods selected and recorded as a measurement in the
-per-experiment table.</p></li>
-</ul>
-</li>
-</ul>
+-  **Blur metrics**
 
-<h4>References</h4>
-<ul>
-<li>Bray MA, Fraser AN, Hasaka TP, Carpenter AE (2012) "Workflow and metrics for image quality
-control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-74.
-<a href="http://dx.doi.org/10.1177/1087057111420292">(link)</a></li>
-</ul>
-'''
+   -  *FocusScore:* A measure of the intensity variance across the
+      image.
+   -  *LocalFocusScore:* A measure of the intensity variance between
+      image sub-regions.
+   -  *Correlation:* A measure of the correlation of the image for a
+      given spatial scale.
+   -  *PowerLogLogSlope:* The slope of the image log-log power spectrum.
+
+-  **Saturation metrics**
+
+   -  *PercentMaximal:* Percent of pixels at the maximum intensity value
+      of the image.
+   -  *PercentMinimal:* Percent of pixels at the minimum intensity value
+      of the image.
+
+-  **Intensity metrics**
+
+   -  *TotalIntensity:* Sum of all pixel intensity values.
+   -  *MeanIntensity, MedianIntensity:* Mean and median of pixel
+      intensity values.
+   -  *StdIntensity, MADIntensity:* Standard deviation and median
+      absolute deviation (MAD) of pixel intensity values.
+   -  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel
+      intensity values.
+   -  *TotalArea:* Number of pixels measured.
+
+-  **Threshold metrics:**
+
+   -  *Threshold:* The automatically calculated threshold for each image
+      for the thresholding method of choice.
+
+      Please note that these thresholds are recorded individually for
+      each image and as an aggregate statistic for all images. The mean,
+      median and standard deviation of the threshold values are computed
+      for each of the threshold methods selected and recorded as a
+      measurement in the per-experiment table.
+
+References
+^^^^^^^^^^
+
+-  Bray MA, Fraser AN, Hasaka TP, Carpenter AE (2012) “Workflow and
+   metrics for image quality control in large-scale high-content
+   screens.” *J Biomol Screen* 17(2):266-74. `(link)`_
+
+.. _(link): http://dx.doi.org/10.1177/1087057111420292
+"""
 
 import logging
 
@@ -203,7 +211,7 @@ class MeasureImageQuality(cpm.Module):
             image divided by mean image intensity. Since it is tailored for autofocusing
             applications (difference focus for the same field of view), it assumes that the
             overall intensity and the number of objects in the image is constant, making it less
-            useful for comparision images of different fields of view. For distinguishing
+            useful for comparison images of different fields of view. For distinguishing
             extremely blurry images, however, it performs well.</li>
             <li><i>%(F_LOCAL_FOCUS_SCORE)s:</i> A local version of the Focus Score, it subdivides the
             image into non-overlapping tiles, computes the normalized variance for each, and
@@ -817,11 +825,20 @@ class MeasureImageQuality(cpm.Module):
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
-                i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
-                m, n = (np.array(shape) + scale - 1) / scale
-                i = (i * float(m) / float(shape[0])).astype(int)
-                j = (j * float(n) / float(shape[1])).astype(int)
-                grid = i * n + j + 1
+                if image.dimensions is 2:
+                    i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
+                    m, n = (np.array(shape) + scale - 1) / scale
+                    i = (i * float(m) / float(shape[0])).astype(int)
+                    j = (j * float(n) / float(shape[1])).astype(int)
+                    grid = i * n + j + 1
+                else:
+                    k, i, j = np.mgrid[0:shape[0], 0:shape[1], 0:shape[2]].astype(float)
+                    o, m, n = (np.array(shape) + scale - 1) / scale
+                    k = (k * float(o) / float(shape[0])).astype(int)
+                    i = (i * float(m) / float(shape[1])).astype(int)
+                    j = (j * float(n) / float(shape[2])).astype(int)
+                    grid = k * o + i * n + j + 1  # hmm
+
                 if image.has_mask:
                     grid[np.logical_not(image.mask)] = 0
                 grid_range = np.arange(0, m * n + 1, dtype=np.int32)
@@ -997,6 +1014,10 @@ class MeasureImageQuality(cpm.Module):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
+            if image.dimensions is 3:
+                # TODO: calculate "radial power spectrum" for volumes.
+                continue
+
             pixel_data = image.pixel_data
 
             if image.has_mask:
@@ -1039,6 +1060,9 @@ class MeasureImageQuality(cpm.Module):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
+            # TODO: works on 2D slice of image, i suspect the thresholding methods in centrosome aren't working in 3D
+            pixel_data = image.pixel_data.astype(np.float32)
+
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm
                 object_fraction = threshold_group.object_fraction.value
@@ -1048,7 +1072,7 @@ class MeasureImageQuality(cpm.Module):
                 (local_threshold, global_threshold) = \
                     (cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            pixel_data,
                                             mask=image.mask,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
@@ -1058,7 +1082,7 @@ class MeasureImageQuality(cpm.Module):
                      else
                      cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            pixel_data,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
                                             use_weighted_variance=use_weighted_variance,
@@ -1338,6 +1362,9 @@ class MeasureImageQuality(cpm.Module):
             variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True
 
 
 class ImageQualitySettingsGroup(cps.SettingsGroup):

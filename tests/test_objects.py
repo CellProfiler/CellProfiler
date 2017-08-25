@@ -6,6 +6,7 @@ import cStringIO
 import unittest
 
 import numpy as np
+import numpy.testing
 import scipy.ndimage
 from centrosome.outline import outline
 
@@ -43,6 +44,19 @@ class TestObjects(unittest.TestCase):
         x.segmented = self.__segmented10
         self.assertTrue((self.__segmented10 == x.segmented).all())
 
+    def test_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.segmented = segmentation
+
+        self.assertTrue(np.all(x.segmented == segmentation))
+
     def test_01_03_set_unedited_segmented(self):
         x = cpo.Objects()
         x.unedited_segmented = self.__unedited_segmented10
@@ -53,10 +67,36 @@ class TestObjects(unittest.TestCase):
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
+    def test_unedited_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.unedited_segmented = segmentation
+
+        self.assertTrue(np.all(x.unedited_segmented == segmentation))
+
     def test_01_05_set_small_removed_segmented(self):
         x = cpo.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
+
+    def test_small_removed_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.small_removed_segmented = segmentation
+
+        self.assertTrue(np.all(x.small_removed_segmented == segmentation))
 
     def test_01_06_unedited_segmented(self):
         x = cpo.Objects()
@@ -80,6 +120,42 @@ class TestObjects(unittest.TestCase):
         self.assertTrue((x.small_removed_segmented == self.__segmented10).all())
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((x.small_removed_segmented == self.__unedited_segmented10).all())
+
+    def test_shape_image_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = self.__segmented10
+
+        self.assertEqual(x.shape, (10, 10))
+
+    def test_shape_volume_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = np.ones((5, 10, 10))
+
+        self.assertEqual(x.shape, (5, 10, 10))
+
+    def test_get_labels_image_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = self.__segmented10
+
+        [(labels, _)] = x.get_labels()
+
+        self.assertTrue(np.all(labels == self.__segmented10))
+
+    def test_get_labels_volume_segmentation(self):
+        x = cpo.Objects()
+
+        segmentation = np.ones((5, 10, 10))
+
+        x.segmented = segmentation
+
+        [(labels, _)] = x.get_labels()
+
+        self.assertEqual(segmentation.shape, labels.shape)
+
+        self.assertTrue(np.all(segmentation == labels))
 
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
@@ -549,6 +625,30 @@ class TestObjects(unittest.TestCase):
         np.testing.assert_array_equal(labels_children_per_parent, ijv_children_per_parent)
         np.testing.assert_array_equal(labels_parents_of_children, ijv_parents_of_children)
 
+    def test_center_of_mass_with_background_label(self):
+        labels = numpy.zeros((11, 11), dtype=numpy.uint8)
+
+        labels[3:8, 3:8] = 1
+
+        objects = cpo.Objects()
+
+        objects.segmented = labels
+
+        centers = objects.center_of_mass()
+
+        np.testing.assert_array_equal(centers, [[5, 5]])
+
+    def test_center_of_mass_without_background_label(self):
+        labels = numpy.ones((11, 11), dtype=numpy.uint8)
+
+        objects = cpo.Objects()
+
+        objects.segmented = labels
+
+        centers = objects.center_of_mass()
+
+        np.testing.assert_array_equal(centers, [[5, 5]])
+
 
 class TestSegmentation(unittest.TestCase):
     def test_01_01_dense(self):
@@ -746,6 +846,40 @@ class TestCropLabelsAndImage(unittest.TestCase):
                                                   np.zeros((20, 20)))
         self.assertEqual(tuple(labels.shape), (10, 20))
         self.assertEqual(tuple(image.shape), (10, 20))
+
+    def test_relate_children_volume(self):
+        parent_labels = numpy.zeros((30, 30, 30), dtype=numpy.uint8)
+
+        k, i, j = numpy.mgrid[-15:15, -15:15, -15:15]
+        parent_labels[k ** 2 + i ** 2 + j ** 2 <= 196] = 1
+
+        parent_object = cpo.Objects()
+
+        parent_object.segmented = parent_labels
+
+        labels = numpy.zeros((30, 30, 30), dtype=numpy.uint8)
+
+        k, i, j = numpy.mgrid[-15:15, -15:15, -7:23]
+        labels[k ** 2 + i ** 2 + j ** 2 <= 25] = 1
+
+        k, i, j = numpy.mgrid[-15:15, -15:15, -22:8]
+        labels[k ** 2 + i ** 2 + j ** 2 <= 16] = 2
+
+        labels[0, 10:20, 10:20] = 3  # not touching a parent, should not be counted as a child
+
+        object = cpo.Objects()
+
+        object.segmented = labels
+
+        actual_children, actual_parents = parent_object.relate_children(object)
+
+        expected_children = [2]
+
+        expected_parents = [1, 1, 0]
+
+        numpy.testing.assert_array_equal(actual_children, expected_children)
+
+        numpy.testing.assert_array_equal(actual_parents, expected_parents)
 
 
 class TestSizeSimilarly(unittest.TestCase):

@@ -1,28 +1,26 @@
-'''<b>Flag Image</b> allows you to flag an image based on properties
-that you specify, for example, quality control measurements.
-<hr>
+# coding=utf-8
 
-This module allows you to assign a flag if
-an image meets certain measurement criteria that you specify (for
-example, if the image fails a quality control measurement).  The
-value of the flag is 1 if the image meets the selected criteria (for
-example, if it fails QC), and 0 if it does not meet the criteria (if
-it passes QC). The flag can be used in post-processing to filter out
-images you do not want to analyze, e.g., in CellProfiler Analyst. In
-addition, you can use <b>ExportToSpreadsheet</b> to generate a file
-that includes the flag as a metadata measurement associated with the
-images. The <b>Metadata</b> module can then use this flag
-to put images that pass QC into one group and images that fail
-into another.
+"""
+**Flag Image** allows you to flag an image based on properties that you
+specify, for example, quality control measurements.
 
-A flag can be based on one or more measurements. If you create a flag
-based on more than one measurement, you can choose between setting the
-flag if all measurements are outside the bounds or if one of the
-measurements is outside of the bounds.
-
-This module must be placed in the pipeline after the relevant measurement
+This module allows you to assign a flag if an image meets certain
+measurement criteria that you specify (for example, if the image fails a
+quality control measurement). The value of the flag is 1 if the image
+meets the selected criteria (for example, if it fails QC), and 0 if it
+does not meet the criteria (if it passes QC). The flag can be used in
+post-processing to filter out images you do not want to analyze, e.g.,
+in CellProfiler Analyst. In addition, you can use
+**ExportToSpreadsheet** to generate a file that includes the flag as a
+metadata measurement associated with the images. The **Metadata** module
+can then use this flag to put images that pass QC into one group and
+images that fail into another. A flag can be based on one or more
+measurements. If you create a flag based on more than one measurement,
+you can choose between setting the flag if all measurements are outside
+the bounds or if one of the measurements is outside of the bounds. This
+module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
-'''
+"""
 
 import logging
 import os
@@ -379,13 +377,13 @@ class FlagImage(cpm.Module):
                         self.get_bin_labels(measurement_setting)
                     except IOError:
                         raise cps.ValidationError(
-                            "Failed to load classifier file %s" % 
-                            measurement_setting.rules_file_name.value, 
+                            "Failed to load classifier file %s" %
+                            measurement_setting.rules_file_name.value,
                             measurement_setting.rules_file_name)
                     except:
                         raise cps.ValidationError(
                         "Unable to load %s as a classifier file" %
-                        measurement_setting.rules_file_name.value, 
+                        measurement_setting.rules_file_name.value,
                         measurement_setting.rules_file_name)
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -526,19 +524,19 @@ class FlagImage(cpm.Module):
         path_ = os.path.join(directory_, file_)
         if path_ not in d:
             if not os.path.isfile(path_):
-                raise cps.ValidationError("No such rules file: %s" % path_, 
+                raise cps.ValidationError("No such rules file: %s" % path_,
                                           self.rules_file_name)
             else:
                 from sklearn.externals import joblib
                 d[path_] = joblib.load(path_)
         return d[path_]
-    
+
     def get_classifier(self, measurement_group):
         return self.load_classifier(measurement_group)[0]
-    
+
     def get_bin_labels(self, measurement_group):
         return self.load_classifier(measurement_group)[1]
-    
+
     def get_classifier_features(self, measurement_group):
         return self.load_classifier(measurement_group)[3]
 
@@ -639,10 +637,10 @@ class FlagImage(cpm.Module):
             for feature_name in self.get_classifier_features(ms):
                 feature_name = feature_name.split("_", 1)[1]
                 features.append(feature_name)
-    
+
             feature_vector = np.array([
                 0 if feature_name not in image_features else
-                workspace.measurements[cpmeas.IMAGE, feature_name] 
+                workspace.measurements[cpmeas.IMAGE, feature_name]
                 for feature_name in features]).reshape(1, len(features))
             predicted_class = classifier.predict(feature_vector)[0]
             predicted_idx = \
@@ -655,17 +653,17 @@ class FlagImage(cpm.Module):
                                       ms.source_choice)
         is_rc = ms.source_choice in (S_RULES, S_CLASSIFIER)
         is_meas = not is_rc
-        fail = (( is_meas and 
-                 (fail or (ms.wants_minimum.value and 
+        fail = (( is_meas and
+                 (fail or (ms.wants_minimum.value and
                            min_value < ms.minimum_value.value) or
                   (ms.wants_maximum.value and
                    max_value > ms.maximum_value.value))) or
                 (is_rc and fail))
-        
-        return ((not fail), (source, 
-                             ms.measurement.value if is_meas 
-                             else ms.source_choice.value, 
-                             display_value, 
+
+        return ((not fail), (source,
+                             ms.measurement.value if is_meas
+                             else ms.source_choice.value,
+                             display_value,
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):

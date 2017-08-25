@@ -16,6 +16,7 @@ import zlib
 from StringIO import StringIO
 
 import cellprofiler.image as I
+import cellprofiler.measurement
 import cellprofiler.measurement as measurements
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.object as cpo
@@ -32,6 +33,7 @@ from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from tests.modules import \
     example_images_directory, maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly, \
     cp_logo_url_folder, cp_logo_url_filename, cp_logo_url_shape
+import skimage.io
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -2220,10 +2222,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         for object_name, feature in (
                 (measurements.IMAGE, LI.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
                 (measurements.IMAGE, LI.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
-                (measurements.IMAGE, LI.I.C_COUNT + "_" + OBJECTS_NAME),
-                (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_X),
-                (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_Y),
-                (OBJECTS_NAME, LI.I.M_NUMBER_OBJECT_NUMBER)):
+                (measurements.IMAGE, cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME),
+                (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
+                (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
+                (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)):
             self.assertTrue(any([True for column in columns
                                  if column[0] == object_name and
                                  column[1] == feature]))
@@ -2236,8 +2238,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         for object_name, expected_categories in (
                 (measurements.IMAGE,
                  (LI.C_OBJECTS_FILE_NAME, LI.C_OBJECTS_PATH_NAME,
-                  LI.C_OBJECTS_URL, LI.I.C_COUNT)),
-                (OBJECTS_NAME, (LI.I.C_LOCATION, LI.I.C_NUMBER)),
+                  LI.C_OBJECTS_URL, cellprofiler.measurement.C_COUNT)),
+                (OBJECTS_NAME, (cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER)),
                 ("Foo", [])):
             categories = module.get_categories(None, object_name)
             for expected_category in expected_categories:
@@ -2254,10 +2256,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 (measurements.IMAGE, (
                         (LI.C_OBJECTS_FILE_NAME, [OBJECTS_NAME]),
                         (LI.C_OBJECTS_PATH_NAME, [OBJECTS_NAME]),
-                        (LI.I.C_COUNT, [OBJECTS_NAME]))),
+                        (cellprofiler.measurement.C_COUNT, [OBJECTS_NAME]))),
                 (OBJECTS_NAME, (
-                        (LI.I.C_LOCATION, [LI.I.FTR_CENTER_X, LI.I.FTR_CENTER_Y]),
-                        (LI.I.C_NUMBER, [LI.I.FTR_OBJECT_NUMBER])))):
+                        (cellprofiler.measurement.C_LOCATION, [cellprofiler.measurement.FTR_CENTER_X,
+                                                               cellprofiler.measurement.FTR_CENTER_Y]),
+                        (cellprofiler.measurement.C_NUMBER, [cellprofiler.measurement.FTR_OBJECT_NUMBER])))):
             for category, expected_features in expected:
                 features = module.get_measurements(None, object_name, category)
                 for feature in features:
@@ -2851,16 +2854,16 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertTrue(np.all(o.segmented == 0))
         columns = module.get_measurement_columns(workspace.pipeline)
         for object_name, measurement in (
-                (measurements.IMAGE, LI.I.FF_COUNT % OBJECTS_NAME),
-                (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_X),
-                (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_Y),
-                (OBJECTS_NAME, LI.I.M_NUMBER_OBJECT_NUMBER)):
+                (measurements.IMAGE, cellprofiler.measurement.FF_COUNT % OBJECTS_NAME),
+                (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
+                (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
+                (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)):
             self.assertTrue(any(
                     [True for column in columns
                      if column[0] == object_name and column[1] == measurement]))
         m = workspace.measurements
         assert isinstance(m, measurements.Measurements)
-        self.assertEqual(m.get_current_image_measurement(LI.I.FF_COUNT % OBJECTS_NAME), 0)
+        self.assertEqual(m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OBJECTS_NAME), 0)
 
     def test_12_02_load_indexed_objects(self):
         r = np.random.RandomState()
@@ -2872,16 +2875,16 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertTrue(np.all(o.segmented == image))
         m = workspace.measurements
         assert isinstance(m, measurements.Measurements)
-        self.assertEqual(m.get_current_image_measurement(LI.I.FF_COUNT % OBJECTS_NAME), 9)
+        self.assertEqual(m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OBJECTS_NAME), 9)
         i, j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
         c = np.bincount(image.ravel())[1:].astype(float)
         x = np.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
         y = np.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
-        v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_NUMBER_OBJECT_NUMBER)
+        v = m.get_current_measurement(OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)
         self.assertTrue(np.all(v == np.arange(1, 10)))
-        v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_LOCATION_CENTER_X)
+        v = m.get_current_measurement(OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X)
         self.assertTrue(np.all(v == x))
-        v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_LOCATION_CENTER_Y)
+        v = m.get_current_measurement(OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y)
         self.assertTrue(np.all(v == y))
 
     def test_12_03_load_sparse_objects(self):
@@ -3813,6 +3816,54 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
 
+
+class TestLoadImagesImageProvider(unittest.TestCase):
+    def test_provide_volume(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+
+        provider = LI.LoadImagesImageProvider(
+            name="ball",
+            pathname=path,
+            filename="ball.tif",
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = provider.provide_image(None)
+
+        expected = skimage.io.imread(os.path.join(path, "ball.tif"))
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
+
+        self.assertTrue(np.all(expected == image.pixel_data))
+
+
+class TestLoadImagesImageProviderURL(unittest.TestCase):
+    def test_provide_volume(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+
+        provider = LI.LoadImagesImageProviderURL(
+            name="ball",
+            url="file:/" + os.path.join(path, "ball.tif"),
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = provider.provide_image(None)
+
+        expected = skimage.io.imread(os.path.join(path, "ball.tif"))
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+
+        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
+
+        self.assertTrue(np.all(expected == image.pixel_data))
 
 '''A two-channel tif containing two overlapped objects'''
 overlapped_objects_data = zlib.decompress(base64.b64decode(

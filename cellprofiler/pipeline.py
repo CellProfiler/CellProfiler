@@ -37,6 +37,7 @@ import numpy
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
+import cellprofiler
 import cellprofiler.preferences as cpprefs
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
@@ -45,7 +46,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from bioformats.omexml import OMEXML
-import cellprofiler.utilities.version as cpversion
+from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
 
 '''The measurement name of the image number'''
@@ -328,105 +329,6 @@ def add_all_measurements(handles, measurements):
             experiment_measurements[field][0, 0] = feature_measurements
 
 
-_evt_modulerunner_done_id = None
-_evt_modulerunner_eventtype = None
-
-
-def evt_modulerunner_done_id():
-    """Initialize _evt_modulerunner_done_id inside this function
-    instead of at the top level so that the module will not require wx
-    when the GUI stuff is not being used."""
-    import wx
-    global _evt_modulerunner_done_id
-    if _evt_modulerunner_done_id is None:
-        _evt_modulerunner_done_id = wx.NewId()
-    return _evt_modulerunner_done_id
-
-
-def evt_modulerunner_event_type():
-    """Initialize the module runner event type"""
-    import wx
-    global _evt_modulerunner_eventtype
-    if _evt_modulerunner_eventtype is None:
-        _evt_modulerunner_eventtype = wx.NewEventType()
-    return _evt_modulerunner_eventtype
-
-
-def evt_modulerunner_done(win, func):
-    done_id = evt_modulerunner_done_id()
-    event_type = evt_modulerunner_event_type()
-    win.Connect(done_id, done_id, event_type, func)
-
-
-class ModuleRunner(threading.Thread):
-    """Worker thread that executes the run() method of a module."""
-
-    def __init__(self, module, workspace, notify_window):
-        super(ModuleRunner, self).__init__()
-        self.module = module
-        self.workspace = workspace
-        self.notify_window = notify_window
-        self.paused = False
-        self.exited_run = False
-        self.exception = None
-        self.tb = None
-        workspace.add_disposition_listener(self.on_disposition_changed)
-
-    def on_disposition_changed(self, event):
-        '''Callback to listen for changes in the workspace disposition
-
-        This gets called when a module decides to pause, continue,
-        or cancel running the pipeline. We want to postpone posting done
-        during pause and post done if we've finished running and
-        we're switching from paused to not paused
-        '''
-        if event.disposition == cpw.DISPOSITION_PAUSE:
-            self.paused = True
-        elif self.paused:
-            self.paused = False
-            if self.exited_run:
-                self.post_done()
-
-    def run(self):
-        try:
-            self.workspace.pipeline.run(self.module, self.workspace)
-        except Exception, instance:
-            self.exception = instance
-            self.tb = sys.exc_info()[2]
-            logger.warning("Intercepted exception while running module",
-                           exc_info=True)
-            if os.getenv('CELLPROFILER_RERAISE') is not None:
-                raise
-        if not self.paused:
-            self.post_done()
-        self.exited_run = True
-
-    def post_done(self):
-        post_module_runner_done_event(self.notify_window)
-
-
-def post_module_runner_done_event(window):
-    import wx
-
-    # Defined here because the module should not depend on wx.
-    class ModuleRunnerDoneEvent(wx.PyEvent):
-        """In spite of its name, this event is posted both when a module
-        runner is done (i.e., when the module's run() method is finished)
-        and then again when run_with_yield has displayed the module's
-        results and collected its measurements."""
-
-        def __init__(self):
-            wx.PyEvent.__init__(self)
-            self.SetEventType(evt_modulerunner_event_type())
-            self.SetId(evt_modulerunner_done_id())
-
-        def RequestMore(self):
-            "For now, make this work with code written for IdleEvent."
-            pass
-
-    wx.PostEvent(window, ModuleRunnerDoneEvent())
-
-
 class ImagePlaneDetails(object):
     '''This class represents the location and metadata for a 2-d image plane
 
@@ -673,8 +575,14 @@ class Pipeline(object):
         self.__image_plane_details = []
         self.__image_plane_details_metadata_settings = tuple()
 
-        self.file_walker = WalkCollection(self.on_walk_completed)
         self.__undo_stack = []
+        self.__volumetric = False
+
+    def set_volumetric(self, value):
+        self.__volumetric = value
+
+    def volumetric(self):
+        return self.__volumetric
 
     def copy(self, save_image_plane_details=True):
         '''Create a copy of the pipeline modules and settings'''
@@ -764,8 +672,6 @@ class Pipeline(object):
 
         """
         # clear previously seen errors on reload
-        import cellprofiler.gui.errordialog
-        cellprofiler.gui.errordialog.clear_old_errors()
         import cellprofiler.modules
         reload(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
@@ -935,6 +841,9 @@ class Pipeline(object):
                            for module in self.modules(False)]
         self.__undo_stack = []
 
+    def respond_to_version_mismatch_error(self, message):
+        logging.warning(message)
+
     def loadtxt(self, fd_or_filename, raise_on_error=False):
         '''Load a pipeline from a text file
 
@@ -945,7 +854,6 @@ class Pipeline(object):
 
         See savetxt for more comprehensive documentation.
         '''
-        from cellprofiler.utilities.version import version_number as cp_version_number
         self.__modules = []
         self.caption_for_user = None
         self.message_for_user = None
@@ -974,7 +882,7 @@ class Pipeline(object):
         do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
-        pipeline_version = None
+        pipeline_version = cellprofiler.__version__
         CURRENT_VERSION = None
         while True:
             line = rl()
@@ -988,14 +896,12 @@ class Pipeline(object):
             if kwd == H_VERSION:
                 version = int(value)
                 if version > NATIVE_VERSION:
-                    raise ValueError(
-                            "Pipeline file version is %d.\nCellProfiler can only read version %d or less.\nPlease upgrade to the latest version of CellProfiler." %
-                            (version, NATIVE_VERSION))
+                    raise ValueError("Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(version, NATIVE_VERSION))
                 elif version > 1:
                     do_utf16_decode = True
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
-                CURRENT_VERSION = cp_version_number
+                CURRENT_VERSION = int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
             elif kwd == H_FROM_MATLAB:
                 from_matlab = (value == "True")
             elif kwd == H_MODULE_COUNT:
@@ -1024,74 +930,46 @@ class Pipeline(object):
 
         if CURRENT_VERSION is None:
             pass
-        elif git_hash is None or git_hash != cpversion.git_hash:
-            if pipeline_version > CURRENT_VERSION:
-                if git_hash is None:
-                    message = (
-                                  'Your pipeline version is %d but you are '
-                                  'running CellProfiler version %d. '
-                                  'Loading this pipeline may fail or have '
-                                  'unpredictable results.') % (
-                                  pipeline_version, CURRENT_VERSION)
-                else:
+        if pipeline_version > CURRENT_VERSION:
+            message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(pipeline_version, CURRENT_VERSION)
 
+            self.respond_to_version_mismatch_error(message)
+        else:
+            if (not cpprefs.get_headless()) and pipeline_version < CURRENT_VERSION:
+                if git_hash is not None:
                     message = (
-                        'Your pipeline was saved by a more recent version '
-                        'of CellProfiler (rev %s%s) but you are running '
-                        'CellProfiler rev %s @ %s. Loading this pipeline may fail or '
-                        'have unpredictable results.') % (
-                            git_hash, pipeline_date, cpversion.git_hash,
-                            cpversion.version_date.strftime("%c"))
-
-                if cpprefs.get_headless():
+                        "Your pipeline was saved using an old version\n"
+                        "of CellProfiler (rev {}{}).\n"
+                        "The current version of CellProfiler can load\n"
+                        "and run this pipeline, but if you make changes\n"
+                        "to it and save, the older version of CellProfiler\n"
+                        "(perhaps the version your collaborator has?) may\n"
+                        "not be able to load it.\n\n"
+                        "You can ignore this warning if you do not plan to save\n"
+                        "this pipeline or if you will only use it with this or\n"
+                        "later versions of CellProfiler."
+                    ).format(git_hash, pipeline_date)
                     logging.warning(message)
                 else:
-                    import wx
-                    if wx.GetApp():
-                        dlg = wx.MessageDialog(
-                                parent=None,
-                                message=message + " Continue?",
-                                caption='Pipeline version mismatch',
-                                style=wx.OK | wx.CANCEL | wx.ICON_QUESTION)
-                        if dlg.ShowModal() != wx.ID_OK:
-                            dlg.Destroy()
-                            raise PipelineLoadCancelledException(message)
-                        dlg.Destroy()
+                    # pipeline versions pre-3.0.0 have unpredictable formatting
+                    if pipeline_version == 300:
+                        pipeline_version = ".".join([version for version in str(pipeline_version)])
                     else:
-                        logger.error(
-                                'Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results.\n' % (
-                                    pipeline_version, CURRENT_VERSION))
-            else:
-                if ((not cpprefs.get_headless()) and
-                            pipeline_version < CURRENT_VERSION):
-                    from cellprofiler.gui.errordialog import show_warning
-                    if git_hash is not None:
-                        message = (
-        "Your pipeline was saved using an old version\n"
-        "of CellProfiler (rev %s%s).\n"
-        "The current version of CellProfiler can load\n"
-        "and run this pipeline, but if you make changes\n"
-        "to it and save, the older version of CellProfiler\n"
-        "(perhaps the version your collaborator has?) may\n"
-        "not be able to load it.\n\n"
-        "You can ignore this warning if you do not plan to save\n"
-        "this pipeline or if you will only use it with this or\n"
-        "later versions of CellProfiler.") % (git_hash, pipeline_date)
-                    else:
-                        message = (
-                            "Your pipeline was saved using an old version\n"
-                            "of CellProfiler (version %d). The current version\n"
-                            "of CellProfiler can load and run this pipeline, but\n"
-                            "if you make changes to it and save, the older version\n"
-                            "of CellProfiler (perhaps the version your collaborator\n"
-                            "has?) may not be able to load it.\n\n"
-                            "You can ignore this warning if you do not plan to save\n"
-                            "this pipeline or if you will only use it with this or\n"
-                            "later versions of CellProfiler." % pipeline_version)
-                else:
-                    pipeline_stats_logger.info(
-                            "Pipeline saved with CellProfiler version %d" %
-                            pipeline_version)
+                        pipeline_version = str(pipeline_version)
+
+                    message = (
+                        "Your pipeline was saved using an old version\n"
+                        "of CellProfiler (version {}). The current version\n"
+                        "of CellProfiler can load and run this pipeline, but\n"
+                        "if you make changes to it and save, the older version\n"
+                        "of CellProfiler (perhaps the version your collaborator\n"
+                        "has?) may not be able to load it.\n\n"
+                        "You can ignore this warning if you do not plan to save\n"
+                        "this pipeline or if you will only use it with this or\n"
+                        "later versions of CellProfiler."
+                    ).format(pipeline_version)
+                    logging.warning(message)
+
         #
         # The module section
         #
@@ -1267,7 +1145,6 @@ class Pipeline(object):
         are a collection of images and their metadata.
         See read_image_plane_details for the file format
         '''
-        from cellprofiler.utilities.version import version_number
         if hasattr(fd_or_filename, "write"):
             fd = fd_or_filename
             needs_close = False
@@ -1281,8 +1158,8 @@ class Pipeline(object):
 
         fd.write("%s\n" % COOKIE)
         fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
-        fd.write("%s:%d\n" % (H_DATE_REVISION, version_number))
-        fd.write("%s:%s\n" % (H_GIT_HASH, cpversion.git_hash))
+        fd.write("%s:%d\n" % (H_DATE_REVISION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))))
+        fd.write("%s:%s\n" % (H_GIT_HASH, ""))
         fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.__modules)))
         fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
         attributes = (
@@ -1693,12 +1570,45 @@ class Pipeline(object):
             measurements = m
         return measurements
 
-    def run_with_yield(self, frame=None,
-                       image_set_start=1,
-                       image_set_end=None,
-                       grouping=None, run_in_background=True,
-                       status_callback=None,
-                       initial_measurements=None):
+    def group(self, grouping, image_set_start, image_set_end, initial_measurements, workspace):
+        """Enumerate relevant image sets.  This function is side-effect free, so it can be called more than once."""
+
+        keys, groupings = self.get_groupings(workspace)
+
+        if grouping is not None and set(keys) != set(grouping.keys()):
+            raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (", ".join(grouping.keys()), ", ".join(keys)))
+
+        for gn, (grouping_keys, image_numbers) in enumerate(groupings):
+            if grouping is not None and grouping != grouping_keys:
+                continue
+
+            need_to_run_prepare_group = True
+
+            for gi, image_number in enumerate(image_numbers):
+                if image_number < image_set_start:
+                    continue
+
+                if image_set_end is not None and image_number > image_set_end:
+                    continue
+
+                if initial_measurements is not None and all([initial_measurements.has_feature(cpmeas.IMAGE, f) for f in GROUP_NUMBER, GROUP_INDEX]):
+                    group_number, group_index = [initial_measurements[cpmeas.IMAGE, f, image_number] for f in GROUP_NUMBER, GROUP_INDEX]
+                else:
+                    group_number = gn + 1
+
+                    group_index = gi + 1
+
+                if need_to_run_prepare_group:
+                    yield group_number, group_index, image_number, lambda: self.prepare_group(workspace, grouping_keys, image_numbers)
+                else:
+                    yield group_number, group_index, image_number, lambda: True
+
+                need_to_run_prepare_group = False
+
+            if not need_to_run_prepare_group:
+                yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
+
+    def run_with_yield(self, frame=None, image_set_start=1, image_set_end=None, grouping=None, run_in_background=True, status_callback=None, initial_measurements=None):
         """Run the pipeline, yielding periodically to keep the GUI alive.
         Yields the measurements made.
 
@@ -1712,230 +1622,222 @@ class Pipeline(object):
 
         can_display = not cpprefs.get_headless()
 
-        def group(workspace):
-            """Enumerate relevant image sets.  This function is
-            side-effect free, so it can be called more than once."""
-            keys, groupings = self.get_groupings(workspace)
-            if grouping is not None and set(keys) != set(grouping.keys()):
-                raise ValueError(
-                        "The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (
-                            ", ".join(grouping.keys()), ", ".join(keys)))
-            for gn, (grouping_keys, image_numbers) in enumerate(groupings):
-                if grouping is not None and grouping != grouping_keys:
-                    continue
-                need_to_run_prepare_group = True
-                for gi, image_number in enumerate(image_numbers):
-                    if image_number < image_set_start:
-                        continue
-                    if image_set_end is not None and image_number > image_set_end:
-                        continue
-                    if initial_measurements is not None and all(
-                            [initial_measurements.has_feature(cpmeas.IMAGE, f)
-                             for f in GROUP_NUMBER, GROUP_INDEX]):
-                        group_number, group_index = [
-                            initial_measurements[cpmeas.IMAGE, f, image_number]
-                            for f in GROUP_NUMBER, GROUP_INDEX]
-                    else:
-                        group_number = gn + 1
-                        group_index = gi + 1
-                    if need_to_run_prepare_group:
-                        yield group_number, group_index, image_number, \
-                              lambda: self.prepare_group(
-                                      workspace, grouping_keys, image_numbers)
-                    else:
-                        yield group_number, group_index, image_number, \
-                              lambda: True
-                    need_to_run_prepare_group = False
-                if not need_to_run_prepare_group:
-                    yield None, None, None, lambda workspace: self.post_group(
-                            workspace, grouping_keys)
-
         columns = self.get_measurement_columns()
 
         if image_set_start is not None:
             assert isinstance(image_set_start, int), "Image set start must be an integer"
+
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
+
         if initial_measurements is None:
             measurements = cpmeas.Measurements(image_set_start)
         else:
             measurements = initial_measurements
 
         image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(self, None, None, None,
-                                  measurements, image_set_list, frame)
+
+        workspace = cpw.Workspace(self, None, None, None, measurements, image_set_list, frame)
 
         try:
             if not self.prepare_run(workspace):
                 return
+
             #
             # Remove image sets outside of the requested ranges
             #
             image_numbers = measurements.get_image_numbers()
+
             to_remove = []
+
             if image_set_start is not None:
-                to_remove += [x for x in image_numbers
-                              if x < image_set_start]
-                image_numbers = [x for x in image_numbers
-                                 if x >= image_set_start]
+                to_remove += [x for x in image_numbers if x < image_set_start]
+
+                image_numbers = [x for x in image_numbers if x >= image_set_start]
+
             if image_set_end is not None:
-                to_remove += [x for x in image_numbers
-                              if x > image_set_end]
-                image_numbers = [x for x in image_numbers
-                                 if x <= image_set_end]
+                to_remove += [x for x in image_numbers if x > image_set_end]
+
+                image_numbers = [x for x in image_numbers if x <= image_set_end]
+
             if grouping is not None:
                 keys, groupings = self.get_groupings(workspace)
+
                 for grouping_keys, grouping_image_numbers in groupings:
                     if grouping_keys != grouping:
                         to_remove += list(grouping_image_numbers)
-            if (len(to_remove) > 0 and
-                    measurements.has_feature(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER)):
+
+            if len(to_remove) > 0 and measurements.has_feature(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER):
                 for image_number in np.unique(to_remove):
-                    measurements.remove_measurement(
-                            cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, image_number)
+                    measurements.remove_measurement(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, image_number)
 
             # Keep track of progress for the benefit of the progress window.
             num_image_sets = len(measurements.get_image_numbers())
+
             image_set_count = -1
+
             is_first_image_set = True
+
             last_image_number = None
+
             pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
-            for group_number, group_index, image_number, closure \
-                    in group(workspace):
+
+            __group = self.group(grouping, image_set_start, image_set_end, initial_measurements, workspace)
+
+            for group_number, group_index, image_number, closure in __group:
                 if image_number is None:
                     if not closure(workspace):
-                        measurements.add_experiment_measurement(EXIT_STATUS,
-                                                                "Failure")
+                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
+
                         return
+
                     continue
+
                 image_set_count += 1
+
                 if not closure():
                     return
+
                 last_image_number = image_number
+
                 measurements.clear_cache()
+
                 for provider in measurements.providers:
                     provider.release_memory()
+
                 measurements.next_image_set(image_number)
+
                 if is_first_image_set:
                     measurements.image_set_start = image_number
+
                     measurements.is_first_image = True
+
                     is_first_image_set = False
+
                 measurements.group_number = group_number
+
                 measurements.group_index = group_index
+
                 numberof_windows = 0
+
                 slot_number = 0
+
                 object_set = cpo.ObjectSet()
+
                 image_set = measurements
+
                 outlines = {}
+
                 should_write_measurements = True
+
                 grids = None
+
                 for module in self.modules():
                     if module.should_stop_writing_measurements():
                         should_write_measurements = False
                     else:
-                        module_error_measurement = ('ModuleError_%02d%s' %
-                                                    (module.module_num,
-                                                     module.module_name))
-                        execution_time_measurement = ('ExecutionTime_%02d%s' %
-                                                      (module.module_num,
-                                                       module.module_name))
+                        module_error_measurement = ('ModuleError_%02d%s' % (module.module_num, module.module_name))
+
+                        execution_time_measurement = ('ExecutionTime_%02d%s' % (module.module_num, module.module_name))
+
                     failure = 1
+
                     exception = None
+
                     tb = None
+
                     frame_if_shown = frame if module.show_window else None
-                    workspace = cpw.Workspace(self,
-                                              module,
-                                              image_set,
-                                              object_set,
-                                              measurements,
-                                              image_set_list,
-                                              frame_if_shown,
-                                              outlines=outlines)
+
+                    workspace = cpw.Workspace(self, module, image_set, object_set, measurements, image_set_list, frame_if_shown, outlines=outlines)
+
                     grids = workspace.set_grids(grids)
+
                     if status_callback:
-                        status_callback(module, len(self.modules()),
-                                        image_set_count, num_image_sets)
+                        status_callback(module, len(self.modules()), image_set_count, num_image_sets)
+
                     start_time = datetime.datetime.now()
+
                     t0 = sum(os.times()[:-1])
-                    if not run_in_background:
-                        try:
-                            self.run_module(module, workspace)
-                        except Exception, instance:
-                            logger.error(
-                                    "Error detected during run of module %s",
-                                    module.module_name, exc_info=True)
-                            exception = instance
-                            tb = sys.exc_info()[2]
-                        yield measurements
-                    else:
-                        # Turn on checks for calls to create_or_find_figure() in workspace.
-                        workspace.in_background = True
-                        worker = ModuleRunner(module, workspace, frame)
-                        worker.start()
-                        yield measurements
-                        # After the worker finishes, we can clear this flag.
-                        workspace.in_background = False
-                        if worker.exception is not None:
-                            exception = worker.exception
-                            tb = worker.tb
+
+                    try:
+                        self.run_module(module, workspace)
+                    except Exception as instance:
+                        logger.error("Error detected during run of module %s", module.module_name, exc_info=True)
+
+                        exception = instance
+
+                        tb = sys.exc_info()[2]
+
+                    yield measurements
+
                     t1 = sum(os.times()[:-1])
+
                     delta_sec = max(0, t1 - t0)
-                    pipeline_stats_logger.info(
-                            "%s: Image # %d, module %s # %d: %.2f sec" %
-                            (start_time.ctime(), image_number,
-                             module.module_name, module.module_num,
-                             delta_sec))
-                    if (module.show_window and can_display and
-                            (exception is None)):
+
+                    pipeline_stats_logger.info("%s: Image # %d, module %s # %d: %.2f sec" % (start_time.ctime(), image_number, module.module_name, module.module_num, delta_sec))
+
+                    if module.show_window and can_display and (exception is None):
                         try:
                             fig = workspace.get_module_figure(module, image_number)
+
                             module.display(workspace, fig)
+
                             fig.Refresh()
-                        except Exception, instance:
-                            logger.error("Failed to display results for module %s",
-                                         module.module_name, exc_info=True)
+                        except Exception as instance:
+                            logger.error("Failed to display results for module %s", module.module_name, exc_info=True)
+
                             exception = instance
+
                             tb = sys.exc_info()[2]
+
                     workspace.refresh()
+
                     failure = 0
+
                     if exception is not None:
                         event = RunExceptionEvent(exception, module, tb)
+
                         self.notify_listeners(event)
+
                         if event.cancel_run:
                             return
                         elif event.skip_thisset:
                             # Skip this image, continue to others
                             workspace.set_disposition(cpw.DISPOSITION_SKIP)
+
                             should_write_measurements = False
+
                             measurements = None
 
                     # Paradox: ExportToDatabase must write these columns in order
                     #  to complete, but in order to do so, the module needs to
                     #  have already completed. So we don't report them for it.
-                    if (module.module_name != 'Restart' and
-                            should_write_measurements):
-                        measurements.add_measurement('Image',
-                                                     module_error_measurement,
-                                                     np.array([failure]))
-                        measurements.add_measurement('Image',
-                                                     execution_time_measurement,
-                                                     np.array([delta_sec]))
-                    while (workspace.disposition == cpw.DISPOSITION_PAUSE and
-                                   frame is not None):
+                    if module.module_name != 'Restart' and should_write_measurements:
+                        measurements.add_measurement('Image', module_error_measurement, np.array([failure]))
+
+                        measurements.add_measurement('Image', execution_time_measurement, np.array([delta_sec]))
+
+                    while workspace.disposition == cpw.DISPOSITION_PAUSE and frame is not None:
                         # try to leave measurements temporary file in a readable state
                         measurements.flush()
+
                         yield measurements
+
                     if workspace.disposition == cpw.DISPOSITION_SKIP:
                         break
                     elif workspace.disposition == cpw.DISPOSITION_CANCEL:
-                        measurements.add_experiment_measurement(EXIT_STATUS,
-                                                                "Failure")
-                        return
+                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
 
+                        return
+            # Close cached readers.
+            # This may play a big role with cluster deployments or long standing jobs
+            # by freeing up memory and resources.
+            clear_image_reader_cache()
             if measurements is not None:
-                workspace = cpw.Workspace(
-                        self, None, None, None, measurements, image_set_list, frame)
+                workspace = cpw.Workspace(self, None, None, None, measurements, image_set_list, frame)
+
                 exit_status = self.post_run(workspace)
+
                 #
                 # Record the status after post_run
                 #
@@ -1946,12 +1848,12 @@ class Pipeline(object):
                 # underlying file, or else we get partially written HDF5
                 # files.  There must be a better way to do this.
                 measurements.flush()
+
                 del measurements
+
             self.end_run()
 
-    def run_image_set(self, measurements, image_set_number,
-                      interaction_handler, display_handler,
-                      cancel_handler):
+    def run_image_set(self, measurements, image_set_number, interaction_handler, display_handler, cancel_handler):
         """Run the pipeline for a single image set storing the results in measurements.
 
         Arguments:
@@ -2039,8 +1941,7 @@ class Pipeline(object):
         '''Tell everyone that a run is ending'''
         self.notify_listeners(EndRunEvent())
 
-    def run_group_with_yield(self, workspace, grouping, image_numbers,
-                             stop_module, title, message):
+    def run_group_with_yield(self, workspace, grouping, image_numbers, stop_module, title, message):
         '''Run the modules for the image_numbers in a group up to an agg module
 
         This method runs a pipeline up to an aggregation step on behalf of
@@ -2064,13 +1965,8 @@ class Pipeline(object):
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         orig_image_number = m.image_set_number
-        if not pipeline.in_batch_mode() and not cpprefs.get_headless():
-            import wx
-            progress_dialog = wx.ProgressDialog(
-                    title, message,
-                    style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
-        else:
-            progress_dialog = None
+
+        progress_dialog = self.create_progress_dialog(message, pipeline, title)
 
         try:
             for i, image_number in enumerate(image_numbers):
@@ -2099,6 +1995,9 @@ class Pipeline(object):
                 progress_dialog.Destroy()
             m.image_set_number = orig_image_number
 
+    def create_progress_dialog(self, message, pipeline, title):
+        return None
+
     def run_module(self, module, workspace):
         '''Run one CellProfiler module
 
@@ -2114,7 +2013,7 @@ class Pipeline(object):
         '''
         assert isinstance(m, cpmeas.Measurements)
         self.write_pipeline_measurement(m)
-        m.add_experiment_measurement(M_VERSION, cpversion.version_string)
+        m.add_experiment_measurement(M_VERSION, cellprofiler.__version__)
         m.add_experiment_measurement(M_TIMESTAMP,
                                      datetime.datetime.now().isoformat())
         m.flush()
@@ -2220,6 +2119,21 @@ class Pipeline(object):
                     np.arange(len(image_numbers)) + 1
                 m.reorder_image_measurements(new_image_numbers)
         m.flush()
+
+        if self.volumetric():
+            unsupported = [module.module_name for module in self.__modules if not module.volumetric()]
+
+            if len(unsupported) > 0:
+                self.report_prepare_run_error(
+                    None,
+                    "Cannot run pipeline. "
+                    "The pipeline is configured to process data as 3D. "
+                    "The pipeline contains modules which do not support 3D processing:"
+                    "\n\n{}".format(", ".join(unsupported))
+                )
+
+                return False
+
 
         return True
 
@@ -3101,27 +3015,6 @@ class Pipeline(object):
     @property
     def image_plane_details(self):
         return self.__image_plane_details
-
-    def walk_paths(self, pathnames):
-        if self.file_walker.get_state() == THREAD_STOP:
-            self.notify_listeners(FileWalkStartedEvent())
-        files = []
-        for pathname in pathnames:
-            if os.path.isdir(pathname):
-                self.file_walker.walk_in_background(
-                        pathname, self.wp_add_files, self.wp_add_image_metadata)
-            else:
-                files.append(pathname)
-        if len(files) > 0:
-            ipds = []
-            for pathname in files:
-                url = "file:" + urllib.pathname2url(pathname)
-                ipd = ImagePlaneDetails(url, None, None, None)
-                ipds.append(ipd)
-            self.add_image_plane_details(ipds)
-
-            self.file_walker.get_metadata_in_background(
-                    files, self.wp_add_image_metadata)
 
     def on_walk_completed(self):
         self.notify_listeners(FileWalkEndedEvent())
@@ -4038,241 +3931,3 @@ def encapsulate_string(s):
         result = numpy.ndarray((1,), '<U%d' % (len(s)))
     result[0] = s
     return result
-
-
-pause_lock = threading.Lock()
-pause_condition = threading.Condition(pause_lock)
-THREAD_RUNNING = "Running"
-THREAD_STOP = "Stop"
-THREAD_STOPPING = "Stopping"
-THREAD_PAUSE = "Pause"
-THREAD_RESUME = "Resume"
-
-
-class InterruptException(Exception):
-    def __init__(self, *args):
-        super(self.__class__, self).__init__(*args)
-
-
-class Checkpoint(object):
-    '''A class that manages pausing and stopping'''
-
-    def __init__(self):
-        self.state = THREAD_RUNNING
-
-    def set_state(self, state):
-        with pause_lock:
-            if state == THREAD_RESUME:
-                state = THREAD_RUNNING
-            self.state = state
-            pause_condition.notify_all()
-
-    def wait(self):
-        with pause_lock:
-            if self.state == THREAD_STOP:
-                raise InterruptException()
-            while self.state == THREAD_PAUSE:
-                pause_condition.wait()
-
-
-exts_that_need_allow_open_files = (".jpg", ".jpeg", ".jpe",
-                                   ".jp2", ".j2k", ".jpf",
-                                   ".jpx", ".dic", ".dcm", ".dicom",
-                                   ".j2ki", ".j2kr", ".ome.tif", ".ome.tiff")
-
-
-def get_metadata(path):
-    import subimager.client as C
-    import subimager.omexml as O
-
-    if path.lower().endswith(exts_that_need_allow_open_files):
-        result = C.get_metadata(path, allowopenfiles="yes")
-    else:
-        result = C.get_metadata(path)
-    if result is not None:
-        return O.OMEXML(result)
-    return None
-
-
-def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
-    '''Walk a directory tree in the background
-
-    path - path to walk
-
-    callback_fn - a function that's called in the UI thread and incrementally
-                  reports results. The callback is called with the
-                  dirpath, dirnames and filenames for each iteration of walk.
-    completed_fn - called when walk has completed
-    metadata_fn - if present, call back with metadata. The signature is
-                  metadata_fn(path, OMEXML) or metadata_fn(path, None) if
-                  the webserver did not find metadata.
-
-    Returns a function that can be called to interrupt the operation.
-    To stop, call it like this: fn(THREAD_STOP)
-    To pause, call it with THREAD_PAUSE, to resume, call it with
-    THREAD_RESUME
-    '''
-
-    checkpoint = Checkpoint()
-
-    def report(dirpath, dirnames, filenames):
-        if checkpoint.state != THREAD_STOP:
-            callback_fn(dirpath, dirnames, filenames)
-
-    def metadata_report(path, metadata):
-        if checkpoint.state != THREAD_STOP:
-            metadata_fn(path, metadata)
-
-    def complete():
-        if checkpoint.state != THREAD_STOP:
-            completed_fn()
-
-    def fn():
-        try:
-            path_list = []
-            for dirpath, dirnames, filenames in os.walk(path):
-                checkpoint.wait()
-                if len(filenames) == 0:
-                    continue
-                import wx
-                wx.CallAfter(report, dirpath, dirnames, filenames)
-                if metadata_fn is not None:
-                    path_list += [os.path.join(dirpath, filename)
-                                  for filename in filenames]
-            for subpath in sorted(path_list):
-                checkpoint.wait()
-                try:
-                    metadata = get_metadata("file:" + urllib.pathname2url(subpath))
-                    import wx
-                    wx.CallAfter(metadata_report, subpath, metadata)
-                except:
-                    logger.info("Failed to read image metadata for %s" % subpath)
-        except InterruptException:
-            logger.info("Exiting after request to stop")
-        except:
-            logger.exception("Exiting background walk after unhandled exception")
-        finally:
-            if completed_fn is not None:
-                import wx
-                wx.CallAfter(complete)
-
-    thread = threading.Thread(target=fn)
-    thread.setDaemon(True)
-    thread.start()
-    return checkpoint.set_state
-
-
-def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
-    '''Get image metadata for each path
-
-    pathnames - list of pathnames
-    fn_callback - callback with signature fn_callback(pathname, metadata)
-    fn_completed - called when operation is complete
-
-    Returns a function that can be called to interrupt the operation.
-    '''
-    checkpoint = Checkpoint()
-
-    def metadata_fn(path, metadata):
-        if checkpoint.state != THREAD_STOP:
-            fn_callback(path, metadata)
-
-    def completion_fn():
-        if checkpoint.state != THREAD_STOP:
-            fn_completed()
-
-    def fn():
-        try:
-            for path in pathnames:
-                checkpoint.wait()
-                try:
-                    if not path.startswith("file:"):
-                        url = "file:" + urllib.pathname2url(path)
-                    else:
-                        url = path
-                    metadata = get_metadata(url)
-                    import wx
-                    wx.CallAfter(metadata_fn, path, metadata)
-                except:
-                    logger.info("Failed to read image metadata for %s" % path)
-        except InterruptException:
-            logger.info("Exiting after request to stop")
-        except:
-            logger.exception("Exiting background walk after unhandled exception")
-        finally:
-            if fn_completed is not None:
-                wx.CallAfter(completion_fn)
-
-    thread = threading.Thread(target=fn)
-    thread.start()
-    return checkpoint.set_state
-
-
-class WalkCollection(object):
-    '''A collection of all walks in progress
-
-    This class manages a group of walks that are in progress so that they
-    can be paused, resumed and stopped in unison.
-    '''
-
-    def __init__(self, fn_on_completed):
-        self.fn_on_completed = fn_on_completed
-        self.stop_functions = {}
-        self.paused_tasks = []
-        self.state = THREAD_STOP
-
-    def on_complete(self, uid):
-        if self.stop_functions.has_key(uid):
-            del self.stop_functions[uid]
-            if len(self.stop_functions) == 0:
-                self.state = THREAD_STOP
-                self.fn_on_completed()
-
-    def walk_in_background(self, path, callback_fn, metadata_fn=None):
-        if self.state == THREAD_PAUSE:
-            self.paused_tasks.append(
-                    lambda path, callback_fn, metadata_fn:
-                    self.walk_in_background(path, callback_fn, metadata_fn))
-        else:
-            key = uuid.uuid4()
-            fn_on_complete = lambda key=key: self.on_complete(key)
-            self.stop_functions[key] = walk_in_background(
-                    path, callback_fn, fn_on_complete, metadata_fn)
-            if self.state == THREAD_STOP:
-                self.state = THREAD_RUNNING
-
-    def get_metadata_in_background(self, pathnames, fn_callback):
-        if self.state == THREAD_PAUSE:
-            self.paused_tasks.append(
-                    lambda pathnames, fn_callback:
-                    self.get_metadata_in_background(pathnames, fn_callback))
-        else:
-            key = uuid.uuid4()
-            fn_on_complete = lambda key=key: self.on_complete(key)
-            self.stop_functions[key] = get_metadata_in_background(
-                    pathnames, fn_callback, fn_on_complete)
-
-    def get_state(self):
-        return self.state
-
-    def pause(self):
-        if self.state == THREAD_RUNNING:
-            for stop_fn in self.stop_functions.values():
-                stop_fn(THREAD_PAUSE)
-            self.state = THREAD_PAUSE
-
-    def resume(self):
-        if self.state == THREAD_PAUSE:
-            for stop_fn in self.stop_functions.values():
-                stop_fn(THREAD_RESUME)
-            for fn_task in self.paused_tasks:
-                fn_task()
-            self.paused_tasks = []
-            self.state = THREAD_RUNNING
-
-    def stop(self):
-        if self.state in (THREAD_RUNNING, THREAD_PAUSE):
-            for stop_fn in self.stop_functions.values():
-                stop_fn(THREAD_STOP)
-            self.paused_tasks = []
-            self.state = THREAD_STOPPING

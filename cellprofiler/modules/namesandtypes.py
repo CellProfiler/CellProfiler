@@ -1,8 +1,6 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, \
-    EXAMPLE_DAPI_PIC, EXAMPLE_GFP_PIC
+# coding=utf-8
 
-__doc__ = """
+"""
 The <b>NamesAndTypes</b> module gives images and/or channels a meaningful name to a particular image or channel,
 as well as defining the relationships between images to create an image set.
 <hr>
@@ -18,8 +16,8 @@ is acquired by the microscope. Sometimes, the two channels are combined into a s
 times they are stored as two separate grayscale images, as in the figure.
 <table border="0" cellpadding="10" cellspacing="4" width="100%%">
 <tr>
-<td align="right"><img src="memory:%(EXAMPLE_DAPI_PIC)s"></td>
-<td align="left"><img src="memory:%(EXAMPLE_GFP_PIC)s"></td>
+<td align="right"><img src="memory:dapi.png"></td>
+<td align="left"><img src="memory:gfp.png"></td>
 </tr>
 </table>
 For the purposes of analysis, you want the DAPI and GFP image for a given site to be loaded and processed
@@ -67,7 +65,7 @@ to identify the channel. You can press this button as many times as needed to di
 sets obtained. When you complete your pipeline and perform an analysis run, CellProfiler will process the
 image sets in the order shown.</p>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(NAMESANDTYPES_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:NamesAndTypes_ExampleDisplayTable.png"></td></tr>
 </table>
 
 <h4>Available measurements</h4>
@@ -77,9 +75,10 @@ written to the per-image table.</li>
 <li><i>ObjectFileName, ObjectPathName:</i> (For used for images loaded as objects) The prefixes of the
 filename and location, respectively, of each object set written to the per-image table.</li>
 </ul>
-""" % globals()
+"""
 
 import logging
+import cellprofiler.icons
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +107,7 @@ from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J
+import skimage.color
 
 ASSIGN_ALL = "All images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -269,7 +269,7 @@ M_IMAGE_SET = "ImageSet_ImageSet"
 
 
 class NamesAndTypes(cpm.Module):
-    variable_revision_number = 6
+    variable_revision_number = 7
     module_name = "NamesAndTypes"
     category = "File Processing"
 
@@ -311,6 +311,38 @@ class NamesAndTypes(cpm.Module):
                                           LOAD_AS_COLOR_IMAGE,
                                           LOAD_AS_MASK],
                 doc=LOAD_AS_CHOICE_HELP_TEXT)
+
+        self.process_as_3d = cps.Binary(
+            text="Process as 3D",
+            value=False,
+            doc="""
+            If you want to treat the data as three-dimensional, select "Yes" to
+            load files as volumes. Otherwise, select "No" to load files as separate,
+            two-dimensional images.
+            """,
+            callback=lambda value: self.pipeline.set_volumetric(value)
+        )
+
+        self.x = cps.Float(
+            text="x",
+            value=1.0,
+            minval=0.0,
+            doc="Spacing between voxels in the x-dimension."
+        )
+
+        self.y = cps.Float(
+            text="y",
+            value=1.0,
+            minval=0.0,
+            doc="Spacing between voxels in the y-dimension."
+        )
+
+        self.z = cps.Float(
+            text="z",
+            value=1.0,
+            minval=0.0,
+            doc="Spacing between voxels in the z-dimension."
+        )
 
         self.single_image_provider = cps.FileImageNameProvider(
                 "Name to assign these images", IMAGE_NAMES[0])
@@ -507,7 +539,7 @@ class NamesAndTypes(cpm.Module):
             Duplicate the channel specification, creating a new image assignment
             with the same settings as this one.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; This button is
+            <dd><img src="memory:thumb-up.png">&nbsp; This button is
             useful if you are specifying a long series of channels which differ
             by one or two settings (e.g., an image stack with many frames). Using
             this button will help avoid the tedium of having to select the same settings
@@ -632,10 +664,22 @@ class NamesAndTypes(cpm.Module):
                         '', "Remove this image", self.single_images, group))
 
     def settings(self):
-        result = [self.assignment_method, self.single_load_as_choice,
-                  self.single_image_provider, self.join, self.matching_choice,
-                  self.single_rescale, self.assignments_count,
-                  self.single_images_count, self.manual_rescale]
+        result = [
+            self.assignment_method,
+            self.single_load_as_choice,
+            self.single_image_provider,
+            self.join,
+            self.matching_choice,
+            self.single_rescale,
+            self.assignments_count,
+            self.single_images_count,
+            self.manual_rescale,
+            self.process_as_3d,
+            self.x,
+            self.y,
+            self.z
+        ]
+
         for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
                        assignment.object_name, assignment.load_as_choice,
@@ -647,12 +691,24 @@ class NamesAndTypes(cpm.Module):
                 single_image.object_name, single_image.load_as_choice,
                 single_image.rescale, single_image.should_save_outlines,
                 single_image.save_outlines, single_image.manual_rescale]
+
         return result
 
     def visible_settings(self):
-        result = [self.assignment_method]
+        result = [self.assignment_method, self.process_as_3d]
+
+        if self.process_as_3d.value:
+            result += [
+                self.x,
+                self.y,
+                self.z
+            ]
+
         if self.assignment_method == ASSIGN_ALL:
-            result += [self.single_load_as_choice, self.single_image_provider]
+            result += [
+                self.single_load_as_choice,
+                self.single_image_provider
+            ]
             if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                               LOAD_AS_GRAYSCALE_IMAGE):
                 result += [self.single_rescale]
@@ -1482,20 +1538,25 @@ class NamesAndTypes(cpm.Module):
 
     def add_simple_image(self, workspace, name, load_choice, rescale, url, series, index, channel):
         m = workspace.measurements
+
         url = m.alter_url_post_create_batch(url)
+
+        volume = self.process_as_3d.value
+
+        spacing = (self.z.value, self.x.value, self.y.value) if volume else None
+
         if load_choice == LOAD_AS_COLOR_IMAGE:
-            provider = ColorImageProvider(name, url, series, index, rescale)
+            provider = ColorImageProvider(name, url, series, index, rescale, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
-            provider = MonochromeImageProvider(name, url, series, index,
-                                               channel, rescale)
+            provider = MonochromeImageProvider(name, url, series, index, channel, rescale, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-            provider = MonochromeImageProvider(name, url, series, index,
-                                               channel, False)
+            provider = MonochromeImageProvider(name, url, series, index, channel, False, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_MASK:
-            provider = MaskImageProvider(name, url, series, index, channel)
+            provider = MaskImageProvider(name, url, series, index, channel, volume=volume, spacing=spacing)
+
         workspace.image_set.providers.append(provider)
-        self.add_provider_measurements(provider, workspace.measurements, \
-                                       cpmeas.IMAGE)
+
+        self.add_provider_measurements(provider, m, cpmeas.IMAGE)
 
     @staticmethod
     def add_provider_measurements(provider, m, image_or_objects):
@@ -1676,9 +1737,13 @@ class NamesAndTypes(cpm.Module):
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
         from cellprofiler.measurement import \
             C_OBJECTS_SERIES, C_OBJECTS_FRAME
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \
-            get_object_measurement_columns
+        from cellprofiler.modules.identify import get_object_measurement_columns
+        from cellprofiler.measurement import FTR_OBJECT_NUMBER
+        from cellprofiler.measurement import FTR_CENTER_Y
+        from cellprofiler.measurement import FTR_CENTER_X
+        from cellprofiler.measurement import C_COUNT
+        from cellprofiler.measurement import C_NUMBER
+        from cellprofiler.measurement import C_LOCATION
 
         image_names = self.get_image_names()
         object_names = self.get_object_names()
@@ -1724,7 +1789,9 @@ class NamesAndTypes(cpm.Module):
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_LOCATION, C_NUMBER, C_COUNT
+        from cellprofiler.measurement import C_COUNT
+        from cellprofiler.measurement import C_NUMBER
+        from cellprofiler.measurement import C_LOCATION
         result = []
         if object_name == cpmeas.IMAGE:
             has_images = any(self.get_image_names())
@@ -1745,8 +1812,12 @@ class NamesAndTypes(cpm.Module):
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y
+        from cellprofiler.measurement import FTR_OBJECT_NUMBER
+        from cellprofiler.measurement import FTR_CENTER_Y
+        from cellprofiler.measurement import FTR_CENTER_X
+        from cellprofiler.measurement import C_COUNT
+        from cellprofiler.measurement import C_NUMBER
+        from cellprofiler.measurement import C_LOCATION
 
         image_names = self.get_image_names()
         object_names = self.get_object_names()
@@ -1864,7 +1935,15 @@ class NamesAndTypes(cpm.Module):
             setting_values = new_setting_values
             variable_revision_number = 6
 
+        if variable_revision_number == 6:
+            new_setting_values = setting_values[:9] + [False, 1.0, 1.0, 1.0] + setting_values[9:]
+            setting_values = new_setting_values
+            variable_revision_number = 7
+
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True
 
     class FakeModpathResolver(object):
         '''Resolve one modpath to one ipd'''
@@ -1971,46 +2050,55 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
 class ColorImageProvider(LoadImagesImageProviderURL):
     '''Provide a color image, tripling a monochrome plane if needed'''
 
-    def __init__(self, name, url, series, index, rescale=True):
+    def __init__(self, name, url, series, index, rescale=True, volume=False, spacing=None):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=rescale,
                                             series=series,
-                                            index=index)
+                                            index=index,
+                                            volume=volume,
+                                            spacing=spacing)
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 2:
-            image.pixel_data = np.dstack([image.pixel_data] * 3)
+
+        if image.pixel_data.ndim == image.dimensions:
+            image.pixel_data = skimage.color.gray2rgb(image.pixel_data, alpha=False)
+
         return image
 
 
 class MonochromeImageProvider(LoadImagesImageProviderURL):
     '''Provide a monochrome image, combining RGB if needed'''
 
-    def __init__(self, name, url, series, index, channel, rescale=True):
+    def __init__(self, name, url, series, index, channel, rescale=True, volume=False, spacing=None):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=rescale,
                                             series=series,
                                             index=index,
-                                            channel=channel)
+                                            channel=channel,
+                                            volume=volume,
+                                            spacing=spacing)
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 3:
-            image.pixel_data = \
-                np.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
+
+        if image.pixel_data.ndim == image.dimensions + 1:
+            image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
+
         return image
 
 
 class MaskImageProvider(MonochromeImageProvider):
     '''Provide a boolean image, converting nonzero to True, zero to False if needed'''
 
-    def __init__(self, name, url, series, index, channel):
+    def __init__(self, name, url, series, index, channel, volume=False, spacing=None):
         MonochromeImageProvider.__init__(self, name, url,
                                          rescale=True,
                                          series=series,
                                          index=index,
-                                         channel=channel)
+                                         channel=channel,
+                                         volume=volume,
+                                         spacing=spacing)
 
     def provide_image(self, image_set):
         image = MonochromeImageProvider.provide_image(self, image_set)
@@ -2026,7 +2114,8 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=False,
                                             series=series,
-                                            index=index)
+                                            index=index,
+                                            volume=False)
 
     def provide_image(self, image_set):
         """Load an image from a pathname

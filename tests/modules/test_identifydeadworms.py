@@ -4,6 +4,7 @@
 import unittest
 from StringIO import StringIO
 
+import cellprofiler.measurement
 import numpy as np
 from scipy.ndimage import binary_fill_holes
 
@@ -119,7 +120,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         module.run(workspace)
         count = workspace.measurements.get_current_image_measurement(
-                '_'.join((ID.I.C_COUNT, OBJECTS_NAME)))
+                '_'.join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME)))
         self.assertEqual(count, 0)
 
     def test_02_02_one_worm(self):
@@ -140,14 +141,14 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         count = m.get_current_image_measurement(
-                '_'.join((ID.I.C_COUNT, OBJECTS_NAME)))
+                '_'.join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME)))
         self.assertEqual(count, 1)
         x = m.get_current_measurement(OBJECTS_NAME,
-                                      ID.I.M_LOCATION_CENTER_X)
+                                      cellprofiler.measurement.M_LOCATION_CENTER_X)
         self.assertEqual(len(x), 1)
         self.assertAlmostEqual(x[0], 9., 1)
         y = m.get_current_measurement(OBJECTS_NAME,
-                                      ID.I.M_LOCATION_CENTER_Y)
+                                      cellprofiler.measurement.M_LOCATION_CENTER_Y)
         self.assertEqual(len(y), 1)
         self.assertAlmostEqual(y[0], 10., 1)
         a = m.get_current_measurement(OBJECTS_NAME,
@@ -180,7 +181,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         count = m.get_current_image_measurement(
-                '_'.join((ID.I.C_COUNT, OBJECTS_NAME)))
+                '_'.join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME)))
         self.assertEqual(count, 2)
         a = m.get_current_measurement(OBJECTS_NAME,
                                       ID.M_ANGLE)
@@ -192,12 +193,12 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertAlmostEqual(a[order[0]], 135, 0)
         self.assertAlmostEqual(a[order[1]], 45, 0)
         x = m.get_current_measurement(OBJECTS_NAME,
-                                      ID.I.M_LOCATION_CENTER_X)
+                                      cellprofiler.measurement.M_LOCATION_CENTER_X)
         self.assertEqual(len(x), 2)
         self.assertAlmostEqual(x[order[0]], 9., 0)
         self.assertAlmostEqual(x[order[1]], 10., 0)
         y = m.get_current_measurement(OBJECTS_NAME,
-                                      ID.I.M_LOCATION_CENTER_Y)
+                                      cellprofiler.measurement.M_LOCATION_CENTER_Y)
         self.assertEqual(len(y), 2)
         self.assertAlmostEqual(y[order[0]], 10., 0)
         self.assertAlmostEqual(y[order[1]], 9., 0)
@@ -208,11 +209,11 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
         columns = module.get_measurement_columns(workspace.pipeline)
         expected = (
-            (OBJECTS_NAME, ID.I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
-            (OBJECTS_NAME, ID.I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
+            (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
+            (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
             (OBJECTS_NAME, ID.M_ANGLE, cpmeas.COLTYPE_FLOAT),
-            (OBJECTS_NAME, ID.I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, ID.I.FF_COUNT % OBJECTS_NAME, cpmeas.COLTYPE_INTEGER))
+            (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+            (cpmeas.IMAGE, cellprofiler.measurement.FF_COUNT % OBJECTS_NAME, cpmeas.COLTYPE_INTEGER))
         self.assertEqual(len(columns), len(expected))
         for e in expected:
             self.assertTrue(any(all([x == y for x, y in zip(c, e)])

@@ -1,11 +1,14 @@
-'''<b>Display Data On Image</b> 
-produces an image with measured data on top of identified objects.
-<hr>
+# coding=utf-8
+
+"""
+**Display Data On Image** produces an image with measured data on top of
+identified objects.
+
 This module displays either a single image measurement on an image of
-your choosing, or one object measurement per object on top
-of every object in an image. The display itself is an image which you
-can save to a file using <b>SaveImages</b>.
-'''
+your choosing, or one object measurement per object on top of every
+object in an image. The display itself is an image which you can save to
+a file using **SaveImages**.
+"""
 
 import numpy as np
 
@@ -16,7 +19,7 @@ import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"

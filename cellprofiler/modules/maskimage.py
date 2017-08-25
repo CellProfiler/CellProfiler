@@ -1,19 +1,20 @@
-"""<b>Mask Image</b> hides certain portions of an image (based on previously identified 
-objects or a binary image) so they are ignored by subsequent mask-respecting modules
-in the pipeline.
-<hr>
+# coding=utf-8
+
+"""
+**Mask Image** hides certain portions of an image (based on previously
+identified objects or a binary image) so they are ignored by subsequent
+mask-respecting modules in the pipeline.
+
 This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
-masking object or image that is selected. If using a masking image, the mask is
-composed of the foreground (white portions); if using a masking object, the mask
-is composed of the area within the object.
-
-Note that the image created by this module for further processing
-downstream is grayscale. If a binary mask is desired in subsequent modules, use
-the <b>ApplyThreshold</b> module instead of <b>MaskImage</b>.
-
-See also <b>ApplyThreshold</b>, <b>IdentifyPrimaryObjects</b>, <b>IdentifyObjectsManually</b>.
-
+masking object or image that is selected. If using a masking image, the
+mask is composed of the foreground (white portions); if using a masking
+object, the mask is composed of the area within the object. Note that
+the image created by this module for further processing downstream is
+grayscale. If a binary mask is desired in subsequent modules, use the
+**ApplyThreshold** module instead of **MaskImage**. See also
+**ApplyThreshold**, **IdentifyPrimaryObjects**,
+**IdentifyObjectsManually**.
 """
 
 import numpy as np
@@ -127,7 +128,7 @@ class MaskImage(cpm.Module):
             if self.invert_mask.value:
                 mask = mask == 0
         orig_image = image_set.get_image(self.image_name.value)
-        if tuple(mask.shape) != tuple(orig_image.pixel_data.shape[:2]):
+        if (orig_image.multichannel and mask.shape != orig_image.pixel_data.shape[:-1]) or mask.shape != orig_image.pixel_data.shape:
             tmp = np.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
             tmp[mask] = True
             mask = tmp
@@ -137,30 +138,34 @@ class MaskImage(cpm.Module):
         masked_pixels[np.logical_not(mask)] = 0
         masked_image = cpi.Image(masked_pixels, mask=mask,
                                  parent_image=orig_image,
-                                 masking_objects=objects)
+                                 masking_objects=objects,
+                                 dimensions=orig_image.dimensions)
 
         image_set.add(self.masked_image_name.value, masked_image)
 
         if self.show_window:
+            workspace.display_data.dimensions=orig_image.dimensions
             workspace.display_data.orig_image_pixel_data = orig_image.pixel_data
             workspace.display_data.masked_pixels = masked_pixels
+            workspace.display_data.multichannel = orig_image.multichannel
 
     def display(self, workspace, figure):
         orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
         masked_pixels = workspace.display_data.masked_pixels
-        figure.set_subplots((2, 1))
-        if orig_image_pixel_data.ndim == 2:
-            figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data,
-                                            "Original image: %s" % self.image_name.value)
-            figure.subplot_imshow_grayscale(1, 0, masked_pixels,
-                                            "Masked image: %s" % self.masked_image_name.value,
-                                            sharexy=figure.subplot(0, 0))
-        else:
+        figure.set_subplots((2, 1),dimensions=workspace.display_data.dimensions)
+        if workspace.display_data.multichannel:
             figure.subplot_imshow_color(0, 0, orig_image_pixel_data,
-                                        "Original image: %s" % self.image_name.value)
+                                        "Original image: %s" % self.image_name.value,dimensions=workspace.display_data.dimensions)
             figure.subplot_imshow_color(1, 0, masked_pixels,
                                         "Masked image: %s" % self.masked_image_name.value,
-                                        sharexy=figure.subplot(0, 0))
+                                        dimensions=workspace.display_data.dimensions)
+        else:
+            figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data,
+                                            "Original image: %s" % self.image_name.value,dimensions=workspace.display_data.dimensions)
+            figure.subplot_imshow_grayscale(1, 0, masked_pixels,
+                                            "Masked image: %s" % self.masked_image_name.value,
+                                            dimensions=workspace.display_data.dimensions)
+
 
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
@@ -191,3 +196,6 @@ class MaskImage(cpm.Module):
             variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

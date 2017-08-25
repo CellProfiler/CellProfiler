@@ -579,7 +579,7 @@ CellProfiler, the objects you identify are called <i>primary</i>,
 <li><b>IdentifyPrimary</b> modules identify objects without relying on any
 information other than a single grayscale input image (e.g., nuclei are
 typically primary objects).</li>
-<li><b>IdentifySecondary</b> modules require a grayscale image plus an image
+<li><b>IdentifySecondaryObjects</b> modules require a grayscale image plus an image
 where primary objects have already been identified, because the secondary
 objects are determined based on the primary objects (e.g., cells can be
 secondary objects when their identification is based on the location of nuclei). </li>
@@ -1724,6 +1724,11 @@ can run ImageJ 1.0 plugins, but there may be incompatibilities.</li></ul>"""
 CHECK_FOR_UPDATES_HELP = """
 Controls whether CellProfiler looks for updates on startup."""
 
+SHOW_TELEMETRY_HELP = """
+Allow limited and anonymous usage statistics and exception reports to be sent
+to the CellProfiler team to help improve CellProfiler.
+"""
+
 SHOW_STARTUP_BLURB_HELP = """
 Controls whether CellProfiler displays an orientation message on startup."""
 
@@ -2027,287 +2032,319 @@ the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.htm
 """ % globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """
-<h3>Introdution</h3>
-In this context, the term <i>image sequence</i> is used to refer to a collection of images which can be from
-a time-lapse assay, a three-dimensional (3-D) Z-stack assay, or both. This section will instruct you how to load these collections
-in order to properly represent your data for processing.
-
+<h3>Introduction</h3>
+In this context, the term <i>image sequence</i> is used to refer to a collection of images
+from a time-lapse assay (movie), a three-dimensional (3-D) Z-stack assay, or both.
+This section will teach you how to
+load these collections in order to properly represent your data for processing.
 <h3>Sequences of individual files</h3>
-<p>For some microscopes, the simplest method of capturing image sequences is to simply acquire them as a series of individual
-images, where each image represents a single timepoint/z-slice (for simplicity, we will refer to <i>timepoints</i> in the rest of
-this example). Typically, the image filename reflects
-the timepoint, such that the alphabetical image listing corresponds to the proper sequence,
-e.g., <i>img000.png</i>, <i>img001.png</i>, <i>img002.png</i>, etc</p>. It is also not uncommon
-to store the movie such that one movie's worth of files is stored in a single folder.</p>
-<p><i>Example:</i>You have a time-lapse movie of individual files set up as follows:
+<p>For some microscopes, the simplest method of capturing image sequences is to simply acquire them as a series of
+individual image files, where each image file represents a single timepoint and/or Z-slice.
+Typically, the image filename reflects the timepoint or Z-slice,
+such that the alphabetical image listing corresponds to the proper sequence, e.g., <i>img000.png</i>, <i>img001.png</i>,
+<i>img002.png</i>, etc</p>. It is also not uncommon to store the movie such that one movie's worth of files is stored
+in a single folder.
+<p><i>Example:</i> You have a time-lapse movie of individual files set up as follows:</p>
 <ul>
-<li>Three folders, one for each image channel, named <i>fluo2</i>, <i>fluor</i> and <i>phase</i>.</li>
-<li>In each folder, the files are named as follows:
-<ul>
-<li><i>fluo2</i>: calibrate2-P01.001.TIF, calibrate2-P01.002.TIF,..., calibrate2-P01.287.TIF</li>
-<li><i>fluor</i>: calibrated-P01.001.TIF, calibrated-P01.002.TIF,..., calibrated-P01.287.TIF</li>
-<li><i>phase</i>: phase-P01.001.TIF, phase-P01.002.TIF,..., phase-P01.287.TIF</li>
+    <li>Three folders, one for each image channel, named <i>DNA</i>, <i>actin</i> and <i>phase</i>.</li>
+    <li>In each folder, the files are named as follows:
+        <ul>
+            <li><i>DNA</i>: calibrate2-P01.001.TIF, calibrate2-P01.002.TIF,..., calibrate2-P01.287.TIF</li>
+            <li><i>actin</i>: calibrated-P01.001.TIF, calibrated-P01.002.TIF,..., calibrated-P01.287.TIF</li>
+            <li><i>phase</i>: phase-P01.001.TIF, phase-P01.002.TIF,..., phase-P01.287.TIF</li>
+        </ul>where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoint&gt;.TIF</i>.
+    </li>
+    <li>There are 287 timepoints per movie, and a movie of the 3 channels above is acquired from each well
+    in a multi-well plate.</li>
 </ul>
-where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoint&gt;.TIF</i>. </li>
-<li>There are 287 timepoints per movie, and a movie of the 3 channels above is acquired from each well.</li>
-</ul>
-</p>
-<p>In this case, the procedure to set up the input modules to handle these files is as follows:
+<p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
 <ul>
-<li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If
-necessary, set your rules accordingly in order to filter out any files that are not part of a movie
-sequence.
-<p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders
-into the File list panel.</p></li>
-<li>In the <b>Metadata</b> module, check the box to enable metadata extraction. The key step here is to
-obtain the metadata tags necessary to do two things:
-<ul>
-<li>Distinguish the movies from each other. This information is typically encapsulated in the filename
-and/or the folder name.</li>
-<li>For each movie, distinguish the timepoints from each other, ensuring their proper ordering. This information is usually contained
-in the filename.</li>
+    <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
+    your rules accordingly in order to filter out any files that are not part of a movie sequence.
+        <p>In the above example, you would drag-and-drop the <i>DNA</i>, <i>actin</i> and <i>phase</i> folders into
+        the File list panel.</p>
+    </li>
+    <li>In the <b>Metadata</b> module, check the box to enable metadata extraction. The key step here is to obtain the
+    metadata tags necessary to do two things:
+        <ul>
+            <li>Distinguish the movies from each other. This information is typically encapsulated in the filename
+            and/or the folder name.</li>
+            <li>For each movie, distinguish the timepoints from each other and ensure their proper ordering. This
+            information is usually contained in the filename.</li>
+        </ul>To accomplish this, do the following:
+        <ul>
+            <li>Select "{X_MANUAL_EXTRACTION}" or "{X_IMPORTED_EXTRACTION}" as the metadata extraction method. You will
+            use these to extract the movie and timepoint tags from the images.</li>
+            <li>Use "{X_MANUAL_EXTRACTION}" to create a regular expression to extract the metadata from the filename
+            and/or path name.</li>
+            <li>Or, use "{X_IMPORTED_EXTRACTION}" if you have a comma-delimited file (CSV) of the necessary metadata
+            columns (including the movie and timepoint tags) for each image. Note that microscopes rarely produce
+            such a file, but it might be worthwhile to write scripts to create them if you do this frequently.</li>
+        </ul>If there are multiple channels for each movie, this step may need to be performed for each channel.
+        <p>In this example, you could do the following:</p>
+        <ul>
+            <li>Select "{X_MANUAL_EXTRACTION}" as the method, "From file name" as the source, and
+            <code>.*-(?P&lt;Well&gt;[A-P][0-9]{{2}})\.(?P&lt;Timepoint&gt;[0-9]{{3}})</code> as the regular expression.
+            This step will extract the well ID and timepoint from each filename.</li>
+            <li>Click the "Add" button to add another extraction method.</li>
+            <li>In the new group of extraction settings, select "{X_MANUAL_EXTRACTION}" as the method, "From folder
+            name" as the source, and <code>.*[\\/](?P&lt;Stain&gt;.*)[\\/].*$</code> as the regular expression. This
+            step will extract the stain name from each folder name.</li>
+            <li>Click the "Update" button below the divider and check the output in the table to confirm that the
+            proper metadata values are being collected from each image.</li>
+        </ul>
+    </li>
+    <li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are multiple
+    channels, you will need to do this for each channel.<br>
+        For this example, you could do the following:
+        <ul>
+            <li>Select "Assign images matching rules".</li>
+            <li>Make a new rule <code>[Metadata][Does][Have Stain matching][actin]</code> and name it
+            <i>OrigFluor</i>.</li>
+            <li>Click the "Add" button to define another image with a rule.</li>
+            <li>Make a new rule <code>[Metadata][Does][Have Stain matching][DNA]</code> and name it
+            <i>OrigFluo2</i>.</li>
+            <li>Click the "Add" button to define another image with a rule.</li>
+            <li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it
+            <i>OrigPhase</i>.</li>
+            <li>In the "Image set matching method" setting, select "Metadata".</li>
+            <li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i>, and <i>OrigPhase</i> channels.</li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right to add another row, and
+            select "Timepoint" for each channel.</li>
+            <li>Click the "Update" button below the divider to view the resulting table and confirm that the proper
+            files are listed and matched across the channels. The corresponding well and frame for each channel should
+            now be matched to each other.</li>
+        </ul>
+    </li>
+    <li>In the <b>Groups</b> module, enable image grouping for these images in order to select the metadata that
+    defines a distinct movie of data.<br>
+        For the example above, do the following:
+        <ul>
+            <li>Select "Well" as the metadata category.</li>
+            <li>The tables below this setting will update themselves, and you should be able to visually confirm that
+            each well is defined as a group, each with 287 frames' worth of images.</li>
+        </ul>Without this step, CellProfiler would not know where one movie ends and the next one begins, and would
+        process the images in all movies together as if they were a single movie. This would result in, for example,
+        the TrackObjects module attempting to track cells from the end of one movie to the start of the next movie.
+    </li>
 </ul>
-To accomplish this, do the following:
-<ul>
-<li>Select "%(X_MANUAL_EXTRACTION)s" or "%(X_IMPORTED_EXTRACTION)s" as the metadata extraction method. You
-will use these to extract the movie and timepoint tags from the images. </li>
-<li>Use "%(X_MANUAL_EXTRACTION)s" to create a regular expression to extract the metadata from the
-filename and/or path name.</li>
-<li>Or, use "%(X_IMPORTED_EXTRACTION)s" if you have a comma-delimted file (CSV) of the necessary
-metadata columns (including the movie and timepoint tags) for each image.</li>
-</ul>
-If there are multiple channels for each movie, this step may need to be performed for each channel.
-<p>In this example, you could do the following:
-<ul>
-<li>Select "%(X_MANUAL_EXTRACTION)s" as the method, "From file name" as the source, and
-<code>.*-(?P&lt;Well&gt;[A-P][0-9]{2})\.(?P&lt;Timepoint&gt;[0-9]{3})</code> as the regular expression.
-This step will extract the well ID and timepoint from each filename.</li>
-<li>Click the "Add" button to add another extraction method.</i>
-<li>In the new group of extraction settings, select "%(X_MANUAL_EXTRACTION)s" as the method, "From folder name" as the source, and
-<code>.*[\\/](?P&lt;Stain>.*)[\\/].*$</code> as the regular expression.
-This step will extract the stain name from each folder name.</li>
-<li>Click the "Update" button below the divider and check the output in the table
-to confirm that the proper metadata values are being collected from each image.</li>
-</ul></p>
-</li>
-<li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are
-multiple channels, you will need to do this for each channel.<br>
-For this example, you could do the following:
-<ul>
-<li>Select "Assign images matching rules".</li>
-<li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluor]</code> and name it <i>OrigFluor</i>.
-<li>Click the "Add" button to define another image with a rule.</li>
-<li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluo2]</code> and name it <i>OrigFluo2</i>.
-<li>Click the "Add" button to define another image with a rule.</li>
-<li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
-<li>In the "Image set matching method" setting, select "Metadata".</li>
-<li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i>, and <i>OrigPhase</i> channels.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row,
-and select "Timepoint" for each channel.</li>
-<li>Click the "Update" button below the divider to view the resulting table and confirm that the proper
-files are listed and matched across the channels. The corresponding well and frame for each channel
-should now be matched to each other.</li>
-</ul>
-</li>
-<li>In the <b>Groups</b> module, enable image grouping for these images in order to select the metadata
-that defines a distinct movie of data.</br>
-For the example above, do the following:
-<ul>
-<li>Select "Well" as the metadata category.</li>
-<li>The tables below this setting will update themselves, and you should be able to visually confirm that
-each well is defined as a group, each with 287 frames' worth of images.</li>
-</ul>
-Without this step, CellProfiler would not know where one movie ends and the next one begins, and would
-process the images in all movies together as if they were constituents of only one movie.
-</li>
-</ul>
-</p>
-
+<p>If your images represent a 3D image, you can follow the above example to process your data. It is important to note,
+however, that CellProfiler will analyze each Z-slice individually and sequentially. Whole volume (3D image) processing
+is supported for single-channel .TIF stacks. Splitting image channels and converting image sets into .TIF stacks can be
+done using another software application, like FIJI.</p>
 <h3>Basic image sequences consisting of a single file</h3>
-<p>Another common means of storing time-lapse/Z-stack data is as a single file containing the movie. Examples of this
-approach include image formats such as:
+<p>Another common means of storing time-lapse or Z-stack data is as a single file containing frames. Examples of this
+approach include image formats such as:</p>
 <ul>
-<li>Multi-frame TIF</li>
-<li>Metamorph stack: STK</li>
-<li>Evotec/PerkinElmer Opera Flex</li>
-<li>Zeiss ZVI, LSM</li>
-<li>Standard movie formats: AVI, Quicktime MOV, etc
+    <li>Multi-frame TIF</li>
+    <li>Metamorph stack: STK</li>
+    <li>Evotec/PerkinElmer Opera Flex</li>
+    <li>Zeiss ZVI, LSM</li>
+    <li>Standard movie formats: AVI, Quicktime MOV, etc</li>
+</ul>CellProfiler uses the Bio-Formats library for reading various image formats. For more details on supported files,
+see this <a href="http://www.openmicroscopy.org/site/support/bio-formats4/supported-formats.html">webpage</a>. In
+general, we recommend saving stacks and movies in .TIF format.
+<p><i>Example:</i> You have several image stacks representing 3D structures in the following format:</p>
+<ul>
+    <li>The stacks are saved in .TIF format.</li>
+    <li>Each stack is a single-channel grayscale image.</li>
+    <li>Your files have names like IMG01_CH01.TIF, IMG01_CH02.TIF, ... IMG01_CH04.TIF and IMG02_CH01.TIF,
+    IMG02_CH02.TIF, etc, where IMG01_CH01.TIF designates channel 1 from image 1, IMG01_CH02.TIF designates channel 2
+    from image 1, and IMG02_CH01.TIF designates channel 1 from image 2.</li>
 </ul>
-CellProfiler uses the Bio-Formats library for reading various image formats. For more details on
-supported files, see this <a href="http://www.openmicroscopy.org/site/support/bio-formats4/supported-formats.html">webpage</a>. In
-general, we recommend saving stacks and movies in a format such as .TIF.
-</p>
-
-<p><i>Example:</i>You have two image stacks in the following format:
+<p>You would like to process each stack as a single image, not as a series of 2D images. In this case, the procedure
+to set up the input modules to handle these files is as follows:</p>
 <ul>
-<li>The stacks are Opera's FLEX format.</li>
-<li>Each FLEX file contains 8 fields of view, with 3 channels at each site (DAPI, GFP, Texas Red). </li>
-<li>Each channel is in grayscale format. </li>
+    <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
+    your rules accordingly in order to filter out any files that are not images to be processed.<br>
+    In the above example, you would drag-and-drop the .TIF files into the File list panel.</li>
+    <li>In the <b>NamesAndTypes</b> module, select "Yes" for "Data is 3D". You should also provide the relative X, Y,
+    and Z pixel sizes of your images. X and Y will be determined by the camera and objective you used to capture your
+    images. Your Z size represents the spacing of your Z-series. In most cases, the X and Y pixel size will be the same.
+    You can divide the Z size by X or Y to get a relative value, with X = Y = 1. CellProfiler will use this
+    information to correctly compute filter sizes and shape features, for example.<br>
+    Additionally assign each channel to a name of your choice. You will need to do this for
+    each channel. For this example, you could do the following:
+        <ul>
+            <li>Select "Assign images matching rules".</li>
+            <li>Make a new rule <code>[File][Does][Contain][CH01]</code></li>
+            <li>Provide a descriptive name for the channel, e.g., <i>DAPI</i>.</li>
+            <li>Click the "Add another image" button to define a second image with a set of rules.</li>
+            <li>Make a new rule <code>[File][Does][Contain][CH02]</code></li>
+            <li>Provide a descriptive name for the channel <i>GFP</i>.</li>
+            <li>Click the "Update" button below the divider to confirm that the proper images are listed and
+            matched across the channels. All file names ending in CH01.TIF should be matched together.</li>
+        </ul>
+    </li>
 </ul>
-</p>
-<p>In this case, the procedure to set up the input modules to handle these files is as follows
-(please note that this procedure is basically identical whether the file is for a time-lapse assay
-or a Z-stack assay):
+<p><i>Example:</i> You have two image stacks in the following format:</p>
 <ul>
-<li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If
-necessary, set your rules accordingly in order to filter out any files that are not files that are not images to be processed.<br>
-In the above example, you would drag-and-drop the FLEX files into the File list panel.</li>
-<li>In the <b>Metadata</b> module, enable metadata extraction in order to obtain metadata from these files.
-The key step here is to obtain the necessary metadata tags  to do two things:
-<ul>
-<li>Distinguish the stacks from each other. This information is contained as the file itself, that is,
-each file represents a different stack.</li>
-<li>For each stack, distinguish the frames from each other. This information is usually contained
-in the image's internal metadata, in contrast to the image sequence described above.</li>
+    <li>The stacks are Opera's FLEX format.</li>
+    <li>Each FLEX file contains 8 fields of view, with 3 channels at each site (DAPI, GFP, Texas Red).</li>
+    <li>Each channel is in grayscale format.</li>
 </ul>
-To accomplish this, do the following:
+<p>In this case, the procedure to set up the input modules to handle these files is as follows:</p>
 <ul>
-<li>Select "%(X_AUTOMATIC_EXTRACTION)s" as the metadata extraction method. In this case, CellProfiler will
-extract the requisite information from the metadata stored in the image headers.</li>
-<li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending on
-the number of files present, this step may take a while to complete.</li>
-<li>Click the "Update" button below the divider.</li>
-<li>The resulting table should show the various metadata contained in the file. In this case, the relevant
-information is contained in the <i>C</i> and <i>Series</i> columns. In the figure shown, the <i>C</i> column
-shows three unique values for the channels represented, numbered from 0 to 2. The <i>Series</i> column shows
-8 values for the slices collected in each stack, numbered from 0 to 7, followed by the slices for other stacks. </li>
+    <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
+    your rules accordingly in order to filter out any files that are not images to be processed.<br>
+    In the above example, you would drag-and-drop the FLEX files into the File list panel.</li>
+    <li>In the <b>Metadata</b> module, enable metadata extraction in order to obtain metadata from these files. The key
+    step here is to obtain the necessary metadata tags to do two things:
+        <ul>
+            <li>Distinguish the stacks from each other. This information is contained as the file itself, that is, each
+            file represents a different stack.</li>
+            <li>For each stack, distinguish the frames from each other. This information is usually contained in the
+            image's internal metadata, in contrast to the image sequence described above.</li>
+        </ul>To accomplish this, do the following:
+        <ul>
+            <li>Select "{X_AUTOMATIC_EXTRACTION}" as the metadata extraction method. In this case, CellProfiler will
+            extract the requisite information from the metadata stored in the image headers.</li>
+            <li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending on
+            the number of files present, this step may take a while to complete.</li>
+            <li>Click the "Update" button below the divider.</li>
+            <li>The resulting table should show the various metadata contained in the file. In this case, the relevant
+            information is contained in the <i>C</i> and <i>Series</i> columns. In the figure shown, the <i>C</i>
+            column shows three unique values for the channels represented, numbered from 0 to 2. The <i>Series</i>
+            column shows 8 values for the slices collected in each stack, numbered from 0 to 7, followed by the slices
+            for other stacks.</li>
+        </ul>
+    </li>
+    <li>In the <b>NamesAndTypes</b> module, assign the channel to a name of your choice. If there are multiple
+    channels, you will need to do this for each channel. For this example, you could do the following:
+        <ul>
+            <li>Select "Assign images matching rules".</li>
+            <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code></li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right of the rule to add another
+            set of rules underneath.</li>
+            <li>Add the rule <code>[Image][Is][Stack frame]</code>. This combination tells CellProfiler not to treat
+            the image as a single file, but rather as a series of frames.</li>
+            <li>Name the image <i>DAPI</i>.</li>
+            <li>Click the "Add another image" button to define a second image with a set of rules.</li>
+            <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code></li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right of the rule to add another
+            set of rules underneath.</li>
+            <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
+            <li>Name the image <i>GFP</i>.</li>
+            <li>Click the "Add another image" button to define a third image with a set of rules.</li>
+            <li>Make a new rule <code>[Metadata][Does][Have C matching][2]</code></li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right of the rule to add another
+            set of rules underneath.</li>
+            <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
+            <li>Name the image <i>TxRed</i>.</li>
+            <li>In the "Image set matching method" setting, select "Metadata".</li>
+            <li>Select "FileLocation" for the DAPI, GFP and TxRed channels. The FileLocation metadata tag identifies
+            the individual stack, and selecting this parameter ensures that the channels are first matched within each
+            stack, rather than across stacks.</li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp; button to the right to add another row, and
+            select <i>Series</i> for each channel.</li>
+            <li>Click the "Update" button below the divider to confirm that the proper image slices are listed and
+            matched across the channels. The corresponding <i>FileLocation</i> and <i>Series</i> for each channel
+            should now be matched to each other.</li>
+        </ul>
+    </li>
+    <li>In the <b>Groups</b> module, select the metadata that defines a distinct image stack. For the example above, do
+    the following:
+        <ul>
+            <li>Select "FileLocation" as the metadata category.</li>
+            <li>The tables below this setting will update themselves, and you should be able to visually confirm that
+            each of the two image stacks are defined as a group, each with 8 slices' worth of images.</li>
+        </ul>Without this step, CellProfiler would not know where one stack ends and the next one begins, and would
+        process the slices in all stacks together as if they were constituents of only one stack.
+    </li>
 </ul>
-</li>
-<li>In the <b>NamesAndTypes</b> module, assign the channel to a name of your choice. If there are multiple
-channels, you will need to do this for each channel. For this example, you could do the following:
+<p><i>Example:</i> You have four Z-stacks in the following format:</p>
 <ul>
-<li>Select "Assign images matching rules".</li>
-<li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
-<li>Add the rule <code>[Image][Is][Stack frame]</code>. This
-combination tells CellProfiler not to treat the image as a single file, but rather as a series of frames.</li>
-<li>Name the image <i>DAPI</i>.</li>
-<li>Click the "Add another image" button to define a second image with a set of rules. </li>
-<li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
-<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
-<li>Name the image <i>GFP</i>.</li>
-<li>Click the "Add another image" button to define a third image with a set of rules. </li>
-<li>Make a new rule <code>[Metadata][Does][Have C matching][2]</code>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
-<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
-<li>Name the image <i>TxRed</i>.</li>
-<li>In the "Image set matching method" setting, select "Metadata". </li>
-<li>Select "FileLocation" for the DAPI, GFP and TxRed channels. The FileLocation metadata tag identifies the
-individual stack, and selecting this parameter ensures that the channels are first matched within each
-stack, rather than across stacks.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp; button to the right to add another row, and select <i>Series</i> for each channel. </li>
-<li>Click the "Update" button below the divider to confirm that the proper image slices are listed and matched across the channels.
-The corresponding <i>FileLocation</i> and <i>Series</i> for each channel should now be matched to each other.
+    <li>The stacks are in Zeiss' CZI format.</li>
+    <li>Each stack consists of a number of slices with 4 channels (DAPI, GFP, Texas Red and Cy3) at each slice.</li>
+    <li>One stack has 9 slices, two stacks have 7 slices and the fourth has 12 slices. Even though the stacks were
+    collected with differing numbers of slices, the pipeline to be constructed is intended to analyze all stacks in the
+    same manner.</li>
+    <li>Each slice is in grayscale format.</li>
 </ul>
-
-<li>In the <b>Groups</b> module, select the metadata that defines a distinct image stack. For the example above,
-do the following:
+<p>In this case, the procedure to set up the input modules to handle these this file is as follows:</p>
 <ul>
-<li>Select "FileLocation" as the metadata category. </li>
-<li>The tables below this setting will update themselves, and you should be able to visually confirm
-that each of the two image stacks are defined as a group, each with 8 slices' worth of images. </li>
+    <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If necessary, set
+    your rules accordingly in order to filter out any files that are not images to be processed.<br>
+    In the above example, you would drag-and-drop the CZI files into the File list panel. In this case, the default
+    "Images only" filter is sufficient to capture the necessary files.</li>
+    <li>In the <b>Metadata</b> module, enable metadata extraction in order to obtain metadata from these files. The key
+    step here is to obtain the metadata tags necessary to do two things:
+        <ul>
+            <li>Distinguish the stacks from each other. This information is contained as the file itself, that is, each
+            file represents a different stack.</li>
+            <li>For each stack, distinguish the z-planes from each other, ensuring proper ordering. This information
+            is usually contained in the image file's internal metadata.</li>
+        </ul>To accomplish this, do the following:
+        <ul>
+            <li>Select "{X_AUTOMATIC_EXTRACTION}" as the metadata extraction method. In this case, CellProfiler will
+            extract the requisite information from the metadata stored in the image headers.</li>
+            <li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending on
+            the number of files present, this step may take a while.</li>
+            <li>Click the "Update" button below the divider.</li>
+            <li>The resulting table should show the various metadata contained in the file. In this case, the relevant
+            information is contained in the C and Z columns. The <i>C</i> column shows four unique values for the
+            channels represented, numbered from 0 to 3. The <i>Z</i> column shows nine values for the slices
+            represented from the first stack, numbered from 0 to 8.</li>
+            <li>Of note in this case, for each file there is a single row summarizing this information. The
+            <i>sizeC</i> column reports a value of 4 and <i>sizeZ</i> column shows a value of 9. You may need to scroll
+            down the table to see this summary for the other stacks.</li>
+        </ul>
+    </li>
+    <li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are multiple
+    channels, you will need to do this for each channel.
+        <p>For the above example, you could do the following:</p>
+        <ul>
+            <li>Select "Assign images matching rules".</li>
+            <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code></li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right of the rule to add another
+            set of rule options.</li>
+            <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
+            <li>Name the image <i>DAPI</i>.</li>
+            <li>Click the "Add another image" button to define a second image with a set of rules.</li>
+            <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code></li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right of the rule to add another
+            set of rule options.</li>
+            <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
+            <li>Name the second image <i>GFP</i>.</li>
+            <li>Click the "Add another image" button to define a third image with a set of rules.</li>
+            <li>Make a new rule <code>[Metadata][Does][Have C matching][2]</code>.</li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right of the rule to add another
+            set of rule options.</li>
+            <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
+            <li>Name the third image <i>TxRed</i>.</li>
+            <li>Click the "Add another image" button to define a fourth image with set of rules.</li>
+            <li>Make a new rule <code>[Metadata][Does][Have C matching][3]</code>.</li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right of the rule to add another
+            set of rule options.</li>
+            <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
+            <li>Name the fourth image <i>Cy3</i>.</li>
+            <li>In the "Image set matching method" setting, select "Metadata".</li>
+            <li>Select "FileLocation" for the <i>DAPI</i>,<i>GFP</i>,<i>TxRed</i>, and <i>Cy3</i>channels. The
+            <i>FileLocation</i> identifies the individual stack, and selecting this parameter insures that the channels
+            are matched within each stack, rather than across stacks.</li>
+            <li>Click the <img src="memory:{MODULE_ADD_BUTTON}">&nbsp;button to the right to add another row, and
+            select "Z" for each channel.</li>
+            <li>Click "Update table" to confirm the channel matching. The corresponding <i>FileLocation</i> and
+            <i>Z</i> for each channel should be matched to each other.</li>
+        </ul>
+        <p></p>
+    </li>
+    <li>In the <b>Groups</b> module, select the metadata that defines a distinct image stack. For the example above, do
+    the following:
+        <ul>
+            <li>Select "FileLocation" as the metadata category.</li>
+            <li>The tables below this setting will update themselves, and you should be able to visually confirm that
+            each of the four image stacks are defined as a group, with 9, 7, 7 and 12 slices' worth of images.</li>
+        </ul>Without this step, CellProfiler would not know where one stack ends and the next one begins, and would
+        process the slices in all stacks together as if they were constituents of only one stack.
+    </li>
 </ul>
-Without this step, CellProfiler would not know where one stack ends and the next one begins, and would
-process the slices in all stacks together as if they were constituents of only one stack.
-</li>
-</ul>
-
-<p><i>Example:</i>You have two Z-stacks in the following format:
-<ul>
-<li>The stacks are in Zeiss' CZI format.</li>
-<li>Each stack consists of a number of slices with 4 channels (DAPI, GFP, Texas Red and Cy3) at each slice. </li>
-<li>One stack has 9 slices, two stacks have 7 slices and the fourth has 12 slices. Even though the stacks
-were collected with differing numbers of slices, the pipeline to be constructed is intended to analyze all stacks in
-the same manner.</li>
-<li>Each slice is in grayscale format.</li>
-</ul>
-</p>
-<p>In this case, the procedure to set up the input modules to handle these this file is as follows
-(please note that this procedure is basically identical whether the file is for a time-lapse assay
-or a Z-stack assay):
-<ul>
-<li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If
-necessary, set your rules accordingly in order to filter out any files that are not images to be processed.<br>
-In the above example, you would drag-and-drop the LSM files into the File list panel. In this case,
-the default "Images only" filter is sufficient to capture the necessary files. </li>
-
-<li>In the <b>Metadata</b> module, enable metadata extraction in order to obtain metadata from these
-files. The key step here is to obtain the metadata tags necessary to do two things:
-<ul>
-<li>Distinguish the stacks from each other. This information is contained as the file itself, that is,
-each file represents a different stack.</li>
-<li>For each stack, distinguish the timepoints from each other, ensuring proper ordering. This information
-is usually contained in the image file's internal metadata.</li>
-</ul>
-To accomplish this, do the following:
-<ul>
-<li>Select "%(X_AUTOMATIC_EXTRACTION)s" as the metadata extraction method. In this case, CellProfiler will
-extract the requisite information from the metadata stored in the image headers.</li>
-<li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending
-on the number of files present, this step may take a while.</li>
-<li>Click the "Update" button below the divider.</li>
-<li>The resulting table should show the various metadata contained in the file. In this case, the relevant
-information is contained in the C and Z columns. The <i>C</i> column shows four unique
-values for the channels represented, numbered from 0 to 3. The <i>Z</i> column shows nine values for
-the slices represented from the first stack, numbered from 0 to 8.</li>
-<li>Of note in this case, for each file there is a single row summarizing this information. The <i>sizeC</i>
-column reports a value of 4 and <i>sizeZ</i> column shows a value of 9. You may need to scroll down the table to
-see this summary for the other stacks.</li>
-</ul>
-</li>
-<li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are
-multiple channels, you will need to do this for each channel.
-<p>For the above example, you could do the following:
-<ul>
-<li>Select "Assign images matching rules".</li>
-<li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
-rule options.</li>
-<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
-<li>Name the image <i>DAPI</i>.
-<li>Click the "Add another image" button to define a second image with a set of rules.</li>
-<li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
-rule options.</li>
-<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
-<li>Name the second image <i>GFP</i>.</li>
-<li>Click the "Add another image" button to define a third image with a set of rules.</li>
-<li>Make a new rule <code>[Metadata][Does][Have C matching][2]</code>.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
-rule options. </li>
-<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
-<li>Name the third image <i>TxRed</i>. </li>
-<li>Click the "Add another image" button to define a fourth image with set of rules.</li>
-<li>Make a new rule <code>[Metadata][Does][Have C matching][3]</code>.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
-rule options. </li>
-<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
-<li>Name the fourth image <i>Cy3</i>.</li>
-<li>In the "Image set matching method" setting, select "Metadata".</li>
-<li>Select "FileLocation" for the <i>DAPI</i>,<i>GFP</i>,<i>TxRed</i>, and <i>Cy3</i>channels. The
-<i>FileLocation</i> identifies the individual
-stack, and selecting this parameter insures that the channels are matched within each stack,
-rather than across stacks.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row,
-and select "Z" for each channel.</li>
-<li>Click "Update table" to confirm the channel matching. The corresponding <i>FileLocation</i> and <i>Z</i> for each
-channel should be matched to each other.</li>
-</ul></p>
-</li>
-<li>In the <b>Groups</b> module, select the metadata that defines a distinct image stack. For the example above,
-do the following:
-<ul>
-<li>Select "FileLocation" as the metadata category. </li>
-<li>The tables below this setting will update themselves, and you should be able to visually confirm that each
-of the four image stacks are defined as a group, with 9, 7, 7 and 12 slices' worth of images. </li>
-</ul>
-Without this step, CellProfiler would not know where one stack ends and the next one begins, and would
-process the slices in all stacks together as if they were constituents of only one stack.
-</li>
-</ul>
-</p>
-""" % globals()
+""".format(**{
+    "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON,
+    "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
+    "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
+    "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION
+})
 
 #########################################################
 #
@@ -2405,10 +2442,14 @@ for you. If you have defined a plate metadata tag (with the name, "Plate"),
 the plate viewer will group your images by plate and display a choice box
 that lets you pick the plate to display.
 <p>
-Click on a well to see the images for that well. Channels are composited together if there is more
-than one channel and you can control the color used to display each channel.
-If you have more than one site per well and have site metadata (with the name,
-"Site"), the plate viewer will tile the sites when displaying.
+Click on a well to see the images for that well. If you have more than one site
+per well and have site metadata (with the name, "Site"), the plate viewer will
+tile the sites when displaying, and the values under "X" and "Y" determine the
+position of each site in the tiled grid.
+<p>
+The values for "Red", "Green", and "Blue" in each row are brightness multipliers-
+changing the values will determine the color and scaling used to display each
+channel.  "Alpha" determines the weight each channel contributes to the summed image.
 """
 
 #########################################################

@@ -1,40 +1,48 @@
-"""<b>Load Single Image</b> loads a single image for use in all image cycles.
-<hr>
-<p>This module tells CellProfiler where to retrieve a single image and gives the image a
-meaningful name by which the other modules can access it. The module
-executes only the first time through the pipeline; thereafter the image
-is accessible to all subsequent processing cycles. This is
-particularly useful for loading an image like an illumination correction
-image for use by the <b>CorrectIlluminationApply</b> module, when that single
-image will be used to correct all images in the analysis run.</p>
+# coding=utf-8
 
-<p><i>Disclaimer:</i> Please note that the Input modules (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
-and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into
-CellProfiler that contain this module will provide the option of preserving them;
-these pipelines will operate exactly as before.</p>
+"""
+**Load Single Image** loads a single image for use in all image cycles.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Pathname, Filename:</i> The full path and the filename of each image.</li>
-<li><i>Metadata:</i> The metadata information extracted from the path and/or
-filename, if requested.</li>
-<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li>
-<li><i>Height, Width:</i> The height and width of the current image.</li>
-</ul>
+This module tells CellProfiler where to retrieve a single image and
+gives the image a meaningful name by which the other modules can access
+it. The module executes only the first time through the pipeline;
+thereafter the image is accessible to all subsequent processing cycles.
+This is particularly useful for loading an image like an illumination
+correction image for use by the **CorrectIlluminationApply** module,
+when that single image will be used to correct all images in the
+analysis run.
 
-<h4>Technical notes</h4>
+*Disclaimer:* Please note that the Input modules (i.e., **Images**,
+**Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
+module. However, old pipelines loaded into CellProfiler that contain
+this module will provide the option of preserving them; these pipelines
+will operate exactly as before.
 
-<p>For most purposes, you will probably want to use the <b>LoadImages</b> module, not
-<b>LoadSingleImage</b>. The reason is that <b>LoadSingleImage</b> does not actually
-create image sets (or even a single image set). Instead, it adds the single image
-to every image cycle for an <i>already existing</i> image set. Hence
-<b>LoadSingleImage</b> should never be used as the only image-loading module in a
-pipeline; attempting to do so will display a warning message in the module settings.
-<p>If you have a single file to load in the pipeline (and only that file), you
-will want to use <b>LoadImages</b> or <b>LoadData</b> with a single, hardcoded file name. </p>
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
-See also the <b>Input</b> modules, <b>LoadImages</b>,<b>LoadData</b>.
+-  *Pathname, Filename:* The full path and the filename of each image.
+-  *Metadata:* The metadata information extracted from the path and/or
+   filename, if requested.
+-  *Scaling:* The maximum possible intensity value for the image format.
+-  *Height, Width:* The height and width of the current image.
 
+Technical notes
+^^^^^^^^^^^^^^^
+
+For most purposes, you will probably want to use the **LoadImages**
+module, not **LoadSingleImage**. The reason is that **LoadSingleImage**
+does not actually create image sets (or even a single image set).
+Instead, it adds the single image to every image cycle for an *already
+existing* image set. Hence **LoadSingleImage** should never be used as
+the only image-loading module in a pipeline; attempting to do so will
+display a warning message in the module settings.
+
+If you have a single file to load in the pipeline (and only that file),
+you will want to use **LoadImages** or **LoadData** with a single,
+hardcoded file name.
+
+See also the **Input** modules, **LoadImages**,\ **LoadData**.
 """
 
 import hashlib
@@ -57,8 +65,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.setting import YES, NO
-from identify import C_COUNT, C_LOCATION, C_NUMBER
-from identify import FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
+from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
 from identify import add_object_count_measurements, add_object_location_measurements
 from identify import get_object_measurement_columns
 from loadimages import C_HEIGHT, C_WIDTH, C_PATH_NAME, C_MD5_DIGEST, C_URL

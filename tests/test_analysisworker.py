@@ -10,7 +10,6 @@ import unittest
 import uuid
 
 import cellprofiler.analysis
-import cellprofiler.gui.errordialog
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
@@ -551,8 +550,8 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei"))
-        self.assertTrue(m.has_feature("Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler.analysis.Ack())
         self.awthread.ecute()
@@ -631,8 +630,8 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei"))
-        self.assertTrue(m.has_feature("Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler.analysis.Ack())
         self.awthread.ecute()
@@ -693,7 +692,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cellprofiler.analysis.ExceptionReport)
-        req.reply(cellprofiler.analysis.ExceptionPleaseDebugReply(disposition = cellprofiler.gui.errordialog.ED_SKIP))
+        req.reply(cellprofiler.analysis.ExceptionPleaseDebugReply(disposition = "Skip"))
         #
         # The worker should send ImageSetSuccess for image set 2 anyway.
         #
@@ -718,198 +717,212 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei"))
-        self.assertTrue(m.has_feature("Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         #
         # The count for the skipped image should be None
         #
-        count = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei", 2]
+        count = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei", 2]
         self.assertIsNone(count)
-        count = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_Nuclei", 3]
-        center_x = m["Nuclei", cellprofiler.modules.identify.M_LOCATION_CENTER_X, 3]
+        count = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_Nuclei", 3]
+        center_x = m["Nuclei", cellprofiler.measurement.M_LOCATION_CENTER_X, 3]
         self.assertEqual(count, len(center_x))
         req.reply(cellprofiler.analysis.Ack())
         self.awthread.ecute()
 
 
-    def test_03_09_flag_image_abort(self):
-                #
-                # Regression test of issue #1210
-                # Make a pipeline that aborts during FlagImage
-                #
-                data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-        Version:3
-        DateRevision:20140918122611
-        GitHash:ded6939
-        ModuleCount:6
-        HasImagePlaneDetails:False
-
-        Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-            :
-            Filter images?:Images only
-            Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
-
-        Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-            Extract metadata?:No
-            Metadata data type:Text
-            Metadata types:{}
-            Extraction method count:1
-            Metadata extraction method:Extract from file/folder names
-            Metadata source:File name
-            Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-            Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-            Extract metadata from:All images
-            Select the filtering criteria:and (file does contain "")
-            Metadata file location:
-            Match file and image metadata:\x5B\x5D
-            Use case insensitive matching?:No
-
-        NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-            Assign a name to:All images
-            Select the image type:Grayscale image
-            Name to assign these images:DNA
-            Match metadata:\x5B\x5D
-            Image set matching method:Order
-            Set intensity range from:Image metadata
-            Assignments count:1
-            Single images count:0
-            Select the rule criteria:and (file does contain "")
-            Name to assign these images:DNA
-            Name to assign these objects:Cell
-            Select the image type:Grayscale image
-            Set intensity range from:Image metadata
-            Retain outlines of loaded objects?:No
-            Name the outline image:LoadedOutlines
-
-        Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-            Do you want to group your images?:No
-            grouping metadata count:1
-            Metadata category:None
-
-        FlagImage:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-            Hidden:1
-            Hidden:1
-            Name the flag\'s category:Metadata
-            Name the flag:QCFlag
-            Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-            Skip image set if flagged?:Yes
-            Flag is based on:Whole-image measurement
-            Select the object to be used for flagging:None
-            Which measurement?:Height_DNA
-            Flag images based on low values?:No
-            Minimum value:0.0
-            Flag images based on high values?:Yes
-            Maximum value:1.0
-            Rules file location:Elsewhere...\x7C
-            Rules file name:rules.txt
-            Class number:
-
-        MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-            Select the image to measure:DNA
-            Measure the intensity only from areas enclosed by objects?:No
-            Select the input objects:None
-        """
-                self.awthread = self.AWThread(self.announce_addr)
-                self.awthread.start()
-                self.set_work_socket()
-                self.awthread.ex(self.awthread.aw.do_job,
-                                 cellprofiler.analysis.WorkReply(
-                                     image_set_numbers = [1],
-                                     worker_runs_post_group = False,
-                                     wants_dictionary = True))
-                #
-                # The worker should ask for the pipeline and preferences next.
-                #
-                req = self.awthread.recv(self.work_socket)
-                self.assertIsInstance(req, cellprofiler.analysis.PipelinePreferencesRequest)
-                self.assertEqual(req.analysis_id, self.analysis_id)
-
-                input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
-                cellprofiler.preferences.set_default_image_directory(input_dir)
-                preferences = {cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY:
-                               cellprofiler.preferences.config_read(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY)}
-
-                rep = cellprofiler.analysis.Reply(
-                    pipeline_blob = numpy.array(data),
-                    preferences = preferences)
-                req.reply(rep)
-                #
-                # The worker asks for the initial measurements.
-                #
-                req = self.awthread.recv(self.work_socket)
-                self.assertIsInstance(req, cellprofiler.analysis.InitialMeasurementsRequest)
-                self.assertEqual(req.analysis_id, self.analysis_id)
-                m = get_measurements_for_good_pipeline()
-                pipeline = cellprofiler.pipeline.Pipeline()
-                pipeline.loadtxt(cStringIO.StringIO(data))
-                pipeline.write_pipeline_measurement(m)
-
-                try:
-                    req.reply(cellprofiler.analysis.Reply(buf = m.file_contents()))
-                finally:
-                    m.close()
-                #
-                # Next, the worker asks for the shared dictionary
-                #
-                req = self.awthread.recv(self.work_socket)
-                self.assertIsInstance(req, cellprofiler.analysis.SharedDictionaryRequest)
-                shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,7)]
-                rep = cellprofiler.analysis.SharedDictionaryReply(
-                    dictionaries = shared_dictionaries)
-                req.reply(rep)
-                #
-                # MeasureImageIntensity follows FlagImage and it is poised to ask
-                # for a display. So if we get that, we know the module has been run
-                # and we fail the test.
-                #
-                req = self.awthread.recv(self.work_socket)
-                self.assertFalse(isinstance(req, cellprofiler.analysis.DisplayRequest))
-                self.assertFalse(isinstance(req, cellprofiler.analysis.ExceptionReport))
-
+    # def test_03_09_flag_image_abort(self):
+    #             #
+    #             # Regression test of issue #1210
+    #             # Make a pipeline that aborts during FlagImage
+    #             #
+    #             data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+    #     Version:3
+    #     DateRevision:20140918122611
+    #     GitHash:ded6939
+    #     ModuleCount:6
+    #     HasImagePlaneDetails:False
+    #
+    #     Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    #         :
+    #         Filter images?:Images only
+    #         Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
+    #
+    #     Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    #         Extract metadata?:No
+    #         Metadata data type:Text
+    #         Metadata types:{}
+    #         Extraction method count:1
+    #         Metadata extraction method:Extract from file/folder names
+    #         Metadata source:File name
+    #         Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+    #         Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    #         Extract metadata from:All images
+    #         Select the filtering criteria:and (file does contain "")
+    #         Metadata file location:
+    #         Match file and image metadata:\x5B\x5D
+    #         Use case insensitive matching?:No
+    #
+    #     NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    #         Assign a name to:All images
+    #         Select the image type:Grayscale image
+    #         Name to assign these images:DNA
+    #         Match metadata:\x5B\x5D
+    #         Image set matching method:Order
+    #         Set intensity range from:Image metadata
+    #         Assignments count:1
+    #         Single images count:0
+    #         Select the rule criteria:and (file does contain "")
+    #         Name to assign these images:DNA
+    #         Name to assign these objects:Cell
+    #         Select the image type:Grayscale image
+    #         Set intensity range from:Image metadata
+    #         Retain outlines of loaded objects?:No
+    #         Name the outline image:LoadedOutlines
+    #
+    #     Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    #         Do you want to group your images?:No
+    #         grouping metadata count:1
+    #         Metadata category:None
+    #
+    #     FlagImage:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    #         Hidden:1
+    #         Hidden:1
+    #         Name the flag\'s category:Metadata
+    #         Name the flag:QCFlag
+    #         Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
+    #         Skip image set if flagged?:Yes
+    #         Flag is based on:Whole-image measurement
+    #         Select the object to be used for flagging:None
+    #         Which measurement?:Height_DNA
+    #         Flag images based on low values?:No
+    #         Minimum value:0.0
+    #         Flag images based on high values?:Yes
+    #         Maximum value:1.0
+    #         Rules file location:Elsewhere...\x7C
+    #         Rules file name:rules.txt
+    #         Class number:
+    #
+    #     MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    #         Select the image to measure:DNA
+    #         Measure the intensity only from areas enclosed by objects?:No
+    #         Select the input objects:None
+    #     """
+    #             self.awthread = self.AWThread(self.announce_addr)
+    #             self.awthread.start()
+    #             self.set_work_socket()
+    #             self.awthread.ex(self.awthread.aw.do_job,
+    #                              cellprofiler.analysis.WorkReply(
+    #                                  image_set_numbers = [1],
+    #                                  worker_runs_post_group = False,
+    #                                  wants_dictionary = True))
+    #             #
+    #             # The worker should ask for the pipeline and preferences next.
+    #             #
+    #             req = self.awthread.recv(self.work_socket)
+    #             self.assertIsInstance(req, cellprofiler.analysis.PipelinePreferencesRequest)
+    #             self.assertEqual(req.analysis_id, self.analysis_id)
+    #
+    #             input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    #             cellprofiler.preferences.set_default_image_directory(input_dir)
+    #             preferences = {cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY:
+    #                            cellprofiler.preferences.config_read(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY)}
+    #
+    #             rep = cellprofiler.analysis.Reply(
+    #                 pipeline_blob = numpy.array(data),
+    #                 preferences = preferences)
+    #             req.reply(rep)
+    #             #
+    #             # The worker asks for the initial measurements.
+    #             #
+    #             req = self.awthread.recv(self.work_socket)
+    #             self.assertIsInstance(req, cellprofiler.analysis.InitialMeasurementsRequest)
+    #             self.assertEqual(req.analysis_id, self.analysis_id)
+    #             m = get_measurements_for_good_pipeline()
+    #             pipeline = cellprofiler.pipeline.Pipeline()
+    #             pipeline.loadtxt(cStringIO.StringIO(data))
+    #             pipeline.write_pipeline_measurement(m)
+    #
+    #             try:
+    #                 req.reply(cellprofiler.analysis.Reply(buf = m.file_contents()))
+    #             finally:
+    #                 m.close()
+    #             #
+    #             # Next, the worker asks for the shared dictionary
+    #             #
+    #             req = self.awthread.recv(self.work_socket)
+    #             self.assertIsInstance(req, cellprofiler.analysis.SharedDictionaryRequest)
+    #             shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,7)]
+    #             rep = cellprofiler.analysis.SharedDictionaryReply(
+    #                 dictionaries = shared_dictionaries)
+    #             req.reply(rep)
+    #             #
+    #             # MeasureImageIntensity follows FlagImage and it is poised to ask
+    #             # for a display. So if we get that, we know the module has been run
+    #             # and we fail the test.
+    #             #
+    #             req = self.awthread.recv(self.work_socket)
+    #             self.assertFalse(isinstance(req, cellprofiler.analysis.DisplayRequest))
+    #             self.assertFalse(isinstance(req, cellprofiler.analysis.ExceptionReport))
+    #
 
 GOOD_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
-DateRevision:20120712182756
+DateRevision:300
+GitHash:
 ModuleCount:7
 HasImagePlaneDetails:False
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     :
-    Filter based on rules:No
-    Filter:or (file does contain "")
+    Filter images?:No filtering
+    Select the rule criteria:or (file does contain "")
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Extract metadata?:No
+    Metadata data type:Text
+    Metadata types:{}
     Extraction method count:1
-    Extraction method:Automatic
-    Source:From file name
+    Metadata extraction method:Extract from image file headers
+    Metadata source:File name
     Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
     Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-    Filter images:All images
-    :or (file does contain "")
-    Metadata file location\x3A:
+    Extract metadata from:All images
+    Select the filtering criteria:or (file does contain "")
+    Metadata file location:
     Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
 
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-    Assignment method:Assign all images
-    Load as:Grayscale image
-    Image name:DNA
-    :\x5B\x5D
-    Assign channels by:Order
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Assign a name to:All images
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:\x5B\x5D
+    Image set matching method:Order
+    Set intensity range from:Manual
     Assignments count:1
-    Match this rule:or (file does contain "")
-    Image name:DNA
-    Objects name:Cell
-    Load as:Grayscale image
+    Single images count:0
+    Maximum intensity:255.0
+    Volumetric:No
+    x:1.0
+    y:1.0
+    z:1.0
+    Select the rule criteria:or (file does contain "")
+    Name to assign these images:DNA
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Maximum intensity:255.0
 
-Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Do you want to group your images?:No
     grouping metadata count:1
-    Image name:DNA
     Metadata category:None
 
-FlipAndRotate:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+FlipAndRotate:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
     Name the output image:DNACopy
     Select method to flip image:Do not flip
@@ -921,43 +934,41 @@ FlipAndRotate:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|s
     Select how the specified points should be aligned:horizontally
     Enter angle of rotation:0
 
-IdentifyPrimaryObjects:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:9|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+IdentifyPrimaryObjects:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:13|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
     Name the primary objects to be identified:Nuclei
     Typical diameter of objects, in pixel units (Min,Max):10,40
     Discard objects outside the diameter range?:Yes
-    Try to merge too small objects with nearby larger objects?:No
     Discard objects touching the border of the image?:Yes
-    Select the thresholding method:Otsu Global
-    Threshold correction factor:1
-    Lower and upper bounds on threshold:0.000000,1.000000
-    Approximate fraction of image covered by objects?:0.01
     Method to distinguish clumped objects:Intensity
     Method to draw dividing lines between clumped objects:Intensity
     Size of smoothing filter:10
-    Suppress local maxima that are closer than this minimum allowed distance:7
+    Suppress local maxima that are closer than this minimum allowed distance:7.0
     Speed up by using lower-resolution image to find local maxima?:Yes
-    Name the outline image:PrimaryOutlines
-    Fill holes in identified objects?:Yes
-    Automatically calculate size of smoothing filter?:Yes
+    Fill holes in identified objects?:After both thresholding and declumping
+    Automatically calculate size of smoothing filter for declumping?:Yes
     Automatically calculate minimum allowed distance between local maxima?:Yes
-    Manual threshold:0.0
-    Select binary image:None
-    Retain outlines of the identified objects?:No
-    Automatically calculate the threshold using the Otsu method?:Yes
-    Enter Laplacian of Gaussian threshold:0.5
-    Two-class or three-class thresholding?:Two classes
-    Minimize the weighted variance or the entropy?:Weighted variance
-    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
-    Enter LoG filter diameter:5
     Handling of objects if excessive number of objects identified:Continue
     Maximum number of objects:500
+    Use advanced settings?:No
+    Threshold setting version:3
+    Threshold strategy:Global
+    Thresholding method:MCT
+    Threshold smoothing scale:1.3488
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold:0.0,1.0
+    Manual threshold:0.0
     Select the measurement to threshold with:None
-    Method to calculate adaptive window size:Image size
-    Size of adaptive window:10
+    Two-class or three-class thresholding?:Two classes
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Size of adaptive window:50
+    Lower outlier fraction:0.05
+    Upper outlier fraction:0.05
+    Averaging method:Mean
+    Variance method:Standard deviation
+    # of deviations:2.0
 
-MeasureObjectSizeShape:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+MeasureObjectSizeShape:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select objects to measure:Nuclei
     Calculate the Zernike features?:Yes
 """

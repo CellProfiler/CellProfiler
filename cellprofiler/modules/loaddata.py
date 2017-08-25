@@ -12,6 +12,7 @@ with the images to be processed, e.g., sample names, plate names, well
 identifiers, or even a list of image filenames to be processed in the
 analysis run.
 
+
 *Disclaimer:* Please note that the Input modues (i.e., **Images**,
 **Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
 module. However, old pipelines loaded into CellProfiler that contain
@@ -104,10 +105,8 @@ allows for special functionality for some downstream modules:
    if the same data is associated with several images (for example,
    multiple images obtained from a single well).
 
-Example CSV file:
-'''''''''''''''''
-
-| ````
+Example CSV file
+^^^^^^^^^^^^^^^^
 
 +--------------------------+--------------------------+--------------------+-----------------------+
 | Image\_FileName\_FITC,   | Image\_PathName\_FITC,   | Metadata\_Plate,   | Titration\_NaCl\_uM   |
@@ -128,7 +127,7 @@ that use numeric metadata, such as **CalculateStatistics**; “Titration”
 will be the category and “NaCl\_uM” will be the measurement.
 
 Using metadata in LoadData
-''''''''''''''''''''''''''
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you would like to use the metadata-specific settings, please see
 *Help > General help > Using metadata in CellProfiler* for more details
@@ -172,7 +171,7 @@ particular) for a LIMS environment, please see our `wiki`_ on the
 subject.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image,
    if image loading was requested by the user.

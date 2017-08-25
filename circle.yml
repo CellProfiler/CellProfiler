@@ -10,7 +10,7 @@ dependencies:
     - brew update
     - brew install awscli mysql upx wxpython
     - pip install --upgrade pip
-    - pip install --upggrade wheel
+    - pip install --upgrade wheel
     - pip install --upgrade cython
     - pip install --upgrade numpy
     - pip install --upgrade scipy

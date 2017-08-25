@@ -9,9 +9,8 @@ Welcome to CellProfiler's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
+
 .. automodule:: cellprofiler.gui.help
-   :members: 
 .. automodule:: cellprofiler.modules.align
 .. automodule:: cellprofiler.modules.applythreshold
 .. automodule:: cellprofiler.modules.blobdetection

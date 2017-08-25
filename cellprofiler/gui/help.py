@@ -2774,6 +2774,171 @@ contributes to the summed image. """
 #
 #########################################################
 
+__doc__ = """
+Why Use CellProfiler?
+=====================
+{WHEN_CAN_I_USE_CELLPROFILER_HELP}
+
+Navigating The Menu Bar
+=======================
+Using the File Menu
+-------------------
+{MENU_BAR_FILE_HELP}
+
+Using the Edit Menu
+-------------------
+{MENU_BAR_EDIT_HELP}
+
+Using the Test Menu
+-------------------
+{TEST_MODE_HELP}
+
+Using the Window Menu
+---------------------
+{MENU_BAR_WINDOW_HELP}
+
+Using the Parameter Sampling Menu
+---------------------------------
+{PARAMETER_SAMPLING_MENU_HELP}
+
+Using the Data Tools Menu
+-------------------------
+{MENU_BAR_DATATOOLS_HELP}
+
+Using Module Display Windows
+============================
+Using The Display Window Menu Bar
+---------------------------------
+{MODULE_DISPLAY_MENU_BAR_HELP}
+
+Using The Interactive Navigation Toolbar
+----------------------------------------
+{MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP}
+
+How To Use The Image Tools
+--------------------------
+{MODULE_DISPLAY_IMAGE_TOOLS_HELP}
+
+{CREATING_A_PROJECT_CAPTION}
+============================
+Introduction to Projects
+------------------------
+{INTRODUCTION_TO_PROJECTS_HELP}
+
+Selecting Images for Input
+--------------------------
+{SELECTING_IMAGES_HELP}
+
+Configuring Images for Analysis
+-------------------------------
+{CONFIGURE_IMAGES_HELP}
+
+Loading Image Stacks and Movies
+-------------------------------
+{LOADING_IMAGE_SEQUENCES_HELP}
+
+How To Build A Pipeline
+=======================
+{BUILDING_A_PIPELINE_HELP}
+
+Testing Your Pipeline
+=====================
+{TEST_MODE_HELP}
+
+Running Your Pipeline
+=====================
+{RUNNING_YOUR_PIPELINE_HELP}
+
+Using Your Output
+=================
+How Measurements are Named
+--------------------------
+{MEASUREMENT_NOMENCLATURE_HELP}
+
+Using Spreadsheets and Databases
+--------------------------------
+{SPREADSHEETS_DATABASE_HELP}
+
+Using the Output File
+---------------------
+{USING_THE_OUTPUT_FILE_HELP}
+
+Troubleshooting Memory and Speed Issues
+=======================================
+{MEMORY_AND_SPEED_HELP}
+
+Batch Processing
+================
+{BATCHPROCESSING_HELP}
+
+Legacy Modules and Features
+===========================
+Load Modules
+------------
+{LEGACY_LOAD_MODULES_HELP}
+
+Setting the Default Input Folder
+--------------------------------
+{DEFAULT_IMAGE_FOLDER_HELP}
+
+Setting the Default Output Folder
+---------------------------------
+{DEFAULT_OUTPUT_FOLDER_HELP}
+
+Setting the Output Filename
+---------------------------
+{USING_THE_OUTPUT_FILE_HELP}
+
+Other Features
+==============
+Running Multiple Pipelines
+--------------------------
+{RUN_MULTIPLE_PIPELINES_HELP}
+
+Configuring Logging
+-------------------
+{CONFIGURING_LOGGING_HELP}
+
+Accessing Images From OMERO
+---------------------------
+{ACCESSING_OMERO_IMAGES}
+
+Plate Viewer
+------------
+{PLATEVIEWER_HELP}
+""".format(**{
+    "ACCESSING_OMERO_IMAGES": ACCESSING_OMERO_IMAGES,
+    "BATCHPROCESSING_HELP": BATCHPROCESSING_HELP,
+    "BUILDING_A_PIPELINE_HELP": BUILDING_A_PIPELINE_HELP,
+    "CONFIGURE_IMAGES_HELP": CONFIGURE_IMAGES_HELP,
+    "CONFIGURING_LOGGING_HELP": CONFIGURING_LOGGING_HELP,
+    "CREATING_A_PROJECT_CAPTION": CREATING_A_PROJECT_CAPTION,
+    "DEFAULT_IMAGE_FOLDER_HELP": DEFAULT_IMAGE_FOLDER_HELP,
+    "DEFAULT_OUTPUT_FOLDER_HELP": DEFAULT_OUTPUT_FOLDER_HELP,
+    "INTRODUCTION_TO_PROJECTS_HELP": INTRODUCTION_TO_PROJECTS_HELP,
+    "LEGACY_LOAD_MODULES_HELP": LEGACY_LOAD_MODULES_HELP,
+    "LOADING_IMAGE_SEQUENCES_HELP": LOADING_IMAGE_SEQUENCES_HELP,
+    "MEASUREMENT_NOMENCLATURE_HELP": MEASUREMENT_NOMENCLATURE_HELP,
+    "MEMORY_AND_SPEED_HELP": MEMORY_AND_SPEED_HELP,
+    "MENU_BAR_DATATOOLS_HELP": MENU_BAR_DATATOOLS_HELP,
+    "MENU_BAR_EDIT_HELP": MENU_BAR_EDIT_HELP,
+    "MENU_BAR_FILE_HELP": MENU_BAR_FILE_HELP,
+    "MENU_BAR_WINDOW_HELP": MENU_BAR_WINDOW_HELP,
+    "MODULE_DISPLAY_IMAGE_TOOLS_HELP": MODULE_DISPLAY_IMAGE_TOOLS_HELP,
+    "MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP": MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP,
+    "MODULE_DISPLAY_MENU_BAR_HELP": MODULE_DISPLAY_MENU_BAR_HELP,
+    "PARAMETER_SAMPLING_MENU_HELP": PARAMETER_SAMPLING_MENU_HELP,
+    "PLATEVIEWER_HELP": PLATEVIEWER_HELP,
+    "RUN_MULTIPLE_PIPELINES_HELP": RUN_MULTIPLE_PIPELINES_HELP,
+    "RUNNING_YOUR_PIPELINE_HELP": RUNNING_YOUR_PIPELINE_HELP,
+    "SELECTING_IMAGES_HELP": SELECTING_IMAGES_HELP,
+    "SPREADSHEETS_DATABASE_HELP": SPREADSHEETS_DATABASE_HELP,
+    "TEST_MODE_HELP": TEST_MODE_HELP,
+    "USING_THE_OUTPUT_FILE_HELP": USING_THE_OUTPUT_FILE_HELP,
+    "WHEN_CAN_I_USE_CELLPROFILER_HELP": WHEN_CAN_I_USE_CELLPROFILER_HELP
+})
+
+
 '''The help menu for CP's main window'''
 MAIN_HELP = (
     ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),

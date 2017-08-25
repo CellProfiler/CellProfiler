@@ -717,7 +717,7 @@ class ExportToDatabase(cpm.Module):
 
             <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be
             run on your Per-Image and Per-Object tables to create the desired per-well table.
-            <p><i>Note:</i> this option is only available if you have extracted plate and well metadata
+            <p>Note that this option is only available if you have extracted plate and well metadata
             from the filename using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s''' % globals())
@@ -733,7 +733,7 @@ class ExportToDatabase(cpm.Module):
 
             <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your
             Per-Image and Per-Object tables to create the desired per-well table.
-            <p><i>Note:</i> this option is only
+            <p>Note that this option is only
             available if you have extracted plate and well metadata from the filename using
             the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
@@ -749,7 +749,7 @@ class ExportToDatabase(cpm.Module):
             three aggregate measurements will create three per-well tables, one for each of the measurements.
             <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your
             Per-Image and Per-Object tables to create the desired per-well table.
-            <p><i>Note:</i> this option is only
+            <p>Note that this option is only
             available if you have extracted plate and well metadata from the filename
             using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
@@ -2568,7 +2568,7 @@ CREATE TABLE %s (
         Returns the relationship_type_id that joins to the relationship
         type record in the relationship types table.
 
-        NOTE: this should not be called for CSV databases.
+        Note that this should not be called for CSV databases.
         '''
         assert self.db_type != DB_MYSQL_CSV
 
@@ -3596,7 +3596,7 @@ cell_y_loc    = %(cell_y_loc)s
 # path and filename column to the per-image table of your database and then
 # adding those column names here.
 #
-# NOTE: These lists must have equal length!
+# Note that these lists must have equal length!
 image_path_cols = %(image_path_cols)s
 image_file_cols = %(image_file_cols)s
 

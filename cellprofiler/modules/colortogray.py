@@ -12,7 +12,7 @@ of individual grayscale images.
   each channel can be extracted into a separate grayscale image
   (*Split*). If you use *Combine*, the relative weights will adjust the
   contribution of the colors relative to each other.
-| *Note:*\ All **Identify** modules require grayscale images.
+| Note that all **Identify** modules require grayscale images.
 
 See also **GrayToColor**.
 """

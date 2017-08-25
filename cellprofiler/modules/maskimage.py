@@ -88,7 +88,7 @@ class MaskImage(cpm.Module):
     def settings(self):
         """Return the settings in the order that they will be saved or loaded
 
-        Note: the settings are also the visible settings in this case, so
+        Note that the settings are also the visible settings in this case, so
               they also control the display order. Implement visible_settings
               for a different display order.
         """

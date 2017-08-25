@@ -104,7 +104,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
             as the minimum intensity for rescaling</li>
             <li><i>%(LOW_ALL_IMAGES)s</i>: use the lowest intensity from all images
             in the image group or the experiment if grouping is not being used.
-            <b>Note:</b> Choosing this option may have undesirable results for
+            Note that choosing this option may have undesirable results for
             a large ungrouped experiment split into a number of batches. Each batch
             will open all images from the chosen channel at the start of the run.
             This sort of synchronized action may have a severe impact on your
@@ -123,7 +123,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
             as the maximum intensity for rescaling</li>
             <li><i>%(HIGH_ALL_IMAGES)s</i>: Use the highest intensity from all images
             in the image group or the experiment if grouping is not being used.
-            <b>Note:</b> Choosing this option may have undesirable results for
+            Note that choosing this option may have undesirable results for
             a large ungrouped experiment split into a number of batches. Each batch
             will open all images from the chosen channel at the start of the run.
             This sort of synchronized action may have a severe impact on your

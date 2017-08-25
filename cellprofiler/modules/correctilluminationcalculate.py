@@ -106,7 +106,7 @@ class CorrectIlluminationCalculate(cpm.Module):
              small set of images with few objects, there will be regions in the
              average image that contain no objects and smoothing by median filtering
              is unlikely to work well.
-             <i>Note:</i> it does not make sense to choose (<i>%(IC_REGULAR)s + %(SM_NONE)s + %(EA_EACH)s</i>)
+             Note that it does not make sense to choose (<i>%(IC_REGULAR)s + %(SM_NONE)s + %(EA_EACH)s</i>)
              because the illumination function would be identical to the original
              image and applying it will yield a blank image. You either need to smooth
              each image, or you need to use <i>%(EA_ALL)s</i> images.</li>
@@ -117,7 +117,7 @@ class CorrectIlluminationCalculate(cpm.Module):
              intensities in blocks across the image (or group of images if you are in
              <i>%(EA_ALL)s</i> mode) and is most often applied by subtraction using the
              <b>CorrectIlluminationApply</b> module.
-             <i>Note:</i> if you will be using the <i>%(DOS_SUBTRACT)s</i> option in the
+             Note that if you will be using the <i>%(DOS_SUBTRACT)s</i> option in the
              <b>CorrectIlluminationApply</b> module, you almost certainly do not want to
              rescale the illumination function. </li>
              </ul>

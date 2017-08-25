@@ -66,14 +66,14 @@ class ColorToGray(cpm.Module):
                 represent pixel measurements made by different detectors, filters or
                 lighting conditions. This setting provides three options to choose from:
 
-                -  *%(CH\_RGB)s:* The RGB (red,green,blue) color space is the typical
+                -  *%(CH_RGB)s:* The RGB (red,green,blue) color space is the typical
                    model in which color images are stored. Choosing this option will
                    split the image into any of the red, green and blue component images.
-                -  *%(CH\_HSV)s:*\ The HSV (hue, saturation, value) color space is based
+                -  *%(CH_HSV)s:*\ The HSV (hue, saturation, value) color space is based
                    on more intuitive color characteristics as tint, shade and tone.
                    Choosing this option will split the image into any of the hue,
                    saturation, and value component images.
-                -  *%(CH\_CHANNELS)s:*\ This is a more complex model for images which
+                -  *%(CH_CHANNELS)s:*\ This is a more complex model for images which
                    involve more than three channels.""" % globals())
 
         # The following settings are used for the combine option

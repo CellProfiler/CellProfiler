@@ -121,13 +121,13 @@ EXAMPLE_GFP_PIC = "gfp.png"
 
 BATCH_PROCESSING_HELP_REF = """Help > Batch Processing"""
 TEST_MODE_HELP_REF = """Help > Testing Your Pipeline"""
-IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools""" 
-DATA_TOOL_HELP_REF = """Help > Data Tool Help""" 
-PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects""" 
-USING_YOUR_OUTPUT_REF = """Help > Using Your Output""" 
-MEASUREMENT_NAMING_HELP = """Help > Using Your Output >How Measurements are Named""" 
-USING_METADATA_HELP_REF = """Please see the **Metadata** module for more details on metadata collection and usage""" 
-LOADING_IMAGE_SEQ_HELP_REF = """Help > Creating a Project > Loading Image Stacks and Movies""" 
+IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools"""
+DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
+PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects"""
+USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
+MEASUREMENT_NAMING_HELP = """Help > Using Your Output >How Measurements are Named"""
+USING_METADATA_HELP_REF = """Please see the **Metadata** module for more details on metadata collection and usage"""
+LOADING_IMAGE_SEQ_HELP_REF = """Help > Creating a Project > Loading Image Stacks and Movies"""
 USING_METADATA_TAGS_REF = """ You can insert a previously defined metadata tag by either using:
 
 -  The insert key
@@ -142,11 +142,11 @@ either:
 -  Use the up and down arrows to cycle through possible values.
 -  Right-click on the tag to display and select the available values.
 
-| """ 
+| """
 
 USING_METADATA_GROUPING_HELP_REF = """Please see the   **Groups** module for more details on the proper use of metadata for
-  grouping""" 
-  
+  grouping"""
+
 from cellprofiler.setting import YES, NO
 
 RETAINING_OUTLINES_HELP = """Select *%(YES)s* to retain the outlines
@@ -154,15 +154,15 @@ RETAINING_OUTLINES_HELP = """Select *%(YES)s* to retain the outlines
   common use is for quality control purposes by overlaying them on your
   image of choice using the **OverlayOutlines** module and then saving
   the overlay image with the **SaveImages** module.""" % locals()
-  
+
 NAMING_OUTLINES_HELP = """ *(Used only if the outline image is to be
   retained for later use in the pipeline)*
 | Enter a name for the outlines of the identified objects. The outlined
   image can be selected in downstream modules by selecting them from any
   drop-down image list."""
-  
+
 ################################################## # # Help for the main window # ##################################################
-  
+
 LEGACY_LOAD_MODULES_HELP = """
 
 Historically, two modules served the same functionality as the current
@@ -298,7 +298,9 @@ To use image grouping in **LoadImages**, please note the following:
    "Plate" metadata tag in the regular expression for the other channels
    that you want grouped together.
 
-""" % globals() 
+.. |image0| image:: memory:%(MODULE_ADD_BUTTON)s
+
+""" % globals()
 
 DEFAULT_IMAGE_FOLDER_HELP = """
 
@@ -331,7 +333,9 @@ want to specify a folder that does not yet exist, type the desired name
 and click on the *New folder* button |image2|. The folder will be
 created according to the pathname you have typed.
 
-""" % globals() 
+.. |image1| image:: memory:%(BROWSE_BUTTON)s
+.. |image2| image:: memory:%(CREATE_BUTTON)s
+""" % globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 
@@ -362,7 +366,7 @@ exist, type the desired name and click on the *New folder* icon to the
 right of the *Browse folder* icon. The folder will be created according
 to the pathname you have typed.
 
-""" 
+"""
 
 USING_THE_OUTPUT_FILE_HELP = """
 
@@ -413,10 +417,12 @@ notice that even though the analysis completes, CellProfiler continues
 to use an inordinate amount of your CPU and RAM. This is because the
 output file is written after the analysis is completed and can take a
 very long time for a lot of measurements. If you do not need this file
-and/or notice this behavior, select "*%(DO\_NOT\_WRITE\_MEASUREMENTS)s*"
+and/or notice this behavior, select "*{DO_NOT_WRITE_MEASUREMENTS}*"
 from the "Measurements file format" drop-down box.
 
-""" % globals() 
+""".format(**{
+    "DO_NOT_WRITE_MEASUREMENTS": DO_NOT_WRITE_MEASUREMENTS
+})
 
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """
 
@@ -506,7 +512,7 @@ For a full list of references, visit our
    *BMC Bioinformatics* 9(1):482
    (`link <http://dx.doi.org/10.1186/1471-2105-9-482>`__)
 
-""" 
+"""
 
 BUILDING_A_PIPELINE_HELP = """
 
@@ -535,7 +541,7 @@ Loading an existing pipeline
    can save the project as a whole using *File > Save Project* or *Save
    Project As...* which also saves the file list.
 #. To learn how to use a cluster of computers to process large batches
-   of images, see *%(BATCH\_PROCESSING\_HELP\_REF)s*.
+   of images, see *{BATCH_PROCESSING_HELP_REF}*.
 
 Building a pipeline from scratch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -621,7 +627,7 @@ panel* (located on the left-hand side of the CellProfiler window).
    | You can optimize your pipeline by selecting the *Test* option from
      the main menu. Test mode allows you to run the pipeline on a
      selected image, preview the results, and adjust the module settings
-     on the fly. See *%(TEST\_MODE\_HELP\_REF)s* for more details.
+     on the fly. See *{TEST_MODE_HELP_REF}* for more details.
 
 #. Save your project (which includes your pipeline) via *File > Save
    Project*.
@@ -633,9 +639,24 @@ request it, using a **SaveImages** module.
 
 *Saving data in your pipeline:* You can include an **Export** module to
 automatically export data in a format you prefer. See
-*%(USING\_YOUR\_OUTPUT\_REF)s* for more details.
+*{USING_YOUR_OUTPUT_REF}* for more details.
 
-""" % globals() 
+.. |image3| image:: memory:%(MODULE_HELP_BUTTON)s
+.. |image4| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image5| image:: memory:%(MODULE_MOVEUP_BUTTON)s
+.. |image6| image:: memory:%(MODULE_MOVEDOWN_BUTTON)s
+.. |image7| image:: memory:%(MODULE_REMOVE_BUTTON)s
+.. |image8| image:: memory:%(SETTINGS_ERROR_ICON)s
+.. |image9| image:: memory:%(SETTINGS_WARNING_ICON)s
+.. |image10| image:: memory:%(SETTINGS_OK_ICON)s
+.. |image11| image:: memory:%(RUNSTATUS_PAUSE_BUTTON)s
+.. |image12| image:: memory:%(RUNSTATUS_STOP_BUTTON)s
+.. |image13| image:: memory:%(RUNSTATUS_SAVE_BUTTON)s
+""".format(**{
+    "BATCH_PROCESSING_HELP_REF": BATCH_PROCESSING_HELP_REF,
+    "TEST_MODE_HELP_REF": TEST_MODE_HELP_REF,
+    "USING_YOUR_OUTPUT_REF": USING_YOUR_OUTPUT_REF
+})
 
 REGEXP_HELP_REF = """ Patterns are specified using
 combinations of metacharacters and literal characters. There are a few
@@ -648,7 +669,7 @@ follow:
    `here <http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/>`__
 -  `Pythex <http://pythex.org/>`__ provides quick way to test your
    regular expressions. Here is an
-   `example <http://pythex.org/?regex=Channel%5B1-2%5D-%5B0-9%5D%7B2%7D-(%3FP%3CWellRow%3E%5BA-H%5D)-(%3FP%3CWellColumn%3E%5B0-9%5D%7B2%7D)%5C.tif&test_string=Channel1-01-A-01.tif&ignorecase=0&multiline=0&dotall=0&verbose=0>`__
+   `example <http://pythex.org/?regex=Channel%5B1-2%5D-%5B0-9%5D(2)-(%3FP%3CWellRow%3E%5BA-H%5D)-(%3FP%3CWellColumn%3E%5B0-9%5D(2))%5C.tif&test_string=Channel1-01-A-01.tif&ignorecase=0&multiline=0&dotall=0&verbose=0>`__
    to capture information from a common microscope nomenclature.
 
 | The following metacharacters match exactly one character from its
@@ -729,7 +750,7 @@ to match a '.' specifically, use '\\.' in your pattern. Examples:
 -  ``^[0-9]*$`` matches either a blank string or a natural number.
 -  ``^-[0-9]+$|^\+?[0-9]+$`` matches any integer.
 
-""" 
+"""
 
 SPREADSHEETS_DATABASE_HELP = """
 
@@ -762,7 +783,7 @@ can also be used, such as
 Docs <https://docs.google.com>`__. For databases, a popular freeware
 access tool is `SQLyog <https://www.webyog.com/>`__.
 
-""" 
+"""
 
 MEMORY_AND_SPEED_HELP = """
 
@@ -773,7 +794,7 @@ solutions on our forum
 on this issue. We will continue to add more tips and tricks to this page
 over time.
 
-""" % globals() 
+""" % globals()
 
 TEST_MODE_HELP = """
 
@@ -845,9 +866,16 @@ a group automatically. Selecting *Choose Image Group* will allow you to
 choose the movie file, and *Choose Image Set* will let you choose the
 individual movie frame from that file.
 
-%(USING\_METADATA\_GROUPING\_HELP\_REF)s
+{USING_METADATA_GROUPING_HELP_REF}
 
-""" % globals() 
+.. |image14| image:: memory:%(TESTMODE_GO_ICON)s
+.. |image15| image:: memory:%(TESTMODE_GO_ICON)s
+.. |image16| image:: memory:%(TESTMODE_PAUSE_ICON)s
+""".format(**{
+    "USING_METADATA_GROUPING_HELP_REF": USING_METADATA_GROUPING_HELP_REF
+})
+
+
 RUNNING_YOUR_PIPELINE_HELP = """ Once you have tested
 your pipeline using Test mode and you are satisfied with the module
 settings, you are ready to run the pipeline on your entire set of
@@ -872,10 +900,13 @@ advantage of them by starting multiple copies of itself to process the
 image sets in parallel. You can set the number of *workers* (i.e.,copies
 of CellProfiler activated) under *File > Preferences...*
 
-""" % globals() 
+.. |image17| image:: memory:%(ANALYZE_IMAGE_BUTTON)s
+.. |image18| image:: memory:%(PAUSE_ANALYSIS_BUTTON)s
+.. |image19| image:: memory:%(STOP_ANALYSIS_BUTTON)s
+""" % globals()
 
-# The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpretcorrectly 
 
+# The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpretcorrectly
 BATCHPROCESSING_HELP = """
 
 CellProfiler is designed to analyze images in a high-throughput manner.
@@ -913,7 +944,7 @@ cluster.
    If you cannot create folders and set read/write permissions to these
    folders (or don't know how), ask your Information Technology (IT)
    department for help.
-#. Press the "%(VIEW\_OUTPUT\_SETTINGS\_BUTTON\_NAME)s" button. In the
+#. Press the "{VIEW_OUTPUT_SETTINGS_BUTTON_NAME}" button. In the
    panel that appears, set the Default Input and Default Output Folders
    to the *images* and *output* folders created above, respectively. The
    Default Input Folder setting will only appear if a legacy pipeline is
@@ -962,7 +993,7 @@ cluster.
      navigate to the directory where you have installed CellProfiler on
      the cluster.
    | A single batch can be submitted with the following command:
-   | ``./python CellProfiler.py -p <Default_Output_Folder_path>/Batch_data.h5 -c -r -b -f         <first_image_set_number> -l <last_image_set_number>``
+   | ``./python CellProfiler.py -p <Default_Output_Folder_path>/Batch_data.h5 -c -r -b -f <first_image_set_number> -l <last_image_set_number>``
      This command submits the batch file to CellProfiler and specifies
      that CellProfiler run in a batch mode without its user interface to
      process the pipeline. This run can be modified by using additional
@@ -1017,8 +1048,9 @@ For additional help on batch processing, refer to our
 system, our `wiki <http://goo.gl/WG9doZ>`__ on adapting CellProfiler to
 a LIMS environment, or post your questions on the CellProfiler
 `CPCluster forum <http://cellprofiler.org/forum/viewforum.php?f=18>`__.
-
-| """ % globals() 
+""".format(**{
+    "VIEW_OUTPUT_SETTINGS_BUTTON_NAME": VIEW_OUTPUT_SETTINGS_BUTTON_NAME
+})
 
 RUN_MULTIPLE_PIPELINES_HELP = """
 | The **Run multiple pipelines** dialog lets you select several
@@ -1050,10 +1082,10 @@ RUN_MULTIPLE_PIPELINES_HELP = """
    displayed. You can click the remove button to remove a pipeline from
    the list
 
-| 
+|
 | CellProfiler will run all of the pipelines on the list when you hit
-  the "OK" button.""" 
-  
+  the "OK" button."""
+
 CONFIGURING_LOGGING_HELP = """CellProfiler
   prints diagnostic messages to the console by default. You can change
   this behavior for most messages by configuring logging. The simplest
@@ -1071,7 +1103,7 @@ CONFIGURING_LOGGING_HELP = """CellProfiler
 -  **CRITICAL:** Messages indicating that CellProfiler should be
    restarted or is incapable of running.
 
-| 
+|
 | You can tailor CellProfiler's logging with much more control using a
   logging configuration file. You specify the file name in place of the
   log level on the command line, like this:
@@ -1126,8 +1158,8 @@ CONFIGURING_LOGGING_HELP = """CellProfiler
   a formatter that prints the logger name ("%(name)s").
 | The format of the file is described in greater detail
   `here <http://docs.python.org/howto/logging.html#configuring-logging>`__.
-  """ 
-  
+  """
+
 ACCESSING_OMERO_IMAGES = """ CellProfiler has first-class
   support for loading images from
   `OMERO <http://www.openmicroscopy.org/site/products/omero>`__. The
@@ -1216,7 +1248,9 @@ here is a .CSV that loads a DNA and GFP channel:
     omero:iid=58135,omero:iid=58039
     omero:iid=58136,omero:iid=58040
 
-""" % globals() 
+.. |image20| image:: memory:%(OMERO_IMAGEID_PIC)s
+.. |image21| image:: memory:%(OMERO_LOGIN_PIC)s
+""" % globals()
 
 MEASUREMENT_NOMENCLATURE_HELP = """ In CellProfiler,
 measurements are exported as well as stored internally using the
@@ -1292,7 +1326,7 @@ As an example, consider a measurement specified as
 
 See also the *Available measurements* heading under the main help for
 many of the modules, as well as **ExportToSpreadsheet** and
-**ExportToDatabase** modules. """ 
+**ExportToDatabase** modules. """
 
 MENU_BAR_FILE_HELP = """ The *File*
 menu provides options for loading and saving your pipelines and
@@ -1343,7 +1377,7 @@ performing an analysis run.
 -  **Exit:** End the current CellProfiler session. You will be given the
    option of saving your current pipeline if you have not done so.
 
-""" 
+"""
 
 MENU_BAR_EDIT_HELP = """ The *Edit* menu provides options for
 modifying modules in your current pipeline.
@@ -1374,7 +1408,13 @@ modifying modules in your current pipeline.
 
 You can select multiple modules at once for moving, deletion and
 duplication by selecting the first module and using Shift-click on the
-last module to select all the modules in between. """ % globals()
+last module to select all the modules in between.
+
+.. |image22| image:: memory:%(MODULE_MOVEUP_BUTTON)s
+.. |image23| image:: memory:%(MODULE_MOVEDOWN_BUTTON)s
+.. |image24| image:: memory:%(MODULE_REMOVE_BUTTON)s
+.. |image25| image:: memory:%(MODULE_ADD_BUTTON)s
+""" % globals()
 
 MENU_BAR_WINDOW_HELP = """ The *Windows* menu provides options for
 showing and hiding the module display windows.
@@ -1391,7 +1431,11 @@ showing and hiding the module display windows.
 
 If there are any open windows, the window titles are listed underneath
 these options. Select any of these window titles to bring that window to
-the front.""" % globals() 
+the front.
+
+.. |image26| image:: memory:%(DISPLAYMODE_SHOW_ICON)s
+.. |image27| image:: memory:%(DISPLAYMODE_HIDE_ICON)s
+""" % globals()
 
 PARAMETER_SAMPLING_MENU_HELP = """ The
 *Sampling* menu is an interface for Paramorama, a plugin for an
@@ -1419,7 +1463,7 @@ More information on how to use the plugin can be found
    Transactions on Visualization and Computer Graphics* 17(12),
    2402-2411.
 
-""" #consider deprecating 
+""" #consider deprecating
 
 MENU_BAR_DATATOOLS_HELP = """ The *Data
 Tools* menu provides tools to allow you to plot, view, export or perform
@@ -1437,12 +1481,15 @@ provide the location of the output file. Once specified, the user is
 then prompted to enter the desired settings. The settings behave
 identically as those from the corresponding module.
 
-Help for each *Data Tool* is available under *%(DATA\_TOOL\_HELP\_REF)s*
+Help for each *Data Tool* is available under *{DATA_TOOL_HELP_REF}*
 or the corresponding module help.
+""".format(**{
+    "DATA_TOOL_HELP_REF": DATA_TOOL_HELP_REF
+})
 
-""" % globals() 
-#################################################### # #Help for the module figure windows##################################################### 
-'''The help menu for the figure window''' 
+
+#################################################### # #Help for the module figure windows#####################################################
+'''The help menu for the figure window'''
 
 MODULE_DISPLAY_MENU_BAR_HELP = """ From the
 menu bar of each module display window, you have the following options:
@@ -1469,9 +1516,10 @@ menu bar of each module display window, you have the following options:
 -  **Subplots:** If the module display window has multiple subplots
    (such as **IdentifyPrimaryObjects**), the Image Tool options for the
    individual subplots are displayed here. See
-   *%(IMAGE\_TOOLS\_HELP\_REF)s* for more details.
-
-""" % globals() 
+   *{IMAGE_TOOLS_HELP_REF}* for more details.
+""".format(**{
+    "IMAGE_TOOLS_HELP_REF": IMAGE_TOOLS_HELP_REF
+})
 
 MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """ All
 figure windows come with a navigation toolbar, which can be used to
@@ -1513,7 +1561,13 @@ navigate through the data set.
    save the entire contents of the window, not just the individual
    subplot(s) or images.
 
-""" % globals() 
+.. |image28| image:: memory:%(WINDOW_HOME_BUTTON)s
+.. |image29| image:: memory:%(WINDOW_FORWARD_BUTTON)s
+.. |image30| image:: memory:%(WINDOW_BACK_BUTTON)s
+.. |image31| image:: memory:%(WINDOW_PAN_BUTTON)s
+.. |image32| image:: memory:%(WINDOW_ZOOMTORECT_BUTTON)s
+.. |image33| image:: memory:%(WINDOW_SAVE_BUTTON)s
+""" % globals()
 
 INTENSITY_MODE_HELP_LIST = """
 
@@ -1533,7 +1587,7 @@ INTENSITY_MODE_HELP_LIST = """
    (e.g., the majority of the interesting information is located at the
    dim values). Using this option increases the effective contrast.
 
-""" 
+"""
 
 INTERPOLATION_MODE_HELP_LIST = """
 
@@ -1549,7 +1603,7 @@ INTERPOLATION_MODE_HELP_LIST = """
    the most visually-appealing image but is the least faithful to the
    image pixel values.
 
-""" 
+"""
 
 MODULE_DISPLAY_IMAGE_TOOLS_HELP = """ Right-clicking in an image
 displayed in a window will bring up a pop-up menu with the following
@@ -1567,21 +1621,24 @@ options:
    values for all three channels combined, even if one or more channels
    is turned off for viewing.
 -  *Image contrast:* Presents three options for displaying the
-   color/intensity values in the images: %(INTENSITY\_MODE\_HELP\_LIST)s
+   color/intensity values in the images: {INTENSITY_MODE_HELP_LIST}
 -  *Interpolation:* Presents three options for displaying the resolution
    in the images. This is useful for specifying the amount of detail
    that you want to be visible if you zoom in:
-   %(INTERPOLATION\_MODE\_HELP\_LIST)s
+   {INTERPOLATION_MODE_HELP_LIST}
 -  *Save subplot:* Save the clicked subplot as an image file. If there
    is only one p lot in the figure, this option will save that one.
 -  *Channels:* For color images only. You can show any combination of
    the red, green, and blue color channels.
 
-""" % globals() 
+""".format(**{
+    "INTENSITY_MODE_HELP_LIST": INTENSITY_MODE_HELP_LIST,
+    "INTERPOLATION_MODE_HELP_LIST": INTERPOLATION_MODE_HELP_LIST
+})
 
-FIGURE_HELP = ( 
-        ("Using The Display Window Menu Bar",MODULE_DISPLAY_MENU_BAR_HELP), 
-        ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP), 
+FIGURE_HELP = (
+        ("Using The Display Window Menu Bar",MODULE_DISPLAY_MENU_BAR_HELP),
+        ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP),
         ("How To Use The Image Tools", MODULE_DISPLAY_IMAGE_TOOLS_HELP))
 
 WORKSPACE_VIEWER_HELP = """ The workspace viewer is a flexible tool
@@ -1699,7 +1756,7 @@ The interpolation mode used to render images, objects and masks is a
 configuration option that applies to the entire workspace. Interpolation
 controls how the intensities of pixels are blended together. You can set
 the interpolation mode by selecting *Interpolation* from the *Subplots*
-menu. The available modes are: %(INTERPOLATION\_MODE\_HELP\_LIST)s
+menu. The available modes are: {INTERPOLATION_MODE_HELP_LIST}
 
 Images
 ^^^^^^
@@ -1715,7 +1772,7 @@ to adjust color and transparency.
 
 The intensity normalization mode controls how the pixel's intensity
 value is translated into the brightness of a pixel on the screen. The
-modes that are available are: %(INTENSITY\_MODE\_HELP\_LIST)s
+modes that are available are: {INTENSITY_MODE_HELP_LIST}
 
 The *Mode* controls how pixel intensities are mapped to colors in the
 image. You can display each image using the following modes:
@@ -1768,21 +1825,24 @@ objects using one of the following modes:
    color maps. You can change the transparency of the overlay by
    choosing *Alpha* from the objects' menu.
 
-""" % globals() 
+""".format(**{
+    "INTERPOLATION_MODE_HELP_LIST": INTERPOLATION_MODE_HELP_LIST,
+    "INTENSITY_MODE_HELP_LIST": INTENSITY_MODE_HELP_LIST
+})
 
-WV_FIGURE_HELP = tuple(list(FIGURE_HELP) + 
+WV_FIGURE_HELP = tuple(list(FIGURE_HELP) +
                        [( "How To Use The Workspace Viewer", WORKSPACE_VIEWER_HELP)])
 
 ################################################### # # Help for the preferences dialog ####################################################
 
-TITLE_FONT_HELP = """ Sets the font used in titles above plots displayed in module figure windows.""" 
+TITLE_FONT_HELP = """ Sets the font used in titles above plots displayed in module figure windows."""
 
 TABLE_FONT_HELP = """ Sets the font used in tables displayed in module figure windows."""
 
 DEFAULT_COLORMAP_HELP = """ Specifies the color map that sets the
 colors for labels and other elements. See this
 `page <http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps>`__ for
-pictures of available colormaps.""" 
+pictures of available colormaps."""
 
 WINDOW_BACKGROUND_HELP = """ Sets the window background color of the CellProfiler main window."""
 
@@ -1792,7 +1852,7 @@ PLUGINS_DIRECTORY_HELP = """ Chooses the directory that holds
 dynamically-loaded CellProfiler modules. You can write your own module
 and place it in this directory and CellProfiler will make it available
 for your pipeline. You must restart CellProfiler after modifying this
-setting.""" 
+setting."""
 
 IJ_PLUGINS_DIRECTORY_HELP = """ Sets the directory that
 holds ImageJ plugins (for the **RunImageJ** module). You can download or
@@ -1814,13 +1874,13 @@ preference for the preference to take effect.
    2.0 plugins. ImageJ 2.0 can run ImageJ 1.0 plugins, but there may be
    incompatibilities.
 
-""" #consider deprecating 
+""" #consider deprecating
 
 CHECK_FOR_UPDATES_HELP = """ Controls whether CellProfiler looks for updates on startup."""
 
 SHOW_TELEMETRY_HELP = """ Allow limited and anonymous usage statistics
 and exception reports to be sent to the CellProfiler team to help
-improve CellProfiler. """ 
+improve CellProfiler. """
 
 SHOW_STARTUP_BLURB_HELP = """ Controls whether CellProfiler displays an orientation message on startup."""
 
@@ -1841,18 +1901,18 @@ message box or uncheck it to stop display."""
 PRIMARY_OUTLINE_COLOR_HELP = """ Sets the color used for the outline
 of the object of interest in the **IdentifyPrimaryObjects**,
 **IdentifySecondaryObjects** and **IdentifyTertiaryObjects**
-displays.""" 
+displays."""
 
 SECONDARY_OUTLINE_COLOR_HELP = """ Sets the color used
 for objects other than the ones of interest. In
 **IdentifyPrimaryObjects**, these are the objects that are too small or
 too large. In **IdentifySecondaryObjects** and
 **IdentifyTertiaryObjects**, this is the color of the secondary objects'
-outline.""" 
+outline."""
 
 TERTIARY_OUTLINE_COLOR_HELP = """ Sets the color used for
 the objects touching the image border or image mask in
-**IdentifyPrimaryObjects**.""" 
+**IdentifyPrimaryObjects**."""
 
 INTERPOLATION_MODE_HELP = """ Sets the
 way CellProfiler displays image pixels. If you choose *Nearest*,
@@ -1864,7 +1924,7 @@ interpolate the screen pixel value for screen pixels that do not fall
 exactly in the center of the image pixel. The result, for bilinear or
 bicubic interpolation is an image that is more visually appealing and
 easier to interpret, but obscures the true pixel nature of the real
-data. """ 
+data. """
 
 INTENSITY_MODE_HELP = """ Sets the way CellProfiler
 normalizes pixel intensities when displaying. If you choose "raw",
@@ -1876,7 +1936,7 @@ with the maximum brightness and pixels at the minimum intensity as
 black. This can be used to view dim images. If you choose "log",
 CellProfiler will use the full brightness range and will use a log scale
 to scale the intensities. This can be used to view the image background
-in more detail. """ 
+in more detail. """
 
 REPORT_JVM_ERROR_HELP = """ Determines whether
 CellProfiler will display a warning on startup if CellProfiler can't
@@ -1897,7 +1957,7 @@ handle each group. This means that you may have multiple workers
 created, but only a subset of them may actually be active, depending on
 the number of groups you have.
 
-""" 
+"""
 
 TEMP_DIR_HELP = """ Sets the folder that CellProfiler uses when
 storing temporary files. CellProfiler will create a temporary
@@ -1935,48 +1995,48 @@ existing in the Input Modules, not LoadData input files.
    path and a .txt extension.
 -  *Pipeline and file list:* Save both files.
 
-""" 
+"""
 
 BATCHPROFILER_URL_HELP = """ The base URL for BatchProfiler.
 BatchProfiler is a set of CGI scripts for running CellProfiler on a
 GridEngine cluster or compatible. If BatchProfiler is available, the
 CreateBatchFiles module can optionally launch a browser to display the
-appropriate batch configuration page.""" 
+appropriate batch configuration page."""
 
 EACH_PREFERENCE_HELP = (
-        ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP), 
-        ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP), 
-        ("Title font", TITLE_FONT_HELP), 
-        ("Table font", TABLE_FONT_HELP), 
-        ("Default colormap", DEFAULT_COLORMAP_HELP), 
-        ("Window background",WINDOW_BACKGROUND_HELP), 
-        ("Error color", ERROR_COLOR_HELP), 
-        ("Primary outline color", PRIMARY_OUTLINE_COLOR_HELP), 
-        ("Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP), 
-        ("Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP), 
-        ("Interpolation mode", INTERPOLATION_MODE_HELP), 
+        ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
+        ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+        ("Title font", TITLE_FONT_HELP),
+        ("Table font", TABLE_FONT_HELP),
+        ("Default colormap", DEFAULT_COLORMAP_HELP),
+        ("Window background",WINDOW_BACKGROUND_HELP),
+        ("Error color", ERROR_COLOR_HELP),
+        ("Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
+        ("Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
+        ("Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
+        ("Interpolation mode", INTERPOLATION_MODE_HELP),
         ("Intensity mode", INTENSITY_MODE_HELP),
-        ("CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP), 
-        ("ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP), 
-        # ( "ImageJ version",IJ_VERSION_HELP), 
-        ("Check for updates", CHECK_FOR_UPDATES_HELP), 
-        ("Display welcome text on startup", SHOW_STARTUP_BLURB_HELP), 
-        ("Warn if Java runtime environment not present", REPORT_JVM_ERROR_HELP), 
-        ('Show the "Analysis complete" message at the end of a run', SHOW_ANALYSIS_COMPLETE_HELP), 
+        ("CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP),
+        ("ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
+        # ( "ImageJ version",IJ_VERSION_HELP),
+        ("Check for updates", CHECK_FOR_UPDATES_HELP),
+        ("Display welcome text on startup", SHOW_STARTUP_BLURB_HELP),
+        ("Warn if Java runtime environment not present", REPORT_JVM_ERROR_HELP),
+        ('Show the "Analysis complete" message at the end of a run', SHOW_ANALYSIS_COMPLETE_HELP),
         ('Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
-        ("Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP), 
-        ("Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP), 
-        ("Maximum number of workers", MAX_WORKERS_HELP), 
-        ("Temporary folder", TEMP_DIR_HELP), 
-        ("Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP), 
-        ("BatchProfiler URL", BATCHPROFILER_URL_HELP) 
-        ) 
+        ("Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
+        ("Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
+        ("Maximum number of workers", MAX_WORKERS_HELP),
+        ("Temporary folder", TEMP_DIR_HELP),
+        ("Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
+        ("BatchProfiler URL", BATCHPROFILER_URL_HELP)
+        )
 
-PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler-  """ 
+PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler-  """
 
 for key, value in enumerate(EACH_PREFERENCE_HELP):
-   PREFERENCES_HELP += """-  **""" + value[0] + """:**""" + value[1] + """""" 
-   
+   PREFERENCES_HELP += """-  **""" + value[0] + """:**""" + value[1] + """"""
+
 ######################################################## # # Help re: projects ##########################################################
 
 CREATING_A_PROJECT_CAPTION = "Creating A Project"
@@ -2069,10 +2129,11 @@ will operate exactly as before.
 
 Alternately, the user can choose to convert these modules into the
 project equivalent as closely as possible. Both **LoadImages** and
-**LoadData** remain accessible via the "Add module" and |image34| 
+**LoadData** remain accessible via the "Add module" and |image34|
 buttons at the bottom of the pipeline panel.
 
-""" % globals() 
+.. |image34| image:: memory:%(MODULE_ADD_BUTTON)s
+""" % globals()
 
 SELECTING_IMAGES_HELP = """
 
@@ -2116,7 +2177,8 @@ clicking the |image35| button at the bottom of the pipeline panel, or
 check out the Input module tutorials on our
 `Tutorials <http://cellprofiler.org/tutorials.html>`__ page.
 
-""" % globals() 
+.. |image35| image:: memory:%(MODULE_HELP_BUTTON)s
+""" % globals()
 
 CONFIGURE_IMAGES_HELP = """
 
@@ -2144,7 +2206,9 @@ and clicking the |image36| button at the bottom of the pipeline panel,
 or check out the Input module tutorials on our
 `Tutorials <http://cellprofiler.org/tutorials.html>`__ page.
 
-""" % globals() 
+.. |image36| image:: memory:%(MODULE_HELP_BUTTON)s
+""" % globals()
+
 
 LOADING_IMAGE_SEQUENCES_HELP = """
 
@@ -2211,12 +2275,12 @@ files is as follows:
 
    To accomplish this, do the following:
 
-   -  Select "{X\_MANUAL\_EXTRACTION}" or "{X\_IMPORTED\_EXTRACTION}" as
+   -  Select "{X_MANUAL_EXTRACTION}" or "{X_IMPORTED_EXTRACTION}" as
       the metadata extraction method. You will use these to extract the
       movie and timepoint tags from the images.
-   -  Use "{X\_MANUAL\_EXTRACTION}" to create a regular expression to
+   -  Use "{X_MANUAL_EXTRACTION}" to create a regular expression to
       extract the metadata from the filename and/or path name.
-   -  Or, use "{X\_IMPORTED\_EXTRACTION}" if you have a comma-delimited
+   -  Or, use "{X_IMPORTED_EXTRACTION}" if you have a comma-delimited
       file (CSV) of the necessary metadata columns (including the movie
       and timepoint tags) for each image. Note that microscopes rarely
       produce such a file, but it might be worthwhile to write scripts
@@ -2227,14 +2291,14 @@ files is as follows:
 
    In this example, you could do the following:
 
-   -  Select "{X\_MANUAL\_EXTRACTION}" as the method, "From file name"
+   -  Select "{X_MANUAL_EXTRACTION}" as the method, "From file name"
       as the source, and
       ``.*-(?P<Well>[A-P][0-9]{{2}})\.(?P<Timepoint>[0-9]{{3}})`` as the
       regular expression. This step will extract the well ID and
       timepoint from each filename.
    -  Click the "Add" button to add another extraction method.
    -  In the new group of extraction settings, select
-      "{X\_MANUAL\_EXTRACTION}" as the method, "From folder name" as the
+      "{X_MANUAL_EXTRACTION}" as the method, "From folder name" as the
       source, and ``.*[\\/](?P<Stain>.*)[\\/].*$`` as the regular
       expression. This step will extract the stain name from each folder
       name.
@@ -2377,7 +2441,7 @@ files is as follows:
 
    To accomplish this, do the following:
 
-   -  Select "{X\_AUTOMATIC\_EXTRACTION}" as the metadata extraction
+   -  Select "{X_AUTOMATIC_EXTRACTION}" as the metadata extraction
       method. In this case, CellProfiler will extract the requisite
       information from the metadata stored in the image headers.
    -  Click the "Update metadata" button. A progress bar will appear
@@ -2476,7 +2540,7 @@ this file is as follows:
 
    To accomplish this, do the following:
 
-   -  Select "{X\_AUTOMATIC\_EXTRACTION}" as the metadata extraction
+   -  Select "{X_AUTOMATIC_EXTRACTION}" as the metadata extraction
       method. In this case, CellProfiler will extract the requisite
       information from the metadata stored in the image headers.
    -  Click the "Update metadata" button. A progress bar will appear
@@ -2551,22 +2615,35 @@ this file is as follows:
    and the next one begins, and would process the slices in all stacks
    together as if they were constituents of only one stack.
 
-| """.format({ "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON,
-  "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
-  "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
-  "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION })
-    
-    
-######################################################### # # Misc.  help ########################################################## 
+.. |image37| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image38| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image39| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image40| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image41| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image42| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image43| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image44| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image45| image:: memory:%(MODULE_ADD_BUTTON)s
+.. |image46| image:: memory:%(MODULE_ADD_BUTTON)s
+
+""".format(**{
+    "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON,
+    "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
+    "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
+    "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION
+})
+
+
+######################################################### # # Misc.  help ##########################################################
 '''The help to be displayed if someone asks for help on a module but none is
-  selected''' 
-  
+  selected'''
+
 HELP_ON_MODULE_BUT_NONE_SELECTED = """The help button
   can be used to obtain help for the currently selected module in the
   pipeline panel on the left side of the CellProfiler interface. You do
   not have any modules in the pipeline, yet. Add a module to the
   pipeline using the "+" button or by using File > Load Pipeline."""
-  
+
 HELP_ON_MEASURING_DISTANCES = """To measure distances in an open
   image, use the "Measure length" tool under *Tools* in the display
   window menu bar. If you click on an image and drag, a line will appear
@@ -2596,7 +2673,7 @@ HELP_ON_FILE_LIST = """The *File List* panel displays the image
 -  *Expand tree*: Expand all of the folders in the tree
 -  *Collapse tree*: Collapse the folders in the tree
 
-""" 
+"""
 
 FILTER_RULES_BUTTONS_HELP = """ Clicking the rule menus shows you
 all the file *attributes*, *operators* and *conditions* you can specify
@@ -2657,11 +2734,14 @@ A *regular expression* is a general term refering to a method of
 searching for pattern matches in text. There is a high learning curve to
 using them, but are quite powerful once you understand the basics.
 
-%(REGEXP\_HELP\_REF)s
+{REGEXP_HELP_REF}
+.. |image47| image:: memory:%(IMAGES_USING_RULES_ICON)s
+""".format(**{
+    "REGEXP_HELP_REF": REGEXP_HELP_REF
+})
 
-""" % globals()
+
 ######################################################### # # Plate viewer help ##########################################################
-
 PLATEVIEWER_HELP = """
 
 Plate Viewer help
@@ -2685,54 +2765,8 @@ multipliers- changing the values will determine the color and scaling
 used to display each channel. "Alpha" determines the weight each channel
 contributes to the summed image. """
 
-.. |image0| image:: memory:%(MODULE_ADD_BUTTON)s
-.. |image1| image:: memory:%(BROWSE_BUTTON)s
-.. |image2| image:: memory:%(CREATE_BUTTON)s
-.. |image3| image:: memory:%(MODULE_HELP_BUTTON)s
-.. |image4| image:: memory:%(MODULE_ADD_BUTTON)s
-.. |image5| image:: memory:%(MODULE_MOVEUP_BUTTON)s
-.. |image6| image:: memory:%(MODULE_MOVEDOWN_BUTTON)s
-.. |image7| image:: memory:%(MODULE_REMOVE_BUTTON)s
-.. |image8| image:: memory:%(SETTINGS_ERROR_ICON)s
-.. |image9| image:: memory:%(SETTINGS_WARNING_ICON)s
-.. |image10| image:: memory:%(SETTINGS_OK_ICON)s
-.. |image11| image:: memory:%(RUNSTATUS_PAUSE_BUTTON)s
-.. |image12| image:: memory:%(RUNSTATUS_STOP_BUTTON)s
-.. |image13| image:: memory:%(RUNSTATUS_SAVE_BUTTON)s
-.. |image14| image:: memory:%(TESTMODE_GO_ICON)s
-.. |image15| image:: memory:%(TESTMODE_GO_ICON)s
-.. |image16| image:: memory:%(TESTMODE_PAUSE_ICON)s
-.. |image17| image:: memory:%(ANALYZE_IMAGE_BUTTON)s
-.. |image18| image:: memory:%(PAUSE_ANALYSIS_BUTTON)s
-.. |image19| image:: memory:%(STOP_ANALYSIS_BUTTON)s
-.. |image20| image:: memory:%(OMERO_IMAGEID_PIC)s
-.. |image21| image:: memory:%(OMERO_LOGIN_PIC)s
-.. |image22| image:: memory:%(MODULE_MOVEUP_BUTTON)s
-.. |image23| image:: memory:%(MODULE_MOVEDOWN_BUTTON)s
-.. |image24| image:: memory:%(MODULE_REMOVE_BUTTON)s
-.. |image25| image:: memory:%(MODULE_ADD_BUTTON)s
-.. |image26| image:: memory:%(DISPLAYMODE_SHOW_ICON)s
-.. |image27| image:: memory:%(DISPLAYMODE_HIDE_ICON)s
-.. |image28| image:: memory:%(WINDOW_HOME_BUTTON)s
-.. |image29| image:: memory:%(WINDOW_FORWARD_BUTTON)s
-.. |image30| image:: memory:%(WINDOW_BACK_BUTTON)s
-.. |image31| image:: memory:%(WINDOW_PAN_BUTTON)s
-.. |image32| image:: memory:%(WINDOW_ZOOMTORECT_BUTTON)s
-.. |image33| image:: memory:%(WINDOW_SAVE_BUTTON)s
-.. |image34| image:: memory:%(MODULE_ADD_BUTTON)s
-.. |image35| image:: memory:%(MODULE_HELP_BUTTON)s
-.. |image36| image:: memory:%(MODULE_HELP_BUTTON)s
-.. |image37| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image38| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image39| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image40| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image41| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image42| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image43| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image44| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image45| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image46| image:: memory:%7BMODULE_ADD_BUTTON%7D
-.. |image47| image:: memory:%(IMAGES_USING_RULES_ICON)s
+"""
+"""
 
 #########################################################
 #

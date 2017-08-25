@@ -18,7 +18,7 @@ partially or fully outside of the region, or retain the whole object
 unless it is fully outside of the region.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Parent object measurements:**
 

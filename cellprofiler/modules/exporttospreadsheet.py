@@ -59,7 +59,7 @@ do this by specifying metadata tags for the folder name and file name:
 +--------------+--------------+---------------------------+
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.

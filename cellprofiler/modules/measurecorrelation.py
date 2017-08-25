@@ -21,7 +21,7 @@ between the following:
 -  The nuclei in each of the above image pairs.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Correlation:* The correlation between a pair of images *I* and *J*,
    calculated as Pearson’s correlation coefficient. The formula is

@@ -46,7 +46,7 @@ in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **For images and objects:**
 

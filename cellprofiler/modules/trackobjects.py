@@ -33,7 +33,7 @@ For an example pipeline using TrackObjects, see the CellProfiler
 `Examples`_ webpage.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements**
 

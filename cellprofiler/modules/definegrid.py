@@ -23,7 +23,7 @@ cropped so that the interior of the plates, upon which the grids will be
 defined, are always in precise alignment with each other.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Rows, Columns*: The number of rows and columns in the grid
 -  *XSpacing, YSpacing:* The spacing in X and Y of the grid elements.

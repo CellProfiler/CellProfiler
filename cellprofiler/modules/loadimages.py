@@ -37,7 +37,7 @@ selected, `*Regular expression that finds metadata in the file name*`_
 for the necessary syntax.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image.
 -  *Metadata:* The metadata information extracted from the path and/or

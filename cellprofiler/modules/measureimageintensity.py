@@ -23,7 +23,7 @@ defined by the “Set intensity range from” setting in **NamesAndTypes**;
 see the help for that setting for more details.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *TotalIntensity:* Sum of all pixel intensity values.
 -  *MeanIntensity, MedianIntensity:* Mean and median of pixel intensity

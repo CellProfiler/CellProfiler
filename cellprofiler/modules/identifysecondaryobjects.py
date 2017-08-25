@@ -101,7 +101,7 @@ processing, the module display window will show the following panels:
    the objects shown.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 

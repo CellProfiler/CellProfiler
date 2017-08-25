@@ -105,7 +105,7 @@ metadata category is selected:
 +------------+
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Group\_Number:* The index of each grouping, as defined by the unique
    combinations of the metadata tags specified. These are written to the

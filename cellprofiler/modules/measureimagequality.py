@@ -14,7 +14,7 @@ original raw images, as opposed to images that have already been
 corrected for illumination.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Blur metrics**
 

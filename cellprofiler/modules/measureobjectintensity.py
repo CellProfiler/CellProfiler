@@ -28,7 +28,7 @@ defined by the “Set intensity range from” setting in **NamesAndTypes**;
 see the help for that setting for more details.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *IntegratedIntensity:* The sum of the pixel intensities within an
    object.

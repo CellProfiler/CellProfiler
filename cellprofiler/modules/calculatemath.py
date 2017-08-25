@@ -20,7 +20,7 @@ dividing the intensity in the nucleus by the intensity in the cytoplasm
 for each cell).
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Image measurements:** If both input measurements are whole-image
    measurements, then the result will also be a whole-image measurement.

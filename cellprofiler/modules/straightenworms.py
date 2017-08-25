@@ -45,7 +45,7 @@ averaged to yield a grayscale image. The intensity measurements are then
 made on that grayscale image.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements:**
 

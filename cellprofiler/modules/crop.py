@@ -15,7 +15,7 @@ cropped image and then trying to measure their intensity in the
 size.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *AreaRetainedAfterCropping:* The area of the image left after
    cropping.

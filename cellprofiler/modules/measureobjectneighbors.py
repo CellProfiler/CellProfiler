@@ -13,7 +13,7 @@ that objects are only considered neighbors if they are directly
 touching.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements**
 

@@ -114,7 +114,7 @@ duplicated for the referenced images; see the **NamesAndTypes** module
 for more details.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Metadata:* The prefix of each metadata tag in the per-image table.
 .. |image0| image:: memory:Metadata_ExampleDisplayTable.png

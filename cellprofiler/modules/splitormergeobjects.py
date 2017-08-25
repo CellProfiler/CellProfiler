@@ -12,7 +12,7 @@ splitting portions of separate objects that previously had the same
 label.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Parent object measurements:**
 

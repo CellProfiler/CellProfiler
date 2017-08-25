@@ -20,7 +20,7 @@ etc.). These measurements can be exported as the “Experiment” set of
 data.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Experiment features:** Whereas most CellProfiler measurements are
    calculated for each object (per-object) or for each image

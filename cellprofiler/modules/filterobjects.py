@@ -22,7 +22,7 @@ the original objects. Any measurements on the new object set will need
 to be made post-filtering by the desired measurement modules.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 

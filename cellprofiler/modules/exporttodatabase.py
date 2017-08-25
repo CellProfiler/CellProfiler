@@ -58,7 +58,7 @@ your own Oracle DB using the .csv output option and writing a simple
 script to upload to the database.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.

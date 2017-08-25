@@ -34,7 +34,7 @@ total number of objects and hence are reflected in the classification
 percentages.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Image measurements:**
 

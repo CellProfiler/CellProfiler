@@ -19,7 +19,7 @@ this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image.
 -  *Metadata:* The metadata information extracted from the path and/or

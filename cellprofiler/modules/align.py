@@ -1,4 +1,4 @@
-Measurements made by this module# coding=utf-8
+# coding=utf-8
 
 """
 Align
@@ -22,7 +22,7 @@ respect to the first image. That is, the X/Y offsets indicate how much
 the second image needs to be shifted by to match the first.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *XShift, Yshift:* The pixel shift in X and Y of the aligned image
    with respect to the original image.

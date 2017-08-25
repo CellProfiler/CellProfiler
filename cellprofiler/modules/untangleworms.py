@@ -16,7 +16,7 @@ can be saved as images using **SaveImages** to create a multi-page TIF
 file by specifying “Objects” as the type of image to save.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements (for “Untangle” mode only)**:
 

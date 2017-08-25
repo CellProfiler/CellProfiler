@@ -53,7 +53,7 @@ Other modules, such as **MeasureImageIntensity** and **MeasureTexture**
 modules, are not affected and will yield expected results.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 

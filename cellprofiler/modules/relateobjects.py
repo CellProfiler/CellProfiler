@@ -19,7 +19,7 @@ For an alternate approach to assigning parent/child relationships,
 consider using the **MaskObjects** module.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Parent object measurements:**
 

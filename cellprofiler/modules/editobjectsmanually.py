@@ -16,7 +16,7 @@ reaches this module. You must press the *Done* button to accept the
 selected objects and continue the pipeline.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 

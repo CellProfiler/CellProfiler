@@ -22,7 +22,7 @@ identified objects themselves along to the object processing module
 **ConvertToImage** and then save them with the **SaveImages** module.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 

@@ -1,124 +1,180 @@
 # coding=utf-8
 
 """
-<b>Identify Primary Objects</b> identifies biological components of interest in grayscale images containing bright
-objects on a dark background.
-<hr>
-<h4>What is a primary object?</h4>In CellProfiler, we use the term <i>object</i> as a generic term to refer to an
-identifed feature in an image, usually a cellular subcompartment of some kind (for example, nuclei, cells, colonies,
-worms). We define an object as <i>primary</i> when it can be found in an image without needing the assistance of
-another cellular feature as a reference. For example:
-<ul>
-    <li>The nuclei of cells are usually more easily identifiable due to their more uniform morphology, high contrast
-    relative to the background when stained, and good separation between adjacent nuclei. These qualities typically
-    make them appropriate candidates for primary object identification.</li>
-    <li>In contrast, cells often have irregular intensity patterns and are lower-contrast with more diffuse staining,
-    making them more challenging to identify than nuclei. In addition, cells often touch their neighbors making it
-    harder to delineate the cell borders. For these reasons, cell bodies are better suited for <i>secondary object</i>
-    identification, since they are best identified by using a previously-identified primary object (i.e, the nuclei) as
-    a reference. See the <b>IdentifySecondaryObjects</b> module for details on how to do this.</li>
-</ul>
-<h4>What do I need as input?</h4>To use this module, you will need to make sure that your input image has the following
-qualities:
-<ul>
-    <li>The image should be grayscale.</li>
-    <li>The foreground (i.e, regions of interest) are lighter than the background.</li>
-</ul>If this is not the case, other modules can be used to pre-process the images to ensure they are in the proper
-form:
-<ul>
-    <li>If the objects in your images are dark on a light background, you should invert the images using the Invert
-    operation in the <b>ImageMath</b> module.</li>
-    <li>If you are working with color images, they must first be converted to grayscale using the <b>ColorToGray</b>
-    module.</li>
-</ul>
-<h4>What do the settings mean?</h4>See below for help on the individual settings. The following icons are used to call
-attention to key items:
-<ul>
-    <li><img src="memory:thumb-up.png">&nbsp;Our recommendation or example use case for which a particular
-    setting is best used.</li>
-    <li><img src="memory:thumb-down.png">&nbsp;Indicates a condition under which a particular setting may not work
-    well.</li>
-    <li><img src="memory:gear.png">&nbsp;Technical note. Provides more detailed information on the
-    setting.</li>
-</ul>
-<h4>What do I get as output?</h4>A set of primary objects are produced by this module, which can be used in downstream
-modules for measurement purposes or other operations. See the section <a href="#Available_measurements">"Available
-measurements"</a> below for the measurements that are produced by this module. Once the module has finished processing,
-the module display window will show the following panels:
-<ul>
-    <li><i>Upper left:</i> The raw, original image.</li>
-    <li><i>Upper right:</i> The identified objects shown as a color image where connected pixels that belong to the
-    same object are assigned the same color (<i>label image</i>). It is important to note that assigned colors are
-    arbitrary; they are used simply to help you distingush the various objects.</li>
-    <li>
-        <i>Lower left:</i> The raw image overlaid with the colored outlines of the identified objects. Each object is
-        assigned one of three (default) colors:
-        <ul>
-            <li>Green: Acceptable; passed all criteria</li>
-            <li>Magenta: Discarded based on size</li>
-            <li>Yellow: Discarded due to touching the border</li>
-        </ul>If you need to change the color defaults, you can make adjustments in <i>File &gt; Preferences</i>.
-    </li>
-    <li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as those calculated by
-    the module in order to produce the objects shown.</li>
-</ul><a id="Available_measurements" name="Available_measurements">
-<h4>Measurements made by this module</h4><b>Image measurements:</b>
-<ul>
-    <li><i>Count:</i> The number of primary objects identified.</li>
-    <li><i>OriginalThreshold:</i> The global threshold for the image.</li>
-    <li><i>FinalThreshold:</i> For the global threshold methods, this value is the same as <i>OriginalThreshold</i>.
-    For the adaptive or per-object methods, this value is the mean of the local thresholds.</li>
-    <li><i>WeightedVariance:</i> The sum of the log-transformed variances of the foreground and background pixels,
-    weighted by the number of pixels in each distribution.</li>
-    <li><i>SumOfEntropies:</i> The sum of entropies computed from the foreground and background distributions.</li>
-</ul><b>Object measurements:</b>
-<ul>
-    <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary object centroids. The centroid is
-    calculated as the center of mass of the binary representation of the object.</li>
-</ul>
-<h4>Technical notes</h4>
-<p>CellProfiler contains a modular three-step strategy to identify objects even if they touch each other. It is based
-on previously published algorithms (<i>Malpica et al., 1997; Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999;
-Wahlby, 2003; Wahlby et al., 2004</i>). Choosing different options for each of these three steps allows CellProfiler to
-flexibly analyze a variety of different types of objects. The module has many options, which vary in terms of speed and
-sophistication. More detail can be found in the Settings section below. Here are the three steps, using an example
-where nuclei are the primary objects:</p>
-<ol>
-    <li>CellProfiler determines whether a foreground region is an individual nucleus or two or more clumped
-    nuclei.</li>
-    <li>The edges of nuclei are identified, using thresholding if the object is a single, isolated nucleus, and using
-    more advanced options if the object is actually two or more nuclei that touch each other.</li>
-    <li>Some identified objects are discarded or merged together if they fail to meet certain your specified criteria.
-    For example, partial objects at the border of the image can be discarded, and small objects can be discarded or
-    merged with nearby larger ones. A separate module, <b>FilterObjects</b>, can further refine the identified nuclei,
-    if desired, by excluding objects that are a particular size, shape, intensity, or texture.</li>
-</ol>
-<h4>References</h4>
-<ul>
-    <li>Malpica N, de Solorzano CO, Vaquero JJ, Santos, A, Vallcorba I, Garcia-Sagredo JM, del Pozo
-    F (1997) "Applying watershed algorithms to the segmentation of clustered nuclei."
-    <i>Cytometry</i> 28, 289-297. (<a href=
-    "http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7">link</a>)
-    </li>
-    <li>Meyer F, Beucher S (1990) "Morphological segmentation." <i>J Visual Communication and Image
-    Representation</i> 1, 21-46. (<a href=
-    "http://dx.doi.org/10.1016/1047-3203(90)90014-M">link</a>)
-    </li>
-    <li>Ortiz de Solorzano C, Rodriguez EG, Jones A, Pinkel D, Gray JW, Sudar D, Lockett SJ. (1999)
-    "Segmentation of confocal microscope images of cell nuclei in thick tissue sections."
-    <i>Journal of Microscopy-Oxford</i> 193, 212-226. (<a href=
-    "http://dx.doi.org/10.1046/j.1365-2818.1999.00463.x">link</a>)
-    </li>
-    <li>W&auml;hlby C (2003) <i>Algorithms for applied digital image cytometry</i>, Ph.D., Uppsala
-    University, Uppsala.</li>
-    <li>W&auml;hlby C, Sintorn IM, Erlandsson F, Borgefors G, Bengtsson E. (2004) "Combining
-    intensity, edge and shape information for 2D and 3D segmentation of cell nuclei in tissue
-    sections." <i>J Microsc</i> 215, 67-76. (<a href=
-    "http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x">link</a>)
-    </li>
-</ul>
-<p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, <b>IdentifyObjectsManually</b> and
-<b>ClassifyPixels</b></p></a>
+IdentifyPrimaryObjects
+======================
+
+**IdentifyPrimaryObjects** identifies biological components of
+interest in grayscale images containing bright objects on a dark
+background.
+
+What is a primary object?
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In CellProfiler, we use the term *object* as a generic term to refer to
+an identifed feature in an image, usually a cellular subcompartment of
+some kind (for example, nuclei, cells, colonies, worms). We define an
+object as *primary* when it can be found in an image without needing the
+assistance of another cellular feature as a reference. For example:
+
+-  The nuclei of cells are usually more easily identifiable due to their
+   more uniform morphology, high contrast relative to the background
+   when stained, and good separation between adjacent nuclei. These
+   qualities typically make them appropriate candidates for primary
+   object identification.
+-  In contrast, cells often have irregular intensity patterns and are
+   lower-contrast with more diffuse staining, making them more
+   challenging to identify than nuclei. In addition, cells often touch
+   their neighbors making it harder to delineate the cell borders. For
+   these reasons, cell bodies are better suited for *secondary object*
+   identification, since they are best identified by using a
+   previously-identified primary object (i.e, the nuclei) as a
+   reference. See the **IdentifySecondaryObjects** module for details on
+   how to do this.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+To use this module, you will need to make sure that your input image has
+the following qualities:
+
+-  The image should be grayscale.
+-  The foreground (i.e, regions of interest) are lighter than the
+   background.
+
+If this is not the case, other modules can be used to pre-process the
+images to ensure they are in the proper form:
+
+-  If the objects in your images are dark on a light background, you
+   should invert the images using the Invert operation in the
+   **ImageMath** module.
+-  If you are working with color images, they must first be converted to
+   grayscale using the **ColorToGray** module.
+
+What do the settings mean?
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See below for help on the individual settings. The following icons are
+used to call attention to key items:
+
+-  |image0| Our recommendation or example use case for which a
+   particular setting is best used.
+-  |image1| Indicates a condition under which a particular setting may
+   not work well.
+-  |image2| Technical note. Provides more detailed information on the
+   setting.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of primary objects are produced by this module, which can be used
+in downstream modules for measurement purposes or other operations. See
+the section `"Available measurements" <#Available_measurements>`__ below
+for the measurements that are produced by this module. Once the module
+has finished processing, the module display window will show the
+following panels:
+
+-  *Upper left:* The raw, original image.
+-  *Upper right:* The identified objects shown as a color image where
+   connected pixels that belong to the same object are assigned the same
+   color (*label image*). It is important to note that assigned colors
+   are arbitrary; they are used simply to help you distingush the
+   various objects.
+-  *Lower left:* The raw image overlaid with the colored outlines of the
+   identified objects. Each object is assigned one of three (default)
+   colors:
+
+   -  Green: Acceptable; passed all criteria
+   -  Magenta: Discarded based on size
+   -  Yellow: Discarded due to touching the border
+
+   If you need to change the color defaults, you can make adjustments in
+   *File > Preferences*.
+-  *Lower right:* A table showing some of the settings selected by the
+   user, as well as those calculated by the module in order to produce
+   the objects shown.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Image measurements:**
+
+-  *Count:* The number of primary objects identified.
+-  *OriginalThreshold:* The global threshold for the image.
+-  *FinalThreshold:* For the global threshold methods, this value is the
+   same as *OriginalThreshold*. For the adaptive or per-object methods,
+   this value is the mean of the local thresholds.
+-  *WeightedVariance:* The sum of the log-transformed variances of the
+   foreground and background pixels, weighted by the number of pixels in
+   each distribution.
+-  *SumOfEntropies:* The sum of entropies computed from the foreground
+   and background distributions.
+
+**Object measurements:**
+
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the
+   primary object centroids. The centroid is calculated as the center of
+   mass of the binary representation of the object.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+CellProfiler contains a modular three-step strategy to identify objects
+even if they touch each other. It is based on previously published
+algorithms (*Malpica et al., 1997; Meyer and Beucher, 1990; Ortiz de
+Solorzano et al., 1999; Wahlby, 2003; Wahlby et al., 2004*). Choosing
+different options for each of these three steps allows CellProfiler to
+flexibly analyze a variety of different types of objects. The module has
+many options, which vary in terms of speed and sophistication. More
+detail can be found in the Settings section below. Here are the three
+steps, using an example where nuclei are the primary objects:
+
+#. CellProfiler determines whether a foreground region is an individual
+   nucleus or two or more clumped nuclei.
+#. The edges of nuclei are identified, using thresholding if the object
+   is a single, isolated nucleus, and using more advanced options if the
+   object is actually two or more nuclei that touch each other.
+#. Some identified objects are discarded or merged together if they fail
+   to meet certain your specified criteria. For example, partial objects
+   at the border of the image can be discarded, and small objects can be
+   discarded or merged with nearby larger ones. A separate module,
+   **FilterObjects**, can further refine the identified nuclei, if
+   desired, by excluding objects that are a particular size, shape,
+   intensity, or texture.
+
+References
+^^^^^^^^^^
+
+-  Malpica N, de Solorzano CO, Vaquero JJ, Santos, A, Vallcorba I,
+   Garcia-Sagredo JM, del Pozo F (1997) “Applying watershed algorithms
+   to the segmentation of clustered nuclei.” *Cytometry* 28, 289-297.
+   (`link`_)
+-  Meyer F, Beucher S (1990) “Morphological segmentation.” *J Visual
+   Communication and Image Representation* 1, 21-46.
+   (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
+-  Ortiz de Solorzano C, Rodriguez EG, Jones A, Pinkel D, Gray JW, Sudar
+   D, Lockett SJ. (1999) “Segmentation of confocal microscope images of
+   cell nuclei in thick tissue sections.” *Journal of Microscopy-Oxford*
+   193, 212-226.
+   (`link <http://dx.doi.org/10.1046/j.1365-2818.1999.00463.x>`__)
+-  Wählby C (2003) *Algorithms for applied digital image cytometry*,
+   Ph.D., Uppsala University, Uppsala.
+-  Wählby C, Sintorn IM, Erlandsson F, Borgefors G, Bengtsson E. (2004)
+   “Combining intensity, edge and shape information for 2D and 3D
+   segmentation of cell nuclei in tissue sections.” *J Microsc* 215,
+   67-76.
+   (`link <http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x>`__)
+
+.. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
+
+
+See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, and
+**IdentifyObjectsManually** 
+
+.. |image0| image:: memory:thumb-up.png
+.. |image1| image:: memory:thumb-down.png
+.. |image2| image:: memory:gear.png
+
 """
 
 import cellprofiler.gui.help

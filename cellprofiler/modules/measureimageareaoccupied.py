@@ -16,7 +16,7 @@ threshold if you precede it with thresholding performed by
 **ApplyThreshold**, and then select the binary image output by
 **ApplyThreshold** to be measured by this module.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *AreaOccupied:* The total area occupied by the input objects or

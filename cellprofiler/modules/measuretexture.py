@@ -16,7 +16,7 @@ texture combinations that are unneccesary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Haralick Features:* Haralick texture features are derived from the

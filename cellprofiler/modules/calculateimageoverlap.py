@@ -45,7 +45,7 @@ while a background pixel in the test image that overlaps with foreground
 in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  **For images and objects:**

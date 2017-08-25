@@ -20,7 +20,7 @@ between the following:
 -  The blue and green, red and green, and red and blue images.
 -  The nuclei in each of the above image pairs.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Correlation:* The correlation between a pair of images *I* and *J*,

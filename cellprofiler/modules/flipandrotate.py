@@ -3,7 +3,7 @@
 """
 **Flip and rotate** flips (mirror image) and/or rotates an image
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Rotation:* Angle of rotation for the input image.

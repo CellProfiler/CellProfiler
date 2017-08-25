@@ -11,7 +11,7 @@ numbers by either unifying separate objects to share the same label, or
 splitting portions of separate objects that previously had the same
 label.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 **Parent object measurements:**

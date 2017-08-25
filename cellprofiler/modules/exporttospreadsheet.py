@@ -58,7 +58,7 @@ do this by specifying metadata tags for the folder name and file name:
 | 2M\_NaCl     | 40uM\_DMSO   | 2M\_NaCl/40uM\_DMSO.csv   |
 +--------------+--------------+---------------------------+
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 For details on the nomenclature used by CellProfiler for the exported

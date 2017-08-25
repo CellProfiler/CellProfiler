@@ -18,7 +18,7 @@ module. However, old pipelines loaded into CellProfiler that contain
 this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image.

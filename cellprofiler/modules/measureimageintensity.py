@@ -22,7 +22,7 @@ maximum possible intensity value. This “maximum possible” value is
 defined by the “Set intensity range from” setting in **NamesAndTypes**;
 see the help for that setting for more details.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *TotalIntensity:* Sum of all pixel intensity values.

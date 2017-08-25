@@ -21,7 +21,7 @@ object set, and hence do not inherit the measurements associated with
 the original objects. Any measurements on the new object set will need
 to be made post-filtering by the desired measurement modules.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**

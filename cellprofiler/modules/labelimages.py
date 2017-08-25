@@ -14,7 +14,7 @@ b>LabelImages</b> assumes the following are true of the image order:
 number of images per plate is the same. </li>
 </ul>
 
-<h4>Available measurements</h4>
+<h4>Measurements made by this module</h4>
 <ul>
 <li><i>Metadata_Plate:</i> The plate number, starting at 1 for the first plate.</li>
 <li><i>Metadata_Well:</i> The well name, e.g., <i>A01</i>.</li>

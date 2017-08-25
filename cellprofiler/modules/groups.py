@@ -104,7 +104,7 @@ metadata category is selected:
 | |image0|   |
 +------------+
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Group\_Number:* The index of each grouping, as defined by the unique

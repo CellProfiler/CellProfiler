@@ -77,7 +77,7 @@ a corresponding secondary object, keep in mind the following points:
 -  There will always be at most one secondary object for each primary
    object.
 
-See the section `“Available measurements”`_ below for the measurements
+See the section `“Measurements made by this module”`_ below for the measurements
 that are produced by this module. Once the module has finished
 processing, the module display window will show the following panels:
 
@@ -100,7 +100,7 @@ processing, the module display window will show the following panels:
    user, as well as those calculated by the module in order to produce
    the objects shown.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
@@ -139,7 +139,7 @@ neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
 
 See also the other **Identify** modules.
 
-.. _“Available measurements”: #Available_measurements
+.. _“Measurements made by this module”: #Available_measurements
 
 .. |image0| image:: memory:thumb-up.png
 .. |image1| image:: memory:thumb-down.png

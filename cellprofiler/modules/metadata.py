@@ -113,7 +113,7 @@ are some caveats in the cases when metadata is either missing or
 duplicated for the referenced images; see the **NamesAndTypes** module
 for more details.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Metadata:* The prefix of each metadata tag in the per-image table.

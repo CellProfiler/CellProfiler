@@ -19,7 +19,7 @@ translocation experiments, for example. Note that the ring widths are
 normalized per-object, i.e., not necessarily a constant width across
 objects.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *FracAtD:* Fraction of total stain in an object at a given radius.

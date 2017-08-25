@@ -19,7 +19,7 @@ intensity in the image) or on an object-by-object basis (for example,
 dividing the intensity in the nucleus by the intensity in the cytoplasm
 for each cell).
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Image measurements:** If both input measurements are whole-image

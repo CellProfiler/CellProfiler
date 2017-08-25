@@ -17,7 +17,7 @@ per-object measurements themselves, you will need to use
 display the object measurements of choice overlaid on an image of
 choice.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 See the *Technical Notes* below for an explanation of creating an

@@ -15,7 +15,7 @@ the ‘?’ button. The pipeline pauses once per processed image when it
 reaches this module. You must press the *Done* button to accept the
 selected objects and continue the pipeline.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**

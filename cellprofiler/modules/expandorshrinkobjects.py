@@ -24,8 +24,8 @@ save them with the **SaveImages** module. You can also pass the
 identified objects themselves along to the object processing module
 **ConvertToImage** and then save them with the **SaveImages** module.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 

@@ -144,8 +144,9 @@ either:
 
 | """
 
-USING_METADATA_GROUPING_HELP_REF = """Please see the   **Groups** module for more details on the proper use of metadata for
-  grouping"""
+USING_METADATA_GROUPING_HELP_REF = """
+Please see the **Groups** module for more details on the proper use of metadata for grouping
+"""
 
 from cellprofiler.setting import YES, NO
 
@@ -500,7 +501,7 @@ For a full list of references, visit our
 -  Lamprecht MR, Sabatini DM, Carpenter AE (2007) "CellProfiler: free,
    versatile software for automated biological image analysis"
    *Biotechniques* 42(1):71-75.
-   [`link <http://dx.doi.org/10.2144/000112257>`__)
+   (`link <http://dx.doi.org/10.2144/000112257>`__)
 -  Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J,
    Root D, Golland P, Sabatini DM (2009) "Scoring diverse cellular
    morphologies in image-based screens with iterative feedback and
@@ -876,10 +877,10 @@ individual movie frame from that file.
 })
 
 
-RUNNING_YOUR_PIPELINE_HELP = """ Once you have tested
-your pipeline using Test mode and you are satisfied with the module
-settings, you are ready to run the pipeline on your entire set of
-images. To do this:
+RUNNING_YOUR_PIPELINE_HELP = """
+Once you have tested your pipeline using Test mode and you are satisfied
+with the module settings, you are ready to run the pipeline on your entire
+set of images. To do this:
 
 -  Exit Test mode by clicking the "Exit Test Mode" button or selecting
    *Test > Exit Test Mode*.
@@ -906,9 +907,7 @@ of CellProfiler activated) under *File > Preferences...*
 """ % globals()
 
 
-# The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpretcorrectly
 BATCHPROCESSING_HELP = """
-
 CellProfiler is designed to analyze images in a high-throughput manner.
 Once a pipeline has been established for a set of images, CellProfiler
 can export batches of images to be analyzed on a computing cluster with
@@ -1053,8 +1052,8 @@ a LIMS environment, or post your questions on the CellProfiler
 })
 
 RUN_MULTIPLE_PIPELINES_HELP = """
-| The **Run multiple pipelines** dialog lets you select several
-  pipelines which will be run consecutively. Please note the following:
+The **Run multiple pipelines** dialog lets you select several
+pipelines which will be run consecutively. Please note the following:
 
 -  CellProfiler 2.1 project files are not currently supported.
 -  Pipelines from CellProfiler 2.0 and lower are supported.
@@ -1063,8 +1062,8 @@ RUN_MULTIPLE_PIPELINES_HELP = """
    *Export > Pipeline...*, and under the "Save as type" dropdown, select
    "CellProfiler pipeline and file list".
 
-| You can invoke **Run multiple pipelines** by selecting it from the
-  file menu. The dialog has three parts to it:
+You can invoke **Run multiple pipelines** by selecting it from the
+file menu. The dialog has three parts to it:
 
 -  *File chooser*: The file chooser lets you select the pipeline files
    to be run. The *Select all* and *Deselect all* buttons to the right
@@ -1082,16 +1081,15 @@ RUN_MULTIPLE_PIPELINES_HELP = """
    displayed. You can click the remove button to remove a pipeline from
    the list
 
-|
-| CellProfiler will run all of the pipelines on the list when you hit
-  the "OK" button."""
+CellProfiler will run all of the pipelines on the list when you hit the "OK" button.
+"""
 
-CONFIGURING_LOGGING_HELP = """CellProfiler
-  prints diagnostic messages to the console by default. You can change
-  this behavior for most messages by configuring logging. The simplest
-  way to do this is to use the command-line switch, "-L", to set the log
-  level. For instance, to show error messages or more critical events,
-  start CellProfiler like this:
+CONFIGURING_LOGGING_HELP = """
+CellProfiler prints diagnostic messages to the console by default. You can change
+this behavior for most messages by configuring logging. The simplest
+way to do this is to use the command-line switch, "-L", to set the log
+level. For instance, to show error messages or more critical events,
+start CellProfiler like this:
 | ``CellProfiler -L ERROR``
 | The following is a list of log levels that can be used:
 
@@ -1103,14 +1101,13 @@ CONFIGURING_LOGGING_HELP = """CellProfiler
 -  **CRITICAL:** Messages indicating that CellProfiler should be
    restarted or is incapable of running.
 
-|
-| You can tailor CellProfiler's logging with much more control using a
-  logging configuration file. You specify the file name in place of the
-  log level on the command line, like this:
-| ``CellProfiler -L ~/CellProfiler/my_log_config.cfg``
-| Files are in the Microsoft .ini format which is grouped into
-  categories enclosed in square brackets and the key/value pairs for
-  each category. Here is an example file:
+You can tailor CellProfiler's logging with much more control using a
+logging configuration file. You specify the file name in place of the
+log level on the command line, like this:
+``CellProfiler -L ~/CellProfiler/my_log_config.cfg``
+Files are in the Microsoft .ini format which is grouped into
+categories enclosed in square brackets and the key/value pairs for
+each category. Here is an example file:
 
 .. raw:: html
 
@@ -1149,36 +1146,37 @@ CONFIGURING_LOGGING_HELP = """CellProfiler
 
    </div>
 
-| The above file would print warnings and errors to the console for all
-  messages but "pipeline statistics" which are configured using the
-  *pipelineStatistics* logger are written to a file instead.. The
-  pipelineStatistics logger is the logger that is used to print progress
-  messages when the pipeline is run. You can find out which loggers are
-  being used to write particular messages by printing all messages with
-  a formatter that prints the logger name ("%(name)s").
-| The format of the file is described in greater detail
-  `here <http://docs.python.org/howto/logging.html#configuring-logging>`__.
-  """
+The above file would print warnings and errors to the console for all
+messages but "pipeline statistics" which are configured using the
+*pipelineStatistics* logger are written to a file instead.. The
+pipelineStatistics logger is the logger that is used to print progress
+messages when the pipeline is run. You can find out which loggers are
+being used to write particular messages by printing all messages with
+a formatter that prints the logger name ("%(name)s").
+The format of the file is described in greater detail
+`here <http://docs.python.org/howto/logging.html#configuring-logging>`__.
+"""
 
-ACCESSING_OMERO_IMAGES = """ CellProfiler has first-class
-  support for loading images from
-  `OMERO <http://www.openmicroscopy.org/site/products/omero>`__. The
-  input modules and the LoadData module can refer to images by URL, for
-  instance, the example pipeline on the welcome page loads its images
-  from ``http://cellprofiler.org/ExampleFlyImages``. The first part of a
-  URL (the part before the colon) is the schema. CellProfiler decides
-  which communication protocol to use, depending on the schema; in the
-  case of the example on the welcome page, the schema is HTTP and
-  CellProfiler uses the HTTP protocol to get the image data. For OMERO,
-  the schema that should be used is "omero" and we use the OMERO client
-  library to fetch and load the data.
+ACCESSING_OMERO_IMAGES = """
+CellProfiler has first-class
+support for loading images from
+`OMERO <http://www.openmicroscopy.org/site/products/omero>`__. The
+input modules and the LoadData module can refer to images by URL, for
+instance, the example pipeline on the welcome page loads its images
+from ``http://cellprofiler.org/ExampleFlyImages``. The first part of a
+URL (the part before the colon) is the schema. CellProfiler decides
+which communication protocol to use, depending on the schema; in the
+case of the example on the welcome page, the schema is HTTP and
+CellProfiler uses the HTTP protocol to get the image data. For OMERO,
+the schema that should be used is "omero" and we use the OMERO client
+library to fetch and load the data.
 
-| OMERO URLs have the form, "omero:iid=". You can find the image IDs
-  using either the OMERO web client or the `Insight
-  software <http://www.openmicroscopy.org/site/support/omero4/downloads>`__.
-  As an example, the screen capture below indicates that the image,
-  "Channel1-01-A-01.tif", has an IID of 58038:
-| |image20|
+OMERO URLs have the form, "omero:iid=". You can find the image IDs
+using either the OMERO web client or the `Insight
+software <http://www.openmicroscopy.org/site/support/omero4/downloads>`__.
+As an example, the screen capture below indicates that the image,
+"Channel1-01-A-01.tif", has an IID of 58038:
+|image20|
 
 At present, manually curating the URL list can be somewhat
 time-consuming, but we are planning to develop plug-ins for Insight that
@@ -1190,17 +1188,18 @@ LoadData module.
 OMERO login credentials
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-| CellProfiler will ask you for your OMERO login credentials when you
-  first access an OMERO URL, either by viewing it from the file list or
-  by loading it in a pipeline. CellProfiler will create and maintain a
-  session for you based on these credentials until you close the
-  application. You should only need to enter your credentials once. To
-  use the "Log into Omero" dialog, enter your server's name or IP
-  address, the port (usually 4064), your user name and password and
-  press the "Connect" button. The "Connect" button should turn green and
-  the OK button of the dialog should become enabled (see below). Press
-  OK to complete the login.
-| |image21|
+CellProfiler will ask you for your OMERO login credentials when you
+first access an OMERO URL, either by viewing it from the file list or
+by loading it in a pipeline. CellProfiler will create and maintain a
+session for you based on these credentials until you close the
+application. You should only need to enter your credentials once. To
+use the "Log into Omero" dialog, enter your server's name or IP
+address, the port (usually 4064), your user name and password and
+press the "Connect" button. The "Connect" button should turn green and
+the OK button of the dialog should become enabled (see below). Press
+OK to complete the login.
+
+|image21|
 
 Currently, CellProfiler cannot establish a connection to OMERO when
 running headless - to do that, we would need to store the user password
@@ -1252,7 +1251,8 @@ here is a .CSV that loads a DNA and GFP channel:
 .. |image21| image:: memory:%(OMERO_LOGIN_PIC)s
 """ % globals()
 
-MEASUREMENT_NOMENCLATURE_HELP = """ In CellProfiler,
+MEASUREMENT_NOMENCLATURE_HELP = """
+In CellProfiler,
 measurements are exported as well as stored internally using the
 following general nomenclature:
 ``MeasurementType_Category_SpecificFeatureName_Parameters``
@@ -1328,9 +1328,8 @@ See also the *Available measurements* heading under the main help for
 many of the modules, as well as **ExportToSpreadsheet** and
 **ExportToDatabase** modules. """
 
-MENU_BAR_FILE_HELP = """ The *File*
-menu provides options for loading and saving your pipelines and
-performing an analysis run.
+MENU_BAR_FILE_HELP = """
+The *File* menu provides options for loading and saving your pipelines and performing an analysis run.
 
 -  **New project:** Clears the current project by removing all the
    analysis modules and resetting the input modules.
@@ -1379,8 +1378,8 @@ performing an analysis run.
 
 """
 
-MENU_BAR_EDIT_HELP = """ The *Edit* menu provides options for
-modifying modules in your current pipeline.
+MENU_BAR_EDIT_HELP = """
+The *Edit* menu provides options for modifying modules in your current pipeline.
 
 -  **Undo:** Undo the last module modification. You can undo multiple
    actions by using *Undo* repeatedly.
@@ -1416,8 +1415,8 @@ last module to select all the modules in between.
 .. |image25| image:: memory:%(MODULE_ADD_BUTTON)s
 """ % globals()
 
-MENU_BAR_WINDOW_HELP = """ The *Windows* menu provides options for
-showing and hiding the module display windows.
+MENU_BAR_WINDOW_HELP = """
+The *Windows* menu provides options for showing and hiding the module display windows.
 
 -  **Close All Open Windows:** Closes all display windows that are
    currently open.
@@ -1437,8 +1436,8 @@ the front.
 .. |image27| image:: memory:%(DISPLAYMODE_HIDE_ICON)s
 """ % globals()
 
-PARAMETER_SAMPLING_MENU_HELP = """ The
-*Sampling* menu is an interface for Paramorama, a plugin for an
+PARAMETER_SAMPLING_MENU_HELP = """
+The *Sampling* menu is an interface for Paramorama, a plugin for an
 interactive visualization program for exploring the parameter space of
 image analysis algorithms.
 
@@ -1463,10 +1462,11 @@ More information on how to use the plugin can be found
    Transactions on Visualization and Computer Graphics* 17(12),
    2402-2411.
 
-""" #consider deprecating
+"""  #consider deprecating
 
-MENU_BAR_DATATOOLS_HELP = """ The *Data
-Tools* menu provides tools to allow you to plot, view, export or perform
+
+MENU_BAR_DATATOOLS_HELP = """
+The *Data Tools* menu provides tools to allow you to plot, view, export or perform
 specialized analyses on your measurements.
 
 Each data tool has a corresponding module with the same name and
@@ -1491,8 +1491,8 @@ or the corresponding module help.
 #################################################### # #Help for the module figure windows#####################################################
 '''The help menu for the figure window'''
 
-MODULE_DISPLAY_MENU_BAR_HELP = """ From the
-menu bar of each module display window, you have the following options:
+MODULE_DISPLAY_MENU_BAR_HELP = """
+From the menu bar of each module display window, you have the following options:
 
 -  **File**
 
@@ -1521,8 +1521,8 @@ menu bar of each module display window, you have the following options:
     "IMAGE_TOOLS_HELP_REF": IMAGE_TOOLS_HELP_REF
 })
 
-MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """ All
-figure windows come with a navigation toolbar, which can be used to
+MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """
+All figure windows come with a navigation toolbar, which can be used to
 navigate through the data set.
 
 -  **Home, Forward, Back buttons:** *Home* |image28| always takes you to
@@ -1570,7 +1570,6 @@ navigate through the data set.
 """ % globals()
 
 INTENSITY_MODE_HELP_LIST = """
-
 -  *Raw:* Shows the image using the full colormap range permissible for
    the image type. For example, for a 16-bit image, the pixel data will
    be shown using 0 as black and 65535 as white. However, if the actual
@@ -1590,7 +1589,6 @@ INTENSITY_MODE_HELP_LIST = """
 """
 
 INTERPOLATION_MODE_HELP_LIST = """
-
 -  *Nearest neighbor:* Use the intensity of the nearest image pixel when
    displaying screen pixels at sub-pixel resolution. This produces a
    blocky image, but the image accurately reflects the data.
@@ -1605,9 +1603,9 @@ INTERPOLATION_MODE_HELP_LIST = """
 
 """
 
-MODULE_DISPLAY_IMAGE_TOOLS_HELP = """ Right-clicking in an image
-displayed in a window will bring up a pop-up menu with the following
-options:
+MODULE_DISPLAY_IMAGE_TOOLS_HELP = """
+Right-clicking in an image displayed in a window will bring up a pop-up menu with
+the following options:
 
 -  *Open image in new window:* Displays the image in a new display
    window. This is useful for getting a closer look at a window subplot
@@ -1641,7 +1639,8 @@ FIGURE_HELP = (
         ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP),
         ("How To Use The Image Tools", MODULE_DISPLAY_IMAGE_TOOLS_HELP))
 
-WORKSPACE_VIEWER_HELP = """ The workspace viewer is a flexible tool
+WORKSPACE_VIEWER_HELP = """
+The workspace viewer is a flexible tool
 that you can use to explore your images, objects and measurements in
 test mode. To use the viewer, select *View Workspace* from the *Test*
 menu after starting test mode. This will display the CellProfiler
@@ -1824,7 +1823,6 @@ objects using one of the following modes:
    *Color* from the objects' menu and choosing one of the available
    color maps. You can change the transparency of the overlay by
    choosing *Alpha* from the objects' menu.
-
 """.format(**{
     "INTERPOLATION_MODE_HELP_LIST": INTERPOLATION_MODE_HELP_LIST,
     "INTENSITY_MODE_HELP_LIST": INTENSITY_MODE_HELP_LIST
@@ -1835,32 +1833,48 @@ WV_FIGURE_HELP = tuple(list(FIGURE_HELP) +
 
 ################################################### # # Help for the preferences dialog ####################################################
 
-TITLE_FONT_HELP = """ Sets the font used in titles above plots displayed in module figure windows."""
+TITLE_FONT_HELP = """
+Sets the font used in titles above plots displayed in module figure windows.
+"""
 
-TABLE_FONT_HELP = """ Sets the font used in tables displayed in module figure windows."""
+TABLE_FONT_HELP = """
+Sets the font used in tables displayed in module figure windows.
+"""
 
-DEFAULT_COLORMAP_HELP = """ Specifies the color map that sets the
+DEFAULT_COLORMAP_HELP = """
+Specifies the color map that sets the
 colors for labels and other elements. See this
 `page <http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps>`__ for
-pictures of available colormaps."""
+pictures of available colormaps.
+"""
 
-WINDOW_BACKGROUND_HELP = """ Sets the window background color of the CellProfiler main window."""
+WINDOW_BACKGROUND_HELP = """
+Sets the window background color of the CellProfiler main window.
+"""
 
-ERROR_COLOR_HELP =""" Sets the color used for the error alerts associated with misconfigured settings and other errors."""
+ERROR_COLOR_HELP = """
+Sets the color used for the error alerts associated with misconfigured
+settings and other errors.
+"""
 
-PLUGINS_DIRECTORY_HELP = """ Chooses the directory that holds
+PLUGINS_DIRECTORY_HELP = """
+Chooses the directory that holds
 dynamically-loaded CellProfiler modules. You can write your own module
 and place it in this directory and CellProfiler will make it available
 for your pipeline. You must restart CellProfiler after modifying this
-setting."""
+setting.
+"""
 
-IJ_PLUGINS_DIRECTORY_HELP = """ Sets the directory that
+IJ_PLUGINS_DIRECTORY_HELP = """
+Sets the directory that
 holds ImageJ plugins (for the **RunImageJ** module). You can download or
 write your own ImageJ plugin and place it in this directory and
 CellProfiler will make it available for your pipeline. You must restart
-CellProfiler after modifying this setting.""" #consider deprecating
+CellProfiler after modifying this setting.
+"""  #consider deprecating
 
-IJ_VERSION_HELP = """ Chooses which version of ImageJ to use in the
+IJ_VERSION_HELP = """
+Chooses which version of ImageJ to use in the
 **RunImageJ** module. You must restart CellProfiler after changing this
 preference for the preference to take effect.
 
@@ -1873,48 +1887,66 @@ preference for the preference to take effect.
    interface and will let you use regular and masked images in ImageJ
    2.0 plugins. ImageJ 2.0 can run ImageJ 1.0 plugins, but there may be
    incompatibilities.
-
 """ #consider deprecating
 
-CHECK_FOR_UPDATES_HELP = """ Controls whether CellProfiler looks for updates on startup."""
+CHECK_FOR_UPDATES_HELP = """
+Controls whether CellProfiler looks for updates on startup.
+"""
 
-SHOW_TELEMETRY_HELP = """ Allow limited and anonymous usage statistics
+SHOW_TELEMETRY_HELP = """
+Allow limited and anonymous usage statistics
 and exception reports to be sent to the CellProfiler team to help
-improve CellProfiler. """
+improve CellProfiler.
+"""
 
-SHOW_STARTUP_BLURB_HELP = """ Controls whether CellProfiler displays an orientation message on startup."""
+SHOW_STARTUP_BLURB_HELP = """
+Controls whether CellProfiler displays an orientation message on startup.
+"""
 
-SHOW_ANALYSIS_COMPLETE_HELP = """ Determines whether CellProfiler
+SHOW_ANALYSIS_COMPLETE_HELP = """
+Determines whether CellProfiler
 displays a message box at the end of a run. Check this preference to
-show the message box or uncheck it to stop display."""
+show the message box or uncheck it to stop display.
+"""
 
-SHOW_EXITING_TEST_MODE_HELP = """ Determines whether CellProfiler
+SHOW_EXITING_TEST_MODE_HELP = """
+Determines whether CellProfiler
 displays a message box to inform you that a change made to the pipeline
 will cause test mode to end. Check this preference to show the message
-box or uncheck it to stop display."""
+box or uncheck it to stop display.
+"""
 
-SHOW_REPORT_BAD_SIZES_DLG_HELP = """ Determines whether
+SHOW_REPORT_BAD_SIZES_DLG_HELP = """
+Determines whether
 CellProfiler will display a warning dialog if images of different sizes
 are loaded together in an image set. Check this preference to show the
-message box or uncheck it to stop display."""
+message box or uncheck it to stop display.
+"""
 
-PRIMARY_OUTLINE_COLOR_HELP = """ Sets the color used for the outline
+PRIMARY_OUTLINE_COLOR_HELP = """
+Sets the color used for the outline
 of the object of interest in the **IdentifyPrimaryObjects**,
 **IdentifySecondaryObjects** and **IdentifyTertiaryObjects**
-displays."""
+displays.
+"""
 
-SECONDARY_OUTLINE_COLOR_HELP = """ Sets the color used
+SECONDARY_OUTLINE_COLOR_HELP = """
+Sets the color used
 for objects other than the ones of interest. In
 **IdentifyPrimaryObjects**, these are the objects that are too small or
 too large. In **IdentifySecondaryObjects** and
 **IdentifyTertiaryObjects**, this is the color of the secondary objects'
-outline."""
+outline.
+"""
 
-TERTIARY_OUTLINE_COLOR_HELP = """ Sets the color used for
+TERTIARY_OUTLINE_COLOR_HELP = """
+Sets the color used for
 the objects touching the image border or image mask in
-**IdentifyPrimaryObjects**."""
+**IdentifyPrimaryObjects**.
+"""
 
-INTERPOLATION_MODE_HELP = """ Sets the
+INTERPOLATION_MODE_HELP = """
+Sets the
 way CellProfiler displays image pixels. If you choose *Nearest*,
 CellProfiler will display each pixel as a square block of uniform
 intensity. This is truest to the data, but the resulting images look
@@ -1924,9 +1956,11 @@ interpolate the screen pixel value for screen pixels that do not fall
 exactly in the center of the image pixel. The result, for bilinear or
 bicubic interpolation is an image that is more visually appealing and
 easier to interpret, but obscures the true pixel nature of the real
-data. """
+data.
+"""
 
-INTENSITY_MODE_HELP = """ Sets the way CellProfiler
+INTENSITY_MODE_HELP = """
+Sets the way CellProfiler
 normalizes pixel intensities when displaying. If you choose "raw",
 CellProfiler will display a pixel with a value of "1" or above with the
 maximum brightness and a pixel with a value of "0" or below as black. If
@@ -1936,14 +1970,18 @@ with the maximum brightness and pixels at the minimum intensity as
 black. This can be used to view dim images. If you choose "log",
 CellProfiler will use the full brightness range and will use a log scale
 to scale the intensities. This can be used to view the image background
-in more detail. """
+in more detail.
+"""
 
-REPORT_JVM_ERROR_HELP = """ Determines whether
+REPORT_JVM_ERROR_HELP = """
+Determines whether
 CellProfiler will display a warning on startup if CellProfiler can't
 locate the Java installation on your computer. Check this box if you
-want to be warned. Uncheck this box to hide warnings."""
+want to be warned. Uncheck this box to hide warnings.
+"""
 
-MAX_WORKERS_HELP = """ Controls the maximum number of *workers* (i.e.,
+MAX_WORKERS_HELP = """
+Controls the maximum number of *workers* (i.e.,
 copies of CellProfiler) that will be started at the outset of an
 analysis run. CellProfiler uses these copies to process multiple image
 sets in parallel, utilizing the computer's CPUs and memory fully. The
@@ -1956,18 +1994,20 @@ If using the **Groups** module, only one worker will be allocated to
 handle each group. This means that you may have multiple workers
 created, but only a subset of them may actually be active, depending on
 the number of groups you have.
-
 """
 
-TEMP_DIR_HELP = """ Sets the folder that CellProfiler uses when
+TEMP_DIR_HELP = """
+Sets the folder that CellProfiler uses when
 storing temporary files. CellProfiler will create a temporary
 measurements file for analyses when the user specifies that a MATLAB
 measurements file should be created or when the user asks that no
 measurements file should be permanently saved. CellProfiler will also
 save images accessed by http URL temporarily to disk (but will
-efficiently access OMERO image planes directly from the server). """
+efficiently access OMERO image planes directly from the server).
+"""
 
-JVM_HEAP_HELP = """ Sets the maximum amount of memory that can be used
+JVM_HEAP_HELP = """
+Sets the maximum amount of memory that can be used
 by the Java virtual machine. CellProfiler uses Java for loading images,
 for running ImageJ and for processing image sets. If you load extremely
 large images, use the RunImageJ module extensively or process large
@@ -1975,9 +2015,11 @@ image set lists, you can use this option to start Java with a larger
 amount of memory. By default, CellProfiler starts Java with 512 MB, but
 you can override this by specifying the number of megabytes to load. You
 can also start CellProfiler from the command-line with the
---jvm-heap-size switch to get the same effect. """
+--jvm-heap-size switch to get the same effect.
+"""
 
-SAVE_PIPELINE_WITH_PROJECT_HELP = """ Controls whether a pipeline
+SAVE_PIPELINE_WITH_PROJECT_HELP = """
+Controls whether a pipeline
 and/or file list file is saved whenever the user saves the project file.
 Users may find it handy to have the pipeline and/or file list saved in a
 readable format, for instance, for version control whenever the project
@@ -1994,14 +2036,15 @@ existing in the Input Modules, not LoadData input files.
 -  *File list:* Save the file list, using the project's file name and
    path and a .txt extension.
 -  *Pipeline and file list:* Save both files.
-
 """
 
-BATCHPROFILER_URL_HELP = """ The base URL for BatchProfiler.
+BATCHPROFILER_URL_HELP = """
+The base URL for BatchProfiler.
 BatchProfiler is a set of CGI scripts for running CellProfiler on a
 GridEngine cluster or compatible. If BatchProfiler is available, the
 CreateBatchFiles module can optionally launch a browser to display the
-appropriate batch configuration page."""
+appropriate batch configuration page.
+"""
 
 EACH_PREFERENCE_HELP = (
         ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
@@ -2229,9 +2272,9 @@ is to simply acquire them as a series of individual image files, where
 each image file represents a single timepoint and/or Z-slice. Typically,
 the image filename reflects the timepoint or Z-slice, such that the
 alphabetical image listing corresponds to the proper sequence, e.g.,
-*img000.png*, *img001.png*, *img002.png*, etc
+*img000.png*, *img001.png*, *img002.png*, etc.
 
-. It is also not uncommon to store the movie such that one movie's worth
+It is also not uncommon to store the movie such that one movie's worth
 of files is stored in a single folder.
 
 *Example:* You have a time-lapse movie of individual files set up as
@@ -2764,9 +2807,6 @@ The values for "Red", "Green", and "Blue" in each row are brightness
 multipliers- changing the values will determine the color and scaling
 used to display each channel. "Alpha" determines the weight each channel
 contributes to the summed image. """
-
-"""
-"""
 
 #########################################################
 #

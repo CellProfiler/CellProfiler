@@ -22,8 +22,8 @@ the next, this allows the plates to be identified automatically and then
 cropped so that the interior of the plates, upon which the grids will be
 defined, are always in precise alignment with each other.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Rows, Columns*: The number of rows and columns in the grid
 -  *XSpacing, YSpacing:* The spacing in X and Y of the grid elements.

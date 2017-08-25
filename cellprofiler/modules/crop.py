@@ -14,8 +14,8 @@ cropped image and then trying to measure their intensity in the
 *original* image will not work because the two images are not the same
 size.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *AreaRetainedAfterCropping:* The area of the image left after
    cropping.

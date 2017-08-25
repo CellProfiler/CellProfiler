@@ -66,48 +66,48 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
                 choices=M_ALL, doc='''
                 There are a number of options for rescaling the input image:
 
-                -  *%(M\_STRETCH)s:* Find the minimum and maximum values within the
+                -  *%(M_STRETCH)s:* Find the minimum and maximum values within the
                    unmasked part of the image (or the whole image if there is no mask)
                    and rescale every pixel so that the minimum has an intensity of zero
                    and the maximum has an intensity of one.
-                -  *%(M\_MANUAL\_INPUT\_RANGE)s:* Pixels are scaled from their
+                -  *%(M_MANUAL_INPUT_RANGE)s:* Pixels are scaled from their
                    user-specified original range to the range 0 to 1. Options are
                    available to handle values outside of the original range.
                    To convert 12-bit images saved in 16-bit format to the correct range,
                    use the range 0 to 0.0625. The value 0.0625 is equivalent to
                    2\ :sup:`12` divided by 2\ :sup:`16`, so it will convert a 16 bit
                    image containing only 12 bits of data to the proper range.
-                -  *%(M\_MANUAL\_IO\_RANGE)s:* Pixels are scaled from their original
+                -  *%(M_MANUAL_IO_RANGE)s:* Pixels are scaled from their original
                    range to the new target range. Options are available to handle values
                    outside of the original range.
-                -  *%(M\_DIVIDE\_BY\_IMAGE\_MINIMUM)s:* Divide the intensity value of
+                -  *%(M_DIVIDE_BY_IMAGE_MINIMUM)s:* Divide the intensity value of
                    each pixel by the image’s minimum intensity value so that all pixel
                    intensities are equal to or greater than 1. The rescaled image can
                    serve as an illumination correction function in
                    **CorrectIlluminationApply**.
-                -  *%(M\_DIVIDE\_BY\_IMAGE\_MAXIMUM)s:* Divide the intensity value of
+                -  *%(M_DIVIDE_BY_IMAGE_MAXIMUM)s:* Divide the intensity value of
                    each pixel by the image’s maximum intensity value so that all pixel
                    intensities are less than or equal to 1.
-                -  *%(M\_DIVIDE\_BY\_VALUE)s:* Divide the intensity value of each pixel
+                -  *%(M_DIVIDE_BY_VALUE)s:* Divide the intensity value of each pixel
                    by the value entered.
-                -  *%(M\_DIVIDE\_BY\_MEASUREMENT)s:* The intensity value of each pixel
+                -  *%(M_DIVIDE_BY_MEASUREMENT)s:* The intensity value of each pixel
                    is divided by some previously calculated measurement. This
                    measurement can be the output of some other module or can be a value
                    loaded by the **Metadata** module.
-                -  *%(M\_SCALE\_BY\_IMAGE\_MAXIMUM)s:* Scale an image so that its
+                -  *%(M_SCALE_BY_IMAGE_MAXIMUM)s:* Scale an image so that its
                    maximum value is the same as the maximum value within the reference
                    image.''' % globals())
 
         self.wants_automatic_low = cellprofiler.setting.Choice(
                 'Method to calculate the minimum intensity',
                 LOW_ALL, doc="""
-                | *(Used only if “%(M\_MANUAL\_IO\_RANGE)s” is selected)*
+                | *(Used only if “%(M_MANUAL_IO_RANGE)s” is selected)*
                 | This setting controls how the minimum intensity is determined.
 
-                -  *%(CUSTOM\_VALUE)s:* Enter the minimum intensity manually below.
-                -  *%(LOW\_EACH\_IMAGE)s*: use the lowest intensity in this image as the
+                -  *%(CUSTOM_VALUE)s:* Enter the minimum intensity manually below.
+                -  *%(LOW_EACH_IMAGE)s*: use the lowest intensity in this image as the
                    minimum intensity for rescaling
-                -  *%(LOW\_ALL\_IMAGES)s*: use the lowest intensity from all images in
+                -  *%(LOW_ALL_IMAGES)s*: use the lowest intensity from all images in
                    the image group or the experiment if grouping is not being used.
                    **Note:** Choosing this option may have undesirable results for a
                    large ungrouped experiment split into a number of batches. Each batch
@@ -119,13 +119,13 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
         self.wants_automatic_high = cellprofiler.setting.Choice(
                 'Method to calculate the maximum intensity',
                 HIGH_ALL, doc="""
-                | *(Used only if “%(M\_MANUAL\_IO\_RANGE)s” is selected)*
+                | *(Used only if “%(M_MANUAL_IO_RANGE)s” is selected)*
                 | This setting controls how the maximum intensity is determined.
 
-                -  *%(CUSTOM\_VALUE)s*: Enter the maximum intensity manually below.
-                -  *%(HIGH\_EACH\_IMAGE)s*: Use the highest intensity in this image as
+                -  *%(CUSTOM_VALUE)s*: Enter the maximum intensity manually below.
+                -  *%(HIGH_EACH_IMAGE)s*: Use the highest intensity in this image as
                    the maximum intensity for rescaling
-                -  *%(HIGH\_ALL\_IMAGES)s*: Use the highest intensity from all images in
+                -  *%(HIGH_ALL_IMAGES)s*: Use the highest intensity from all images in
                    the image group or the experiment if grouping is not being used.
                    **Note:** Choosing this option may have undesirable results for a
                    large ungrouped experiment split into a number of batches. Each batch
@@ -144,19 +144,19 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
 
         self.matching_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select image to match in maximum intensity", cellprofiler.setting.NONE, doc="""
-                *(Used only if “%(M\_SCALE\_BY\_IMAGE\_MAXIMUM)s” is selected)*
+                *(Used only if “%(M_SCALE_BY_IMAGE_MAXIMUM)s” is selected)*
                 Select the image whose maximum you want the rescaled image to match.""" % globals())
 
         self.divisor_value = cellprofiler.setting.Float(
                 "Divisor value",
                 1, minval=numpy.finfo(float).eps, doc="""
-                *(Used only if “%(M\_DIVIDE\_BY\_VALUE)s” is selected)*
+                *(Used only if “%(M_DIVIDE_BY_VALUE)s” is selected)*
                 Enter the value to use as the divisor for the final image..""" % globals())
 
         self.divisor_measurement = cellprofiler.setting.Measurement(
                 "Divisor measurement",
                 lambda: cellprofiler.measurement.IMAGE, doc="""
-                *(Used only if “%(M\_DIVIDE\_BY\_MEASUREMENT)s” is selected)*
+                *(Used only if “%(M_DIVIDE_BY_MEASUREMENT)s” is selected)*
                 Select the measurement value to use as the divisor for the final image.""" % globals())
 
     def settings(self):
@@ -218,14 +218,19 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
         return d[HIGH_ALL_IMAGES]
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Handle initialization per-group pipeline - the pipeline being run
-        image\_set\_list - the list of image sets for the whole experiment
-        grouping - a dictionary that describes the key for the grouping. For
-        instance, { ‘Metadata\_Row’:’A’,’Metadata\_Column’:’01’} image\_numbers
-        - a sequence of the image numbers within the group (image sets can be
-        retreved as image\_set\_list.get\_image\_set(image\_numbers[i]-1) We use
-        prepare\_group to compute the minimum or maximum values among all images
-        in the group for certain values of “wants\_automatic\_[low,high]”.
+        '''Handle initialization per-group
+
+        pipeline - the pipeline being run
+        image_set_list - the list of image sets for the whole experiment
+        grouping - a dictionary that describes the key for the grouping.
+                   For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
+        image_numbers - a sequence of the image numbers within the
+                   group (image sets can be retreved as
+                   image_set_list.get_image_set(image_numbers[i]-1)
+
+        We use prepare_group to compute the minimum or maximum values
+        among all images in the group for certain values of
+        "wants_automatic_[low,high]".
         '''
         if (self.wants_automatic_high != HIGH_ALL_IMAGES and
                     self.wants_automatic_low != LOW_ALL_IMAGES):

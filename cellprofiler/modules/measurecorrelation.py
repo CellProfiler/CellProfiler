@@ -37,22 +37,22 @@ Measurements made by this module
    images R and G, the overlap coefficient is measured as r = sum(Ri \*
    Gi) / sqrt (sum(Ri\*Ri)\*sum(Gi\*Gi)).
 -  *Manders coefficient:* The Manders coefficient for a pair of images R
-   and G is measured as M1 = sum(Ri\_coloc)/sum(Ri) and M2 =
-   sum(Gi\_coloc)/sum(Gi), where Ri\_coloc = Ri when Gi > 0, 0 otherwise
-   and Gi\_coloc = Gi when Ri >0, 0 otherwise.
+   and G is measured as M1 = sum(Ri_coloc)/sum(Ri) and M2 =
+   sum(Gi_coloc)/sum(Gi), where Ri_coloc = Ri when Gi > 0, 0 otherwise
+   and Gi_coloc = Gi when Ri >0, 0 otherwise.
 -  *Manders coefficient (Costes Automated Threshold):* Costes’ automated
    threshold estimates maximum threshold of intensity for each image
    based on correlation. Manders coefficient is applied on thresholded
-   images as Ri\_coloc = Ri when Gi > Gthr and Gi\_coloc = Gi when Ri >
+   images as Ri_coloc = Ri when Gi > Gthr and Gi_coloc = Gi when Ri >
    Rthr where Gthr and Rthr are thresholds calculed using Costes’
    authomated threshold method.
 -  *Rank Weighted Colocalization coefficient:* The RWC coefficient for a
    pair of images R and G is measured as RWC1 =
-   sum(Ri\_coloc\*Wi)/sum(Ri) and RWC2 = sum(Gi\_coloc\*Wi)/sum(Gi),
+   sum(Ri_coloc\*Wi)/sum(Ri) and RWC2 = sum(Gi_coloc\*Wi)/sum(Gi),
    where Wi is Weight defined as Wi = (Rmax - Di)/Rmax where Rmax is the
    maximum of Ranks among R and G based on the max intensity, and Di =
    abs(Rank(Ri) - Rank(Gi)) (absolute difference in ranks between R and
-   G) and Ri\_coloc = Ri when Gi > 0, 0 otherwise and Gi\_coloc = Gi
+   G) and Ri_coloc = Ri when Gi > 0, 0 otherwise and Gi_coloc = Gi
    when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics
    12:407).
 """
@@ -122,12 +122,12 @@ class MeasureCorrelation(cpm.Module):
                 'Select where to measure correlation',
                 [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''You can measure the correlation in several ways:
 
-                -  *%(M\_OBJECTS)s:* Measure correlation only in those pixels previously
+                -  *%(M_OBJECTS)s:* Measure correlation only in those pixels previously
                    identified as an object. You will be asked to specify which object to
                    measure from.
-                -  *%(M\_IMAGES)s:* Measure the correlation across all pixels in the
+                -  *%(M_IMAGES)s:* Measure the correlation across all pixels in the
                    images.
-                -  *%(M\_IMAGES\_AND\_OBJECTS)s:* Calculate both measurements above.
+                -  *%(M_IMAGES_AND_OBJECTS)s:* Calculate both measurements above.
 
                 All methods measure correlation on a pixel by pixel basis.''' % globals())
 

@@ -41,7 +41,7 @@ A set of tertiary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations.
 Because each tertiary object is produced from primary and secondary
 objects, there will always be at most one secondary object for each
-primary object. See the section `“Available measurements”`_ below for
+primary object. See the section `“Measurements made by this module”`_ below for
 the measurements that are produced by this module.
 
 Note that creating subregions using this module can result in objects
@@ -52,8 +52,8 @@ ratio, solidity, etc. typically make sense only for contiguous objects.
 Other modules, such as **MeasureImageIntensity** and **MeasureTexture**
 modules, are not affected and will yield expected results.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 
@@ -70,7 +70,7 @@ Available measurements
 See also **IdentifyPrimaryObject** and **IdentifySecondaryObject**
 modules.
 
-.. _“Available measurements”: #Available_measurements
+.. _“Measurements made by this module”: #Available_measurements
 """
 
 import cellprofiler.measurement

@@ -33,8 +33,8 @@ a value of False for all bins. However, they are still counted in the
 total number of objects and hence are reflected in the classification
 percentages.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Image measurements:**
 

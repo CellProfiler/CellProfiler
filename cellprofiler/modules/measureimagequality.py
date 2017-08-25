@@ -13,8 +13,8 @@ Please note that for best results, this module should be applied to the
 original raw images, as opposed to images that have already been
 corrected for illumination.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Blur metrics**
 

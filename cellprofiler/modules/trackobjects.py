@@ -32,8 +32,8 @@ Stacks and Movies*.
 For an example pipeline using TrackObjects, see the CellProfiler
 `Examples`_ webpage.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements**
 

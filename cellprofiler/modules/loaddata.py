@@ -168,8 +168,8 @@ For more details on configuring CellProfiler (and LoadData in
 particular) for a LIMS environment, please see our `wiki`_ on the
 subject.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image,
    if image loading was requested by the user.

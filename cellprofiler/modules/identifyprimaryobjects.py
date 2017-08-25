@@ -62,7 +62,7 @@ the module display window will show the following panels:
     <li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as those calculated by
     the module in order to produce the objects shown.</li>
 </ul><a id="Available_measurements" name="Available_measurements">
-<h4>Available measurements</h4><b>Image measurements:</b>
+<h4>Measurements made by this module</h4><b>Image measurements:</b>
 <ul>
     <li><i>Count:</i> The number of primary objects identified.</li>
     <li><i>OriginalThreshold:</i> The global threshold for the image.</li>

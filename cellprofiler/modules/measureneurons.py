@@ -28,8 +28,8 @@ and dendrites and assigns branchpoints based on distance to the closest
 seed object when two seed objects appear to be attached to the same
 dendrite or axon.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *NumberTrunks:* The number of trunks. Trunks are branchpoints that
    lie within the seed objects

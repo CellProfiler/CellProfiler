@@ -19,7 +19,7 @@ behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
 Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Haralick Features:* Haralick texture features are derived from the
    co-occurrence matrix, which contains information about how image

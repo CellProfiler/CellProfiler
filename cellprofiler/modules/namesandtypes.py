@@ -68,7 +68,7 @@ image sets in the order shown.</p>
 <tr align="center"><td><img src="memory:NamesAndTypes_ExampleDisplayTable.png"></td></tr>
 </table>
 
-<h4>Available measurements</h4>
+<h4>Measurements made by this module</h4>
 <ul>
 <li><i>FileName, PathName:</i> The prefixes of the filename and location, respectively, of each image set
 written to the per-image table.</li>

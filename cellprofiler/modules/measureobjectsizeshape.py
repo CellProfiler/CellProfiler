@@ -17,8 +17,8 @@ per-object measurements themselves, you will need to use
 display the object measurements of choice overlaid on an image of
 choice.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See the *Technical Notes* below for an explanation of creating an
 ellipse with the same second-moments as an object region.
@@ -97,9 +97,9 @@ statistical properties. Furthermore, they are not affected by the
 translation or uniform scaling of a region.
 
 Following computer vision conventions, the origin of the X and Y axes is at the top
-left of the image rather than the bottom left; the orientation of objects whose topmost point 
-is on their right (or are rotated counter-clockwise from the horizontal) will therefore 
-have a negative orientation, while objects whose topmost point is on their left 
+left of the image rather than the bottom left; the orientation of objects whose topmost point
+is on their right (or are rotated counter-clockwise from the horizontal) will therefore
+have a negative orientation, while objects whose topmost point is on their left
  (or are rotated clockwise from the horizontal) will have a positive orientation.
 
 The Zernike features are computed within the minimum enclosing circle of

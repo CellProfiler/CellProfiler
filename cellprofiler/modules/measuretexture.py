@@ -1,22 +1,24 @@
 # coding=utf-8
 
 """
-**Measure Texture** measures the degree and nature of textures within
-objects (versus smoothness).
+MeasureTexture
+==============
 
-This module measures the variations in grayscale images. An object (or
-entire image) without much texture has a smooth appearance; an object or
+**MeasureTexture** measures the degree and nature of textures within
+images and objects to quantify their roughness and smoothness.
+
+This module measures intensity variations in grayscale images. An object or
+entire image without much texture has a smooth appearance; an object or
 image with a lot of texture will appear rough and show a wide variety of
 pixel intensities.
 
-This module can also measure textures of objects against grayscale
-images. Any input objects specified will have their texture measured
+Note that any input objects specified will have their texture measured
 against *all* input images specified, which may lead to image-object
 texture combinations that are unneccesary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
-Available measurements
+Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Haralick Features:* Haralick texture features are derived from the
@@ -65,8 +67,11 @@ Available measurements
       co-occurance matrix.
    -  *DifferenceEntropy:* Another indication of the amount of
       randomness in an image.
-   -  *InfoMeas1*
-   -  *InfoMeas2*
+   -  *InfoMeas1:* A measure of the total amount of information contained within a region of pixels derived from
+   the recurring spatial relationship ship between specific intensity values.
+   -  *InfoMeas2:* An additional measure of the total amount of information contained within a region of pixels derived
+   from the recurring spatial relationship ship between specific intensity values. It is a complementary value to
+   InfoMeas1 and is on a different scale.
 
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 
@@ -169,14 +174,14 @@ class MeasureTexture(cellprofiler.module.Module):
             ],
             value=IO_BOTH,
             doc="""
-            This setting determines whether the module computes image-wide measurements, per-object
-            measurements or both.
-            <ul>
-                <li><i>{IO_IMAGES}:</i> Select if you only want to measure the texture of objects.</li>
-                <li><i>{IO_OBJECTS}:</i> Select if your pipeline does not contain objects or if you only want
-                to make per-image measurements.</li>
-                <li><i>{IO_BOTH}:</i> Select to make both image and object measurements.</li>
-            </ul>
+            This setting determines whether the module computes image-wide
+            measurements, per-object measurements or both.
+            
+            -  *{IO_IMAGES}:* Select if you only want to measure the texture of
+               objects.
+            -  *{IO_OBJECTS}:* Select if your pipeline does not contain objects or
+               if you only want to make per-image measurements.
+            -  *{IO_BOTH}:* Select to make both image and object measurements.
             """.format(**{
                 "IO_IMAGES": IO_IMAGES,
                 "IO_OBJECTS": IO_OBJECTS,
@@ -316,13 +321,15 @@ class MeasureTexture(cellprofiler.module.Module):
 
         object_subscriber = cellprofiler.setting.ObjectNameSubscriber(
             doc="""
-            <p>Select the objects whose texture you want to measure. If you only want to measure the texture for
-            the image overall, you can remove all objects using the "Remove this object" button.</p>
-
-            <p>Objects specified here will have their texture measured against <i>all</i> images specified
-            above, which may lead to image-object combinations that are unneccesary. If you do not want this
-            behavior, use multiple <b>MeasureTexture</b> modules to specify the particular image-object
-            measures that you want.</p>
+            Select the objects whose texture you want to measure. If you only want
+            to measure the texture for the image overall, you can remove all objects
+            using the “Remove this object” button.
+            
+            Objects specified here will have their texture measured against *all*
+            images specified above, which may lead to image-object combinations that
+            are unnecessary. If you do not want this behavior, use multiple
+            **MeasureTexture** modules to specify the particular image-object
+            measures that you want.
             """,
             text="Select objects to measure",
             value=cellprofiler.setting.NONE
@@ -357,13 +364,15 @@ class MeasureTexture(cellprofiler.module.Module):
 
         scale = cellprofiler.setting.Integer(
             doc="""
-            <p>You can specify the scale of texture to be measured, in pixel units; the texture scale is the
-            distance between correlated intensities in the image. A higher number for the scale of texture
-            measures larger patterns of texture whereas smaller numbers measure more localized patterns of
-            texture. It is best to measure texture on a scale smaller than your objects' sizes, so be sure that
-            the value entered for scale of texture is smaller than most of your objects. For very small objects
-            (smaller than the scale of texture you are measuring), the texture cannot be measured and will
-            result in a undefined value in the output file.</p>
+            You can specify the scale of texture to be measured, in pixel units; the
+            texture scale is the distance between correlated intensities in the
+            image. A higher number for the scale of texture measures larger patterns
+            of texture whereas smaller numbers measure more localized patterns of
+            texture. It is best to measure texture on a scale smaller than your
+            objects’ sizes, so be sure that the value entered for scale of texture
+            is smaller than most of your objects. For very small objects (smaller
+            than the scale of texture you are measuring), the texture cannot be
+            measured and will result in a undefined value in the output file.
             """,
             text="Texture scale to measure",
             value=len(self.scale_groups) + 3

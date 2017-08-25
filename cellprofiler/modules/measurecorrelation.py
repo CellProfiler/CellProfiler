@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Correlation** measures the colocalization and correlation
+MeasureCorrelation
+=====
+
+**MeasureCorrelation** measures the colocalization and correlation
 between intensities in different images (e.g., different color channels)
 on a pixel-by-pixel basis, within identified objects or across an entire
 image.
@@ -20,15 +23,14 @@ between the following:
 -  The blue and green, red and green, and red and blue images.
 -  The nuclei in each of the above image pairs.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Correlation:* The correlation between a pair of images *I* and *J*,
    calculated as Pearson’s correlation coefficient. The formula is
    covariance(\ *I* ,\ *J*)/[std(\ *I* ) × std(\ *J*)].
 -  *Slope:* The slope of the least-squares regression between a pair of
-   images I and J. Calculated using the model *A* × *I* + *B* = *J*, w
-   here *A* is the slope.
+   images I and J. Calculated using the model *A* × *I* + *B* = *J*, where *A* is the slope.
 -  *Overlap coefficient:* The overlap coefficient is a modification of
    Pearson’s correlation where average intesity values of the pixels are
    not subtracted from the original intesity values. For a pair of

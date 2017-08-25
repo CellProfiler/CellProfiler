@@ -8,7 +8,7 @@ dependencies:
     - pip install --editable .[test] --upgrade
   pre:
     - brew update
-    - brew install mysql wxpython
+    - brew install awscli mysql upx wxpython
     - pip install --upgrade cython numpy scipy
 deployment:
   nightly:

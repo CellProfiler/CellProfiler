@@ -24,7 +24,7 @@ database:
     - brew services start mysql
 test:
   override:
-    - python2 -m pytest tests/modules/
+    - python2 -m pytest
 # deployment:
 #   nightly:
 #     branch: features/circle

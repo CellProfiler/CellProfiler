@@ -219,7 +219,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                the resulting image in another pipeline. The option is useful if you
                want to exclude images that are filtered by a prior **FlagImage**
                module.
-               """ % globals())
+            """ % globals())
         self.smoothing_method = cps.Choice(
                 "Smoothing method",
                 [SM_NONE,
@@ -291,9 +291,9 @@ class CorrectIlluminationCalculate(cpm.Module):
         self.automatic_object_width = cps.Choice(
             "Method to calculate smoothing filter size",
             [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc="""               
-            | *(Used only if a smoothing method other than Fit Polynomial is
+            *(Used only if a smoothing method other than Fit Polynomial is
               selected)*
-            | Calculate the smoothing filter size. There are three options:
+            Calculate the smoothing filter size. There are three options:
                
             -  *%(FI_AUTOMATIC)s:* The size is computed as 1/40 the size of the
                image or 30 pixels, whichever is smaller.
@@ -349,8 +349,8 @@ class CorrectIlluminationCalculate(cpm.Module):
 
         self.automatic_splines = cps.Binary(
             "Automatically calculate spline parameters?", True, doc="""    
-            | *(Used only if %(SM_SPLINES)s are selected for the smoothing method)*
-            | Select *%(YES)s* to automatically calculate the parameters for spline
+            *(Used only if %(SM_SPLINES)s are selected for the smoothing method)*
+            Select *%(YES)s* to automatically calculate the parameters for spline
               fitting.
             
             Select *%(NO)s* to specify the background mode, background threshold,
@@ -383,14 +383,14 @@ class CorrectIlluminationCalculate(cpm.Module):
 
         self.spline_threshold = cps.Float(
             "Background threshold", 2, minval=.1, maxval=5.0, doc="""
-            | *(Used only if %(SM_SPLINES)s are selected for the smoothing method
-              and spline parameters are not calculated automatically)*
-            | This setting determines the cutoff used when excluding foreground
-              pixels from consideration. On each iteration, the method computes the
-              standard deviation of background pixels from the computed background.
-              The number entered in this setting is the number of standard
-              deviations a pixel can be from the computed background on the last
-              pass if it is to be considered as background during the next pass.
+            *(Used only if %(SM_SPLINES)s are selected for the smoothing method
+            and spline parameters are not calculated automatically)*
+            This setting determines the cutoff used when excluding foreground
+            pixels from consideration. On each iteration, the method computes the
+            standard deviation of background pixels from the computed background.
+            The number entered in this setting is the number of standard
+            deviations a pixel can be from the computed background on the last
+            pass if it is to be considered as background during the next pass.
             
             You should enter a higher number to converge stabily and slowly on a
             final background and a lower number to converge more rapidly, but with
@@ -432,16 +432,16 @@ class CorrectIlluminationCalculate(cpm.Module):
 
         self.spline_convergence = cps.Float(
             "Residual value for convergence", value=.001, minval=.00001, maxval=.1, doc="""           
-            | *(Used only if %(SM_SPLINES)s are selected for the smoothing method
-              and spline parameters are not calculated automatically)*
-            | This setting determines the convergence criterion. The software sets
-              the convergence criterion to the number entered here times the signal
-              intensity; the convergence you enter is the fraction of the signal
-              intensity that indicates convergence. The algorithm derives a standard
-              deviation of the background pixels from the calculated background on
-              each iteration. The algorithm terminates when the difference between
-              the standard deviation for the current iteration and the previous
-              iteration is less than the convergence criterion.
+            *(Used only if %(SM_SPLINES)s are selected for the smoothing method
+            and spline parameters are not calculated automatically)*
+            This setting determines the convergence criterion. The software sets
+            the convergence criterion to the number entered here times the signal
+            intensity; the convergence you enter is the fraction of the signal
+            intensity that indicates convergence. The algorithm derives a standard
+            deviation of the background pixels from the calculated background on
+            each iteration. The algorithm terminates when the difference between
+            the standard deviation for the current iteration and the previous
+            iteration is less than the convergence criterion.
             
             Enter a smaller number for the convergence to calculate a more accurate
             background. Enter a larger number to calculate the background using

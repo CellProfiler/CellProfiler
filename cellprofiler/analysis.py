@@ -737,7 +737,7 @@ class AnalysisRunner(object):
             if hasattr(sys, 'frozen'):
                 if sys.platform == 'darwin':
                     executable = os.path.join(
-                            os.path.dirname(sys.executable), "CellProfiler")
+                            os.path.dirname(sys.executable), "cp")
                     args = ([executable] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),

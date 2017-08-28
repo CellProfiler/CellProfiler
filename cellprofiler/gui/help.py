@@ -1657,6 +1657,12 @@ FIGURE_HELP = (
     ("How To Use The Image Tools", MODULE_DISPLAY_IMAGE_TOOLS_HELP)
 )
 
+FIGURE_HELP = {
+    "Using The Display Window Menu Bar": MODULE_DISPLAY_MENU_BAR_HELP,
+    "Using The Interactive Navigation Toolbar": MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP,
+    "How To Use The Image Tools": MODULE_DISPLAY_IMAGE_TOOLS_HELP
+}
+
 WORKSPACE_VIEWER_HELP = """\
 The workspace viewer is a flexible tool
 that you can use to explore your images, objects and measurements in
@@ -1846,7 +1852,7 @@ objects using one of the following modes:
     "INTENSITY_MODE_HELP_LIST": INTENSITY_MODE_HELP_LIST
 })
 
-WV_FIGURE_HELP = tuple(list(FIGURE_HELP) + [("How To Use The Workspace Viewer", WORKSPACE_VIEWER_HELP)])
+WV_FIGURE_HELP = FIGURE_HELP.copy().update({"How To Use The Workspace Viewer": WORKSPACE_VIEWER_HELP})
 
 #################################
 #
@@ -3004,43 +3010,46 @@ Plate Viewer
 })
 
 
-'''The help menu for CP's main window'''
-MAIN_HELP = (
-    ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),
-    ("Navigating The Menu Bar", (
-        ("Using the File Menu", MENU_BAR_FILE_HELP),
-        ("Using the Edit Menu", MENU_BAR_EDIT_HELP),
-        ("Using the Test Menu", TEST_MODE_HELP),
-        ("Using the Window Menu", MENU_BAR_WINDOW_HELP),
-        ("Using the Parameter Sampling Menu", PARAMETER_SAMPLING_MENU_HELP),
-        ("Using the Data Tools Menu", MENU_BAR_DATATOOLS_HELP))),
-    ("Using Module Display Windows", FIGURE_HELP),
-    # ("Setting the Preferences", PREFERENCES_HELP),
-    (CREATING_A_PROJECT_CAPTION, (
-        ("Introduction to Projects", INTRODUCTION_TO_PROJECTS_HELP),
-        ("Selecting Images for Input", SELECTING_IMAGES_HELP),
-        ("Configuring Images for Analysis", CONFIGURE_IMAGES_HELP),
-        ("Loading Image Stacks and Movies", LOADING_IMAGE_SEQUENCES_HELP))),
-    ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
-    ("Testing Your Pipeline", TEST_MODE_HELP),
-    ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),
-    ("Using Your Output", (
-        ("How Measurements are Named", MEASUREMENT_NOMENCLATURE_HELP),
-        ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
-        ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),
-    ("Troubleshooting Memory and Speed Issues", MEMORY_AND_SPEED_HELP),
-    ("Batch Processing", BATCHPROCESSING_HELP),
-    ("Legacy Modules and Features", (
-        ("Load Modules", LEGACY_LOAD_MODULES_HELP),
-        ("Setting the Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-        ("Setting the Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-        ("Setting the Output Filename", USING_THE_OUTPUT_FILE_HELP))),
-    ("Other Features", (
-        ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
-        ("Configuring Logging", CONFIGURING_LOGGING_HELP),
-        ("Accessing Images From OMERO", ACCESSING_OMERO_IMAGES),
-        ("Plate Viewer", PLATEVIEWER_HELP)))
-)
+MAIN_HELP = {
+    "Why Use CellProfiler?": WHEN_CAN_I_USE_CELLPROFILER_HELP,
+    "Navigating The Menu Bar": {
+        "Using the File Menu": MENU_BAR_FILE_HELP,
+        "Using the Edit Menu": MENU_BAR_EDIT_HELP,
+        "Using the Test Menu": TEST_MODE_HELP,
+        "Using the Window Menu": MENU_BAR_WINDOW_HELP,
+        "Using the Parameter Sampling Menu": PARAMETER_SAMPLING_MENU_HELP,
+        "Using the Data Tools Menu": MENU_BAR_DATATOOLS_HELP
+    },
+    "Using Module Display Windows": FIGURE_HELP,
+    CREATING_A_PROJECT_CAPTION: {
+        "Introduction to Projects": INTRODUCTION_TO_PROJECTS_HELP,
+        "Selecting Images for Input": SELECTING_IMAGES_HELP,
+        "Configuring Images for Analysis": CONFIGURE_IMAGES_HELP,
+        "Loading Image Stacks and Movies": LOADING_IMAGE_SEQUENCES_HELP,
+    },
+    "How To Build A Pipeline": BUILDING_A_PIPELINE_HELP,
+    "Testing Your Pipeline": TEST_MODE_HELP,
+    "Running Your Pipeline": RUNNING_YOUR_PIPELINE_HELP,
+    "Using Your Output": {
+        "How Measurements are Named": MEASUREMENT_NOMENCLATURE_HELP,
+        "Using Spreadsheets and Databases": SPREADSHEETS_DATABASE_HELP,
+        "Using the Output File": USING_THE_OUTPUT_FILE_HELP,
+    },
+    "Troubleshooting Memory and Speed Issues": MEMORY_AND_SPEED_HELP,
+    "Batch Processing": BATCHPROCESSING_HELP,
+    "Legacy Modules and Features": {
+        "Load Modules": LEGACY_LOAD_MODULES_HELP,
+        "Setting the Default Input Folder": DEFAULT_IMAGE_FOLDER_HELP,
+        "Setting the Default Output Folder": DEFAULT_OUTPUT_FOLDER_HELP,
+        "Setting the Output Filename": USING_THE_OUTPUT_FILE_HELP
+    },
+    "Other Features": {
+        "Running Multiple Pipelines": RUN_MULTIPLE_PIPELINES_HELP,
+        "Configuring Logging": CONFIGURING_LOGGING_HELP,
+        "Accessing Images From OMERO": ACCESSING_OMERO_IMAGES,
+        "Plate Viewer": PLATEVIEWER_HELP
+    }
+}
 
 
 def make_help_menu(h, window, menu=None):
@@ -3048,7 +3057,7 @@ def make_help_menu(h, window, menu=None):
     import htmldialog
     if menu is None:
         menu = wx.Menu()
-    for key, value in h:
+    for key, value in h.iteritems():
         my_id = wx.NewId()
         if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
             menu.AppendMenu(my_id, key, make_help_menu(value, window))

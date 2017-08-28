@@ -5,7 +5,7 @@ dependencies:
   cache_directories:
     - /usr/local/lib/python2.7/site-packages
   override:
-    - pip install --editable .[test] --upgrade
+    - pip2 install --editable .[test] --upgrade
   pre:
     - brew update
     - brew install awscli

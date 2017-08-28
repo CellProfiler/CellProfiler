@@ -7,14 +7,8 @@ dependencies:
   override:
     - pip2 install --editable .[test] --upgrade
   pre:
-    - brew update
-    - brew install awscli mysql upx python wxpython
-    # - export PATH="/usr/local/opt/python/libexec/bin:$PATH"
-    - pip2 install --upgrade pip
-    - pip2 install --upgrade wheel
-    - pip2 install --upgrade cython
-    - pip2 install --upgrade numpy
-    - pip2 install --upgrade scipy
+    - brew update && brew install awscli mysql upx python wxpython
+    - pip2 install --upgrade cython numpy scipy
 deployment:
   nightly:
     branch: master

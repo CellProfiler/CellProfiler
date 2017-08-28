@@ -1,27 +1,53 @@
 database:
   pre:
+    # Start MySQL:
     - brew services start mysql
 dependencies:
   cache_directories:
+    # Cache CellProfiler’s Python dependencies:
     - /usr/local/lib/python2.7/site-packages
-  override:
-    - pip2 install --editable .[test] --upgrade
   pre:
+    # Install CellProfiler’s Homebrew dependencies:
     - brew update && brew install awscli mysql upx python wxpython
-    - pip2 install --upgrade cython numpy scipy
+
+    # Install CellProfiler’s Python dependencies and PyInstaller:
+    - pip2 install --upgrade cython numpy pyinstaller scipy
+  override:
+    # Install CellProfiler:
+    - pip2 install --editable .[test] --upgrade
 deployment:
   nightly:
     branch: master
     commands:
-      - pip2 install --upgrade pyinstaller
+      # Create macOS application bundle:
       - pyinstaller CellProfiler.spec
-      - cp /usr/local/Cellar/libpng/1.6.31/lib/libpng16.16.dylib dist/CellProfiler.app/Contents/MacOS
+
+      # Copy Homebrew’s libpng dynamic library to application bundle:
+      - >
+        cp                                                    \
+          `brew --cellar libpng`/1.6.31/lib/libpng16.16.dylib \
+          dist/CellProfiler.app/Contents/MacOS
+
+      # Remove duplicate wx dynamic libraries from application bundle:
       - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
-      - hdiutil create -srcfolder dist/CellProfiler.app -volname CellProfiler -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 500000k dist/CellProfiler-nightly.dmg
-      - aws s3 sync dist s3://cellprofiler-releases --exclude "*" --include "CellProfiler-nightly.dmg" --delete
-general:
-  artifacts:
-    - dist/CellProfiler.app
+      
+      # Create Apple Disk Image:
+      - >
+        hdiutil create                     \
+          -format UDRW                     \
+          -fs HFS+                         \
+          -fsargs "-c c=64,a=16,e=16"      \
+          -size 500000k                    \
+          -srcfolder dist/CellProfiler.app \
+          -volname CellProfiler            \
+          dist/CellProfiler-nightly.dmg
+      
+      # Upload to disk image to Amazon S3 (Simple Storage Service):
+      - >
+        aws s3 sync dist s3://cellprofiler-releases \
+          --delete                                  \
+          --exclude "*"                             \
+          --include "CellProfiler-nightly.dmg"
 machine:
   xcode:
     version: 8.2

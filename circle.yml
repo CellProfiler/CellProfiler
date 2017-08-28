@@ -3,6 +3,7 @@ machine:
     CP_MYSQL_TEST_HOST: "127.0.0.1"
     CP_MYSQL_TEST_PASSWORD: ""
     CP_MYSQL_TEST_USER: "root"
+    PATH: "/usr/local/opt/python/libexec/bin:$PATH"
   xcode:
     version: 8.2
 dependencies:

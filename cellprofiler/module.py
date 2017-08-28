@@ -214,6 +214,9 @@ class Module(object):
         return parts["body_pre_docinfo"] + parts["fragment"]
 
     def _get_setting_help(self, setting):
+        if isinstance(setting, cellprofiler.setting.HiddenCount):
+            return u""
+
         return u"""
         <div>
             <h4>{SETTING_NAME}</h4>

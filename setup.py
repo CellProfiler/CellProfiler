@@ -47,8 +47,7 @@ setuptools.setup(
             "twine"
         ],
         "test": [
-            "pytest",
-            "pytest-xdist"
+            "pytest"
         ]
     },
     install_requires=[

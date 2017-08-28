@@ -212,6 +212,12 @@ class Images(cpm.Module):
             that do not pass the current filter.
             """)
 
+    def help_settings(self):
+        return [
+            self.filter,
+            self.update_button
+        ]
+
     @staticmethod
     def modpath_to_url(modpath):
         if modpath[0] in ("http", "https", "ftp"):

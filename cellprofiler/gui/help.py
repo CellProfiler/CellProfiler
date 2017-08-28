@@ -1,12 +1,14 @@
 # coding=utf-8
 
-import cellprofiler.icons
 import logging
-import os
-import sys
-import cellprofiler.icons
-from cellprofiler.setting import YES, NO
 import os.path
+
+import docutils
+import pkg_resources
+import sys
+
+import cellprofiler.icons
+from cellprofiler.setting import YES
 
 logger = logging.getLogger(__name__)
 
@@ -42,59 +44,65 @@ except:
 #
 ########################
 
-# General help references
 
-REFRESH_BUTTON = 'folder_refresh.png'
-BROWSE_BUTTON = 'folder_browse.png'
-CREATE_BUTTON = 'folder_create.png'
+def _image_resource(filename):
+    return pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "images", filename)
+    )
 
-MODULE_HELP_BUTTON = 'module_help.png'
-MODULE_MOVEUP_BUTTON = 'module_moveup.png'
-MODULE_MOVEDOWN_BUTTON = 'module_movedown.png'
-MODULE_ADD_BUTTON = 'module_add.png'
-MODULE_REMOVE_BUTTON = 'module_remove.png'
 
-TESTMODE_PAUSE_ICON = 'IMG_PAUSE.png'
-TESTMODE_GO_ICON = 'IMG_GO.png'
+REFRESH_BUTTON = _image_resource('folder_refresh.png')
+BROWSE_BUTTON = _image_resource('folder_browse.png')
+CREATE_BUTTON = _image_resource('folder_create.png')
 
-DISPLAYMODE_SHOW_ICON = 'IMG_EYE.png'
-DISPLAYMODE_HIDE_ICON = 'IMG_CLOSED_EYE.png'
+MODULE_HELP_BUTTON = _image_resource('module_help.png')
+MODULE_MOVEUP_BUTTON = _image_resource('module_moveup.png')
+MODULE_MOVEDOWN_BUTTON = _image_resource('module_movedown.png')
+MODULE_ADD_BUTTON = _image_resource('module_add.png')
+MODULE_REMOVE_BUTTON = _image_resource('module_remove.png')
 
-SETTINGS_OK_ICON = 'IMG_OK.png'
-SETTINGS_ERROR_ICON = 'IMG_ERROR.png'
-SETTINGS_WARNING_ICON = 'IMG_WARN.png'
+TESTMODE_PAUSE_ICON = _image_resource('IMG_PAUSE.png')
+TESTMODE_GO_ICON = _image_resource('IMG_GO.png')
 
-RUNSTATUS_PAUSE_BUTTON = 'status_pause.png'
-RUNSTATUS_STOP_BUTTON = 'status_stop.png'
-RUNSTATUS_SAVE_BUTTON = 'status_save.png'
+DISPLAYMODE_SHOW_ICON = _image_resource('IMG_EYE.png')
+DISPLAYMODE_HIDE_ICON = _image_resource('IMG_CLOSED_EYE.png')
 
-WINDOW_HOME_BUTTON = 'window_home.png'
-WINDOW_BACK_BUTTON = 'window_back.png'
-WINDOW_FORWARD_BUTTON = 'window_forward.png'
-WINDOW_PAN_BUTTON = 'window_pan.png'
-WINDOW_ZOOMTORECT_BUTTON = 'window_zoom_to_rect.png'
-WINDOW_SAVE_BUTTON = 'window_filesave.png'
+SETTINGS_OK_ICON = _image_resource('IMG_OK.png')
+SETTINGS_ERROR_ICON = _image_resource('IMG_ERROR.png')
+SETTINGS_WARNING_ICON = _image_resource('IMG_WARN.png')
 
-ANALYZE_IMAGE_BUTTON = 'IMG_ANALYZE_16.png'
-STOP_ANALYSIS_BUTTON = 'IMG_STOP.png'
-PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
+RUNSTATUS_PAUSE_BUTTON = _image_resource('status_pause.png')
+RUNSTATUS_STOP_BUTTON = _image_resource('status_stop.png')
+RUNSTATUS_SAVE_BUTTON = _image_resource('status_save.png')
 
-OMERO_IMAGEID_PIC = 'OMERO_imageID_screenshot.png'
-OMERO_LOGIN_PIC = 'OMERO_login_screenshot.png'
+WINDOW_HOME_BUTTON = _image_resource('window_home.png')
+WINDOW_BACK_BUTTON = _image_resource('window_back.png')
+WINDOW_FORWARD_BUTTON = _image_resource('window_forward.png')
+WINDOW_PAN_BUTTON = _image_resource('window_pan.png')
+WINDOW_ZOOMTORECT_BUTTON = _image_resource('window_zoom_to_rect.png')
+WINDOW_SAVE_BUTTON = _image_resource('window_filesave.png')
+
+ANALYZE_IMAGE_BUTTON = _image_resource('IMG_ANALYZE_16.png')
+STOP_ANALYSIS_BUTTON = _image_resource('IMG_STOP.png')
+PAUSE_ANALYSIS_BUTTON = _image_resource('IMG_PAUSE.png')
+
+OMERO_IMAGEID_PIC = _image_resource('OMERO_imageID_screenshot.png')
+OMERO_LOGIN_PIC = _image_resource('OMERO_login_screenshot.png')
 
 # Module specific help
-PROTIP_RECOMEND_ICON = "thumb-up.png"
-PROTIP_AVOID_ICON = "thumb-down.png"
-TECH_NOTE_ICON = "gear.png"
-IMAGES_FILELIST_BLANK = "Images_FilelistPanel_Blank.png"
-IMAGES_FILELIST_FILLED = "Images_FilelistPanel_Filled.png"
-MEASUREOBJSIZESHAPE_ECCENTRICITY = 'MeasureObjectSizeShape_Eccentricity.png'
-IMAGES_USING_RULES_ICON = 'Images_UsingRules.png'
-METADATA_DISPLAY_TABLE = 'Metadata_ExampleDisplayTable.png'
-NAMESANDTYPES_DISPLAY_TABLE = 'NamesAndTypes_ExampleDisplayTable.png'
-GROUPS_DISPLAY_TABLE = 'Groups_ExampleDisplayTable.png'
-EXAMPLE_DAPI_PIC = "dapi.png"
-EXAMPLE_GFP_PIC = "gfp.png"
+PROTIP_RECOMEND_ICON = _image_resource("thumb-up.png")
+PROTIP_AVOID_ICON = _image_resource("thumb-down.png")
+TECH_NOTE_ICON = _image_resource("gear.png")
+IMAGES_FILELIST_BLANK = _image_resource("Images_FilelistPanel_Blank.png")
+IMAGES_FILELIST_FILLED = _image_resource("Images_FilelistPanel_Filled.png")
+MEASUREOBJSIZESHAPE_ECCENTRICITY = _image_resource('MeasureObjectSizeShape_Eccentricity.png')
+IMAGES_USING_RULES_ICON = _image_resource('Images_UsingRules.png')
+METADATA_DISPLAY_TABLE = _image_resource('Metadata_ExampleDisplayTable.png')
+NAMESANDTYPES_DISPLAY_TABLE = _image_resource('NamesAndTypes_ExampleDisplayTable.png')
+GROUPS_DISPLAY_TABLE = _image_resource('Groups_ExampleDisplayTable.png')
+EXAMPLE_DAPI_PIC = _image_resource("dapi.png")
+EXAMPLE_GFP_PIC = _image_resource("gfp.png")
 
 ########################################
 #
@@ -3052,6 +3060,13 @@ MAIN_HELP = {
 }
 
 
+# https://wiki.python.org/moin/reStructuredText
+def _rst_to_html_fragment(source):
+    parts = docutils.core.publish_parts(source=source, writer_name="html")
+
+    return parts["body_pre_docinfo"] + parts["fragment"]
+
+
 def make_help_menu(h, window, menu=None):
     import wx
     import htmldialog
@@ -3063,7 +3078,7 @@ def make_help_menu(h, window, menu=None):
             menu.AppendMenu(my_id, key, make_help_menu(value, window))
         else:
             def show_dialog(event, key=key, value=value):
-                dlg = htmldialog.HTMLDialog(window, key, value)
+                dlg = htmldialog.HTMLDialog(window, key, _rst_to_html_fragment(value))
                 dlg.Show()
 
             menu.Append(my_id, key)

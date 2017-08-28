@@ -1,7 +1,10 @@
-database:
-  pre:
-    # Start MySQL:
-    - brew services start mysql
+machine:
+  environment:
+    CP_MYSQL_TEST_HOST: "127.0.0.1"
+    CP_MYSQL_TEST_PASSWORD: ""
+    CP_MYSQL_TEST_USER: "root"
+  xcode:
+    version: 8.2
 dependencies:
   cache_directories:
     # Cache CellProfiler’s Python dependencies:
@@ -14,43 +17,44 @@ dependencies:
     - pip2 install --upgrade cython numpy pyinstaller scipy
   override:
     # Install CellProfiler:
-    - pip2 install --editable .[test] --upgrade
-deployment:
-  nightly:
-    branch: master
-    commands:
-      # Create macOS application bundle:
-      - pyinstaller CellProfiler.spec
-
-      # Copy Homebrew’s libpng dynamic library to application bundle:
-      - >
-        cp                                                    \
-          `brew --cellar libpng`/1.6.31/lib/libpng16.16.dylib \
-          dist/CellProfiler.app/Contents/MacOS
-
-      # Remove duplicate wx dynamic libraries from application bundle:
-      - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
-      
-      # Create Apple Disk Image:
-      - >
-        hdiutil create                     \
-          -format UDRW                     \
-          -fs HFS+                         \
-          -fsargs "-c c=64,a=16,e=16"      \
-          -size 500000k                    \
-          -srcfolder dist/CellProfiler.app \
-          -volname CellProfiler            \
-          dist/CellProfiler-nightly.dmg
-      
-      # Upload to disk image to Amazon S3 (Simple Storage Service):
-      - >
-        aws s3 sync dist s3://cellprofiler-releases \
-          --delete                                  \
-          --exclude "*"                             \
-          --include "CellProfiler-nightly.dmg"
-machine:
-  xcode:
-    version: 8.2
+    - pip2 install --editable .[test] --upgrade    
+database:
+  pre:
+    # Start MySQL:
+    - brew services start mysql
 test:
   override:
-    - echo "foo"
+    - pytest tests/modules/test_exporttodatabase.py
+# deployment:
+#   nightly:
+#     branch: features/circle
+#     commands:
+#       # Create macOS application bundle:
+#       - pyinstaller CellProfiler.spec
+
+#       # Copy Homebrew’s libpng dynamic library to application bundle:
+#       - >
+#         cp                                                    \
+#           `brew --cellar libpng`/1.6.31/lib/libpng16.16.dylib \
+#           dist/CellProfiler.app/Contents/MacOS
+
+#       # Remove duplicate wx dynamic libraries from application bundle:
+#       - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
+      
+#       # Create Apple Disk Image:
+#       - >
+#         hdiutil create                     \
+#           -format UDRW                     \
+#           -fs HFS+                         \
+#           -fsargs "-c c=64,a=16,e=16"      \
+#           -size 500000k                    \
+#           -srcfolder dist/CellProfiler.app \
+#           -volname CellProfiler            \
+#           dist/CellProfiler-nightly.dmg
+      
+#       # Upload to disk image to Amazon S3 (Simple Storage Service):
+#       - >
+#         aws s3 sync dist s3://cellprofiler-releases \
+#           --delete                                  \
+#           --exclude "*"                             \
+#           --include "CellProfiler-nightly.dmg"

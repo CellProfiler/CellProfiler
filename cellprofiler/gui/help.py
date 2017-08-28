@@ -7,6 +7,7 @@ import docutils
 import pkg_resources
 import sys
 
+import cellprofiler.gui.html.utils
 import cellprofiler.icons
 from cellprofiler.setting import YES
 
@@ -3060,13 +3061,6 @@ MAIN_HELP = {
 }
 
 
-# https://wiki.python.org/moin/reStructuredText
-def _rst_to_html_fragment(source):
-    parts = docutils.core.publish_parts(source=source, writer_name="html")
-
-    return parts["body_pre_docinfo"] + parts["fragment"]
-
-
 def make_help_menu(h, window, menu=None):
     import wx
     import htmldialog
@@ -3078,7 +3072,7 @@ def make_help_menu(h, window, menu=None):
             menu.AppendMenu(my_id, key, make_help_menu(value, window))
         else:
             def show_dialog(event, key=key, value=value):
-                dlg = htmldialog.HTMLDialog(window, key, _rst_to_html_fragment(value))
+                dlg = htmldialog.HTMLDialog(window, key, cellprofiler.gui.html.utils.rst_to_html_fragment(value))
                 dlg.Show()
 
             menu.Append(my_id, key)

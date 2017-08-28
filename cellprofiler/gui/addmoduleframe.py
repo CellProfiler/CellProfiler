@@ -4,6 +4,7 @@ that give you the GUI to add a module to a pipeline
 
 import cellprofiler.module
 import cellprofiler.gui
+import cellprofiler.gui.html.utils
 import cellprofiler.gui.html.manual
 import cellprofiler.modules
 import cellprofiler.preferences
@@ -214,7 +215,7 @@ class AddModuleFrame(wx.Frame):
         helpframe.SetSizer(sizer)
         window = HtmlClickableWindow(helpframe)
         sizer.Add(window, 1, wx.EXPAND)
-        window.AppendToPage(help_text)
+        window.AppendToPage(cellprofiler.gui.html.utils.rst_to_html_fragment(help_text))
         helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()

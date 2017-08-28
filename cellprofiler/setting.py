@@ -71,7 +71,7 @@ class Setting(object):
     #
     save_to_pipeline = True
 
-    def __init__(self, text, value, doc=None, reset_view=False):
+    def __init__(self, text, value, doc="", reset_view=False):
         """Initialize a setting with the enclosing module and its string value
 
         text   - the explanatory text for the setting
@@ -1678,10 +1678,14 @@ class Choice(Setting):
 
 
 class StructuringElement(Setting):
-    def __init__(self, text="Structuring element", value="disk,1", doc=None, allow_planewise=False):
+    def __init__(self, text="Structuring element",
+                 value="disk,1",
+                 allow_planewise=False,
+                 *args,
+                 **kwargs):
         self.__allow_planewise = allow_planewise
 
-        super(StructuringElement, self).__init__(text, value, doc=doc)
+        super(StructuringElement, self).__init__(text, value, *args, **kwargs)
 
     @staticmethod
     def get_choices():

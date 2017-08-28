@@ -4,7 +4,7 @@
 ColorToGray
 ===========
 
-**Color to Gray** converts an image with three color channels to a set
+**ColortoGray** converts an image with three color channels to a set
 of individual grayscale images.
 
 | This module converts RGB (Red, Green, Blue) color images to grayscale.
@@ -12,7 +12,8 @@ of individual grayscale images.
   each channel can be extracted into a separate grayscale image
   (*Split*). If you use *Combine*, the relative weights will adjust the
   contribution of the colors relative to each other.
-| *Note:*\ All **Identify** modules require grayscale images.
+
+| *Note:* All **Identify** modules require grayscale images.
 
 See also **GrayToColor**.
 """
@@ -52,29 +53,28 @@ class ColorToGray(cpm.Module):
                 "Conversion method",
                 [COMBINE, SPLIT], doc='''
             How do you want to convert the color image?
-            <ul>
-            <li><i>%(SPLIT)s:</i> Splits the three channels
-            (red, green, blue) of a color image into three separate grayscale images. </li>
-            <li><i>%(COMBINE)s</i> Converts a color image to a grayscale
-            image by combining the three channels (red, green, blue) together.</li>
-            </ul>''' % globals())
+            -  *%(SPLIT)s:* Splits the three channels (red, green, blue) of a color
+               image into three separate grayscale images.
+            -  *%(COMBINE)s* Converts a color image to a grayscale image by
+               combining the three channels (red, green, blue) together.''' % globals())
 
         self.rgb_or_channels = cps.Choice(
                 "Image type", [CH_RGB, CH_HSV, CH_CHANNELS], doc="""
-            Many images contain color channels other than red, green
-            and blue. For instance, GIF and PNG formats can have an alpha
-            channel that encodes transparency. TIF formats can have an arbitrary
-            number of channels which represent pixel measurements made by
-            different detectors, filters or lighting conditions. This setting
-            provides three options to choose from:
-            <ul>
-            <li><i>%(CH_RGB)s:</i> The RGB (red,green,blue) color space is the typical model in which color images are stored. Choosing this option
-            will split the image into any of the red, green and blue component images.</li>
-            <li><i>%(CH_HSV)s:</i>The HSV (hue, saturation, value) color space is based on more intuitive color characteristics as
-            tint, shade and tone. Choosing
-            this option will split the image into any of the hue, saturation, and value component images.</li>
-            <li><i>%(CH_CHANNELS)s:</i>This is a more complex model for images which involve more than three channels.</li>
-            </ul>""" % globals())
+                Many images contain color channels other than red, green and blue. For
+                instance, GIF and PNG formats can have an alpha channel that encodes
+                transparency. TIF formats can have an arbitrary number of channels which
+                represent pixel measurements made by different detectors, filters or
+                lighting conditions. This setting provides three options to choose from:
+
+                -  *%(CH_RGB)s:* The RGB (red,green,blue) color space is the typical
+                   model in which color images are stored. Choosing this option will
+                   split the image into any of the red, green and blue component images.
+                -  *%(CH_HSV)s:*\ The HSV (hue, saturation, value) color space is based
+                   on more intuitive color characteristics as tint, shade and tone.
+                   Choosing this option will split the image into any of the hue,
+                   saturation, and value component images.
+                -  *%(CH_CHANNELS)s:*\ This is a more complex model for images which
+                   involve more than three channels.""" % globals())
 
         # The following settings are used for the combine option
         self.grayscale_name = cps.ImageNameProvider(
@@ -83,26 +83,26 @@ class ColorToGray(cpm.Module):
         self.red_contribution = cps.Float(
                 "Relative weight of the red channel",
                 1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+            *(Used only when combining channels)*
+            Relative weights: If all relative weights are equal, all three colors
+            contribute equally in the final image. To weight colors relative to each
+            other, increase or decrease the relative weights.''')
 
         self.green_contribution = cps.Float(
                 "Relative weight of the green channel",
                 1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+            *(Used only when combining channels)*
+            Relative weights: If all relative weights are equal, all three colors
+            contribute equally in the final image. To weight colors relative to each
+            other, increase or decrease the relative weights.''')
 
         self.blue_contribution = cps.Float(
                 "Relative weight of the blue channel",
                 1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+            *(Used only when combining channels)*
+            Relative weights: If all relative weights are equal, all three colors
+            contribute equally in the final image. To weight colors relative to each
+            other, increase or decrease the relative weights.''')
 
         # The following settings are used for the split RGB option
         self.use_red = cps.Binary('Convert red to gray?', True)
@@ -142,24 +142,21 @@ class ColorToGray(cpm.Module):
         group.append("channel_choice", cps.Choice(
                 "Channel number", self.channel_names,
                 self.channel_names[len(self.channels) % len(self.channel_names)], doc="""
-            This setting chooses a channel to be processed.
-            <i>Red: 1</i> is the first channel in a .TIF or the red channel
-            in a traditional image file. <i>Green: 2</i> and <i>Blue: 3</i>
-            are the second and third channels of a TIF or the green and blue
-            channels in other formats. <i>Alpha: 4</i> is the transparency
-            channel for image formats that support transparency and is
-            channel # 4 for a .TIF file.
-
-            <b>ColorToGray</b> will fail to process an image if you select
-            a channel that is not supported by that image, for example, "5"
-            for a .PNG file"""))
+            This setting chooses a channel to be processed. *Red: 1* is the first
+            channel in a .TIF or the red channel in a traditional image file.
+            *Green: 2* and *Blue: 3* are the second and third channels of a TIF or
+            the green and blue channels in other formats. *Alpha: 4* is the
+            transparency channel for image formats that support transparency and is
+            channel # 4 for a .TIF file. **ColorToGray** will fail to process an
+            image if you select a channel that is not supported by that image, for
+            example, “5” for a .PNG file"""))
 
         group.append("contribution", cps.Float(
                 "Relative weight of the channel", 1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.'''))
+            *(Used only when combining channels)*
+            Relative weights: If all relative weights are equal, all three colors
+            contribute equally in the final image. To weight colors relative to each
+            other, increase or decrease the relative weights.'''))
 
         group.append("image_name", cps.ImageNameProvider(
                 "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""

@@ -52,6 +52,7 @@ setuptools.setup(
     },
     install_requires=[
         "centrosome",
+        "docutils",
         "h5py",
         "inflect",
         "javabridge",

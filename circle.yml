@@ -17,14 +17,14 @@ dependencies:
     - pip2 install --upgrade cython numpy pyinstaller scipy
   override:
     # Install CellProfiler:
-    - pip2 install --editable .[test] --upgrade    
+    - pip2 install --editable ".[build, test]" --upgrade    
 database:
   pre:
     # Start MySQL:
     - brew services start mysql
 test:
   override:
-    - python2 -m pytest tests/modules/test_exporttodatabase.py
+    - python2 -m pytest tests/modules/
 # deployment:
 #   nightly:
 #     branch: features/circle

@@ -14,6 +14,16 @@ datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
 datas += [("cellprofiler/data/images/*", "cellprofiler/data/images")]
 
+excludes = []
+
+excludes += [
+    "botocore",
+    "PyQt5",
+    "sphinx",
+    "tcl",
+    "tk"
+]
+
 hiddenimports = []
 
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
@@ -62,7 +72,6 @@ pyz = PYZ(
 exe = EXE(
     pyz,
     a.scripts,
-    # options,
     console=True,
     debug=False,
     exclude_binaries=True,

@@ -14,16 +14,16 @@ dependencies:
     - brew install python
     - brew install wxpython
     - export PATH="/usr/local/opt/python/libexec/bin:$PATH"
-    - pip install --upgrade pip
-    - pip install --upgrade wheel
-    - pip install --upgrade cython
-    - pip install --upgrade numpy
-    - pip install --upgrade scipy
+    - pip2 install --upgrade pip
+    - pip2 install --upgrade wheel
+    - pip2 install --upgrade cython
+    - pip2 install --upgrade numpy
+    - pip2 install --upgrade scipy
 deployment:
   nightly:
     branch: features/circle
     commands:
-      - pip install --upgrade pyinstaller
+      - pip2 install --upgrade pyinstaller
       - pyinstaller CellProfiler.spec
       - cp /usr/local/Cellar/libpng/1.6.31/lib/libpng16.16.dylib dist/CellProfiler.app/Contents/MacOS
       - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib

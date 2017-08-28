@@ -75,7 +75,7 @@ exe = EXE(
     console=True,
     debug=False,
     exclude_binaries=True,
-    icon=os.path.join("cellprofiler", "data", "images", "CellProfilerIcon.ico"),
+    icon="./cellprofiler/data/images/CellProfilerIcon.icns",
     name="cp",
     strip=False,
     upx=True
@@ -94,6 +94,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     bundle_identifier=None,
-    icon=os.path.join("cellprofiler", "data", "images", "CellProfilerIcon.ico"),
+    icon="./cellprofiler/data/images/CellProfilerIcon.icns",
     name="CellProfiler.app"
 )

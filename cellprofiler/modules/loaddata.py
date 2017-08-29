@@ -1,13 +1,17 @@
 # coding=utf-8
 
 """
-**Load Data** loads text or numerical data to be associated with images,
+LoadData
+========
+
+**LoadData** loads text or numerical data to be associated with images,
 and can also load images specified by file names.
 
 This module loads a file that supplies text or numerical data associated
 with the images to be processed, e.g., sample names, plate names, well
 identifiers, or even a list of image filenames to be processed in the
 analysis run.
+
 
 *Disclaimer:* Please note that the Input modues (i.e., **Images**,
 **Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
@@ -101,10 +105,8 @@ allows for special functionality for some downstream modules:
    if the same data is associated with several images (for example,
    multiple images obtained from a single well).
 
-Example CSV file:
-'''''''''''''''''
-
-| ````
+Example CSV file
+^^^^^^^^^^^^^^^^
 
 +--------------------------+--------------------------+--------------------+-----------------------+
 | Image\_FileName\_FITC,   | Image\_PathName\_FITC,   | Metadata\_Plate,   | Titration\_NaCl\_uM   |
@@ -125,7 +127,7 @@ that use numeric metadata, such as **CalculateStatistics**; “Titration”
 will be the category and “NaCl\_uM” will be the measurement.
 
 Using metadata in LoadData
-''''''''''''''''''''''''''
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you would like to use the metadata-specific settings, please see
 *Help > General help > Using metadata in CellProfiler* for more details
@@ -168,8 +170,8 @@ For more details on configuring CellProfiler (and LoadData in
 particular) for a LIMS environment, please see our `wiki`_ on the
 subject.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image,
    if image loading was requested by the user.
@@ -356,15 +358,8 @@ class LoadData(cpm.Module):
         self.csv_directory = cps.DirectoryPath(
                 "Input data file location", allow_metadata=False, support_urls=True,
                 doc="""Select the folder containing the CSV file to be loaded.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s
-            <p>An additional option is the following:
-            <ul>
-            <li><i>URL</i>: Use the path part of a URL. For instance, an example .CSV file
-            is hosted at <i>http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages/1049_Metadata.csv</i>
-            To access this file, you would choose <i>URL</i> and enter
-            <i>http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages</i>
-            as the path location.</li>
-            </ul></p>""" % globals())
+%(IO_FOLDER_CHOICE_HELP_TEXT)s
+""" % globals())
 
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
@@ -388,66 +383,71 @@ class LoadData(cpm.Module):
                 "Press to view CSV file contents", "View...", self.browse_csv)
 
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
-            Select <i>%(YES)s</i> to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the
-            <i>Image_PathName</i> fields (the latter is optional).""" % globals())
+            Select *%(YES)s* to have **LoadData** load images using the
+*Image\_FileName* field and the *Image\_PathName* fields (the latter is
+optional).""" % globals())
 
         self.rescale = cps.Binary(
                 "Rescale intensities?", True, doc="""
-            This option determines whether image metadata should be
-            used to rescale the image's intensities. Some image formats
-            save the maximum possible intensity value along with the pixel data.
-            For instance, a microscope might acquire images using a 12-bit
-            A/D converter which outputs intensity values between zero and 4095,
-            but stores the values in a field that can take values up to 65535.
-            <p>Select <i>%(YES)s</i> to rescale the image intensity so that
-            saturated values are rescaled to 1.0 by dividing all pixels
-            in the image by the maximum possible intensity value. </p>
-            <p>Select <i>%(NO)s</i> to ignore the image metadata and rescale the image
-            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image.</p>""" % globals())
+            This option determines whether image metadata should be used to rescale
+the image’s intensities. Some image formats save the maximum possible
+intensity value along with the pixel data. For instance, a microscope
+might acquire images using a 12-bit A/D converter which outputs
+intensity values between zero and 4095, but stores the values in a field
+that can take values up to 65535.
+
+Select *%(YES)s* to rescale the image intensity so that saturated values
+are rescaled to 1.0 by dividing all pixels in the image by the maximum
+possible intensity value.
+
+Select *%(NO)s* to ignore the image metadata and rescale the image to 0
+– 1.0 by dividing by 255 or 65535, depending on the number of bits used
+to store the image.""" % globals())
 
         self.image_directory = cps.DirectoryPath(
                 "Base image location",
                 dir_choices=DIR_ALL, allow_metadata=False, doc="""
             The parent (base) folder where images are located. If images are
-            contained in subfolders, then the file you load with this module should
-            contain a column with path names relative to the base image folder (see
-            the general help for this module for more details). You can choose among the following options:
-            <ul>
-            <li><i>Default Input Folder:</i> Use the Default Input Folder.</li>
-            <li><i>Default Output Folder:</i> Use the Default Output Folder.</li>
-            <li><i>None:</i> You have an <i>Image_PathName</i> field that supplies an absolute path.</li>
-            <li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
-            </ul>""")
+contained in subfolders, then the file you load with this module should
+contain a column with path names relative to the base image folder (see
+the general help for this module for more details). You can choose among
+the following options:
+
+-  *Default Input Folder:* Use the Default Input Folder.
+-  *Default Output Folder:* Use the Default Output Folder.
+-  *None:* You have an *Image\_PathName* field that supplies an absolute
+   path.
+-  *Elsewhere…*: Use a particular folder you specify.""")
 
         self.wants_image_groupings = cps.Binary(
                 "Group images by metadata?", False, doc="""
-            Select <i>%(YES)s</i> to break the image sets in an experiment into groups
-            that can be processed by different nodes on a computing cluster. Each set of
-            files that share your selected metadata tags will be processed
-            together. See <b>CreateBatchFiles</b> for details on submitting a
-            CellProfiler pipeline to a computing cluster for processing.""" % globals())
+            Select *%(YES)s* to break the image sets in an experiment into groups
+that can be processed by different nodes on a computing cluster. Each
+set of files that share your selected metadata tags will be processed
+together. See **CreateBatchFiles** for details on submitting a
+CellProfiler pipeline to a computing cluster for processing.""" % globals())
 
         self.metadata_fields = cps.MultiChoice(
                 "Select metadata tags for grouping", None, doc="""
-            <i>(Used only if images are to be grouped by metadata)</i><br>
-            Select the tags by which you want to group the image files here. You can select multiple tags. For
-            example, if a set of images had metadata for "Run", "Plate", "Well", and
-            "Site", selecting <i>Run</i> and <i>Plate</i> will create groups containing
-            images that share the same [<i>Run</i>,<i>Plate</i>] pair of tags.""")
+            *(Used only if images are to be grouped by metadata)*
+Select the tags by which you want to group the image files here. You can
+select multiple tags. For example, if a set of images had metadata for
+“Run”, “Plate”, “Well”, and “Site”, selecting *Run* and *Plate* will
+create groups containing images that share the same [*Run*,\ *Plate*]
+pair of tags.""")
 
         self.wants_rows = cps.Binary(
                 "Process just a range of rows?",
                 False, doc="""
-            Select <i>%(YES)s</i> if you want to process a subset of the rows in the CSV file.
-            Rows are numbered starting at 1 (but do not count the header line).
-            <b>LoadData</b> will process up to and including the end row.""" % globals())
+            Select *%(YES)s* if you want to process a subset of the rows in the CSV
+file. Rows are numbered starting at 1 (but do not count the header
+line). **LoadData** will process up to and including the end row.""" % globals())
 
         self.row_range = cps.IntegerRange(
                 "Rows to process",
                 (1, 100000), 1, doc="""
-            <i>(Used only if a range of rows is to be specified)</i><br>
-            Enter the row numbers of the first and last row to be processed.""")
+            *(Used only if a range of rows is to be specified)*
+Enter the row numbers of the first and last row to be processed.""")
 
         def do_reload():
             global header_cache
@@ -460,16 +460,15 @@ class LoadData(cpm.Module):
         self.clear_cache_button = cps.DoSomething(
                 "Reload cached information", "Reload", do_reload, doc="""
             Press this button to reload header information saved inside
-            CellProfiler. <b>LoadData</b> caches information about
-            your .csv file in its memory for efficiency.  The
-            information is reloaded if a modification is detected.
-            <b>LoadData</b> might fail to detect a modification on a
-            file accessed over the network and will fail to detect
-            modifications on files accessed through HTTP or FTP. In
-            this case, you will have to use this button to reload the
-            header information after changing the file.
-            <p>This button will never destroy any information on
-            disk. It is always safe to press it.</p>
+CellProfiler. **LoadData** caches information about your .csv file in
+its memory for efficiency. The information is reloaded if a modification
+is detected. **LoadData** might fail to detect a modification on a file
+accessed over the network and will fail to detect modifications on files
+accessed through HTTP or FTP. In this case, you will have to use this
+button to reload the header information after changing the file.
+
+This button will never destroy any information on disk. It is always
+safe to press it.
             """)
 
     def settings(self):

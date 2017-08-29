@@ -12,15 +12,15 @@ the distance within which objects should be considered neighbors, or
 that objects are only considered neighbors if they are directly
 touching.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements**
 
 -  *NumberOfNeighbors:* Number of neighbor objects.
 -  *PercentTouching:* Percent of the object’s boundary pixels that touch
    neighbors, after the objects have been expanded to the specified
-   distance. Note: This measurement is only available if you use the
+   distance. Note that this measurement is only available if you use the
    same set of objects for both objects and neighbors.
 -  *FirstClosestObjectNumber:* The index of the closest object.
 -  *FirstClosestDistance:* The distance to the closest object.

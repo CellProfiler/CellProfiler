@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Object Size Shape** measures several area and shape features
+MeasureObjectSizeShape
+======================
+
+**MeasureObjectSizeShape** measures several area and shape features
 of identified objects.
 
 Given an image with identified objects (e.g. nuclei or cells), this
@@ -17,13 +20,13 @@ per-object measurements themselves, you will need to use
 display the object measurements of choice overlaid on an image of
 choice.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See the *Technical Notes* below for an explanation of creating an
 ellipse with the same second-moments as an object region.
 
--  *Area:* The actual number of pixels in the region.
+-  *Area:* The number of pixels in the region.
 -  *Perimeter:* The total number of pixels around the boundary of each
    region in the image.
 -  *FormFactor:* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
@@ -95,6 +98,12 @@ with the same second-moments as the original object region. This is
 essentially the best-fitting ellipse for a given object with the same
 statistical properties. Furthermore, they are not affected by the
 translation or uniform scaling of a region.
+
+Following computer vision conventions, the origin of the X and Y axes is at the top
+left of the image rather than the bottom left; the orientation of objects whose topmost point
+is on their right (or are rotated counter-clockwise from the horizontal) will therefore
+have a negative orientation, while objects whose topmost point is on their left
+(or are rotated clockwise from the horizontal) will have a positive orientation.
 
 The Zernike features are computed within the minimum enclosing circle of
 the object, i.e., the circle of the smallest diameter that contains all
@@ -198,10 +207,10 @@ class MeasureObjectSizeShape(cpm.Module):
 
         self.calculate_zernikes = cps.Binary(
                 'Calculate the Zernike features?', True, doc="""
-            Select <i>%(YES)s</i> to calculate the Zernike shape features. Since the
-            first 10 Zernike polynomials (from order 0 to order 9) are
-            calculated, this operation can be time consuming if the image
-            contains a lot of objects.""" % globals())
+                Select *%(YES)s* to calculate the Zernike shape features. Since the
+                first 10 Zernike polynomials (from order 0 to order 9) are calculated,
+                this operation can be time consuming if the image contains a lot of
+                objects.""" % globals())
 
     def add_object(self, can_remove=True):
         """Add a slot for another object"""
@@ -384,9 +393,10 @@ class MeasureObjectSizeShape(cpm.Module):
                     #
                     # Zernike features
                     #
-                    zf_l = cpmz.zernike(zernike_numbers, labels, indices)
-                    for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
-                        zf[(n, m)][to_indices] = z
+                    if self.calculate_zernikes.value:
+                        zf_l = cpmz.zernike(zernike_numbers, labels, indices)
+                        for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
+                            zf[(n, m)][to_indices] = z
                 #
                 # Form factor
                 #

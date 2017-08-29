@@ -15,8 +15,8 @@ measurment modules. If using the *overlapping* style of objects, these
 can be saved as images using **SaveImages** to create a multi-page TIF
 file by specifying “Objects” as the type of image to save.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements (for “Untangle” mode only)**:
 
@@ -1472,9 +1472,7 @@ class UntangleWorms(cpm.Module):
         coordinates of one point on the path. The path itself can be formed
         by joining these points successively to each other.
 
-        Note:
-
-        Because of the way the graph is built, the points in pixel_coords are
+        Note that because of the way the graph is built, the points in pixel_coords are
         likely to contain segments consisting of runs of pixels where each is
         close to the next (in its 8-neighbourhood), but interleaved with
         reasonably long "jumps", where there is some distance between the end
@@ -1642,7 +1640,7 @@ class UntangleWorms(cpm.Module):
         the control points (and length) are less similar to the training
         set.
 
-        Note: All the angles in question here are direction angles,
+        Note that all the angles in question here are direction angles,
         constrained to lie between -pi and pi. The angle 0 corresponds to
         the case when two adjacnet line segments are parallel (and thus
         belong to the same line); the angles can be thought of as the

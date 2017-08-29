@@ -19,8 +19,8 @@ calculated for all measured values (Intensity, AreaShape, Texture,
 etc.). These measurements can be exported as the “Experiment” set of
 data.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Experiment features:** Whereas most CellProfiler measurements are
    calculated for each object (per-object) or for each image
@@ -65,7 +65,7 @@ than on the minimum and maximum responses. When there are only two doses
 in the assay (positive and negative controls only), the V factor will
 equal the Z’ factor.
 
-*Note:* If the standard deviation of a measured feature is zero for a
+Note that if the standard deviation of a measured feature is zero for a
 particular set of samples (e.g., all the positive controls), the Z’ and
 V factors will equal 1 despite the fact that the assay quality is poor.
 This can occur when there is only one sample at each dose. This also
@@ -763,7 +763,7 @@ def calc_init_params(x, y):
     # This is an estimate of the EC50, i.e. the half maximal effective
     # concentration (here denoted as x-value)
     #
-    # Note: this was originally simply mean([max(x); min(x)]).  This does not
+    # Note that this was originally simply mean([max(x); min(x)]).  This does not
     # take into account the y-values though, so it was changed to be the
     # x-value that corresponded to the y-value closest to the mean([max(y); min(y)]).
     # Unfortunately, for x-values with only two categories e.g. [0 1], this results in

@@ -787,6 +787,11 @@ class SaveImages(cellprofiler.module.Module):
 
             setting_values = new_setting_values
 
+            if setting_values[10] == "8":
+                setting_values[10] = BIT_DEPTH_8
+            elif setting_values[10] == "16":
+                setting_values[10] = BIT_DEPTH_16
+
             variable_revision_number = 12
 
         if variable_revision_number == 12:

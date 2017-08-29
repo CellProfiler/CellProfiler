@@ -20,10 +20,10 @@ dependencies:
     - brew update && brew install awscli mysql upx python wxpython
 
     # Install CellProfiler’s Python dependencies and PyInstaller:
-    - pip2 install --upgrade cython numpy scipy
+    - pip2 install --force-reinstall --upgrade cython numpy scipy
   override:
     # Install CellProfiler:
-    - pip2 install --editable ".[build, test]" --upgrade    
+    - pip2 install --editable ".[build, test]" --force-reinstall --upgrade    
 database:
   pre:
     # Start MySQL:

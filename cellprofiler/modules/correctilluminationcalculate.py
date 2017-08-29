@@ -8,12 +8,11 @@ CorrectIlluminationCalculate
 that is used to correct uneven illumination/lighting/shading or to
 reduce uneven background in images.
 
-This module calculates an illumination function that can either be saved
-to the hard drive for later use or immediately applied to images later
-in the pipeline. This function will correct for the uneven illumination
-in images. If saving, select *.mat* format in **SaveImages**. Use the
-**CorrectIlluminationApply** module to apply the function to the image
-to be corrected. Illumination correction is a challenge to do properly;
+This module calculates an illumination function that can either be saved to the
+hard drive for later use or immediately applied to images later in the pipeline.
+This function will correct for the uneven illumination in images. Use the
+**CorrectIlluminationApply** module to apply the function to the image to be
+corrected. Illumination correction is a challenge to do properly;
 please see the `examples`_ and `tutorials`_ pages on the CellProfiler
 website for further advice. See also **CorrectIlluminationApply**,
 **EnhanceOrSuppressFeatures**.

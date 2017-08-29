@@ -20,18 +20,17 @@ dependencies:
     - brew update && brew install awscli mysql upx python wxpython
 
     # Install CellProfiler’s Python dependencies and PyInstaller:
-    - pip2 install --force-reinstall --upgrade cython numpy scipy
+    - pip2 install --upgrade cython numpy scipy
   override:
     # Install CellProfiler:
-    - pip2 install --editable ".[build, test]" --force-reinstall --upgrade    
+    - pip2 install --editable ".[build, test]" --upgrade    
 database:
   pre:
     # Start MySQL:
     - brew services start mysql
 test:
   override:
-    - echo "foo"
-    # - python2 -m pytest
+    - python2 -m pytest
 deployment:
   nightly:
     branch: features/circle
@@ -51,6 +50,12 @@ deployment:
       # Remove duplicate wx dynamic libraries from application bundle:
       - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
       
+      # - >
+      #   codesign                                                    \
+      #     --deep                                                    \
+      #     -s "Developer ID Application: Allen Goodman (MERWFR65Q3)" \
+      #     dist/CellProfiler.app
+
       # Create Apple Disk Image:
       - >
         hdiutil create                     \
@@ -68,12 +73,6 @@ deployment:
           --delete                                  \
           --exclude "*"                             \
           --include "CellProfiler-nightly.dmg"
-
-      - >
-        codesign                                                    \
-          --deep                                                    \
-          -s "Developer ID Application: Allen Goodman (MERWFR65Q3)" \
-          dist/CellProfiler.app
   beta:
     branch: beta
   stable:

@@ -100,41 +100,41 @@ class CorrectIlluminationCalculate(cpm.Module):
                 IC_BACKGROUND
             ],
             IC_REGULAR,
-            doc=""""
-            Choose which method you want to use to calculate the illumination
-            function. You may chose from the following options:
-            
-            -  *{IC_REGULAR}:* If you have objects that are evenly dispersed across
-               your image(s) and cover most of the image, the *Regular* method might
-               be appropriate. Regular intensities makes the illumination function
-               based on the intensity at each pixel of the image (or group of images
-               if you are in *{EA_ALL}* mode) and is most often rescaled (see
-               below) and applied by division using **CorrectIlluminationApply.**
-               Note that if you are in *{EA_EACH}* mode or using a small set of
-               images with few objects, there will be regions in the average image
-               that contain no objects and smoothing by median filtering is unlikely
-               to work well. *Note:* it does not make sense to choose
-               (*{IC_REGULAR} + {SM_NONE} + {EA_EACH}*) because the illumination
-               function would be identical to the original image and applying it
-               will yield a blank image. You either need to smooth each image, or
-               you need to use *{EA_ALL}* images.
-            -  *{IC_BACKGROUND}:* If you think that the background (dim points)
-               between objects show the same pattern of illumination as your objects
-               of interest, you can choose the *{IC_BACKGROUND}* method. Background
-               intensities finds the minimum pixel intensities in blocks across the
-               image (or group of images if you are in *{EA_ALL}* mode) and is most
-               often applied by subtraction using the **CorrectIlluminationApply**
-               module. *Note:* if you will be using the *{DOS_SUBTRACT}* option in
-               the **CorrectIlluminationApply** module, you almost certainly do not
-               want to rescale the illumination function.
-            
-            Please note that if a mask was applied to the input image, the pixels
-            outside of the mask will be excluded from consideration. This is useful,
-            for instance, in cases where you have masked out the well edge in an
-            image from a multi-well plate; the dark well edge would distort the
-            illumination correction function along the interior well edge. Masking
-            the image beforehand solves this problem.
-            """.format(**{
+            doc=""""\
+Choose which method you want to use to calculate the illumination
+function. You may chose from the following options:
+
+-  *{IC_REGULAR}:* If you have objects that are evenly dispersed across
+   your image(s) and cover most of the image, the *Regular* method might
+   be appropriate. Regular intensities makes the illumination function
+   based on the intensity at each pixel of the image (or group of images
+   if you are in *{EA_ALL}* mode) and is most often rescaled (see
+   below) and applied by division using **CorrectIlluminationApply.**
+   Note that if you are in *{EA_EACH}* mode or using a small set of
+   images with few objects, there will be regions in the average image
+   that contain no objects and smoothing by median filtering is unlikely
+   to work well. *Note:* it does not make sense to choose
+   (*{IC_REGULAR} + {SM_NONE} + {EA_EACH}*) because the illumination
+   function would be identical to the original image and applying it
+   will yield a blank image. You either need to smooth each image, or
+   you need to use *{EA_ALL}* images.
+-  *{IC_BACKGROUND}:* If you think that the background (dim points)
+   between objects show the same pattern of illumination as your objects
+   of interest, you can choose the *{IC_BACKGROUND}* method. Background
+   intensities finds the minimum pixel intensities in blocks across the
+   image (or group of images if you are in *{EA_ALL}* mode) and is most
+   often applied by subtraction using the **CorrectIlluminationApply**
+   module. *Note:* if you will be using the *{DOS_SUBTRACT}* option in
+   the **CorrectIlluminationApply** module, you almost certainly do not
+   want to rescale the illumination function.
+
+Please note that if a mask was applied to the input image, the pixels
+outside of the mask will be excluded from consideration. This is useful,
+for instance, in cases where you have masked out the well edge in an
+image from a multi-well plate; the dark well edge would distort the
+illumination correction function along the interior well edge. Masking
+the image beforehand solves this problem.
+""".format(**{
                 "IC_REGULAR": IC_REGULAR,
                 "EA_ALL": EA_ALL,
                 "EA_EACH": EA_EACH,

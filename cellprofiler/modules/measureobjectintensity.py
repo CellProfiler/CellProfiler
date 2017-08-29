@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Object Intensity** measures several intensity features for
+MeasureObjectIntensity
+========================
+
+**MeasureObjectIntensity** measures several intensity features for
 identified objects.
 
 Given an image with objects identified (e.g. nuclei or cells), this
@@ -135,8 +138,8 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
         group.append("name", cellprofiler.setting.ImageNameSubscriber(
-                "Select an image to measure", cellprofiler.setting.NONE, doc="""
-            Select the grayscale images whose intensity you want to measure."""))
+                "Select an image to measure", cellprofiler.setting.NONE, doc="""\
+Select the grayscale images whose intensity you want to measure."""))
 
         if can_remove:
             group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.images, group))
@@ -152,8 +155,8 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
         group.append("name", cellprofiler.setting.ObjectNameSubscriber(
-                "Select objects to measure", cellprofiler.setting.NONE, doc="""
-            Select the objects whose intensities you want to measure."""))
+                "Select objects to measure", cellprofiler.setting.NONE, doc="""\
+Select the objects whose intensities you want to measure."""))
 
         if can_remove:
             group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this object", self.objects, group))

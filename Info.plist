@@ -9,7 +9,7 @@
     <key>CFBundleIconFile</key>
     <string>CellProfilerIcon.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>org.cellprofiler.cellprofiler</string>
+    <string>org.cellprofiler.distribution.CellProfiler</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

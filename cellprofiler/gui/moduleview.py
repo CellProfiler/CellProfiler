@@ -3,6 +3,7 @@
 """
 
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.html.utils
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -2045,7 +2046,11 @@ class ModuleView(object):
                             name=name)
 
         def callback(event):
-            dialog = htmldialog.HTMLDialog(self.__module_panel, title, content)
+            dialog = htmldialog.HTMLDialog(
+                self.__module_panel,
+                title,
+                cellprofiler.gui.html.utils.rst_to_html_fragment(content)
+            )
             dialog.CentreOnParent()
             dialog.Show()
 

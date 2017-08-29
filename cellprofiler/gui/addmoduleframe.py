@@ -38,7 +38,6 @@ class AddModuleFrame(wx.Frame):
         module_help_button = wx.Button(selected_module_panel, -1, '? Module Help')
         # Other buttons
         getting_started_button = wx.Button(left_panel, -1, 'Getting Started')
-        wheres_my_module_button = wx.Button(left_panel, -1, "Where's my Module?")
         done_button = wx.Button(left_panel, -1, 'Done')
         # Right-side panel
         self.__module_list_box = wx.ListBox(right_panel, -1)
@@ -68,8 +67,6 @@ class AddModuleFrame(wx.Frame):
         left_sizer.AddSpacer((-1, 10))
         left_sizer.Add(getting_started_button, 0, wx.EXPAND)
         left_sizer.AddSpacer(2)
-        left_sizer.Add(wheres_my_module_button, 0, wx.EXPAND)
-        left_sizer.AddSpacer(2)
         left_sizer.Add(done_button, 0, wx.EXPAND | wx.BOTTOM, 5)
         left_panel.SetSizer(left_sizer)
 
@@ -95,7 +92,6 @@ class AddModuleFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.__on_close, done_button)
         self.Bind(wx.EVT_BUTTON, self.__on_help, module_help_button)
         self.Bind(wx.EVT_BUTTON, self.__on_getting_started, getting_started_button)
-        self.Bind(wx.EVT_BUTTON, self.__on_wheres_my_module, wheres_my_module_button)
         self.Bind(wx.EVT_MENU, self.__on_close, id=cpframe.ID_FILE_EXIT)
         self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
@@ -218,11 +214,6 @@ class AddModuleFrame(wx.Frame):
         helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
-
-    @staticmethod
-    def __on_wheres_my_module(event):
-        import webbrowser
-        webbrowser.open("http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=3221#p4486")
 
     def add_listener(self, listener):
         self.__listeners.append(listener)

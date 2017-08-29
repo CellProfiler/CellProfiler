@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Image Intensity** measures the total intensity in an image by
+MeasureImageIntensity
+=====================
+
+**MeasureImageIntensity** measures the total intensity in an image by
 summing all of the pixel intensities (excluding masked pixels).
 
 This module will sum all pixel values to measure the total image
@@ -109,22 +112,25 @@ class MeasureImageIntensity(cpm.Module):
 
         group.append("image_name", cps.ImageNameSubscriber(
                 "Select the image to measure",
-                cps.NONE, doc='''
-            Choose an image name from the drop-down menu to calculate intensity for that
-            image. Use the <i>Add another image</i> button below to add additional images which will be
-            measured. You can add the same image multiple times if you want to measure
-            the intensity within several different objects.'''))
+                cps.NONE, doc="""\          
+Choose an image name from the drop-down menu to calculate intensity for
+that image. Use the *Add another image* button below to add additional
+images which will be measured. You can add the same image multiple times
+if you want to measure the intensity within several different
+objects."""))
 
         group.append("wants_objects", cps.Binary(
                 "Measure the intensity only from areas enclosed by objects?",
-                False, doc="""
-            Select <i>%(YES)s</i> to measure only those pixels within an object of choice.""" % globals()))
+                False, doc="""\         
+Select *%(YES)s* to measure only those pixels within an object of choice.
+""" % globals()))
 
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc='''
-            <i>(Used only when measuring intensity from area enclosed by objects)</i><br>
-            Select the objects that the intensity will be aggregated within. The intensity measurement will be
-            restricted to the pixels within these objects.'''))
+                "Select the input objects", cps.NONE, doc="""\               
+*(Used only when measuring intensity from area enclosed by objects)*
+Select the objects that the intensity will be aggregated within. The
+intensity measurement will be restricted to the pixels within these
+objects."""))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("",

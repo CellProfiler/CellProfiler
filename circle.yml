@@ -36,7 +36,10 @@ deployment:
     branch: features/circle
     commands:
       # Create macOS application bundle:
-      - pyinstaller CellProfiler.spec
+      - python2 -m pyinstaller CellProfiler.spec
+
+      # Copy Info.plist to application bundle:
+      - cp Info.plist dist/CellProfiler.app/Contents
 
       # Copy Homebrew’s libpng dynamic library to application bundle:
       - >

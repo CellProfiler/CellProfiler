@@ -77,7 +77,7 @@ exe = EXE(
     exclude_binaries=True,
     icon="./cellprofiler/data/images/CellProfilerIcon.icns",
     name="cp",
-    strip=True,
+    strip=False,
     upx=True
 )
 
@@ -87,13 +87,13 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     name="CellProfiler",
-    strip=True,
+    strip=False,
     upx=True
 )
 
 app = BUNDLE(
     coll,
-    bundle_identifier="org.cellprofiler.CellProfiler",
+    bundle_identifier=None,
     icon="./cellprofiler/data/images/CellProfilerIcon.icns",
     name="CellProfiler.app"
 )

@@ -31,8 +31,12 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins
 
 if os.environ.get('OS','') == "Windows_NT":
     icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.ico")
+
+    name = "CellProfiler"
 else:
     icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.icns")
+
+    name = "cp"
 
 options = [("v", None, "OPTION"), ("W ignore", None, "OPTION")]
 
@@ -77,11 +81,11 @@ pyz = PYZ(
 exe = EXE(
     pyz,
     a.scripts,
-    console=True,
+    console=False,
     debug=False,
     exclude_binaries=True,
     icon=icon,
-    name="cp",
+    name=name,
     strip=False,
     upx=True
 )

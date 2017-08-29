@@ -21,9 +21,9 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Administrator\Documents\CellProfiler\LICENSE
-OutputBaseFilename=CellProfiler-nightly
-SetupIconFile=C:\Users\Administrator\Documents\CellProfiler\cellprofiler\data\CellProfilerIcon.ico
+LicenseFile=.\LICENSE
+OutputBaseFilename=CellProfiler
+SetupIconFile=.\cellprofiler\data\images\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -34,8 +34,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Administrator\Documents\CellProfiler\dist\CellProfiler\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Administrator\Documents\CellProfiler\dist\CellProfiler\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ".\dist\CellProfiler\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\dist\CellProfiler\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

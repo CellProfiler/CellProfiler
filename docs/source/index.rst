@@ -10,6 +10,7 @@ Welcome to CellProfiler's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+.. automodule:: cellprofiler.gui.help
 .. automodule:: cellprofiler.modules.align
 .. automodule:: cellprofiler.modules.applythreshold
 .. automodule:: cellprofiler.modules.blobdetection

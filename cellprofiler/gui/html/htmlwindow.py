@@ -1,6 +1,7 @@
 # coding=utf-8
 from cellprofiler.preferences import get_background_color, set_startup_blurb
 
+import cellprofiler.gui.html.utils
 import cellprofiler.icons
 import content
 import os
@@ -43,7 +44,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         elif href.startswith('help:'):
             href = linkinfo.Href[7:]
             import cellprofiler.gui.html.content
-            html_str = cellprofiler.gui.html.content.WELCOME_HELP[href]
+            html_str = cellprofiler.gui.html.utils.rst_to_html_fragment(cellprofiler.gui.html.content.WELCOME_HELP[href])
             html_str += '<p>Go <a href="startup_main">back</a> to the welcome screen.</p>'
             self.SetPage(html_str)
         elif href.startswith('load:'):

@@ -29,6 +29,11 @@ hiddenimports = []
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
 
+if os.environ.get('OS','') == "Windows_NT":
+    icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.ico")
+else:
+    icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.icns")
+
 options = [("v", None, "OPTION"), ("W ignore", None, "OPTION")]
 
 block_cipher = None
@@ -75,7 +80,7 @@ exe = EXE(
     console=True,
     debug=False,
     exclude_binaries=True,
-    icon="./cellprofiler/data/images/CellProfilerIcon.icns",
+    icon=icon,
     name="cp",
     strip=False,
     upx=True
@@ -94,6 +99,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     bundle_identifier=None,
-    icon="./cellprofiler/data/images/CellProfilerIcon.icns",
+    icon=icon,
     name="CellProfiler.app"
 )

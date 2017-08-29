@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Correct Illumination - Apply** applies an illumination function,
+CorrectIlluminationApply
+========================
+
+**CorrectIlluminationApply** applies an illumination function,
 usually created by **CorrectIlluminationCalculate**, to an image in
 order to correct for uneven illumination (uneven shading).
 
@@ -60,39 +63,45 @@ class CorrectIlluminationApply(cpm.Module):
     def add_image(self, can_delete=True):
         '''Add an image and its settings to the list of images'''
         image_name = cps.ImageNameSubscriber(
-                "Select the input image",
-                cps.NONE, doc='''
-            Select the image to be corrected.''')
+            "Select the input image",
+            cps.NONE,
+            doc="Select the image to be corrected.")
 
         corrected_image_name = cps.ImageNameProvider(
-                "Name the output image",
-                "CorrBlue", doc='''
-            Enter a name for the corrected image.''')
+            "Name the output image",
+            "CorrBlue",
+            doc="Enter a name for the corrected image.")
 
         illum_correct_function_image_name = cps.ImageNameSubscriber(
-                "Select the illumination function",
-                cps.NONE, doc='''
-            Select the illumination correction function image that will be used to
-            carry out the correction. This image is usually produced by another module
-            or loaded as a .mat format image using the <b>Images</b> module or
-            <b>LoadSingleImage</b>.''')
+            "Select the illumination function",
+            cps.NONE,
+            doc="""\
+Select the illumination correction function image that will be used to
+carry out the correction. This image is usually produced by another
+module or loaded as a .mat format image using the **Images** module or
+**LoadSingleImage**.
+"""
+        )
 
         divide_or_subtract = cps.Choice(
-                "Select how the illumination function is applied",
-                [DOS_DIVIDE, DOS_SUBTRACT], doc='''
-            This choice depends on how the illumination function was calculated
-            and on your physical model of the way illumination variation affects the
-            background of images relative to the objects in images; it is also somewhat empirical.
-            <ul>
-            <li><i>%(DOS_SUBTRACT)s:</i> Use this option if the background signal is significant
-            relative to the real signal coming from the cells.  If you created the illumination
-            correction function using <i>%(IC_BACKGROUND)s</i>,
-            then you will want to choose <i>%(DOS_SUBTRACT)s</i> here.</li>
-            <li><i>%(DOS_DIVIDE)s:</i> Choose this option if the signal to background ratio
-            is high (the cells are stained very strongly). If you created the illumination correction
-            function using <i>%(IC_REGULAR)s</i>,
-            then you will want to choose <i>%(DOS_DIVIDE)s</i> here.</li>
-            </ul>''' % globals())
+            "Select how the illumination function is applied",
+            [DOS_DIVIDE, DOS_SUBTRACT],
+            doc="""\
+This choice depends on how the illumination function was calculated and
+on your physical model of the way illumination variation affects the
+background of images relative to the objects in images; it is also
+somewhat empirical.
+
+-  *%(DOS_SUBTRACT)s:* Use this option if the background signal is
+   significant relative to the real signal coming from the cells. If you
+   created the illumination correction function using
+   *%(IC_BACKGROUND)s*, then you will want to choose
+   *%(DOS_SUBTRACT)s* here.
+-  *%(DOS_DIVIDE)s:* Choose this option if the signal to background
+   ratio is high (the cells are stained very strongly). If you created
+   the illumination correction function using *%(IC_REGULAR)s*, then
+   you will want to choose *%(DOS_DIVIDE)s* here.
+""" % globals())
 
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)

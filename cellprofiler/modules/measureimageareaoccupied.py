@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Image Area Occupied** measures the total area in an image that
+MeasureImageAreaOccupied
+========================
+
+**MeasureImageAreaOccupied** measures the total area in an image that
 is occupied by objects.
 
 This module reports the sum of the areas and perimeters of the objects
@@ -93,12 +96,9 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                         O_OBJECTS
                     ],
                     doc="""
-                    The area can be measured in two ways:
-                    <ul>
-                        <li><i>{O_BINARY_IMAGE}:</i> The area occupied by the foreground in a binary (black and white)
-                        image.</li>
-                        <li><i>{O_OBJECTS}:</i> The area occupied by previously-identified objects.</li>
-                    </ul>
+The area can be measured in two ways:
+-  *{O_BINARY_IMAGE}:* The area occupied by the foreground in a binary (black and white) image.
+-  *{O_OBJECTS}:* The area occupied by previously-identified objects.
                     """.format(**{
                         "O_BINARY_IMAGE": O_BINARY_IMAGE,
                         "O_OBJECTS": O_OBJECTS
@@ -108,9 +108,9 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                 self.__operand_objects = cellprofiler.setting.ObjectNameSubscriber(
                     "Select objects to measure",
                     cellprofiler.setting.NONE,
-                    doc="""
-                    <i>(Used only if '{O_OBJECTS}' are to be measured)</i><br>
-                    Select the previously identified objects you would like to measure.
+                    doc="""\
+*(Used only if ‘{O_OBJECTS}’ are to be measured)*
+Select the previously identified objects you would like to measure.
                     """.format(**{
                         "O_OBJECTS": O_OBJECTS
                     })
@@ -119,11 +119,12 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                 self.__should_save_image = cellprofiler.setting.Binary(
                     "Retain a binary image of the object regions?",
                     False,
-                    doc="""
-                    <i>(Used only if '{O_OBJECTS}' are to be measured)</i><br>
-                    Select <i>{YES}</i> if you would like to use a binary image later in the pipeline, for example in
-                    <b>SaveImages</b>. The image will display the object area that you have measured as the foreground
-                    in white and the background in black.
+                    doc="""\
+*(Used only if ‘{O_OBJECTS}’ are to be measured)*
+Select *{YES}* if you would like to use a binary image later in the
+pipeline, for example in **SaveImages**. The image will display the
+object area that you have measured as the foreground in white and the
+background in black.
                     """.format(**{
                         "O_OBJECTS": O_OBJECTS,
                         "YES": cellprofiler.setting.YES
@@ -133,21 +134,21 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                 self.__image_name = cellprofiler.setting.ImageNameProvider(
                     "Name the output binary image",
                     "Stain",
-                    doc="""
-                    <i>(Used only if the binary image of the objects is to be retained for later use in the
-                    pipeline)</i><br>
-                    Specify a name that will allow the binary image of the objects to be selected later in the
-                    pipeline.
+                    doc="""\
+*(Used only if the binary image of the objects is to be retained for
+later use in the pipeline)*
+Specify a name that will allow the binary image of the objects to be
+selected later in the pipeline.
                     """
                 )
 
                 self.__binary_name = cellprofiler.setting.ImageNameSubscriber(
                     "Select a binary image to measure",
                     cellprofiler.setting.NONE,
-                    doc="""
-                    <i>(Used only if '{O_BINARY_IMAGE}' is to be measured)</i><br>
-                    This is a binary image created earlier in the pipeline, where you would like to measure the area
-                    occupied by the foreground in the image.
+                    doc="""\
+*(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
+This is a binary image created earlier in the pipeline, where you would
+like to measure the area occupied by the foreground in the image.
                     """.format(**{
                         "O_BINARY_IMAGE": O_BINARY_IMAGE
                     })

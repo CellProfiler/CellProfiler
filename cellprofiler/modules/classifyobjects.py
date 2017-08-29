@@ -309,7 +309,7 @@ class ClassifyObjects(cpm.Module):
             <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
             This is the threshold that separates the last bin from
             the others.
-            <i>Note:</i> If you would like two bins, you should select <i>%(BC_CUSTOM)s</i>.
+            Note that if you would like two bins, you should select <i>%(BC_CUSTOM)s</i>.
             """ % globals()))
 
         group.append("wants_high_bin", cps.Binary(

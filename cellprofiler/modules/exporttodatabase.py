@@ -769,7 +769,7 @@ class ExportToDatabase(cpm.Module):
                 file, which can be run on your Per-Image and Per-Object tables to create
                 the desired per-well table.
                 
-                *Note:* this option is only available if you have extracted plate and
+                Note that this option is only available if you have extracted plate and
                 well metadata from the filename using the **Metadata** or **LoadData**
                 modules. It will write out a .sql file with the statements necessary to
                 create the Per\_Well table, regardless of the option chosen above.
@@ -791,7 +791,7 @@ class ExportToDatabase(cpm.Module):
                 file, which can be run on your Per-Image and Per-Object tables to create
                 the desired per-well table.
                 
-                *Note:* this option is only available if you have extracted plate and
+                Note that this option is only available if you have extracted plate and
                 well metadata from the filename using the **Metadata** or **LoadData**
                 modules. It will write out a .sql file with the statements necessary to
                 create the Per\_Well table, regardless of the option chosen above.
@@ -813,7 +813,7 @@ class ExportToDatabase(cpm.Module):
                 file, which can be run on your Per-Image and Per-Object tables to create
                 the desired per-well table.
                 
-                *Note:* this option is only available if you have extracted plate and
+                Note that this option is only available if you have extracted plate and
                 well metadata from the filename using the **Metadata** or **LoadData**
                 modules. It will write out a .sql file with the statements necessary to
                 create the Per\_Well table, regardless of the option chosen above.
@@ -2647,7 +2647,7 @@ CREATE TABLE %s (
         Returns the relationship_type_id that joins to the relationship
         type record in the relationship types table.
 
-        NOTE: this should not be called for CSV databases.
+        Note that this should not be called for CSV databases.
         '''
         assert self.db_type != DB_MYSQL_CSV
 
@@ -3675,7 +3675,7 @@ cell_y_loc    = %(cell_y_loc)s
 # path and filename column to the per-image table of your database and then
 # adding those column names here.
 #
-# NOTE: These lists must have equal length!
+# Note that these lists must have equal length!
 image_path_cols = %(image_path_cols)s
 image_file_cols = %(image_file_cols)s
 

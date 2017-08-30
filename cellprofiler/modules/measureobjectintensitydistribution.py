@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Object Intensity Distribution** measures the distribution of
+MeasureObjectIntensityDistribution
+==================================
+
+**MeasureObjectIntensityDistribution** measures the distribution of
 intensities within each object.
 
 Given an image with objects identified, this module measures the
@@ -142,14 +145,16 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
         self.wants_zernikes = cellprofiler.setting.Choice(
             "Calculate intensity Zernikes?",
             Z_ALL,
-            doc="""
-            This setting determines whether the intensity Zernike moments are calculated. Choose
-            <i>{Z_NONE}</i> to save computation time by not calculating the Zernike moments. Choose
-            <i>{Z_MAGNITUDES}</i> to only save the magnitude information and discard information related to
-            the object's angular orientation. Choose <i>{Z_MAGNITUDES_AND_PHASE}</i> to save the phase
-            information as well. The last option lets you recover each object's rough appearance from the
-            Zernikes but may not contribute useful information if used to classify phenotypes.
-            """.format(**{
+            doc="""\
+This setting determines whether the intensity Zernike moments are
+calculated. Choose *{Z_NONE}* to save computation time by not
+calculating the Zernike moments. Choose *{Z_MAGNITUDES}* to only save
+the magnitude information and discard information related to the
+object’s angular orientation. Choose *{Z_MAGNITUDES_AND_PHASE}* to
+save the phase information as well. The last option lets you recover
+each object’s rough appearance from the Zernikes but may not contribute
+useful information if used to classify phenotypes.
+""".format(**{
                 "Z_NONE": Z_NONE,
                 "Z_MAGNITUDES": Z_MAGNITUDES,
                 "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE
@@ -161,12 +166,13 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             value=9,
             minval=1,
             maxval=20,
-            doc="""
-            (<i>Only if {wants_zernikes} is {Z_MAGNITUDES} or {Z_MAGNITUDES_AND_PHASE}</i>)<br>
-            This is the maximum radial moment that will be calculated. There are increasing numbers of
-            azimuthal moments as you increase the radial moment, so higher values are increasingly expensive to
-            calculate.
-            """.format(**{
+            doc="""\
+(*Only if {wants_zernikes} is {Z_MAGNITUDES} or {Z_MAGNITUDES_AND_PHASE}*)
+
+This is the maximum radial moment that will be calculated. There are
+increasing numbers of azimuthal moments as you increase the radial
+moment, so higher values are increasingly expensive to calculate.
+""".format(**{
                 "wants_zernikes": self.wants_zernikes.text,
                 "Z_MAGNITUDES": Z_MAGNITUDES,
                 "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE
@@ -189,12 +195,11 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             "",
             "Add another heatmap display",
             self.add_heatmap,
-            doc="""
-            Press this button to add a display of one of the radial distribution
-            measurements. Each radial band of the object is colored using a
-            heatmap according to the measurement value for that band.
-            """
-        )
+            doc="""\
+Press this button to add a display of one of the radial distribution
+measurements. Each radial band of the object is colored using a
+heatmap according to the measurement value for that band.
+""")
 
         self.add_image(can_remove=False)
 
@@ -250,19 +255,23 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             cellprofiler.setting.Choice(
                 "Object to use as center?",
                 C_ALL,
-                doc="""
-                There are three ways to specify the center of the radial measurement:
-                <ul>
-                    <li><i>{C_SELF}:</i> Use the centers of these objects for the radial measurement.</li>
-                    <li><i>{C_CENTERS_OF_OTHER}:</i> Use the centers of other objects for the radial
-                    measurement.</li>
-                    <li><i>{C_EDGES_OF_OTHER}:</i> Measure distances from the edge of the other object to each
-                    pixel outside of the centering object. Do not include pixels within the centering object in the
-                    radial measurement calculations.</li>
-                </ul>For example, if measuring the radial distribution in a Cell object, you can use the center of
-                the Cell objects (<i>{C_SELF}</i>) or you can use previously identified Nuclei objects as the
-                centers (<i>{C_CENTERS_OF_OTHER}</i>).
-                """.format(**{
+                doc="""\
+There are three ways to specify the center of the radial measurement:
+
+-  *{C_SELF}:* Use the centers of these objects for the radial
+   measurement.
+-  *{C_CENTERS_OF_OTHER}:* Use the centers of other objects for the
+   radial measurement.
+-  *{C_EDGES_OF_OTHER}:* Measure distances from the edge of the other
+   object to each pixel outside of the centering object. Do not include
+   pixels within the centering object in the radial measurement
+   calculations.
+
+For example, if measuring the radial distribution in a Cell object, you
+can use the center of the Cell objects (*{C_SELF}*) or you can use
+previously identified Nuclei objects as the centers
+(*{C_CENTERS_OF_OTHER}*).
+""".format(**{
                     "C_SELF": C_SELF,
                     "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
                     "C_EDGES_OF_OTHER": C_EDGES_OF_OTHER
@@ -275,11 +284,13 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             cellprofiler.setting.ObjectNameSubscriber(
                 "Select objects to use as centers",
                 cellprofiler.setting.NONE,
-                doc="""
-                <i>(Used only if "{C_CENTERS_OF_OTHER}" are selected for centers)</i><br>
-                Select the object to use as the center, or select <i>None</i> to use the input object centers
-                (which is the same as selecting <i>{C_SELF}</i> for the object centers).
-                """.format(**{
+                doc="""\
+*(Used only if “{C_CENTERS_OF_OTHER}” are selected for centers)*
+
+Select the object to use as the center, or select *None* to use the
+input object centers (which is the same as selecting *{C_SELF}* for the
+object centers).
+""".format(**{
                     "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
                     "C_SELF": C_SELF
                 })
@@ -310,13 +321,16 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             cellprofiler.setting.Binary(
                 "Scale the bins?",
                 True,
-                doc="""
-                <p>Select <i>{YES}</i> to divide the object radially into the number of bins that you specify.</p>
-                <p>Select <i>{NO}</i> to create the number of bins you specify based on distance. For this option,
-                the user will be asked to specify a maximum distance so that each object will have the same
-                measurements (which might be zero for small objects) and so that the measurements can be taken
-                without knowing the maximum object radius before the run starts.</p>
-                """.format(**{
+                doc="""\
+Select *{YES}* to divide the object radially into the number of bins
+that you specify.
+
+Select *{NO}* to create the number of bins you specify based on
+distance. For this option, the user will be asked to specify a maximum
+distance so that each object will have the same measurements (which
+might be zero for small objects) and so that the measurements can be
+taken without knowing the maximum object radius before the run starts.
+""".format(**{
                     "YES": cellprofiler.setting.YES,
                     "NO": cellprofiler.setting.NO
                 })
@@ -329,15 +343,14 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
                 "Number of bins",
                 4,
                 2,
-                doc="""
-                Specify the number of bins that you want to use to measure the distribution. Radial distribution is
-                measured with respect to a series of concentric rings starting from the object center (or more
-                generally, between contours at a normalized distance from the object center). This number specifies
-                the number of rings into which the distribution is to be divided. Additional ring counts can be
-                specified by clicking the <i>Add another set of bins</i> button.
-                """
-            )
-        )
+                doc="""\
+Specify the number of bins that you want to use to measure the
+distribution. Radial distribution is measured with respect to a series
+of concentric rings starting from the object center (or more generally,
+between contours at a normalized distance from the object center). This
+number specifies the number of rings into which the distribution is to
+be divided. Additional ring counts can be specified by clicking the *Add
+another set of bins* button."""))
 
         group.append(
             "maximum_radius",
@@ -345,12 +358,12 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
                 "Maximum radius",
                 100,
                 minval=1,
-                doc="""
-                Specify the maximum radius for the unscaled bins. The unscaled binning method creates the number of
-                bins that you specify and creates equally spaced bin boundaries up to the maximum radius. Parts of
-                the object that are beyond this radius will be counted in an overflow bin. The radius is measured
-                in pixels.
-                """
+                doc="""\
+Specify the maximum radius for the unscaled bins. The unscaled binning method creates the number of
+bins that you specify and creates equally spaced bin boundaries up to the maximum radius. Parts of
+the object that are beyond this radius will be counted in an overflow bin. The radius is measured
+in pixels.
+"""
             )
         )
 
@@ -387,12 +400,10 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             "image_name",
             MORDImageNameSubscriber(
                 "Image",
-                doc="""
-                The heatmap will be displayed with measurements taken using this image. The setting will let you
-                choose from among the images you have specified in "Select image to measure".
-                """
-            )
-        )
+                doc="""\
+The heatmap will be displayed with measurements taken using this image. The setting will let you
+choose from among the images you have specified in "Select image to measure".
+"""))
 
         group.image_name.set_module(self)
 
@@ -400,12 +411,9 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             "object_name",
             MORDObjectNameSubscriber(
                 "Objects to display",
-                doc="""
-                The objects to display in the heatmap. You can select any of the
-                objects chosen in "Select objects to measure".
-                """
-            )
-        )
+                doc="""\
+The objects to display in the heatmap. You can select any of the
+objects chosen in "Select objects to measure"."""))
 
         group.object_name.set_module(self)
 
@@ -439,25 +447,22 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             "colormap",
             cellprofiler.setting.Colormap(
                 "Color map",
-                doc="""
-                The color map setting chooses the color palette that will be
-                used to render the different values for your measurement. If you
-                choose "gray", the image will label each of the bins with the
-                actual image measurement.
-                """
-            )
-        )
+                doc="""\
+The color map setting chooses the color palette that will be
+used to render the different values for your measurement. If you
+choose "gray", the image will label each of the bins with the
+actual image measurement."""))
 
         group.append(
             "wants_to_save_display",
             cellprofiler.setting.Binary(
                 "Save display as image?",
                 False,
-                doc="""
-                This setting allows you to save the heatmap display as an image that can be output using the
-                <b>SaveImages</b> module. Choose <i>{YES}</i> to save the display or <i>{NO}</i> if the display
-                is not needed.
-                """.format(**{
+                doc="""\
+This setting allows you to save the heatmap display as an image that can
+be output using the **SaveImages** module. Choose *{YES}* to save the
+display or *{NO}* if the display is not needed.
+""".format(**{
                     "YES": cellprofiler.setting.YES,
                     "NO": cellprofiler.setting.NO
                 })
@@ -468,11 +473,12 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
             "display_name", cellprofiler.setting.ImageNameProvider(
                 "Output image name",
                 "Heatmap",
-                doc="""
-                <i>(Only used if "Save display as image?" is "{YES}")</i><br>
-                This setting names the heatmap image so that the name you enter
-                here can be selected in a later <b>SaveImages</b> or other module.
-                """.format(**{
+                doc="""\
+*(Only used if “Save display as image?” is “{YES}”)*
+
+This setting names the heatmap image so that the name you enter here can
+be selected in a later **SaveImages** or other module.
+""".format(**{
                     "YES": cellprofiler.setting.YES
                 })
             )

@@ -18,6 +18,18 @@ Installation
 
     $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
+Java
+~~~~
+
+`Java`_ is a general-purpose computer programming language that is concurrent, class-based, object-oriented, and specifically designed to have as few implementation dependencies as possible.
+
+Installation
+^^^^^^^^^^^^
+
+.. code:: sh
+
+	$ brew cask install java
+
 MySQL
 ~~~~~
 
@@ -87,6 +99,7 @@ that contains the macOS `package`_ (CellProfiler.app):
 
 .. _Apple Disk Image: https://en.wikipedia.org/wiki/Apple_Disk_Image
 .. _Homebrew: https://brew.sh
+.. _Java: https://java.com
 .. _MySQL: https://www.mysql.com
 .. _package: https://en.wikipedia.org/wiki/Package_(macOS)
 .. _Python: https://en.wikipedia.org/wiki/Python_(programming_language)

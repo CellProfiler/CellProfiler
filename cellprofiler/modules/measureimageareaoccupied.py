@@ -95,7 +95,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                         O_BINARY_IMAGE,
                         O_OBJECTS
                     ],
-                    doc="""
+                    doc="""\
 The area can be measured in two ways:
 -  *{O_BINARY_IMAGE}:* The area occupied by the foreground in a binary (black and white) image.
 -  *{O_OBJECTS}:* The area occupied by previously-identified objects.
@@ -110,6 +110,7 @@ The area can be measured in two ways:
                     cellprofiler.setting.NONE,
                     doc="""\
 *(Used only if ‘{O_OBJECTS}’ are to be measured)*
+
 Select the previously identified objects you would like to measure.
                     """.format(**{
                         "O_OBJECTS": O_OBJECTS
@@ -121,6 +122,7 @@ Select the previously identified objects you would like to measure.
                     False,
                     doc="""\
 *(Used only if ‘{O_OBJECTS}’ are to be measured)*
+
 Select *{YES}* if you would like to use a binary image later in the
 pipeline, for example in **SaveImages**. The image will display the
 object area that you have measured as the foreground in white and the
@@ -137,6 +139,7 @@ background in black.
                     doc="""\
 *(Used only if the binary image of the objects is to be retained for
 later use in the pipeline)*
+
 Specify a name that will allow the binary image of the objects to be
 selected later in the pipeline.
                     """
@@ -147,6 +150,7 @@ selected later in the pipeline.
                     cellprofiler.setting.NONE,
                     doc="""\
 *(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
+
 This is a binary image created earlier in the pipeline, where you would
 like to measure the area occupied by the foreground in the image.
                     """.format(**{

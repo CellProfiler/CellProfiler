@@ -1493,6 +1493,8 @@ FIGURE_HELP = (
     ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP),
     ("How To Use The Image Tools", MODULE_DISPLAY_IMAGE_TOOLS_HELP))
 
+WV_FIGURE_HELP = tuple(list(FIGURE_HELP))
+
 ###################################################
 #
 # Help for the preferences dialog

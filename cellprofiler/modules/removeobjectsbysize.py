@@ -17,9 +17,9 @@ import cellprofiler.setting
 
 
 class RemoveObjectsBySize(cellprofiler.module.ObjectProcessing):
-    category = ["Advanced"]
+    category = "Advanced"
 
-    module_name = "Remove objects"
+    module_name = "RemoveObjectsBySize"
 
     variable_revision_number = 1
 

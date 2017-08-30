@@ -5,11 +5,11 @@ import numpy.testing
 import skimage.measure
 import skimage.morphology
 
-import cellprofiler.modules.cropobjects
+import cellprofiler.modules.savecroppedobjects
 import cellprofiler.object
 import cellprofiler.setting
 
-instance = cellprofiler.modules.cropobjects.CropObjects()
+instance = cellprofiler.modules.savecroppedobjects.SaveCroppedObjects()
 
 
 def test_run(image, module, image_set, workspace, object_set, tmpdir):

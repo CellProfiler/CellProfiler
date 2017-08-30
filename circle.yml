@@ -1,0 +1,37 @@
+general:
+  branches:
+    only:
+      - beta
+      - features/circle
+      - stable
+machine:
+  environment:
+    CP_MYSQL_TEST_HOST: "127.0.0.1"
+    CP_MYSQL_TEST_PASSWORD: ""
+    CP_MYSQL_TEST_USER: "root"
+  xcode:
+    version: 8.2
+dependencies:
+  pre:
+    - brew update
+
+    # Install CellProfiler’s Homebrew dependencies:
+    - brew install upx 
+    - brew install python 
+    - brew install wxpython
+test:
+  override:
+    - echo
+deployment:
+  nightly:
+    branch: platforms/macos
+    commands:
+      - make
+      
+      # Upload disk image to Amazon S3 (Simple Storage Service):
+      - >
+        aws s3 sync dist s3://cellprofiler-releases \
+          --acl public-read                         \
+          --delete                                  \
+          --exclude "*"                             \
+          --include "CellProfiler-nightly.dmg"

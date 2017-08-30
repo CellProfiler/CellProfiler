@@ -73,7 +73,10 @@ if PyInstaller.compat.is_darwin:
 
     a.binaries = [binary for binary in a.binaries if binary not in exclude_binaries]
 
-icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.icns")
+    icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.icns")
+
+if PyInstaller.compat.is_win:
+    icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.ico")
 
 pyz = PYZ(
     a.pure, 

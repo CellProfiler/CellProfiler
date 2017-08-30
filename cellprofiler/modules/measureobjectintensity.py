@@ -2,7 +2,7 @@
 
 """
 MeasureObjectIntensity
-========================
+======================
 
 **MeasureObjectIntensity** measures several intensity features for
 identified objects.

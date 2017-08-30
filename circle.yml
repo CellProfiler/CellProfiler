@@ -12,7 +12,7 @@ dependencies:
     # Install CellProfiler’s Homebrew dependencies:
     - brew update
 
-    - brew install java
+    - brew cask install java
     - brew install mysql
     - brew install python 
     - brew install upx 

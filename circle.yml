@@ -9,11 +9,12 @@ machine:
     version: 8.2
 dependencies:
   pre:
+    # Install CellProfiler’s Homebrew dependencies:
     - brew update
 
-    # Install CellProfiler’s Homebrew dependencies:
-    - brew install upx 
+    - brew install mysql
     - brew install python 
+    - brew install upx 
     - brew install wxpython
 test:
   override:

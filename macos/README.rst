@@ -18,6 +18,18 @@ Installation
 
     $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
+MySQL
+~~~~~
+
+`MySQL`_ is an open-source relational database management system (RDBMS).
+
+Installation
+^^^^^^^^^^^^
+
+.. code:: sh
+
+	$ brew install mysql
+
 Python
 ~~~~~~
 
@@ -75,6 +87,7 @@ that contains the macOS `package`_ (CellProfiler.app):
 
 .. _Apple Disk Image: https://en.wikipedia.org/wiki/Apple_Disk_Image
 .. _Homebrew: https://brew.sh
+.. _MySQL: https://www.mysql.com
 .. _package: https://en.wikipedia.org/wiki/Package_(macOS)
 .. _Python: https://en.wikipedia.org/wiki/Python_(programming_language)
 .. _UPX: https://upx.github.io

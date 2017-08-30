@@ -14,13 +14,13 @@ import skimage.restoration
 import skimage.util
 
 
-class NoiseReduction(cellprofiler.module.ImageProcessing):
-    module_name = "NoiseReduction"
+class ReduceNoise(cellprofiler.module.ImageProcessing):
+    module_name = "ReduceNoise"
 
     variable_revision_number = 1
 
     def create_settings(self):
-        super(NoiseReduction, self).create_settings()
+        super(ReduceNoise, self).create_settings()
 
         self.size = cellprofiler.setting.Integer(
             doc="Size is the size of patches used for noise reduction.",
@@ -45,7 +45,7 @@ class NoiseReduction(cellprofiler.module.ImageProcessing):
         )
 
     def settings(self):
-        __settings__ = super(NoiseReduction, self).settings()
+        __settings__ = super(ReduceNoise, self).settings()
 
         return __settings__ + [
             self.size,
@@ -54,7 +54,7 @@ class NoiseReduction(cellprofiler.module.ImageProcessing):
         ]
 
     def visible_settings(self):
-        __settings__ = super(NoiseReduction, self).visible_settings()
+        __settings__ = super(ReduceNoise, self).visible_settings()
 
         return __settings__ + [
             self.size,

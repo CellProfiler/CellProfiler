@@ -25,12 +25,12 @@ module:
 -  **ImageMath**: If the objects are black and the background is white,
    you must invert the intensity using this module.
 
--  **ApplyThreshold**: If the image is grayscale, you must make it
+-  **Threshold**: If the image is grayscale, you must make it
    binary using this module, or alternately use an **Identify** module
    followed by **ConvertObjectsToImage** as described above.
 
 -  **ColorToGray**: If the image is in color, you must first convert it
-   to grayscale using this module, and then use **ApplyThreshold** to
+   to grayscale using this module, and then use **Threshold** to
    generate a binary image.
 
 In the test image, any foreground (white) pixels that overlap with the

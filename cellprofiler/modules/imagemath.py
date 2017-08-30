@@ -15,7 +15,7 @@ scaled from 0 – 1 for object identification and display purposes, so
 additional rescaling may be needed. Please see the **RescaleIntensity**
 module for more scaling options.
 
-See also **ApplyThreshold**, **RescaleIntensity**,
+See also **Threshold**, **RescaleIntensity**,
 **CorrectIlluminationCalculate**.
 """
 

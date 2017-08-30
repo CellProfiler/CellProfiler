@@ -26,7 +26,7 @@ OBJECTS_NAME = 'objects'
 
 class TestMeasureCorrelation(unittest.TestCase):
     def make_workspace(self, image1, image2, objects=None):
-        '''Make a workspace for testing ApplyThreshold'''
+        '''Make a workspace for testing Threshold'''
         module = M.MeasureCorrelation()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)

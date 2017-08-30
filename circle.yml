@@ -5,33 +5,36 @@ general:
       - platforms/macos
       - stable
 machine:
+  environment:
+    JAVA_HOME: "$(/usr/libexec/java_home)"
   xcode:
     version: 8.2
 dependencies:
   pre:
+    - echo $JAVA_HOME
     # Install CellProfiler’s Homebrew dependencies:
-    - brew update
+    # - brew update
 
-    - brew cask install java
-    - brew install mysql
-    - brew install python 
-    - brew install upx 
-    - brew install wxpython
+    # - brew cask install java
+    # - brew install mysql
+    # - brew install python 
+    # - brew install upx 
+    # - brew install wxpython
 test:
   override:
     - echo
-deployment:
-  nightly:
-    branch: platforms/macos
-    commands:
-      - cd macos && make
+# deployment:
+#   nightly:
+#     branch: platforms/macos
+#     commands:
+#       - cd macos && make
       
-      # Upload disk image to Amazon S3 (Simple Storage Service):
-      - brew install awscli
+#       # Upload disk image to Amazon S3 (Simple Storage Service):
+#       - brew install awscli
 
-      - >
-        aws s3 sync dist s3://cellprofiler-releases \
-          --acl public-read                         \
-          --delete                                  \
-          --exclude "*"                             \
-          --include "CellProfiler-nightly.dmg"
+#       - >
+#         aws s3 sync dist s3://cellprofiler-releases \
+#           --acl public-read                         \
+#           --delete                                  \
+#           --exclude "*"                             \
+#           --include "CellProfiler-nightly.dmg"

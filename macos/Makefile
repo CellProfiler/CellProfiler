@@ -23,7 +23,6 @@ dependencies: CellProfiler
 
 	pip2 install --editable "CellProfiler[build, test]" --upgrade   
 
-.INTERMEDIATE: dist/CellProfiler.app
 dist/CellProfiler.app: CellProfiler dependencies Info.plist
 	pyinstaller --noconfirm CellProfiler.spec
 

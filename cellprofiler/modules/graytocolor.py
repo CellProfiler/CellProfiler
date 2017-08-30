@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+GrayToColor
+===========
+
 **Gray to Color** takes grayscale images and and produces a color image
 from them.
 
@@ -51,23 +54,25 @@ class GrayToColor(cpm.Module):
         self.scheme_choice = cps.Choice(
                 "Select a color scheme",
                 [SCHEME_RGB, SCHEME_CMYK, SCHEME_STACK, SCHEME_COMPOSITE],
-                doc="""
-            This module can use one of two color schemes to combine images:<br/>
-            <ul><li><i>%(SCHEME_RGB)s</i>: Each input image determines the intensity of
-            one of the color channels: red, green, and blue.</li>
-            <li><i>%(SCHEME_CMYK)s</i>: Three of the input images are combined to determine
-            the colors (cyan, magenta, and yellow) and a fourth is used only for brightness. The cyan
-            image adds equally to the green and blue intensities. The magenta
-            image adds equally to the red and blue intensities. The yellow
-            image adds equally to the red and green intensities.</li>
-            <li><i>%(SCHEME_STACK)s</i>: The channels are stacked in order. An arbitrary number of
-            channels is allowed.</li>
-            <li><i>%(SCHEME_COMPOSITE)s</i>: A color is assigned to each grayscale
-            image. Each grayscale image is converted to color by multiplying
-            the intensity by the color and the resulting color images are
-            added together. An arbitrary number of channels can be composited
-            into a single color image.</li>
-            </ul>""" % globals())
+                doc="""\
+This module can use one of two color schemes to combine images:
+
+-  *%(SCHEME_RGB)s*: Each input image determines the intensity of one
+   of the color channels: red, green, and blue.
+-  *%(SCHEME_CMYK)s*: Three of the input images are combined to
+   determine the colors (cyan, magenta, and yellow) and a fourth is used
+   only for brightness. The cyan image adds equally to the green and
+   blue intensities. The magenta image adds equally to the red and blue
+   intensities. The yellow image adds equally to the red and green
+   intensities.
+-  *%(SCHEME_STACK)s*: The channels are stacked in order. An arbitrary
+   number of channels is allowed.
+-  *%(SCHEME_COMPOSITE)s*: A color is assigned to each grayscale image.
+   Each grayscale image is converted to color by multiplying the
+   intensity by the color and the resulting color images are added
+   together. An arbitrary number of channels can be composited into a
+   single color image.
+""" % globals())
 
         # # # # # # # # # # # # # # # #
         #
@@ -91,27 +96,33 @@ class GrayToColor(cpm.Module):
 
         self.red_adjustment_factor = cps.Float(
                 "Relative weight for the red image",
-                value=1, minval=0, doc='''
-            <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
-            Enter the relative weight for the red image. If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+                value=1, minval=0, doc='''\
+*(Used only if %(SCHEME_RGB)s is selected as the color scheme)*
+Enter the relative weight for the red image. If all relative weights are
+equal, all three colors contribute equally in the final image. To weight
+colors relative to each other, increase or decrease the relative
+weights.
+''' % globals())
 
         self.green_adjustment_factor = cps.Float(
                 "Relative weight for the green image",
-                value=1, minval=0, doc='''
-            <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
-            Enter the relative weight for the green image. If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+                value=1, minval=0, doc='''\
+*(Used only if %(SCHEME_RGB)s is selected as the color scheme)*
+Enter the relative weight for the green image. If all relative weights
+are equal, all three colors contribute equally in the final image. To
+weight colors relative to each other, increase or decrease the relative
+weights.
+''' % globals())
 
         self.blue_adjustment_factor = cps.Float(
                 "Relative weight for the blue image",
-                value=1, minval=0, doc='''
-            <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
-            Enter the relative weight for the blue image. If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+                value=1, minval=0, doc='''\
+*(Used only if %(SCHEME_RGB)s is selected as the color scheme)*
+Enter the relative weight for the blue image. If all relative weights
+are equal, all three colors contribute equally in the final image. To
+weight colors relative to each other, increase or decrease the relative
+weights.
+''' % globals())
         # # # # # # # # # # # # # #
         #
         # CYMK settings
@@ -135,35 +146,43 @@ class GrayToColor(cpm.Module):
 
         self.cyan_adjustment_factor = cps.Float(
                 "Relative weight for the cyan image",
-                value=1, minval=0, doc='''
-            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
-            Enter the relative weight for the cyan image. If all relative weights are equal, all
-            colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+                value=1, minval=0, doc='''\
+*(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+Enter the relative weight for the cyan image. If all relative weights
+are equal, all colors contribute equally in the final image. To weight
+colors relative to each other, increase or decrease the relative
+weights.
+''' % globals())
 
         self.magenta_adjustment_factor = cps.Float(
                 "Relative weight for the magenta image",
-                value=1, minval=0, doc='''
-            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
-            Enter the relative weight for the magenta image. If all relative weights are equal, all
-            colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+                value=1, minval=0, doc='''\
+*(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+Enter the relative weight for the magenta image. If all relative weights
+are equal, all colors contribute equally in the final image. To weight
+colors relative to each other, increase or decrease the relative
+weights.
+''' % globals())
 
         self.yellow_adjustment_factor = cps.Float(
                 "Relative weight for the yellow image",
-                value=1, minval=0, doc='''
-            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
-            Enter the relative weight for the yellow image. If all relative weights are equal, all
-            colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+                value=1, minval=0, doc='''\
+*(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+Enter the relative weight for the yellow image. If all relative weights
+are equal, all colors contribute equally in the final image. To weight
+colors relative to each other, increase or decrease the relative
+weights.
+''' % globals())
 
         self.gray_adjustment_factor = cps.Float(
                 "Relative weight for the brightness image",
-                value=1, minval=0, doc='''
-            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
-            Enter the relative weight for the brightness image. If all relative weights are equal, all
-            colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+                value=1, minval=0, doc='''\
+*(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+Enter the relative weight for the brightness image. If all relative
+weights are equal, all colors contribute equally in the final image. To
+weight colors relative to each other, increase or decrease the relative
+weights.
+''' % globals())
 
         # # # # # # # # # # # # # #
         #
@@ -182,25 +201,23 @@ class GrayToColor(cpm.Module):
             len(self.stack_channels) % len(DEFAULT_COLORS)]
         group.append("image_name", cps.ImageNameSubscriber(
                 "Image name", cps.NONE,
-                doc=
-                """
-                <i>Used only if %(SCHEME_STACK)s or %(SCHEME_COMPOSITE)s is
-                chosen</i><br>
-                Select the input image to add to the stacked image""" % globals()))
+                doc='''\
+*Used only if %(SCHEME_STACK)s or %(SCHEME_COMPOSITE)s is chosen*
+Select the input image to add to the stacked image
+''' % globals()))
         group.append("color", cps.Color(
                 "Color", default_color,
-                doc="""
-            <i>Used only if %(SCHEME_COMPOSITE)s is chosen</i>
-            <br>The color to be assigned to the above image.
-            """ % globals()))
+                doc='''\
+*Used only if %(SCHEME_COMPOSITE)s is chosen*
+The color to be assigned to the above image.
+''' % globals()))
         group.append("weight", cps.Float(
                 "Weight", 1.0, minval=.5 / 255,
-                doc="""
-            <i>Used only if %(SCHEME_COMPOSITE)s is chosen</i>
-            <br>The weighting of the above image relative to the others. The
-            image's pixel values are multiplied by this weight before assigning
-            the color.
-            """ % globals()))
+                doc='''\
+*Used only if %(SCHEME_COMPOSITE)s is chosen*
+The weighting of the above image relative to the others. The image’s
+pixel values are multiplied by this weight before assigning the color.
+''' % globals()))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.stack_channels, group))

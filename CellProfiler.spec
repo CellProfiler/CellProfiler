@@ -5,6 +5,11 @@ import os.path
 import PyInstaller.compat
 import PyInstaller.utils.hooks
 
+def find_java():
+    if PyInstaller.compat.is_darwin:
+        return "libjvm.dylib", "/usr/libexec/java_home/jre/lib/server/libjvm.dylib", "BINARY"
+
+
 binaries = []
 
 block_cipher = None
@@ -27,6 +32,7 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.module
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
 
 hiddenimports += [
+    "scipy.special.ellipeinc",
     "pywt._extensions._cwt"
 ]
 
@@ -54,7 +60,8 @@ if PyInstaller.compat.is_darwin:
     pathname = os.path.join(pathname, "lib", "libpng16.16.dylib")
 
     a.binaries += [
-        ("libpng16.16.dylib", pathname, "BINARY")
+        ("libpng16.16.dylib", pathname, "BINARY"),
+        ("libjvm.dylib", "/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/server/libjvm.dylib", "BINARY")
     ]
 
     exclude_binaries = [
@@ -75,11 +82,12 @@ if PyInstaller.compat.is_darwin:
 
     icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.icns")
 
+
 if PyInstaller.compat.is_win:
     icon = os.path.join(".", "cellprofiler", "data", "images", "CellProfilerIcon.ico")
 
 pyz = PYZ(
-    a.pure, 
+    a.pure,
     a.zipped_data,
     cipher=block_cipher
 )

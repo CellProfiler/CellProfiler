@@ -139,7 +139,7 @@ builtin_modules = ['align',
                    'exporttospreadsheet',
                    'filterobjects',
                    'flagimage',
-                   'flipandrotate'
+                   'flipandrotate',
                    'gaussianfilter',
                    'graytocolor',
                    'groups',

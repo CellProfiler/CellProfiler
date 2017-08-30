@@ -24,6 +24,8 @@ import cellprofiler.setting
 
 
 class Watershed(cellprofiler.module.ImageSegmentation):
+    category = "Advanced"
+
     module_name = "Watershed"
 
     variable_revision_number = 1

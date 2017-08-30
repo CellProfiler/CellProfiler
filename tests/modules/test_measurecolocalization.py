@@ -17,7 +17,7 @@ import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.measurecorrelation as M
+import cellprofiler.modules.measurecolocalization as M
 
 IMAGE1_NAME = 'image1'
 IMAGE2_NAME = 'image2'
@@ -27,7 +27,7 @@ OBJECTS_NAME = 'objects'
 class TestMeasureCorrelation(unittest.TestCase):
     def make_workspace(self, image1, image2, objects=None):
         '''Make a workspace for testing Threshold'''
-        module = M.MeasureCorrelation()
+        module = M.MeasureColocalization()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         for image_group, name, image in zip(module.image_groups,
@@ -56,7 +56,7 @@ class TestMeasureCorrelation(unittest.TestCase):
 Version:1
 SVNRevision:8905
 
-MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
     Hidden:2
     Hidden:2
     Select an image to measure:DNA
@@ -93,7 +93,7 @@ GitHash:e55aeba
 ModuleCount:1
 HasImagePlaneDetails:False
 
-MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Hidden:2
     Hidden:2
     Select an image to measure:DNA
@@ -133,7 +133,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
 
     def test_02_01_get_categories(self):
         '''Test the get_categories function for some different cases'''
-        module = M.MeasureCorrelation()
+        module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
@@ -153,7 +153,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
 
     def test_02_02_get_measurements(self):
         '''Test the get_measurements function for some different cases'''
-        module = M.MeasureCorrelation()
+        module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
@@ -184,7 +184,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
                 (M.M_IMAGES, [cpmeas.IMAGE]),
                 (M.M_OBJECTS, [OBJECTS_NAME]),
                 (M.M_IMAGES_AND_OBJECTS, [cpmeas.IMAGE, OBJECTS_NAME])):
-            module = M.MeasureCorrelation()
+            module = M.MeasureColocalization()
             module.image_groups[0].image_name.value = IMAGE1_NAME
             module.image_groups[1].image_name.value = IMAGE2_NAME
             module.object_groups[0].object_name.value = OBJECTS_NAME
@@ -206,7 +206,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
                         self.assertTrue(any([e in ans for e in expected]))
 
     def test_02_04_01_get_measurement_columns_images(self):
-        module = M.MeasureCorrelation()
+        module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
@@ -227,7 +227,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
                                  for ex in expected]))
 
     def test_02_04_02_get_measurement_columns_objects(self):
-        module = M.MeasureCorrelation()
+        module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
@@ -248,7 +248,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
                                  for ex in expected]))
 
     def test_02_04_03_get_measurement_columns_both(self):
-        module = M.MeasureCorrelation()
+        module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
@@ -483,7 +483,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
 
     def test_06_05_last_object_masked(self):
         # Regression test of issue #1553
-        # MeasureCorrelation was truncating the measurements
+        # MeasureColocalization was truncating the measurements
         # if the last had no pixels or all pixels masked.
         #
         r = np.random.RandomState()

@@ -37,16 +37,7 @@ deployment:
       - pyinstaller --noconfirm CellProfiler.spec
 
       # Copy Info.plist to application bundle:
-      - cp Info.plist dist/CellProfiler.app/Contents
-
-      # Copy Homebrew’s libpng dynamic library to application bundle:
-      # - >
-      #   cp                                                    \
-      #     `brew --cellar libpng`/1.6.31/lib/libpng16.16.dylib \
-      #     dist/CellProfiler.app/Contents/MacOS
-
-      # Remove duplicate wx dynamic libraries from application bundle:
-      # - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
+      # - cp Info.plist dist/CellProfiler.app/Contents
       
       # - >
       #   codesign                                                    \
@@ -60,7 +51,7 @@ deployment:
           -format UDRW                     \
           -fs HFS+                         \
           -fsargs "-c c=64,a=16,e=16"      \
-          -size 165300k                    \
+          -size 170000k                    \
           -srcfolder dist/CellProfiler.app \
           -volname CellProfiler            \
           dist/CellProfiler-nightly.dmg
@@ -68,6 +59,7 @@ deployment:
       # Upload to disk image to Amazon S3 (Simple Storage Service):
       - >
         aws s3 sync dist s3://cellprofiler-releases \
+          --acl public-read                         \
           --delete                                  \
           --exclude "*"                             \
           --include "CellProfiler-nightly.dmg"

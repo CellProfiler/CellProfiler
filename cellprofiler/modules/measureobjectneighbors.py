@@ -168,7 +168,7 @@ to be retained for later use in the pipeline)*
 Select the colormap to use to color the neighbor number image. All
 available colormaps can be seen `here`_.
 
-.. _here: http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps""")
+.. _here: http://matplotlib.org/examples/color/colormaps_reference.html""")
 
         self.wants_percent_touching_image = cps.Binary(
                 'Retain the image of objects colored by percent of touching pixels?',

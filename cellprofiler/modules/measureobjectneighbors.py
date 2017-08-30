@@ -196,7 +196,7 @@ retained for later use in the pipeline)*
 Select the colormap to use to color the percent touching image. All
 available colormaps can be seen `here`_.
 
-.. _here: http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps.""")
+.. _here: http://matplotlib.org/examples/color/colormaps_reference.html""")
 
     def settings(self):
         return [self.object_name, self.neighbors_name,

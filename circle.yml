@@ -26,7 +26,7 @@ deployment:
   nightly:
     branch: platforms/macos
     commands:
-      - make
+      - cd macos && make
       
       # Upload disk image to Amazon S3 (Simple Storage Service):
       - >

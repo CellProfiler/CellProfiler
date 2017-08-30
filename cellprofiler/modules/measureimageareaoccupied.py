@@ -97,6 +97,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                     ],
                     doc="""\
 The area can be measured in two ways:
+
 -  *{O_BINARY_IMAGE}:* The area occupied by the foreground in a binary (black and white) image.
 -  *{O_OBJECTS}:* The area occupied by previously-identified objects.
                     """.format(**{

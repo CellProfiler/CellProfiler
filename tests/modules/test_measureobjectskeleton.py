@@ -23,7 +23,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.measureneurons as M
+import cellprofiler.modules.measureobjectskeleton as M
 
 IMAGE_NAME = "MyImage"
 INTENSITY_IMAGE_NAME = "MyIntensityImage"
@@ -53,7 +53,7 @@ class TestMeasureNeurons(unittest.TestCase):
 Version:1
 SVNRevision:8977
 
-MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
     Seed objects name\x3A:Nucs
     Skeletonized image name\x3A:DNA
     Do you want to save the branchpoint image?:Yes
@@ -68,7 +68,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MeasureNeurons))
+        self.assertTrue(isinstance(module, M.MeasureObjectSkeleton))
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.seed_objects_name, "Nucs")
         self.assertTrue(module.wants_branchpoint_image)
@@ -90,7 +90,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
 
-        module = M.MeasureNeurons()
+        module = M.MeasureObjectSkeleton()
         module.image_name.value = IMAGE_NAME
         module.seed_objects_name.value = OBJECT_NAME
         if intensity_image is not None:

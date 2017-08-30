@@ -425,7 +425,7 @@ limited amount of annotation relevant to your images, via a text file. Now you c
 comma-delimited files to load tables of metadata, in addition to lists of input
 images for analysis.</li>
 <li><i>Convex hull</i> has been included as an image morphological operation.</li>
-<li>A new module, MeasureNeurons, has been added, which measures the number
+<li>A new module, MeasureObjectSkeleton, has been added, which measures the number
 of trunks and branches for each neuron in an image.</li>
 <li><i>Detection of new features:</i> Neurites can be extracted from images of neurons.
 Branching points of line segments can be found as an image morphological operation.

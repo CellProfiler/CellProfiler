@@ -1,5 +1,6 @@
 # -*- mode: python -*-
 
+import os
 import os.path
 
 import PyInstaller.compat
@@ -52,13 +53,11 @@ pathname = PyInstaller.utils.hooks.get_homebrew_path("libpng")
 
 pathname = os.path.join(pathname, "lib", "libpng16.16.dylib")
 
-java_pathname = "/usr/libexec/java_home"
-
-java_pathname = os.path.join(java_pathname, "jre/lib/server/libjvm.dylib")
+java_pathname = os.path.join(os.environ["JAVA_HOME"], "jre/lib/server/libjvm.dylib")
 
 a.binaries += [
     ("libpng16.16.dylib", pathname, "BINARY"),
-    ("libjvm.dylib", "/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/server/libjvm.dylib", "BINARY")
+    ("libjvm.dylib", java_pathname, "BINARY")
 ]
 
 exclude_binaries = [

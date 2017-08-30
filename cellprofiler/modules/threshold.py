@@ -7,7 +7,7 @@ Apply Threshold
 **Apply Threshold** sets pixel intensities below or above a certain
 threshold to zero
 
-**Threshold** produces a grayscale image based on a threshold which
+**Threshold** produces a binary, or black and white, image based on a threshold which
 can be pre-selected or calculated automatically using one of many
 methods.
 """
@@ -63,33 +63,29 @@ class Threshold(cellprofiler.module.ImageProcessing):
             "Threshold strategy",
             TS_ALL,
             value=TS_GLOBAL,
-            doc="""
-            The thresholding strategy determines the type of input that is used to calculate the threshold. These
-            options allow you to calculate a threshold based on the whole image or based on image sub-regions.<br>
-            The choices for the threshold strategy are:<br>
-            <ul>
-                <li>
-                    <i>{TS_GLOBAL}:</i> Calculate a single threshold value based on the unmasked pixels of the
-                    input image and use that value to classify pixels above the threshold as foreground and
-                    below as background.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This strategy is fast and robust,
-                        especially if the background is uniformly illuminated.</dd>
-                    </dl>
-                </li>
-                <li>
-                    <i>{TS_ADAPTIVE}:</i> Partition the input image into tiles and calculate thresholds for
-                    each tile. For each tile, the calculated threshold is applied only to the pixels within
-                    that tile.<br>
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This method is slower but can
-                        produce better results for non-uniform backgrounds. However, for signifcant
-                        illumination variation, using the <b>CorrectIllumination</b> modules is
-                        preferable.</dd>
-                    </dl>
-                </li>
-            </ul>
-            """.format(**{
+            doc="""\
+The thresholding strategy determines the type of input that is used to
+calculate the threshold. These options allow you to calculate a
+threshold based on the whole image or based on image sub-regions.
+  
+The choices for the threshold strategy are:
+
+-  *{TS_GLOBAL}:* Calculate a single threshold value based on the
+   unmasked pixels of the input image and use that value to classify
+   pixels above the threshold as foreground and below as background.
+   
+   |image0|  This strategy is fast and robust, especially if the
+   background is uniformly illuminated.
+-  *{TS_ADAPTIVE}:* Partition the input image into tiles and calculate
+   thresholds for each tile. For each tile, the calculated threshold is
+   applied only to the pixels within that tile.
+   
+   |image1|  This method is slower but can produce better results for
+   non-uniform backgrounds. However, for significant illumination
+   variation, using the **CorrectIllumination** modules is preferable.
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image1| image:: memory:{PROTIP_RECOMEND_ICON}""".format(**{
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TS_ADAPTIVE": TS_ADAPTIVE,
                 "TS_GLOBAL": TS_GLOBAL
@@ -106,99 +102,87 @@ class Threshold(cellprofiler.module.ImageProcessing):
                 centrosome.threshold.TM_ROBUST_BACKGROUND
             ],
             value=TM_LI,
-            doc="""
-             <i>(Used only if {TS_GLOBAL} is selected for thresholding scope)</i><br>
-            The intensity threshold affects the decision of whether each pixel will be considered foreground
-            (region(s) of interest) or background. A higher threshold value will result in only the brightest
-            regions being identified, whereas a lower threshold value will include dim regions. You can have
-            the threshold automatically calculated from a choice of several methods, or you can enter a number
-            manually between 0 and 1 for the threshold.
-            <p>Both the automatic and manual options have advantages and disadvantages.</p>
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; An automatically-calculated threshold
-                adapts to changes in lighting/staining conditions between images and is usually more
-                robust/accurate. In the vast majority of cases, an automatic method is sufficient to achieve
-                the desired thresholding, once the proper method is selected.</dd>
-                <dd>In contrast, an advantage of a manually-entered number is that it treats every image
-                identically, so use this option when you have a good sense for what the threshold should be
-                across all images. To help determine the choice of threshold manually, you can inspect the
-                pixel intensities in an image of your choice. {HELP_ON_PIXEL_INTENSITIES}.</dd>
-                <dd><img src="memory:{PROTIP_AVOID_ICON}">&nbsp; The manual method is not robust with regard to
-                slight changes in lighting/staining conditions between images.</dd>
-                <dd>The automatic methods may ocasionally produce a poor threshold for unusual or artifactual
-                images. It also takes a small amount of time to calculate, which can add to processing time for
-                analysis runs on a large number of images.</dd>
-            </dl>
-            <p></p>
-            <p>The threshold that is used for each image is recorded as a per-image measurement, so if you are
-            surprised by unusual measurements from one of your images, you might check whether the
-            automatically calculated threshold was unusually high or low compared to the other images. See the
-            <b>FlagImage</b> module if you would like to flag an image based on the threshold value.</p>
-            <p>There are a number of methods for finding thresholds automatically:</p>
-            <ul>
-                <li>
-                    <i>{TM_OTSU}:</i> This approach calculates the threshold separating the two classes of
-                    pixels (foreground and background) by minimizing the variance within the each class.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This method is a good initial
-                        approach if you do not know much about the image characteristics of all the images in
-                        your experiment, especially if the percentage of the image covered by foreground varies
-                        substantially from image to image.</dd>
-                    </dl>
-                    <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; Our implementation of Otsu's method
-                        allows for assigning the threshold value based on splitting the image into either two
-                        classes (foreground and background) or three classes (foreground, mid-level, and
-                        background). See the help below for more details.</dd>
-                    </dl>
-                </li>
-                <li>
-                    <i>{TM_ROBUST_BACKGROUND}:</i> This method assumes that the background distribution approximates a
-                    Gaussian by trimming the brightest and dimmest 5% of pixel intensities. It then calculates the mean
-                    and standard deviation of the remaining pixels and calculates the threshold as the mean + 2 times
-                    the standard deviation.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This thresholding method can be
-                        helpful if the majority of the image is background. It can also be helpful
-                        if your images vary in overall brightness, but the objects of interest are consistently
-                        <i>N</i> times brighter than the background level of the image.</dd>
-                    </dl>
-                </li>
-                <li>
-                    <i>{TM_LI}:</i>
-                </li>
-                <li>
-                    <i>{TM_MANUAL}:</i> Enter a single value between zero and one that applies to all cycles
-                    and is independent of the input image.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This approach is useful if the
-                        input image has a stable or negligible background, or if the input image is the
-                        probability map output of the <b>ClassifyPixels</b> module (in which case, a value of
-                        0.5 should be chosen). If the input image is already binary (i.e., where the foreground
-                        is 1 and the background is 0), a manual value of 0.5 will identify the objects.</dd>
-                    </dl>
-                </li>
-                <li>
-                    <i>{TM_MEASUREMENT}:</i> Use a prior image measurement as the threshold. The measurement
-                    should have values between zero and one. This strategy can be used to apply a
-                    pre-calculated threshold imported as per-image metadata via the <b>Metadata</b> module.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; Like manual thresholding, this
-                        approach can be useful when you are certain what the cutoff should be. The difference
-                        in this case is that the desired threshold does vary from image to image in the
-                        experiment but can be measured using another module, such as one of the <b>Measure</b>
-                        modules, <b>Threshold</b> or an <b>Identify</b> module.</dd>
-                    </dl>
-                </li>
-            </ul>
-            <p><b>References</b></p>
-            <ul>
-                <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative
-                performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165. (<a href=
-                "http://dx.doi.org/10.1117/1.1631315">link</a>)
-                </li>
-            </ul>
-            <p></p>
+            doc="""\
+*(Used only if {TS_GLOBAL} is selected for thresholding scope)*
+
+The intensity threshold affects the decision of whether each pixel
+will be considered foreground (region(s) of interest) or background. A
+higher threshold value will result in only the brightest regions being
+identified, whereas a lower threshold value will include dim regions.
+You can have the threshold automatically calculated from a choice of
+several methods, or you can enter a number manually between 0 and 1
+for the threshold.
+
+Both the automatic and manual options have advantages and disadvantages.
+
+|image0|  An automatically-calculated threshold adapts to changes in
+lighting/staining conditions between images and is usually more
+robust/accurate. In the vast majority of cases, an automatic method is
+sufficient to achieve the desired thresholding, once the proper method
+is selected. In contrast, an advantage of a manually-entered number is
+that it treats every image identically, so use this option when you have
+a good sense for what the threshold should be across all images. To help
+determine the choice of threshold manually, you can inspect the pixel
+intensities in an image of your choice. {HELP_ON_PIXEL_INTENSITIES}.
+|image1|  The manual method is not robust with regard to slight changes
+in lighting/staining conditions between images. The automatic methods
+may ocasionally produce a poor threshold for unusual or artifactual
+images. It also takes a small amount of time to calculate, which can add
+to processing time for analysis runs on a large number of images.
+
+The threshold that is used for each image is recorded as a per-image
+measurement, so if you are surprised by unusual measurements from one of
+your images, you might check whether the automatically calculated
+threshold was unusually high or low compared to the other images. See
+the **FlagImage** module if you would like to flag an image based on the
+threshold value.
+
+There are a number of methods for finding thresholds automatically:
+            
+-  *{TM_OTSU}:* This approach calculates the threshold separating the
+   two classes of pixels (foreground and background) by minimizing the
+   variance within the each class. |image2|  This method is a good
+   initial approach if you do not know much about the image
+   characteristics of all the images in your experiment, especially if
+   the percentage of the image covered by foreground varies
+   substantially from image to image. |image3|  Our implementation of
+   Otsu’s method allows for assigning the threshold value based on
+   splitting the image into either two classes (foreground and
+   background) or three classes (foreground, mid-level, and background).
+   See the help below for more details.
+-  *{TM_ROBUST_BACKGROUND}:* This method assumes that the background
+   distribution approximates a Gaussian by trimming the brightest and
+   dimmest 5% of pixel intensities. It then calculates the mean and
+   standard deviation of the remaining pixels and calculates the
+   threshold as the mean + 2 times the standard deviation. |image4| 
+   This thresholding method can be helpful if the majority of the image
+   is background. It can also be helpful if your images vary in overall
+   brightness, but the objects of interest are consistently *N* times
+   brighter than the background level of the image.
+-  *{TM_LI}:*
+-  *{TM_MANUAL}:* Enter a single value between zero and one that
+   applies to all cycles and is independent of the input image.
+   |image5|  This approach is useful if the input image has a stable or
+   negligible background, or if the input image is the probability map
+   output of the **ClassifyPixels** module (in which case, a value of
+   0.5 should be chosen). If the input image is already binary (i.e.,
+   where the foreground is 1 and the background is 0), a manual value of
+   0.5 will identify the objects.
+-  *{TM_MEASUREMENT}:* Use a prior image measurement as the threshold.
+   The measurement should have values between zero and one. This
+   strategy can be used to apply a pre-calculated threshold imported as
+   per-image
+-  Sezgin M, Sankur B (2004) “Survey over image thresholding techniques
+   and quantitative performance evaluation.” *Journal of Electronic
+   Imaging*, 13(1), 146-165. (`link`_)
+
+.. _link: http://dx.doi.org/10.1117/1.1631315
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image1| image:: memory:{PROTIP_AVOID_ICON}
+.. |image2| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image3| image:: memory:{TECH_NOTE_ICON}
+.. |image4| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image5| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
@@ -219,61 +203,68 @@ class Threshold(cellprofiler.module.ImageProcessing):
                 centrosome.threshold.TM_OTSU
             ],
             value=centrosome.threshold.TM_OTSU,
-            doc="""
-             <i>(Used only if {TS_ADAPTIVE} is selected for thresholding scope)</i><br>
-            The intensity threshold affects the decision of whether each pixel will be considered foreground
-            (region(s) of interest) or background. A higher threshold value will result in only the brightest
-            regions being identified, whereas a lower threshold value will include dim regions. You can have
-            the threshold automatically calculated from a choice of several methods, or you can enter a number
-            manually between 0 and 1 for the threshold.
-            <p>Both the automatic and manual options have advantages and disadvantages.</p>
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; An automatically-calculated threshold
-                adapts to changes in lighting/staining conditions between images and is usually more
-                robust/accurate. In the vast majority of cases, an automatic method is sufficient to achieve
-                the desired thresholding, once the proper method is selected.</dd>
-                <dd>In contrast, an advantage of a manually-entered number is that it treats every image
-                identically, so use this option when you have a good sense for what the threshold should be
-                across all images. To help determine the choice of threshold manually, you can inspect the
-                pixel intensities in an image of your choice. {HELP_ON_PIXEL_INTENSITIES}.</dd>
-                <dd><img src="memory:{PROTIP_AVOID_ICON}">&nbsp; The manual method is not robust with regard to
-                slight changes in lighting/staining conditions between images.</dd>
-                <dd>The automatic methods may ocasionally produce a poor threshold for unusual or artifactual
-                images. It also takes a small amount of time to calculate, which can add to processing time for
-                analysis runs on a large number of images.</dd>
-            </dl>
-            <p></p>
-            <p>The threshold that is used for each image is recorded as a per-image measurement, so if you are
-            surprised by unusual measurements from one of your images, you might check whether the
-            automatically calculated threshold was unusually high or low compared to the other images. See the
-            <b>FlagImage</b> module if you would like to flag an image based on the threshold value.</p>
-            <p>There are a number of methods for finding thresholds automatically:</p>
-            <ul>
-                <li>
-                    <i>{TM_OTSU}:</i> This approach calculates the threshold separating the two classes of
-                    pixels (foreground and background) by minimizing the variance within the each class.
-                    <dl>
-                        <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This method is a good initial
-                        approach if you do not know much about the image characteristics of all the images in
-                        your experiment, especially if the percentage of the image covered by foreground varies
-                        substantially from image to image.</dd>
-                    </dl>
-                    <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; Our implementation of Otsu's method
-                        allows for assigning the threshold value based on splitting the image into either two
-                        classes (foreground and background) or three classes (foreground, mid-level, and
-                        background). See the help below for more details.</dd>
-                    </dl>
-                </li>
-            </ul>
-            <p><b>References</b></p>
-            <ul>
-                <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative
-                performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165. (<a href=
-                "http://dx.doi.org/10.1117/1.1631315">link</a>)
-                </li>
-            </ul>
-            <p></p>
+            doc="""\
+*(Used only if {TS_ADAPTIVE} is selected for thresholding scope)*
+
+The intensity threshold affects the decision of whether each pixel
+will be considered foreground (region(s) of interest) or background. A
+higher threshold value will result in only the brightest regions being
+identified, whereas a lower threshold value will include dim regions.
+You can have the threshold automatically calculated from a choice of
+several methods, or you can enter a number manually between 0 and 1
+for the threshold.
+
+Both the automatic and manual options have advantages and disadvantages.
+
+|image0|  An automatically-calculated threshold adapts to changes in
+lighting/staining conditions between images and is usually more
+robust/accurate. In the vast majority of cases, an automatic method is
+sufficient to achieve the desired thresholding, once the proper method
+is selected. In contrast, an advantage of a manually-entered number is
+that it treats every image identically, so use this option when you have
+a good sense for what the threshold should be across all images. To help
+determine the choice of threshold manually, you can inspect the pixel
+intensities in an image of your choice. {HELP_ON_PIXEL_INTENSITIES}.
+|image1|  The manual method is not robust with regard to slight changes
+in lighting/staining conditions between images. The automatic methods
+may ocasionally produce a poor threshold for unusual or artifactual
+images. It also takes a small amount of time to calculate, which can add
+to processing time for analysis runs on a large number of images.
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image1| image:: memory:{PROTIP_AVOID_ICON}
+
+The threshold that is used for each image is recorded as a per-image
+measurement, so if you are surprised by unusual measurements from one of
+your images, you might check whether the automatically calculated
+threshold was unusually high or low compared to the other images. See
+the **FlagImage** module if you would like to flag an image based on the
+threshold value.
+
+There are a number of methods for finding thresholds automatically:
+
+-  *{TM_OTSU}:* This approach calculates the threshold separating the
+   two classes of pixels (foreground and background) by minimizing the
+   variance within the each class. |image2|  This method is a good
+   initial approach if you do not know much about the image
+   characteristics of all the images in your experiment, especially if
+   the percentage of the image covered by foreground varies
+   substantially from image to image. |image3|  Our implementation of
+   Otsu’s method allows for assigning the threshold value based on
+   splitting the image into either two classes (foreground and
+   background) or three classes (foreground, mid-level, and background).
+   See the help below for more details.
+
+.. |image2| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image3| image:: memory:{TECH_NOTE_ICON}
+
+**References**
+
+-  Sezgin M, Sankur B (2004) “Survey over image thresholding techniques
+   and quantitative performance evaluation.” *Journal of Electronic
+   Imaging*, 13(1), 146-165. (`link`_)
+
+.. _link: http://dx.doi.org/10.1117/1.1631315
             """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
@@ -288,36 +279,43 @@ class Threshold(cellprofiler.module.ImageProcessing):
             "Threshold smoothing scale",
             0,
             minval=0,
-            doc="""
-            This setting controls the scale used to smooth the input image before the threshold is applied.<br>
-            The input image can be optionally smoothed before being thresholded. Smoothing can improve the
-            uniformity of the resulting objects, by removing holes and jagged edges caused by noise in the
-            acquired image. Smoothing is most likely <i>not</i> appropriate if the input image is binary, if it
-            has already been smoothed or if it is an output of the <i>ClassifyPixels</i> module.<br>
-            The scale should be approximately the size of the artifacts to be eliminated by smoothing. A Gaussian
-            is used with a sigma adjusted so that 1/2 of the Gaussian's distribution falls within the diameter
-            given by the scale (sigma = scale / 0.674)<br>
-            Use a value of 0 for no smoothing. Use a value of 1.3488 for smoothing with a sigma of 1.
+            doc="""\
+This setting controls the scale used to smooth the input image before
+the threshold is applied.
+The input image can be optionally smoothed before being thresholded.
+Smoothing can improve the uniformity of the resulting objects, by
+removing holes and jagged edges caused by noise in the acquired image.
+Smoothing is most likely *not* appropriate if the input image is binary,
+if it has already been smoothed or if it is an output of the
+*ClassifyPixels* module.
+The scale should be approximately the size of the artifacts to be
+eliminated by smoothing. A Gaussian is used with a sigma adjusted so
+that 1/2 of the Gaussian’s distribution falls within the diameter given
+by the scale (sigma = scale / 0.674)
+Use a value of 0 for no smoothing. Use a value of 1.3488 for smoothing
+with a sigma of 1.
             """
         )
 
         self.threshold_correction_factor = cellprofiler.setting.Float(
             "Threshold correction factor",
             1,
-            doc="""
-            This setting allows you to adjust the threshold as calculated by the above method. The value
-            entered here adjusts the threshold either upwards or downwards, by multiplying it by this value. A
-            value of 1 means no adjustment, 0 to 1 makes the threshold more lenient and &gt; 1 makes the
-            threshold more stringent.
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; When the threshold is calculated
-                automatically, you may find that the value is consistently too stringent or too lenient across
-                all images. This setting is helpful for adjusting the threshold to a value that you empirically
-                determine is more suitable. For example, the {TM_OTSU} automatic thresholding inherently
-                assumes that 50% of the image is covered by objects. If a larger percentage of the image is
-                covered, the Otsu method will give a slightly biased threshold that may have to be corrected
-                using this setting.</dd>
-            </dl>
+            doc="""\
+This setting allows you to adjust the threshold as calculated by the
+above method. The value entered here adjusts the threshold either
+upwards or downwards, by multiplying it by this value. A value of 1
+means no adjustment, 0 to 1 makes the threshold more lenient and > 1
+makes the threshold more stringent. |image0|  When the threshold is
+calculated automatically, you may find that the value is consistently
+too stringent or too lenient across all images. This setting is helpful
+for adjusting the threshold to a value that you empirically determine is
+more suitable. For example, the {TM_OTSU} automatic thresholding
+inherently assumes that 50% of the image is covered by objects. If a
+larger percentage of the image is covered, the Otsu method will give a
+slightly biased threshold that may have to be corrected using this
+setting.
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TM_OTSU": centrosome.threshold.TM_OTSU
@@ -329,18 +327,19 @@ class Threshold(cellprofiler.module.ImageProcessing):
             (0, 1),
             minval=0,
             maxval=1,
-            doc="""
-            Enter the minimum and maximum allowable threshold, a value from 0 to 1. This is helpful as a safety
-            precaution when the threshold is calculated automatically, by overriding the automatic threshold.
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; For example, if there are no objects in the
-                field of view, the automatic threshold might be calculated as unreasonably low; the algorithm
-                will still attempt to divide the foreground from background (even though there is no
-                foreground), and you may end up with spurious false positive foreground regions. In such cases,
-                you can estimate the background pixel intensity and set the lower bound according to this
-                empirically-determined value.</dd>
-                <dd>{HELP_ON_PIXEL_INTENSITIES}</dd>
-            </dl>
+            doc="""\
+Enter the minimum and maximum allowable threshold, a value from 0 to 1.
+This is helpful as a safety precaution when the threshold is calculated
+automatically, by overriding the automatic threshold. |image0|  For
+example, if there are no objects in the field of view, the automatic
+threshold might be calculated as unreasonably low; the algorithm will
+still attempt to divide the foreground from background (even though
+there is no foreground), and you may end up with spurious false positive
+foreground regions. In such cases, you can estimate the background pixel
+intensity and set the lower bound according to this
+empirically-determined value. {HELP_ON_PIXEL_INTENSITIES}
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
@@ -370,30 +369,31 @@ class Threshold(cellprofiler.module.ImageProcessing):
         self.two_class_otsu = cellprofiler.setting.Choice(
             "Two-class or three-class thresholding?",
             [O_TWO_CLASS, O_THREE_CLASS],
-            doc="""
-            <i>(Used only for the Otsu thresholding method)</i><br>
-            <ul>
-                <li><i>{O_TWO_CLASS}:</i> Select this option if the grayscale levels are readily
-                distinguishable into only two classes: foreground (i.e., regions of interest) and
-                background.</li>
-                <li><i>{O_THREE_CLASS}</i>: Choose this option if the grayscale levels fall instead into three
-                classes: foreground, background and a middle intensity between the two. You will then be asked
-                whether the middle intensity class should be added to the foreground or background class in
-                order to generate the final two-class output.</li>
-            </ul>Note that whether two- or three-class thresholding is chosen, the image pixels are always
-            finally assigned two classes: foreground and background.
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; Three-class thresholding may be useful for
-                images in which you have nuclear staining along with low-intensity non-specific cell staining.
-                Where two-class thresholding might incorrectly assign this intermediate staining to the nuclei
-                objects for some cells, three-class thresholding allows you to assign it to the foreground or
-                background as desired.</dd>
-            </dl>
-            <dl>
-                <dd><img src="memory:{PROTIP_AVOID_ICON}">&nbsp; However, in extreme cases where either there
-                are almost no objects or the entire field of view is covered with objects, three-class
-                thresholding may perform worse than two-class.</dd>
-            </dl>
+            doc="""\
+*(Used only for the Otsu thresholding method)*
+
+-  *{O_TWO_CLASS}:* Select this option if the grayscale levels are
+   readily distinguishable into only two classes: foreground (i.e.,
+   regions of interest) and background.
+-  *{O_THREE_CLASS}*: Choose this option if the grayscale levels fall
+   instead into three classes: foreground, background and a middle
+   intensity between the two. You will then be asked whether the middle
+   intensity class should be added to the foreground or background class
+   in order to generate the final two-class output.
+
+Note that whether two- or three-class thresholding is chosen, the image
+pixels are always finally assigned two classes: foreground and
+background. |image0|  Three-class thresholding may be useful for images
+in which you have nuclear staining along with low-intensity non-specific
+cell staining. Where two-class thresholding might incorrectly assign
+this intermediate staining to the nuclei objects for some cells,
+three-class thresholding allows you to assign it to the foreground or
+background as desired. |image1|  However, in extreme cases where either
+there are almost no objects or the entire field of view is covered with
+objects, three-class thresholding may perform worse than two-class.
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image1| image:: memory:{PROTIP_AVOID_ICON}
             """.format(**{
                 "O_THREE_CLASS": O_THREE_CLASS,
                 "O_TWO_CLASS": O_TWO_CLASS,
@@ -405,10 +405,11 @@ class Threshold(cellprofiler.module.ImageProcessing):
         self.assign_middle_to_foreground = cellprofiler.setting.Choice(
             "Assign pixels in the middle intensity class to the foreground or the background?",
             [O_FOREGROUND, O_BACKGROUND],
-            doc="""
-            <i>(Used only for three-class thresholding)</i><br>
-            Choose whether you want the pixels with middle grayscale intensities to be assigned to the
-            foreground class or the background class.
+            doc="""\
+*(Used only for three-class thresholding)*
+
+Choose whether you want the pixels with middle grayscale intensities to
+be assigned to the foreground class or the background class.
             """
         )
 
@@ -417,9 +418,11 @@ class Threshold(cellprofiler.module.ImageProcessing):
             0.05,
             minval=0,
             maxval=1,
-            doc="""
-            <i>(Used only when customizing the {TM_ROBUST_BACKGROUND} method)</i><br>
-            Discard this fraction of the pixels in the image starting with those of the lowest intensity.
+            doc="""\
+*(Used only when customizing the {TM_ROBUST_BACKGROUND} method)*
+
+Discard this fraction of the pixels in the image starting with those of
+the lowest intensity.
             """.format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
@@ -430,9 +433,10 @@ class Threshold(cellprofiler.module.ImageProcessing):
             0.05,
             minval=0,
             maxval=1,
-            doc="""
-            <i>(Used only when customizing the {TM_ROBUST_BACKGROUND} method)</i><br>
-            Discard this fraction of the pixels in the image starting with those of the highest intensity.
+            doc="""\
+*(Used only when customizing the {TM_ROBUST_BACKGROUND} method)*
+Discard this fraction of the pixels in the image starting with those of
+the highest intensity.
             """.format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
@@ -441,19 +445,22 @@ class Threshold(cellprofiler.module.ImageProcessing):
         self.averaging_method = cellprofiler.setting.Choice(
             "Averaging method",
             [RB_MEAN, RB_MEDIAN, RB_MODE],
-            doc="""
-            <i>(Used only when customizing the {TM_ROBUST_BACKGROUND} method)</i><br>
-            This setting determines how the intensity midpoint is determined.<br>
-            <ul>
-                <li><i>{RB_MEAN}</i>: Use the mean of the pixels remaining after discarding the outliers. This
-                is a good choice if the cell density is variable or high.</li>
-                <li><i>{RB_MEDIAN}</i>: Use the median of the pixels. This is a good choice if, for all images,
-                more than half of the pixels are in the background after removing outliers.</li>
-                <li><i>{RB_MODE}</i>: Use the most frequently occurring value from among the pixel values. The
-                {TM_ROBUST_BACKGROUND} method groups the intensities into bins (the number of bins is the
-                square root of the number of pixels in the unmasked portion of the image) and chooses the
-                intensity associated with the bin with the most pixels.</li>
-            </ul>
+            doc="""\
+*(Used only when customizing the {TM_ROBUST_BACKGROUND} method)*
+
+This setting determines how the intensity midpoint is determined.
+
+-  *{RB_MEAN}*: Use the mean of the pixels remaining after discarding
+   the outliers. This is a good choice if the cell density is variable
+   or high.
+-  *{RB_MEDIAN}*: Use the median of the pixels. This is a good choice
+   if, for all images, more than half of the pixels are in the
+   background after removing outliers.
+-  *{RB_MODE}*: Use the most frequently occurring value from among the
+   pixel values. The {TM_ROBUST_BACKGROUND} method groups the
+   intensities into bins (the number of bins is the square root of the
+   number of pixels in the unmasked portion of the image) and chooses
+   the intensity associated with the bin with the most pixels.
             """.format(**{
                 "RB_MEAN": RB_MEAN,
                 "RB_MEDIAN": RB_MEDIAN,
@@ -465,13 +472,13 @@ class Threshold(cellprofiler.module.ImageProcessing):
         self.variance_method = cellprofiler.setting.Choice(
             "Variance method",
             [RB_SD, RB_MAD],
-            doc="""
-            <i>(Used only when customizing the {TM_ROBUST_BACKGROUND} method)</i><br>
-            Robust background adds a number of deviations (standard or MAD) to the average to get the final
-            background. This setting chooses the method used to assess the variance in the pixels, after
-            removing outliers.<br>
-            Choose one of <i>{RB_SD}</i> or <i>{RB_MAD}</i> (the median of the absolute difference of the pixel
-            intensities from their median).
+            doc="""\
+*(Used only when customizing the {TM_ROBUST_BACKGROUND} method)*
+Robust background adds a number of deviations (standard or MAD) to the
+average to get the final background. This setting chooses the method
+used to assess the variance in the pixels, after removing outliers.
+Choose one of *{RB_SD}* or *{RB_MAD}* (the median of the absolute
+difference of the pixel intensities from their median).
             """.format(**{
                 "RB_MAD": RB_MAD,
                 "RB_SD": RB_SD,
@@ -482,14 +489,17 @@ class Threshold(cellprofiler.module.ImageProcessing):
         self.number_of_deviations = cellprofiler.setting.Float(
             "# of deviations",
             2,
-            doc="""
-            <i>(Used only when customizing the {TM_ROBUST_BACKGROUND} method)</i><br>
-            Robust background calculates the variance, multiplies it by the value given by this setting and
-            adds it to the average. Adding several deviations raises the background value above the average,
-            which should be close to the average background, excluding most background pixels. Use a larger
-            number to exclude more background pixels. Use a smaller number to include more low-intensity
-            foreground pixels. It's possible to use a negative number to lower the threshold if the averaging
-            method picks a threshold that is within the range of foreground pixel intensities.
+            doc="""\
+*(Used only when customizing the {TM_ROBUST_BACKGROUND} method)*
+Robust background calculates the variance, multiplies it by the value
+given by this setting and adds it to the average. Adding several
+deviations raises the background value above the average, which should
+be close to the average background, excluding most background pixels.
+Use a larger number to exclude more background pixels. Use a smaller
+number to include more low-intensity foreground pixels. It’s possible to
+use a negative number to lower the threshold if the averaging method
+picks a threshold that is within the range of foreground pixel
+intensities.
             """.format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })

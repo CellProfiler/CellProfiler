@@ -37,7 +37,7 @@ deployment:
       - pyinstaller --noconfirm CellProfiler.spec
 
       # Copy Info.plist to application bundle:
-      # - cp Info.plist dist/CellProfiler.app/Contents
+      - cp Info.plist dist/CellProfiler.app/Contents
       
       # - >
       #   codesign                                                    \

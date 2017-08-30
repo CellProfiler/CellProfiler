@@ -5,11 +5,11 @@
     <key>CFBundleDisplayName</key>
     <string>CellProfiler</string>
     <key>CFBundleExecutable</key>
-    <string>MacOS/cp</string>
+    <string>MacOS/CellProfiler</string>
     <key>CFBundleIconFile</key>
     <string>CellProfilerIcon.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>org.cellprofiler.distribution.CellProfiler</string>
+    <string>org.cellprofiler.CellProfiler</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

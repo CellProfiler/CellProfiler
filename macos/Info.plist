@@ -1,0 +1,20 @@
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundleDisplayName</key>
+    <string>CellProfiler</string>
+    <key>CFBundleExecutable</key>
+    <string>MacOS/CellProfiler</string>
+    <key>CFBundleIconFile</key>
+    <string>CellProfilerIcon.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.cellprofiler.CellProfiler</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>CellProfiler</string>
+    <key>CFBundleVersion</key>
+    <string>3.0.0</string>
+</dict>
+</plist>

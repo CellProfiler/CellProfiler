@@ -1,19 +1,37 @@
+MAKEFLAGS += --warn-undefined-variables
+
+SHELL := bash
+
+.DEFAULT_GOAL := CellProfiler.dmg
+
+.DELETE_ON_ERROR:
+
+.SHELLFLAGS := -eu -o pipefail -c
+
+.SUFFIXES:
+
 identity = "Developer ID Application: Allen Goodman (MERWFR65Q3)"
 
-build:
+CellProfiler:
 	git clone git@github.com:CellProfiler/CellProfiler.git $@
 
-.INTERMEDIATE: CellProfiler.app
-CellProfiler.app: build Info.plist
-	pyinstaller --distpath . --noconfirm CellProfiler.spec
+.PHONY: dependencies
+dependencies: CellProfiler
+	pip2 install --upgrade cython
+	pip2 install --upgrade numpy
+	pip2 install --upgrade scipy
 
-	rm CellProfiler
+	pip2 install --editable "CellProfiler[build, test]" --upgrade   
 
-	cp $(word 2, $^) $@/Contents
+.INTERMEDIATE: dist/CellProfiler.app
+dist/CellProfiler.app: CellProfiler dependencies Info.plist
+	pyinstaller --noconfirm CellProfiler.spec
+
+	cp $(word 3, $^) $@/Contents
 
 	codesign --deep -s $(identity) $@
 
-CellProfiler.dmg: CellProfiler.app
+CellProfiler.dmg: dist/CellProfiler.app
 	hdiutil create                  \
 		-format UDRW                \
 		-fs HFS+                    \
@@ -25,8 +43,4 @@ CellProfiler.dmg: CellProfiler.app
 
 .PHONY: clean
 clean:
-	rm -rf build
-
-.PHONY: dependencies
-dependencies: build
-	pip2 install --editable "build[build, test]" --upgrade   
+	rm -rf build dist

@@ -14,7 +14,7 @@ import numpy
 
 
 class GaussianFilter(cellprofiler.module.ImageProcessing):
-    module_name = "GaussianFilter"
+    module_name = "Advanced"
 
     variable_revision_number = 1
 

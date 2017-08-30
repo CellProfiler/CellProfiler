@@ -17,7 +17,7 @@ import cellprofiler.setting
 
 
 class RemoveObjectsBySize(cellprofiler.module.ObjectProcessing):
-    category = ["Mathematical morphology", "Object Processing"]
+    category = ["Advanced"]
 
     module_name = "Remove objects"
 

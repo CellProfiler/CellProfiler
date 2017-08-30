@@ -21,7 +21,7 @@ import cellprofiler.setting
 
 
 class Label(cellprofiler.module.ImageSegmentation):
-    module_name = "Label"
+    module_name = "Advanced"
 
     variable_revision_number = 1
 

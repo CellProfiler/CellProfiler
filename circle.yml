@@ -21,10 +21,10 @@ dependencies:
   override:
     # Install CellProfiler:
     - pip2 install --editable ".[build, test]" --upgrade    
-database:
-  pre:
-    # Start MySQL:
-    - brew services start mysql
+# database:
+#   pre:
+#     # Start MySQL:
+#     - brew services start mysql
 test:
   override:
     # - python2 -m pytest
@@ -34,19 +34,19 @@ deployment:
     branch: features/circle
     commands:
       # Create macOS application bundle:
-      - pyinstaller CellProfiler.spec
+      - pyinstaller --noconfirm CellProfiler.spec
 
       # Copy Info.plist to application bundle:
       - cp Info.plist dist/CellProfiler.app/Contents
 
       # Copy Homebrew’s libpng dynamic library to application bundle:
-      - >
-        cp                                                    \
-          `brew --cellar libpng`/1.6.31/lib/libpng16.16.dylib \
-          dist/CellProfiler.app/Contents/MacOS
+      # - >
+      #   cp                                                    \
+      #     `brew --cellar libpng`/1.6.31/lib/libpng16.16.dylib \
+      #     dist/CellProfiler.app/Contents/MacOS
 
       # Remove duplicate wx dynamic libraries from application bundle:
-      - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
+      # - rm dist/CellProfiler.app/Contents/MacOS/libwx*3.0.dylib
       
       # - >
       #   codesign                                                    \
@@ -60,7 +60,7 @@ deployment:
           -format UDRW                     \
           -fs HFS+                         \
           -fsargs "-c c=64,a=16,e=16"      \
-          -size 500000k                    \
+          -size 165300k                    \
           -srcfolder dist/CellProfiler.app \
           -volname CellProfiler            \
           dist/CellProfiler-nightly.dmg

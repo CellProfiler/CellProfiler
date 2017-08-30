@@ -112,7 +112,7 @@ class MeasureImageIntensity(cpm.Module):
 
         group.append("image_name", cps.ImageNameSubscriber(
                 "Select the image to measure",
-                cps.NONE, doc="""\          
+                cps.NONE, doc="""\
 Choose an image name from the drop-down menu to calculate intensity for
 that image. Use the *Add another image* button below to add additional
 images which will be measured. You can add the same image multiple times
@@ -121,13 +121,14 @@ objects."""))
 
         group.append("wants_objects", cps.Binary(
                 "Measure the intensity only from areas enclosed by objects?",
-                False, doc="""\         
+                False, doc="""\
 Select *%(YES)s* to measure only those pixels within an object of choice.
 """ % globals()))
 
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc="""\               
+                "Select the input objects", cps.NONE, doc="""\
 *(Used only when measuring intensity from area enclosed by objects)*
+
 Select the objects that the intensity will be aggregated within. The
 intensity measurement will be restricted to the pixels within these
 objects."""))

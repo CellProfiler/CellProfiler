@@ -7,8 +7,9 @@ import cellprofiler.preferences
 import javabridge
 import logging
 import os
-import prokaryote
+import pkg_resources
 import sys
+import prokaryote
 import tempfile
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,12 @@ def get_jars():
         logging.debug(
                 "Adding Java class path from environment variable, ""CLASSPATH""")
         logging.debug("    CLASSPATH=" + os.environ["CLASSPATH"])
+
+    # prokaryote_resources = pkg_resources.get_distribution("prokaryote")
+
+    # filename = "prokaryote-{}.jar".format(prokaryote_resources.version)
+
+    # os.path.join(prokaryote_resources.location, prokaryote)
 
     pathname = os.path.dirname(prokaryote.__file__)
 

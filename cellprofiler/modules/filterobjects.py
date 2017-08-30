@@ -36,7 +36,7 @@ Measurements made by this module
    coordinates of the center of mass of the remaining objects.
 
 See also any of the **MeasureObject** modules, **MeasureTexture**,
-**MeasureCorrelation**, and **CalculateRatios**.
+**MeasureColocalization**, and **CalculateRatios**.
 """
 
 import logging

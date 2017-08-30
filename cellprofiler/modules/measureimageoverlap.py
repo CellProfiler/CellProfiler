@@ -25,12 +25,12 @@ module:
 -  **ImageMath**: If the objects are black and the background is white,
    you must invert the intensity using this module.
 
--  **ApplyThreshold**: If the image is grayscale, you must make it
+-  **Threshold**: If the image is grayscale, you must make it
    binary using this module, or alternately use an **Identify** module
    followed by **ConvertObjectsToImage** as described above.
 
 -  **ColorToGray**: If the image is in color, you must first convert it
-   to grayscale using this module, and then use **ApplyThreshold** to
+   to grayscale using this module, and then use **Threshold** to
    generate a binary image.
 
 In the test image, any foreground (white) pixels that overlap with the
@@ -151,10 +151,10 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class CalculateImageOverlap(cellprofiler.module.Module):
+class MeasureImageOverlap(cellprofiler.module.Module):
     category = "Measurement"
     variable_revision_number = 4
-    module_name = "CalculateImageOverlap"
+    module_name = "MeasureImageOverlap"
 
     def create_settings(self):
         self.obj_or_img = cellprofiler.setting.Choice(
@@ -213,7 +213,7 @@ class CalculateImageOverlap(cellprofiler.module.Module):
             mover's" refers to an analogy: the pixels are "earth" that has to be moved by some machine at the
             smallest possible cost.<br>
             It would take too much memory and processing time to compute the exact earth mover's distance, so
-            <b>CalculateImageOverlap</b> chooses representative foreground pixels in each image and assigns
+            <b>MeasureImageOverlap</b> chooses representative foreground pixels in each image and assigns
             each foreground pixel to its closest representative. The earth mover's distance is then computed
             for moving the foreground pixels associated with each representative in the test image to those in
             the reference image.

@@ -13,8 +13,8 @@ outside the mask.
 
 You can use this module to measure the number of pixels above a given
 threshold if you precede it with thresholding performed by
-**ApplyThreshold**, and then select the binary image output by
-**ApplyThreshold** to be measured by this module.
+**Threshold**, and then select the binary image output by
+**Threshold** to be measured by this module.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -438,7 +438,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                                       "You should use this module by either:\n"
                                       "(1) Thresholding your image using an Identify module\n"
                                       "and then measure the resulting objects' area; or\n"
-                                      "(2) Create a binary image with ApplyThreshold and then measure the\n"
+                                      "(2) Create a binary image with Threshold and then measure the\n"
                                       "resulting foreground image area.")
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but

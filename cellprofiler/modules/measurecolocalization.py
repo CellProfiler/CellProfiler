@@ -1,10 +1,10 @@
 # coding=utf-8
 
 """
-MeasureCorrelation
+MeasureColocalization
 =====
 
-**MeasureCorrelation** measures the colocalization and correlation
+**MeasureColocalization** measures the colocalization and correlation
 between intensities in different images (e.g., different color channels)
 on a pixel-by-pixel basis, within identified objects or across an entire
 image.
@@ -97,8 +97,8 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureCorrelation(cpm.Module):
-    module_name = 'MeasureCorrelation'
+class MeasureColocalization(cpm.Module):
+    module_name = 'MeasureColocalization'
     category = 'Measurement'
     variable_revision_number = 3
 

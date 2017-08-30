@@ -222,7 +222,7 @@ class UntangleWorms(cpm.Module):
         self.image_name = cps.ImageNameSubscriber(
                 "Select the input binary image", cps.NONE, doc="""
             A binary image where the foreground indicates the worm
-            shapes. The binary image can be produced by the <b>ApplyThreshold</b>
+            shapes. The binary image can be produced by the <b>Threshold</b>
             module.""")
 
         self.overlap = cps.Choice(

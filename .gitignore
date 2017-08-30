@@ -9,5 +9,4 @@ build/
 dist/
 frozen_version.py
 plugins/
-src/
-!/tests/modules/test_correctilluminationcalculate.py
+

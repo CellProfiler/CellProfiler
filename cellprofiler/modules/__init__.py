@@ -113,7 +113,6 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'trackobjects': 'TrackObjects',
                         'tile': 'Tile',
                         'tophattransform': 'TopHatTransform',
-                        'calculateimageoverlap': 'MeasureImageOverlap',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms',
                         'watershed': 'Watershed'

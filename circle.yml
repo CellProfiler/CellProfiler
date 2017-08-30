@@ -25,9 +25,11 @@ deployment:
       - cd macos && make
       
       # Upload disk image to Amazon S3 (Simple Storage Service):
-      # - >
-      #   aws s3 sync dist s3://cellprofiler-releases \
-      #     --acl public-read                         \
-      #     --delete                                  \
-      #     --exclude "*"                             \
-      #     --include "CellProfiler-nightly.dmg"
+      - brew install awscli
+
+      - >
+        aws s3 sync dist s3://cellprofiler-releases \
+          --acl public-read                         \
+          --delete                                  \
+          --exclude "*"                             \
+          --include "CellProfiler-nightly.dmg"

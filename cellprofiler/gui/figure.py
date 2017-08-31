@@ -55,10 +55,6 @@ for ft in mpl_unsupported_filetypes:
     del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[ft]
 
 
-def is_color_image(image):
-    return image.ndim == 3 and image.shape[2] >= 2
-
-
 COLOR_NAMES = ['Red', 'Green', 'Blue', 'Yellow', 'Cyan', 'Magenta', 'White']
 COLOR_VALS = [[1, 0, 0],
               [0, 1, 0],
@@ -93,6 +89,37 @@ CPLD_ALPHA_VALUE = "alpha_value"
 """subplot_imshow cplabels dictionary key: show (TRUE) or hide (False)"""
 CPLD_SHOW = "show"
 
+EVT_NAV_MODE_CHANGE = wx.PyEventBinder(wx.NewEventType())
+NAV_MODE_ZOOM = 'zoom rect'
+NAV_MODE_PAN = 'pan/zoom'
+NAV_MODE_NONE = ''
+MENU_FILE_SAVE = wx.NewId()
+MENU_FILE_SAVE_TABLE = wx.NewId()
+MENU_CLOSE_WINDOW = wx.NewId()
+MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
+MENU_CLOSE_ALL = wx.NewId()
+MENU_LABELS_OUTLINE = {}
+MENU_LABELS_OVERLAY = {}
+MENU_LABELS_LINES = {}
+MENU_LABELS_OFF = {}
+MENU_LABELS_ALPHA = {}
+MENU_SAVE_SUBPLOT = {}
+MENU_RGB_CHANNELS = {}
+
+'''mouse tool mode - do nothing'''
+MODE_NONE = 0
+
+'''mouse tool mode - show pixel data'''
+MODE_MEASURE_LENGTH = 2
+
+window_ids = []
+
+__crosshair_cursor = None
+
+
+def is_color_image(image):
+    return image.ndim == 3 and image.shape[2] >= 2
+
 
 def wraparound(sequence):
     while True:
@@ -109,9 +136,6 @@ def match_rgbmask_to_image(rgb_mask, image):
     return rgb_mask
 
 
-window_ids = []
-
-
 def window_name(module):
     """Return a module's figure window name"""
     return "CellProfiler:%s:%s" % (module.module_name, module.module_num)
@@ -124,15 +148,10 @@ def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
             return w
 
 
-def create_or_find(parent=None, identifier=-1, title="",
-                   pos=wx.DefaultPosition, size=wx.DefaultSize,
-                   style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
-                   subplots=None,
-                   on_close=None):
+def create_or_find(parent=None, identifier=-1, title="", pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr, subplots=None, on_close=None):
     """Create or find a figure frame window"""
     win = find_fig(parent, title, name, subplots)
-    return win or Figure(parent, identifier, title, pos, size, style, name,
-                         subplots, on_close)
+    return win or Figure(parent, identifier, title, pos, size, style, name, subplots, on_close)
 
 
 def close_all(parent):
@@ -163,31 +182,114 @@ def allow_sharexy(fn):
     return wrapper
 
 
-MENU_FILE_SAVE = wx.NewId()
-MENU_FILE_SAVE_TABLE = wx.NewId()
-MENU_CLOSE_WINDOW = wx.NewId()
-MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
-MENU_CLOSE_ALL = wx.NewId()
-MENU_LABELS_OUTLINE = {}
-MENU_LABELS_OVERLAY = {}
-MENU_LABELS_LINES = {}
-MENU_LABELS_OFF = {}
-MENU_LABELS_ALPHA = {}
-MENU_SAVE_SUBPLOT = {}
-MENU_RGB_CHANNELS = {}
-
-
 def get_menu_id(d, idx):
     if idx not in d:
         d[idx] = wx.NewId()
     return d[idx]
 
 
-'''mouse tool mode - do nothing'''
-MODE_NONE = 0
+def format_plate_data_as_array(plate_dict, plate_type):
+    """ Returns an array shaped like the given plate type with the values from
+    plate_dict stored in it.  Wells without data will be set to np.NaN
+    plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
+                   data values must be of numerical or string types
+    plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
+    """
+    if plate_type == '96':
+        plate_shape = (8, 12)
+    elif plate_type == '384':
+        plate_shape = (16, 24)
+    alphabet = 'ABCDEFGHIJKLMNOP'
+    data = numpy.zeros(plate_shape)
+    data[:] = numpy.nan
+    display_error = True
+    for well, val in plate_dict.items():
+        r = alphabet.index(well[0].upper())
+        c = int(well[1:]) - 1
+        if r >= data.shape[0] or c >= data.shape[1]:
+            if display_error:
+                logging.getLogger("cellprofiler.gui.cpfigure").warning(
+                        'A well value (%s) does not fit in the given plate type.\n' % well)
+                display_error = False
+            continue
+        data[r, c] = val
+    return data
 
-'''mouse tool mode - show pixel data'''
-MODE_MEASURE_LENGTH = 2
+
+def show_image(url, parent=None, needs_raise_after=True):
+    """Show an image in a figure frame
+
+    url - url of the image
+    parent - parent frame to this one.
+    """
+    filename = url[(url.rfind("/") + 1):]
+    try:
+        if url.lower().endswith(".mat"):
+            from scipy.io.matlab.mio import loadmat
+            from cellprofiler.modules.loadimages import url2pathname
+            image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
+        else:
+            from bioformats import load_image_url
+            image = load_image_url(url)
+    except IOError:
+        wx.MessageBox('Failed to open file, "%s"' % filename,
+                      caption="File open error")
+        return
+    except javabridge.JavaException, je:
+        wx.MessageBox(
+                'Could not open "%s" as an image.' % filename,
+                caption="File format error")
+        return
+
+    except Exception, e:
+        from cellprofiler.gui.errordialog import display_error_dialog
+        display_error_dialog(None, e, None,
+                             "Failed to load %s" % url,
+                             continue_only=True)
+        return
+    frame = Figure(parent=parent,
+                   title=filename,
+                   subplots=(1, 1))
+    if image.ndim == 2:
+        frame.subplot_imshow_grayscale(0, 0, image, title=filename)
+    else:
+        frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename)
+    frame.panel.draw()
+    if needs_raise_after:
+        # %$@ hack hack hack
+        wx.CallAfter(lambda: frame.Raise())
+    return True
+
+
+def get_matplotlib_interpolation_preference():
+    interpolation = cellprofiler.preferences.get_interpolation_mode()
+    if interpolation == cellprofiler.preferences.IM_NEAREST:
+        return matplotlib.image.NEAREST
+    elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+        return matplotlib.image.BILINEAR
+    elif interpolation == cellprofiler.preferences.IM_BICUBIC:
+        return matplotlib.image.BICUBIC
+    return matplotlib.image.NEAREST
+
+
+def get_crosshair_cursor():
+    global __crosshair_cursor
+    if __crosshair_cursor is None:
+        if sys.platform.lower().startswith('win'):
+            #
+            # Build the crosshair cursor image as a numpy array.
+            #
+            buf = numpy.ones((16, 16, 3), dtype='uint8') * 255
+            buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
+            abuf = numpy.ones((16, 16), dtype='uint8') * 255
+            abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
+            image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
+            __crosshair_cursor = wx.CursorFromImage(image)
+        else:
+            __crosshair_cursor = wx.CROSS_CURSOR
+    return __crosshair_cursor
 
 
 class Figure(wx.Frame):
@@ -1348,7 +1450,7 @@ class Figure(wx.Frame):
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
-        outlines = [x for x in subplot.collections if isinstance(x, CPOutlineArtist)]
+        outlines = [x for x in subplot.collections if isinstance(x, OutlineArtist)]
 
         for outline in outlines:
             outline.remove()
@@ -1359,7 +1461,7 @@ class Figure(wx.Frame):
 
             if cplabels[CPLD_MODE] == CPLDM_LINES:
                 subplot.add_collection(
-                    CPOutlineArtist(
+                    OutlineArtist(
                         cplabels[CPLD_NAME],
                         cplabels[CPLD_LABELS],
                         linewidth=cplabels[CPLD_LINE_WIDTH],
@@ -1978,165 +2080,6 @@ class Figure(wx.Frame):
         return plot
 
 
-def format_plate_data_as_array(plate_dict, plate_type):
-    """ Returns an array shaped like the given plate type with the values from
-    plate_dict stored in it.  Wells without data will be set to np.NaN
-    plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
-                   data values must be of numerical or string types
-    plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
-    """
-    if plate_type == '96':
-        plate_shape = (8, 12)
-    elif plate_type == '384':
-        plate_shape = (16, 24)
-    alphabet = 'ABCDEFGHIJKLMNOP'
-    data = numpy.zeros(plate_shape)
-    data[:] = numpy.nan
-    display_error = True
-    for well, val in plate_dict.items():
-        r = alphabet.index(well[0].upper())
-        c = int(well[1:]) - 1
-        if r >= data.shape[0] or c >= data.shape[1]:
-            if display_error:
-                logging.getLogger("cellprofiler.gui.cpfigure").warning(
-                        'A well value (%s) does not fit in the given plate type.\n' % well)
-                display_error = False
-            continue
-        data[r, c] = val
-    return data
-
-
-def show_image(url, parent=None, needs_raise_after=True):
-    """Show an image in a figure frame
-
-    url - url of the image
-    parent - parent frame to this one.
-    """
-    filename = url[(url.rfind("/") + 1):]
-    try:
-        if url.lower().endswith(".mat"):
-            from scipy.io.matlab.mio import loadmat
-            from cellprofiler.modules.loadimages import url2pathname
-            image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
-        else:
-            from bioformats import load_image_url
-            image = load_image_url(url)
-    except IOError:
-        wx.MessageBox('Failed to open file, "%s"' % filename,
-                      caption="File open error")
-        return
-    except javabridge.JavaException, je:
-        wx.MessageBox(
-                'Could not open "%s" as an image.' % filename,
-                caption="File format error")
-        return
-
-    except Exception, e:
-        from cellprofiler.gui.errordialog import display_error_dialog
-        display_error_dialog(None, e, None,
-                             "Failed to load %s" % url,
-                             continue_only=True)
-        return
-    frame = Figure(parent=parent,
-                   title=filename,
-                   subplots=(1, 1))
-    if image.ndim == 2:
-        frame.subplot_imshow_grayscale(0, 0, image, title=filename)
-    else:
-        frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename)
-    frame.panel.draw()
-    if needs_raise_after:
-        # %$@ hack hack hack
-        wx.CallAfter(lambda: frame.Raise())
-    return True
-
-
-class CPOutlineArtist(matplotlib.collections.LineCollection):
-    """An artist that is a plot of the outline around an object
-
-    This class is here so that we can add and remove artists for certain
-    outlines.
-    """
-
-    def __init__(self, name, labels, *args, **kwargs):
-        """Draw outlines for objects
-
-        name - the name of the outline
-
-        labels - a sequence of labels matrices
-
-        kwargs - further arguments for Line2D
-        """
-        # get_outline_pts has its faults:
-        # * it doesn't do holes
-        # * it only does one of two disconnected objects
-        #
-        # We get around the second failing by resegmenting with
-        # connected components and combining the original and new segmentation
-        #
-        lines = []
-        for l in labels:
-            new_labels, counts = scipy.ndimage.label(l != 0, numpy.ones((3, 3), bool))
-            if counts == 0:
-                continue
-            l = l.astype(numpy.uint64) * counts + new_labels
-            unique, idx = numpy.unique(l.flatten(), return_inverse=True)
-            if unique[0] == 0:
-                my_range = numpy.arange(len(unique))
-            else:
-                my_range = numpy.arange(1, len(unique))
-            idx.shape = l.shape
-            pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
-            pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
-            for off, count in zip(offs, counts):
-                lines.append(numpy.vstack((pts[off:off + count], pts[off:off + 1])))
-        matplotlib.collections.LineCollection.__init__(
-                self, lines, *args, **kwargs)
-
-    def get_outline_name(self):
-        return self.__outline_name
-
-
-def get_matplotlib_interpolation_preference():
-    interpolation = cellprofiler.preferences.get_interpolation_mode()
-    if interpolation == cellprofiler.preferences.IM_NEAREST:
-        return matplotlib.image.NEAREST
-    elif interpolation == cellprofiler.preferences.IM_BILINEAR:
-        return matplotlib.image.BILINEAR
-    elif interpolation == cellprofiler.preferences.IM_BICUBIC:
-        return matplotlib.image.BICUBIC
-    return matplotlib.image.NEAREST
-
-
-__crosshair_cursor = None
-
-
-def get_crosshair_cursor():
-    global __crosshair_cursor
-    if __crosshair_cursor is None:
-        if sys.platform.lower().startswith('win'):
-            #
-            # Build the crosshair cursor image as a numpy array.
-            #
-            buf = numpy.ones((16, 16, 3), dtype='uint8') * 255
-            buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
-            abuf = numpy.ones((16, 16), dtype='uint8') * 255
-            abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
-            image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
-            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
-            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            __crosshair_cursor = wx.CursorFromImage(image)
-        else:
-            __crosshair_cursor = wx.CROSS_CURSOR
-    return __crosshair_cursor
-
-
-EVT_NAV_MODE_CHANGE = wx.PyEventBinder(wx.NewEventType())
-NAV_MODE_ZOOM = 'zoom rect'
-NAV_MODE_PAN = 'pan/zoom'
-NAV_MODE_NONE = ''
-
-
 class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
     """Navigation toolbar for EditObjectsDialog"""
 
@@ -2212,3 +2155,49 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
         event.EventObject = self
 
         self.GetEventHandler().ProcessEvent(event)
+
+
+class OutlineArtist(matplotlib.collections.LineCollection):
+    """An artist that is a plot of the outline around an object
+
+    This class is here so that we can add and remove artists for certain
+    outlines.
+    """
+
+    def __init__(self, name, labels, *args, **kwargs):
+        """Draw outlines for objects
+
+        name - the name of the outline
+
+        labels - a sequence of labels matrices
+
+        kwargs - further arguments for Line2D
+        """
+        # get_outline_pts has its faults:
+        # * it doesn't do holes
+        # * it only does one of two disconnected objects
+        #
+        # We get around the second failing by resegmenting with
+        # connected components and combining the original and new segmentation
+        #
+        lines = []
+        for l in labels:
+            new_labels, counts = scipy.ndimage.label(l != 0, numpy.ones((3, 3), bool))
+            if counts == 0:
+                continue
+            l = l.astype(numpy.uint64) * counts + new_labels
+            unique, idx = numpy.unique(l.flatten(), return_inverse=True)
+            if unique[0] == 0:
+                my_range = numpy.arange(len(unique))
+            else:
+                my_range = numpy.arange(1, len(unique))
+            idx.shape = l.shape
+            pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
+            pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
+            for off, count in zip(offs, counts):
+                lines.append(numpy.vstack((pts[off:off + count], pts[off:off + 1])))
+        matplotlib.collections.LineCollection.__init__(
+                self, lines, *args, **kwargs)
+
+    def get_outline_name(self):
+        return self.__outline_name

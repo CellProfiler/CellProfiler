@@ -24,6 +24,7 @@ import cellprofiler.modules
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
+import codecs
 import inspect
 import logging
 import os
@@ -1108,8 +1109,9 @@ class CPFrame(wx.Frame):
         result = save_dlg.ShowModal()
 
         if result == wx.ID_OK:
-            with open(save_dlg.GetPath(), "w") as fd:
-                fd.write(help_text.encode("utf-8"))
+            with codecs.open(save_dlg.GetPath(), "w+", encoding="utf-8") as fd:
+                fd.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />")
+                fd.write(help_text)
 
     def on_open_image(self, event):
         dlg = wx.FileDialog(self,

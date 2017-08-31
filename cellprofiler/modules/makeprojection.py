@@ -11,7 +11,7 @@ This module combines a set of images by performing a mathematical
 operation of your choice at each pixel position; please refer to the
 settings help for more information on the available operations. The
 process of averaging or summing a Z-stack (3D image stack) is known as
-making a projection.
+making a projection. **MakeProjection** is meant to be used only on single image Z-slices across image cycles; it will not work on images that have been loaded as 3D volumes in **NamesAndTypes**.
 
 This module will create a projection of all images specified in the
 Input modules. For more information on loading image stacks and movies,
@@ -130,6 +130,7 @@ The final projection image can be created by the following methods:
         self.frequency = cps.Float(
                 "Frequency", 6.0, minval=1.0, doc="""\
 *(Used only if %(P_POWER)s is selected as the projection method)*
+
 This setting controls the frequency at which the power is measured. A
 frequency of 2 will respond most strongly to pixels that alternate
 between dark and light in successive z-stack slices. A frequency of N

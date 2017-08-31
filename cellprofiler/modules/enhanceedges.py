@@ -6,7 +6,7 @@ improve object identification or other downstream image processing.
 
 This module enhances the edges (gradients) in a grayscale image. All
 methods other than Canny produce a grayscale image that can be used in
-an **Identify** module or thresholded using the **ApplyThreshold**
+an **Identify** module or thresholded using the **Threshold**
 module to produce a binary (black/white) mask of edges. The Canny
 algorithm produces a binary (black/white) mask image consisting of the
 edge pixels.

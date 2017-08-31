@@ -4,10 +4,9 @@
 Create an RGB image with color-coded labels overlaid on a grayscale image.
 """
 
-import numpy
-import skimage.color
-
 import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.preferences
 import cellprofiler.setting
 
 
@@ -62,9 +61,9 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
         return visible_settings
 
     def run(self, workspace):
-        self.function = lambda pixel_data, objects_name, opacity: overlay_objects(
+        self.function = lambda pixel_data, objects_name, opacity: cellprofiler.object.overlay_labels(
             pixel_data,
-            workspace.object_set.get_objects(objects_name),
+            workspace.object_set.get_objects(objects_name).segmented,
             opacity
         )
 
@@ -72,27 +71,3 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
 
     def display(self, workspace, figure, cmap=["gray", None]):
         super(OverlayObjects, self).display(workspace, figure, cmap=["gray", None])
-
-
-def overlay_objects(pixel_data, objects, opacity):
-    labels = objects.segmented
-
-    if objects.volumetric:
-        overlay = numpy.zeros(labels.shape + (3,), dtype=numpy.float32)
-
-        for index, plane in enumerate(pixel_data):
-            overlay[index] = skimage.color.label2rgb(
-                labels[index],
-                image=plane,
-                alpha=opacity,
-                bg_label=0
-            )
-
-        return overlay
-
-    return skimage.color.label2rgb(
-        labels,
-        image=pixel_data,
-        alpha=opacity,
-        bg_label=0
-    )

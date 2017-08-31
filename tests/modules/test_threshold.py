@@ -15,7 +15,7 @@ import skimage.morphology
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules.applythreshold
+import cellprofiler.modules.threshold
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -28,10 +28,10 @@ INPUT_IMAGE_NAME = 'inputimage'
 OUTPUT_IMAGE_NAME = 'outputimage'
 
 
-class TestApplyThreshold(unittest.TestCase):
+class TestThreshold(unittest.TestCase):
     def make_workspace(self, image, mask=None, dimensions=2):
-        '''Make a workspace for testing ApplyThreshold'''
-        module = cellprofiler.modules.applythreshold.ApplyThreshold()
+        '''Make a workspace for testing Threshold'''
+        module = cellprofiler.modules.threshold.Threshold()
         module.x_name.value = INPUT_IMAGE_NAME
         module.y_name.value = OUTPUT_IMAGE_NAME
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -50,7 +50,7 @@ class TestApplyThreshold(unittest.TestCase):
         return workspace, module
 
     def test_01_00_write_a_test_for_the_new_variable_revision_please(self):
-        self.assertEqual(cellprofiler.modules.applythreshold.ApplyThreshold.variable_revision_number, 10)
+        self.assertEqual(cellprofiler.modules.threshold.Threshold.variable_revision_number, 10)
 
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -98,7 +98,7 @@ class TestApplyThreshold(unittest.TestCase):
             grouping metadata count:1
             Metadata category:None
 
-        ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+        Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
             Select the input image:RainbowPony
             Name the output image:GrayscalePony
             Select the output image type:Grayscale
@@ -127,19 +127,19 @@ class TestApplyThreshold(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
+        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
         self.assertEqual(module.x_name.value, "RainbowPony")
         self.assertEqual(module.y_name.value, "GrayscalePony")
-        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_GLOBAL)
-        self.assertEqual(module.global_operation.value, cellprofiler.modules.applythreshold.TM_LI)
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, cellprofiler.modules.threshold.TM_LI)
         self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
         self.assertEqual(module.threshold_correction_factor.value, 1.1)
         self.assertEqual(module.threshold_range.min, .07)
         self.assertEqual(module.threshold_range.max, .99)
         self.assertEqual(module.manual_threshold.value, 0.1)
         self.assertEqual(module.thresholding_measurement.value, "Pony_Perimeter")
-        self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.applythreshold.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground.value, cellprofiler.modules.applythreshold.O_FOREGROUND)
+        self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.threshold.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground.value, cellprofiler.modules.threshold.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size.value, 13)
 
     def test_01_08_load_v8(self):
@@ -198,7 +198,7 @@ Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_win
     grouping metadata count:1
     Metadata category:None
 
-ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
     Name the output image:ThreshBlue
     Threshold setting version:3
@@ -224,19 +224,19 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
+        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
         self.assertEqual(module.x_name, "DNA")
         self.assertEqual(module.y_name, "ThreshBlue")
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.applythreshold.TS_GLOBAL)
-        self.assertEqual(module.global_operation.value, cellprofiler.modules.applythreshold.TM_LI)
+        self.assertEqual(module.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, cellprofiler.modules.threshold.TM_LI)
         self.assertEqual(module.threshold_smoothing_scale, 0)
         self.assertEqual(module.threshold_correction_factor, 1.0)
         self.assertEqual(module.threshold_range.min, 0.0)
         self.assertEqual(module.threshold_range.max, 1.0)
         self.assertEqual(module.manual_threshold, 0.0)
         self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.applythreshold.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.applythreshold.O_FOREGROUND)
+        self.assertEqual(module.two_class_otsu, cellprofiler.modules.threshold.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.threshold.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size, 50)
 
     def test_01_09_load_v9(self):
@@ -295,9 +295,9 @@ Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_win
     grouping metadata count:1
     Metadata category:None
 
-ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
-    Name the output image:ApplyThreshold
+    Name the output image:Threshold
     Threshold strategy:Global
     Thresholding method:MCT
     Threshold smoothing scale:0.0
@@ -314,9 +314,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
     Variance method:Standard deviation
     # of deviations:2.0
 
-ApplyThreshold:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Threshold:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
-    Name the output image:ApplyThreshold
+    Name the output image:Threshold
     Threshold strategy:Manual
     Thresholding method:MCT
     Threshold smoothing scale:0.0
@@ -333,9 +333,9 @@ ApplyThreshold:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:9|
     Variance method:Standard deviation
     # of deviations:2.0
 
-ApplyThreshold:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Threshold:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
-    Name the output image:ApplyThreshold
+    Name the output image:Threshold
     Threshold strategy:Adaptive
     Thresholding method:RobustBackground
     Threshold smoothing scale:0.0
@@ -352,9 +352,9 @@ ApplyThreshold:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:9|
     Variance method:Standard deviation
     # of deviations:2.0
 
-ApplyThreshold:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Threshold:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:DNA
-    Name the output image:ApplyThreshold
+    Name the output image:Threshold
     Threshold strategy:Adaptive
     Thresholding method:MCT
     Threshold smoothing scale:0.0
@@ -376,32 +376,32 @@ ApplyThreshold:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[4]
-        self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
+        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
         self.assertEqual(module.x_name, "DNA")
-        self.assertEqual(module.y_name, "ApplyThreshold")
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.applythreshold.TS_GLOBAL)
-        self.assertEqual(module.global_operation.value, cellprofiler.modules.applythreshold.TM_LI)
+        self.assertEqual(module.y_name, "Threshold")
+        self.assertEqual(module.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, cellprofiler.modules.threshold.TM_LI)
         self.assertEqual(module.threshold_smoothing_scale, 0)
         self.assertEqual(module.threshold_correction_factor, 1.0)
         self.assertEqual(module.threshold_range.min, 0.0)
         self.assertEqual(module.threshold_range.max, 1.0)
         self.assertEqual(module.manual_threshold, 0.0)
         self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.applythreshold.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.applythreshold.O_FOREGROUND)
+        self.assertEqual(module.two_class_otsu, cellprofiler.modules.threshold.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.threshold.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size, 50)
 
         module = pipeline.modules()[5]
-        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_GLOBAL)
-        self.assertEqual(module.global_operation.value, cellprofiler.modules.applythreshold.TM_MANUAL)
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, cellprofiler.modules.threshold.TM_MANUAL)
 
         module = pipeline.modules()[6]
-        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_GLOBAL)
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL)
         self.assertEqual(module.global_operation.value, centrosome.threshold.TM_ROBUST_BACKGROUND)
 
         module = pipeline.modules()[7]
-        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_GLOBAL)
-        self.assertEqual(module.global_operation.value, cellprofiler.modules.applythreshold.TM_LI)
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, cellprofiler.modules.threshold.TM_LI)
 
     def test_01_10_load_v10(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -459,9 +459,9 @@ Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_win
     grouping metadata count:1
     Metadata category:None
 
-ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Input:DNA
-    Output:ApplyThreshold
+    Output:Threshold
     Threshold strategy:Global
     Thresholding method:Minimum cross entropy
     Threshold smoothing scale:0.0
@@ -484,19 +484,19 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
+        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
         self.assertEqual(module.x_name, "DNA")
-        self.assertEqual(module.y_name, "ApplyThreshold")
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.applythreshold.TS_GLOBAL)
-        self.assertEqual(module.global_operation.value, cellprofiler.modules.applythreshold.TM_LI)
+        self.assertEqual(module.y_name, "Threshold")
+        self.assertEqual(module.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL)
+        self.assertEqual(module.global_operation.value, cellprofiler.modules.threshold.TM_LI)
         self.assertEqual(module.threshold_smoothing_scale, 0)
         self.assertEqual(module.threshold_correction_factor, 1.0)
         self.assertEqual(module.threshold_range.min, 0.0)
         self.assertEqual(module.threshold_range.max, 1.0)
         self.assertEqual(module.manual_threshold, 0.0)
         self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.applythreshold.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.applythreshold.O_FOREGROUND)
+        self.assertEqual(module.two_class_otsu, cellprofiler.modules.threshold.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.threshold.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size, 50)
         self.assertEqual(module.local_operation.value, centrosome.threshold.TM_OTSU)
 
@@ -506,8 +506,8 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         image = numpy.random.uniform(size=(20, 20))
         expected = image > .5
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.manual_threshold.value = .5
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -520,7 +520,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         threshold = skimage.filters.threshold_otsu(image)
         expected = image > threshold
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         module.global_operation.value = centrosome.threshold.TM_OTSU
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -533,7 +533,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         threshold = skimage.filters.threshold_otsu(image) * .5
         expected = image > threshold
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         module.global_operation.value = centrosome.threshold.TM_OTSU
         module.threshold_correction_factor.value = .5
         module.run(workspace)
@@ -548,7 +548,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         image[(image > .4) & (image < .6)] = .5
         expected = image > .7
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         module.global_operation.value = centrosome.threshold.TM_OTSU
         module.threshold_range.min = .7
         module.run(workspace)
@@ -562,7 +562,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         image = numpy.random.uniform(size=(40, 40))
         expected = image > .1
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         module.global_operation.value = centrosome.threshold.TM_OTSU
         module.threshold_range.max = .1
         module.run(workspace)
@@ -574,16 +574,16 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.manual_threshold.value = .5
         module.run(workspace)
 
-        module2 = cellprofiler.modules.applythreshold.ApplyThreshold()
+        module2 = cellprofiler.modules.threshold.Threshold()
         module2.x_name.value = OUTPUT_IMAGE_NAME
         module2.y_name.value = OUTPUT_IMAGE_NAME + 'new'
-        module2.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module2.global_operation.value = cellprofiler.modules.applythreshold.TM_MEASUREMENT
+        module2.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module2.global_operation.value = cellprofiler.modules.threshold.TM_MEASUREMENT
         module2.thresholding_measurement.value = 'Threshold_FinalThreshold_' + OUTPUT_IMAGE_NAME
         module2.run(workspace)
 
@@ -599,10 +599,10 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         t1, t2 = centrosome.otsu.otsu3(limage)
         threshold = centrosome.threshold.inverse_log_transform(t2, d)
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         module.global_operation.value = centrosome.threshold.TM_OTSU
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
-        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_BACKGROUND
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+        module.assign_middle_to_foreground.value = cellprofiler.modules.threshold.O_BACKGROUND
         module.run(workspace)
         m = workspace.measurements
         m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value]
@@ -620,10 +620,10 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         t1, t2 = centrosome.otsu.otsu3(limage)
         threshold = centrosome.threshold.inverse_log_transform(t1, d)
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         module.global_operation.value = centrosome.threshold.TM_OTSU
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
-        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+        module.assign_middle_to_foreground.value = cellprofiler.modules.threshold.O_FOREGROUND
         module.run(workspace)
         m = workspace.measurements
         m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value]
@@ -695,7 +695,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
         ii, jj = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
         ii, jj = ii.flatten(), jj.flatten()
 
-        for threshold_method in (cellprofiler.modules.applythreshold.TM_LI,
+        for threshold_method in (cellprofiler.modules.threshold.TM_LI,
                                  centrosome.threshold.TM_OTSU,
                                  centrosome.threshold.TM_ROBUST_BACKGROUND):
             for i in range(11):
@@ -722,9 +722,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
     def test_08_01_test_manual_background(self):
         """Test manual background"""
         workspace, x = self.make_workspace(numpy.zeros((10, 10)))
-        x = cellprofiler.modules.applythreshold.ApplyThreshold()
-        x.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        x.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        x = cellprofiler.modules.threshold.Threshold()
+        x.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        x.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         x.manual_threshold.value = .5
         local_threshold, threshold = x.get_threshold(
             cellprofiler.image.Image(numpy.zeros((10, 10)), mask=numpy.ones((10, 10), bool)),
@@ -738,9 +738,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
+        module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
         t_local, t_global = module.get_threshold(image, workspace)
 
@@ -763,9 +763,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
+        module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
         t_local, t_global = module.get_threshold(image, workspace)
 
@@ -784,9 +784,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
+        module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
         t_local, t_global = module.get_threshold(image, workspace)
 
@@ -803,9 +803,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
+        module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
         t_local, t_global = module.get_threshold(image, workspace)
 
@@ -824,9 +824,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
+        module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
         module.threshold_range.maximum = 0.0  # expected to be ignored
 
@@ -851,9 +851,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
-        module.global_operation.value = cellprofiler.modules.applythreshold.TM_LI
+        module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
         t_local, t_global = module.get_threshold(image, workspace)
 
@@ -872,19 +872,19 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
         module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MEAN
+        module.averaging_method.value = cellprofiler.modules.threshold.RB_MEAN
 
-        module.variance_method.value = cellprofiler.modules.applythreshold.RB_SD
+        module.variance_method.value = cellprofiler.modules.threshold.RB_SD
 
         t_local, t_global = module.get_threshold(image, workspace)
 
         t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
             centrosome.threshold.TM_ROBUST_BACKGROUND,
-            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            cellprofiler.modules.threshold.TS_GLOBAL,
             data,
             threshold_range_min=0.0,
             threshold_range_max=1.0,
@@ -909,19 +909,19 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
         module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MEDIAN
+        module.averaging_method.value = cellprofiler.modules.threshold.RB_MEDIAN
 
-        module.variance_method.value = cellprofiler.modules.applythreshold.RB_SD
+        module.variance_method.value = cellprofiler.modules.threshold.RB_SD
 
         t_local, t_global = module.get_threshold(image, workspace)
 
         t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
             centrosome.threshold.TM_ROBUST_BACKGROUND,
-            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            cellprofiler.modules.threshold.TS_GLOBAL,
             data,
             threshold_range_min=0.0,
             threshold_range_max=1.0,
@@ -946,19 +946,19 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
         module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MODE
+        module.averaging_method.value = cellprofiler.modules.threshold.RB_MODE
 
-        module.variance_method.value = cellprofiler.modules.applythreshold.RB_SD
+        module.variance_method.value = cellprofiler.modules.threshold.RB_SD
 
         t_local, t_global = module.get_threshold(image, workspace)
 
         t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
             centrosome.threshold.TM_ROBUST_BACKGROUND,
-            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            cellprofiler.modules.threshold.TS_GLOBAL,
             data,
             threshold_range_min=0.0,
             threshold_range_max=1.0,
@@ -983,19 +983,19 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
         module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-        module.averaging_method.value = cellprofiler.modules.applythreshold.RB_MEAN
+        module.averaging_method.value = cellprofiler.modules.threshold.RB_MEAN
 
-        module.variance_method.value = cellprofiler.modules.applythreshold.RB_MAD
+        module.variance_method.value = cellprofiler.modules.threshold.RB_MAD
 
         t_local, t_global = module.get_threshold(image, workspace)
 
         t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
             centrosome.threshold.TM_ROBUST_BACKGROUND,
-            cellprofiler.modules.applythreshold.TS_GLOBAL,
+            cellprofiler.modules.threshold.TS_GLOBAL,
             data,
             threshold_range_min=0.0,
             threshold_range_max=1.0,
@@ -1022,11 +1022,11 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_TWO_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
         module.adaptive_window_size.value = 3
 
@@ -1055,11 +1055,11 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_TWO_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
         module.adaptive_window_size.value = 3
 
@@ -1082,11 +1082,11 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_TWO_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
         module.adaptive_window_size.value = 3
 
@@ -1113,11 +1113,11 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_TWO_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
         module.adaptive_window_size.value = 3
 
@@ -1158,11 +1158,11 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_TWO_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
         module.adaptive_window_size.value = 3
 
@@ -1206,13 +1206,13 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
 
-        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
+        module.assign_middle_to_foreground.value = cellprofiler.modules.threshold.O_FOREGROUND
 
         module.adaptive_window_size.value = 3
 
@@ -1220,7 +1220,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
             centrosome.threshold.TM_OTSU,
-            cellprofiler.modules.applythreshold.TS_ADAPTIVE,
+            cellprofiler.modules.threshold.TS_ADAPTIVE,
             data,
             mask=mask,
             adaptive_window_size=3,
@@ -1248,13 +1248,13 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
 
-        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
+        module.assign_middle_to_foreground.value = cellprofiler.modules.threshold.O_FOREGROUND
 
         module.adaptive_window_size.value = 3
 
@@ -1262,7 +1262,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
             centrosome.threshold.TM_OTSU,
-            cellprofiler.modules.applythreshold.TS_ADAPTIVE,
+            cellprofiler.modules.threshold.TS_ADAPTIVE,
             data,
             mask=mask,
             adaptive_window_size=3,
@@ -1290,13 +1290,13 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_ADAPTIVE
+        module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
         module.global_operation.value = centrosome.threshold.TM_OTSU
 
-        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
 
-        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
+        module.assign_middle_to_foreground.value = cellprofiler.modules.threshold.O_FOREGROUND
 
         module.adaptive_window_size.value = 3
 

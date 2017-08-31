@@ -134,7 +134,7 @@ import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
 
-import applythreshold
+import threshold
 import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
@@ -232,7 +232,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
     module_name = "IdentifyPrimaryObjects"
 
     def __init__(self):
-        self.apply_threshold = applythreshold.ApplyThreshold()
+        self.apply_threshold = threshold.Threshold()
 
         super(IdentifyPrimaryObjects, self).__init__()
 
@@ -635,12 +635,12 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                 "THRESHOLD_CORRECTION_FACTOR_TEXT": self.apply_threshold.threshold_correction_factor.get_text(),
                 "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
                 "THRESHOLD_METHOD_TEXT": self.apply_threshold.global_operation.get_text(),
-                "THRESHOLD_METHOD_VALUE": applythreshold.TM_LI,
+                "THRESHOLD_METHOD_VALUE": threshold.TM_LI,
                 "THRESHOLD_RANGE_MAX": 1.0,
                 "THRESHOLD_RANGE_MIN": 0.0,
                 "THRESHOLD_RANGE_TEXT": self.apply_threshold.threshold_range.get_text(),
                 "THRESHOLD_SCOPE_TEXT": self.apply_threshold.threshold_scope.get_text(),
-                "THRESHOLD_SCOPE_VALUE": applythreshold.TS_GLOBAL,
+                "THRESHOLD_SCOPE_VALUE": threshold.TS_GLOBAL,
                 "THRESHOLD_SMOOTHING_SCALE_TEXT": self.apply_threshold.threshold_smoothing_scale.get_text(),
                 "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
                 "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
@@ -739,7 +739,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
-            "ApplyThreshold",
+            "Threshold",
             False
         )
 

@@ -16,7 +16,7 @@ import dateutil.parser
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]
 else:
-    ARGLIST_START = ["CellProfiler.py", "-b"]
+    ARGLIST_START = ["-m", "cellprofiler", "-b"]
 
 
 @unittest.skipIf(sys.platform != 'win32', "Skip tests on all but Windows")
@@ -36,10 +36,7 @@ class TestCellProfiler(unittest.TestCase):
             test_dir = os.path.dirname(__file__)
             cellprofiler_dir = os.path.dirname(test_dir)
             root_dir = os.path.dirname(cellprofiler_dir)
-            cellprofiler_path = os.path.join(root_dir, "CellProfiler.py")
-            self.assertTrue(os.path.isfile(cellprofiler_path))
-            args = [sys.executable, cellprofiler_path,
-                    "--do-not-build", "--do-not-fetch"] + list(args)
+            args = [sys.executable, "-m", "cellprofiler", "--do-not-build", "--do-not-fetch"] + list(args)
             return subprocess.check_output(args, cwd=root_dir)
 
     def test_01_01_html(self):

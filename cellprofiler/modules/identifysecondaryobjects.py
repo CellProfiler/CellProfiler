@@ -264,13 +264,11 @@ Cells on Image Manifolds”, *ICCV Workshop on Computer Vision for
 Biomedical Image Applications*, 535-543. (`link1`_)
 
 Vincent L, Soille P (1991) "Watersheds in Digital Spaces: An Efficient
-Algorithm Based on Immersion Simulations",*IEEE Transactions on Pattern
+Algorithm Based on Immersion Simulations", *IEEE Transactions on Pattern
 Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
 
 .. _link1: http://people.csail.mit.edu/polina/papers/JonesCarpenterGolland_CVBIA2005.pdf
-
 .. _link2: http://www.cse.msu.edu/~cse902/S03/watershed.pdf
-
 """.format(**{
                 "M_PROPAGATION": M_PROPAGATION,
                 "M_WATERSHED_G": M_WATERSHED_G,
@@ -295,7 +293,17 @@ identification, only the final display.
         self.distance_to_dilate = cellprofiler.setting.Integer(
             "Number of pixels by which to expand the primary objects",
             10,
-            minval=1
+            minval=1,
+            doc = u"""\
+*(Used only if "{M_DISTANCE_B:s}" or "{M_DISTANCE_N:s}" method is selected)*
+
+This option allows to define the number of pixels by which the primary objects
+will be expanded. This option becomes useful in situations when no staining was
+used to define cell cytoplasm but is needed to be defined for further measurements. 
+""".format(**{
+            "M_DISTANCE_N": M_DISTANCE_N,
+            "M_DISTANCE_B": M_DISTANCE_B
+            })
         )
 
         self.regularization_factor = cellprofiler.setting.Float(
@@ -303,7 +311,7 @@ identification, only the final display.
             0.05,
             minval=0,
             doc=u"""\
-*(Used only if {M_PROPAGATION:s} method is selected)*
+*(Used only if "{M_PROPAGATION:s}" method is selected)*
 
 The regularization factor λ can be anywhere in the range 0 to
 infinity. This method takes two factors into account when deciding

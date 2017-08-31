@@ -84,7 +84,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
                 [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE,
                  O_MINIMUM, O_MAXIMUM, O_INVERT,
                  O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY,
-                 O_AND, O_OR, O_NOT, O_EQUALS, O_NONE], doc="""            
+                 O_AND, O_OR, O_NOT, O_EQUALS, O_NONE], doc="""\
 Select the operation to perform. Note that if more than two images are
 chosen, then operations will be performed sequentially from first to
 last, e.g., for “Divide”, (Image1 / Image2) / Image3

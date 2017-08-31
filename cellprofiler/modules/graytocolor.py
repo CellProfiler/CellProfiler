@@ -207,7 +207,10 @@ weights.
         self.stack_channels = []
         self.stack_channel_count = cps.HiddenCount(self.stack_channels)
         self.add_stack_channel_cb(can_remove=False)
-        self.add_stack_channel = cps.DoSomething("Add an image from another channel to the stack", "Add another channel", self.add_stack_channel_cb)
+        self.add_stack_channel = cps.DoSomething("Add another channel", "Add another channel", self.add_stack_channel_cb,
+        doc="""\
+    Press this button to add another image to the stack.
+    """)
 
     def add_stack_channel_cb(self, can_remove=True):
         group = cps.SettingsGroup()

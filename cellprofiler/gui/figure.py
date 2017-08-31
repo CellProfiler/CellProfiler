@@ -32,6 +32,7 @@ import scipy.ndimage
 import scipy.sparse
 import skimage.exposure
 import wx
+import wx.grid
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -865,7 +866,7 @@ class Figure(wx.Frame):
             elif evt.Id == MENU_CONTRAST_LOG:
                 params['normalize'] = 'log'
             for artist in axes.artists:
-                if isinstance(artist, CPImageArtist):
+                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.kwargs["normalize"] = params['normalize']
                     self.figure.canvas.draw()
                     return
@@ -885,7 +886,7 @@ class Figure(wx.Frame):
                 params['interpolation'] = matplotlib.image.BICUBIC
             axes = self.subplot(x, y)
             for artist in axes.artists:
-                if isinstance(artist, CPImageArtist):
+                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.interpolation = params['interpolation']
                     artist.kwargs["interpolation"] = params["interpolation"]
                     self.figure.canvas.draw()
@@ -1497,7 +1498,7 @@ class Figure(wx.Frame):
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
-                    lnumbers = tools.renumber_labels_for_display(labels) + loffset
+                    lnumbers = cellprofiler.gui.tools.renumber_labels_for_display(labels) + loffset
                     mappable = matplotlib.cm.ScalarMappable(
                             cmap=cplabel[CPLD_ALPHA_COLORMAP])
                     mappable.set_clim(1, ltotal)

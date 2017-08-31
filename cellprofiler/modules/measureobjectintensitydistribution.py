@@ -167,7 +167,7 @@ useful information if used to classify phenotypes.
             minval=1,
             maxval=20,
             doc="""\
-(*Only if {wants_zernikes} is {Z_MAGNITUDES} or {Z_MAGNITUDES_AND_PHASE}*)
+(*Only if "{wants_zernikes}" is "{Z_MAGNITUDES}" or "{Z_MAGNITUDES_AND_PHASE}"*)
 
 This is the maximum radial moment that will be calculated. There are
 increasing numbers of azimuthal moments as you increase the radial

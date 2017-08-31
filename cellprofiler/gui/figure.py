@@ -15,11 +15,15 @@ import centrosome.cpmorphology
 import centrosome.outline
 import javabridge
 import matplotlib
+import matplotlib.axes
+import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
+import matplotlib.collections
 import matplotlib.colorbar
 import matplotlib.colors
 import matplotlib.gridspec
+import matplotlib.image
 import matplotlib.patches
 import matplotlib.pyplot
 import numpy
@@ -31,9 +35,9 @@ import wx
 import cellprofiler.gui
 import cellprofiler.gui.artist
 import cellprofiler.gui.help
+import cellprofiler.gui.tools
 import cellprofiler.object
 import cellprofiler.preferences
-import cellprofiler.gui.tools
 
 im = None
 

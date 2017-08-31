@@ -30,6 +30,7 @@ import numpy
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
+import skimage.exposure
 import wx
 
 import cellprofiler.gui
@@ -68,20 +69,6 @@ def log_transform(im):
     except:
         pass
     return orig
-
-
-def auto_contrast(im):
-    """returns image scaled to the interval [0,1]"""
-    im = im.copy()
-    if numpy.prod(im.shape) == 0:
-        return im
-    (minimum, maximum) = (im.min(), im.max())
-    # Check that the image isn't binary
-    if numpy.any((im > minimum) & (im < maximum)):
-        im -= im.min()
-        if im.max() > 0:
-            im /= im.max()
-    return im
 
 
 def is_color_image(im):
@@ -1516,9 +1503,11 @@ class Figure(wx.Frame):
                 image = log_transform(image)
         elif normalize:
             if is_color_image(image):
-                image = numpy.dstack([auto_contrast(image[:, :, ch]) for ch in range(image.shape[2])])
+                image = [skimage.exposure.rescale_intensity(image[:, :, ch]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
             else:
-                image = auto_contrast(image)
+                image = skimage.exposure.rescale_intensity(image)
 
         # Apply rgb mask to hide/show channels
         if is_color_image(image):

@@ -40,8 +40,6 @@ import cellprofiler.gui.tools
 import cellprofiler.object
 import cellprofiler.preferences
 
-im = None
-
 logger = logging.getLogger(__name__)
 
 #
@@ -563,14 +561,12 @@ class Figure(wx.Frame):
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
             self.find_image_for_axes(event.inaxes)
-            if im is not None:
-                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
-            elif isinstance(event.inaxes, matplotlib.axes.Axes):
-                for artist in event.inaxes.artists:
-                    if isinstance(
-                            artist, cellprofiler.gui.artist.CPImageArtist):
-                        fields += ["%s: %.4f" % (k, v) for k, v in
-                                   artist.get_channel_values(xi, yi).items()]
+
+            for artist in event.inaxes.artists:
+                if isinstance(
+                        artist, cellprofiler.gui.artist.CPImageArtist):
+                    fields += ["%s: %.4f" % (k, v) for k, v in
+                               artist.get_channel_values(xi, yi).items()]
         else:
             fields = []
         return fields

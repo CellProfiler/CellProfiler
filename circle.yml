@@ -1,0 +1,69 @@
+general:
+  branches:
+    only:
+      - beta
+      - features/circle
+      - stable
+machine:
+  environment:
+    CP_MYSQL_TEST_HOST: "127.0.0.1"
+    CP_MYSQL_TEST_PASSWORD: ""
+    CP_MYSQL_TEST_USER: "root"
+  xcode:
+    version: 8.2
+dependencies:
+  pre:
+    # Install CellProfiler’s Homebrew dependencies:
+    - brew update && brew install awscli mysql upx python wxpython
+
+    # Install CellProfiler’s Python dependencies and PyInstaller:
+    - pip2 install --upgrade cython numpy scipy
+  override:
+    # Install CellProfiler:
+    - pip2 install --editable ".[build, test]" --upgrade    
+# database:
+#   pre:
+#     # Start MySQL:
+#     - brew services start mysql
+test:
+  override:
+    # - python2 -m pytest
+    - echo "foo"
+deployment:
+  nightly:
+    branch: features/circle
+    commands:
+      # Create macOS application bundle:
+      - pyinstaller --noconfirm CellProfiler.spec
+
+      # Copy Info.plist to application bundle:
+      - cp Info.plist dist/CellProfiler.app/Contents
+      
+      # - >
+      #   codesign                                                    \
+      #     --deep                                                    \
+      #     -s "Developer ID Application: Allen Goodman (MERWFR65Q3)" \
+      #     dist/CellProfiler.app
+
+      # Create Apple Disk Image:
+      - >
+        hdiutil create                     \
+          -format UDRW                     \
+          -fs HFS+                         \
+          -fsargs "-c c=64,a=16,e=16"      \
+          -size 170000k                    \
+          -srcfolder dist/CellProfiler.app \
+          -volname CellProfiler            \
+          dist/CellProfiler-nightly.dmg
+      
+      # Upload to disk image to Amazon S3 (Simple Storage Service):
+      - >
+        aws s3 sync dist s3://cellprofiler-releases \
+          --acl public-read                         \
+          --delete                                  \
+          --exclude "*"                             \
+          --include "CellProfiler-nightly.dmg"
+  beta:
+    branch: beta
+  stable:
+    branch: stable

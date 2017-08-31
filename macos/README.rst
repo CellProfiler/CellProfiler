@@ -30,7 +30,7 @@ Installation
 
 .. code:: sh
 
-	$ brew cask install java
+    $ brew cask install java
 
 MySQL
 ~~~~~
@@ -42,7 +42,7 @@ Installation
 
 .. code:: sh
 
-	$ brew install mysql
+    $ brew install mysql
 
 Python
 ~~~~~~

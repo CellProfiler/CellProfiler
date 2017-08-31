@@ -48,13 +48,12 @@ logger = logging.getLogger(__name__)
 # Monkey-patch the backend canvas to only report the truly supported filetypes
 #
 mpl_filetypes = ["png", "pdf"]
+
 mpl_unsupported_filetypes = [
     ft for ft in matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes
     if ft not in mpl_filetypes]
 for ft in mpl_unsupported_filetypes:
     del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[ft]
-
-g_use_imshow = False
 
 
 def is_color_image(im):
@@ -1958,9 +1957,6 @@ def show_image(url, parent=None, needs_raise_after=True):
         # %$@ hack hack hack
         wx.CallAfter(lambda: frame.Raise())
     return True
-
-
-roundoff = True
 
 
 class CPOutlineArtist(matplotlib.collections.LineCollection):

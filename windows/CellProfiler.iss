@@ -21,9 +21,9 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Administrator\Documents\CellProfiler\LICENSE
-OutputBaseFilename=CellProfiler-nightly
-SetupIconFile=C:\Users\Administrator\Documents\CellProfiler\cellprofiler\data\CellProfilerIcon.ico
+LicenseFile=CellProfiler\LICENSE
+OutputBaseFilename=CellProfiler
+SetupIconFile=CellProfiler.ico
 Compression=lzma
 SolidCompression=yes
 

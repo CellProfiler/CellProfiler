@@ -81,23 +81,27 @@ This module can use one of two color schemes to combine images:
         # # # # # # # # # # # # # # # #
         self.red_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored red",
-                can_be_blank=True, blank_text=LEAVE_THIS_BLACK)
+                can_be_blank=True, blank_text=LEAVE_THIS_BLACK,
+                doc="""Select the input image to be displayed in red""")
 
         self.green_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored green",
-                can_be_blank=True, blank_text=LEAVE_THIS_BLACK)
+                can_be_blank=True, blank_text=LEAVE_THIS_BLACK,
+                doc="""Select the input image to be displayed in green""")
 
         self.blue_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored blue",
-                can_be_blank=True, blank_text=LEAVE_THIS_BLACK)
+                can_be_blank=True, blank_text=LEAVE_THIS_BLACK,
+                doc="""Select the input image to be displayed in blue""")
 
         self.rgb_image_name = cps.ImageNameProvider(
-                "Name the output image", "ColorImage")
+                "Name the output image", "ColorImage", doc="""Enter a name for the resulting image""")
 
         self.red_adjustment_factor = cps.Float(
                 "Relative weight for the red image",
                 value=1, minval=0, doc='''\
 *(Used only if %(SCHEME_RGB)s is selected as the color scheme)*
+
 Enter the relative weight for the red image. If all relative weights are
 equal, all three colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
@@ -108,6 +112,7 @@ weights.
                 "Relative weight for the green image",
                 value=1, minval=0, doc='''\
 *(Used only if %(SCHEME_RGB)s is selected as the color scheme)*
+
 Enter the relative weight for the green image. If all relative weights
 are equal, all three colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
@@ -118,6 +123,7 @@ weights.
                 "Relative weight for the blue image",
                 value=1, minval=0, doc='''\
 *(Used only if %(SCHEME_RGB)s is selected as the color scheme)*
+
 Enter the relative weight for the blue image. If all relative weights
 are equal, all three colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
@@ -130,24 +136,29 @@ weights.
         # # # # # # # # # # # # # #
         self.cyan_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored cyan", can_be_blank=True,
-                blank_text=LEAVE_THIS_BLACK)
+                blank_text=LEAVE_THIS_BLACK,
+                doc="""Select the input image to be displayed in cyan""")
 
         self.magenta_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored magenta", can_be_blank=True,
-                blank_text=LEAVE_THIS_BLACK)
+                blank_text=LEAVE_THIS_BLACK,
+                doc="""Select the input image to be displayed in magenta""")
 
         self.yellow_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored yellow", can_be_blank=True,
-                blank_text=LEAVE_THIS_BLACK)
+                blank_text=LEAVE_THIS_BLACK,
+                doc="""Select the input image to be displayed in yellow""")
 
         self.gray_image_name = cps.ImageNameSubscriber(
                 "Select the image that determines brightness", can_be_blank=True,
-                blank_text=LEAVE_THIS_BLACK)
+                blank_text=LEAVE_THIS_BLACK,
+                doc="""Select the input image that will determine each pixel's brightness""")
 
         self.cyan_adjustment_factor = cps.Float(
                 "Relative weight for the cyan image",
                 value=1, minval=0, doc='''\
 *(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+
 Enter the relative weight for the cyan image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
@@ -158,6 +169,7 @@ weights.
                 "Relative weight for the magenta image",
                 value=1, minval=0, doc='''\
 *(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+
 Enter the relative weight for the magenta image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
@@ -168,6 +180,7 @@ weights.
                 "Relative weight for the yellow image",
                 value=1, minval=0, doc='''\
 *(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+
 Enter the relative weight for the yellow image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
@@ -178,6 +191,7 @@ weights.
                 "Relative weight for the brightness image",
                 value=1, minval=0, doc='''\
 *(Used only if %(SCHEME_CMYK)s is selected as the color scheme)*
+
 Enter the relative weight for the brightness image. If all relative
 weights are equal, all colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
@@ -193,7 +207,7 @@ weights.
         self.stack_channels = []
         self.stack_channel_count = cps.HiddenCount(self.stack_channels)
         self.add_stack_channel_cb(can_remove=False)
-        self.add_stack_channel = cps.DoSomething("", "Add another channel", self.add_stack_channel_cb)
+        self.add_stack_channel = cps.DoSomething("Add an image from another channel to the stack", "Add another channel", self.add_stack_channel_cb)
 
     def add_stack_channel_cb(self, can_remove=True):
         group = cps.SettingsGroup()
@@ -202,19 +216,22 @@ weights.
         group.append("image_name", cps.ImageNameSubscriber(
                 "Image name", cps.NONE,
                 doc='''\
-*Used only if %(SCHEME_STACK)s or %(SCHEME_COMPOSITE)s is chosen*
+*(Used only if %(SCHEME_STACK)s or %(SCHEME_COMPOSITE)s is chosen)*
+
 Select the input image to add to the stacked image
 ''' % globals()))
         group.append("color", cps.Color(
                 "Color", default_color,
                 doc='''\
-*Used only if %(SCHEME_COMPOSITE)s is chosen*
+*(Used only if %(SCHEME_COMPOSITE)s is chosen)*
+
 The color to be assigned to the above image.
 ''' % globals()))
         group.append("weight", cps.Float(
                 "Weight", 1.0, minval=.5 / 255,
                 doc='''\
-*Used only if %(SCHEME_COMPOSITE)s is chosen*
+*(Used only if %(SCHEME_COMPOSITE)s is chosen)*
+
 The weighting of the above image relative to the others. The image’s
 pixel values are multiplied by this weight before assigning the color.
 ''' % globals()))

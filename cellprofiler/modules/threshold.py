@@ -126,7 +126,7 @@ Both the automatic and manual options have advantages and disadvantages.
 
     |image1|  The manual method is not robust with regard to slight changes
     in lighting/staining conditions between images. The automatic methods
-    may ocasionally produce a poor threshold for unusual or artifactual
+    may occasionally produce a poor threshold for unusual or artifactual
     images. It also takes a small amount of time to calculate, which can add
     to processing time for analysis runs on a large number of images.
 
@@ -154,6 +154,7 @@ There are a number of methods for finding thresholds automatically:
        splitting the image into either two classes (foreground and
        background) or three classes (foreground, mid-level, and background).
        See the help below for more details.
+       
 -  *{TM_ROBUST_BACKGROUND}:* This method assumes that the background
    distribution approximates a Gaussian by trimming the brightest and
    dimmest 5% of pixel intensities. It then calculates the mean and
@@ -164,7 +165,15 @@ There are a number of methods for finding thresholds automatically:
        is background. It can also be helpful if your images vary in overall
        brightness, but the objects of interest are consistently *N* times
        brighter than the background level of the image.
--  *{TM_LI}:*
+       
+-  *{TM_LI}:* The distributions of intensities that define foreground and background are
+   used as estimates of probability distributions that produce the intensities of foreground
+   and background pixels. For each possible threshold the cross-entropy between the foreground
+   and background distributions is calculated and the lowest cross-entropy value is chosen as
+   the final threshold. The lowest cross-entropy can be interpreted as the value where the information
+   between the two probability distributions is the highest; given a pixel of an arbitrary intensity, 
+   the likelihood it would come from either foreground or background would be at its highest.
+   
 -  *{TM_MANUAL}:* Enter a single value between zero and one that
    applies to all cycles and is independent of the input image.
    
@@ -174,6 +183,7 @@ There are a number of methods for finding thresholds automatically:
        0.5 should be chosen). If the input image is already binary (i.e.,
        where the foreground is 1 and the background is 0), a manual value of
        0.5 will identify the objects.
+       
 -  *{TM_MEASUREMENT}:* Use a prior image measurement as the threshold.
    The measurement should have values between zero and one. This
    strategy can be used to apply a pre-calculated threshold imported as

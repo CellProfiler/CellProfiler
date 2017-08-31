@@ -148,7 +148,7 @@ startup_main = '''<html>
 </tr>
 <tr>
     <td width="1">&nbsp;</td>
-    <td colspan="2"><a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe">Load</a> an example pipeline, then click on the "Analyze Images" button.</td>
+    <td colspan="2"><a href="loadexample:https://raw.githubusercontent.com/CellProfiler/examples/{}/ExampleFly/ExampleFlyURL.cppipe">Load</a> an example pipeline, then click on the "Analyze Images" button.</td>
 </tr>
 <tr>
     <td colspan="3"><b><font size="+2">Build your own pipeline</font></b></td>

@@ -57,20 +57,6 @@ for ft in mpl_unsupported_filetypes:
 g_use_imshow = False
 
 
-def log_transform(im):
-    """returns log(image) scaled to the interval [0,1]"""
-    orig = im
-    try:
-        im = im.copy()
-        im[numpy.isnan(im)] = 0
-        (minimum, maximum) = (im[im > 0].min(), im[numpy.isfinite(im)].max())
-        if (maximum > minimum) and (maximum > 0):
-            return (numpy.log(im.clip(minimum, maximum)) - numpy.log(minimum)) / (numpy.log(maximum) - numpy.log(minimum))
-    except:
-        pass
-    return orig
-
-
 def is_color_image(im):
     return im.ndim == 3 and im.shape[2] >= 2
 
@@ -1498,9 +1484,11 @@ class Figure(wx.Frame):
         # Perform normalization
         if normalize == 'log':
             if is_color_image(image):
-                image = numpy.dstack([log_transform(image[:, :, ch]) for ch in range(image.shape[2])])
+                image = [skimage.exposure.adjust_log(image[:, :, ch]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
             else:
-                image = log_transform(image)
+                image = skimage.exposure.adjust_log(image)
         elif normalize:
             if is_color_image(image):
                 image = [skimage.exposure.rescale_intensity(image[:, :, ch]) for ch in range(image.shape[2])]

@@ -324,7 +324,7 @@ class Figure(wx.Frame):
         self.MenuBar.Append(cellprofiler.gui.help.make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
-        self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
+        self.navtoolbar = NavigationToolbar(self.figure.canvas)
         if wx.VERSION < (2, 9, 1, 1, ''):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
@@ -2106,8 +2106,11 @@ NAV_MODE_PAN = 'pan/zoom'
 NAV_MODE_NONE = ''
 
 
-class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
+class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
     """Navigation toolbar for EditObjectsDialog"""
+
+    def __init__(self, **kwargs):
+        super(NavigationToolbar, self).__init__(kwargs)
 
     def set_cursor(self, cursor):
         """Set the cursor based on the mode"""
@@ -2120,27 +2123,33 @@ class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2Wx
         """Toggle the current mode to off"""
         if self.mode == NAV_MODE_ZOOM:
             self.zoom()
+
             if 'Zoom' in self.wx_ids:
                 self.ToggleTool(self.wx_ids['Zoom'], False)
         elif self.mode == NAV_MODE_PAN:
             self.pan()
+
             if 'Pan' in self.wx_ids:
                 self.ToggleTool(self.wx_ids['Pan'], False)
 
     def zoom(self, *args):
         matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.zoom(self, *args)
+
         self.__send_mode_change_event()
 
     def pan(self, *args):
         matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.pan(self, *args)
+
         self.__send_mode_change_event()
 
     def is_home(self):
         """Return True if zoom/pan is at the home position"""
         if self._views._pos <= 0:
             return True
+
         if self._views[0] == self._views[-1]:
             return True
+
         return False
 
     def reset(self):
@@ -2148,7 +2157,9 @@ class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2Wx
         # We differ from the reference implementation because we clear
         # the view stacks.
         self._views.clear()
+
         self._positions.clear()
+
         self.home()
 
     def save(self, event):
@@ -2158,12 +2169,15 @@ class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2Wx
         #                    you save using the icon.
         #
         parent = self.GetTopLevelParent()
+
         if isinstance(parent, Figure):
             parent.on_file_save(event)
         else:
-            super(CPNavigationToolbar, self).save(event)
+            super(NavigationToolbar, self).save(event)
 
     def __send_mode_change_event(self):
         event = wx.NotifyEvent(EVT_NAV_MODE_CHANGE.evtType[0])
+
         event.EventObject = self
+
         self.GetEventHandler().ProcessEvent(event)

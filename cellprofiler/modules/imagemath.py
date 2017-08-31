@@ -195,7 +195,7 @@ calculate the median intensity, then select *%(IM_MEASUREMENT)s* and
 use the median intensity measurement as the denominator
 """ % globals()))
 
-        group.append("image_name", cellprofiler.setting.ImageNameSubscriber("", "", doc="""\
+        group.append("image_name", cellprofiler.setting.ImageNameSubscriber("Select the image", "", doc="""\
 Select the image that you want to use for this operation."""))
 
         group.append("measurement", cellprofiler.setting.Measurement(
@@ -204,7 +204,7 @@ This is a measurement made on the image. The value of the
 measurement is used for the operand for all of the pixels of the
 other operand's image."""))
 
-        group.append("factor", cellprofiler.setting.Float("", 1, doc="""\
+        group.append("factor", cellprofiler.setting.Float("Multiply the image by", 1, doc="""\
 Enter the number that you would like to multiply the above image by. This multiplication
 is applied before other operations."""))
 
@@ -269,13 +269,20 @@ is applied before other operations."""))
         return result
 
     def help_settings(self):
-        result = [self.operation, self.output_image_name, ]
-        for image in self.images:
-            result += [image.image_or_measurement, image.image_name,
-                       image.measurement, image.factor]
-        result += [self.exponent, self.after_factor, self.addend,
-                   self.truncate_low, self.truncate_high, self.ignore_mask]
-        return result
+        return [
+            self.operation,
+            self.output_image_name,
+            self.images[0].image_or_measurement,
+            self.images[0].image_name,
+            self.images[0].measurement,
+            self.images[0].factor,
+            self.exponent,
+            self.after_factor,
+            self.addend,
+            self.truncate_low,
+            self.truncate_high,
+            self.ignore_mask
+        ]
 
     def prepare_settings(self, setting_values):
         value_count = len(setting_values)

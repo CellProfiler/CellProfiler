@@ -1,5 +1,5 @@
-macOS Instructions
-==================
+macOS
+=====
 
 Prerequisites
 -------------
@@ -21,7 +21,9 @@ Installation
 Java
 ~~~~
 
-`Java`_ is a general-purpose computer programming language that is concurrent, class-based, object-oriented, and specifically designed to have as few implementation dependencies as possible.
+`Java`_ is a general-purpose computer programming language that is concurrent, 
+class-based, object-oriented, and specifically designed to have as few 
+implementation dependencies as possible.
 
 Installation
 ^^^^^^^^^^^^
@@ -74,11 +76,9 @@ wxWidgets
 ~~~~~~~~~
 
 `wxWidgets`_ is a widget toolkit and tools library for creating
-graphical user interfaces (GUIs) for cross-platform applications.
-
-`wxPython`_ is a wrapper for the cross-platform GUI API (often referred
-to as a “toolkit”) wxWidgets (which is written in C++) for the Python
-programming language.
+graphical user interfaces (GUIs) for cross-platform applications. `wxPython`_ 
+is a wrapper for the cross-platform GUI API (often referred to as a “toolkit”) 
+wxWidgets (which is written in C++) for the Python programming language.
 
 Installation
 ^^^^^^^^^^^^
@@ -95,7 +95,7 @@ that contains the macOS `package`_ (CellProfiler.app):
 
 .. code:: sh
 
-    $ make CellProfiler.dmg
+    $ make
 
 .. _Apple Disk Image: https://en.wikipedia.org/wiki/Apple_Disk_Image
 .. _Homebrew: https://brew.sh

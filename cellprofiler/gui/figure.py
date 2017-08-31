@@ -1,41 +1,45 @@
 # coding=utf-8
-""" figure.py - provides a frame with a figure inside
+
+"""
+figure.py - provides a frame with a figure inside
 """
 
-import cellprofiler.gui
-import cellprofiler.gui.artist
-import cellprofiler.gui.help
-import cellprofiler.preferences
-import cellprofiler.preferences
-import cellprofiler.object
-import centrosome.cpmorphology
-import centrosome.outline
-import tools
 import csv
 import functools
-import javabridge
 import logging
-import math
+import os
+import sys
+import uuid
+
+import centrosome.cpmorphology
+import centrosome.outline
+import javabridge
 import matplotlib
-import matplotlib.backends.backend_wxagg
+import matplotlib.axes
+import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
+import matplotlib.collections
 import matplotlib.colorbar
 import matplotlib.colors
 import matplotlib.gridspec
+import matplotlib.image
 import matplotlib.patches
 import matplotlib.pyplot
 import numpy
 import numpy.ma
-import os
 import scipy.ndimage
 import scipy.sparse
-import skimage.color
-import sys
-import uuid
+import skimage.exposure
 import wx
+import wx.grid
 
-im = None
+import cellprofiler.gui
+import cellprofiler.gui.artist
+import cellprofiler.gui.help
+import cellprofiler.gui.tools
+import cellprofiler.object
+import cellprofiler.preferences
 
 logger = logging.getLogger(__name__)
 
@@ -43,45 +47,16 @@ logger = logging.getLogger(__name__)
 # Monkey-patch the backend canvas to only report the truly supported filetypes
 #
 mpl_filetypes = ["png", "pdf"]
+
 mpl_unsupported_filetypes = [
     ft for ft in matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes
     if ft not in mpl_filetypes]
 for ft in mpl_unsupported_filetypes:
     del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[ft]
 
-g_use_imshow = False
 
-
-def log_transform(im):
-    """returns log(image) scaled to the interval [0,1]"""
-    orig = im
-    try:
-        im = im.copy()
-        im[numpy.isnan(im)] = 0
-        (minimum, maximum) = (im[im > 0].min(), im[numpy.isfinite(im)].max())
-        if (maximum > minimum) and (maximum > 0):
-            return (numpy.log(im.clip(minimum, maximum)) - numpy.log(minimum)) / (numpy.log(maximum) - numpy.log(minimum))
-    except:
-        pass
-    return orig
-
-
-def auto_contrast(im):
-    """returns image scaled to the interval [0,1]"""
-    im = im.copy()
-    if numpy.prod(im.shape) == 0:
-        return im
-    (minimum, maximum) = (im.min(), im.max())
-    # Check that the image isn't binary
-    if numpy.any((im > minimum) & (im < maximum)):
-        im -= im.min()
-        if im.max() > 0:
-            im /= im.max()
-    return im
-
-
-def is_color_image(im):
-    return im.ndim == 3 and im.shape[2] >= 2
+def is_color_image(image):
+    return image.ndim == 3 and image.shape[2] >= 2
 
 
 COLOR_NAMES = ['Red', 'Green', 'Blue', 'Yellow', 'Cyan', 'Magenta', 'White']
@@ -123,40 +98,6 @@ def wraparound(sequence):
     while True:
         for l in sequence:
             yield l
-
-
-def make_1_or_3_channels(im):
-    if im.ndim == 2 or im.shape[2] == 1:
-        return im.astype(numpy.float32)
-    if im.shape[2] == 3:
-        return (im * 255).clip(0, 255).astype(numpy.uint8)
-    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.float32)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
-        for idx, v in enumerate(weights):
-            out[:, :, idx] += v * im[:, :, chanidx]
-    return (out * 255).clip(0, 255).astype(numpy.uint8)
-
-
-def make_3_channels_float(im):
-    if im.ndim == 3 and im.shape[2] == 1:
-        im = im[:, :, 0]
-    if im.ndim == 2:
-        return numpy.dstack((im, im, im)).astype(numpy.double).clip(0, 1)
-    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.double)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
-        for idx, v in enumerate(weights):
-            out[:, :, idx] += v * im[:, :, chanidx]
-    return out.clip(0, 1)
-
-
-def getbitmap(im):
-    if im.ndim == 2:
-        im = (255 * numpy.dstack((im, im, im))).astype(numpy.uint8)
-    h, w, _ = im.shape
-    outim = wx.EmptyImage(w, h)
-    b = buffer(im)  # make sure buffer exists through the remainder of function
-    outim.SetDataBuffer(b)
-    return outim.ConvertToBitmap()
 
 
 def match_rgbmask_to_image(rgb_mask, image):
@@ -551,27 +492,27 @@ class Figure(wx.Frame):
         elif not self.mouse_mode == MODE_NONE:
             self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
 
-    def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
+    def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
         fields = []
         x, y = [int(round(xy)) for xy in xi, yi]
-        if not self.in_bounds(im, x, y):
+        if not self.in_bounds(image, x, y):
             return fields
-        if im.dtype.type == numpy.uint8:
-            im = im.astype(numpy.float32) / 255.0
-        if im.ndim == 2:
-            fields += ["Intensity: %.4f" % (im[y, x])]
-        elif im.ndim == 3 and im.shape[2] == 3:
-            fields += ["Red: %.4f" % (im[y, x, 0]),
-                       "Green: %.4f" % (im[y, x, 1]),
-                       "Blue: %.4f" % (im[y, x, 2])]
-        elif im.ndim == 3:
-            fields += ["Channel %d: %.4f" % (idx + 1, im[y, x, idx]) for idx in range(im.shape[2])]
+        if image.dtype.type == numpy.uint8:
+            image = image.astype(numpy.float32) / 255.0
+        if image.ndim == 2:
+            fields += ["Intensity: %.4f" % (image[y, x])]
+        elif image.ndim == 3 and image.shape[2] == 3:
+            fields += ["Red: %.4f" % (image[y, x, 0]),
+                       "Green: %.4f" % (image[y, x, 1]),
+                       "Blue: %.4f" % (image[y, x, 2])]
+        elif image.ndim == 3:
+            fields += ["Channel %d: %.4f" % (idx + 1, image[y, x, idx]) for idx in range(image.shape[2])]
         return fields
 
     @staticmethod
-    def in_bounds(im, xi, yi):
+    def in_bounds(image, xi, yi):
         """Return false if xi or yi are outside of the bounds of the image"""
-        return not (im is None or xi >= im.shape[1] or yi >= im.shape[0]
+        return not (image is None or xi >= image.shape[1] or yi >= image.shape[0]
                     or xi < 0 or yi < 0)
 
     def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
@@ -579,7 +520,6 @@ class Figure(wx.Frame):
             return
         xi = int(event.xdata + .5)
         yi = int(event.ydata + .5)
-        im = None
         fields = self.get_fields(event, yi, xi, x1)
 
         if self.mouse_down is not None:
@@ -622,14 +562,12 @@ class Figure(wx.Frame):
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
             self.find_image_for_axes(event.inaxes)
-            if im is not None:
-                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
-            elif isinstance(event.inaxes, matplotlib.axes.Axes):
-                for artist in event.inaxes.artists:
-                    if isinstance(
-                            artist, cellprofiler.gui.artist.CPImageArtist):
-                        fields += ["%s: %.4f" % (k, v) for k, v in
-                                   artist.get_channel_values(xi, yi).items()]
+
+            for artist in event.inaxes.artists:
+                if isinstance(
+                        artist, cellprofiler.gui.artist.CPImageArtist):
+                    fields += ["%s: %.4f" % (k, v) for k, v in
+                               artist.get_channel_values(xi, yi).items()]
         else:
             fields = []
         return fields
@@ -928,7 +866,7 @@ class Figure(wx.Frame):
             elif evt.Id == MENU_CONTRAST_LOG:
                 params['normalize'] = 'log'
             for artist in axes.artists:
-                if isinstance(artist, CPImageArtist):
+                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.kwargs["normalize"] = params['normalize']
                     self.figure.canvas.draw()
                     return
@@ -948,7 +886,7 @@ class Figure(wx.Frame):
                 params['interpolation'] = matplotlib.image.BICUBIC
             axes = self.subplot(x, y)
             for artist in axes.artists:
-                if isinstance(artist, CPImageArtist):
+                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.interpolation = params['interpolation']
                     artist.kwargs["interpolation"] = params["interpolation"]
                     self.figure.canvas.draw()
@@ -1507,14 +1445,18 @@ class Figure(wx.Frame):
         # Perform normalization
         if normalize == 'log':
             if is_color_image(image):
-                image = numpy.dstack([log_transform(image[:, :, ch]) for ch in range(image.shape[2])])
+                image = [skimage.exposure.adjust_log(image[:, :, ch]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
             else:
-                image = log_transform(image)
+                image = skimage.exposure.adjust_log(image)
         elif normalize:
             if is_color_image(image):
-                image = numpy.dstack([auto_contrast(image[:, :, ch]) for ch in range(image.shape[2])])
+                image = [skimage.exposure.rescale_intensity(image[:, :, ch]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
             else:
-                image = auto_contrast(image)
+                image = skimage.exposure.rescale_intensity(image)
 
         # Apply rgb mask to hide/show channels
         if is_color_image(image):
@@ -1556,7 +1498,7 @@ class Figure(wx.Frame):
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
-                    lnumbers = tools.renumber_labels_for_display(labels) + loffset
+                    lnumbers = cellprofiler.gui.tools.renumber_labels_for_display(labels) + loffset
                     mappable = matplotlib.cm.ScalarMappable(
                             cmap=cplabel[CPLD_ALPHA_COLORMAP])
                     mappable.set_clim(1, ltotal)
@@ -2013,9 +1955,6 @@ def show_image(url, parent=None, needs_raise_after=True):
     return True
 
 
-roundoff = True
-
-
 class CPOutlineArtist(matplotlib.collections.LineCollection):
     """An artist that is a plot of the outline around an object
 
@@ -2087,10 +2026,10 @@ def get_crosshair_cursor():
             buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
             abuf = numpy.ones((16, 16), dtype='uint8') * 255
             abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
-            im = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            __crosshair_cursor = wx.CursorFromImage(im)
+            image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
+            __crosshair_cursor = wx.CursorFromImage(image)
         else:
             __crosshair_cursor = wx.CROSS_CURSOR
     return __crosshair_cursor

@@ -1333,11 +1333,14 @@ class Figure(wx.Frame):
         :return:
         """
         if background_image is None:
-            background_image = numpy.zeros_like(labels, dtype=numpy.float32)
+            background_image = numpy.zeros_like(image, dtype=numpy.float32)
+            opacity = 1.0
+        else:
+            opacity = 0.7
 
         label_image = cellprofiler.object.overlay_labels(
             labels=image,
-            opacity=0.7,
+            opacity=opacity,
             pixel_data=background_image
         )
 

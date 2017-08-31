@@ -153,7 +153,7 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 
-import applythreshold
+import threshold
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
@@ -182,7 +182,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
     category = "Object Processing"
 
     def __init__(self):
-        self.apply_threshold = applythreshold.ApplyThreshold()
+        self.apply_threshold = threshold.Threshold()
 
         super(IdentifySecondaryObjects, self).__init__()
 
@@ -510,7 +510,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
-            "ApplyThreshold",
+            "Threshold",
             False
         )
 

@@ -1047,22 +1047,6 @@ class ImageSegmentation(Module):
     def display(self, workspace, figure):
         layout = (2, 1)
 
-        if workspace.display_data.dimensions == 3:
-            overlay = numpy.zeros(workspace.display_data.x_data.shape + (3,))
-
-            for index, data in enumerate(workspace.display_data.x_data):
-                overlay[index] = skimage.color.label2rgb(
-                    workspace.display_data.y_data[index],
-                    image=data,
-                    bg_label=0
-                )
-        else:
-            overlay = skimage.color.label2rgb(
-                workspace.display_data.y_data,
-                image=workspace.display_data.x_data,
-                bg_label=0
-            )
-
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions,
             subplots=layout
@@ -1076,9 +1060,10 @@ class ImageSegmentation(Module):
             y=0
         )
 
-        figure.subplot_imshow(
+        figure.subplot_imshow_labels(
+            background_image=workspace.display_data.x_data,
             dimensions=workspace.display_data.dimensions,
-            image=overlay,
+            image=workspace.display_data.y_data,
             x=1,
             y=0
         )

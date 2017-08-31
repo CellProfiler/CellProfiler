@@ -85,7 +85,7 @@ class IdentifyDeadWorms(cpm.Module):
             The name of a binary image from a previous module.
             <b>IdentifyDeadWorms</b> will use this image to establish the
             foreground and background for the fitting operation. You can use
-            <b>ApplyThreshold</b> to threshold a grayscale image and
+            <b>Threshold</b> to threshold a grayscale image and
             create the binary mask. You can also use a module such as
             <b>IdentifyPrimaryObjects</b> to label each worm and then use
             <b>ConvertObjectsToImage</b> to make the result a mask.""")

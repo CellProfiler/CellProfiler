@@ -368,18 +368,20 @@ automatically, by overriding the automatic threshold.
             value=0.0,
             minval=0.0,
             maxval=1.0,
-            doc="""
-            <i>(Used only if Manual selected for thresholding method)</i><br>
-            Enter the value that will act as an absolute threshold for the images, a value from 0 to 1.
+            doc="""\
+*(Used only if Manual selected for thresholding method)*
+Enter the value that will act as an absolute threshold for the images, a
+value from 0 to 1.
             """
         )
 
         self.thresholding_measurement = cellprofiler.setting.Measurement(
             "Select the measurement to threshold with",
             lambda: cellprofiler.measurement.IMAGE,
-            doc="""
-            <i>(Used only if Measurement is selected for thresholding method)</i><br>
-            Choose the image measurement that will act as an absolute threshold for the images.
+            doc="""\
+*(Used only if Measurement is selected for thresholding method)*
+Choose the image measurement that will act as an absolute threshold for
+the images.
             """
         )
 
@@ -532,7 +534,7 @@ intensities.
         self.adaptive_window_size = cellprofiler.setting.Integer(
             "Size of adaptive window",
             50,
-            doc="""
+            doc="""\
             Enter the window for the adaptive method. For example, you may want to use a multiple of the
             largest expected object size.
             """

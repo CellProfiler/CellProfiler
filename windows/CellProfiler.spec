@@ -1,0 +1,74 @@
+# -*- mode: python -*-
+
+import os
+import os.path
+
+import PyInstaller.compat
+import PyInstaller.utils.hooks
+
+binaries = []
+
+block_cipher = None
+
+datas = []
+
+datas += PyInstaller.utils.hooks.collect_data_files("bioformats")
+datas += PyInstaller.utils.hooks.collect_data_files("cellprofiler")
+datas += PyInstaller.utils.hooks.collect_data_files("javabridge")
+datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
+datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
+
+datas += [
+    ("CellProfiler/cellprofiler/data/images/*", "cellprofiler/data/images")
+]
+
+hiddenimports = []
+
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
+
+hiddenimports += [
+    "pywt._extensions._cwt"
+]
+
+a = Analysis(
+    [
+        'CellProfiler/CellProfiler.py'
+    ],
+    binaries=binaries,
+    cipher=block_cipher,
+    datas=datas,
+    excludes=[],
+    hiddenimports=hiddenimports,
+    hookspath=[],
+    pathex=[
+        'CellProfiler'
+    ],
+    runtime_hooks=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False
+)
+
+# a.binaries += [
+#     ("libjvm.dylib", java_pathname, "BINARY")
+# ]
+
+pyz = PYZ(
+    a.pure,
+    a.zipped_data,
+    cipher=block_cipher
+)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    console=False,
+    debug=False,
+    icon="CellProfiler.ico",
+    name="CellProfiler",
+    strip=False,
+    upx=True
+)

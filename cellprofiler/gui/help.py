@@ -911,7 +911,7 @@ for more details on how to use this utility.</li>""" % globals() + \
                        to the directory where you have installed CellProfiler on the cluster. <br>
                        A single batch can be submitted with the following command:<br>
                        <code>
-                       ./python CellProfiler.py -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
+                       ./python -m cellprofiler -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
                        </code>
                        This command submits the batch file to CellProfiler and specifies that CellProfiler run in a
                        batch mode without its user interface to process the pipeline.
@@ -944,7 +944,7 @@ for more details on how to use this utility.</li>""" % globals() + \
                        processed to generate a script that can invoke the jobs in a cluster-computing context.<br>
                        The above notes assume that you are running CellProfiler using our source code (see
                        "Developer's Guide" under Help for more details). If you are using the compiled version,
-                       you would replace <code>./python CellProfiler.py</code> with the CellProfiler
+                       you would replace <code>./python -m cellprofiler</code> with the CellProfiler
                        executable file itself and run it from the installation folder.</p></li>
                        </ol>
 
@@ -956,7 +956,7 @@ for more details on how to use this utility.</li>""" % globals() + \
                        processes to make sure all batches complete. Batches that fail for transient reasons
                        can be resubmitted.</p>
 
-                       <p>To see documentation for all available arguments to CellProfiler, type <code>CellProfiler.py
+                       <p>To see documentation for all available arguments to CellProfiler, type <code>cellprofiler
                        --help</code> to see a listing.</p>
 
                        <p>For additional help on batch processing, refer to our

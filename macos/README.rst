@@ -72,13 +72,12 @@ Installation
 
     $ brew install upx
 
-wxWidgets
-~~~~~~~~~
+wxPython
+~~~~~~~~
 
-`wxWidgets`_ is a widget toolkit and tools library for creating
-graphical user interfaces (GUIs) for cross-platform applications. `wxPython`_ 
-is a wrapper for the cross-platform GUI API (often referred to as a “toolkit”) 
-wxWidgets (which is written in C++) for the Python programming language.
+`wxPython`_ is a wrapper for the cross-platform GUI API (often referred to as 
+a “toolkit”) `wxWidgets`_ (which is written in C++) for the Python programming 
+language.
 
 Installation
 ^^^^^^^^^^^^

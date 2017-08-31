@@ -6,7 +6,8 @@ IdentifyPrimaryObjects
 
 **IdentifyPrimaryObjects** identifies biological components of
 interest in grayscale images containing bright objects on a dark
-background.
+background.  This module is designed to identify objects in 2D images;
+please use the **Watershed** module for identification of objects in 3D.
 
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,6 +42,7 @@ the following qualities:
 -  The image should be grayscale.
 -  The foreground (i.e, regions of interest) are lighter than the
    background.
+-  The image should be 2D, not volumetric.
 
 If this is not the case, other modules can be used to pre-process the
 images to ensure they are in the proper form:
@@ -50,6 +52,20 @@ images to ensure they are in the proper form:
    **ImageMath** module.
 -  If you are working with color images, they must first be converted to
    grayscale using the **ColorToGray** module.
+
+What are the advanced settings?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**IdentifyPrimaryObjects** allows you to tweak your settings in many ways;
+so many so that it can often become confusing where you should start.  
+Using **IdentifyPrimaryObjects** with *'Use advanced settings?'* set to *'No'* 
+allows you to quickly try to segment your objects based only the size and input
+image; CellProfiler will then use its built-in defaults to decide how to set the 
+threshold and how to break clumped objects apart.  If you are happy with the 
+segmentation produced by the default settings, you can then move on to 
+construct the rest of your pipeline; if not, you can set 
+*'Use advanced settings?'* to *'Yes'* which will allow you to fully tweak and 
+customize all the segmentation settings.
 
 What do the settings mean?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -168,8 +184,8 @@ References
 .. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
 
 
-See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, and
-**IdentifyObjectsManually** 
+See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, 
+**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
 .. |image0| image:: memory:thumb-up.png
 .. |image1| image:: memory:thumb-down.png
@@ -294,37 +310,41 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
 
     def create_settings(self):
         super(IdentifyPrimaryObjects, self).create_settings()
-
+        
+        self.x_name.text = "Select the input image"
         self.x_name.doc = "Select the image that you want to use to identify objects."
-
+        
+        self.y_name.text = "Name the primary objects to be identified"
         self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
         self.size_range = cellprofiler.setting.IntegerRange(
             SIZE_RANGE_SETTING_TEXT,
             (10, 40),
             minval=1,
-            doc="""
-            This setting allows the user to make a distinction on the basis of size, which can be used in
-            conjunction with the <i>{EXCLUDE_SIZE_SETTING_TEXT}</i> setting below to remove objects that fail
-            this criteria.
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; The units used here are pixels so that it
-                is easy to zoom in on objects and determine typical diameters.
-                {HELP_ON_MEASURING_DISTANCES}</dd>
-            </dl>
-            <p>A few important notes:</p>
-            <ul>
-                <li>Several other settings make use of the minimum object size entered here, whether the <i>
-                    {EXCLUDE_SIZE_SETTING_TEXT}</i> setting is used or not:
-                    <ul>
-                        <li><i>{AUTOMATIC_SMOOTHING_SETTING_TEXT}</i></li>
-                        <li><i>{AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT}</i></li>
-                    </ul>
-                </li>
-                <li>For non-round objects, the diameter here is actually the "equivalent diameter", i.e., the
-                diameter of a circle with the same area as the object.</li>
-            </ul>
-            <p></p>
+            doc="""\
+This setting allows the user to make a distinction on the basis of size,
+which can be used in conjunction with the
+*{EXCLUDE_SIZE_SETTING_TEXT}* setting below to remove objects that
+fail this criteria.
+
+    |image0|  The units used here are pixels so that it is easy to zoom in
+    on objects and determine typical diameters.
+    {HELP_ON_MEASURING_DISTANCES}
+    
+A few important notes:
+
+-  Several other settings make use of the minimum object size entered
+   here, whether the "*{EXCLUDE_SIZE_SETTING_TEXT}*" setting is used or
+   not:
+
+   -  "*{AUTOMATIC_SMOOTHING_SETTING_TEXT}*"
+   -  "*{AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT}*"
+
+-  For non-round objects, the diameter here is actually the “equivalent
+   diameter”, i.e., the diameter of a circle with the same area as the
+   object.
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{
                 "EXCLUDE_SIZE_SETTING_TEXT": EXCLUDE_SIZE_SETTING_TEXT,
                 "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
@@ -337,16 +357,20 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.exclude_size = cellprofiler.setting.Binary(
             EXCLUDE_SIZE_SETTING_TEXT,
             True,
-            doc="""
-            Select <i>{YES}</i> to discard objects outside the range you specified in the
-            <i>{SIZE_RANGE_SETTING_TEXT}</i> setting. Select <i>{NO}</i> to ignore this criterion.
-            <p>Objects discarded based on size are outlined in magenta in the module's display. See also the
-            <b>FilterObjects</b> module to further discard objects based on some other measurement.</p>
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; Select <i>{YES}</i> allows you to exclude
-                small objects (e.g., dust, noise, and debris) or large objects (e.g., large clumps) if
-                desired.</dd>
-            </dl>
+            doc="""\
+Select "*{YES}*" to discard objects outside the range you specified in the
+*{SIZE_RANGE_SETTING_TEXT}* setting. Select "*{NO}*" to ignore this
+criterion.
+
+Objects discarded based on size are outlined in magenta in the module’s
+display. See also the **FilterObjects** module to further discard
+objects based on some other measurement.
+
+    |image0|  Select "*{YES}*" allows you to exclude small objects (e.g.,
+    dust, noise, and debris) or large objects (e.g., large clumps) if
+    desired.
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
@@ -358,18 +382,21 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.exclude_border_objects = cellprofiler.setting.Binary(
             "Discard objects touching the border of the image?",
             True,
-            doc="""
-            Choose <i>{YES}</i> to discard objects that touch the border of the image. Choose <i>{NO}</i> to
-            ignore this criterion.
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">; Removing objects that touch the image
-                border is useful when you do not want to make downstream measurements of objects that are not
-                fully within the field of view. For example, morphological measurements obtained from a portion
-                of an object would not be accurate.</dd>
-            </dl>
-            <p>Objects discarded due to border touching are outlined in yellow in the module's display. Note
-            that if a per-object thresholding method is used or if the image has been previously cropped or
-            masked, objects that touch the border of the cropped or masked region may also discarded.</p>
+            doc="""\
+Choose "*{YES}*" to discard objects that touch the border of the image.
+Choose "*{NO}*" to ignore this criterion.
+
+    |image0| Removing objects that touch the image border is useful when
+    you do not want to make downstream measurements of objects that are not
+    fully within the field of view. For example, morphological measurements
+    obtained from a portion of an object would not be accurate.
+
+Objects discarded due to border touching are outlined in yellow in the
+module’s display. Note that if a per-object thresholding method is used
+or if the image has been previously cropped or masked, objects that
+touch the border of the cropped or masked region may also discarded.
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO,
@@ -380,67 +407,80 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.unclump_method = cellprofiler.setting.Choice(
             'Method to distinguish clumped objects',
             [UN_INTENSITY, UN_SHAPE, UN_NONE],
-            doc="""
-            This setting allows you to choose the method that is used to segment objects, i.e., "declump" a
-            large, merged object into individual objects of interest. To decide between these methods, you can
-            run Test mode to see the results of each.
-            <ul>
-                <li>
-                    <table cellpadding="0">
-                        <tr>
-                            <td>
-                                <i>{UN_INTENSITY}:</i> For objects that tend to have only a single peak of
-                                brightness (e.g. objects that are brighter towards their interiors and dimmer
-                                towards their edges), this option counts each intensity peak as a separate
-                                object. The objects can be any shape, so they need not be round and uniform in
-                                size as would be required for the <i>{UN_SHAPE}</i> option.
-                                <dl>
-                                    <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This choice is more
-                                    successful when the objects have a smooth texture. By default, the image is
-                                    automatically blurred to attempt to achieve appropriate smoothness (see
-                                    <i>Smoothing filter</i> options), but overriding the default value can
-                                    improve the outcome on lumpy-textured objects.</dd>
-                                </dl>
-                            </td>
-                            <td><img src="memory:{INTENSITY_DECLUMPING_ICON}"></td>
-                        </tr>
-                    </table>
-                    <dl>
-                        <dd><img src="memory:gear.png">&nbsp; The object centers are defined as local
-                        intensity maxima in the smoothed image.</dd>
-                    </dl>
-                </li>
-                <li>
-                    <table cellpadding="0">
-                        <tr>
-                            <td>
-                                <i>{UN_SHAPE}:</i> For cases when there are definite indentations separating
-                                objects. The image is converted to black and white (binary) and the shape
-                                determines whether clumped objects will be distinguished. The declumping
-                                results of this method are affected by the thresholding method you choose.
-                                <dl>
-                                    <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; This choice works best
-                                    for objects that are round. In this case, the intensity patterns in the
-                                    original image are largely irrelevant. Therefore, the cells need not be
-                                    brighter towards the interior as is required for the <i>{UN_INTENSITY}</i>
-                                    option.</dd>
-                                </dl>
-                            </td>
-                            <td><img src="memory:{SHAPE_DECLUMPING_ICON}"></td>
-                        </tr>
-                    </table>
-                    <dl>
-                        <dd><img src="memory:gear.png">&nbsp; The binary thresholded image is
-                        distance-transformed and object centers are defined as peaks in this image. A
-                        distance-transform gives each pixel a value equal to the distance to the nearest pixel
-                        below a certain threshold, so it indicates the <i>{UN_SHAPE}</i> of the object.</dd>
-                    </dl>
-                </li>
-                <li><i>{UN_NONE}:</i> If objects are well separated and bright relative to the background, it
-                may be unnecessary to attempt to separate clumped objects. Using the very fast <i>{UN_NONE}</i>
-                option, a simple threshold will be used to identify objects. This will override any declumping
-                method chosen in the settings below.</li>
-            </ul>
+            doc="""\
+This setting allows you to choose the method that is used to segment
+objects, i.e., “declump” a large, merged object into individual objects
+of interest. To decide between these methods, you can run Test mode to
+see the results of each.
+
+   +--------------------------------------+--------------------------------------+
+   | *{UN_INTENSITY}:* For objects that        | |image1|                             |
+   | tend to have only a single peak of   |                                      |
+   | brightness (e.g. objects that are    |                                      |
+   | brighter towards their interiors and |                                      |
+   | dimmer towards their edges), this    |                                      |
+   | option counts each intensity peak as |                                      |
+   | a separate object. The objects can   |                                      |
+   | be any shape, so they need not be    |                                      |
+   | round and uniform in size as would   |                                      |
+   | be required for the *{UN_SHAPE}*          |                                      |
+   | option.                              |                                      |
+   |                                      |                                      |
+   | |image0|  This choice is more        |                                      |
+   | successful when the objects have a   |                                      |
+   | smooth texture. By default, the      |                                      |
+   | image is automatically blurred to    |                                      |
+   | attempt to achieve appropriate       |                                      |
+   | smoothness (see *Smoothing filter*   |                                      |
+   | options), but overriding the default |                                      |
+   | value can improve the outcome on     |                                      |
+   | lumpy-textured objects.              |                                      |
+   |                                      |                                      |
+   | |image2|  The object centers are     |                                      |
+   | defined as local intensity maxima in |                                      |
+   | the smoothed image.                  |                                      |
+   +--------------------------------------+--------------------------------------+
+   | *{UN_SHAPE}:* For cases when there        | |image4|                             |
+   | are definite indentations separating |                                      |
+   | objects. The image is converted to   |                                      |
+   | black and white (binary) and the     |                                      |
+   | shape determines whether clumped     |                                      |
+   | objects will be distinguished. The   |                                      |
+   | declumping results of this method    |                                      |
+   | are affected by the thresholding     |                                      |
+   | method you choose.                   |                                      |
+   |                                      |                                      |
+   | |image3|  This choice works best for |                                      |
+   | objects that are round. In this      |                                      |
+   | case, the intensity patterns in the  |                                      |
+   | original image are largely           |                                      |
+   | irrelevant. Therefore, the cells     |                                      |
+   | need not be brighter towards the     |                                      |
+   | interior as is required for the      |                                      |
+   | *{UN_INTENSITY}* option.                  |                                      |
+   |                                      |                                      |
+   | |image5|  The binary thresholded     |                                      | 
+   | image is distance-transformed and    |                                      |
+   | object centers are defined as peaks  |                                      |
+   | in this image. A distance-transform  |                                      |
+   | gives each pixel a value equal to    |                                      |
+   | the nearest pixel below a certain    |                                      |
+   | threshold, so it indicates the       |                                      |
+   | *{UN_SHAPE}* of the object.               |                                      |
+   +--------------------------------------+--------------------------------------+
+   | *{UN_NONE}:* If objects are well separated and bright relative to the            |
+   | background, it may be unnecessary to attempt to separate clumped objects.   | 
+   | Using the very fast *{UN_NONE}* option, a simple threshold will be used to       |
+   | identify objects. This will override any declumping method chosen in the    |
+   | settings below.                                                             |
+   +--------------------------------------+--------------------------------------+
+
+.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image1| image:: memory:{INTENSITY_DECLUMPING_ICON}
+.. |image2| image:: memory:gear.png
+.. |image3| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image4| image:: memory:{SHAPE_DECLUMPING_ICON}
+.. |image5| image:: memory:gear.png
             """.format(**{
                 "UN_INTENSITY": UN_INTENSITY,
                 "UN_SHAPE": UN_SHAPE,
@@ -455,34 +495,41 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.watershed_method = cellprofiler.setting.Choice(
             'Method to draw dividing lines between clumped objects',
             [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE],
-            doc="""
-            This setting allows you to choose the method that is used to draw the line bewteen segmented
-            objects, provided that you have chosen to declump the objects. To decide between these methods, you
-            can run Test mode to see the results of each.
-            <ul>
-                <li>
-                    <i>{WA_INTENSITY}:</i> Works best where the dividing lines between clumped objects are
-                    dimmer than the remainder of the objects.
-                    <p><b>Technical description:</b> Using the previously identified local maxima as seeds,
-                    this method is a watershed (<i>Vincent and Soille, 1991</i>) on the intensity image.</p>
-                </li>
-                <li><i>{WA_SHAPE}:</i> Dividing lines between clumped objects are based on the shape of the
-                clump. For example, when a clump contains two objects, the dividing line will be placed where
-                indentations occur between the two objects. The intensity patterns in the original image are
-                largely irrelevant: the cells need not be dimmer along the lines between clumped objects.
-                Technical description: Using the previously identified local maxima as seeds, this method is a
-                watershed on the distance-transformed thresholded image.</li>
-                <li><i>{WA_PROPAGATE}:</i> This method uses a propagation algorithm instead of a watershed. The
-                image is ignored and the pixels are assigned to the objects by repeatedly adding unassigned
-                pixels to the objects that are immediately adjacent to them. This method is suited in cases
-                such as objects with branching extensions, for instance neurites, where the goal is to trace
-                outward from the cell body along the branch, assigning pixels in the branch along the way. See
-                the help for the <b>IdentifySecondaryObjects</b> module for more details on this method.</li>
-                <li><i>{WA_NONE}</i>: If objects are well separated and bright relative to the background, it
-                may be unnecessary to attempt to separate clumped objects. Using the very fast <i>{WA_NONE}</i>
-                option, a simple threshold will be used to identify objects. This will override any declumping
-                method chosen in the previous question.</li>
-            </ul>
+            doc="""\
+This setting allows you to choose the method that is used to draw the
+line bewteen segmented objects, provided that you have chosen to declump
+the objects. To decide between these methods, you can run Test mode to
+see the results of each.
+
+-  *{WA_INTENSITY}:* Works best where the dividing lines between
+   clumped objects are dimmer than the remainder of the objects.
+
+   **Technical description:** Using the previously identified local
+   maxima as seeds, this method is a watershed (*Vincent and Soille,
+   1991*) on the intensity image.
+
+-  *{WA_SHAPE}:* Dividing lines between clumped objects are based on
+   the shape of the clump. For example, when a clump contains two
+   objects, the dividing line will be placed where indentations occur
+   between the two objects. The intensity patterns in the original image
+   are largely irrelevant: the cells need not be dimmer along the lines
+   between clumped objects. Technical description: Using the previously
+   identified local maxima as seeds, this method is a watershed on the
+   distance-transformed thresholded image.
+-  *{WA_PROPAGATE}:* This method uses a propagation algorithm instead
+   of a watershed. The image is ignored and the pixels are assigned to
+   the objects by repeatedly adding unassigned pixels to the objects
+   that are immediately adjacent to them. This method is suited in cases
+   such as objects with branching extensions, for instance neurites,
+   where the goal is to trace outward from the cell body along the
+   branch, assigning pixels in the branch along the way. See the help
+   for the **IdentifySecondaryObjects** module for more details on this
+   method.
+-  *{WA_NONE}*: If objects are well separated and bright relative to
+   the background, it may be unnecessary to attempt to separate clumped
+   objects. Using the very fast *{WA_NONE}* option, a simple threshold
+   will be used to identify objects. This will override any declumping
+   method chosen in the previous question.
             """.format(**{
                 "WA_INTENSITY": WA_INTENSITY,
                 "WA_SHAPE": WA_SHAPE,
@@ -494,20 +541,27 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.automatic_smoothing = cellprofiler.setting.Binary(
             AUTOMATIC_SMOOTHING_SETTING_TEXT,
             True,
-            doc="""
-            <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>{YES}</i> to automatically calculate the amount of smoothing applied to the image to
-            assist in declumping. Select <i>{NO}</i> to manually enter the smoothing filter size.
-            <p>This setting, along with the <i>Minimum allowed distance between local maxima</i> setting,
-            affects whether objects close to each other are considered a single object or multiple objects. It
-            does not affect the dividing lines between an object and the background.</p>
-            <p>Please note that this smoothing setting is applied after thresholding, and is therefore distinct
-            from the threshold smoothing method setting above, which is applied <i>before</i> thresholding.</p>
-            <p>The size of the smoothing filter is automatically calculated based on the
-            <i>{SIZE_RANGE_SETTING_TEXT}</i> setting above. If you see too many objects merged that ought to be
-            separate or too many objects split up that ought to be merged, you may want to override the
-            automatically calculated value.</p>
-            """.format(**{
+            doc="""\
+*(Used only when distinguishing between clumped objects)*
+
+Select "*{YES}*" to automatically calculate the amount of smoothing
+applied to the image to assist in declumping. Select "*{NO}*" to
+manually enter the smoothing filter size.
+
+This setting, along with the *Minimum allowed distance between local
+maxima* setting, affects whether objects close to each other are
+considered a single object or multiple objects. It does not affect the
+dividing lines between an object and the background.
+
+Please note that this smoothing setting is applied after thresholding,
+and is therefore distinct from the threshold smoothing method setting
+above, which is applied *before* thresholding.
+
+The size of the smoothing filter is automatically calculated based on
+the *{SIZE_RANGE_SETTING_TEXT}* setting above. If you see too many
+objects merged that ought to be separate or too many objects split up
+that ought to be merged, you may want to override the automatically
+calculated value.""".format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO,
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT
@@ -517,35 +571,44 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.smoothing_filter_size = cellprofiler.setting.Integer(
             SMOOTHING_FILTER_SIZE_SETTING_TEXT,
             10,
-            doc="""
-            <i>(Used only when distinguishing between clumped objects)</i><br>
-            If you see too many objects merged that ought to be separated (under-segmentation), this value
-            should be lower. If you see too many objects split up that ought to be merged (over-segmentation),
-            the value should be higher. Enter 0 to prevent any image smoothing in certain cases; for example,
-            for low resolution images with small objects ( &lt; ~5 pixels in diameter).
-            <p>Reducing the texture of objects by increasing the smoothing increases the chance that each real,
-            distinct object has only one peak of intensity but also increases the chance that two distinct
-            objects will be recognized as only one object. Note that increasing the size of the smoothing
-            filter increases the processing time exponentially.</p>
-            """
+            doc="""\
+*(Used only when distinguishing between clumped objects)*
+
+If you see too many objects merged that ought to be separated
+(under-segmentation), this value should be lower. If you see too many
+objects split up that ought to be merged (over-segmentation), the
+value should be higher. Enter 0 to prevent any image smoothing in
+certain cases; for example, for low resolution images with small
+objects ( < ~5 pixels in diameter).
+
+Reducing the texture of objects by increasing the smoothing increases
+the chance that each real, distinct object has only one peak of
+intensity but also increases the chance that two distinct objects will
+be recognized as only one object. Note that increasing the size of the
+smoothing filter increases the processing time exponentially. """
         )
 
         self.automatic_suppression = cellprofiler.setting.Binary(
             AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
             True,
-            doc="""
-            <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>{YES}</i> to automatically calculate the distance between intensity maxima to assist in
-            declumping. Select <i>{NO}</i> to manually enter the permissible maxima distance.
-            <p>This setting, along with the <i>{SMOOTHING_FILTER_SIZE_SETTING_TEXT}</i> setting, affects
-            whether objects close to each other are considered a single object or multiple objects. It does not
-            affect the dividing lines between an object and the background. Local maxima that are closer
-            together than the minimum allowed distance will be suppressed (the local intensity histogram is
-            smoothed to remove the peaks within that distance). The distance can be automatically calculated
-            based on the minimum entered for the <i>{SIZE_RANGE_SETTING_TEXT}</i> setting above, but if you see
-            too many objects merged that ought to be separate, or too many objects split up that ought to be
-            merged, you may want to override the automatically calculated value.</p>
-            """.format(**{
+            doc="""\
+*(Used only when distinguishing between clumped objects)*
+
+Select "*{YES}*" to automatically calculate the distance between
+intensity maxima to assist in declumping. Select "*{NO}*" to manually
+enter the permissible maxima distance.
+
+This setting, along with the *{SMOOTHING_FILTER_SIZE_SETTING_TEXT}*
+setting, affects whether objects close to each other are considered a
+single object or multiple objects. It does not affect the dividing lines
+between an object and the background. Local maxima that are closer
+together than the minimum allowed distance will be suppressed (the local
+intensity histogram is smoothed to remove the peaks within that
+distance). The distance can be automatically calculated based on the
+minimum entered for the *{SIZE_RANGE_SETTING_TEXT}* setting above,
+but if you see too many objects merged that ought to be separate, or too
+many objects split up that ought to be merged, you may want to override
+the automatically calculated value.""".format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO,
                 "SMOOTHING_FILTER_SIZE_SETTING_TEXT": SMOOTHING_FILTER_SIZE_SETTING_TEXT,
@@ -557,28 +620,32 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             'Suppress local maxima that are closer than this minimum allowed distance',
             7,
             minval=0,
-            doc="""
-            <i>(Used only when distinguishing between clumped objects)</i><br>
-            Enter a positive integer, in pixel units. If you see too many objects merged that ought to be
-            separated (under-segmentation), the value should be lower. If you see too many objects split up
-            that ought to be merged (over-segmentation), the value should be higher.
-            <p>The maxima suppression distance should be set to be roughly equivalent to the minimum radius of
-            a real object of interest. Any distinct "objects" which are found but are within two times this
-            distance from each other will be assumed to be actually two lumpy parts of the same object, and
-            they will be merged.</p>
-            """
+            doc="""\
+*(Used only when distinguishing between clumped objects)*
+
+Enter a positive integer, in pixel units. If you see too many objects
+merged that ought to be separated (under-segmentation), the value
+should be lower. If you see too many objects split up that ought to be
+merged (over-segmentation), the value should be higher.
+
+The maxima suppression distance should be set to be roughly equivalent
+to the minimum radius of a real object of interest. Any distinct
+“objects” which are found but are within two times this distance from
+each other will be assumed to be actually two lumpy parts of the same
+object, and they will be merged."""
         )
 
         self.low_res_maxima = cellprofiler.setting.Binary(
             'Speed up by using lower-resolution image to find local maxima?',
             True,
-            doc="""
-            <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>{YES}</i> to down-sample the image for declumping. This can be helpful for saving
-            processing time on large images.
-            <p>Note that if you have entered a minimum object diameter of 10 or less, checking this box will
-            have no effect.</p>
-            """.format(**{
+            doc="""\
+*(Used only when distinguishing between clumped objects)*
+
+Select "*{YES}*" to down-sample the image for declumping. This can be
+helpful for saving processing time on large images.
+
+Note that if you have entered a minimum object diameter of 10 or less,
+checking this box will have no effect.""".format(**{
                 "YES": cellprofiler.setting.YES
             })
         )
@@ -587,18 +654,18 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             'Fill holes in identified objects?',
             FH_ALL,
             value=FH_THRESHOLDING,
-            doc="""
-            This option controls how holes are filled in:
-            <ul>
-                <li><i>{FH_THRESHOLDING}:</i> Fill in background holes that are smaller than the maximum object
-                size prior to declumping and to fill in any holes after declumping.</li>
-                <li><i>{FH_DECLUMP}:</i> Fill in background holes located within identified objects after
-                declumping.</li>
-                <li><i>{FH_NEVER}:</i> Leave holes within objects.<br>
-                Please note that if a foreground object is located within a hole and this option is enabled,
-                the object will be lost when the hole is filled in.</li>
-            </ul>
-            """.format(**{
+            doc="""\
+This option controls how holes are filled in:
+
+-  *{FH_THRESHOLDING}:* Fill in background holes that are smaller than
+   the maximum object size prior to declumping and to fill in any holes
+   after declumping.
+-  *{FH_DECLUMP}:* Fill in background holes located within identified
+   objects after declumping.
+-  *{FH_NEVER}:* Leave holes within objects.
+   Please note that if a foreground object is located within a hole and
+   this option is enabled, the object will be lost when the hole is
+   filled in.""".format(**{
                 "FH_THRESHOLDING": FH_THRESHOLDING,
                 "FH_DECLUMP": FH_DECLUMP,
                 "FH_NEVER": FH_NEVER
@@ -608,17 +675,18 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.limit_choice = cellprofiler.setting.Choice(
             "Handling of objects if excessive number of objects identified",
             [LIMIT_NONE, LIMIT_ERASE],
-            doc="""
-            This setting deals with images that are segmented into an unreasonable number of objects. This
-            might happen if the module calculates a low threshold or if the image has unusual artifacts.
-            <b>IdentifyPrimaryObjects</b> can handle this condition in one of three ways:
-            <ul>
-                <li><i>{LIMIT_NONE}</i>: Don't check for large numbers of objects.</li>
-                <li><i>{LIMIT_ERASE}</i>: Erase all objects if the number of objects exceeds the maximum. This
-                results in an image with no primary objects. This option is a good choice if a large number of
-                objects indicates that the image should not be processed.</li>
-            </ul>
-            """.format(**{
+            doc="""\
+This setting deals with images that are segmented into an unreasonable
+number of objects. This might happen if the module calculates a low
+threshold or if the image has unusual artifacts.
+**IdentifyPrimaryObjects** can handle this condition in one of three
+ways:
+
+-  *{LIMIT_NONE}*: Don’t check for large numbers of objects.
+-  *{LIMIT_ERASE}*: Erase all objects if the number of objects exceeds
+   the maximum. This results in an image with no primary objects. This
+   option is a good choice if a large number of objects indicates that
+   the image should not be processed.""".format(**{
                 "LIMIT_NONE": LIMIT_NONE,
                 "LIMIT_ERASE": LIMIT_ERASE
             })
@@ -628,58 +696,36 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             "Maximum number of objects",
             value=500,
             minval=2,
-            doc="""
-            <i>(Used only when handling images with large numbers of objects by erasing)</i><br>
-            This setting limits the number of objects in the image. See the documentation for the previous
-            setting for details.
-            """
+            doc="""\
+*(Used only when handling images with large numbers of objects by
+erasing)*
+
+This setting limits the number of objects in the image. See the
+documentation for the previous setting for details."""
         )
 
         self.use_advanced = cellprofiler.setting.Binary(
             "Use advanced settings?",
             value=False,
-            doc="""
-            Select {YES} to use advanced module settings.<br>
-            If {NO} is selected, the following settings are used:
-            <ul>
-                <li>
-                    <i>{THRESHOLD_SCOPE_TEXT}</i>: {THRESHOLD_SCOPE_VALUE}
-                </li>
-                <li>
-                    <i>{THRESHOLD_METHOD_TEXT}</i>: {THRESHOLD_METHOD_VALUE}
-                </li>
-                <li>
-                    <i>{THRESHOLD_SMOOTHING_SCALE_TEXT}</i>: {THRESHOLD_SMOOTHING_SCALE_VALUE} (sigma = 1)
-                </li>
-                <li>
-                    <i>{THRESHOLD_CORRECTION_FACTOR_TEXT}</i>: {THRESHOLD_CORRECTION_FACTOR_VALUE}
-                </li>
-                <li>
-                    <i>{THRESHOLD_RANGE_TEXT}</i>: minimum {THRESHOLD_RANGE_MIN}, maximum {THRESHOLD_RANGE_MAX}
-                </li>
-                <li>
-                    <i>{UNCLUMP_METHOD_TEXT}</i>: {UNCLUMP_METHOD_VALUE}
-                </li>
-                <li>
-                    <i>{WATERSHED_METHOD_TEXT}</i>: {WATERSHED_METHOD_VALUE}
-                </li>
-                <li>
-                    <i>{AUTOMATIC_SMOOTHING_TEXT}</i>: {YES}
-                </li>
-                <li>
-                    <i>{AUTOMATIC_SUPPRESSION_TEXT}</i>: {YES}
-                </li>
-                <li>
-                    <i>{LOW_RES_MAXIMA_TEXT}</i>: {YES}
-                </li>
-                <li>
-                    <i>{FILL_HOLES_TEXT}</i>: {FILL_HOLES_VALUE}
-                </li>
-                <li>
-                    <i>{LIMIT_CHOICE_TEXT}</i>: {LIMIT_CHOICE_VALUE}
-                </li>
-            </ul>
-            """.format(**{
+            doc="""\
+Select "*{YES}*" to use advanced module settings.
+If "*{NO}*" is selected, the following settings are used:
+
+-  *{THRESHOLD_SCOPE_TEXT}*: {THRESHOLD_SCOPE_VALUE}
+-  *{THRESHOLD_METHOD_TEXT}*: {THRESHOLD_METHOD_VALUE}
+-  *{THRESHOLD_SMOOTHING_SCALE_TEXT}*:
+   {THRESHOLD_SMOOTHING_SCALE_VALUE} (sigma = 1)
+-  *{THRESHOLD_CORRECTION_FACTOR_TEXT}*:
+   {THRESHOLD_CORRECTION_FACTOR_VALUE}
+-  *{THRESHOLD_RANGE_TEXT}*: minimum {THRESHOLD_RANGE_MIN}, maximum
+   {THRESHOLD_RANGE_MAX}
+-  *{UNCLUMP_METHOD_TEXT}*: {UNCLUMP_METHOD_VALUE}
+-  *{WATERSHED_METHOD_TEXT}*: {WATERSHED_METHOD_VALUE}
+-  *{AUTOMATIC_SMOOTHING_TEXT}*: *{YES}*
+-  *{AUTOMATIC_SUPPRESSION_TEXT}*: *{YES}*
+-  *{LOW_RES_MAXIMA_TEXT}*: *{YES}*
+-  *{FILL_HOLES_TEXT}*: {FILL_HOLES_VALUE}
+-  *{LIMIT_CHOICE_TEXT}*: {LIMIT_CHOICE_VALUE}""".format(**{
                 "AUTOMATIC_SMOOTHING_TEXT": self.automatic_smoothing.get_text(),
                 "AUTOMATIC_SUPPRESSION_TEXT": self.automatic_suppression.get_text(),
                 "FILL_HOLES_TEXT": self.fill_holes.get_text(),
@@ -816,12 +862,16 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             self.exclude_size,
             self.exclude_border_objects
         ] + threshold_help_settings + [
-            self.use_advanced,
-            self.x_name,
-            self.y_name,
-            self.size_range,
-            self.exclude_size,
-            self.exclude_border_objects
+            self.unclump_method,
+            self.watershed_method,
+            self.automatic_smoothing,
+            self.smoothing_filter_size,
+            self.automatic_suppression,
+            self.maxima_suppression_size,
+            self.low_res_maxima,
+            self.fill_holes,
+            self.limit_choice,
+            self.maximum_object_count
         ]
 
     def visible_settings(self):

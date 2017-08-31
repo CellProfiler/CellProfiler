@@ -1099,17 +1099,17 @@ class CPFrame(wx.Frame):
     @staticmethod
     def save_help(event, module_name, help_text):
         """Save the help text for a module"""
-        save_dlg = wx.FileDialog(event.GetEventObject(),
+        save_dlg = wx.FileDialog(event.GetEventObject().GetWindow(),
                                  message="Save help for %s to file" % module_name,
                                  defaultFile="%s.html" % module_name,
                                  wildcard="*.html",
                                  style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+
         result = save_dlg.ShowModal()
+
         if result == wx.ID_OK:
-            pathname = save_dlg.GetPath()
-            fd = open(pathname, "wt")
-            fd.write(help_text)
-            fd.close()
+            with open(save_dlg.GetPath(), "w") as fd:
+                fd.write(help_text.encode("utf-8"))
 
     def on_open_image(self, event):
         dlg = wx.FileDialog(self,

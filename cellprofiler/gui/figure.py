@@ -421,6 +421,7 @@ class Figure(wx.Frame):
         nbheight = self.navtoolbar.GetSize()[1]
         self.navtoolbar.SetPosition((0, 0))
         self.navtoolbar.SetSize((available_width, nbheight))
+
         if self.secret_panel.IsShown():
             sp_width = self.secret_panel.GetVirtualSize()[0]
             canvas_width = min(max(available_width - sp_width, 250),
@@ -437,6 +438,7 @@ class Figure(wx.Frame):
                 kid.Update()
         else:
             canvas_width = available_width
+
         self.panel.SetPosition((0, nbheight))
         self.panel.SetSize((canvas_width, available_height - nbheight))
         self.ClearBackground()
@@ -444,23 +446,29 @@ class Figure(wx.Frame):
     def on_close(self, event):
         if self.close_fn is not None:
             self.close_fn(event)
+
         self.clf()  # Free memory allocated by imshow
+
         for menu, menu_id in self.remove_menu:
             self.Parent.Unbind(wx.EVT_MENU, id=menu_id)
+
             menu.Delete(menu_id)
+
         self.Destroy()
 
     def on_navtool_changed(self, event):
-        if event.EventObject.mode != NAV_MODE_NONE and \
-                        self.mouse_mode == MODE_MEASURE_LENGTH:
+        if event.EventObject.mode != NAV_MODE_NONE and self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
+
             self.__menu_item_measure_length.Check(False)
 
     def on_measure_length(self, event):
         """Measure length menu item selected."""
         if self.__menu_item_measure_length.IsChecked():
             self.mouse_mode = MODE_MEASURE_LENGTH
+
             self.navtoolbar.cancel_mode()
+
             self.Layout()
         elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
@@ -468,8 +476,10 @@ class Figure(wx.Frame):
     def on_button_press(self, event):
         if not hasattr(self, "subplots"):
             return
+
         if event.inaxes in self.subplots.flatten():
             self.mouse_down = (event.xdata, event.ydata)
+
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_mouse_down(event)
 
@@ -487,6 +497,7 @@ class Figure(wx.Frame):
             x1 = max(self.mouse_down[0], evt.xdata)
             y0 = min(self.mouse_down[1], evt.ydata)
             y1 = max(self.mouse_down[1], evt.ydata)
+
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)
         elif not self.mouse_mode == MODE_NONE:
@@ -494,11 +505,15 @@ class Figure(wx.Frame):
 
     def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
         fields = []
+
         x, y = [int(round(xy)) for xy in xi, yi]
+
         if not self.in_bounds(image, x, y):
             return fields
+
         if image.dtype.type == numpy.uint8:
             image = image.astype(numpy.float32) / 255.0
+
         if image.ndim == 2:
             fields += ["Intensity: %.4f" % (image[y, x])]
         elif image.ndim == 3 and image.shape[2] == 3:
@@ -507,13 +522,13 @@ class Figure(wx.Frame):
                        "Blue: %.4f" % (image[y, x, 2])]
         elif image.ndim == 3:
             fields += ["Channel %d: %.4f" % (idx + 1, image[y, x, idx]) for idx in range(image.shape[2])]
+
         return fields
 
     @staticmethod
     def in_bounds(image, xi, yi):
         """Return false if xi or yi are outside of the bounds of the image"""
-        return not (image is None or xi >= image.shape[1] or yi >= image.shape[0]
-                    or xi < 0 or yi < 0)
+        return not (image is None or xi >= image.shape[1] or yi >= image.shape[0] or xi < 0 or yi < 0)
 
     def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
@@ -561,23 +576,26 @@ class Figure(wx.Frame):
         """Get the standard fields at the cursor location"""
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
+
             self.find_image_for_axes(event.inaxes)
 
             for artist in event.inaxes.artists:
-                if isinstance(
-                        artist, cellprofiler.gui.artist.CPImageArtist):
-                    fields += ["%s: %.4f" % (k, v) for k, v in
-                               artist.get_channel_values(xi, yi).items()]
+                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                    fields += ["%s: %.4f" % (k, v) for k, v in artist.get_channel_values(xi, yi).items()]
         else:
             fields = []
+
         return fields
 
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
+
         xi = int(event.xdata + .5)
         yi = int(event.ydata + .5)
+
         fields = self.get_fields(event, yi, xi, x1)
+
         if len(fields) > 0:
             self.status_bar.SetFields(fields)
 
@@ -594,16 +612,19 @@ class Figure(wx.Frame):
     def on_button_release(self, event):
         if not hasattr(self, "subplots"):
             return
+
         if event.inaxes in self.subplots.flatten() and self.mouse_down:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
             y1 = max(self.mouse_down[1], event.ydata)
+
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_done(event, x0, y0, x1, y1)
         elif self.mouse_down:
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_canceled(event)
+
         self.mouse_down = None
 
     def on_measure_length_done(self, event, x0, y0, x1, y1):
@@ -612,17 +633,18 @@ class Figure(wx.Frame):
     def on_measure_length_canceled(self, event):
         if self.length_arrow is not None:
             self.length_arrow.remove()
+
             self.length_arrow = None
+
         self.figure.canvas.draw()
+
         self.Refresh()
 
     def on_file_save(self, event):
-        with wx.FileDialog(self, "Save figure",
-                           wildcard=("PDF file (*.pdf)|*.pdf|"
-                                     "PNG image (*.png)|*.png"),
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+        with wx.FileDialog(self, "Save figure", wildcard=("PDF file (*.pdf)|*.pdf|PNG image (*.png)|*.png"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
+
                 if dlg.FilterIndex == 1:
                     file_format = "png"
                 elif dlg.FilterIndex == 0:
@@ -633,18 +655,20 @@ class Figure(wx.Frame):
                     file_format = "jpg"
                 else:
                     file_format = "pdf"
+
                 if "." not in os.path.split(path)[1]:
                     path += "." + file_format
+
                 self.figure.savefig(path, format=file_format)
 
     def on_file_save_table(self, event):
         if self.table is None:
             return
-        with wx.FileDialog(self, "Save table",
-                           wildcard="Excel file (*.csv)|*.csv",
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+
+        with wx.FileDialog(self, "Save table", wildcard="Excel file (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
+
                 with open(path, "wb") as fd:
                     csv.writer(fd).writerows(self.table)
 
@@ -660,15 +684,13 @@ class Figure(wx.Frame):
         # http://stackoverflow.com/questions/4325733/save-a-subplot-in-matplotlib
         #
         ax = self.subplots[x, y]
-        extent = ax.get_window_extent().transformed(
-                self.figure.dpi_scale_trans.inverted())
-        with wx.FileDialog(self, "Save axes",
-                           wildcard=("PDF file (*.pdf)|*.pdf|"
-                                     "Png image (*.png)|*.png|"
-                                     "Postscript file (*.ps)|*.ps"),
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+
+        extent = ax.get_window_extent().transformed(self.figure.dpi_scale_trans.inverted())
+
+        with wx.FileDialog(self, "Save axes", wildcard=("PDF file (*.pdf)|*.pdf|Png image (*.png)|*.png|Postscript file (*.ps)|*.ps"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
+
                 if dlg.FilterIndex == 1:
                     file_format = "png"
                 elif dlg.FilterIndex == 0:
@@ -677,12 +699,12 @@ class Figure(wx.Frame):
                     file_format = "ps"
                 else:
                     file_format = "pdf"
-                self.figure.savefig(path,
-                                    format=file_format,
-                                    bbox_inches=extent)
+
+                self.figure.savefig(path, format=file_format, bbox_inches=extent)
 
     def set_subplots(self, subplots, dimensions=2):
         self.clf()  # get rid of any existing subplots, menus, etc.
+
         if subplots is None:
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
@@ -705,9 +727,11 @@ class Figure(wx.Frame):
         """
         if not self.subplots[x, y]:
             rows, cols = self.subplots.shape
-            plot = self.figure.add_subplot(cols, rows, x + y * rows + 1,
-                                           sharex=sharex, sharey=sharey)
+
+            plot = self.figure.add_subplot(cols, rows, x + y * rows + 1, sharex=sharex, sharey=sharey)
+
             self.subplots[x, y] = plot
+
         return self.subplots[x, y]
 
     def set_subplot_title(self, title, x, y):
@@ -717,11 +741,9 @@ class Figure(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        fontname = fontname = cellprofiler.preferences.get_title_font_name()
+        fontname = cellprofiler.preferences.get_title_font_name()
 
-        self.subplot(x, y).set_title(title,
-                                     fontname=fontname,
-                                     fontsize=cellprofiler.preferences.get_title_font_size())
+        self.subplot(x, y).set_title(title, fontname=fontname, fontsize=cellprofiler.preferences.get_title_font_size())
 
     def clear_subplot(self, x, y):
         """Clear a subplot of its gui junk. Noop if no subplot exists at x,y
@@ -731,12 +753,16 @@ class Figure(wx.Frame):
         """
         if not self.subplots[x, y]:
             return
+
         axes = self.subplot(x, y)
+
         try:
             del self.images[(x, y)]
+
             del self.popup_menus[(x, y)]
         except:
             pass
+
         axes.clear()
 
     def show_imshow_popup_menu(self, pos, subplot_xy):
@@ -1348,14 +1374,19 @@ class Figure(wx.Frame):
         return self.subplot_imshow(x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
 
     @allow_sharexy
-    def subplot_imshow_labels(self, x, y, image,
-                              title=None,
-                              clear=True,
-                              sharex=None,
-                              sharey=None,
-                              use_imshow=False,
-                              dimensions=2,
-                              background_image=None):
+    def subplot_imshow_labels(
+            self,
+            x,
+            y,
+            image,
+            title=None,
+            clear=True,
+            sharex=None,
+            sharey=None,
+            use_imshow=False,
+            dimensions=2,
+            background_image=None
+    ):
         """
         Show a labels matrix using the default color map
 

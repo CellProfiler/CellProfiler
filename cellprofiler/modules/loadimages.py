@@ -148,7 +148,7 @@ SUPPORTED_IMAGE_EXTENSIONS = set([
     '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
     '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
     '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
-SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
+SUPPORTED_IMAGE_EXTENSIONS.add(".npy")
 # The following is a list of the extensions as gathered from Bio-formats
 # Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
 # not to be images but you are welcome to add if needed
@@ -3101,13 +3101,13 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
                 raise IOError("Test for access to directory failed. Directory: %s" % path)
         if parsed_path.scheme == 'file':
             self.__cached_file = url2pathname(path)
-        elif self.is_matlab_file():
+        elif self.is_numpy_file():
             #
             # urlretrieve uses the suffix of the path component of the URL
             # to name the temporary file, so we replicate that behavior
             #
             temp_dir = preferences.get_temporary_directory()
-            tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir=temp_dir)
+            tempfd, temppath = tempfile.mkstemp(suffix=".npy", dir=temp_dir)
             self.__cached_file = temppath
             try:
                 self.__cached_file, headers = urllib.urlretrieve(
@@ -3131,10 +3131,8 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         '''Get the URL representation of the file location'''
         return self.__url
 
-    def is_matlab_file(self):
-        '''Return True if the file name ends with .mat (no Bio-formats)'''
-        path = urlparse.urlparse(self.get_url())[2]
-        return path.lower().endswith(".mat")
+    def is_numpy_file(self):
+        return os.path.splitext(self.__filename)[-1].lower() == ".npy"
 
     def get_md5_hash(self, measurements):
         '''Compute the MD5 hash of the underlying file or use cached value
@@ -3145,7 +3143,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         #
         # Cache the MD5 hash on the image reader
         #
-        if self.is_matlab_file():
+        if self.is_numpy_file():
             rdr = None
         else:
             from bioformats.formatreader import get_image_reader
@@ -3174,7 +3172,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
         Possibly delete the temporary file'''
         if self.__is_cached:
-            if self.is_matlab_file():
+            if self.is_numpy_file():
                 try:
                     os.remove(self.__cached_file)
                 except:
@@ -3215,16 +3213,8 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
-        if isinstance(self.rescale, float):
-            rescale = False
-        else:
-            rescale = self.rescale
-        if self.is_matlab_file():
-            with open(self.get_full_name(), "rb") as fd:
-                imgdata = scipy.io.matlab.mio.loadmat(
-                        fd, struct_as_record=True)
-            img = imgdata["Image"]
-            # floating point - scale = 1:1
+        if self.is_numpy_file():
+            img = np.load(self.get_full_name())
             self.scale = 1.0
             pixel_type_scale = 1.0
         else:
@@ -3276,7 +3266,12 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         return image
 
     def __provide_volume(self):
-        data = skimage.io.imread(url2pathname(self.get_url()))
+        pathname = url2pathname(self.get_url())
+
+        if self.is_numpy_file():
+            data = np.load(pathname)
+        else:
+            data = skimage.io.imread(pathname)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:

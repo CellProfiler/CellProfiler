@@ -14,7 +14,7 @@ import cellprofiler.setting
 
 
 class Opening(cellprofiler.module.ImageProcessing):
-    category = "Mathematical morphology"
+    category = "Advanced"
 
     module_name = "Opening"
 

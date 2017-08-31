@@ -13,7 +13,7 @@ import cellprofiler.setting
 
 
 class Erosion(cellprofiler.module.ImageProcessing):
-    category = "Mathematical morphology"
+    category = "Advanced"
 
     module_name = "Erosion"
 

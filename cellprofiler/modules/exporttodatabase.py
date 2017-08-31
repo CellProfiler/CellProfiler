@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Export To Database** exports data directly to a database, or in
+ExportToDatabase
+================
+
+**ExportToDatabase** exports data directly to a database, or in
 database readable format, including an imported file with column names
 and a CellProfiler Analyst properties file, if desired.
 
@@ -56,9 +59,6 @@ The commands written by CellProfiler to create the Per\_Well table will
 be executed. Oracle is not fully supported at present; you can create
 your own Oracle DB using the .csv output option and writing a simple
 script to upload to the database.
-
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
 
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.
@@ -362,36 +362,50 @@ class ExportToDatabase(cpm.Module):
         self.db_type = cps.Choice(
                 "Database type",
                 db_choices, default_db, doc="""
-            Specify the type of database you want to use:
-            <ul>
-            <li><i>%(DB_MYSQL)s:</i> Writes the data directly to a MySQL
-            database. MySQL is open-source software; you may require help from
-            your local Information Technology group to set up a database
-            server.</li>
-            <li><i>%(DB_MYSQL_CSV)s:</i> Writes a script file that
-            contains SQL statements for creating a database and uploading the
-            Per_Image and Per_Object tables. This option will write out the Per_Image
-            and Per_Object table data to two CSV files; you can use these files can be
-            used to import the data directly into an application
-            that accepts CSV data.</li>
-            <li><i>%(DB_SQLITE)s:</i> Writes SQLite files directly.
-            SQLite is simpler to set up than MySQL and
-            can more readily be run on your local computer rather than requiring a
-            database server. More information about SQLite can be found
-            <a href="http://www.sqlite.org/">here</a>. </li>
-            </ul>
-            <dl>
-            <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
-            If running this module on a computing cluster, there are a few
-            considerations to note:
-            <ul>
-            <li>The <i>%(DB_MYSQL)s</i> option is well-suited for cluster use, since
-            multiple jobs can write to the database simultaneously.</li>
-            <li>The <i>%(DB_SQLITE)s</i> option is not
-            as appropriate; a SQLite database only allows access by one job at a time.</li>
-            </ul>
-            </dd>
-            </dl>""" % globals())
+                Specify the type of database you want to use:
+                
+                -  *%(DB_MYSQL)s:* Writes the data directly to a MySQL database. MySQL
+                   is open-source software; you may require help from your local
+                   Information Technology group to set up a database server.
+                -  *%(DB_MYSQL_CSV)s:* Writes a script file that contains SQL
+                   statements for creating a database and uploading the Per\_Image and
+                   Per\_Object tables. This option will write out the Per\_Image and
+                   Per\_Object table data to two CSV files; you can use these files can
+                   be used to import the data directly into an application that accepts
+                   CSV data.
+                -  *%(DB_SQLITE)s:* Writes SQLite files directly. SQLite is simpler to
+                   set up than MySQL and can more readily be run on your local computer
+                   rather than requiring a database server. More information about
+                   SQLite can be found `here`_.
+                
+                .. raw:: html
+                
+                   <dl>
+                
+                .. raw:: html
+                
+                   <dd>
+                
+                |image0|  If running this module on a computing cluster, there are a few
+                considerations to note:
+                
+                -  The *%(DB_MYSQL)s* option is well-suited for cluster use, since
+                   multiple jobs can write to the database simultaneously.
+                -  The *%(DB_SQLITE)s* option is not as appropriate; a SQLite database
+                   only allows access by one job at a time.
+                
+                .. raw:: html
+                
+                   </dd>
+                
+                .. raw:: html
+                
+                   </dl>
+                
+                .. _here: http://www.sqlite.org/
+                
+                .. |image0| image:: memory:%(TECH_NOTE_ICON)s
+                """ % globals())
 
         self.test_connection_button = cps.DoSomething(
                 "Press this button to test the connection to the remote server using the current settings",
@@ -405,40 +419,41 @@ class ExportToDatabase(cpm.Module):
 
         self.experiment_name = cps.Text(
                 "Experiment name", "MyExpt", doc="""
-            Select a name for the experiment. This name will be
-            registered in the database and linked to the tables that
-            <b>ExportToDatabase</b> creates. You will be able to select the experiment
-            by name in CellProfiler Analyst and will be able to find the
-            experiment's tables through database queries.""")
+                Select a name for the experiment. This name will be registered in the
+                database and linked to the tables that **ExportToDatabase** creates. You
+                will be able to select the experiment by name in CellProfiler Analyst
+                and will be able to find the experiment’s tables through database
+                queries.""")
 
         self.want_table_prefix = cps.Binary(
                 "Add a prefix to table names?", True, doc="""
-            Select whether you want to add a prefix to your table names. The
-            default table names are <i>Per_Image</i> for the per-image table and
-            <i>Per_Object</i> for the per-object table. Adding a prefix can be useful
-            for bookkeeping purposes.
-            <ul>
-            <li>Select <i>%(YES)s</i> to add a user-specified prefix to the default table names.
-            If you want to distinguish multiple sets of data written to the same
-            database, you probably want to use a prefix.</li>
-            <li>Select <i>%(NO)s</i> to use the default table names. For a one-time export of
-            data, this option is fine. </li>
-            </ul>
-            Whether you chose to use a prefix or not, CellProfiler will warn
-            you if your choice entails overwriting an existing table.""" % globals())
+                Select whether you want to add a prefix to your table names. The default
+                table names are *Per\_Image* for the per-image table and *Per\_Object*
+                for the per-object table. Adding a prefix can be useful for bookkeeping
+                purposes.
+                
+                -  Select *%(YES)s* to add a user-specified prefix to the default table
+                   names. If you want to distinguish multiple sets of data written to
+                   the same database, you probably want to use a prefix.
+                -  Select *%(NO)s* to use the default table names. For a one-time export
+                   of data, this option is fine.
+                
+                Whether you chose to use a prefix or not, CellProfiler will warn you if
+                your choice entails overwriting an existing table.""" % globals())
 
         self.table_prefix = cps.Text(
                 "Table prefix", "MyExpt_", doc="""
-            <i>(Used if Add a prefix to table names?</i> is selected)<br>
-            Enter the table prefix you want to use.
-            <p>MySQL has a 64 character limit on the full name of the table.
-            If the combination of the table name and prefix exceeds this
-            limit, you will receive an error associated with this setting.</p>""")
+                | *(Used if Add a prefix to table names?* is selected)
+                | Enter the table prefix you want to use.
+                
+                MySQL has a 64 character limit on the full name of the table. If the
+                combination of the table name and prefix exceeds this limit, you will
+                receive an error associated with this setting.""")
 
         self.sql_file_prefix = cps.Text(
                 "SQL file prefix", "SQL_", doc="""
-            <i>(Used if %(DB_MYSQL_CSV)s is selected as the database type)</i><br>
-            Enter the prefix to be used to name the SQL file.""" % globals())
+                *(Used if %(DB_MYSQL_CSV)s is selected as the database type)*
+                Enter the prefix to be used to name the SQL file.""" % globals())
 
         self.directory = cps.DirectoryPath(
                 "Output file location",
@@ -446,61 +461,65 @@ class ExportToDatabase(cpm.Module):
                     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,
                     ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
                     DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
-            <i>(Used only when using a CSV or a SQLite database, and/or creating a properties or workspace file)</i><br>
-            This setting determines where the CSV files or SQLite database is saved if
-            you decide to write measurements to files instead of writing them
-            directly to the database. If you request a CellProfiler Analyst properties file
-            or workspace file, it will also be saved to this location. %(IO_FOLDER_CHOICE_HELP_TEXT)s
-
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
-            For instance, if you have a metadata tag named
-            "Plate", you can create a per-plate folder by selecting one of the subfolder options
-            and then specifying the subfolder name with the "Plate" metadata tag.
-            The module will substitute the metadata values for the last image set
-            processed for any metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.</p>""" % globals())
+                | *(Used only when using a CSV or a SQLite database, and/or creating a
+                  properties or workspace file)*
+                | This setting determines where the CSV files or SQLite database is
+                  saved if you decide to write measurements to files instead of writing
+                  them directly to the database. If you request a CellProfiler Analyst
+                  properties file or workspace file, it will also be saved to this
+                  location. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+                
+                | %(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s
+                | For instance, if you have a metadata tag named “Plate”, you can create
+                  a per-plate folder by selecting one of the subfolder options and then
+                  specifying the subfolder name with the “Plate” metadata tag. The
+                  module will substitute the metadata values for the last image set
+                  processed for any metadata tags in the folder name.
+                  %(USING_METADATA_HELP_REF)s.""" % globals())
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
         self.save_cpa_properties = cps.Binary(
                 "Create a CellProfiler Analyst properties file?",
                 False, doc="""
-            Select <i>%(YES)s</i> to generate a template properties file that will allow you to use
-            your new database with CellProfiler Analyst (a data
-            exploration tool which can also be downloaded from
-            <a href="http://www.cellprofiler.org/">http://www.cellprofiler.org/</a>).
-            The module will attempt to fill in as many as the entries as possible
-            based on the pipeline's settings, including the
-            server name, username and password if MySQL is used.""" % globals())
+                Select *%(YES)s* to generate a template properties file that will allow
+                you to use your new database with CellProfiler Analyst (a data
+                exploration tool which can also be downloaded from
+                http://www.cellprofiler.org/). The module will attempt to fill in as
+                many as the entries as possible based on the pipeline’s settings,
+                including the server name, username and password if MySQL is used.""" % globals())
 
         self.location_object = cps.ObjectNameSubscriber(
                 "Which objects should be used for locations?", cps.NONE, doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            CellProfiler Analyst displays cells during classification. This
-            setting determines which object centers will be used as the center
-            of the cells to be displayed. Choose one of the listed objects
-            and CellProfiler will save that object's location columns in
-            the properties file so that CellProfiler Analyst centers cells
-            using that object's center.
-            <p>You can manually change this choice in the properties file by
-            editing the <i>cell_x_loc</i> and <i>cell_y_loc</i> properties.
-            </p>
-            <p>Note that if there are no objects defined in the pipeline (e.g.
-            if only using MeasureImageQuality and/or Illumination Correction modules),
-            a warning will diplay until you choose <i>'None'</i> for the subsequent setting:
-            'Export measurements for all objects to the database?'.</p>
-            """ % globals())
+                | *(Used only if creating a properties file)*
+                | CellProfiler Analyst displays cells during classification. This
+                  setting determines which object centers will be used as the center of
+                  the cells to be displayed. Choose one of the listed objects and
+                  CellProfiler will save that object’s location columns in the
+                  properties file so that CellProfiler Analyst centers cells using that
+                  object’s center.
+                
+                You can manually change this choice in the properties file by editing
+                the *cell\_x\_loc* and *cell\_y\_loc* properties.
+                
+                Note that if there are no objects defined in the pipeline (e.g. if only
+                using MeasureImageQuality and/or Illumination Correction modules), a
+                warning will diplay until you choose *‘None’* for the subsequent
+                setting: ‘Export measurements for all objects to the database?’.
+                """ % globals())
 
         self.wants_properties_image_url_prepend = cps.Binary(
                 "Access CPA images via URL?", False,
                 doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            The image paths written to the database will be the absolute
-            path the image files on your computer. If you plan to make these
-            files accessible via the web, you can have CellProfiler Analyst prepend
-            a URL to your file name.
-            Eg: If an image is loaded from the path "/cellprofiler/images/" and you use
-            a url prepend of "http://mysite.com/", CellProfiler Analyst will look
-            for your file at "http://mysite.com/cellprofiler/images/"
-            """)
+                *(Used only if creating a properties file)*
+                The image paths written to the database will be the absolute path the
+                image files on your computer. If you plan to make these files accessible
+                via the web, you can have CellProfiler Analyst prepend a URL to your
+                file name. Eg: If an image is loaded from the path
+                “/cellprofiler/images/” and you use a url prepend of
+                “http://mysite.com/”, CellProfiler Analyst will look for your file at
+                “http://mysite.com/cellprofiler/images/”
+                """
+        )
         #
         # Hack: if user is on Broad IP, then plug in the imageweb url prepend
         #
@@ -516,54 +535,60 @@ class ExportToDatabase(cpm.Module):
         self.properties_image_url_prepend = cps.Text(
                 "Enter an image url prepend if you plan to access your files via http",
                 default_prepend, doc="""
-            <i>(Used only if accessing CellProfiler Analyst images via URL)</i><br>
-            The image paths written to the database will be the absolute
-            path the image files on your computer. If you plan to make these
-            files accessible via the web, you can enter a url prefix here. Eg:
-            If an image is loaded from the path "/cellprofiler/images/" and you use
-            a url prepend of "http://mysite.com/", CellProfiler Analyst will look
-            for your file at "http://mysite.com/cellprofiler/images/"
-            <p>If you are not using the web to access your files (i.e., they are locally
-            aceesible by your computer), leave this setting blank.""")
+                | *(Used only if accessing CellProfiler Analyst images via URL)*
+                | The image paths written to the database will be the absolute path the
+                  image files on your computer. If you plan to make these files
+                  accessible via the web, you can enter a url prefix here. Eg: If an
+                  image is loaded from the path “/cellprofiler/images/” and you use a
+                  url prepend of “http://mysite.com/”, CellProfiler Analyst will look
+                  for your file at “http://mysite.com/cellprofiler/images/”
+                
+                If you are not using the web to access your files (i.e., they are
+                locally aceesible by your computer), leave this setting blank.""")
 
         self.properties_plate_type = cps.Choice(
                 "Select the plate type",
                 PLATE_TYPES, doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            If you are using a multi-well plate or microarray, you can select the plate
-            type here. Supported types in CellProfiler Analyst are 96- and 384-well plates,
-            as well as 5600-spot microarrays. If you are not using a plate or microarray, select
-            <i>None</i>.""")
+                *(Used only if creating a properties file)*
+                If you are using a multi-well plate or microarray, you can select the
+                plate type here. Supported types in CellProfiler Analyst are 96- and
+                384-well plates, as well as 5600-spot microarrays. If you are not using
+                a plate or microarray, select *None*.""")
 
         self.properties_plate_metadata = cps.Choice(
                 "Select the plate metadata",
                 ["None"], choices_fn=self.get_metadata_choices, doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            If you are using a multi-well plate or microarray, you can select the metadata corresponding
-            to the plate here. If there is no plate metadata associated with the image set, select
-            <i>None</i>.
-            <p>%(USING_METADATA_HELP_REF)s.</p>""" % globals())
+                | *(Used only if creating a properties file)*
+                | If you are using a multi-well plate or microarray, you can select the
+                  metadata corresponding to the plate here. If there is no plate
+                  metadata associated with the image set, select *None*.
+                
+                %(USING_METADATA_HELP_REF)s.""" % globals())
 
         self.properties_well_metadata = cps.Choice(
                 "Select the well metadata",
                 ["None"], choices_fn=self.get_metadata_choices, doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            If you are using a multi-well plate or microarray, you can select the metadata corresponding
-            to the well here. If there is no well metadata associated with the image set, select
-            <i>None</i>.
-            <p>%(USING_METADATA_HELP_REF)s.</p>""" % globals())
+                | *(Used only if creating a properties file)*
+                | If you are using a multi-well plate or microarray, you can select the
+                  metadata corresponding to the well here. If there is no well metadata
+                  associated with the image set, select *None*.
+                
+                %(USING_METADATA_HELP_REF)s.""" % globals())
 
         self.properties_export_all_image_defaults = cps.Binary(
                 "Include information for all images, using default values?", True, doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            Select <i>%(YES)s</i> to include information in the properties file for all images. This
-            option will do the following:
-            <ul>
-            <li>All images loaded using the <b>Input</b> modules or saved in <b>SaveImages</b> will be included.</li>
-            <li>The CellProfiler image name will be used for the <i>image_name</i> field.</li>
-            <li>A channel color listed in the <i>image_channel_colors</i> field will be assigned to the image by default order.</li>
-            </ul>
-            <p>Select <i>%(NO)s</i> to specify which images should be included or to override the automatic values.</p>""" % globals())
+                | *(Used only if creating a properties file)*
+                | Select *%(YES)s* to include information in the properties file for all
+                  images. This option will do the following:
+                
+                -  All images loaded using the **Input** modules or saved in
+                   **SaveImages** will be included.
+                -  The CellProfiler image name will be used for the *image\_name* field.
+                -  A channel color listed in the *image\_channel\_colors* field will be
+                   assigned to the image by default order.
+                
+                Select *%(NO)s* to specify which images should be included or to
+                override the automatic values.""" % globals())
 
         self.image_groups = []
         self.image_group_count = cps.HiddenCount(self.image_groups, "Properties image group count")
@@ -573,21 +598,27 @@ class ExportToDatabase(cpm.Module):
 
         self.properties_wants_groups = cps.Binary(
                 "Do you want to add group fields?", False, doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            <b>Please note that "groups" as defined by CellProfiler Analyst has nothing to do with "grouping" as defined by
-            CellProfiler in the Groups module.</b>
-            <p>Select <i>%(YES)s</i> to define a "group" for your image data (for example, when several images represent the same experimental
-            sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns
-            (the <i>group key</i>).</p>
-            <p>The format for a group in CPA is:<br>
-            <code>group_SQL_&lt;XXX&gt; = &lt;MySQL SELECT statement that returns image-key columns followed by group-key columns&gt;</code>
-            For example, if you wanted to be able to group your data by unique plate names, you could define a group called
-            <i>SQL_Plate</i> as follows:<br>
-            <code>group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate FROM Per_Image</code></p>
-            <p>Grouping is useful, for example, when you want to aggregate counts for each class of object and their scores
-            on a per-group basis (e.g., per-well) instead of on a per-image basis when scoring with Classifier. It will
-            also provide new options in the Classifier fetch menu so you can fetch objects from images with specific
-            values for the group columns.</p>""" % globals())
+                | *(Used only if creating a properties file)*
+                | **Please note that “groups” as defined by CellProfiler Analyst has
+                  nothing to do with “grouping” as defined by CellProfiler in the Groups
+                  module.**
+                
+                Select *%(YES)s* to define a “group” for your image data (for example,
+                when several images represent the same experimental sample), by
+                providing column(s) that identify unique images (the *image key*) to
+                another set of columns (the *group key*).
+                
+                | The format for a group in CPA is:
+                | ``group_SQL_<XXX> = <MySQL SELECT statement that returns image-key columns followed by group-key columns>``
+                  For example, if you wanted to be able to group your data by unique
+                  plate names, you could define a group called *SQL\_Plate* as follows:
+                | ``group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate FROM Per_Image``
+                
+                Grouping is useful, for example, when you want to aggregate counts for
+                each class of object and their scores on a per-group basis (e.g.,
+                per-well) instead of on a per-image basis when scoring with Classifier.
+                It will also provide new options in the Classifier fetch menu so you can
+                fetch objects from images with specific values for the group columns.""" % globals())
 
         self.group_field_groups = []
         self.group_field_count = cps.HiddenCount(self.group_field_groups, "Properties group field count")
@@ -597,16 +628,21 @@ class ExportToDatabase(cpm.Module):
 
         self.properties_wants_filters = cps.Binary(
                 "Do you want to add filter fields?", False, doc=
-                """<i>(Used only if creating a properties file)</i><br>
-                Select <i>%(YES)s</i> to specify a subset of the images in your experiment by defining a <i>filter</i>.
-                Filters are useful, for example, for fetching and scoring objects in Classifier or making graphs using the
-                plotting tools that satisfy a specific metadata contraint. """ % globals())
+                """
+                *(Used only if creating a properties file)*
+                Select *%(YES)s* to specify a subset of the images in your experiment by
+                defining a *filter*. Filters are useful, for example, for fetching and
+                scoring objects in Classifier or making graphs using the plotting tools
+                that satisfy a specific metadata contraint.
+                """ % globals())
 
         self.create_filters_for_plates = cps.Binary(
                 "Automatically create a filter for each plate?", False, doc="""
-            <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
-            If you have specified a plate metadata tag, selecting <i>%(YES)s</i> to create a set of filters
-            in the properties file, one for each plate.""" % globals())
+                *(Used only if creating a properties file and specifiying an image data
+                filter)*
+                If you have specified a plate metadata tag, selecting *%(YES)s* to
+                create a set of filters in the properties file, one for each plate.
+                """ % globals())
 
         self.filter_field_groups = []
         self.filter_field_count = cps.HiddenCount(self.filter_field_groups, "Properties filter field count")
@@ -616,43 +652,52 @@ class ExportToDatabase(cpm.Module):
         self.properties_class_table_name = cps.Text(
                 "Enter a phenotype class table name if using the classifier tool",
                 '', doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            If you are using the machine-learning tool in CellProfiler Analyst,
-            you can create an additional table in your database  which contains
-            the per-object phenotype labels. This table is produced after scoring
-            all the objects in your data set and will be named with the label given here.
-            Note that the actual class table will be named by prepending the table prefix
-            (if any) to what you enter here.
-            <p>You can manually change this choice in the properties file by
-            editing the <i>class_table</i> field. Leave this field blank if you are
-            not using the classifier or do not need the table written to the database</p>.""")
+                | *(Used only if creating a properties file)*
+                | If you are using the machine-learning tool in CellProfiler Analyst,
+                  you can create an additional table in your database which contains the
+                  per-object phenotype labels. This table is produced after scoring all
+                  the objects in your data set and will be named with the label given
+                  here. Note that the actual class table will be named by prepending the
+                  table prefix (if any) to what you enter here.
+                
+                You can manually change this choice in the properties file by editing
+                the *class\_table* field. Leave this field blank if you are not using
+                the classifier or do not need the table written to the database
+            """)
 
         self.properties_classification_type = cps.Choice(
                 "Select the classification type",
                 CLASSIFIER_TYPE, doc="""
-            <i>(Used only if creating a properties file)</i><br>
-            Choose the type of classification this properties file will be used for. This
-            setting will create and set a field called <i>classification_type</i>.
-            Note that if you are not using the classifier tool, this setting will be ignored.
-            <ul>
-            <li><i>%(CT_OBJECT)s:</i> Object-based classification, i.e., set <i>classification_type</i>
-            to "object" (or leave it blank).</li>
-            <li><i>%(CT_IMAGE)s:</i> Image-based classification, e.g., set <i>classification_type</i>
-            to "image".</li>
-            </ul>
-            You can manually change this choice in the properties file by
-            editing the <i>classification_type</i> field.
+                | *(Used only if creating a properties file)*
+                | Choose the type of classification this properties file will be used
+                  for. This setting will create and set a field called
+                  *classification\_type*. Note that if you are not using the classifier
+                  tool, this setting will be ignored.
+                
+                -  *%(CT_OBJECT)s:* Object-based classification, i.e., set
+                   *classification\_type* to “object” (or leave it blank).
+                -  *%(CT_IMAGE)s:* Image-based classification, e.g., set
+                   *classification\_type* to “image”.
+                
+                You can manually change this choice in the properties file by editing
+                the *classification\_type* field.
             """ % globals())
 
         self.create_workspace_file = cps.Binary(
                 "Create a CellProfiler Analyst workspace file?", False, doc="""
-            Select <i>%(YES)s</i> to generate a workspace file for use with
-            CellProfiler Analyst, a data exploration tool which can
-            also be downloaded from <a href="http://www.cellprofiler.org/">
-            http://www.cellprofiler.org/</a>. A workspace file allows you
-            to open a selected set of measurements with the display tools
-            of your choice. This is useful, for example, if you want examine a standard
-            set of quality control image measurements for outliers.""" % globals())
+                | *(Used only if creating a properties file)*
+                | Choose the type of classification this properties file will be used
+                  for. This setting will create and set a field called
+                  *classification\_type*. Note that if you are not using the classifier
+                  tool, this setting will be ignored.
+                
+                -  *%(CT_OBJECT)s:* Object-based classification, i.e., set
+                   *classification\_type* to “object” (or leave it blank).
+                -  *%(CT_IMAGE)s:* Image-based classification, e.g., set
+                   *classification\_type* to “image”.
+                
+                You can manually change this choice in the properties file by editing
+                the *classification\_type* field.""" % globals())
 
         self.divider = cps.Divider(line=True)
         self.divider_props = cps.Divider(line=True)
@@ -682,25 +727,28 @@ class ExportToDatabase(cpm.Module):
         self.sqlite_file = cps.Text(
                 "Name the SQLite database file",
                 "DefaultDB.db", doc="""
-            <i>(Used if SQLite selected as database type)</i><br>
-            Enter the name of the SQLite database filename to which you want to write.""")
+                *(Used if SQLite selected as database type)*
+                Enter the name of the SQLite database filename to which you want to
+                write.""")
 
         self.wants_agg_mean = cps.Binary(
                 "Calculate the per-image mean values of object measurements?", True, doc="""
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate population statistics over all the objects in each image
-            and store the results in the database. For instance, if
-            you are measuring the area of the Nuclei objects and you check the box for this option, <b>ExportToDatabase</b> will create a column in the Per_Image
-            table called "Mean_Nuclei_AreaShape_Area".
-            <p>You may not want to use <b>ExportToDatabase</b> to calculate these population statistics if your pipeline generates
-            a large number of per-object measurements; doing so might exceed database
-            column limits. These columns can be created manually for selected measurements directly in MySQL.
-            For instance, the following SQL command creates the Mean_Nuclei_AreaShape_Area column:
-
-                <p><tt>ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
-                UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area =
-                    (SELECT AVG(Nuclei_AreaShape_Area)
-                     FROM Per_Object
-                     WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);</tt>""" % globals())
+                 Select *%(YES)s* for **ExportToDatabase** to calculate population
+                statistics over all the objects in each image and store the results in
+                the database. For instance, if you are measuring the area of the Nuclei
+                objects and you check the box for this option, **ExportToDatabase** will
+                create a column in the Per\_Image table called
+                “Mean\_Nuclei\_AreaShape\_Area”.
+                
+                You may not want to use **ExportToDatabase** to calculate these
+                population statistics if your pipeline generates a large number of
+                per-object measurements; doing so might exceed database column limits.
+                These columns can be created manually for selected measurements directly
+                in MySQL. For instance, the following SQL command creates the
+                Mean\_Nuclei\_AreaShape\_Area column:
+                
+                ``ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);                 UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area =                     (SELECT AVG(Nuclei_AreaShape_Area)                      FROM Per_Object                      WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);``
+                     """ % globals())
 
         self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False)
         self.wants_agg_std_dev = cps.Binary("Calculate the per-image standard deviation values of object measurements?",
@@ -708,210 +756,219 @@ class ExportToDatabase(cpm.Module):
 
         self.wants_agg_mean_well = cps.Binary(
                 "Calculate the per-well mean values of object measurements?", False, doc='''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
-            and store the results as columns in a "per-well" table in the database. For instance,
-            if you are measuring the area of the Nuclei objects and you check the aggregate
-            mean box in this module, <b>ExportToDatabase</b> will create a table in the database called
-            "Per_Well_avg", with a column called "Mean_Nuclei_AreaShape_Area". Selecting all three
-            aggregate measurements will create three per-well tables, one for each of the measurements.
-
-            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be
-            run on your Per-Image and Per-Object tables to create the desired per-well table.
-            <p><i>Note:</i> this option is only available if you have extracted plate and well metadata
-            from the filename using the <b>Metadata</b> or <b>LoadData</b> modules.
-            It will write out a .sql file with the statements necessary to create the Per_Well
-            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s''' % globals())
+                Select *%(YES)s* for **ExportToDatabase** to calculate statistics over
+                all the objects in each well and store the results as columns in a
+                “per-well” table in the database. For instance, if you are measuring the
+                area of the Nuclei objects and you check the aggregate mean box in this
+                module, **ExportToDatabase** will create a table in the database called
+                “Per\_Well\_avg”, with a column called “Mean\_Nuclei\_AreaShape\_Area”.
+                Selecting all three aggregate measurements will create three per-well
+                tables, one for each of the measurements.
+                
+                The per-well functionality will create the appropriate lines in a .SQL
+                file, which can be run on your Per-Image and Per-Object tables to create
+                the desired per-well table.
+                
+                Note that this option is only available if you have extracted plate and
+                well metadata from the filename using the **Metadata** or **LoadData**
+                modules. It will write out a .sql file with the statements necessary to
+                create the Per\_Well table, regardless of the option chosen above.
+                %(USING_METADATA_HELP_REF)s''' % globals())
 
         self.wants_agg_median_well = cps.Binary(
                 "Calculate the per-well median values of object measurements?", False, doc='''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
-            and store the results as columns in a "per-well" table in the database. For instance,
-            if you are measuring the area of the Nuclei objects and you check the aggregate
-            median box in this module, <b>ExportToDatabase</b> will create a table in the database called
-            "Per_Well_median", with a column called "Median_Nuclei_AreaShape_Area". Selecting all
-            three aggregate measurements will create three per-well tables, one for each of the measurements.
-
-            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your
-            Per-Image and Per-Object tables to create the desired per-well table.
-            <p><i>Note:</i> this option is only
-            available if you have extracted plate and well metadata from the filename using
-            the <b>Metadata</b> or <b>LoadData</b> modules.
-            It will write out a .sql file with the statements necessary to create the Per_Well
-            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s''' % globals())
+                Select *%(YES)s* for **ExportToDatabase** to calculate statistics over
+                all the objects in each well and store the results as columns in a
+                “per-well” table in the database. For instance, if you are measuring the
+                area of the Nuclei objects and you check the aggregate median box in
+                this module, **ExportToDatabase** will create a table in the database
+                called “Per\_Well\_median”, with a column called
+                “Median\_Nuclei\_AreaShape\_Area”. Selecting all three aggregate
+                measurements will create three per-well tables, one for each of the
+                measurements.
+                
+                The per-well functionality will create the appropriate lines in a .SQL
+                file, which can be run on your Per-Image and Per-Object tables to create
+                the desired per-well table.
+                
+                Note that this option is only available if you have extracted plate and
+                well metadata from the filename using the **Metadata** or **LoadData**
+                modules. It will write out a .sql file with the statements necessary to
+                create the Per\_Well table, regardless of the option chosen above.
+                %(USING_METADATA_HELP_REF)s''' % globals())
 
         self.wants_agg_std_dev_well = cps.Binary(
                 "Calculate the per-well standard deviation values of object measurements?", False, doc='''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
-            and store the results as columns in a "per-well" table in the database. For instance,
-            if you are measuring the area of the Nuclei objects and you check the aggregate
-            standard deviation box in this module, <b>ExportToDatabase</b> will create a table in the database called
-            "Per_Well_std", with a column called "Mean_Nuclei_AreaShape_Area".  Selecting all
-            three aggregate measurements will create three per-well tables, one for each of the measurements.
-            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your
-            Per-Image and Per-Object tables to create the desired per-well table.
-            <p><i>Note:</i> this option is only
-            available if you have extracted plate and well metadata from the filename
-            using the <b>Metadata</b> or <b>LoadData</b> modules.
-            It will write out a .sql file with the statements necessary to create the Per_Well
-            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s''' % globals())
+                Select *%(YES)s* for **ExportToDatabase** to calculate statistics over
+                all the objects in each well and store the results as columns in a
+                “per-well” table in the database. For instance, if you are measuring the
+                area of the Nuclei objects and you check the aggregate standard
+                deviation box in this module, **ExportToDatabase** will create a table
+                in the database called “Per\_Well\_std”, with a column called
+                “Mean\_Nuclei\_AreaShape\_Area”. Selecting all three aggregate
+                measurements will create three per-well tables, one for each of the
+                measurements.
+                
+                The per-well functionality will create the appropriate lines in a .SQL
+                file, which can be run on your Per-Image and Per-Object tables to create
+                the desired per-well table.
+                
+                Note that this option is only available if you have extracted plate and
+                well metadata from the filename using the **Metadata** or **LoadData**
+                modules. It will write out a .sql file with the statements necessary to
+                create the Per\_Well table, regardless of the option chosen above.
+                %(USING_METADATA_HELP_REF)s''' % globals())
 
         self.objects_choice = cps.Choice(
                 "Export measurements for all objects to the database?",
                 [O_ALL, O_NONE, O_SELECT], doc="""
-            This option lets you choose the objects whose measurements will be saved in the Per_Object and
-            Per_Well(s) database tables.
-            <ul>
-            <li><i>%(O_ALL)s:</i> Export measurements from all objects.</li>
-            <li><i>%(O_NONE)s:</i> Do not export data to a Per_Object table. Save only Per_Image or Per_Well
-            measurements (which nonetheless include population statistics from objects).</li>
-            <li><i>%(O_SELECT)s:</i> Select the objects you want to export from a list.</li>
-            </ul>""" % globals())
+                This option lets you choose the objects whose measurements will be saved
+                in the Per\_Object and Per\_Well(s) database tables.
+                
+                -  *%(O_ALL)s:* Export measurements from all objects.
+                -  *%(O_NONE)s:* Do not export data to a Per\_Object table. Save only
+                   Per\_Image or Per\_Well measurements (which nonetheless include
+                   population statistics from objects).
+                -  *%(O_SELECT)s:* Select the objects you want to export from a list.""" % globals())
 
         self.objects_list = cps.ObjectSubscriberMultiChoice(
                 "Select the objects", doc="""
-            <i>(Used only if Select is chosen for adding objects)</i><br>
-            Choose one or more objects from this list (click using shift or command keys to select
-            multiple objects). The list includes
-            the objects that were created by prior modules. If you choose an
-            object, its measurements will be written out to the Per_Object and/or
-            Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
+                *(Used only if Select is chosen for adding objects)*
+                Choose one or more objects from this list (click using shift or command
+                keys to select multiple objects). The list includes the objects that
+                were created by prior modules. If you choose an object, its measurements
+                will be written out to the Per\_Object and/or Per\_Well(s) tables,
+                otherwise, the object’s measurements will be skipped.""")
 
         self.wants_relationship_table_setting = cps.Binary(
                 "Export object relationships?", True, doc="""
-            <i>(Used only for pipelines which relate objects to each other)</i><br>
-            Select <i>%(YES)s</i> to export object relationships to the
-            RelationshipsView view. Only certain modules produce
-            relationships that can be exported by this setting; see
-            the <b>TrackObjects</b>, <b>RelateObjects</b>,
-            <b>MeasureObjectNeighbors</b> and the <b>Identify</b> modules
-            for more details.
-            <p>This view has the following columns:
-            <ul><li><i>%(COL_MODULE_NUMBER)s</i>: the module number of the
-            module that produced the relationship. The first module in the
-            pipeline is module #1, etc.</li>
-            <li><i>%(COL_RELATIONSHIP)s</i>: the relationship between the two
-            objects, for instance, "Parent".</li>
-            <li><i>%(COL_OBJECT_NAME1)s, %(COL_OBJECT_NAME2)s</i>:
-            the names of the two objects being related.</li>
-            <li><i>%(COL_IMAGE_NUMBER1)s, %(COL_OBJECT_NUMBER1)s</i>:
-            the image number and object number of the first object in the
-            relationship</li>
-            <li><i>%(COL_IMAGE_NUMBER2)s, %(COL_OBJECT_NUMBER2)s</i>:
-            the image number and object number of the second object in the
-            relationship</li>
-            </ul>
-            </p>""" % globals())
+                | *(Used only for pipelines which relate objects to each other)*
+                | Select *%(YES)s* to export object relationships to the
+                  RelationshipsView view. Only certain modules produce relationships
+                  that can be exported by this setting; see the **TrackObjects**,
+                  **RelateObjects**, **MeasureObjectNeighbors** and the **Identify**
+                  modules for more details.
+                
+                This view has the following columns:
+                
+                -  *%(COL_MODULE_NUMBER)s*: the module number of the module that
+                   produced the relationship. The first module in the pipeline is module
+                   #1, etc.
+                -  *%(COL_RELATIONSHIP)s*: the relationship between the two objects,
+                   for instance, “Parent”.
+                -  *%(COL_OBJECT_NAME1)s, %(COL_OBJECT_NAME2)s*: the names of the
+                   two objects being related.
+                -  *%(COL_IMAGE_NUMBER1)s, %(COL_OBJECT_NUMBER1)s*: the image number
+                   and object number of the first object in the relationship
+                -  *%(COL_IMAGE_NUMBER2)s, %(COL_OBJECT_NUMBER2)s*: the image number
+                   and object number of the second object in the relationship""" % globals())
 
         self.max_column_size = cps.Integer(
                 "Maximum # of characters in a column name", 64,
                 minval=10, maxval=64, doc="""
-            This setting limits the number of characters that can appear
-            in the name of a field in the database. MySQL has a limit of 64
-            characters per field, but also has an overall limit on the number of characters
-            in all of the columns of a table. <b>ExportToDatabase</b> will
-            shorten all of the column names by removing characters, at the
-            same time guaranteeing that no two columns have the same name.""")
+                This setting limits the number of characters that can appear in the name
+                of a field in the database. MySQL has a limit of 64 characters per
+                field, but also has an overall limit on the number of characters in all
+                of the columns of a table. **ExportToDatabase** will shorten all of the
+                column names by removing characters, at the same time guaranteeing that
+                no two columns have the same name.""")
 
         self.separate_object_tables = cps.Choice(
                 "Create one table per object, a single object table or a single object view?",
                 [OT_COMBINE, OT_PER_OBJECT, OT_VIEW], doc="""
-            <b>ExportToDatabase</b> can create either one table
-            for each type of object exported or a single
-            object table.<br><ul>
-            <li><i>%(OT_PER_OBJECT)s</i> creates one
-            table for each object type you export. The table name will reflect
-            the name of your objects. The table will have one row for each
-            of your objects. You can write SQL queries that join tables using
-            the "Number_ObjectNumber" columns of parent objects (such as those
-            created by <b>IdentifyPrimaryObjects</b>) with the corresponding
-            "Parent_... column" of the child objects. Choose
-            <i>%(OT_PER_OBJECT)s</i> if parent objects can have more than
-            one child object, if you want a relational representation of
-            your objects in the database,
-            or if you need to split columns among different
-            tables and shorten column names because of database limitations.</li>
-            <li><i>%(OT_COMBINE)s</i> creates a single
-            database table that records the object measurements. <b>
-            ExportToDatabase</b> will prepend each column name with the
-            name of the object associated with that column's measurement.
-            Each row of the table will have measurements for all objects
-            that have the same image and object number. Choose
-            <i>%(OT_COMBINE)s</i> if parent objects have a single child,
-            or if you want a simple table structure in your database. You can
-            combine the measurements for all or selected objects in this way.</li>
-            <li><i>%(OT_VIEW)s</i> creates a single
-            database view to contain the object measurements. A <i>view</i> is a
-            virtual database table which can be used to package together multiple
-            per-object tables into a single structure that is accessed just like a
-            regular table. Choose <i>%(OT_VIEW)s</i> if you want to combine multiple
-            objects but using <i>%(OT_COMBINE)s</i> would produce a table that hits
-            the database size limitations. <br>
-            An important note is that only objects that are related as primary, secondary
-            or tertiary objects to each other should be combined in a view. This is
-            because the view expects a one-to-one relationship between the combined objects. If
-            you are selecting objects for the view, the module will warn you if they are
-            not related in this way.
-            </li>
-            </ul>""" % globals())
+                | **ExportToDatabase** can create either one table for each type of
+                  object exported or a single object table.
+                
+                -  *%(OT_PER_OBJECT)s* creates one table for each object type you
+                   export. The table name will reflect the name of your objects. The
+                   table will have one row for each of your objects. You can write SQL
+                   queries that join tables using the “Number\_ObjectNumber” columns of
+                   parent objects (such as those created by **IdentifyPrimaryObjects**)
+                   with the corresponding “Parent\_… column” of the child objects.
+                   Choose *%(OT_PER_OBJECT)s* if parent objects can have more than one
+                   child object, if you want a relational representation of your objects
+                   in the database, or if you need to split columns among different
+                   tables and shorten column names because of database limitations.
+                -  *%(OT_COMBINE)s* creates a single database table that records the
+                   object measurements. **ExportToDatabase** will prepend each column
+                   name with the name of the object associated with that column’s
+                   measurement. Each row of the table will have measurements for all
+                   objects that have the same image and object number. Choose
+                   *%(OT_COMBINE)s* if parent objects have a single child, or if you
+                   want a simple table structure in your database. You can combine the
+                   measurements for all or selected objects in this way.
+                -  *%(OT_VIEW)s* creates a single database view to contain the object
+                   measurements. A *view* is a virtual database table which can be used
+                   to package together multiple per-object tables into a single
+                   structure that is accessed just like a regular table. Choose
+                   *%(OT_VIEW)s* if you want to combine multiple objects but using
+                   *%(OT_COMBINE)s* would produce a table that hits the database size
+                   limitations.
+                   An important note is that only objects that are related as primary,
+                   secondary or tertiary objects to each other should be combined in a
+                   view. This is because the view expects a one-to-one relationship
+                   between the combined objects. If you are selecting objects for the
+                   view, the module will warn you if they are not related in this way.""" % globals())
 
         self.want_image_thumbnails = cps.Binary(
                 "Write image thumbnails directly to the database?", False, doc="""
-            <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type)</i><br>
-            Select %(YES)s if you'd like to write image thumbnails directly
-            into the database. This will slow down the writing step, but will
-            enable new functionality in CellProfiler Analyst such as quickly
-            viewing images in the Plate Viewer tool by selecting "thumbnail"
-            from the "Well display" dropdown.""" % globals())
+                *(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database
+                type)*
+                Select %(YES)s if you’d like to write image thumbnails directly into the
+                database. This will slow down the writing step, but will enable new
+                functionality in CellProfiler Analyst such as quickly viewing images in
+                the Plate Viewer tool by selecting “thumbnail” from the “Well display”
+                dropdown.""" % globals())
 
         self.thumbnail_image_names = cps.ImageNameSubscriberMultiChoice(
                 "Select the images for which you want to save thumbnails", doc="""
-            <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type
-            and writing thumbnails is selected)</i><br>
-            Select the images that you wish to save as thumbnails to
-            the database. Make multiple selections by using Ctrl-Click (Windows)
-            or Command-Click (Mac); """ % globals())
+                *(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database
+                type)*
+                Select %(YES)s if you’d like to write image thumbnails directly into the
+                database. This will slow down the writing step, but will enable new
+                functionality in CellProfiler Analyst such as quickly viewing images in
+                the Plate Viewer tool by selecting “thumbnail” from the “Well display”
+                dropdown.""" % globals())
 
         self.auto_scale_thumbnail_intensities = cps.Binary(
                 "Auto-scale thumbnail pixel intensities?", True,
                 doc="""
-            <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type
-            and writing thumbnails is selected)</i><br>
-            Select <i>%(YES)s</i> if you'd like to automatically rescale
-            the thumbnail pixel intensities to the range 0-1, where 0 is
-            black/unsaturated, and 1 is white/saturated.""" % globals())
+                *(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database
+                type and writing thumbnails is selected)*
+                Select *%(YES)s* if you’d like to automatically rescale the thumbnail
+                pixel intensities to the range 0-1, where 0 is black/unsaturated, and 1
+                is white/saturated.""" % globals())
 
         self.allow_overwrite = cps.Choice(
                 "Overwrite without warning?",
                 [OVERWRITE_NEVER, OVERWRITE_DATA, OVERWRITE_ALL],
                 doc="""
-            <b>ExportToDatabase</b> creates tables and databases at the start
-            of a run when writing directly to a MySQL or SQLite database. It
-            writes SQL scripts and CSVs when not writing directly. It also
-            can write CellProfiler Analysis property files. In some cases,
-            it is appropriate to run CellProfiler and append to or overwrite
-            the data in existing tables, for instance when running several
-            CellProfiler instances which each process a range of the experiment's
-            image sets. In other cases, such as when the measurements to be written
-            have changed, the data tables must be dropped completely.
-            <br>
-            You can choose fromm three options to conrtol overwriting behavior:
-            <ul><li><i>%(OVERWRITE_NEVER)s:</i> <b>ExportToDatabase</b> will
-            ask before dropping and recreating tables unless you are running
-            headless. CellProfiler will exit if running headless if the tables
-            exist and this option is chosen.</li>
-            <li><i>%(OVERWRITE_DATA)s:</i> <b>ExportToDatabase</b> will keep
-            the existing tables if present and will overwrite the data. Choose
-            <i>%(OVERWRITE_DATA)s</i> if you are breaking your experiment
-            into ranges of image sets and running each range on a separate
-            instance of CellProfiler.</li>
-            <li><i>%(OVERWRITE_ALL)s:</i> <b>ExportToDatabase</b> will
-            drop previous versions of tables at the start of a run. This option
-            is appropriate if you are using the <b>CreateBatchFiles</b> module;
-            your tables will be created by the run that creates the batch
-            data file. The actual analysis runs that utilize the <code>Batch_data</code>
-            file will use the existing tables without trying to recreate them.</li>
-            </ul>
-            """ % globals())
+                | **ExportToDatabase** creates tables and databases at the start of a
+                  run when writing directly to a MySQL or SQLite database. It writes SQL
+                  scripts and CSVs when not writing directly. It also can write
+                  CellProfiler Analysis property files. In some cases, it is appropriate
+                  to run CellProfiler and append to or overwrite the data in existing
+                  tables, for instance when running several CellProfiler instances which
+                  each process a range of the experiment’s image sets. In other cases,
+                  such as when the measurements to be written have changed, the data
+                  tables must be dropped completely.
+                | You can choose fromm three options to conrtol overwriting behavior:
+                
+                -  *%(OVERWRITE_NEVER)s:* **ExportToDatabase** will ask before dropping
+                   and recreating tables unless you are running headless. CellProfiler
+                   will exit if running headless if the tables exist and this option is
+                   chosen.
+                -  *%(OVERWRITE_DATA)s:* **ExportToDatabase** will keep the existing
+                   tables if present and will overwrite the data. Choose
+                   *%(OVERWRITE_DATA)s* if you are breaking your experiment into ranges
+                   of image sets and running each range on a separate instance of
+                   CellProfiler.
+                -  *%(OVERWRITE_ALL)s:* **ExportToDatabase** will drop previous
+                   versions of tables at the start of a run. This option is appropriate
+                   if you are using the **CreateBatchFiles** module; your tables will be
+                   created by the run that creates the batch data file. The actual
+                   analysis runs that utilize the ``Batch_data`` file will use the
+                   existing tables without trying to recreate them.""" % globals())
 
     def add_image_group(self, can_remove=True):
         group = cps.SettingsGroup()
@@ -922,26 +979,36 @@ class ExportToDatabase(cpm.Module):
                 "image_cols", cps.Choice(
                         "Select an image to include", [cps.NONE],
                         choices_fn=self.get_property_file_image_choices, doc="""
-                <i>(Used only if creating a properties file and specifiying the image information)</i><br>
-                Choose image name to include it in the properties file of images.
-                <p>The images in the drop-down correspond to images that have been:
-                <ul>
-                <li>Loaded using one of the <b>Load</b> modules.</li>
-                <li>Saved with the <b>SaveImages</b> module, with the corresponding file and path information stored.</li>
-                </ul>
-                If you do not see your desired image listed, check the settings on these modules.</p>"""))
+                        | *(Used only if creating a properties file and specifiying the image
+                          information)*
+                        | Choose image name to include it in the properties file of images.
+                        
+                        The images in the drop-down correspond to images that have been:
+                        
+                        -  Loaded using one of the **Load** modules.
+                        -  Saved with the **SaveImages** module, with the corresponding file and
+                           path information stored.
+                        
+                        If you do not see your desired image listed, check the settings on these
+                        modules.
+                        """))
 
         group.append(
                 "wants_automatic_image_name", cps.Binary(
                         "Use the image name for the display?", True, doc=
-                        """<i>(Used only if creating a properties file and specifiying the image information)</i><br>
-                        Select <i>%(YES)s</i> to use the image name as given above for the displayed name.
-                        <p>Select <i>%(NO)s</i> to name the file yourself.</p>""" % globals()))
+                        """| *(Used only if creating a properties file and specifiying the image
+                          information)*
+                        | Select *%(YES)s* to use the image name as given above for the
+                          displayed name.
+                        
+                        Select *%(NO)s* to name the file yourself.
+                        """ % globals()))
 
         group.append(
                 "image_name", cps.Text(
                         "Image name", "Channel%d" % (len(self.image_groups) + 1), doc=
-                        """<i>(Used only if creating a properties file, specifiying the image information and naming the image)</i><br>
+                        """*(Used only if creating a properties file, specifiying the image
+                        information and naming the image)*
                         Enter a name for the specified image"""))
 
         default_color = (COLOR_ORDER[len(self.image_groups)]
@@ -951,8 +1018,9 @@ class ExportToDatabase(cpm.Module):
         group.append(
                 "image_channel_colors", cps.Choice(
                         "Channel color", COLOR_ORDER, default_color, doc="""
-                <i>(Used only if creating a properties file and specifiying the image information)</i><br>
-                Enter a color to display this channel."""))
+                        *(Used only if creating a properties file and specifiying the image
+                        information)*
+                        Enter a color to display this channel."""))
 
         group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
 
@@ -972,17 +1040,24 @@ class ExportToDatabase(cpm.Module):
                 "group_statement", cps.Text(
                         "Enter the per-image columns which define the group, separated by commas", GROUP_COL_DEFAULT,
                         doc="""
-            <i>(Used only if creating a properties file and specifiying an image data group)</i><br>
-            To define a group, enter the image key columns followed by group key columns, each separated by commas.
-            <p>In CellProfiler, the image key column is always given the name as <i>ImageNumber</i>; group keys
-            are typically metadata columns which are always prefixed with <i>Image_Metadata_</i>. For example, if you
-            wanted to be able to group your data by unique plate and well metadata tags, you could define a
-            group with the following MySQL statement:<br>
-            <code>group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate, Image_Metadata_Well FROM Per_Image</code><br>
-            For this example, the columns to enter in this setting would be:<br>
-            <code>ImageNumber, Image_Metadata_Plate, Image_Metadata_Well</code></p>
-            <p>Groups are specified as MySQL statements in the properties file, but please note that the full SELECT and
-            FROM clauses will be added automatically, so there is no need to enter them here.</p>"""))
+                    | *(Used only if creating a properties file and specifiying an image
+                      data group)*
+                    | To define a group, enter the image key columns followed by group key
+                      columns, each separated by commas.
+                    
+                    | In CellProfiler, the image key column is always given the name as
+                      *ImageNumber*; group keys are typically metadata columns which are
+                      always prefixed with *Image\_Metadata\_*. For example, if you wanted
+                      to be able to group your data by unique plate and well metadata tags,
+                      you could define a group with the following MySQL statement:
+                    | ``group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate, Image_Metadata_Well FROM Per_Image``
+                    | For this example, the columns to enter in this setting would be:
+                    | ``ImageNumber, Image_Metadata_Plate, Image_Metadata_Well``
+                    
+                    Groups are specified as MySQL statements in the properties file, but
+                    please note that the full SELECT and FROM clauses will be added
+                    automatically, so there is no need to enter them here.
+                                """))
         group.append("remover", cps.RemoveSettingButton("", "Remove this group", self.group_field_groups, group))
         group.append("divider", cps.Divider(line=True))
 
@@ -996,20 +1071,27 @@ class ExportToDatabase(cpm.Module):
         group.append(
                 "filter_name", cps.Text(
                         "Enter the name of the filter", '', doc="""
-            <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
-            Enter a name for the filter. Only alphanumeric characters and underscores are permitted."""))
+                        *(Used only if creating a properties file and specifiying an image data
+                        filter)*
+                        Enter a name for the filter. Only alphanumeric characters and
+                        underscores are permitted."""))
 
         group.append(
                 "filter_statement", cps.Text(
                         "Enter the MySQL WHERE clause to define a filter", '', doc="""
-            <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
-            To define a filter, enter a MySQL <i>WHERE</i> clause that returns image-keys for images you want to include.
-            For example, here is a filter that returns only images from plate 1:<br>
-            <code>Image_Metadata_Plate = '1'</code><br>
-            Here is a filter returns only images from with a gene column that starts with CDK:
-            <code>Image_Metadata_Gene REGEXP 'CDK.*'</code><br>
-            <p>Filters are specified as MySQL statements in the properties file, but please note that the full SELECT and
-            FROM clauses (as well as the WHERE keyword) will be added automatically, so there is no need to enter them here.</p>"""))
+                        | *(Used only if creating a properties file and specifiying an image
+                          data filter)*
+                        | To define a filter, enter a MySQL *WHERE* clause that returns
+                          image-keys for images you want to include. For example, here is a
+                          filter that returns only images from plate 1:
+                        | ``Image_Metadata_Plate = '1'``
+                        | Here is a filter returns only images from with a gene column that
+                          starts with CDK: ``Image_Metadata_Gene REGEXP 'CDK.*'``
+                        
+                        Filters are specified as MySQL statements in the properties file, but
+                        please note that the full SELECT and FROM clauses (as well as the WHERE
+                        keyword) will be added automatically, so there is no need to enter them
+                        here."""))
         group.append("remover", cps.RemoveSettingButton("", "Remove this filter", self.filter_field_groups, group))
         group.append("divider", cps.Divider(line=True))
 
@@ -1027,59 +1109,56 @@ class ExportToDatabase(cpm.Module):
                 "measurement_display", cps.Choice(
                         "Select the measurement display tool",
                         W_DISPLAY_ALL, doc="""
-            <i>(Used only if creating a workspace file)</i><br>
-            Select what display tool in CPA you want to use to open the
-            measurements.
-            <ul>
-            <li>%(W_SCATTERPLOT)s</li>
-            <li>%(W_HISTOGRAM)s</li>
-            <li>%(W_DENSITYPLOT)s</li>
-            <li>%(W_PLATEVIEWER)s</li>
-            <li>%(W_BOXPLOT)s</li>
-            </ul>""" % globals()))
+                | *(Used only if creating a workspace file)*
+                | Select what display tool in CPA you want to use to open the
+                  measurements.
+                
+                -  %(W_SCATTERPLOT)s
+                -  %(W_HISTOGRAM)s
+                -  %(W_DENSITYPLOT)s
+                -  %(W_PLATEVIEWER)s
+                -  %(W_BOXPLOT)s""" % globals()))
 
         def measurement_type_help():
             return """
-                <i>(Used only if creating a workspace file)</i><br>
-                You can plot two types of measurements:
-                <ul>
-                <li><i>Image:</i> For a per-image measurement, one numerical value is
-                recorded for each image analyzed.
-                Per-image measurements are produced by
-                many modules. Many have <b>MeasureImage</b> in the name but others do not
-                (e.g., the number of objects in each image is a per-image
-                measurement made by <b>IdentifyObject</b>
-                modules).</li>
-                <li><i>Object:</i> For a per-object measurement, each identified
-                object is measured, so there may be none or many
-                numerical values recorded for each image analyzed. These are usually produced by
-                modules with <b>MeasureObject</b> in the name.</li>
-                </ul>""" % globals()
+            | *(Used only if creating a workspace file)*
+            | You can plot two types of measurements:
+            
+            -  *Image:* For a per-image measurement, one numerical value is recorded
+               for each image analyzed. Per-image measurements are produced by many
+               modules. Many have **MeasureImage** in the name but others do not
+               (e.g., the number of objects in each image is a per-image measurement
+               made by **IdentifyObject** modules).
+            -  *Object:* For a per-object measurement, each identified object is
+               measured, so there may be none or many numerical values recorded for
+               each image analyzed. These are usually produced by modules with
+               **MeasureObject** in the name.""" % globals()
 
         def object_name_help():
-            return """<i>(Used only if creating a workspace file)</i><br>
-                Select the object that you want to measure from the list.
-                This should be an object created by a previous module such as
-                <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
-                <b>IdentifyTertiaryObjects</b>."""
+            return """*(Used only if creating a workspace file)*
+            Select the object that you want to measure from the list. This should be
+            an object created by a previous module such as
+            **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**, or
+            **IdentifyTertiaryObjects**."""
 
         def measurement_name_help():
-            return """<i>(Used only if creating a workspace file)</i><br>
+            return """*(Used only if creating a workspace file)*
             Select the measurement to be plotted on the desired axis."""
 
         def index_name_help():
-            return """<i>(Used only if creating a workspace file and an index is plotted)</i><br>
-            Select the index to be plot on the selected axis. Two options are available:
-            <ul>
-            <li><i>%(C_IMAGE_NUMBER)s:</i> In CellProfiler, the unique identifier for each image
-            is always given this name. Selecting this option allows you to plot a single measurement
-            for each image indexed by the order it was processed.</li>
-            <li><i>%(GROUP_INDEX)s:</i> This identifier is used in cases where grouping is applied.
-            Each image in a group is given an index indicating the order it was processed. Selecting
-            this option allows you to plot a set of measurements grouped by a common index.
-            %(USING_METADATA_GROUPING_HELP_REF)s
-            </li>
-            </ul>""" % globals()
+            return """| *(Used only if creating a workspace file and an index is plotted)*
+            | Select the index to be plot on the selected axis. Two options are
+              available:
+            
+            -  *%(C_IMAGE_NUMBER)s:* In CellProfiler, the unique identifier for
+               each image is always given this name. Selecting this option allows
+               you to plot a single measurement for each image indexed by the order
+               it was processed.
+            -  *%(GROUP_INDEX)s:* This identifier is used in cases where grouping
+               is applied. Each image in a group is given an index indicating the
+               order it was processed. Selecting this option allows you to plot a
+               set of measurements grouped by a common index.
+               %(USING_METADATA_GROUPING_HELP_REF)s""" % globals()
 
         group.append(
                 "x_measurement_type", cps.Choice(
@@ -2568,7 +2647,7 @@ CREATE TABLE %s (
         Returns the relationship_type_id that joins to the relationship
         type record in the relationship types table.
 
-        NOTE: this should not be called for CSV databases.
+        Note that this should not be called for CSV databases.
         '''
         assert self.db_type != DB_MYSQL_CSV
 
@@ -3596,7 +3675,7 @@ cell_y_loc    = %(cell_y_loc)s
 # path and filename column to the per-image table of your database and then
 # adding those column names here.
 #
-# NOTE: These lists must have equal length!
+# Note that these lists must have equal length!
 image_path_cols = %(image_path_cols)s
 image_file_cols = %(image_file_cols)s
 

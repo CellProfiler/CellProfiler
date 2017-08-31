@@ -21,15 +21,15 @@ The typical approach for this module is the following:
    seed nuclei using **IdentifySecondaryObjects**.
 -  Use the **Morph** module to skeletonize the secondary objects.
 -  Finally, the primary objects and the skeleton objects are used as
-   inputs to **MeasureNeurons**.
+   inputs to **MeasureObjectSkeleton**.
 
 The module determines distances from the seed objects along the axons
 and dendrites and assigns branchpoints based on distance to the closest
 seed object when two seed objects appear to be attached to the same
 dendrite or axon.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *NumberTrunks:* The number of trunks. Trunks are branchpoints that
    lie within the seed objects
@@ -75,8 +75,8 @@ F_ALL = [F_NUMBER_TRUNKS, F_NUMBER_NON_TRUNK_BRANCHES, F_NUMBER_BRANCH_ENDS,
          F_TOTAL_NEURITE_LENGTH]
 
 
-class MeasureNeurons(cpm.Module):
-    module_name = "MeasureNeurons"
+class MeasureObjectSkeleton(cpm.Module):
+    module_name = "MeasureObjectSkeleton"
     category = "Measurement"
     variable_revision_number = 3
 

@@ -1,48 +1,46 @@
-"""test_measureobjectsizeshape.py - test the MeasureObjectSizeShape module
-"""
-
 import StringIO
-import base64
+import os
 import unittest
 
-import numpy as np
+import numpy
+import skimage.io
 
-from cellprofiler.preferences import set_headless
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.injectimage
+import cellprofiler.modules.measureobjectsizeshape
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.workspace
 
-set_headless()
+cellprofiler.preferences.set_headless()
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.modules.measureobjectsizeshape as cpmoas
-import cellprofiler.modules.injectimage as ii
-import cellprofiler.measurement as cpmeas
-import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
-import cellprofiler.image as cpi
 
 OBJECTS_NAME = "myobjects"
 
 
 class TestMeasureObjectSizeShape(unittest.TestCase):
     def make_workspace(self, labels):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cellprofiler.object.ObjectSet()
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
-        m = cpmeas.Measurements()
-        module = cpmoas.MeasureObjectAreaShape()
+        m = cellprofiler.measurement.Measurements()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.module_num = 1
         module.object_groups[0].name.value = OBJECTS_NAME
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  m, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set,
+                                                     m, image_set_list)
         return workspace, module
 
     def test_01_01_01_load_v1(self):
@@ -55,16 +53,16 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
     Select objects to measure:Cells
     Calculate the Zernike features?:Yes
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cpmoas.MeasureObjectSizeShape))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape))
         self.assertEqual(len(module.object_groups), 2)
         for og, expected in zip(module.object_groups, ("Nuclei", "Cells")):
             self.assertEqual(og.name, expected)
@@ -72,64 +70,64 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
 
     def test_01_00_zeros(self):
         """Run on an empty labels matrix"""
-        object_set = cpo.ObjectSet()
-        labels = np.zeros((10, 20), int)
-        objects = cpo.Objects()
+        object_set = cellprofiler.object.ObjectSet()
+        labels = numpy.zeros((10, 20), int)
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
-        pipeline = cpp.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.measurement.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set_list.get_image_set(0),
-                                  object_set, measurements, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     image_set_list.get_image_set(0),
+                                                     object_set, measurements, image_set_list)
         module.run(workspace)
 
-        for f in (cpmoas.F_AREA, cpmoas.F_CENTER_X, cpmoas.F_CENTER_Y,
-                  cpmoas.F_ECCENTRICITY, cpmoas.F_EULER_NUMBER,
-                  cpmoas.F_EXTENT, cpmoas.F_FORM_FACTOR,
-                  cpmoas.F_MAJOR_AXIS_LENGTH, cpmoas.F_MINOR_AXIS_LENGTH,
-                  cpmoas.F_ORIENTATION, cpmoas.F_PERIMETER,
-                  cpmoas.F_SOLIDITY, cpmoas.F_COMPACTNESS,
-                  cpmoas.F_MAXIMUM_RADIUS, cpmoas.F_MEAN_RADIUS,
-                  cpmoas.F_MEDIAN_RADIUS,
-                  cpmoas.F_MIN_FERET_DIAMETER, cpmoas.F_MAX_FERET_DIAMETER):
-            m = cpmoas.AREA_SHAPE + "_" + f
+        for f in (cellprofiler.modules.measureobjectsizeshape.F_AREA, cellprofiler.modules.measureobjectsizeshape.F_CENTER_X, cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
+                  cellprofiler.modules.measureobjectsizeshape.F_ECCENTRICITY, cellprofiler.modules.measureobjectsizeshape.F_EULER_NUMBER,
+                  cellprofiler.modules.measureobjectsizeshape.F_EXTENT, cellprofiler.modules.measureobjectsizeshape.F_FORM_FACTOR,
+                  cellprofiler.modules.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH, cellprofiler.modules.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
+                  cellprofiler.modules.measureobjectsizeshape.F_ORIENTATION, cellprofiler.modules.measureobjectsizeshape.F_PERIMETER,
+                  cellprofiler.modules.measureobjectsizeshape.F_SOLIDITY, cellprofiler.modules.measureobjectsizeshape.F_COMPACTNESS,
+                  cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS, cellprofiler.modules.measureobjectsizeshape.F_MEAN_RADIUS,
+                  cellprofiler.modules.measureobjectsizeshape.F_MEDIAN_RADIUS,
+                  cellprofiler.modules.measureobjectsizeshape.F_MIN_FERET_DIAMETER, cellprofiler.modules.measureobjectsizeshape.F_MAX_FERET_DIAMETER):
+            m = cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + f
             a = measurements.get_current_measurement('SomeObjects', m)
             self.assertEqual(len(a), 0)
 
     def test_01_02_run(self):
         """Run with a rectangle, cross and circle"""
-        object_set = cpo.ObjectSet()
-        labels = np.zeros((10, 20), int)
+        object_set = cellprofiler.object.ObjectSet()
+        labels = numpy.zeros((10, 20), int)
         labels[1:9, 1:5] = 1
         labels[1:9, 11] = 2
         labels[4, 6:19] = 2
-        objects = cpo.Objects()
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
-        labels = np.zeros((115, 115), int)
-        x, y = np.mgrid[-50:51, -50:51]
+        labels = numpy.zeros((115, 115), int)
+        x, y = numpy.mgrid[-50:51, -50:51]
         labels[:101, :101][x ** 2 + y ** 2 <= 2500] = 1
-        objects = cpo.Objects()
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "OtherObjects")
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
-        pipeline = cpp.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.measurement.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set_list.get_image_set(0),
-                                  object_set, measurements, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     image_set_list.get_image_set(0),
+                                                     object_set, measurements, image_set_list)
         module.run(workspace)
         self.features_and_columns_match(measurements, module)
 
@@ -148,13 +146,13 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         area = measurements.get_current_measurement('OtherObjects',
                                                     'AreaShape_Area')
         # The perimeter is obtained geometrically and is overestimated.
-        expected = 100 * np.pi
+        expected = 100 * numpy.pi
         diff = abs((perim[0] - expected) / (perim[0] + expected))
         self.assertTrue(diff < .05, "perimeter off by %f" % diff)
         wrongness = (perim[0] / expected) ** 2
 
         # It's an approximate circle...
-        expected = np.pi * 50.0 ** 2
+        expected = numpy.pi * 50.0 ** 2
         diff = abs((area[0] - expected) / (area[0] + expected))
         self.assertTrue(diff < .05, "area off by %f" % diff)
         wrongness *= expected / area[0]
@@ -170,7 +168,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                 self.assertEqual(len(m), object_count)
 
     def test_02_01_categories(self):
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         for object_name in settings[:-1]:
@@ -180,50 +178,50 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.assertEqual(len(module.get_categories(None, "Bogus")), 0)
 
     def test_02_02_measurements_zernike(self):
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         for object_name in settings[:-1]:
             measurements = module.get_measurements(None, object_name, 'AreaShape')
-            for measurement in cpmoas.F_STANDARD:
+            for measurement in cellprofiler.modules.measureobjectsizeshape.F_STANDARD:
                 self.assertTrue(measurement in measurements)
             self.assertTrue('Zernike_3_1' in measurements)
 
     def test_02_03_measurements_no_zernike(self):
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "No"]
         module.set_settings_from_values(settings, 1, module.module_class())
         for object_name in settings[:-1]:
             measurements = module.get_measurements(None, object_name, 'AreaShape')
-            for measurement in cpmoas.F_STANDARD:
+            for measurement in cellprofiler.modules.measureobjectsizeshape.F_STANDARD:
                 self.assertTrue(measurement in measurements)
             self.assertFalse('Zernike_3_1' in measurements)
 
     def test_03_01_non_contiguous(self):
         '''make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects'''
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
-        object_set = cpo.ObjectSet()
-        labels = np.zeros((10, 20), int)
+        object_set = cellprofiler.object.ObjectSet()
+        labels = numpy.zeros((10, 20), int)
         labels[1:9, 1:5] = 1
         labels[4:6, 6:19] = 1
-        objects = cpo.Objects()
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
-        pipeline = cpp.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.measurement.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set_list.get_image_set(0),
-                                  object_set, measurements, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     image_set_list.get_image_set(0),
+                                                     object_set, measurements, image_set_list)
         module.run(workspace)
         values = measurements.get_current_measurement("SomeObjects",
                                                       "AreaShape_Perimeter")
@@ -233,33 +231,33 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
     def test_03_02_zernikes_are_different(self):
         '''Regression test of IMG-773'''
 
-        np.random.seed(32)
-        labels = np.zeros((40, 20), int)
+        numpy.random.seed(32)
+        labels = numpy.zeros((40, 20), int)
         #
         # Make two "objects" composed of random foreground/background
         #
-        labels[1:19, 1:19] = (np.random.uniform(size=(18, 18)) > .5).astype(int)
-        labels[21:39, 1:19] = (np.random.uniform(size=(18, 18)) > .5).astype(int) * 2
-        objects = cpo.Objects()
+        labels[1:19, 1:19] = (numpy.random.uniform(size=(18, 18)) > .5).astype(int)
+        labels[21:39, 1:19] = (numpy.random.uniform(size=(18, 18)) > .5).astype(int) * 2
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
-        object_set = cpo.ObjectSet()
+        object_set = cellprofiler.object.ObjectSet()
         object_set.add_objects(objects, "SomeObjects")
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
-        pipeline = cpp.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.measurement.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set_list.get_image_set(0),
-                                  object_set, measurements, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     image_set_list.get_image_set(0),
+                                                     object_set, measurements, image_set_list)
         module.run(workspace)
         features = [x[1] for x in module.get_measurement_columns(pipeline)
                     if x[0] == "SomeObjects" and
@@ -271,83 +269,83 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             self.assertNotEqual(values[0], values[1])
 
     def test_04_01_extent(self):
-        module = cpmoas.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
-        object_set = cpo.ObjectSet()
-        labels = np.zeros((10, 20), int)
+        object_set = cellprofiler.object.ObjectSet()
+        labels = numpy.zeros((10, 20), int)
         # 3/4 of a square is covered
         labels[5:7, 5:10] = 1
         labels[7:9, 5:15] = 1
-        objects = cpo.Objects()
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
-        pipeline = cpp.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.measurement.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set_list.get_image_set(0),
-                                  object_set, measurements, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     image_set_list.get_image_set(0),
+                                                     object_set, measurements, image_set_list)
         module.run(workspace)
         values = measurements.get_current_measurement(
-                "SomeObjects", "_".join((cpmoas.AREA_SHAPE, cpmoas.F_EXTENT)))
+                "SomeObjects", "_".join((cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE, cellprofiler.modules.measureobjectsizeshape.F_EXTENT)))
         self.assertEqual(len(values), 1)
         self.assertAlmostEqual(values[0], .75)
 
     def test_05_01_overlapping(self):
         '''Test object measurement with two overlapping objects in ijv format'''
 
-        i, j = np.mgrid[0:10, 0:20]
+        i, j = numpy.mgrid[0:10, 0:20]
         m = (i > 1) & (i < 9) & (j > 1) & (j < 19)
         m1 = m & (i < j)
         m2 = m & (i < 9 - j)
         mlist = []
         olist = []
         for m in (m1, m2):
-            objects = cpo.Objects()
+            objects = cellprofiler.object.Objects()
             objects.segmented = m.astype(int)
             olist.append(objects)
-        ijv = np.column_stack((
-            np.hstack([np.argwhere(m)[:, 0] for m in (m1, m2)]),
-            np.hstack([np.argwhere(m)[:, 1] for m in (m1, m2)]),
-            np.array([1] * np.sum(m1) + [2] * np.sum(m2))))
-        objects = cpo.Objects()
+        ijv = numpy.column_stack((
+            numpy.hstack([numpy.argwhere(m)[:, 0] for m in (m1, m2)]),
+            numpy.hstack([numpy.argwhere(m)[:, 1] for m in (m1, m2)]),
+            numpy.array([1] * numpy.sum(m1) + [2] * numpy.sum(m2))))
+        objects = cellprofiler.object.Objects()
         objects.ijv = ijv
         olist.append(objects)
         for objects in olist:
-            module = cpmoas.MeasureObjectAreaShape()
+            module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
             module.object_groups[0].name.value = "SomeObjects"
             module.calculate_zernikes.value = True
-            object_set = cpo.ObjectSet()
+            object_set = cellprofiler.object.ObjectSet()
             object_set.add_objects(objects, "SomeObjects")
             module.module_num = 1
-            image_set_list = cpi.ImageSetList()
-            measurements = cpmeas.Measurements()
+            image_set_list = cellprofiler.image.ImageSetList()
+            measurements = cellprofiler.measurement.Measurements()
             mlist.append(measurements)
-            pipeline = cpp.Pipeline()
+            pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(module)
 
             def callback(caller, event):
-                self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+                self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
                 pipeline.add_listener(callback)
 
-            workspace = cpw.Workspace(pipeline, module,
-                                      image_set_list.get_image_set(0),
-                                      object_set, measurements, image_set_list)
+            workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                         image_set_list.get_image_set(0),
+                                                         object_set, measurements, image_set_list)
             module.run(workspace)
         for c in module.get_measurement_columns(None):
             oname, feature = c[:2]
             if oname != "SomeObjects":
                 continue
             measurements = mlist[0]
-            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            self.assertTrue(isinstance(measurements, cellprofiler.measurement.Measurements))
             v1 = measurements.get_current_measurement(oname, feature)
             self.assertEqual(len(v1), 1)
             v1 = v1[0]
@@ -360,14 +358,14 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             self.assertEqual(tuple(v), expected)
 
     def test_06_01_max_radius(self):
-        labels = np.zeros((20, 10), int)
+        labels = numpy.zeros((20, 10), int)
         labels[3:8, 3:6] = 1
         labels[11:19, 2:7] = 2
         workspace, module = self.make_workspace(labels)
         module.run(workspace)
         m = workspace.measurements
         max_radius = m.get_current_measurement(
-                OBJECTS_NAME, cpmoas.AREA_SHAPE + "_" + cpmoas.F_MAXIMUM_RADIUS)
+                OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS)
         self.assertEqual(len(max_radius), 2)
         self.assertEqual(max_radius[0], 2)
         self.assertEqual(max_radius[1], 3)
@@ -383,10 +381,10 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         for column in columns:
             self.assertTrue(column[0] in ['SomeObjects', 'OtherObjects'])
             self.assertTrue(column[1] in features)
-            self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
+            self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_FLOAT)
 
     def test_run_volume(self):
-        labels = np.ones((10, 10, 10), dtype=np.uint8)
+        labels = numpy.ones((10, 10, 10), dtype=numpy.uint8)
 
         labels[0, :, :] = 0
 
@@ -394,10 +392,54 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
 
         module.run(workspace)
 
-        for feature in [cpmoas.F_AREA, cpmoas.F_EXTENT, cpmoas.F_CENTER_X, cpmoas.F_CENTER_Y, cpmoas.F_CENTER_Z,
-                        cpmoas.F_PERIMETER]:
-            assert workspace.measurements.has_current_measurements(OBJECTS_NAME, cpmoas.AREA_SHAPE + "_" + feature)
+        for feature in [cellprofiler.modules.measureobjectsizeshape.F_AREA, cellprofiler.modules.measureobjectsizeshape.F_EXTENT, cellprofiler.modules.measureobjectsizeshape.F_CENTER_X, cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y, cellprofiler.modules.measureobjectsizeshape.F_CENTER_Z,
+                        cellprofiler.modules.measureobjectsizeshape.F_PERIMETER]:
+            assert workspace.measurements.has_current_measurements(OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature)
 
             assert len(
-                workspace.measurements.get_current_measurement(OBJECTS_NAME, cpmoas.AREA_SHAPE + "_" + feature)
+                workspace.measurements.get_current_measurement(OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature)
             ) == 1
+
+    # https://github.com/CellProfiler/CellProfiler/issues/2813
+    def test_run_without_zernikes(self):
+        cells_resource = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "resources",
+                "cells.tiff"
+            )
+        )
+
+        workspace, module = self.make_workspace(skimage.io.imread(cells_resource))
+
+        module.calculate_zernikes.value = False
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        for feature in measurements.get_feature_names(OBJECTS_NAME):
+            assert "Zernike_" not in feature
+
+    def test_run_with_zernikes(self):
+        cells_resource = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "resources",
+                "cells.tiff"
+            )
+        )
+
+        workspace, module = self.make_workspace(skimage.io.imread(cells_resource))
+
+        module.calculate_zernikes.value = True
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        zernikes = [feature for feature in measurements.get_feature_names(OBJECTS_NAME) if "Zernike_" in feature]
+
+        assert len(zernikes) > 0

@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Correlation** measures the colocalization and correlation
+MeasureColocalization
+=====
+
+**MeasureColocalization** measures the colocalization and correlation
 between intensities in different images (e.g., different color channels)
 on a pixel-by-pixel basis, within identified objects or across an entire
 image.
@@ -20,37 +23,36 @@ between the following:
 -  The blue and green, red and green, and red and blue images.
 -  The nuclei in each of the above image pairs.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Correlation:* The correlation between a pair of images *I* and *J*,
    calculated as Pearson’s correlation coefficient. The formula is
    covariance(\ *I* ,\ *J*)/[std(\ *I* ) × std(\ *J*)].
 -  *Slope:* The slope of the least-squares regression between a pair of
-   images I and J. Calculated using the model *A* × *I* + *B* = *J*, w
-   here *A* is the slope.
+   images I and J. Calculated using the model *A* × *I* + *B* = *J*, where *A* is the slope.
 -  *Overlap coefficient:* The overlap coefficient is a modification of
    Pearson’s correlation where average intesity values of the pixels are
    not subtracted from the original intesity values. For a pair of
    images R and G, the overlap coefficient is measured as r = sum(Ri \*
    Gi) / sqrt (sum(Ri\*Ri)\*sum(Gi\*Gi)).
 -  *Manders coefficient:* The Manders coefficient for a pair of images R
-   and G is measured as M1 = sum(Ri\_coloc)/sum(Ri) and M2 =
-   sum(Gi\_coloc)/sum(Gi), where Ri\_coloc = Ri when Gi > 0, 0 otherwise
-   and Gi\_coloc = Gi when Ri >0, 0 otherwise.
+   and G is measured as M1 = sum(Ri_coloc)/sum(Ri) and M2 =
+   sum(Gi_coloc)/sum(Gi), where Ri_coloc = Ri when Gi > 0, 0 otherwise
+   and Gi_coloc = Gi when Ri >0, 0 otherwise.
 -  *Manders coefficient (Costes Automated Threshold):* Costes’ automated
    threshold estimates maximum threshold of intensity for each image
    based on correlation. Manders coefficient is applied on thresholded
-   images as Ri\_coloc = Ri when Gi > Gthr and Gi\_coloc = Gi when Ri >
+   images as Ri_coloc = Ri when Gi > Gthr and Gi_coloc = Gi when Ri >
    Rthr where Gthr and Rthr are thresholds calculed using Costes’
    authomated threshold method.
 -  *Rank Weighted Colocalization coefficient:* The RWC coefficient for a
    pair of images R and G is measured as RWC1 =
-   sum(Ri\_coloc\*Wi)/sum(Ri) and RWC2 = sum(Gi\_coloc\*Wi)/sum(Gi),
+   sum(Ri_coloc\*Wi)/sum(Ri) and RWC2 = sum(Gi_coloc\*Wi)/sum(Gi),
    where Wi is Weight defined as Wi = (Rmax - Di)/Rmax where Rmax is the
    maximum of Ranks among R and G based on the max intensity, and Di =
    abs(Rank(Ri) - Rank(Gi)) (absolute difference in ranks between R and
-   G) and Ri\_coloc = Ri when Gi > 0, 0 otherwise and Gi\_coloc = Gi
+   G) and Ri_coloc = Ri when Gi > 0, 0 otherwise and Gi_coloc = Gi
    when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics
    12:407).
 """
@@ -95,8 +97,8 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureCorrelation(cpm.Module):
-    module_name = 'MeasureCorrelation'
+class MeasureColocalization(cpm.Module):
+    module_name = 'MeasureColocalization'
     category = 'Measurement'
     variable_revision_number = 3
 
@@ -112,20 +114,22 @@ class MeasureCorrelation(cpm.Module):
         self.spacer_2 = cps.Divider()
         self.thr = cps.Float(
                 "Set threshold as percentage of maximum intensity for the images",
-                15, minval=0, maxval=99, doc='''\
-            Select the threshold as a percentage of the maximum intensity of the above image [0-99].''')
+                15, minval=0, maxval=99, doc='''
+                \\ Select the threshold as a percentage of the maximum intensity of the
+                above image [0-99].''')
 
         self.images_or_objects = cps.Choice(
                 'Select where to measure correlation',
-                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''
-            You can measure the correlation in several ways:
-            <ul>
-            <li><i>%(M_OBJECTS)s:</i> Measure correlation only in those pixels previously
-            identified as an object. You will be asked to specify which object to measure from.</li>
-            <li><i>%(M_IMAGES)s:</i> Measure the correlation across all pixels in the images.</li>
-            <li><i>%(M_IMAGES_AND_OBJECTS)s:</i> Calculate both measurements above.</li>
-            </ul>
-            All methods measure correlation on a pixel by pixel basis.''' % globals())
+                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''You can measure the correlation in several ways:
+
+                -  *%(M_OBJECTS)s:* Measure correlation only in those pixels previously
+                   identified as an object. You will be asked to specify which object to
+                   measure from.
+                -  *%(M_IMAGES)s:* Measure the correlation across all pixels in the
+                   images.
+                -  *%(M_IMAGES_AND_OBJECTS)s:* Calculate both measurements above.
+
+                All methods measure correlation on a pixel by pixel basis.''' % globals())
 
         self.object_groups = []
         self.add_object(can_delete=False)

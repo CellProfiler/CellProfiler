@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Load Images** allows you to specify which images or movies are to be
+LoadImages
+==========
+
+**LoadImages** allows you to specify which images or movies are to be
 loaded and in which order.
 
 This module tells CellProfiler where to retrieve images and gives each
@@ -250,77 +253,94 @@ class LoadImages(cpmodule.Module):
     def create_settings(self):
         # Settings
         self.file_types = cps.Choice(
-                'File type to be loaded', FF, doc="""
-            CellProfiler accepts the following image file types. For movie file formats,
-            the files are opened as a stack of images and each image is processed individually, although <b> TrackObjects</b>
-            can be used to relate objects across timepoints.
-            <ul>
-            <li><i>%(FF_INDIVIDUAL_IMAGES)s:</i> Each file represents a single image.
-            Some methods of file compression sacrifice image quality ("lossy") and should be avoided for automated image analysis
-            if at all possible (e.g., .jpg). Other file compression formats retain exactly the original image information but in
-            a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif).
-            Uncompressed file formats are also fine for image analysis (e.g., .bmp).</li>
-            <li><i>%(FF_AVI_MOVIES)s:</i> AVIs (Audio Video Interleave) and MOVs (QuicktTime) files are types of movie files. Only
-            uncompressed AVIs are supported; supported MOVs are listed <a href="http://www.openmicroscopy.org/site/support/bio-formats5/formats/quicktime-movie.html">here</a>.
-            Note that .mov files are not supported on 64-bit systems.</li>
-            <li><i>%(FF_STK_MOVIES)s:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically
-            used to encode 3D image data, e.g. from confocal microscopy, and is a special version of the TIF format. </li>
-            <li><i>%(FF_OTHER_MOVIES)s:</i> A TIF/TIFF movie is a file that contains a series of images as individual frames.
-            The same is true for the FLEX file format (used by Evotec Opera automated microscopes). ZVIs are a proprietary image
-            format used by Zeiss. It is typically
-            used to encode 3D image data, e.g. from fluorescence microscopy. </li>
-            </ul>""" % globals())
+                'File type to be loaded', FF, doc="""\
+CellProfiler accepts the following image file types. For movie file
+formats, the files are opened as a stack of images and each image is
+processed individually, although **TrackObjects** can be used to relate
+objects across timepoints.
+
+-  *%(FF_INDIVIDUAL_IMAGES)s:* Each file represents a single image.
+   Some methods of file compression sacrifice image quality (“lossy”)
+   and should be avoided for automated image analysis if at all possible
+   (e.g., .jpg). Other file compression formats retain exactly the
+   original image information but in a smaller file (“lossless”) so they
+   are perfectly acceptable for image analysis (e.g., .png, .tif, .gif).
+   Uncompressed file formats are also fine for image analysis (e.g.,
+   .bmp).
+-  *%(FF_AVI_MOVIES)s:* AVIs (Audio Video Interleave) and MOVs
+   (QuicktTime) files are types of movie files. Only uncompressed AVIs
+   are supported; supported MOVs are listed `here`_. Note that .mov
+   files are not supported on 64-bit systems.
+-  *%(FF_STK_MOVIES)s:* STKs are a proprietary image format used by
+   MetaMorph (Molecular Devices). It is typically used to encode 3D
+   image data, e.g. from confocal microscopy, and is a special version
+   of the TIF format.
+-  *%(FF_OTHER_MOVIES)s:* A TIF/TIFF movie is a file that contains a
+   series of images as individual frames. The same is true for the FLEX
+   file format (used by Evotec Opera automated microscopes). ZVIs are a
+   proprietary image format used by Zeiss. It is typically used to
+   encode 3D image data, e.g. from fluorescence microscopy.
+
+.. _here: http://www.openmicroscopy.org/site/support/bio-formats5/formats/quicktime-movie.html
+""" % globals())
 
         self.match_method = cps.Choice(
-                'File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER], doc="""
-            Three options are available:
-            <ul>
-            <li><i>%(MS_EXACT_MATCH)s:</i> Used to load image (or movie) files that have a particular piece of
-            text in the name. The specific text that is entered will be searched for in the filenames and
-            the files that contain that text exactly will be loaded and given the name you specify.
-            The search for the text is case-sensitive.</li>
-            <li><i>%(MS_REGEXP)s:</i> Used to load image (or movie) files that match
-            a pattern of regular expressions. %(REGEXP_HELP_REF)s</li>
-            <li><i>%(MS_ORDER)s:</i> Used when image (or movie) files are present in a repeating order,
-            like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
-            loaded based on the order of their location on the hard disk, and they are
-            assigned an identity based on how many images are in each group and what position
-            within each group the file is located (e.g., three images per
-            group; DAPI is always first).</li>
-            </ul>""" % globals())
+                'File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER], doc="""\
+Three options are available:
+
+-  *%(MS_EXACT_MATCH)s:* Used to load image (or movie) files that have
+   a particular piece of text in the name. The specific text that is
+   entered will be searched for in the filenames and the files that
+   contain that text exactly will be loaded and given the name you
+   specify. The search for the text is case-sensitive.
+-  *%(MS_REGEXP)s:* Used to load image (or movie) files that match a
+   pattern of regular expressions. %(REGEXP_HELP_REF)s
+-  *%(MS_ORDER)s:* Used when image (or movie) files are present in a
+   repeating order, like “DAPI, FITC, Red; DAPI, FITC, Red;” and so on.
+   Images are loaded based on the order of their location on the hard
+   disk, and they are assigned an identity based on how many images are
+   in each group and what position within each group the file is located
+   (e.g., three images per group; DAPI is always first).
+""" % globals())
 
         self.exclude = cps.Binary(
-                'Exclude certain files?', False, doc="""
-            <i>(Used only if "%(MS_EXACT_MATCH)s" for loading files is selected)</i> <br>
-            The image/movie files specified with the <i>Text</i> options may also include
-            files that you want to exclude from analysis (such as thumbnails created
-            by an imaging system). Select <i>%(YES)s</i> to enter text to match against
-            such files for exclusion.""" % globals())
+                'Exclude certain files?', False, doc="""\
+*(Used only if “%(MS_EXACT_MATCH)s” for loading files is selected)*
+
+The image/movie files specified with the *Text* options may also include
+files that you want to exclude from analysis (such as thumbnails created
+by an imaging system). Select *%(YES)s* to enter text to match against
+such files for exclusion.
+""" % globals())
 
         self.match_exclude = cps.Text(
-                'Type the text that the excluded images have in common', cps.DO_NOT_USE, doc="""
-            <i>(Used only if file exclusion is selected)</i> <br>
-            Specify text that marks files for exclusion. <b>LoadImages</b> looks for this text as an
-            exact match within the filename and not as a regular expression. """)
+                'Type the text that the excluded images have in common', cps.DO_NOT_USE, doc="""\
+*(Used only if file exclusion is selected)*
+
+Specify text that marks files for exclusion. **LoadImages** looks for
+this text as an exact match within the filename and not as a regular
+expression.""")
 
         self.order_group_size = cps.Integer(
-                'Number of images in each group?', 3, doc="""
-            <i>(Used only when Order is selected for file loading)</i><br>
-            Enter the number of images that comprise a group. For example, for images given in the order:
-            <i>DAPI, FITC, Red; DAPI, FITC, Red</i> and so on, the number of images that in each group would be 3.""")
+                'Number of images in each group?', 3, doc="""\
+*(Used only when Order is selected for file loading)*
+
+Enter the number of images that comprise a group. For example, for
+images given in the order: *DAPI, FITC, Red; DAPI, FITC, Red* and so on,
+the number of images that in each group would be 3.""")
 
         self.descend_subdirectories = cps.Choice(
                 'Analyze all subfolders within the selected folder?',
-                [SUB_NONE, SUB_ALL, SUB_SOME], doc="""
-            This setting determines whether <b>LoadImages</b> analyzes
-            just the images in the specified folder or whether it analyzes
-            images in subfolders as well:
-            <ul>
-            <li><i>%(SUB_ALL)s:</i> Analyze all matching image files in subfolders under your
-            specified image folder location. </li>
-            <li><i>%(SUB_NONE)s:</i> Only analyze files in the specified location.</li>
-            <li><i>%(SUB_SOME)s:</i> Select which subfolders to analyze.</li>
-            </ul>""" % globals())
+                [SUB_NONE, SUB_ALL, SUB_SOME], doc="""\
+This setting determines whether **LoadImages** analyzes just the images
+in the specified folder or whether it analyzes images in subfolders as
+well:
+
+-  *%(SUB_ALL)s:* Analyze all matching image files in subfolders under
+   your specified image folder location.
+-  *%(SUB_NONE)s:* Only analyze files in the specified location.
+-  *%(SUB_SOME)s:* Select which subfolders to analyze.
+""" % globals())
 
         # Location settings
         self.location = cps.DirectoryPath(
@@ -330,48 +350,55 @@ class LoadImages(cpmodule.Module):
                     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                     DEFAULT_OUTPUT_SUBFOLDER_NAME],
                 allow_metadata=False,
-                doc="""Select the folder containing the images to be loaded.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
+                doc="Select the folder containing the images to be loaded. %(IO_FOLDER_CHOICE_HELP_TEXT)s" % globals())
 
         self.subdirectory_filter = cps.SubdirectoryFilter(
                 "Select subfolders to analyze",
-                directory_path=self.location, doc="""
-            Use this control to select some subfolders and exclude
-            others from analysis. Press the button to see the folder tree
-            and check or uncheck the checkboxes to enable or disable analysis
-            of the associated folders.""")
+                directory_path=self.location, doc="""\
+Use this control to select some subfolders and exclude
+others from analysis. Press the button to see the folder tree
+and check or uncheck the checkboxes to enable or disable analysis
+of the associated folders.""")
 
         self.check_images = cps.Binary(
-                'Check image sets for unmatched or duplicate files?', True, doc="""
-            <i>(Used only if metadata is extracted from the image file and not loading by order)</i><br>
-            Select <i>%(YES)s</i> to examine the filenames for
-            unmatched or duplicate files based on extracted metadata. This is useful for images
-            generated by HCS systems where acquisition may produce a corrupted image and create
-            a duplicate as a correction or may miss an image entirely. See
-            the <i>Extract metadata from where?</i> setting for more details on obtaining, extracting,
-            and using metadata tags.""" % globals())
+                'Check image sets for unmatched or duplicate files?', True, doc="""\
+*(Used only if metadata is extracted from the image file and not loading by order)*
+
+Select *%(YES)s* to examine the filenames for unmatched or duplicate
+files based on extracted metadata. This is useful for images generated
+by HCS systems where acquisition may produce a corrupted image and
+create a duplicate as a correction or may miss an image entirely. See
+the *Extract metadata from where?* setting for more details on
+obtaining, extracting, and using metadata tags.
+""" % globals())
 
         self.group_by_metadata = cps.Binary(
-                'Group images by metadata?', False, doc="""
-            <a name='group_by_metadata'></a>
-            <i>(Used only if metadata is extracted from the image file or if movies are used)</i><br>
-            Select <i>%(YES)s</i> to process those images that share a particular
-            metadata tag as a group. For example, if you are performing per-plate illumination correction and the
-            plate metadata is part of the image file name, image grouping will enable you to
-            process those images that have the same plate field together (the alternative would be
-            to place the images from each plate in a separate folder). The next setting allows you
-            to select the metadata tags by which to group.%(USING_METADATA_GROUPING_HELP_REF)s
+                'Group images by metadata?', False, doc="""\
+*(Used only if metadata is extracted from the image file or if movies are used)*
 
-            <p>Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
-            is already treated as a group of images, so there is no need to enable here.""" % globals())
+Select *%(YES)s* to process those images that share a particular
+metadata tag as a group. For example, if you are performing per-plate
+illumination correction and the plate metadata is part of the image file
+name, image grouping will enable you to process those images that have
+the same plate field together (the alternative would be to place the
+images from each plate in a separate folder). The next setting allows
+you to select the metadata tags by which to
+group.%(USING_METADATA_GROUPING_HELP_REF)s
+
+Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs,
+AVIs, ZVIs), each movie is already treated as a group of images, so
+there is no need to enable here.
+""" % globals())
 
         self.metadata_fields = cps.MultiChoice(
-                'Specify metadata fields to group by', [], doc="""
-            <i>(Used only if grouping images by metadata)</i> <br>
-            Select the fields by which you want group the image files. You can select multiple tags. For
-            example, if a set of images had metadata for "Run", "Plate", "Well", and
-            "Site", selecting <i>Run</i> and <i>Plate</i> will create groups containing
-            images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
+                'Specify metadata fields to group by', [], doc="""\
+*(Used only if grouping images by metadata)*
+
+Select the fields by which you want group the image files. You can
+select multiple tags. For example, if a set of images had metadata for
+“Run”, “Plate”, “Well”, and “Site”, selecting *Run* and *Plate* will
+create groups containing images that share the same [*Run*,\ *Plate*]
+pair of fields.""")
 
         # Add the first image to the images list
         self.images = []
@@ -436,199 +463,241 @@ class LoadImages(cpmodule.Module):
         self.images.append(group)
         group.append("divider", cps.Divider(line=True))
         group.append("common_text", cps.Text(
-                'Text that these images have in common (case-sensitive)', '', doc="""
-            <i>(Used only for the image-loading Text options)</i><br>
-            For <i>Text-Exact match</i>, type the text string that all the
-            images have in common. For example, if all the images for the given
-            channel end with the text "D.TIF", type <tt>D.TIF</tt> here.
-            <p>For <i>Text-Regular expression</i>, type the regular expression
-            that would capture all the images for this channel. See the module
-            help for more information on regular expressions."""))
+                'Text that these images have in common (case-sensitive)', '', doc="""\
+                
+*(Used only for the image-loading Text options)*
+
+For *Text-Exact match*, type the text string that all the images have
+in common. For example, if all the images for the given channel end
+with the text “D.TIF”, type ``D.TIF`` here.
+
+For *Text-Regular expression*, type the regular expression that would
+capture all the images for this channel. See the module help for more
+information on regular expressions."""))
 
         group.append("order_position", cps.Integer(
                 'Position of this image in each group', img_index + 1,
                 minval=1,
-                doc="""
-            <i>(Used only for the image-loading Order option)</i><br>
-            Enter the number in the image order that this image channel
-            occupies. For example, if the order is "DAPI, FITC, Red;
-            DAPI, FITC, Red" and so on, the DAPI channel would occupy
-            position 1."""))
+                doc="""\
+*(Used only for the image-loading Order option)*
+
+Enter the number in the image order that this image channel occupies.
+For example, if the order is “DAPI, FITC, Red; DAPI, FITC, Red” and so
+on, the DAPI channel would occupy position 1."""))
 
         group.append("metadata_choice", cps.Choice(
                 'Extract metadata from where?',
-                [M_NONE, M_FILE_NAME, M_PATH, M_BOTH], doc="""
-            <a name='where_to_extract'>Metadata fields can be specified from
-            the image filename, the image path (including subfolders), or both.
-            The metadata entered here can be used for image grouping (see the
-            <i>Group images by metadata?</i> setting) or simply used as
-            additional columns in the exported
-            measurements (see the <b>ExportToSpreadsheet</b> module).</a>"""))
+                [M_NONE, M_FILE_NAME, M_PATH, M_BOTH], doc="""\
+Metadata fields can be specified from the image filename, the image path
+(including subfolders), or both. The metadata entered here can be used
+for image grouping (see the *Group images by metadata?* setting) or
+simply used as additional columns in the exported measurements (see the
+**ExportToSpreadsheet** module)."""))
 
         group.append("file_metadata", cps.RegexpText(
-                'Regular expression that finds metadata in the file name',
-                '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',
-                get_example_fn=example_file_fn, doc="""
-            <a name='regular_expression'><i>(Used only if you want to extract
-            metadata from the file name)</i><br>
-            The regular expression to extract the metadata from the file name
-            is entered here. Note that this field is available whether you have
-            selected <i>Text-Regular expressions</i> to load the files or not.
-            Please see the general module help for more information on
-            construction of a regular expression.</a>
-            <p>Clicking the magnifying glass icon to the right will bring up a
-            tool for checking the accuracy of your regular expression. The
-            regular expression syntax can be used to name different parts of
-            your expression. The syntax <i>(?P&lt;fieldname&gt;expr)</i> will
-            extract whatever matches <i>expr</i> and assign it to the
-            measurement,<i>fieldname</i> for the image.
-            <p>For instance, a researcher uses plate names composed of a string
-            of letters and numbers, followed by an underscore, then the well,
-            followed by another underscore, followed by an "s" and a digit
-            representing the site taken within the well (e.g., <i>TE12345_A05_s1.tif</i>).
-            The following regular expression will capture the plate, well, and
-            site in the fields "Plate", "Well", and "Site":<br><br>
-            <table border = "1">
-            <tr><td colspan = "2">^(?P&lt;Plate&gt;.*)_(?P&lt;Well&gt;[A-P][0-9]{1,2})_s(?P&lt;Site&gt;[0-9])</td></tr>
-            <tr><td>^</td><td>Start only at beginning of the file name</td></tr>
-            <tr><td>(?P&lt;Plate&gt;</td><td>Name the captured field <i>Plate</i></td></tr>
-            <tr><td>.*</td><td>Capture as many characters as follow</td></tr>
-            <tr><td>_</td><td>Discard the underbar separating plate from well</td></tr>
-            <tr><td>(?P&lt;Well&gt;</td><td>Name the captured field <i>Well</i></td></tr>
-            <tr><td>[A-P]</td><td>Capture exactly one letter between A and P</td></tr>
-            <tr><td>[0-9]{1,2}</td><td>Capture one or two digits that follow</td></tr>
-            <tr><td>_s</td><td>Discard the underbar followed by <i>s</i> separating well from site</td></tr>
-            <tr><td>(?P&lt;Site&gt;</td><td>Name the captured field <i>Site</i></td></tr>
-            <tr><td>[0-9]</td><td>Capture one digit following</td></tr>
-            </table>
+        'Regular expression that finds metadata in the file name',
+        '^(?P.*)_(?P[A-P][0-9]{2})_s(?P[0-9])',
+                get_example_fn=example_file_fn, doc="""\
+*(Used only if you want to extract metadata from the file name)*
 
-            <p>The regular expression can be typed in the upper text box, with
-            a sample file name given in the lower text box. Provided the syntax
-            is correct, the corresponding fields will be highlighted in the same
-            color in the two boxes. Press <i>Submit</i> to enter the typed
-            regular expression.</p>
+The regular expression to extract the metadata from the file name is
+entered here. Note that this field is available whether you have
+selected *Text-Regular expressions* to load the files or not. Please see
+the general module help for more information on construction of a
+regular expression.
 
-            <p>You can create metadata tags for any portion of the filename or path, but if you are
-            specifying metadata for multiple images in a single <b>LoadImages</b> module, an image cycle can
-            only have one set of values for each metadata tag. This means that you can only
-            specify the metadata tags which have the same value across all images listed in the module. For example,
-            in the example above, you might load two wavelengths of data, one named <i>TE12345_A05_s1_w1.tif</i>
-            and the other <i>TE12345_A05_s1_w2.tif</i>, where the number following the <i>w</i> is the wavelength.
-            In this case, a "Wavelength" tag <i>should not</i> be included in the regular expression
-            because while the "Plate", "Well" and "Site" metadata is identical for both images, the wavelength metadata is not.</p>
+Clicking the magnifying glass icon to the right will bring up a tool for
+checking the accuracy of your regular expression. The regular expression
+syntax can be used to name different parts of your expression. The
+syntax *(?P<fieldname>expr)* will extract whatever matches *expr* and
+assign it to the measurement,\ *fieldname* for the image.
 
-            <p>Note that if you use the special fieldnames <i>&lt;WellColumn&gt;</i> and
-            <i>&lt;WellRow&gt;</i> together, LoadImages will automatically create a <i>&lt;Well&gt;</i>
-            metadata field by joining the two fieldname values together. For example,
-            if <i>&lt;WellRow&gt;</i> is "A" and <i>&lt;WellColumn&gt;</i> is "01", a field
-            <i>&lt;Well&gt;</i> will be "A01". This is useful if your well row and column names are
-            separated from each other in the filename, but you want to retain the standard
-            well nomenclature.</p>"""))
+For instance, a researcher uses plate names composed of a string of
+letters and numbers, followed by an underscore, then the well,
+followed by another underscore, followed by an “s” and a digit
+representing the site taken within the well (e.g.,
+*TE12345_A05_s1.tif*). The following regular expression will capture
+the plate, well, and site in the fields “Plate”, “Well”, and “Site”:
+
++----------------------------------------------------------------+------------------------------------------------------------------+
+| ^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{1,2})_s(?P<Site>[0-9])   |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| ^                                                              | Start only at beginning of the file name                         |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| (?P<Plate>                                                     | Name the captured field *Plate*                                  |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| .*                                                            | Capture as many characters as follow                             |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| _                                                             | Discard the underbar separating plate from well                  |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| (?P<Well>                                                      | Name the captured field *Well*                                   |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| [A-P]                                                          | Capture exactly one letter between A and P                       |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| [0-9]{1,2}                                                     | Capture one or two digits that follow                            |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| _s                                                            | Discard the underbar followed by *s* separating well from site   |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| (?P<Site>                                                      | Name the captured field *Site*                                   |
++----------------------------------------------------------------+------------------------------------------------------------------+
+| [0-9]                                                          | Capture one digit following                                      |
++----------------------------------------------------------------+------------------------------------------------------------------+
+
+The regular expression can be typed in the upper text box, with a sample
+file name given in the lower text box. Provided the syntax is correct,
+the corresponding fields will be highlighted in the same color in the
+two boxes. Press *Submit* to enter the typed regular expression.
+
+You can create metadata tags for any portion of the filename or path,
+but if you are specifying metadata for multiple images in a single
+**LoadImages** module, an image cycle can only have one set of values
+for each metadata tag. This means that you can only specify the metadata
+tags which have the same value across all images listed in the module.
+For example, in the example above, you might load two wavelengths of
+data, one named *TE12345_A05_s1_w1.tif* and the other
+*TE12345_A05_s1_w2.tif*, where the number following the *w* is the
+wavelength. In this case, a “Wavelength” tag *should not* be included in
+the regular expression because while the “Plate”, “Well” and “Site”
+metadata is identical for both images, the wavelength metadata is not.
+
+Note that if you use the special fieldnames *<WellColumn>* and
+*<WellRow>* together, LoadImages will automatically create a *<Well>*
+metadata field by joining the two fieldname values together. For
+example, if *<WellRow>* is “A” and *<WellColumn>* is “01”, a field
+*<Well>* will be “A01”. This is useful if your well row and column names
+are separated from each other in the filename, but you want to retain
+the standard well nomenclature."""))
 
         group.append("path_metadata", cps.RegexpText(
                 'Type the regular expression that finds metadata in the subfolder path',
-                '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',
+                '.*[\\\\\\\\/](?P.*)[\\\\\\\\/](?P.*)$',
                 get_example_fn=example_path_fn,
                 guess=cps.RegexpText.GUESS_FOLDER,
-                doc="""
-            <i>(Used only if you want to extract metadata from the path)</i><br>
-            Enter the regular expression for extracting the metadata from the
-            path. Note that this field is available whether you have selected
-            <i>Text-Regular expressions</i> to load the files or not.
+                doc="""\
+*(Used only if you want to extract metadata from the path)*
 
-            <p>Clicking the magnifying glass icon to the right will bring up a
-            tool that will allow you to check the accuracy of your regular
-            expression. The regular expression syntax can be used to
-            name different parts of your expression. The syntax
-            <i>(?&lt;fieldname&gt;expr)</i> will extract whatever matches
-            <i>expr</i> and assign it to the image's <i>fieldname</i> measurement.
+Enter the regular expression for extracting the metadata from the
+path. Note that this field is available whether you have selected
+*Text-Regular expressions* to load the files or not.
 
-            <p>For instance, a researcher uses folder names with the date and
-            subfolders containing the images with the run ID
-            (e.g., <i>./2009_10_02/1234/</i>) The following regular expression
-            will capture the plate, well, and site in the fields
-            <i>Date</i> and <i>Run</i>:<br>
-            <table border = "1">
-            <tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$</td></tr>
-            <tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
-            backslash (\\) is encountered (depending on the operating system)</td></tr>
-            <tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
-            <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
-            <tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
-            <tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
-            <tr><td>.*</td><td>Capture as many characters as follow</td></tr>
-            <tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e., the
-            last folder on the path. This also means that the Date field contains the parent
-            folder of the Date folder.</td></tr>
-            </table></p>"""))
+Clicking the magnifying glass icon to the right will bring up a tool
+that will allow you to check the accuracy of your regular expression.
+The regular expression syntax can be used to name different parts of
+your expression. The syntax *(?<fieldname>expr)* will extract whatever
+matches *expr* and assign it to the image’s *fieldname* measurement.
+
+For instance, a researcher uses folder names with the date and
+subfolders containing the images with the run ID (e.g.,
+*.2009_10_02/1234*) The following regular expression will capture
+the plate, well, and site in the fields *Date* and *Run*:
+
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| .*[\\\\\\/](?P<Date>.*)[\\\\\\\\/](?P<Run>.*)$      |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| .*[\\\\\\\\/]                                       | Skip characters at the beginning of the pathname until either a slash (/) or backslash (\\\\) is encountered (depending on the operating system)                               |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| (?P<Date>                                           | Name the captured field *Date*                                                                                                                                                 |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| .*                                                  | Capture as many characters that follow                                                                                                                                         |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [\\\\\\\\/]                                         | Discard the slash/backslash character                                                                                                                                          |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| (?P<Run>                                            | Name the captured field *Run*                                                                                                                                                  |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| .*                                                  | Capture as many characters as follow                                                                                                                                           |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| $                                                   | The *Run* field must be at the end of the path string, i.e., the last folder on the path. This also means that the Date field contains the parent folder of the Date folder.   |
++-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+"""))
 
         group.append("wants_movie_frame_grouping", cps.Binary(
                 "Group the movie frames?", False,
-                doc="""
-            <i>(Used only if a movie image format is selected as file type)</i><br>
-            <b>LoadImages</b> can load several frames from a movie
-            into different images within the same cycle. For example, a movie's
-            first frame might be an image of the red fluorescence channel at
-            time zero, the second might be the green channel at time zero,
-            the third might be the red channel at time one, etc.
-            Select <i>%(YES)s</i> to extract both channels for this movie
-            as separate images within the same cycle.
-            <p>
-            <b>LoadImages</b> refers to the individual images in a group
-            as <i>channels</i>. Channels are numbered consecutively, starting
-            at channel 1. To set up grouping, first specify how the channels
-            are grouped (interleaving and number of channels per group), then
-            assign image names to each of the channels individually.
-            """ % globals()))
+                doc="""\
+*(Used only if a movie image format is selected as file type)*
+
+**LoadImages** can load several frames from a movie into different
+images within the same cycle. For example, a movie’s first frame might
+be an image of the red fluorescence channel at time zero, the second
+might be the green channel at time zero, the third might be the red
+channel at time one, etc. Select *%(YES)s* to extract both channels
+for this movie as separate images within the same cycle.
+
+**LoadImages** refers to the individual images in a group as *channels*.
+Channels are numbered consecutively, starting at channel 1. To set up
+grouping, first specify how the channels are grouped (interleaving and
+number of channels per group), then assign image names to each of the
+channels individually.
+""" % globals()))
 
         group.append("interleaving", cps.Choice(
                 "Grouping method", [I_INTERLEAVED, I_SEPARATED],
-                doc="""
-            <i>(Used only if a movie image format is selected as file type and movie frame grouping are selected)</i><br>
-            Channels in a movie can be interleaved or separated.
-            <p>In an interleaved movie, the first frame is channel 1, the second
-            is channel 2 and so on up to the number of channels per group for a given
-            image cycle.
-            In a separated movie, all of the frames for channel 1 are processed as the first
-            image cycle, then the frames for channel 2 for the second image cycle, and so on.
+                doc="""\
+*(Used only if a movie image format is selected as file type and movie
+frame grouping are selected)*
 
-            <p>For example, a movie may consist of 6 frames and we would like to
-            process the movie as two channels per group. An interleaved movie would be processed like this:
-            <p><table border="1">
-            <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
-            <tr><td>1</td><td>1</td><td>1</td></tr>
-            <tr><td>2</td><td>2</td><td>1</td></tr>
-            <tr><td>3</td><td>1</td><td>2</td></tr>
-            <tr><td>4</td><td>2</td><td>2</td></tr>
-            <tr><td>5</td><td>1</td><td>3</td></tr>
-            <tr><td>6</td><td>2</td><td>3</td></tr></table><br>
+Channels in a movie can be interleaved or separated.
 
-            <p>For a separated movie, the channels would be processed like this:<br>
-            <p><table border="1">
-            <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
-            <tr><td>1</td><td>1</td><td>1</td></tr>
-            <tr><td>2</td><td>1</td><td>2</td></tr>
-            <tr><td>3</td><td>1</td><td>3</td></tr>
-            <tr><td>4</td><td>2</td><td>1</td></tr>
-            <tr><td>5</td><td>2</td><td>2</td></tr>
-            <tr><td>6</td><td>2</td><td>3</td></tr></table>
+In an interleaved movie, the first frame is channel 1, the second is
+channel 2 and so on up to the number of channels per group for a given
+image cycle. In a separated movie, all of the frames for channel 1 are
+processed as the first image cycle, then the frames for channel 2 for
+the second image cycle, and so on.
 
-            <p>Note the difference in which frames are processed in which image cycle
-            between the two methods."""))
+For example, a movie may consist of 6 frames and we would like to
+process the movie as two channels per group. An interleaved movie would
+be processed like this:
+
++-----------+-------------+-----------------+
+| Frame #   | Channel #   | Image cycle #   |
++===========+=============+=================+
+| 1         | 1           | 1               |
++-----------+-------------+-----------------+
+| 2         | 2           | 1               |
++-----------+-------------+-----------------+
+| 3         | 1           | 2               |
++-----------+-------------+-----------------+
+| 4         | 2           | 2               |
++-----------+-------------+-----------------+
+| 5         | 1           | 3               |
++-----------+-------------+-----------------+
+| 6         | 2           | 3               |
++-----------+-------------+-----------------+
+
+For a separated movie, the channels would be processed like this:
+
++-----------+-------------+-----------------+
+| Frame #   | Channel #   | Image cycle #   |
++===========+=============+=================+
+| 1         | 1           | 1               |
++-----------+-------------+-----------------+
+| 2         | 1           | 2               |
++-----------+-------------+-----------------+
+| 3         | 1           | 3               |
++-----------+-------------+-----------------+
+| 4         | 2           | 1               |
++-----------+-------------+-----------------+
+| 5         | 2           | 2               |
++-----------+-------------+-----------------+
+| 6         | 2           | 3               |
++-----------+-------------+-----------------+
+
+Note the difference in which frames are processed in which image cycle
+between the two methods."""))
 
         group.append("channels_per_group", cps.Integer(
                 "Number of channels per group", 3, minval=2,
-                reset_view=True, doc="""
-            <i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
-            This setting controls the number of frames to be
-            grouped together. As an example, for an interleaved movie with
-            12 frames and three channels per group, the first, fourth,
-            seventh and tenth frame will be assigned to channel 1, the
-            2<sup>nd</sup>, 5,<sup>th</sup> 8<sup>th</sup> and 11<sup>th</sup> frame will be assigned to
-            channel 2 and the 3<sup>rd</sup>, 6<sup>th</sup>, 9<sup>th</sup>, and 12<sup>th</sup> will be
-            assigned to channel 3. For a separated movie, frames 1 through 4
-            will be assigned to channel 1, 5 through 8 to channel 2 and
-            9 through 12 to channel 3."""))
+                reset_view=True, doc="""\
+*(Used only if a movie image format is selected as file type and movie
+frame grouping is selected)*
+
+This setting controls the number of frames to be grouped together. As an
+example, for an interleaved movie with 12 frames and three channels per
+group, the first, fourth, seventh and tenth frame will be assigned to
+channel 1, the 2\ :sup:`nd`, 5,\ :sup:`th` 8\ :sup:`th` and
+11\ :sup:`th` frame will be assigned to channel 2 and the 3\ :sup:`rd`,
+6\ :sup:`th`, 9\ :sup:`th`, and 12\ :sup:`th` will be assigned to
+channel 3. For a separated movie, frames 1 through 4 will be assigned to
+channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3."""))
         #
         # Flex files (and arguably others like color images and multichannel
         # TIF files) can have more than one channel. So, within each image,
@@ -668,68 +737,71 @@ class LoadImages(cpmodule.Module):
                 img_index += 1
 
         group.append("image_object_choice", cps.Choice(
-                'Load the input as images or objects?', IO_ALL, doc="""
-            This setting determines whether you load an image as image data
-            or as segmentation results (i.e., objects):
-            <ul>
-            <li><i>%(IO_IMAGES)s:</i> The input image will be given a user-specified name by
-            which it will be refered downstream. This is the most common usage for this
-            module.</li>
-            <li><i>%(IO_OBJECTS)s:</i> Use this option if the input image is a label matrix
-            and you want to obtain the objects that it defines. A <i>label matrix</i>
-            is a grayscale or color image in which the connected regions share the
-            same label, and defines how objects are represented in CellProfiler.
-            The labels are integer values greater than or equal to 0.
-            The elements equal to 0 are the background, whereas the elements equal to 1
-            make up one object, the elements equal to 2 make up a second object, and so on.
-            This option allows you to use the objects without needing to insert an
-            <b>Identify</b> module to extract them first. See <b>IdentifyPrimaryObjects</b>
-            for more details.</li>
-            </ul>""" % globals()))
+                'Load the input as images or objects?', IO_ALL, doc="""\
+This setting determines whether you load an image as image data or as
+segmentation results (i.e., objects):
+
+-  *%(IO_IMAGES)s:* The input image will be given a user-specified name
+   by which it will be refered downstream. This is the most common usage
+   for this module.
+-  *%(IO_OBJECTS)s:* Use this option if the input image is a label
+   matrix and you want to obtain the objects that it defines. A *label
+   matrix* is a grayscale or color image in which the connected regions
+   share the same label, and defines how objects are represented in
+   CellProfiler. The labels are integer values greater than or equal to
+   0. The elements equal to 0 are the background, whereas the elements
+   equal to 1 make up one object, the elements equal to 2 make up a
+   second object, and so on. This option allows you to use the objects
+   without needing to insert an **Identify** module to extract them
+   first. See **IdentifyPrimaryObjects** for more details.
+""" % globals()))
 
         group.append("image_name", cps.FileImageNameProvider(
                 'Name this loaded image',
-                default_cpimage_name(img_index), doc="""
-            What do you want to call the images you are loading for use
-            downstream in the pipeline? Give your images a meaningful name
-            that you can use to refer to these images in later modules.  Keep
-            the following points in mind:
-            <ul>
-            <li>Image names can consist of any combination of characters
-            (e.g., letters, digits, and other non-alphanumeric characters).
-            However, if you are using <b>ExportToDatabase</b>, these names will
-            become part of the measurement column name, and some characters
-            are not permitted in MySQL (e.g., slashes).</li>
-            <li>Names are not case sensitive. Therefore, <i>OrigBlue</i>,
-            <i>origblue</i>, and <i>ORIGBLUE</i> will all correspond to the
-            same name, and unexpected results may ensue.</li>
-            <li>Although CellProfiler can accept names of any length, you may
-            want to avoid making the name too long, especially if you are
-            uploading to a database. The name is used to generate the column
-            header for a given measurement, and in MySQL the total bytes used
-            for all column headers cannot exceed 64K. A warning will be
-            generated later if this limit has been exceeded.</li>
-            </ul>"""))
+                default_cpimage_name(img_index), doc="""\
+What do you want to call the images you are loading for use downstream
+in the pipeline? Give your images a meaningful name that you can use to
+refer to these images in later modules. Keep the following points in
+mind:
+
+-  Image names can consist of any combination of characters (e.g.,
+   letters, digits, and other non-alphanumeric characters). However, if
+   you are using **ExportToDatabase**, these names will become part of
+   the measurement column name, and some characters are not permitted in
+   MySQL (e.g., slashes).
+-  Names are not case sensitive. Therefore, *OrigBlue*, *origblue*, and
+   *ORIGBLUE* will all correspond to the same name, and unexpected
+   results may ensue.
+-  Although CellProfiler can accept names of any length, you may want to
+   avoid making the name too long, especially if you are uploading to a
+   database. The name is used to generate the column header for a given
+   measurement, and in MySQL the total bytes used for all column headers
+   cannot exceed 64K. A warning will be generated later if this limit
+   has been exceeded."""))
 
         group.append("object_name", cps.ObjectNameProvider(
                 'Name this loaded object',
-                "Nuclei", doc="""
-            <i>(Used only if objects are output)</i><br>
-            This is the name for the objects loaded from your image"""))
+                "Nuclei", doc="""\
+*(Used only if objects are output)*
+
+This is the name for the objects loaded from your image"""))
 
         group.append("wants_outlines", cps.Binary(
-                'Retain outlines of loaded objects?', False, doc="""
-            <i>(Used only if objects are output)</i><br>
-            Select <i>%(YES)s</i> if you want to create an image of the outlines
-            of the loaded objects.""" % globals()))
+                'Retain outlines of loaded objects?', False, doc="""\
+*(Used only if objects are output)*
+
+Select *%(YES)s* if you want to create an image of the outlines of the
+loaded objects.""" % globals()))
 
         group.append("outlines_name", cps.OutlineNameProvider(
-                'Name the outline image', 'LoadedImageOutlines', doc='''
-            <i>(Used only if objects are output and outlines are saved)</i> <br>
-            Enter a name that will allow the outlines to be selected later in the pipeline.
-            <p><i>Special note on saving images:</i> You can use the settings in this module
-            to pass object outlines along to the module <b>OverlayOutlines</b>, and then save
-            them with the <b>SaveImages</b> module.'''))
+                'Name the outline image', 'LoadedImageOutlines', doc='''\
+*(Used only if objects are output and outlines are saved)*
+
+Enter a name that will allow the outlines to be selected later in the pipeline.
+
+*Special note on saving images:* You can use the settings in this module
+to pass object outlines along to the module **OverlayOutlines**, and
+then save them with the **SaveImages** module.'''))
 
         group.get_image_name = lambda: (
             group.image_name.value if self.channel_wants_images(group)
@@ -739,27 +811,31 @@ class LoadImages(cpmodule.Module):
             str(x) for x in range(1, max(10, len(image_settings.channels) + 2))]
 
         group.append("channel_number", cps.Choice(
-                "Channel number", channels, channels[len(image_settings.channels) - 1], doc="""
-            <i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
-            The channels of a multichannel image are numbered starting from 1.
-            Each channel is a greyscale image, acquired using different
-            illumination sources and/or optics. Use this setting to pick
-            the channel to associate with the above image name."""))
+                "Channel number", channels, channels[len(image_settings.channels) - 1], doc="""\
+*(Used only if a movie image format is selected as file type and movie
+frame grouping is selected)*
+
+The channels of a multichannel image are numbered starting from 1. Each
+channel is a greyscale image, acquired using different illumination
+sources and/or optics. Use this setting to pick the channel to associate
+with the above image name."""))
 
         group.append("rescale", cps.Binary(
-                "Rescale intensities?", True, doc="""
-            This option determines whether image metadata should be
-            used to rescale the image's intensities. Some image formats
-            save the maximum possible intensity value along with the pixel data.
-            For instance, a microscope might acquire images using a 12-bit
-            A/D converter which outputs intensity values between zero and 4095,
-            but stores the values in a field that can take values up to 65535.
-            <p>Select <i>%(YES)s</i> to rescale the image intensity so that
-            saturated values are rescaled to 1.0 by dividing all pixels
-            in the image by the maximum possible intensity value. </p>
-            <p>Select <i>%(NO)s</i> to ignore the image metadata and rescale the image
-            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image.</p>""" % globals()))
+                "Rescale intensities?", True, doc="""\
+This option determines whether image metadata should be used to rescale
+the image’s intensities. Some image formats save the maximum possible
+intensity value along with the pixel data. For instance, a microscope
+might acquire images using a 12-bit A/D converter which outputs
+intensity values between zero and 4095, but stores the values in a field
+that can take values up to 65535.
+
+Select *%(YES)s* to rescale the image intensity so that saturated values
+are rescaled to 1.0 by dividing all pixels in the image by the maximum
+possible intensity value.
+
+Select *%(NO)s* to ignore the image metadata and rescale the image to 0
+– 1.0 by dividing by 255 or 65535, depending on the number of bits used
+to store the image."""% globals()))
 
         group.can_remove = can_remove
         if can_remove:

@@ -102,40 +102,6 @@ def wraparound(sequence):
             yield l
 
 
-def make_1_or_3_channels(im):
-    if im.ndim == 2 or im.shape[2] == 1:
-        return im.astype(numpy.float32)
-    if im.shape[2] == 3:
-        return (im * 255).clip(0, 255).astype(numpy.uint8)
-    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.float32)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
-        for idx, v in enumerate(weights):
-            out[:, :, idx] += v * im[:, :, chanidx]
-    return (out * 255).clip(0, 255).astype(numpy.uint8)
-
-
-def make_3_channels_float(im):
-    if im.ndim == 3 and im.shape[2] == 1:
-        im = im[:, :, 0]
-    if im.ndim == 2:
-        return numpy.dstack((im, im, im)).astype(numpy.double).clip(0, 1)
-    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.double)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
-        for idx, v in enumerate(weights):
-            out[:, :, idx] += v * im[:, :, chanidx]
-    return out.clip(0, 1)
-
-
-def getbitmap(im):
-    if im.ndim == 2:
-        im = (255 * numpy.dstack((im, im, im))).astype(numpy.uint8)
-    h, w, _ = im.shape
-    outim = wx.EmptyImage(w, h)
-    b = buffer(im)  # make sure buffer exists through the remainder of function
-    outim.SetDataBuffer(b)
-    return outim.ConvertToBitmap()
-
-
 def match_rgbmask_to_image(rgb_mask, image):
     rgb_mask = list(rgb_mask)  # copy
     nchannels = image.shape[2]

@@ -15,7 +15,7 @@ it will mean a Cellprofiler image (= OMERO image plane) unless noted otherwise.<
 <p>When run from the command line the module will not used the omero object id that is saved in
 the pipeline. It will use the image directory parameter instead. e.g.:</p>
 
-<i>python CellProfiler.py -p mypipeline -i 1</i>
+<i>cellprofiler -p mypipeline -i 1</i>
 
 In the above example the pipeline "mypipeline" will be run with "1" as omero object id.
 

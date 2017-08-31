@@ -4,7 +4,7 @@
 MeasureGranularity
 ==================
 **MeasureGranularity** outputs spectra of size measurements of the
-textures in the image.
+textures in the image. This module supports 2D and volumetric images.
 
 Image granularity is a texture measurement that tries to fit a series of
 structure elements of increasing size into the texture of the image and outputs a spectrum of measures
@@ -93,8 +93,8 @@ but also require more processing time. Images are typically of higher
 resolution than is required for granularity measurements, so the default
 value is 0.25. For low-resolution images, increase the subsampling
 fraction; for high-resolution images, decrease the subsampling fraction.
-Subsampling by 1/4 reduces computation time by (1/4):sup:`3` because the
-size of the image is (1/4):sup:`2` of original and the range of granular
+Subsampling by 1/4 reduces computation time by (1/4) :sup:`3` because the
+size of the image is (1/4) :sup:`2` of original and the range of granular
 spectrum can be 1/4 of original. Moreover, the results are sometimes
 actually a little better with subsampling, which is probably because
 with subsampling the individual granular spectrum components can be used
@@ -104,10 +104,7 @@ numerical value cannot be determined in advance; an analysis as in this
 reference may be required before running the whole set. See this `pdf`_,
 slides 27-31, 49-50.
 
-.. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf
-pandoc 1.19.2
-
-© 2013–2015 John MacFarlane"""))
+.. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf"""))
 
         group.append("image_sample_size", cps.Float(
                 "Subsampling factor for background reduction",

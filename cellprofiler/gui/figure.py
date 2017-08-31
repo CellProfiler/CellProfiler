@@ -1103,23 +1103,30 @@ class Figure(wx.Frame):
         if dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax
+
             if interpolation is None:
                 interpolation = get_matplotlib_interpolation_preference()
+
             if normalize is None:
                 normalize = cellprofiler.preferences.get_intensity_mode()
+
                 if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
                     normalize = False
                 elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
                     normalize = "log"
                 else:
                     normalize = True
+
             if cplabels is None:
                 cplabels = []
             else:
                 use_imshow = False
+
                 new_cplabels = []
+
                 for i, d in enumerate(cplabels):
                     d = d.copy()
+
                     if CPLD_OUTLINE_COLOR not in d:
                         if i == 0:
                             d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_primary_outline_color()
@@ -1127,15 +1134,21 @@ class Figure(wx.Frame):
                             d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_secondary_outline_color()
                         elif i == 2:
                             d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_tertiary_outline_color()
+
                     if CPLD_MODE not in d:
                         d[CPLD_MODE] = CPLDM_OUTLINES
+
                     if CPLD_LINE_WIDTH not in d:
                         d[CPLD_LINE_WIDTH] = 1
+
                     if CPLD_ALPHA_COLORMAP not in d:
                         d[CPLD_ALPHA_COLORMAP] = cellprofiler.preferences.get_default_colormap()
+
                     if CPLD_ALPHA_VALUE not in d:
                         d[CPLD_ALPHA_VALUE] = .25
+
                     new_cplabels.append(d)
+
                 cplabels = new_cplabels
 
             # NOTE: self.subplot_user_params is used to store changes that are made
@@ -1143,24 +1156,31 @@ class Figure(wx.Frame):
             #    Once a subplot that uses this mechanism has been drawn, it will
             #    continually load defaults from self.subplot_user_params instead of
             #    the default values specified in the function definition.
-            kwargs = {'title': title,
-                      'clear': False,
-                      'colormap': colormap,
-                      'colorbar': colorbar,
-                      'normalize': normalize,
-                      'vmin': vmin,
-                      'vmax': vmax,
-                      'rgb_mask': rgb_mask,
-                      'use_imshow': use_imshow,
-                      'interpolation': interpolation,
-                      'cplabels': cplabels}
+            kwargs = {
+                'title': title,
+                'clear': False,
+                'colormap': colormap,
+                'colorbar': colorbar,
+                'normalize': normalize,
+                'vmin': vmin,
+                'vmax': vmax,
+                'rgb_mask': rgb_mask,
+                'use_imshow': use_imshow,
+                'interpolation': interpolation,
+                'cplabels': cplabels
+            }
+
             if (x, y) not in self.subplot_user_params:
                 self.subplot_user_params[(x, y)] = {}
+
             if (x, y) not in self.subplot_params:
                 self.subplot_params[(x, y)] = {}
+
             # overwrite keyword arguments with user-set values
             kwargs.update(self.subplot_user_params[(x, y)])
+
             self.subplot_params[(x, y)].update(kwargs)
+
             if kwargs["colormap"] is None:
                 kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
 
@@ -1184,6 +1204,7 @@ class Figure(wx.Frame):
 
             if clear:
                 self.clear_subplot(x, y)
+
             # Store the raw image keyed by it's subplot location
             self.images[(x, y)] = image
 
@@ -1206,6 +1227,7 @@ class Figure(wx.Frame):
                 tick_vmin = image[image > 0].min()
             else:
                 tick_vmin = image.min()
+
             if orig_vmax is not None:
                 tick_vmax = orig_vmax
             else:
@@ -1234,6 +1256,7 @@ class Figure(wx.Frame):
 
             if colorbar and not is_color_image(image):
                 colormap.set_array(self.images[(x, y)])
+
                 colormap.autoscale()
 
             image = self.images[(x, y)]
@@ -1241,72 +1264,88 @@ class Figure(wx.Frame):
             subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)
+
             #
             # Colorbar support
             #
             if colorbar and not is_color_image(image):
-
                 if not subplot in self.colorbar:
                     cax = matplotlib.colorbar.make_axes(subplot)[0]
+
                     bar = subplot.figure.colorbar(colormap, cax, subplot, use_gridspec=False)
+
                     self.colorbar[subplot] = (cax, bar)
                 else:
                     cax, bar = self.colorbar[subplot]
+
                     bar.set_array(self.images[(x, y)])
+
                     bar.update_normal(colormap)
+
                     bar.update_ticks()
 
             # Also add this menu to the main menu
             if (x, y) in self.subplot_menus:
                 # First trash the existing menu if there is one
                 self.menu_subplots.RemoveItem(self.subplot_menus[(x, y)])
+
             menu_pos = 0
+
             for yy in range(y + 1):
                 if yy == y:
                     cols = x
                 else:
                     cols = self.subplots.shape[0]
+
                 for xx in range(cols):
                     if (xx, yy) in self.images:
                         menu_pos += 1
-            self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(menu_pos,
-                                                                       -1, (title or 'Subplot (%s,%s)' % (x, y)),
-                                                                       self.get_imshow_menu((x, y)))
+
+            self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(
+                menu_pos,
+                -1,
+                (title or 'Subplot (%s,%s)' % (x, y)),
+                self.get_imshow_menu((x, y))
+            )
 
             # Attempt to update histogram plot if one was created
-            hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name,
-                                                                      (x, y)))
+            hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name, (x, y)))
+
             if hist_fig:
-                hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(),
-                                           bins=200, xlabel='pixel intensity')
+                hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(), bins=200, xlabel='pixel intensity')
+
                 hist_fig.figure.canvas.draw()
+
             return subplot
         else:
             self.gridshow(x, y, image, title, colormap, colorbar)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
-        outlines = [x for x in subplot.collections
-                    if isinstance(x, CPOutlineArtist)]
+        outlines = [x for x in subplot.collections if isinstance(x, CPOutlineArtist)]
+
         for outline in outlines:
             outline.remove()
+
         for cplabels in kwargs['cplabels']:
             if not cplabels.get(CPLD_SHOW, True):
                 continue
+
             if cplabels[CPLD_MODE] == CPLDM_LINES:
-                subplot.add_collection(CPOutlineArtist(
+                subplot.add_collection(
+                    CPOutlineArtist(
                         cplabels[CPLD_NAME],
                         cplabels[CPLD_LABELS],
                         linewidth=cplabels[CPLD_LINE_WIDTH],
-                        colors=numpy.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.))
+                        colors=numpy.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.)
+                )
 
     @allow_sharexy
-    def subplot_imshow_color(self, x, y, image, title=None,
-                             normalize=False, rgb_mask=None, **kwargs):
+    def subplot_imshow_color(self, x, y, image, title=None, normalize=False, rgb_mask=None, **kwargs):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
-        return self.subplot_imshow(
-                x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
+
+        return self.subplot_imshow(x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
 
     @allow_sharexy
     def subplot_imshow_labels(self, x, y, image,
@@ -1341,10 +1380,20 @@ class Figure(wx.Frame):
             pixel_data=background_image
         )
 
-        return self.subplot_imshow(x, y, label_image, title, clear,
-                                   normalize=False, vmin=None, vmax=None,
-                                   sharex=sharex, sharey=sharey,
-                                   use_imshow=use_imshow, dimensions=dimensions)
+        return self.subplot_imshow(
+            x,
+            y,
+            label_image,
+            title,
+            clear,
+            normalize=False,
+            vmin=None,
+            vmax=None,
+            sharex=sharex,
+            sharey=sharey,
+            use_imshow=use_imshow,
+            dimensions=dimensions
+        )
 
     @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape=None, title=None,
@@ -1369,26 +1418,42 @@ class Figure(wx.Frame):
                 shape = [1, 1]
             else:
                 shape = [numpy.max(ijv[:, 0]) + 1, numpy.max(ijv[:, 1]) + 1]
+
         image = numpy.zeros(list(shape) + [3], numpy.float)
+
         if len(ijv) > 0:
             cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+
             max_label = numpy.max(ijv[:, 2])
+
             if renumber:
                 numpy.random.seed(0)
                 order = numpy.random.permutation(max_label)
             else:
                 order = numpy.arange(max_label)
+
             order = numpy.hstack(([0], order + 1))
+
             colors = matplotlib.cm.ScalarMappable(cmap=cm).to_rgba(order)
-            r, g, b, a = [scipy.sparse.coo_matrix((colors[ijv[:, 2], i], (ijv[:, 0], ijv[:, 1])),
-                                                  shape=shape).toarray()
-                          for i in range(4)]
+
+            r, g, b, a = [scipy.sparse.coo_matrix((colors[ijv[:, 2], i], (ijv[:, 0], ijv[:, 1])), shape=shape).toarray() for i in range(4)]
+
             for i, plane in enumerate((r, g, b)):
                 image[a != 0, i] = plane[a != 0] / a[a != 0]
-        return self.subplot_imshow(x, y, image, title, clear,
-                                   normalize=False, vmin=None, vmax=None,
-                                   sharex=sharex, sharey=sharey,
-                                   use_imshow=use_imshow)
+
+        return self.subplot_imshow(
+            x,
+            y,
+            image,
+            title,
+            clear,
+            normalize=False,
+            vmin=None,
+            vmax=None,
+            sharex=sharex,
+            sharey=sharey,
+            use_imshow=use_imshow
+        )
 
     @allow_sharexy
     def subplot_imshow_grayscale(self, x, y, image, title=None, **kwargs):

@@ -33,7 +33,7 @@ hiddenimports += [
 
 a = Analysis(
     [
-        'CellProfiler/CellProfiler.py'
+        'CellProfiler.py'
     ],
     binaries=binaries,
     cipher=block_cipher,

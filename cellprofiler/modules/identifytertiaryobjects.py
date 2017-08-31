@@ -137,14 +137,12 @@ objects with no area. Measurements can still be made on such objects,
 but the results will be zero or not-a-number (NaN).
 """ % globals())
 
-        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc="""\
-%(RETAINING_OUTLINES_HELP)s
-""" % globals())
+        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc=RETAINING_OUTLINES_HELP
+% globals())
 
         self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "CytoplasmOutlines", doc="""\
-%(NAMING_OUTLINES_HELP)s
-""" % globals())
+                "Name the outline image", "CytoplasmOutlines", doc=NAMING_OUTLINES_HELP
+% globals())
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

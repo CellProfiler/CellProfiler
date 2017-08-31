@@ -1410,7 +1410,7 @@ class Figure(wx.Frame):
         if image.dtype.type == numpy.float64:
             image = image.astype(numpy.float32)
         kwargs = kwargs.copy()
-        kwargs['colormap'] = matplotlib.cm.Greys_r
+        kwargs['colormap'] = "Greys"
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     @allow_sharexy
@@ -1427,7 +1427,7 @@ class Figure(wx.Frame):
                      our own artist.
         """
         kwargs = kwargs.copy()
-        kwargs['colormap'] = matplotlib.cm.binary_r
+        kwargs['colormap'] = "binary"
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     @staticmethod
@@ -1748,7 +1748,7 @@ class Figure(wx.Frame):
         return plot
 
     def subplot_platemap(self, x, y, plates_dict, plate_type,
-                         cmap=matplotlib.cm.jet, colorbar=True, title=''):
+                         cmap="jet", colorbar=True, title=''):
         """Draws a basic plate map (as an image).
         x, y       - subplot's column and row (should be 0,0)
         plates_dict - dict of the form: d[plate][well] --> numeric value

@@ -56,8 +56,8 @@ for ft in mpl_unsupported_filetypes:
     del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[ft]
 
 
-def is_color_image(im):
-    return im.ndim == 3 and im.shape[2] >= 2
+def is_color_image(image):
+    return image.ndim == 3 and image.shape[2] >= 2
 
 
 COLOR_NAMES = ['Red', 'Green', 'Blue', 'Yellow', 'Cyan', 'Magenta', 'White']
@@ -493,27 +493,27 @@ class Figure(wx.Frame):
         elif not self.mouse_mode == MODE_NONE:
             self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
 
-    def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
+    def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
         fields = []
         x, y = [int(round(xy)) for xy in xi, yi]
-        if not self.in_bounds(im, x, y):
+        if not self.in_bounds(image, x, y):
             return fields
-        if im.dtype.type == numpy.uint8:
-            im = im.astype(numpy.float32) / 255.0
-        if im.ndim == 2:
-            fields += ["Intensity: %.4f" % (im[y, x])]
-        elif im.ndim == 3 and im.shape[2] == 3:
-            fields += ["Red: %.4f" % (im[y, x, 0]),
-                       "Green: %.4f" % (im[y, x, 1]),
-                       "Blue: %.4f" % (im[y, x, 2])]
-        elif im.ndim == 3:
-            fields += ["Channel %d: %.4f" % (idx + 1, im[y, x, idx]) for idx in range(im.shape[2])]
+        if image.dtype.type == numpy.uint8:
+            image = image.astype(numpy.float32) / 255.0
+        if image.ndim == 2:
+            fields += ["Intensity: %.4f" % (image[y, x])]
+        elif image.ndim == 3 and image.shape[2] == 3:
+            fields += ["Red: %.4f" % (image[y, x, 0]),
+                       "Green: %.4f" % (image[y, x, 1]),
+                       "Blue: %.4f" % (image[y, x, 2])]
+        elif image.ndim == 3:
+            fields += ["Channel %d: %.4f" % (idx + 1, image[y, x, idx]) for idx in range(image.shape[2])]
         return fields
 
     @staticmethod
-    def in_bounds(im, xi, yi):
+    def in_bounds(image, xi, yi):
         """Return false if xi or yi are outside of the bounds of the image"""
-        return not (im is None or xi >= im.shape[1] or yi >= im.shape[0]
+        return not (image is None or xi >= image.shape[1] or yi >= image.shape[0]
                     or xi < 0 or yi < 0)
 
     def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
@@ -521,7 +521,6 @@ class Figure(wx.Frame):
             return
         xi = int(event.xdata + .5)
         yi = int(event.ydata + .5)
-        im = None
         fields = self.get_fields(event, yi, xi, x1)
 
         if self.mouse_down is not None:
@@ -2030,10 +2029,10 @@ def get_crosshair_cursor():
             buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
             abuf = numpy.ones((16, 16), dtype='uint8') * 255
             abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
-            im = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            __crosshair_cursor = wx.CursorFromImage(im)
+            image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
+            __crosshair_cursor = wx.CursorFromImage(image)
         else:
             __crosshair_cursor = wx.CROSS_CURSOR
     return __crosshair_cursor

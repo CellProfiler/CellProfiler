@@ -198,7 +198,7 @@ LOAD_AS_CHOICE_HELP_TEXT = """
     <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
     is an image which has been generated for the purpose of correcting uneven
     illumination/lighting/shading or to reduce uneven background in images. Typically,
-    is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and
+    is a file in the NumPy .npy format. See <b>CorrectIlluminationCalculate</b> and
     <b>CorrectIlluminationApply</b> for more details. </li>
     <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image
     is a label matrix and you want to obtain the objects that it defines.

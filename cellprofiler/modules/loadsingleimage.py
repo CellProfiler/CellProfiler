@@ -139,7 +139,7 @@ class LoadSingleImage(cpm.Module):
                       ("JPG/JPEG file (*.jpg,*.jpeg)", "*.jpg,*.jpeg"),
                       ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),
                       ("Compuserve GIF file (*.gif)", "*.gif"),
-                      ("MATLAB image (*.mat)", "*.mat"),
+                      ("NumPy array (*.npy)", "*.npy"),
                       ("All files (*.*)", "*.*")], doc="""
                     The filename can be constructed in one of two ways:
                     <ul>

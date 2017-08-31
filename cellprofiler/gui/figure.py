@@ -1,23 +1,20 @@
 # coding=utf-8
-""" figure.py - provides a frame with a figure inside
+
+"""
+figure.py - provides a frame with a figure inside
 """
 
-import cellprofiler.gui
-import cellprofiler.gui.artist
-import cellprofiler.gui.help
-import cellprofiler.preferences
-import cellprofiler.preferences
-import cellprofiler.object
-import centrosome.cpmorphology
-import centrosome.outline
-import tools
 import csv
 import functools
-import javabridge
 import logging
-import math
+import os
+import sys
+import uuid
+
+import centrosome.cpmorphology
+import centrosome.outline
+import javabridge
 import matplotlib
-import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
@@ -27,13 +24,16 @@ import matplotlib.patches
 import matplotlib.pyplot
 import numpy
 import numpy.ma
-import os
 import scipy.ndimage
 import scipy.sparse
-import skimage.color
-import sys
-import uuid
 import wx
+
+import cellprofiler.gui
+import cellprofiler.gui.artist
+import cellprofiler.gui.help
+import cellprofiler.object
+import cellprofiler.preferences
+import cellprofiler.gui.tools
 
 im = None
 

@@ -4,7 +4,7 @@
 CalculateMath
 =============
 
-**Calculate Math** takes measurements produced by previous modules and
+**CalculateMath** takes measurements produced by previous modules and
 performs basic arithmetic operations.
 
 The arithmetic operations available in this module include addition,

@@ -120,7 +120,7 @@ The final projection image can be created by the following methods:
        4(10): e7497 `(link)`_.
 
 .. _(link): http://dx.doi.org/10.1371/journal.pone.0007497
-                    """% globals())
+"""% globals())
 
         self.projection_image_name = cps.ImageNameProvider(
                 'Name the output image',
@@ -129,7 +129,7 @@ The final projection image can be created by the following methods:
                                      cps.AVAILABLE_ON_LAST_ATTRIBUTE: True})
         self.frequency = cps.Float(
                 "Frequency", 6.0, minval=1.0, doc="""\
-*(Used only if %(P_POWER)s is selected as the projection method)*
+*(Used only if "%(P_POWER)s" is selected as the projection method)*
 
 This setting controls the frequency at which the power is measured. A
 frequency of 2 will respond most strongly to pixels that alternate

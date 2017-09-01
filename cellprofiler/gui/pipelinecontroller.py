@@ -165,7 +165,6 @@ class PipelineController(object):
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_VIEW_WORKSPACE, self.on_debug_view_workspace)
 
         # ~*~
         wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)
@@ -3282,17 +3281,6 @@ class PipelineController(object):
                            "See the log for details."),
                           "Error reloading modules.",
                           wx.ICON_ERROR | wx.OK)
-
-    def on_debug_view_workspace(self, event):
-        """Show the workspace viewer"""
-        workspace = cellprofiler.gui.workspace.Workspace(
-            self.__pipeline,
-            None,
-            self.__debug_measurements,
-            self.__debug_object_set,
-            self.__debug_measurements,
-            self.__debug_image_set_list)
-        cellprofiler.gui.viewworkspace.show_workspace_viewer(self.__frame, workspace)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

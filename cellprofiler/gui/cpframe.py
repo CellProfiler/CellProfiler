@@ -88,7 +88,6 @@ ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
 ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
 ID_DEBUG_PDB = wx.NewId()
-ID_DEBUG_VIEW_WORKSPACE = wx.NewId()
 
 # ~*~
 ID_SAMPLE_INIT = wx.NewId()
@@ -646,7 +645,6 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, False)
-        self.__menu_debug.Enable(ID_DEBUG_VIEW_WORKSPACE, False)
 
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L",
@@ -871,8 +869,7 @@ class CPFrame(wx.Frame):
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
                       ID_DEBUG_NEXT_GROUP, ID_DEBUG_CHOOSE_GROUP,
                       ID_DEBUG_CHOOSE_IMAGE_SET,
-                      ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
-                      ID_DEBUG_VIEW_WORKSPACE)
+                      ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET)
 
     def enable_debug_commands(self):
         """Enable or disable the debug commands (like ID_DEBUG_STEP)"""

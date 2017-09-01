@@ -49,7 +49,8 @@ class IdentifyObjectsManually(I.Identify):
                 "Select the input image", cps.NONE, doc="""Choose the name of the image to display in the object selection user interface.""")
 
         self.objects_name = cps.ObjectNameProvider(
-                "Name the objects to be identified", "Cells", doc="""What do you want to call the objects that you identify using this module? You can use this name to
+                "Name the objects to be identified", "Cells", doc="""\
+What do you want to call the objects that you identify using this module? You can use this name to
 refer to your objects in subsequent modules.""")
 
         self.wants_outlines = cps.Binary(

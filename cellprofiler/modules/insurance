@@ -1,0 +1,95 @@
++----------------------------------------------------------------------------------------------------------------------+
+| ^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{1,2})_s(?P<Site>[0-9])                                                            |
++-----------------------------------------------------------+----------------------------------------------------------+
+| ^                                                         | Start only at beginning of the file name                 |
++-----------------------------------------------------------+----------------------------------------------------------+
+| ?P<Plate>                                                 | Name the captured field *Plate*                          |
++-----------------------------------------------------------+----------------------------------------------------------+
+| .*                                                        | Capture as many characters as follow                     |
++-----------------------------------------------------------+----------------------------------------------------------+
+| _                                                         | Discard the underbar separating plate from well          |
++-----------------------------------------------------------+----------------------------------------------------------+
+| ?P<Well>                                                  | Name the captured field *Well*                           |
++-----------------------------------------------------------+----------------------------------------------------------+
+| [A-P]                                                     | Capture exactly one letter between A and P               |
++-----------------------------------------------------------+----------------------------------------------------------+
+| [0-9]{1,2}                                                | Capture one or two digits that follow                    |
++-----------------------------------------------------------+----------------------------------------------------------+
+| _s                                                        | Discard the underbar followed by *s*                     |
+|                                                           | separating well from site                                |
++-----------------------------------------------------------+----------------------------------------------------------+
+| ?P<Site>                                                  | Name the captured field *Site*                           |
++-----------------------------------------------------------+----------------------------------------------------------+
+| [0-9]                                                     | Capture one digit following                              |
++-----------------------------------------------------------+----------------------------------------------------------+
+
+The regular expression can be typed in the upper text box, with a sample
+file name given in the lower text box. Provided the syntax is correct,
+the corresponding fields will be highlighted in the same color in the
+two boxes. Press *Submit* to enter the typed regular expression.
+
+You can create metadata tags for any portion of the filename or path,
+but if you are specifying metadata for multiple images in a single
+**LoadImages** module, an image cycle can only have one set of values
+for each metadata tag. This means that you can only specify the metadata
+tags which have the same value across all images listed in the module.
+For example, in the example above, you might load two wavelengths of
+data, one named *TE12345_A05_s1_w1.tif* and the other
+*TE12345_A05_s1_w2.tif*, where the number following the *w* is the
+wavelength. In this case, a “Wavelength” tag *should not* be included in
+the regular expression because while the “Plate”, “Well” and “Site”
+metadata is identical for both images, the wavelength metadata is not.
+
+Note that if you use the special fieldnames *<WellColumn>* and
+*<WellRow>* together, LoadImages will automatically create a *<Well>*
+metadata field by joining the two fieldname values together. For
+example, if *<WellRow>* is “A” and *<WellColumn>* is “01”, a field
+*<Well>* will be “A01”. This is useful if your well row and column names
+are separated from each other in the filename, but you want to retain
+the standard well nomenclature."""))
+
+        group.append("path_metadata", cps.RegexpText(
+                'Type the regular expression that finds metadata in the subfolder path',
+                '.\*[\\\/](?P.\*)[\\\/](?P.\*)$',
+                get_example_fn=example_path_fn,
+                guess=cps.RegexpText.GUESS_FOLDER,
+                doc="""\
+*(Used only if you want to extract metadata from the path)*
+
+Enter the regular expression for extracting the metadata from the
+path. Note that this field is available whether you have selected
+*Text-Regular expressions* to load the files or not.
+
+Clicking the magnifying glass icon to the right will bring up a tool
+that will allow you to check the accuracy of your regular expression.
+The regular expression syntax can be used to name different parts of
+your expression. The syntax *(?<fieldname>expr)* will extract whatever
+matches *expr* and assign it to the image’s *fieldname* measurement.
+
+For instance, a researcher uses folder names with the date and
+subfolders containing the images with the run ID (e.g.,
+*.2009_10_02/1234*) The following regular expression will capture
+the plate, well, and site in the fields *Date* and *Run*:
+
++---------------------------------------------------------------------------------------------------------------------+
+| .\*[\\\/](?P<Date>.\*)[\\\/](?P<Run>.\*)$                                                                             |
++---------------------------------------------------+-----------------------------------------------------------------+
+| .\*[\\\/]                                          | Skip characters at the beginning of the pathname until either a |
+|                                                   | slash (/) or backslash (\\\) is encountered (depending on the    |
+|                                                   | operating system)                                               |
++---------------------------------------------------+-----------------------------------------------------------------+
+| ?P<Date>                                          | Name the captured field *Date*                                  |
++---------------------------------------------------+-----------------------------------------------------------------+
+| .\*                                               | Capture as many characters that follow                          |
++---------------------------------------------------+-----------------------------------------------------------------+
+| [\\\/]                                             | Discard the slash/backslash character                           |
++---------------------------------------------------+-----------------------------------------------------------------+
+| ?P<Run>                                           | Name the captured field *Run*                                   |
++---------------------------------------------------+-----------------------------------------------------------------+
+| .\*                                               | Capture as many characters as follow                            |
++---------------------------------------------------+-----------------------------------------------------------------+
+| $                                                 | The *Run* field must be at the end of the path string, i.e.,    |
+|                                                   | the last folder on the path. This also means that the Date      |
+|                                                   | field contains the parent folder of the Date folder.            |
++---------------------------------------------------+-----------------------------------------------------------------+
+"""))

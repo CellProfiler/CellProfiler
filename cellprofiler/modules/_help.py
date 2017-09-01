@@ -105,7 +105,7 @@ HELP_ON_PIXEL_INTENSITIES = """\
 To view pixel intensities in an open image, use the pixel intensity tool
 which is available in any open display window. When you move your mouse
 over the image, the pixel intensities will appear in the bottom bar of
-the display window.
+the display window.\
 """
 
 NAMING_OUTLINES_HELP = """\

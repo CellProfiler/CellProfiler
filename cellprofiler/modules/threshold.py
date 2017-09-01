@@ -167,12 +167,12 @@ There are a number of methods for finding thresholds automatically:
        brighter than the background level of the image.
        
 -  *{TM_LI}:* The distributions of intensities that define foreground and background are
-   used as estimates of probability distributions that produce the intensities of foreground
+   used as estimates for probability distributions that produce the intensities of foreground
    and background pixels. For each possible threshold the cross-entropy between the foreground
    and background distributions is calculated and the lowest cross-entropy value is chosen as
    the final threshold. The lowest cross-entropy can be interpreted as the value where the information
-   between the two probability distributions is the highest; given a pixel of an arbitrary intensity, 
-   the likelihood it would come from either foreground or background would be at its highest.
+   shared between the two probability distributions is the highest. On average, given a pixel of an 
+   arbitrary intensity, the likelihood it came from the foreground or background would be at its highest.
    
 -  *{TM_MANUAL}:* Enter a single value between zero and one that
    applies to all cycles and is independent of the input image.
@@ -380,6 +380,7 @@ automatically, by overriding the automatic threshold.
             maxval=1.0,
             doc="""\
 *(Used only if Manual selected for thresholding method)*
+
 Enter the value that will act as an absolute threshold for the images, a
 value from 0 to 1.
             """
@@ -390,6 +391,7 @@ value from 0 to 1.
             lambda: cellprofiler.measurement.IMAGE,
             doc="""\
 *(Used only if Measurement is selected for thresholding method)*
+
 Choose the image measurement that will act as an absolute threshold for
 the images.
             """
@@ -545,8 +547,8 @@ intensities.
             "Size of adaptive window",
             50,
             doc="""\
-            Enter the window for the adaptive method. For example, you may want to use a multiple of the
-            largest expected object size.
+Enter the window for the adaptive method. For example, you may want to use a multiple of the
+largest expected object size.
             """
         )
 

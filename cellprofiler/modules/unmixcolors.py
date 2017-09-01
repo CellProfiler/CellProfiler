@@ -43,7 +43,7 @@ References
 
 See also **ColorToGray**.
 
-.. _here: http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html
+.. _here: http://imagej.net/Colour_Deconvolution
 """
 
 import numpy as np
@@ -176,9 +176,9 @@ class UnmixColors(cpm.Module):
         self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
 
         self.input_image_name = cps.ImageNameSubscriber(
-                "Select the input color image", cps.NONE, doc="""
-            Choose the name of the histologically stained color image
-            loaded or created by some prior module.""")
+                "Select the input color image", cps.NONE, doc="""\
+Choose the name of the histologically stained color image
+loaded or created by some prior module.""")
 
         self.add_image(False)
 

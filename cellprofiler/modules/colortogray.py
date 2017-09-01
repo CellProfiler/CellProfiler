@@ -336,17 +336,29 @@ class ColorToGray(cellprofiler.module.Module):
             b = contributions[numpy.newaxis, numpy.newaxis, numpy.newaxis, :]
 
             output_image = numpy.sum(a * b, -1)
+
+            image = cellprofiler.image.Image(
+                output_image,
+                dimensions=3,
+                parent_image=image
+            )
         else:
             a = input_image[:, :, channels]
             b = contributions[numpy.newaxis, numpy.newaxis, :]
 
-            output_image = numpy.sum(a * b, 2)
+            output_image = numpy.sum(a * b, -1)
 
-        image = cellprofiler.image.Image(output_image, parent_image=image)
+            image = cellprofiler.image.Image(
+                output_image,
+                dimensions=2,
+                parent_image=image
+            )
 
         workspace.image_set.add(self.grayscale_name.value, image)
 
         workspace.display_data.input_image = input_image
+
+        workspace.display_data.dimensions = image.dimensions
 
         workspace.display_data.output_image = output_image
 
@@ -361,6 +373,7 @@ class ColorToGray(cellprofiler.module.Module):
             0,
             0,
             input_image,
+            dimensions=workspace.display_data.dimensions,
             title="Original image: {}".format(self.image_name)
         )
 
@@ -368,9 +381,10 @@ class ColorToGray(cellprofiler.module.Module):
             0,
             1,
             output_image,
-            title="Grayscale image: {}".format(self.grayscale_name),
             colormap=matplotlib.cm.Greys_r,
-            sharexy=figure.subplot(0, 0)
+            dimensions=workspace.display_data.dimensions,
+            sharexy=figure.subplot(0, 0),
+            title="Grayscale image: {}".format(self.grayscale_name)
         )
 
     def run_split(self, workspace, image):

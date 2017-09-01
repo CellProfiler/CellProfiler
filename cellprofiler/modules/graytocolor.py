@@ -106,7 +106,7 @@ Select the input image to be displayed in green
 Select the input image to be displayed in blue
 """ % globals())
 
-        self.rgb_image_name = cps.ImageNameProvider(
+        self.rgb_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "ColorImage", doc="""Enter a name for the resulting image""")
 
         self.red_adjustment_factor = cellprofiler.setting.Float(
@@ -238,7 +238,7 @@ weights.
 
         self.add_stack_channel_cb(can_remove=False)
 
-        self.add_stack_channel = cps.DoSomething("Add another channel", "Add another channel", self.add_stack_channel_cb,
+        self.add_stack_channel = cellprofiler.setting.DoSomething("Add another channel", "Add another channel", self.add_stack_channel_cb,
         doc="""\
     Press this button to add another image to the stack.
     """)
@@ -248,21 +248,21 @@ weights.
         default_color = DEFAULT_COLORS[
             len(self.stack_channels) % len(DEFAULT_COLORS)]
 
-        group.append("image_name", cps.ImageNameSubscriber(
-                "Image name", cps.NONE,
+        group.append("image_name", cellprofiler.setting.ImageNameSubscriber(
+                "Image name", cellprofiler.setting.NONE,
                 doc='''\
 *(Used only if "%(SCHEME_STACK)s" or "%(SCHEME_COMPOSITE)s" is chosen)*
 
 Select the input image to add to the stacked image
 ''' % globals()))
-        group.append("color", cps.Color(
+        group.append("color", cellprofiler.setting.Color(
                 "Color", default_color,
                 doc='''\
 *(Used only if "%(SCHEME_COMPOSITE)s" is chosen)*
 
 The color to be assigned to the above image.
 ''' % globals()))
-        group.append("weight", cps.Float(
+        group.append("weight", cellprofiler.setting.Float(
                 "Weight", 1.0, minval=.5 / 255,
                 doc='''\
 *(Used only if "%(SCHEME_COMPOSITE)s" is chosen)*
@@ -485,9 +485,6 @@ pixel values are multiplied by this weight before assigning the color.
             color_subplot = (nsubplots % 4, int(nsubplots / 4))
 
         figure.set_subplots(subplots)
-
-        import IPython
-        IPython.embed()
 
         for i, (input_image_name, image_pixel_data) in enumerate(zip(input_image_names, images)):
             x, y = subplot_indices[i]

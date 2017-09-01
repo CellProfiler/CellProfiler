@@ -1,7 +1,13 @@
 # coding=utf-8
 
 """
-**Split or merge** previously identified objects.
+SplitOrMergeObjects
+===================
+
+**SplitOrMergeObjects** separates or combines a set of objects that
+were identified earlier in a pipeline. Objects that share a label, but
+are not touching will be relabeled into separate. Objects that share a
+boundary will be combined into a single object.
 
 Objects and their measurements are associated with each other based on
 their object numbers (also known as *labels*). Typically, each object is
@@ -35,7 +41,7 @@ labeled consecutively without gaps in the numbering (which other modules
 may depend on), **SplitOrMergeObjects** will typically result in most
 of the objects having their numbers reordered. This reassignment
 information is stored as a per-object measurement with both the original
-input and reasigned output objects, in case you need to track the
+input and reassigned output objects, in case you need to track the
 reassignment.
 
 See also **RelateObjects**.
@@ -82,147 +88,158 @@ class SplitOrMergeObjects(cpm.Module):
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
                 "Select the input objects",
-                cps.NONE, doc="""
-            Select the objects whose object numbers you want to reassign.
-            You can use any objects that were created in previous modules, such as
-            <b>IdentifyPrimaryObjects</b> or <b>IdentifySecondaryObjects</b>.""")
+                cps.NONE, doc="""\
+Select the objects whose object numbers you want to reassign. You can
+use any objects that were created in previous modules, such as
+**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**."""
+        )
 
         self.output_objects_name = cps.ObjectNameProvider(
-                "Name the new objects", "RelabeledNuclei", doc="""
-            Enter a name for the objects whose numbers have been reassigned.
-            You can use this name in subsequent modules that take objects as inputs.""")
+                "Name the new objects", "RelabeledNuclei", doc="""\
+Enter a name for the objects whose numbers have been reassigned.
+You can use this name in subsequent modules that take objects as inputs."""
+        )
 
         self.relabel_option = cps.Choice(
-                "Operation", [OPTION_UNIFY, OPTION_SPLIT], doc="""
-            You can choose one of the following options:
-            <ul>
-            <li><i>%(OPTION_UNIFY)s:</i> Assign adjacent or nearby objects the same
-            label based on certain criteria. It can be useful, for example,
-            to merge together touching objects that were incorrectly split into two pieces
-            by an <b>Identify</b> module.</li>
-            <li><i>%(OPTION_SPLIT)s:</i> Assign a unique number to separate objects
-            that currently share the same label. This can occur if you applied certain
-            operations with the <b>Morph</b> module to objects.</li>
-            </ul>""" % globals())
+                "Operation", [OPTION_UNIFY, OPTION_SPLIT], doc="""\
+You can choose one of the following options:
+
+-  *%(OPTION_UNIFY)s:* Assign adjacent or nearby objects the same label
+   based on certain criteria. It can be useful, for example, to merge
+   together touching objects that were incorrectly split into two pieces
+   by an **Identify** module.
+-  *%(OPTION_SPLIT)s:* Assign a unique number to separate objects that
+   currently share the same label. This can occur if you applied certain
+   operations with the **Morph** module to objects.""" % globals()
+        )
 
         self.unify_option = cps.Choice(
-                "Unification method", [UNIFY_DISTANCE, UNIFY_PARENT], doc="""
-            <i>(Used only with the %(OPTION_UNIFY)s option)</i><br>
-            You can unify objects in one of two ways:
-            <ul>
-            <li><i>%(UNIFY_DISTANCE)s: </i> All objects within a certain pixel radius
-            from each other will be unified</li>
-            <li><i>%(UNIFY_PARENT)s: </i>All objects which share the same parent
-            relationship to another object will be unified. This is not be confused
-            with using the <b>RelateObjects</b> module, in which the related objects
-            remain as individual objects. See <b>RelateObjects</b> for more details.</li>
-            </ul>
-            """ % globals())
+                "Unification method", [UNIFY_DISTANCE, UNIFY_PARENT], doc="""\
+*(Used only with the %(OPTION_UNIFY)s option)*
+
+You can unify objects in one of two ways:
+
+-  *%(UNIFY_DISTANCE)s:* All objects within a certain pixel radius from
+   each other will be unified
+-  *%(UNIFY_PARENT)s:* All objects which share the same parent
+   relationship to another object will be unified. This is not be
+   confused with using the **RelateObjects** module, in which the
+   related objects remain as individual objects. See **RelateObjects**
+   for more details.""" % globals()
+        )
 
         self.unification_method = cps.Choice(
                 "Output object type", [UM_DISCONNECTED, UM_CONVEX_HULL],
-                doc="""
-            <i>(Used only with the %(UNIFY_PARENT)s unification method)</i>
-            <br>
-            <b>SplitOrMergeObjects</b> can either unify the child objects
-            and keep them disconnected or it can find the smallest convex
-            polygon (the convex hull) that encloses all of a parent's child
-            objects. The convex hull will be truncated to include only those
-            pixels in the parent - in that case it may not truly be convex.
-            Choose %(UM_DISCONNECTED)s to leave the children as
-            disconnected pieces. Choose %(UM_CONVEX_HULL)s to create an
-            output object that is the convex hull around them all.
-            """ % globals()
+                doc="""\
+*(Used only with the "%(UNIFY_PARENT)s" unification method)*
+
+**SplitOrMergeObjects** can either unify the child objects and keep them
+disconnected or it can find the smallest convex polygon (the convex
+hull) that encloses all of a parent’s child objects. The convex hull
+will be truncated to include only those pixels in the parent - in that
+case it may not truly be convex. Choose %(UM_DISCONNECTED)s to leave
+the children as disconnected pieces. Choose %(UM_CONVEX_HULL)s to
+create an output object that is the convex hull around them all.""" % globals()
         )
 
         self.parent_object = cps.Choice(
                 "Select the parent object", [cps.NONE],
-                choices_fn=self.get_parent_choices, doc="""
-            Select the parent object that will be used to
-            unify the child objects. Please note the following:
-            <ul>
-            <li>You must have established a parent-child relationship
-            between the objects using a prior <b>RelateObjects</b> module.</li>
-            <li>Primary objects and their associated secondary objects are
-            already in a one-to-one parent-child relationship, so it makes no
-            sense to unify them here.</li>
-            </ul>""")
+                choices_fn=self.get_parent_choices, doc="""\
+Select the parent object that will be used to unify the child objects.
+Please note the following:
+
+-  You must have established a parent-child relationship between the
+   objects using a prior **RelateObjects** module.
+-  Primary objects and their associated secondary objects are already in
+   a one-to-one parent-child relationship, so it makes no sense to unify
+   them here."""
+        )
 
         self.distance_threshold = cps.Integer(
                 "Maximum distance within which to unify objects",
-                0, minval=0, doc="""
-            <i>(Used only with the %(OPTION_UNIFY)s option and the %(UNIFY_DISTANCE)s method)</i><br>
-            Objects that are less than or equal to the distance
-            you enter here, in pixels, will be unified. If you choose zero
-            (the default), only objects that are touching will be unified.
-            Note that <i>%(OPTION_UNIFY)s </i> will not actually connect or bridge
-            the two objects by adding any new pixels; it simply assigns the same object number
-            to the portions of the object. The new, unified object
-            may therefore consist of two or more unconnected components.""" % globals())
+                0, minval=0, doc="""\
+*(Used only with the "%(OPTION_UNIFY)s" option and the
+
+%(UNIFY_DISTANCE)s method)*
+Objects that are less than or equal to the distance you enter here, in
+pixels, will be unified. If you choose zero (the default), only objects
+that are touching will be unified. Note that *%(OPTION_UNIFY)s* will
+not actually connect or bridge the two objects by adding any new pixels;
+it simply assigns the same object number to the portions of the object.
+The new, unified object may therefore consist of two or more unconnected
+components.""" % globals()
+        )
 
         self.wants_image = cps.Binary(
-                "Unify using a grayscale image?", False, doc="""
-            <i>(Used only with the %(OPTION_UNIFY)s option)</i><br>
-            Select <i>%(YES)s</i> to use the objects' intensity features to determine whether two
-            objects should be unified. If you choose to use a grayscale image,
-            <i>%(OPTION_UNIFY)s</i> will unify two objects only if they
-            are within the distance you have specified <i>and</i> certain criteria about the objects
-            within the grayscale image are met.""" % globals())
+                "Unify using a grayscale image?", False, doc="""\
+*(Used only with the "%(OPTION_UNIFY)s" option)*
+
+Select *%(YES)s* to use the objects’ intensity features to determine
+whether two objects should be unified. If you choose to use a grayscale
+image, *%(OPTION_UNIFY)s* will unify two objects only if they are
+within the distance you have specified *and* certain criteria about the
+objects within the grayscale image are met.""" % globals())
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the grayscale image to guide unification", cps.NONE, doc="""
-            <i>(Used only if a grayscale image is to be used as a guide for unification)</i><br>
-            Select the name of an image loaded or created by a previous module.""")
+                "Select the grayscale image to guide unification", cps.NONE, doc="""\
+*(Used only if a grayscale image is to be used as a guide for
+unification)*
+
+Select the name of an image loaded or created by a previous module.""")
 
         self.minimum_intensity_fraction = cps.Float(
-                "Minimum intensity fraction", .9, minval=0, maxval=1, doc="""
-            <i>(Used only if a grayscale image is to be used as a guide for unification)</i><br>
-            Select the minimum acceptable intensity fraction. This will be used
-            as described for the method you choose in the next setting.""")
+                "Minimum intensity fraction", .9, minval=0, maxval=1, doc="""\
+*(Used only if a grayscale image is to be used as a guide for
+unification)*
+
+Select the minimum acceptable intensity fraction. This will be used as
+described for the method you choose in the next setting.""")
 
         self.where_algorithm = cps.Choice(
                 "Method to find object intensity",
-                [CA_CLOSEST_POINT, CA_CENTROIDS], doc="""
-            <i>(Used only if a grayscale image is to be used as a guide for unification)</i><br>
-            You can use one of two methods to determine whether two
-            objects should unified, assuming they meet the distance criteria (as specified above):
-            <ul>
-            <li><i>%(CA_CENTROIDS)s:</i> When the module considers merging two objects,
-            this method identifies the centroid of each object,
-            records the intensity value of the dimmer of the two centroids,
-            multiplies this value by the <i>minimum intensity fraction</i> to generate a threshold,
-            and draws a line between the centroids. The method will unify the
-            two objects only if the intensity of every point along the line is above
-            the threshold. For instance, if the intensity
-            of one centroid is 0.75 and the other is 0.50 and the <i>minimum intensity fraction</i>
-            has been chosen to be 0.9, all points along the line would need to have an intensity
-            of min(0.75, 0.50) * 0.9 = 0.50 * 0.9 = 0.45.<br>
-            This method works well for round cells whose maximum intensity
-            is in the center of the cell: a single cell that was incorrectly segmented
-            into two objects will typically not have a dim line between the centroids
-            of the two halves and will be correctly unified.</li>
+                [CA_CLOSEST_POINT, CA_CENTROIDS], doc="""\
+*(Used only if a grayscale image is to be used as a guide for
+unification)*
+  
+You can use one of two methods to determine whether two objects should
+unified, assuming they meet the distance criteria (as specified
+above):
 
-            <li><i>%(CA_CLOSEST_POINT)s:</i> This method is useful for unifying irregularly shaped cells
-            which are connected. It starts by assigning background pixels in the vicinity of the objects to the nearest
-            object. Objects are then unified if each object has background pixels that are:
-            <ul>
-            <li>Within a distance threshold from each object;</li>
-            <li>Above the minimum intensity fraction of the nearest object pixel;</li>
-            <li>Adjacent to background pixels assigned to a neighboring object.</li>
-            </ul>
-            An example of a feature that satisfies the above constraints is a line of
-            pixels that connect two neighboring objects and is roughly the same intensity
-            as the boundary pixels of both (such as an axon connecting two neurons).</li>
-            </ul>""" % globals())
+-  *%(CA_CENTROIDS)s:* When the module considers merging two objects,
+   this method identifies the centroid of each object, records the
+   intensity value of the dimmer of the two centroids, multiplies this
+   value by the *minimum intensity fraction* to generate a threshold,
+   and draws a line between the centroids. The method will unify the two
+   objects only if the intensity of every point along the line is above
+   the threshold. For instance, if the intensity of one centroid is 0.75
+   and the other is 0.50 and the *minimum intensity fraction* has been
+   chosen to be 0.9, all points along the line would need to have an
+   intensity of min(0.75, 0.50) \* 0.9 = 0.50 \* 0.9 = 0.45.
+   This method works well for round cells whose maximum intensity is in
+   the center of the cell: a single cell that was incorrectly segmented
+   into two objects will typically not have a dim line between the
+   centroids of the two halves and will be correctly unified.
+-  *%(CA_CLOSEST_POINT)s:* This method is useful for unifying
+   irregularly shaped cells which are connected. It starts by assigning
+   background pixels in the vicinity of the objects to the nearest
+   object. Objects are then unified if each object has background pixels
+   that are:
+
+   -  Within a distance threshold from each object;
+   -  Above the minimum intensity fraction of the nearest object pixel;
+   -  Adjacent to background pixels assigned to a neighboring object.
+
+   An example of a feature that satisfies the above constraints is a
+   line of pixels that connect two neighboring objects and is roughly
+   the same intensity as the boundary pixels of both (such as an axon
+   connecting two neurons).""" % globals())
 
         self.wants_outlines = cps.Binary(
-                "Retain outlines of the relabeled objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+                "Retain outlines of the relabeled objects?", False, doc="""%(RETAINING_OUTLINES_HELP)s""" % globals())
 
         self.outlines_name = cps.OutlineNameProvider(
                 'Name the outlines',
-                'RelabeledNucleiOutlines', doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+                'RelabeledNucleiOutlines', doc=NAMING_OUTLINES_HELP % globals())
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()

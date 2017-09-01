@@ -431,7 +431,7 @@ pixel values are multiplied by this weight before assigning the color.
                     raise ValueError("The %s image and %s image have different sizes (%s vs %s)" % values)
 
             if self.scheme_choice == SCHEME_STACK:
-                rgb_pixel_data = numpy.dstack(source_channels)
+                rgb_pixel_data = numpy.stack(source_channels, -1)
             else:
                 colors = []
 
@@ -442,10 +442,17 @@ pixel values are multiplied by this weight before assigning the color.
 
                     colors.append(color[numpy.newaxis, numpy.newaxis, :])
 
-                rgb_pixel_data = parent_image.pixel_data[:, :, numpy.newaxis] * colors[0]
+                if parent_image.volumetric:
+                    rgb_pixel_data = parent_image.pixel_data[:, :, :, numpy.newaxis] * colors[0]
+                else:
+                    rgb_pixel_data = parent_image.pixel_data[:, :, numpy.newaxis] * colors[0]
 
-                for image, color in zip(source_channels[1:], colors[1:]):
-                    rgb_pixel_data = rgb_pixel_data + image[:, :, numpy.newaxis] * color
+                if parent_image.volumetric:
+                    for image, color in zip(source_channels[1:], colors[1:]):
+                        rgb_pixel_data = rgb_pixel_data + image[:, :, :, numpy.newaxis] * color
+                else:
+                    for image, color in zip(source_channels[1:], colors[1:]):
+                        rgb_pixel_data = rgb_pixel_data + image[:, :, numpy.newaxis] * color
 
         rgb_image = cellprofiler.image.Image(
             rgb_pixel_data,

@@ -84,11 +84,12 @@ class TestGrayToColor(unittest.TestCase):
                 weights = [1.0] * len(images)
 
             if colors is None:
-                colors = [G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)]
-                          for i in range(len(images))]
+                colors = [
+                    G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)]
+                    for i in range(len(images))
+                ]
 
-            for i, (image, color, weight) in enumerate(
-                    zip(images, colors, weights)):
+            for i, (image, color, weight) in enumerate(zip(images, colors, weights)):
                 image_name = 'image%d' % (i + 1)
                 image_names.append(image_name)
                 module.stack_channels[i].image_name.value = image_name
@@ -449,7 +450,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
 
         r.seed(41)
 
-        images = [r.uniform(size=(5, 11, 13)) for _ in range(5)]
+        images = [r.uniform(size=(8, 16, 16)) for _ in range(5)]
 
         workspace, module = self.make_workspace(
             G.SCHEME_STACK,
@@ -461,15 +462,12 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
 
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
 
-        import IPython
-        IPython.embed()
+        self.assertSequenceEqual(output.shape[:3], images[0].shape)
 
-        self.assertSequenceEqual(output.shape[:2], images[0].shape)
-
-        self.assertEqual(output.shape[2], len(images))
+        self.assertEqual(output.shape[-1], len(images))
 
         for i, image in enumerate(images):
-            np.testing.assert_array_almost_equal(output[:, :, i], image)
+            np.testing.assert_array_almost_equal(output[:, :, :, i], image)
 
     def test_05_01_composite(self):
         r = np.random.RandomState()
@@ -490,3 +488,45 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                 [image * weight * float(color[i]) / 255
                  for image, color, weight in zip(images, colors, weights)])
             np.testing.assert_array_almost_equal(output[:, :, i], channel)
+
+    def test_05_01_composite_volume(self):
+        r = np.random.RandomState()
+
+        r.seed(41)
+
+        images = [r.uniform(size=(8, 16, 16)) for _ in range(5)]
+
+        colors = [r.randint(0, 255, size=3) for _ in range(5)]
+
+        weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
+
+        color_names = [
+            "#%02x%02x%02x" % tuple(color.tolist())
+            for color in colors
+        ]
+
+        workspace, module = self.make_workspace(
+            G.SCHEME_COMPOSITE,
+            images,
+            colors=color_names,
+            dimensions=3,
+            weights=weights
+        )
+
+        module.run(workspace)
+
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+
+        self.assertSequenceEqual(output.shape[:3], images[0].shape)
+
+        self.assertEqual(output.shape[-1], 3)
+
+        for i in range(3):
+            channel = sum(
+                [
+                    image * weight * float(color[i]) / 255
+                    for image, color, weight in zip(images, colors, weights)
+                ]
+            )
+
+            np.testing.assert_array_almost_equal(output[:, :, :, i], channel)

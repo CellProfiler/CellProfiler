@@ -7,10 +7,8 @@ Welcome to CellProfiler's documentation!
 ========================================
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Contents:
-
-    help
+   :maxdepth: 2
+   :caption: Contents:
 
 .. automodule:: cellprofiler.modules.align
 .. automodule:: cellprofiler.modules.applythreshold

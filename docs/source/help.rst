@@ -1,5 +1,0 @@
-Help
-====
-
-Why Use CellProfiler?
----------------------

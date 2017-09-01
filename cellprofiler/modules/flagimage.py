@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Flag Image** allows you to flag an image based on properties that you
+FlagImage
+=========
+
+**FlagImage** allows you to flag an image based on properties that you
 specify, for example, quality control measurements.
 
 This module allows you to assign a flag if an image meets certain
@@ -80,58 +83,65 @@ class FlagImage(cpm.Module):
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
         group.append("category",
                      cps.Text(
-                             "Name the flag's category", "Metadata", doc='''
-                        Name a measurement category by which to categorize the flag. The <i>Metadata</i>
-                        category is the default used in CellProfiler to store information about
-                        images (referred to as <i>metadata</i>).</p>
-                        <p>The flag is stored as a per-image measurement whose name is a combination of the
-                        flag's category and feature name, underscore delimited.
-                        For instance, if the measurement category is
-                        <i>Metadata</i> and the feature name is <i>QCFlag</i>, then the default
-                        measurement name would be <i>Metadata_QCFlag</i>. %s</p>''' % USING_METADATA_HELP_REF))
+                             "Name the flag's category", "Metadata", doc='''\
+Name a measurement category by which to categorize the flag. The
+*Metadata* category is the default used in CellProfiler to store
+information about images (referred to as *metadata*).
+
+The flag is stored as a per-image measurement whose name is a
+combination of the flag’s category and feature name, underscore
+delimited. For instance, if the measurement category is *Metadata* and
+the feature name is *QCFlag*, then the default measurement name would be
+*Metadata_QCFlag*.
+'''))
 
         group.append("feature_name",
                      cps.Text(
-                             "Name the flag", "QCFlag", doc='''
-                        The flag is stored as a per-image measurement whose name is a combination of the
-                        flag's category and feature name, separated by underscores.
-                        For instance, if the measurement category is
-                        <i>Metadata</i> and the feature name is <i>QCFlag</i>, then the default
-                        measurement name would be <i>Metadata_QCFlag</i>.'''))
+                             "Name the flag", "QCFlag", doc='''\
+The flag is stored as a per-image measurement whose name is a
+combination of the flag’s category and feature name, separated by
+underscores. For instance, if the measurement category is *Metadata* and
+the feature name is *QCFlag*, then the default measurement name would be
+*Metadata_QCFlag*.
+'''))
 
         group.append("combination_choice",
                      cps.Choice(
                              "How should measurements be linked?",
-                             [C_ANY, C_ALL], doc='''
-                        For combinations of measurements, you can set the criteria under which an image set is flagged:
-                        <ul>
-                        <li><i>%(C_ANY)s:</i> An image set will be flagged if any of its measurements fail. This can be useful
-                        for flagging images possessing multiple QC flaws; for example, you can flag all bright images
-                        and all out of focus images with one flag.</li>
-                        <li><i>%(C_ALL)s:</i> A flag will only be assigned if all measurements fail.  This can be useful
-                        for flagging images that possess only a combination
-                        of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
-                        </ul>''' % globals()))
+                             [C_ANY, C_ALL], doc='''\
+For combinations of measurements, you can set the criteria under which
+an image set is flagged:
+
+-  *%(C_ANY)s:* An image set will be flagged if any of its measurements
+   fail. This can be useful for flagging images possessing multiple QC
+   flaws; for example, you can flag all bright images and all out of
+   focus images with one flag.
+-  *%(C_ALL)s:* A flag will only be assigned if all measurements fail.
+   This can be useful for flagging images that possess only a
+   combination of QC flaws; for example, you can flag only images that
+   are both bright and out of focus.
+''' % globals()))
 
         group.append("wants_skip",
                      cps.Binary(
-                             "Skip image set if flagged?", False, doc="""
-                        <p>Select <i>%(YES)s</i> to skip the remainder of the pipeline for image sets
-                        that are flagged. CellProfiler will not run subsequent modules in the
-                        pipeline on the images in any image set that is flagged.
-                        Select <i>%(NO)s</i> for CellProfiler to continue to process the pipeline regardless
-                        of flagging.</p>
-                        <p>You may want to skip processing in order to filter out
-                        unwanted images. For instance, you may want
-                        to exclude out of focus images when running
-                        <b>CorrectIllumination_Calculate</b>. You can do this with a
-                        pipeline that measures image quality and flags inappropriate
-                        images before it runs <b>CorrectIllumination_Calculate</b>.</p>""" % globals()))
+                             "Skip image set if flagged?", False, doc="""\
+Select *%(YES)s* to skip the remainder of the pipeline for image sets
+that are flagged. CellProfiler will not run subsequent modules in the
+pipeline on the images in any image set that is flagged. Select *%(NO)s*
+for CellProfiler to continue to process the pipeline regardless of
+flagging.
+
+You may want to skip processing in order to filter out unwanted images.
+For instance, you may want to exclude out of focus images when running
+**CorrectIllumination_Calculate**. You can do this with a pipeline that
+measures image quality and flags inappropriate images before it runs
+**CorrectIllumination_Calculate**.
+""" % globals()))
 
         group.append("add_measurement_button",
                      cps.DoSomething("",
                                      "Add another measurement",
-                                     self.add_measurement, group))
+                                     self.add_measurement, group, doc="""Add another measurement as a criteria"""))
         self.add_measurement(group, False if not can_delete else True)
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this flag", self.flags, group))
@@ -145,28 +155,28 @@ class FlagImage(cpm.Module):
         group.append("divider1", cps.Divider(line=False))
         group.append("source_choice",
                      cps.Choice(
-                             "Flag is based on", S_ALL, doc='''
-                        <ul>
-                        <li><i>%(S_IMAGE)s:</i> A per-image measurement, such as intensity or
-                        granularity.</li>
-                        <li><i>%(S_AVERAGE_OBJECT)s:</i> The average of all
-                        object measurements in the image.</li>
-                        <li><i>%(S_ALL_OBJECTS)s:</i> All the
-                        object measurements in an image, without averaging. In other words, if <i>any</i>
-                        of the objects meet the criteria, the image will be flagged.</li>
-                        <li><i>%(S_RULES)s:</i> Use a text file of rules produced by CellProfiler Analyst. With this
-                        option, you will have to ensure that this pipeline produces every measurement
-                        in the rules file upstream of this module.</li>
-                        <li><i>%(S_CLASSIFIER)s:</i> Use a classifier built by CellProfiler Analyst.</li>
-                        </ul>
-                        ''' % globals()))
+                             "Flag is based on", S_ALL, doc='''\
+-  *%(S_IMAGE)s:* A per-image measurement, such as intensity or
+   granularity.
+-  *%(S_AVERAGE_OBJECT)s:* The average of all object measurements in
+   the image.
+-  *%(S_ALL_OBJECTS)s:* All the object measurements in an image,
+   without averaging. In other words, if *any* of the objects meet the
+   criteria, the image will be flagged.
+-  *%(S_RULES)s:* Use a text file of rules produced by CellProfiler
+   Analyst. With this option, you will have to ensure that this pipeline
+   produces every measurement in the rules file upstream of this module.
+-  *%(S_CLASSIFIER)s:* Use a classifier built by CellProfiler Analyst.
+''' % globals()))
 
         group.append("object_name",
                      cps.ObjectNameSubscriber(
                              "Select the object to be used for flagging",
-                             cps.NONE, doc='''
-                        <i>(Used only when flag is based on an object measurement)</i><br>
-                        Select the objects whose measurements you want to use for flagging.'''))
+                             cps.NONE, doc='''\
+*(Used only when flag is based on an object measurement)*
+
+Select the objects whose measurements you want to use for flagging.
+'''))
 
         def object_fn():
             if group.source_choice == S_IMAGE:
@@ -175,10 +185,12 @@ class FlagImage(cpm.Module):
 
         group.append("rules_directory",
                      cps.DirectoryPath(
-                             "Rules file location", doc="""
-                        <i>(Used only when flagging using %(S_RULES)s)</i><br>
-                        Select the location of the rules file that will be used for filtering.
-                        %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals()))
+                             "Rules file location", doc="""\
+*(Used only when flagging using "%(S_RULES)s")*
+
+Select the location of the rules file that will be used for filtering.
+%(IO_FOLDER_CHOICE_HELP_TEXT)s
+""" % globals()))
 
         def get_directory_fn():
             '''Get the directory for the rules file name'''
@@ -192,19 +204,23 @@ class FlagImage(cpm.Module):
                      cps.FilenameText(
                              "Rules file name", "rules.txt",
                              get_directory_fn=get_directory_fn,
-                             set_directory_fn=set_directory_fn, doc="""
-                        <i>(Used only when flagging using %(S_RULES)s)</i><br>
-                        The name of the rules file. This file should be a plain text
-                        file containing the complete set of rules.
-                        <p>Each line of
-                        this file should be a rule naming a measurement to be made
-                        on an image, for instance:
-                        <pre>IF (Image_ImageQuality_PowerLogLogSlope_DNA &lt; -2.5, [0.79, -0.79], [-0.94, 0.94])</pre><br><br>
-                        The above rule will score +0.79 for the positive category and -0.94
-                        for the negative category for images whose power log slope is less than -2.5
-                        pixels and will score the opposite for images whose slope is larger.
-                        The filter adds positive and negative and flags the images whose
-                        positive score is higher than the negative score.</p>""" % globals()))
+                             set_directory_fn=set_directory_fn, doc="""\
+*(Used only when flagging using "%(S_RULES)s")*
+
+The name of the rules file. This file should be a plain text file
+containing the complete set of rules.
+
+Each line of this file should be a rule naming a measurement to be made
+on an image, for instance:
+
+    IF (Image_ImageQuality_PowerLogLogSlope_DNA < -2.5, [0.79, -0.79], [-0.94, 0.94])
+
+The above rule will score +0.79 for the positive category and -0.94
+for the negative category for images whose power log slope is less
+than -2.5 pixels and will score the opposite for images whose slope is
+larger. The filter adds positive and negative and flags the images
+whose positive score is higher than the negative score.
+""" % globals()))
 
         def get_rules_class_choices(group=group):
             '''Get the available choices from the rules file'''
@@ -226,40 +242,46 @@ class FlagImage(cpm.Module):
         group.append("rules_class",
                      cps.MultiChoice(
                              "Class number",
-                             choices=["1", "2"], doc="""
-                        <i>(Used only when flagging using %(S_RULES)s)</i><br>
-                        Select which classes to flag when filtering. The
-                        CellProfiler Analyst classifier user interface lists the names of
-                        the classes in order. By default, these are the positive (class 1)
-                        and negative (class 2) classes. <b>FlagImage</b> uses the
-                        first class from CellProfiler Analyst if you choose "1", etc.
-                        <p>Please note the following:
-                        <ul>
-                        <li>The flag is set if the image falls into the selected class.</li>
-                        <li>You can make multiple class selections. If you do so, the module
-                        will set the flag if the image falls into any of the selected classes.</li>
-                        </ul></p>""" % globals()))
+                             choices=["1", "2"], doc="""\
+*(Used only when flagging using "%(S_RULES)s")*
+
+Select which classes to flag when filtering. The CellProfiler Analyst
+classifier user interface lists the names of the classes in order. By
+default, these are the positive (class 1) and negative (class 2)
+classes. **FlagImage** uses the first class from CellProfiler Analyst
+if you choose “1”, etc.
+
+Please note the following:
+
+-  The flag is set if the image falls into the selected class.
+-  You can make multiple class selections. If you do so, the module will
+   set the flag if the image falls into any of the selected classes.
+""" % globals()))
 
         group.rules_class.get_choices = get_rules_class_choices
 
         group.append("measurement",
-                     cps.Measurement("Which measurement?", object_fn))
+                     cps.Measurement("Which measurement?", object_fn, doc="""Choose the measurement to be used as criteria"""))
 
         group.append("wants_minimum",
                      cps.Binary(
-                             "Flag images based on low values?", True, doc='''
-                         Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.
-                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
+                             "Flag images based on low values?", True, doc='''\
+Select *%(YES)s* to flag images with measurements below the specified
+cutoff. If the measurement evaluates to Not-A-Number (NaN), then the
+image is not flagged.
+''' % globals()))
 
-        group.append("minimum_value", cps.Float("Minimum value", 0))
+        group.append("minimum_value", cps.Float("Minimum value", 0, doc="""Set a value as a lower limit"""))
 
         group.append("wants_maximum",
                      cps.Binary(
-                             "Flag images based on high values?", True, doc='''
-                         Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.
-                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
+                             "Flag images based on high values?", True, doc='''\
+Select *%(YES)s* to flag images with measurements above the specified
+cutoff. If the measurement evaluates to Not-A-Number (NaN), then the
+image is not flagged.
+''' % globals()))
 
-        group.append("maximum_value", cps.Float("Maximum value", 1))
+        group.append("maximum_value", cps.Float("Maximum value", 1, doc="""Set a value as an upper limit"""))
 
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))
@@ -709,7 +731,7 @@ class FlagImage(cpm.Module):
                 wants_maximum = cps.YES
             if new_or_append == "Append existing flag":
                 logger.warning(
-                        "CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0")
+                        "CellProfiler 3.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0 and 2.0")
 
             new_name_split = new_name.find('_')
             if new_name_split == -1:

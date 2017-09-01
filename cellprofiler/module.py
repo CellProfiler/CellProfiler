@@ -924,6 +924,7 @@ class ImageProcessing(Module):
             colormap=cmap[0],
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
+            title=self.x_name.value,
             x=0,
             y=0
         )
@@ -932,6 +933,7 @@ class ImageProcessing(Module):
             colormap=cmap[1],
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            title=self.y_name.value,
             x=1,
             y=0
         )
@@ -1060,6 +1062,7 @@ class ImageSegmentation(Module):
             colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
+            title=self.x_name.value,
             x=0,
             y=0
         )
@@ -1068,6 +1071,7 @@ class ImageSegmentation(Module):
             background_image=workspace.display_data.x_data,
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            title=self.y_name.value,
             x=1,
             y=0
         )

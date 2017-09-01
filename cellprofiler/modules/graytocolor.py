@@ -4,7 +4,7 @@
 GrayToColor
 ===========
 
-**Gray to Color** takes grayscale images and and produces a color image
+**GrayToColor** takes grayscale images and and produces a color image
 from them.
 
 This module takes grayscale images as input and assigns them to colors
@@ -82,17 +82,29 @@ This module can use one of two color schemes to combine images:
         self.red_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored red",
                 can_be_blank=True, blank_text=LEAVE_THIS_BLACK,
-                doc="""Select the input image to be displayed in red""")
+                doc="""\
+*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+
+Select the input image to be displayed in red
+""" % globals())
 
         self.green_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored green",
                 can_be_blank=True, blank_text=LEAVE_THIS_BLACK,
-                doc="""Select the input image to be displayed in green""")
+                doc="""\
+*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+
+Select the input image to be displayed in green
+""" % globals())
 
         self.blue_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored blue",
                 can_be_blank=True, blank_text=LEAVE_THIS_BLACK,
-                doc="""Select the input image to be displayed in blue""")
+                doc="""\
+*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+
+Select the input image to be displayed in blue
+""" % globals())
 
         self.rgb_image_name = cps.ImageNameProvider(
                 "Name the output image", "ColorImage", doc="""Enter a name for the resulting image""")
@@ -137,22 +149,38 @@ weights.
         self.cyan_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored cyan", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK,
-                doc="""Select the input image to be displayed in cyan""")
+                doc="""\
+*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+
+Select the input image to be displayed in cyan
+""" % globals())
 
         self.magenta_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored magenta", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK,
-                doc="""Select the input image to be displayed in magenta""")
+                doc="""\
+*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+
+Select the input image to be displayed in magenta
+""" % globals())
 
         self.yellow_image_name = cps.ImageNameSubscriber(
                 "Select the image to be colored yellow", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK,
-                doc="""Select the input image to be displayed in yellow""")
+                doc="""\
+*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+
+Select the input image to be displayed in yellow
+""" % globals())
 
         self.gray_image_name = cps.ImageNameSubscriber(
                 "Select the image that determines brightness", can_be_blank=True,
                 blank_text=LEAVE_THIS_BLACK,
-                doc="""Select the input image that will determine each pixel's brightness""")
+                doc="""\
+*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+
+Select the input image that will determine each pixel's brightness
+""" % globals())
 
         self.cyan_adjustment_factor = cps.Float(
                 "Relative weight for the cyan image",

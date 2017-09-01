@@ -80,7 +80,7 @@ a corresponding secondary object, keep in mind the following points:
 -  There will always be at most one secondary object for each primary
    object.
 
-See the section `“Measurements made by this module”`_ below for the measurements
+See the section "Measurements made by this module"_ below for the measurements
 that are produced by this module. Once the module has finished
 processing, the module display window will show the following panels:
 
@@ -130,7 +130,7 @@ Technical notes
 ^^^^^^^^^^^^^^^
 
 The *Propagation* algorithm is the default approach for secondary object
-creation, creating each primary object as a “seed” guided by the input
+creation, creating each primary object as a "seed" guided by the input
 image and limited to the foreground region as determined by the chosen
 thresholding method. λ is a regularization parameter; see the help for
 the setting for more details. Propagation of secondary object labels is
@@ -142,7 +142,7 @@ neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
 
 See also the other **Identify** modules.
 
-.. _“Measurements made by this module”: #Available_measurements
+.. _"Measurements made by this module": #Available_measurements
 
 .. |image0| image:: memory:thumb-up.png
 .. |image1| image:: memory:thumb-down.png

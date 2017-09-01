@@ -2,7 +2,7 @@
 
 """
 Threshold
-===============
+=========
 
 **Threshold** produces a binary, or black and white, image based on a threshold which
 can be pre-selected or calculated automatically using one of many
@@ -294,7 +294,7 @@ There are a number of methods for finding thresholds automatically:
    Imaging*, 13(1), 146-165. (`link`_)
 
 .. _link: http://dx.doi.org/10.1117/1.1631315
-            """.format(**{
+""".format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
@@ -322,7 +322,7 @@ that 1/2 of the Gaussian’s distribution falls within the diameter given
 by the scale (sigma = scale / 0.674)
 Use a value of 0 for no smoothing. Use a value of 1.3488 for smoothing
 with a sigma of 1.
-            """
+"""
         )
 
         self.threshold_correction_factor = cellprofiler.setting.Float(
@@ -346,7 +346,7 @@ slightly biased threshold that may have to be corrected using this
 setting.
 
 .. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
-            """.format(**{
+""".format(**{
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TM_OTSU": centrosome.threshold.TM_OTSU
             })
@@ -389,7 +389,7 @@ empirically-determined value.
 
 Enter the value that will act as an absolute threshold for the images, a
 value from 0 to 1.
-            """
+"""
         )
 
         self.thresholding_measurement = cellprofiler.setting.Measurement(
@@ -400,7 +400,7 @@ value from 0 to 1.
 
 Choose the image measurement that will act as an absolute threshold for
 the images.
-            """
+"""
         )
 
         self.two_class_otsu = cellprofiler.setting.Choice(
@@ -435,7 +435,7 @@ objects, three-class thresholding may perform worse than two-class.
 
 .. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
 .. |image1| image:: memory:{PROTIP_AVOID_ICON}
-            """.format(**{
+""".format(**{
                 "O_THREE_CLASS": O_THREE_CLASS,
                 "O_TWO_CLASS": O_TWO_CLASS,
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
@@ -451,7 +451,7 @@ objects, three-class thresholding may perform worse than two-class.
 
 Choose whether you want the pixels with middle grayscale intensities to
 be assigned to the foreground class or the background class.
-            """
+"""
         )
 
         self.lower_outlier_fraction = cellprofiler.setting.Float(
@@ -464,7 +464,7 @@ be assigned to the foreground class or the background class.
 
 Discard this fraction of the pixels in the image starting with those of
 the lowest intensity.
-            """.format(**{
+""".format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
         )
@@ -479,7 +479,7 @@ the lowest intensity.
 
 Discard this fraction of the pixels in the image starting with those of
 the highest intensity.
-            """.format(**{
+""".format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
         )
@@ -503,7 +503,7 @@ This setting determines how the intensity midpoint is determined.
    intensities into bins (the number of bins is the square root of the
    number of pixels in the unmasked portion of the image) and chooses
    the intensity associated with the bin with the most pixels.
-            """.format(**{
+""".format(**{
                 "RB_MEAN": RB_MEAN,
                 "RB_MEDIAN": RB_MEDIAN,
                 "RB_MODE": RB_MODE,
@@ -522,7 +522,7 @@ average to get the final background. This setting chooses the method
 used to assess the variance in the pixels, after removing outliers.
 Choose one of *{RB_SD}* or *{RB_MAD}* (the median of the absolute
 difference of the pixel intensities from their median).
-            """.format(**{
+""".format(**{
                 "RB_MAD": RB_MAD,
                 "RB_SD": RB_SD,
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
@@ -544,7 +544,7 @@ number to include more low-intensity foreground pixels. It’s possible to
 use a negative number to lower the threshold if the averaging method
 picks a threshold that is within the range of foreground pixel
 intensities.
-            """.format(**{
+""".format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
         )
@@ -553,9 +553,13 @@ intensities.
             "Size of adaptive window",
             50,
             doc="""\
+*(Used only if "{TS_ADAPTIVE}" is selected for thresholding scope)*
+
 Enter the window for the adaptive method. For example, you may want to use a multiple of the
 largest expected object size.
-            """
+""".format(**{
+                "TS_ADAPTIVE": TS_ADAPTIVE
+            })
         )
 
     @property

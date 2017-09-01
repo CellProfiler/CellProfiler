@@ -85,7 +85,7 @@ import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import identify as cpmi
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.modules._help import NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP
 from cellprofiler.setting import YES, NO
 
 '''The parent object relationship points to the secondary / larger objects'''

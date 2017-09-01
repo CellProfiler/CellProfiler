@@ -51,8 +51,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns

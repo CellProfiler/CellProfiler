@@ -19,11 +19,11 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
 
-import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
+import _help
 
 
 O_TWO_CLASS = "Two classes"
@@ -200,7 +200,7 @@ class Threshold(cellprofiler.module.ImageProcessing):
             </ul>
             <p></p>
             """.format(**{
-                "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
+                "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
@@ -275,7 +275,7 @@ class Threshold(cellprofiler.module.ImageProcessing):
             </ul>
             <p></p>
             """.format(**{
-                "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
+                "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
                 "TECH_NOTE_ICON": TECH_NOTE_ICON,
@@ -342,7 +342,7 @@ class Threshold(cellprofiler.module.ImageProcessing):
                 <dd>{HELP_ON_PIXEL_INTENSITIES}</dd>
             </dl>
             """.format(**{
-                "HELP_ON_PIXEL_INTENSITIES": cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES,
+                "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
             })
         )

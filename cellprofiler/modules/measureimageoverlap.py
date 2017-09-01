@@ -108,13 +108,14 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 
-import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
+import _help
+
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
@@ -256,7 +257,7 @@ class MeasureImageOverlap(cellprofiler.module.Module):
             """.format(**{
                 "DM_KMEANS": DM_KMEANS,
                 "DM_SKEL": DM_SKEL,
-                "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON
             })
         )
 

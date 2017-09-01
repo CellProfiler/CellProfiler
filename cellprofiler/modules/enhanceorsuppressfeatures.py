@@ -23,7 +23,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'

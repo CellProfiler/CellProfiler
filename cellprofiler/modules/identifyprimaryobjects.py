@@ -134,10 +134,12 @@ import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
 
-import threshold
 import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
+import _help
+import threshold
+
 
 #################################################
 #
@@ -271,8 +273,8 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             <p></p>
             """.format(**{
                 "EXCLUDE_SIZE_SETTING_TEXT": EXCLUDE_SIZE_SETTING_TEXT,
-                "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
-                "HELP_ON_MEASURING_DISTANCES": cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES,
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+                "HELP_ON_MEASURING_DISTANCES": _help.HELP_ON_MEASURING_DISTANCES,
                 "AUTOMATIC_SMOOTHING_SETTING_TEXT": AUTOMATIC_SMOOTHING_SETTING_TEXT,
                 "AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT
             })
@@ -295,7 +297,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                 "YES": cellprofiler.setting.YES,
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 "NO": cellprofiler.setting.NO,
-                "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON
             })
         )
 
@@ -317,7 +319,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO,
-                "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON
             })
         )
 
@@ -388,9 +390,9 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             """.format(**{
                 "UN_INTENSITY": UN_INTENSITY,
                 "UN_SHAPE": UN_SHAPE,
-                "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
                 "INTENSITY_DECLUMPING_ICON": INTENSITY_DECLUMPING_ICON,
-                "TECH_NOTE_ICON": cellprofiler.gui.help.TECH_NOTE_ICON,
+                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
                 "SHAPE_DECLUMPING_ICON": SHAPE_DECLUMPING_ICON,
                 "UN_NONE": UN_NONE
             })

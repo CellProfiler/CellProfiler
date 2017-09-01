@@ -440,8 +440,6 @@ pixel values are multiplied by this weight before assigning the color.
 
                     color = sc.weight.value * numpy.array(color_tuple).astype(parent_image.pixel_data.dtype) / 255
 
-
-
                     colors.append(color[numpy.newaxis, numpy.newaxis, :])
 
                 rgb_pixel_data = parent_image.pixel_data[:, :, numpy.newaxis] * colors[0]

@@ -24,7 +24,6 @@ import os.path
 import sys
 
 import cellprofiler.icons
-from cellprofiler.setting import NO, YES
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
@@ -1713,36 +1712,6 @@ to set up the input modules to handle these files is as follows:</p>
     "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
     "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION
 })
-
-#########################################################
-#
-# Misc. help
-#
-#########################################################
-
-'''The help to be displayed if someone asks for help on a module but none is selected'''
-HELP_ON_MODULE_BUT_NONE_SELECTED = (
-    "The help button can be used to obtain help for the currently selected module "
-    "in the pipeline panel on the left side of the CellProfiler interface.\n\n"
-    "You do not have any modules in the pipeline, yet. Add a module to the "
-    'pipeline using the "+" button or by using File > Load Pipeline.')
-
-HELP_ON_FILE_LIST = """The <i>File List</i> panel displays the image files
-that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
-and <b>Groups</b> modules. You can drop files and directories into this window
-or use the <i>Browse...</i> button to add files to the list. The context menu
-for the window lets you display or remove files and lets you remove folders.
-<br>
-The buttons and checkbox along the bottom have the following functions:<br>
-<ul><li><i>Browse...</i>: Browse for files and folders to add.</li>
-<li><i>Clear</i>: Clear all entries from the File list</li>
-<li><i>Show files excluded by filters</i>: <i>(Only shown if filtered based on rules is selected)</i>
-Check this to see all files in the
-list. Uncheck it to see only the files that pass the rules criteria in the
-<b>Images</b> module.</li>
-<li><i>Expand tree</i>: Expand all of the folders in the tree</li>
-<li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
-"""
 
 #########################################################
 #

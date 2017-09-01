@@ -275,8 +275,8 @@ class SaveImages(cellprofiler.module.Module):
             of a forward slash (“/”) as a folder separator will avoid ambiguity
             between the various operating systems.
             """.format(**{
-                "IO_FOLDER_CHOICE_HELP_TEXT": cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT,
-                "IO_WITH_METADATA_HELP_TEXT": cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
+                "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
+                "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT,
                 "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
             })

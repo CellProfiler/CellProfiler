@@ -91,7 +91,8 @@ from loadimages import C_FILE_NAME, C_SCALING
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
+    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 ##############################################
 #
@@ -417,7 +418,7 @@ thresholding may perform worse than two-class.""" % globals()))
         group.append("use_weighted_variance", cps.Choice(
                 'Minimize the weighted variance or the entropy?',
                 [O_WEIGHTED_VARIANCE, O_ENTROPY], doc="""\
-Choose whether to minimize the weighted variance or the entropy when selecting 
+Choose whether to minimize the weighted variance or the entropy when selecting
 the threshold"""))
 
         group.append("assign_middle_to_foreground", cps.Choice(

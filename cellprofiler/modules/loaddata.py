@@ -224,7 +224,8 @@ from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.modules.loadimages import pathname2url, url2pathname
 from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
+    ABSOLUTE_FOLDER_NAME
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 IMAGE_CATEGORIES = (C_URL, C_FILE_NAME, C_PATH_NAME)
 OBJECTS_CATEGORIES = (C_OBJECTS_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME)

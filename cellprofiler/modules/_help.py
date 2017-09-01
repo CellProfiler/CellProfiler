@@ -5,7 +5,7 @@ import os.path
 import pkg_resources
 
 import cellprofiler.setting
-
+from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 REGEXP_HELP_REF = """\
 Patterns are specified using combinations of metacharacters and literal
@@ -107,6 +107,46 @@ which is available in any open display window. When you move your mouse
 over the image, the pixel intensities will appear in the bottom bar of
 the display window.\
 """
+
+IO_FOLDER_CHOICE_HELP_TEXT = """\
+You can choose among the following options which are common to all file
+input/output modules:
+
+-  *Default Input Folder*: Use the default input folder.
+-  *Default Output Folder:* Use from the default output folder.
+-  *Elsewhere…*: Use a particular folder you specify.
+-  *Default input directory sub-folder*: Enter the name of a subfolder
+   of the default input folder or a path that starts from the default
+   input folder.
+-  *Default output directory sub-folder*: Enter the name of a subfolder
+   of the default output folder or a path that starts from the default
+   output folder.
+
+*Elsewhere* and the two sub-folder options all require you to enter an
+additional path name. You can use an *absolute path* (such as
+“C:\\imagedir\\image.tif” on a PC) or a *relative path* to specify the
+file location relative to a directory):
+
+-  Use one period to represent the current directory. For example, if
+   you choose *Default Input Folder sub-folder*, you can enter
+   “./MyFiles” to look in a folder called “MyFiles” that is contained
+   within the Default Input Folder.
+-  Use two periods “..” to move up one folder level. For example, if you
+   choose *Default Input Folder sub-folder*, you can enter “../MyFolder”
+   to look in a folder called “MyFolder” at the same level as the
+   Default Input Folder.\
+"""
+
+IO_WITH_METADATA_HELP_TEXT = """\
+For *{ABSOLUTE_FOLDER_NAME}*, *{DEFAULT_INPUT_SUBFOLDER_NAME}* and
+*{DEFAULT_OUTPUT_SUBFOLDER_NAME}*, if you have metadata associated
+with your images via **Metadata** module, you can name the folder using
+metadata tags.
+""".format(**{
+    "ABSOLUTE_FOLDER_NAME": ABSOLUTE_FOLDER_NAME,
+    "DEFAULT_INPUT_SUBFOLDER_NAME": DEFAULT_INPUT_SUBFOLDER_NAME,
+    "DEFAULT_OUTPUT_SUBFOLDER_NAME": DEFAULT_OUTPUT_SUBFOLDER_NAME
+})
 
 NAMING_OUTLINES_HELP = """\
 *(Used only if the outline image is to be retained for later use in the

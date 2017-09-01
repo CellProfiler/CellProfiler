@@ -89,10 +89,9 @@ from cellprofiler.preferences import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, \
     get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
     get_headless
-from cellprofiler.modules._help import REGEXP_HELP_REF, USING_METADATA_GROUPING_HELP_REF
+from cellprofiler.modules._help import REGEXP_HELP_REF, USING_METADATA_GROUPING_HELP_REF, IO_FOLDER_CHOICE_HELP_TEXT
 
 from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \

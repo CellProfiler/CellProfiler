@@ -60,6 +60,7 @@ import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.utilities.rules
+import _help
 
 
 logger = logging.getLogger(__name__)
@@ -110,9 +111,9 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
 
     def create_settings(self):
         super(FilterObjects, self).create_settings()
-        
+
         self.x_name.text="""Select the objects to filter"""
-        
+
         self.x_name.doc="""\
 Select the set of objects that you want to filter. This setting also
 controls which measurement choices appear for filtering: you can only
@@ -256,7 +257,7 @@ choices.""".format(**{
 Select the location of the rules file that will be used for filtering.
 {IO_FOLDER_CHOICE_HELP_TEXT}""".format(**{
                 "MODE_RULES": MODE_RULES,
-                "IO_FOLDER_CHOICE_HELP_TEXT": cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT
+                "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
             })
         )
 

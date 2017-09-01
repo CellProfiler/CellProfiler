@@ -4,7 +4,7 @@
 CalculateStatistics
 ===================
 
-**Calculate Statistics** calculates measures of assay quality (V and Z’
+**CalculateStatistics** calculates measures of assay quality (V and Z’
 factors) and dose response data (EC50) for all measured features made
 from images.
 
@@ -74,12 +74,10 @@ cytoplasm compartments per cell, which is always equal to 1.
 
 This module can create MATLAB scripts that display the EC50 curves for
 each measurement. These scripts will require MATLAB and the statistics
-toolbox in order to run. See `*Create dose/response plots?*`_ below.
+toolbox in order to run. See *Create dose/response plots?* below.
 
 References
 ^^^^^^^^^^
-
-.. _*Create dose/response plots?*: #wants_save_figure
 
 -  *Z’ factor:* Zhang JH, Chung TD, et al. (1999) “A simple statistical
    parameter for use in evaluation and validation of high throughput
@@ -113,8 +111,7 @@ References
    the form *<prefix>\_<measurement>*. Select *<prefix>* as the category
    and *<measurement>* as the measurement.
 
-| Here is an example file:
-| ````
+Here is an example file:
 
 +-------------------------+-------------------------+------------------+--------------+
 | Image\_FileName\_CY3,   | Image\_PathName\_CY3,   | Data\_Control,   | Data\_Dose   |
@@ -141,10 +138,10 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF
+from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
+    IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler.setting import YES, NO
 
 '''# of settings aside from the dose measurements'''
@@ -174,26 +171,30 @@ class CalculateStatistics(cpm.Module):
 
         self.grouping_values = cps.Measurement(
                 "Select the image measurement describing the positive and negative control status",
-                lambda: cpmeas.IMAGE, doc='''
-            The Z' factor, a measure of assay quality, is calculated by this
-            module based on measurements from images that are specified as positive controls
-            and images that are specified as negative controls. (Images that are neither are
-            ignored.) The module assumes that
-            all of the negative controls are specified by a minimum value, all of the
-            positive controls are specified by a maximum value, and all other images have an
-            intermediate value; this might allow you to use your dosing information to also
-            specify the positive and negative controls. If you don't use actual dose
-            data to designate your controls, a common practice is to designate -1 as a
-            negative control, 0 as an experimental sample, and 1 as a positive control.
-            In other words, positive controls should all be specified by a single high
-            value (for instance, 1) and negative controls should all be specified by a
-            single low value (for instance, 0). Other samples should have an intermediate value
-            to exclude them from the Z' factor analysis.<p>
-            The typical way to provide this information in the pipeline is to create
-            a text comma-delimited (CSV) file outside of CellProfiler and then load that file into the pipeline
-            using the <b>Metadata</b> module or the legacy <b>LoadData</b> module. In that case, choose the
-            measurement that matches the column header of the measurement
-            in the input file. See the <b>Metadata</b> module help for an example text file.''')
+                lambda: cpmeas.IMAGE, doc='''\
+The Z’ factor, a measure of assay quality, is calculated by this module
+based on measurements from images that are specified as positive
+controls and images that are specified as negative controls. (Images
+that are neither are ignored.) The module assumes that all of the
+negative controls are specified by a minimum value, all of the positive
+controls are specified by a maximum value, and all other images have an
+intermediate value; this might allow you to use your dosing information
+to also specify the positive and negative controls. If you don’t use
+actual dose data to designate your controls, a common practice is to
+designate -1 as a negative control, 0 as an experimental sample, and 1
+as a positive control. In other words, positive controls should all be
+specified by a single high value (for instance, 1) and negative controls
+should all be specified by a single low value (for instance, 0). Other
+samples should have an intermediate value to exclude them from the Z’
+factor analysis.
+
+The typical way to provide this information in the pipeline is to create
+a text comma-delimited (CSV) file outside of CellProfiler and then load
+that file into the pipeline using the **Metadata** module or the legacy
+**LoadData** module. In that case, choose the measurement that matches
+the column header of the measurement in the input file. See the
+**Metadata** module help for an example text file.
+''')
         self.dose_values = []
         self.add_dose_value(can_remove=False)
         self.add_dose_button = cps.DoSomething("", "Add another dose specification",
@@ -208,55 +209,68 @@ class CalculateStatistics(cpm.Module):
         group.append("measurement",
                      cps.Measurement("Select the image measurement describing the treatment dose",
                                      lambda: cpmeas.IMAGE,
-                                     doc="""
-            The V and Z' factor, a measure of assay quality, and the EC50, indicating
-            dose/response, are calculated by this module based on each image being
-            specified as a particular treatment dose. Choose a measurement that gives
-            the dose of some treatment for each of your images. <p>
-            The typical way to provide this information in the pipeline is to create
-            a comma-delimited text file (CSV) outside of CellProfiler and then load that file into the pipeline
-            using <b>Metadata</b> or the <b>LoadData</b>. In that case, choose the
-            measurement that matches the column header of the measurement
-            in the CSV input file. See <b>LoadData</b> help for an example text file.
+                                     doc="""\
+The V and Z’ factor, a measure of assay quality, and the EC50,
+indicating dose/response, are calculated by this module based on each
+image being specified as a particular treatment dose. Choose a
+measurement that gives the dose of some treatment for each of your
+images.
+
+The typical way to provide this information in the pipeline is to create
+a comma-delimited text file (CSV) outside of CellProfiler and then load
+that file into the pipeline using **Metadata** or the **LoadData**. In
+that case, choose the measurement that matches the column header of the
+measurement in the CSV input file. See **LoadData** help for an example
+text file.
             """))
 
         group.append("log_transform", cps.Binary(
-                "Log-transform the dose values?", False, doc='''
-            Select <i>%(YES)s</i> if you have dose-response data and you want to log-transform
-            the dose values before fitting a sigmoid curve.
-            <p>Select <i>%(NO)s</i> if your data values indicate only positive vs. negative
-            controls.</p>''' % globals()))
+                "Log-transform the dose values?", False, doc='''\
+Select *%(YES)s* if you have dose-response data and you want to
+log-transform the dose values before fitting a sigmoid curve.
+
+Select *%(NO)s* if your data values indicate only positive vs. negative
+controls.
+''' % globals()))
 
         group.append('wants_save_figure', cps.Binary(
-                '''Create dose/response plots?''', False, doc='''<a name='wants_save_figure'></a>
-            Select <i>%(YES)s</i> if you want to create and save
-            dose response plots. You will be asked for information on how to save the plots.''' % globals()))
+                '''Create dose/response plots?''', False, doc='''Select *%(YES)s* if you want to create and save dose response plots.
+You will be asked for information on how to save the plots.''' % globals()))
 
         group.append('figure_name', cps.Text(
-                "Figure prefix", "", doc='''
-            <i>(Used only when creating dose/response plots)</i><br>
-            CellProfiler will create a file name by appending the measurement name
-            to the prefix you enter here. For instance, if you have objects
-            named, "Cells", the "AreaShape_Area measurement", and a prefix of "Dose_",
-            CellProfiler will save the figure as <i>Dose_Cells_AreaShape_Area.m</i>.
-            Leave this setting blank if you do not want a prefix.'''
+                "Figure prefix", "", doc='''\
+*(Used only when creating dose/response plots)*
+
+CellProfiler will create a file name by appending the measurement name
+to the prefix you enter here. For instance, if you have objects named,
+“Cells”, the “AreaShape_Area measurement”, and a prefix of “Dose\_”,
+CellProfiler will save the figure as *Dose_Cells_AreaShape_Area.m*.
+Leave this setting blank if you do not want a prefix.
+'''
         ))
         group.append('pathname', cps.DirectoryPath(
                 "Output file location",
                 dir_choices=[
                     cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                     cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
-            <i>(Used only when creating dose/response plots)</i><br>
-            This setting lets you choose the folder for the output
-            files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+                    cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
+*(Used only when creating dose/response plots)*
 
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s
-            For instance, if you have a metadata tag named
-            "Plate", you can create a per-plate folder by selecting one of the subfolder options
-            and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will
-            substitute the metadata values for the current image set for any metadata tags in the
-            folder name. %(USING_METADATA_HELP_REF)s.</p>""" % globals()))
+This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+
+%(IO_WITH_METADATA_HELP_TEXT)s
+
+%(USING_METADATA_TAGS_REF)s
+
+For
+instance, if you have a metadata tag named “Plate”, you can create a
+per-plate folder by selecting one of the subfolder options and then
+specifying the subfolder name as “\\g<Plate>”. The module will
+substitute the metadata values for the current image set for any
+metadata tags in the folder name.
+
+%(USING_METADATA_HELP_REF)s
+""" % globals()))
 
         group.append("divider", cps.Divider())
 

@@ -1,10 +1,10 @@
 # coding=utf-8
 
 """
-Calculate Image Overlap
+MeasureImageOverlap
 =======================
 
-**Calculate Image Overlap** calculates how much overlap occurs between
+**MeasureImageOverlap** calculates how much overlap occurs between
 the white portions of two black and white images
 
 This module calculates overlap by determining a set of statistics that
@@ -256,9 +256,9 @@ are chosen.
 -  *{DM_SKEL}:* Select to skeletonize the image and pick points
    eqidistant along the skeleton.
 
-|image0|  *{DM_KMEANS}* is a choice that’s generally applicable to all
-images. *{DM_SKEL}* is best suited to long, skinny objects such as
-worms or neurites.
+    |image0|  *{DM_KMEANS}* is a choice that’s generally applicable to all
+    images. *{DM_SKEL}* is best suited to long, skinny objects such as
+    worms or neurites.
 
 .. |image0| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{

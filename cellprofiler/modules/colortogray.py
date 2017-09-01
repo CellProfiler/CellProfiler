@@ -445,6 +445,8 @@ class ColorToGray(cellprofiler.module.Module):
 
         workspace.display_data.input_image = input_image
 
+        workspace.display_data.dimensions = image.dimensions
+
         workspace.display_data.disp_collection = disp_collection
 
     def display_split(self, workspace, figure):
@@ -464,6 +466,7 @@ class ColorToGray(cellprofiler.module.Module):
             0,
             0,
             input_image,
+            dimensions=workspace.display_data.dimensions,
             title="Original image"
         )
 
@@ -473,9 +476,10 @@ class ColorToGray(cellprofiler.module.Module):
              figure.subplot_imshow(
                  placenum%ncols, placenum/ncols,
                  disp_collection[eachplot][0],
-                 title="%s" % (disp_collection[eachplot][1]),
                  colormap=matplotlib.cm.Greys_r,
-                 sharexy=figure.subplot(0, 0)
+                 dimensions=workspace.display_data.dimensions,
+                 sharexy=figure.subplot(0, 0),
+                 title="{}".format(disp_collection[eachplot][1])
              )
 
     def prepare_settings(self, setting_values):

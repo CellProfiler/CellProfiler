@@ -87,12 +87,12 @@ from cellprofiler.measurement import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
 from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
 from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP
-from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF
+from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
+    IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.preferences import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536

@@ -11,16 +11,15 @@ import logging
 import multiprocessing
 import os
 import os.path
-import pkg_resources
-import random
-import re
-import sys
 import tempfile
 import threading
-import time
 import traceback
 import uuid
 import weakref
+
+import pkg_resources
+import sys
+import time
 
 import cellprofiler
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
@@ -284,41 +283,6 @@ FOLDER_CHOICE_TRANSLATIONS = {
     'None': NO_FOLDER_NAME,
     'Elsewhere...': ABSOLUTE_FOLDER_NAME
 }
-
-
-# TODO: move -- only used by modules
-IO_FOLDER_CHOICE_HELP_TEXT = """
-You can choose among the following options which are common to all file input/output
-modules:
-<ul>
-<li><i>Default Input Folder</i>: Use the default input folder.</li>
-<li><i>Default Output Folder:</i> Use from the default output folder.</li>
-<li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
-<li><i>Default input directory sub-folder</i>: Enter the name of a subfolder of
-the default input folder or a path that starts from the default input folder.</li>
-<li><i>Default output directory sub-folder</i>: Enter the name of a subfolder of
-the default output folder or a path that starts from the default output folder.</li>
-</ul>
-<p><i>Elsewhere</i> and the two sub-folder options all require you to enter an additional
-path name. You can use an <i>absolute path</i> (such as "C:\imagedir\image.tif" on a PC) or a
-<i>relative path</i> to specify the file location relative to a directory):
-<ul>
-<li>Use one period to represent the current directory. For example, if you choose
-<i>Default Input Folder sub-folder</i>, you can enter "./MyFiles" to look in a
-folder called "MyFiles" that is contained within the Default Input Folder.</li>
-<li>Use two periods ".." to move up one folder level. For example, if you choose
-<i>Default Input Folder sub-folder</i>, you can enter "../MyFolder" to look in a
-folder called "MyFolder" at the same level as the Default Input Folder.</li>
-</ul></p>
-"""
-
-
-# TODO: move -- only used by modules
-IO_WITH_METADATA_HELP_TEXT = """
-For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and
-<i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata associated with your
-images via <b>Metadata</b> module, you can name the folder using metadata
-tags.""" % globals()
 
 PREFERENCES_VERSION = 'PreferencesVersion'
 PREFERENCES_VERSION_NUMBER = 1

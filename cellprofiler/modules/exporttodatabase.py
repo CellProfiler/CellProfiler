@@ -67,7 +67,8 @@ See also **ExportToSpreadsheet**.
 
 import cellprofiler.icons
 from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, \
-    USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF
+    USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
+    IO_WITH_METADATA_HELP_TEXT
 import csv
 import datetime
 import hashlib
@@ -101,8 +102,7 @@ from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.preferences import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
-    DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+    DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME
 
 ##############################################
 #

@@ -112,7 +112,6 @@ References
    and *<measurement>* as the measurement.
 
 Here is an example file:
-| 
 
 +-------------------------+-------------------------+------------------+--------------+
 | Image\_FileName\_CY3,   | Image\_PathName\_CY3,   | Data\_Control,   | Data\_Dose   |
@@ -139,10 +138,10 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF
+from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
+    IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler.setting import YES, NO
 
 '''# of settings aside from the dose measurements'''
@@ -257,15 +256,20 @@ Leave this setting blank if you do not want a prefix.
                     cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
 *(Used only when creating dose/response plots)*
 
-This setting lets you choose the folder for the output files.
-%(IO_FOLDER_CHOICE_HELP_TEXT)s
+This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
-%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s For
+%(IO_WITH_METADATA_HELP_TEXT)s
+
+%(USING_METADATA_TAGS_REF)s
+
+For
 instance, if you have a metadata tag named “Plate”, you can create a
 per-plate folder by selecting one of the subfolder options and then
 specifying the subfolder name as “\\g<Plate>”. The module will
 substitute the metadata values for the current image set for any
-metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.
+metadata tags in the folder name.
+
+%(USING_METADATA_HELP_REF)s
 """ % globals()))
 
         group.append("divider", cps.Divider())

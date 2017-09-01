@@ -1,10 +1,10 @@
 # coding=utf-8
 
 """
-Relate Objects
-==============
+RelateObjects
+=============
 
-**Relate Objects** assigns relationships; all objects (e.g. speckles)
+**RelateObjects** assigns relationships; all objects (e.g. speckles)
 within a parent object (e.g. nucleus) become its children.
 
 This module allows you to associate *child* objects with *parent*
@@ -17,6 +17,8 @@ touching a parent object. If an child object is touching multiple parent
 objects, the object will be assigned to the parent with maximal overlap.
 For an alternate approach to assigning parent/child relationships,
 consider using the **MaskObjects** module.
+
+This module supports 2D and 3D objects
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -32,7 +34,7 @@ Measurements made by this module
 **Child object measurements:**
 
 -  *Parent:* The label number of the parent object, as assigned by an
-   **Identify** module.
+   **Identify** or **Watershed** module.
 
 See also: **SplitOrMergeObjects**, **MaskObjects**.
 """

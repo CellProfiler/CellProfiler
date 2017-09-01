@@ -13,9 +13,7 @@ to measure the size, shape, intensity and texture of each object or
 location in a grid. The grid is defined by the location of marker spots
 (control spots), which are either indicated manually or found
 automatically using previous modules in the pipeline. You can then use
-the grid to make measurements (using **IdentifyObjectsInGrid**). Text
-annotation of a grid can be shown on top of an image using the
-**DisplayGridInfo** module (coming soon). If you are using images of
+the grid to make measurements (using **IdentifyObjectsInGrid**). If you are using images of
 plastic plates, it may be useful to precede this module with an
 **IdentifyPrimaryObjects** module to find the plastic plate, followed by
 a **Crop** module to remove the plastic edges of the plate, so that the
@@ -208,7 +206,7 @@ entering the coordinates of the cells.
         self.manual_image = cps.ImageNameSubscriber(
                 "Select the image to display",
                 cps.NONE, doc="""\
-*(Used only if you selected "%(AM_MANUAL)s" + "%(MAN_MOUSE)s" to define
+*(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_MOUSE)s" to define
 the grid)*
 
 Specify the image you want to display when defining the grid. This
@@ -219,7 +217,7 @@ interface.
         self.first_spot_coordinates = cps.Coordinates(
                 "Coordinates of the first cell",
                 (0, 0), doc="""\
-*(Used only if you selected "%(AM_MANUAL)s" + "%(MAN_COORDINATES)s" to
+*(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_COORDINATES)s" to
 define the grid)*
 
 Enter the coordinates of the first cell on your grid. This setting
@@ -231,7 +229,7 @@ coordinates of the center of your cell.
 
         self.first_spot_row = cps.Integer(
                 "Row number of the first cell", 1, minval=1, doc="""\
-*(Used only if you selected "%(AM_MANUAL)s" + "%(MAN_COORDINATES)s" to
+*(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_COORDINATES)s" to
 define the grid)*
 
 Enter the row index for the first cell here. Rows are numbered starting
@@ -243,7 +241,7 @@ be row number 12.
 
         self.first_spot_col = cps.Integer(
                 "Column number of the first cell", 1, minval=1, doc="""\
-*(Used only if you selected "%(AM_MANUAL)s" + "%(MAN_COORDINATES)s" to
+*(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_COORDINATES)s" to
 define the grid)*
 
 Enter the column index for the first cell here. Columns are numbered
@@ -256,7 +254,7 @@ be *12* and *1*, respectively.
         self.second_spot_coordinates = cps.Coordinates(
                 "Coordinates of the second cell",
                 (0, 0), doc="""\
-*(Used only if you selected "%(AM_MANUAL)s" + "%(MAN_COORDINATES)s" to
+*(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_COORDINATES)s" to
 define the grid)*
 
 This setting defines the location of the second of two cells in your
@@ -267,7 +265,7 @@ display to determine the coordinates of the center of your cell.
 
         self.second_spot_row = cps.Integer(
                 "Row number of the second cell", 1, minval=1, doc="""\
-*(Used only if you selected "%(AM_MANUAL)s" + "%(MAN_COORDINATES)s" to
+*(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_COORDINATES)s" to
 define the grid)*
 
 Enter the row index for the second cell here. Rows are numbered starting
@@ -279,7 +277,7 @@ be row number 12.
 
         self.second_spot_col = cps.Integer(
                 "Column number of the second cell", 1, minval=1, doc="""\
-*(Used only if you selected "%(AM_MANUAL)s" + "%(MAN_COORDINATES)s" to
+*(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_COORDINATES)s" to
 define the grid)*
 
 Enter the column index for the second cell here. Columns are numbered

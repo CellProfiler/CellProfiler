@@ -8,8 +8,6 @@ IdentifyTertiaryObjects
 cytoplasm) by removing smaller primary objects (e.g. nuclei) from larger
 secondary objects (e.g., cells), leaving a ring shape.
 
---------------
-
 What is a tertiary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -44,7 +42,7 @@ A set of tertiary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations.
 Because each tertiary object is produced from primary and secondary
 objects, there will always be at most one secondary object for each
-primary object. See the section `“Measurements made by this module”`_ below for
+primary object. See the section "Measurements made by this module"_ below for
 the measurements that are produced by this module.
 
 Note that creating subregions using this module can result in objects
@@ -73,7 +71,7 @@ Measurements made by this module
 See also **IdentifyPrimaryObject** and **IdentifySecondaryObject**
 modules.
 
-.. _“Measurements made by this module”: #Available_measurements
+.. _"Measurements made by this module": #Available_measurements
 """
 
 import cellprofiler.measurement

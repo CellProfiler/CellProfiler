@@ -4,7 +4,7 @@
 ClassifyObjects
 ===============
 
-*Classify Objects** classifies objects into different classes according
+**ClassifyObjects** classifies objects into different classes according
 to the value of measurements you choose.
 
 This module classifies objects into a number of different bins according
@@ -90,14 +90,16 @@ class ClassifyObjects(cpm.Module):
         """
         self.contrast_choice = cps.Choice(
                 "Make each classification decision on how many measurements?",
-                [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS], doc="""
-            This setting controls how many measurements are used to make a classifications decision
-            for each object:
-            <ul>
-            <li><i>%(BY_SINGLE_MEASUREMENT)s:</i> Classifies each object based on a single measurement.</li>
-            <li><i>%(BY_TWO_MEASUREMENTS)s:</i> Classifies each object based on a pair of measurements taken
-            together (that is, an object must meet two criteria to belong to a class).</li>
-            </ul>""" % globals())
+                [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS], doc="""\
+This setting controls how many measurements are used to make a
+classifications decision for each object:
+
+-  *%(BY_SINGLE_MEASUREMENT)s:* Classifies each object based on a
+   single measurement.
+-  *%(BY_TWO_MEASUREMENTS)s:* Classifies each object based on a pair
+   of measurements taken together (that is, an object must meet two
+   criteria to belong to a class).
+""" % globals())
 
         ############### Single measurement settings ##################
         #
@@ -124,11 +126,12 @@ class ClassifyObjects(cpm.Module):
         # The object for the contrasting method
         #
         self.object_name = cps.ObjectNameSubscriber(
-                "Select the object name", cps.NONE, doc="""
-            Choose the object that you want to measure from the list.
-            This should be an object created by a previous module such as
-            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
-            <b>IdentifyTertiaryObjects</b>.""")
+                "Select the object name", cps.NONE, doc="""\
+Choose the object that you want to measure from the list. This should be
+an object created by a previous module such as
+**IdentifyPrimaryObjects**, **IdentifySecondaryObjects**, or
+**IdentifyTertiaryObjects**.
+""")
 
         #
         # The two measurements for the contrasting method
@@ -137,103 +140,107 @@ class ClassifyObjects(cpm.Module):
             return self.object_name.value
 
         self.first_measurement = cps.Measurement(
-                "Select the first measurement", object_fn, doc="""
-            Choose a measurement made on the above object. This is
-            the first of two measurements that will be contrasted together.
-            The measurement should be one made on the object in a prior
-            module.""")
+                "Select the first measurement", object_fn, doc="""\
+Choose a measurement made on the above object. This is the first of two
+measurements that will be contrasted together. The measurement should be
+one made on the object in a prior module.
+""")
 
         self.first_threshold_method = cps.Choice(
                 "Method to select the cutoff",
-                [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""
-            Objects are classified as being above or below a cutoff
-            value for a measurement. You can set this cutoff threshold in one
-            of three ways:<br>
-            <ul>
-            <li><i>%(TM_MEAN)s</i>: At the mean
-            of the measurement's value for all objects in the image cycle.</li>
-            <li><i>%(TM_MEDIAN)s</i>: At the median of the
-            measurement's value for all objects in the image set.</li>
-            <li><i>%(TM_CUSTOM)s</i>: You specify a custom threshold value.</li>
-            </ul>""" % globals())
+                [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""\
+Objects are classified as being above or below a cutoff value for a
+measurement. You can set this cutoff threshold in one of three ways:
+
+-  *%(TM_MEAN)s*: At the mean of the measurement’s value for all
+   objects in the image cycle.
+-  *%(TM_MEDIAN)s*: At the median of the measurement’s value for all
+   objects in the image set.
+-  *%(TM_CUSTOM)s*: You specify a custom threshold value.
+""" % globals())
 
         self.first_threshold = cps.Float(
-                "Enter the cutoff value", 0.5, doc="""
-            This is the cutoff value separating objects in the two
-            classes.""")
+                "Enter the cutoff value", 0.5, doc="""This is the cutoff value separating objects in the two classes.""")
 
         self.second_measurement = cps.Measurement(
-                "Select the second measurement", object_fn, doc="""
-            Select a measurement made on the above object. This is
-            the second of two measurements that will be contrasted together.
-            The measurement should be one made on the object in a prior
-            module.""")
+                "Select the second measurement", object_fn, doc="""\
+Select a measurement made on the above object. This is
+the second of two measurements that will be contrasted together.
+The measurement should be one made on the object in a prior
+module.""")
 
         self.second_threshold_method = cps.Choice(
                 "Method to select the cutoff",
-                [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""
-            Objects are classified as being above or below a cutoff
-            value for a measurement. You can set this cutoff threshold in one
-            of three ways:<br>
-            <ul>
-            <li><i>%(TM_MEAN)s:</i> At the mean
-            of the measurement's value for all objects in the image cycle.</li>
-            <li><i>%(TM_MEDIAN)s:</i> At the median of the
-            measurement's value for all objects in the image set.</li>
-            <li><i>%(TM_CUSTOM)s:</i> You specify a custom threshold value.</li>
-            </ul>""" % globals())
+                [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""\
+Objects are classified as being above or below a cutoff value for a
+measurement. You can set this cutoff threshold in one of three ways:
+
+-  *%(TM_MEAN)s:* At the mean of the measurement’s value for all
+   objects in the image cycle.
+-  *%(TM_MEDIAN)s:* At the median of the measurement’s value for all
+   objects in the image set.
+-  *%(TM_CUSTOM)s:* You specify a custom threshold value.
+""" % globals())
 
         self.second_threshold = cps.Float(
-                "Enter the cutoff value", 0.5, doc="""
-            This is the cutoff value separating objects in the two
-            classes.""")
+                "Enter the cutoff value", 0.5, doc="""This is the cutoff value separating objects in the two classes.""")
 
         self.wants_custom_names = cps.Binary(
-                "Use custom names for the bins?", False, doc="""
-            Select <i>%(YES)s</i> if you want to specify the names of each bin
-            measurement. <br>
-            Select <i>%(NO)s</i> to create names based on the
-            measurements. For instance, for
-            "Intensity_MeanIntensity_Green" and "Intensity_TotalIntensity_Blue",
-            the module generates measurements such as
-            "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low".""" % globals())
+                "Use custom names for the bins?", False, doc="""\
+Select "*%(YES)s*" if you want to specify the names of each bin
+measurement.
+
+Select "*%(NO)s*" to create names based on the measurements. For instance,
+for “Intensity_MeanIntensity_Green” and
+“Intensity_TotalIntensity_Blue”, the module generates measurements
+such as
+“Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low”.
+""" % globals())
 
         self.low_low_custom_name = cps.AlphanumericText(
-                "Enter the low-low bin name", "low_low", doc="""
-            <i>(Used only if using a pair of measurements)</i><br>
-            Name of the measurement for objects that
-            fall below the threshold for both measurements.""")
+                "Enter the low-low bin name", "low_low", doc="""\
+*(Used only if using a pair of measurements)*
+
+Name of the measurement for objects that fall below the threshold for
+both measurements.
+""")
 
         self.low_high_custom_name = cps.AlphanumericText(
-                "Enter the low-high bin name", "low_high", doc="""
-            <i>(Used only if using a pair of measurements)</i><br>
-            Name of the measurement for objects whose
-            first measurement is below threshold and whose second measurement
-            is above threshold.""")
+                "Enter the low-high bin name", "low_high", doc="""\
+*(Used only if using a pair of measurements)*
+
+Name of the measurement for objects whose
+first measurement is below threshold and whose second measurement
+is above threshold.
+""")
 
         self.high_low_custom_name = cps.AlphanumericText(
-                "Enter the high-low bin name", "high_low", doc="""
-            <i>(Used only if using a pair of measurements)</i><br>
-            Name of the measurement for objects whose
-            first measurement is above threshold and whose second measurement
-            is below threshold.""")
+                "Enter the high-low bin name", "high_low", doc="""\
+*(Used only if using a pair of measurements)*
+
+Name of the measurement for objects whose
+first measurement is above threshold and whose second measurement
+is below threshold.""")
 
         self.high_high_custom_name = cps.AlphanumericText(
-                "Enter the high-high bin name", "high_high", doc="""
-            <i>(Used only if using a pair of measurements)</i><br>
-            Name of the measurement for objects that
-            are above the threshold for both measurements.""")
+                "Enter the high-high bin name", "high_high", doc="""\
+*(Used only if using a pair of measurements)*
+
+Name of the measurement for objects that
+are above the threshold for both measurements.""")
 
         self.wants_image = cps.Binary(
-                "Retain an image of the classified objects?", False, doc="""
-            Select <i>%(YES)s</i> to retain the image of the objects color-coded according
-            to their classification, for use later in the pipeline (for example,
-            to be saved by a <b>SaveImages</b> module).""" % globals())
+                "Retain an image of the classified objects?", False, doc="""\
+Select "*%(YES)s*" to retain the image of the objects color-coded
+according to their classification, for use later in the pipeline (for
+example, to be saved by a **SaveImages** module).
+""" % globals())
 
         self.image_name = cps.ImageNameProvider(
-                "Enter the image name", cps.NONE, doc="""
-            <i>(Used only if the classified object image is to be retained for later use in the pipeline)</i> <br>
-            Enter the name to be given to the classified object image.""")
+                "Enter the image name", cps.NONE, doc="""\
+*(Used only if the classified object image is to be retained for later use in the pipeline)*
+
+Enter the name to be given to the classified object image.""")
 
     def add_single_measurement(self, can_delete=True):
         '''Add a single measurement to the group of single measurements
@@ -247,110 +254,113 @@ class ClassifyObjects(cpm.Module):
 
         group.append("object_name", cps.ObjectNameSubscriber(
                 "Select the object to be classified", cps.NONE,
-                doc="""The name of the objects to be classified. You can
-            choose from objects created by any previous module. See
-            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
-            <b>IdentifyTertiaryObjects</b>."""))
+                doc="""\
+The name of the objects to be classified. You can choose from objects
+created by any previous module. See **IdentifyPrimaryObjects**,
+**IdentifySecondaryObjects**, or **IdentifyTertiaryObjects**.
+"""))
 
         def object_fn():
             return group.object_name.value
 
         group.append("measurement", cps.Measurement(
-                "Select the measurement to classify by", object_fn, doc="""
-            Select a measurement made by a previous module. The objects
-            will be classified according to their values for this
-            measurement."""))
+                "Select the measurement to classify by", object_fn, doc="""\
+Select a measurement made by a previous module. The objects will be
+classified according to their values for this measurement.
+"""))
 
         group.append("bin_choice", cps.Choice(
                 "Select bin spacing",
-                [BC_EVEN, BC_CUSTOM], doc="""
-            Select how you want to define the spacing of the bins.
-            You have the following options:
-            <ul>
-            <li><i>%(BC_EVEN)s:</i> Choose this if you want to specify
-            bins of equal size, bounded by upper and lower limits. If you
-            want two bins, choose this option and then provide a single
-            threshold when asked.</li>
-            <li><i>%(BC_CUSTOM)s:</i> Choose this option to create the
-            indicated number of bins  at evenly spaced intervals between the
-            low and high threshold.
-            You also have the option to create bins for objects that fall below
-            or above the low and high threshold.</li>
-            </ul>
-            """ % globals()))
+                [BC_EVEN, BC_CUSTOM], doc="""\
+Select how you want to define the spacing of the bins. You have the
+following options:
+
+-  *%(BC_EVEN)s:* Choose this if you want to specify bins of equal
+   size, bounded by upper and lower limits. If you want two bins, choose
+   this option and then provide a single threshold when asked.
+-  *%(BC_CUSTOM)s:* Choose this option to create the indicated number
+   of bins at evenly spaced intervals between the low and high
+   threshold. You also have the option to create bins for objects that
+   fall below or above the low and high threshold.
+""" % globals()))
 
         group.append("bin_count", cps.Integer(
-                "Number of bins", 3, minval=1, doc="""
-            This is the number of bins that will be created between
-            the low and high threshold"""
+                "Number of bins", 3, minval=1, doc="""\
+This is the number of bins that will be created between
+the low and high threshold"""
         ))
 
         group.append("low_threshold", cps.Float(
-                "Lower threshold", 0, doc="""
-            <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
-            This is the threshold that separates the lowest bin from the
-            others. The lower threshold, upper threshold, and number of bins
-            define the thresholds of bins between the lowest and highest.
-            """ % globals()))
+                "Lower threshold", 0, doc="""\
+*(Used only if "%(BC_EVEN)s" selected)*
+
+This is the threshold that separates the lowest bin from the others. The
+lower threshold, upper threshold, and number of bins define the
+thresholds of bins between the lowest and highest.
+""" % globals()))
 
         group.append("wants_low_bin", cps.Binary(
-                "Use a bin for objects below the threshold?", False, doc="""
-            Select <i>%(YES)s</i> if you want to create a bin for objects
-            whose values fall below the low threshold. Select <i>%(NO)s</i>
-            if you do not want a bin for these objects.
-            """ % globals()))
+                "Use a bin for objects below the threshold?", False, doc="""\
+Select "*%(YES)s*" if you want to create a bin for objects whose values
+fall below the low threshold. Select "*%(NO)s*" if you do not want a bin
+for these objects.
+""" % globals()))
 
         def min_upper_threshold():
             return group.low_threshold.value + np.finfo(float).eps
 
         group.append("high_threshold", cps.Float(
                 "Upper threshold", 1,
-                minval=cps.NumberConnector(min_upper_threshold), doc="""
-            <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
-            This is the threshold that separates the last bin from
-            the others.
-            Note that if you would like two bins, you should select <i>%(BC_CUSTOM)s</i>.
-            """ % globals()))
+                minval=cps.NumberConnector(min_upper_threshold), doc="""\
+*(Used only if "%(BC_EVEN)s" selected)*
+
+This is the threshold that separates the last bin from the others. Note
+that if you would like two bins, you should select "*%(BC_CUSTOM)s*".
+""" % globals()))
 
         group.append("wants_high_bin", cps.Binary(
-                "Use a bin for objects above the threshold?", False, doc="""
-            Select <i>%(YES)s</i> if you want to create a bin for objects
-            whose values are above the high threshold. <br>
-            Select <i>%(NO)s</i> if you do not want a bin for these objects.""" % globals()))
+                "Use a bin for objects above the threshold?", False, doc="""\
+Select "*%(YES)s*" if you want to create a bin for objects whose values
+are above the high threshold.
+
+Select "*%(NO)s*" if you do not want a bin for these objects.
+""" % globals()))
 
         group.append("custom_thresholds", cps.Text(
                 "Enter the custom thresholds separating the values between bins",
-                "0,1", doc="""
-            <i>(Used only if "%(BC_CUSTOM)s" selected)</i><br>
-            This setting establishes the threshold values for the
-            bins. You should enter one threshold between each bin, separating
-            thresholds with commas (for example, <i>0.3, 1.5, 2.1</i> for four bins).
-            The module will create one more bin than there are thresholds.
-            """ % globals()))
+                "0,1", doc="""\
+*(Used only if "%(BC_CUSTOM)s" selected)*
+
+This setting establishes the threshold values for the bins. You should
+enter one threshold between each bin, separating thresholds with commas
+(for example, *0.3, 1.5, 2.1* for four bins). The module will create one
+more bin than there are thresholds.
+""" % globals()))
 
         group.append("wants_custom_names", cps.Binary(
-                "Give each bin a name?", False, doc="""
-            Select <i>%(YES)s</i> to assign custom names to bins you have
-            specified.
-            <p>Select <i>%(NO)s</i> for the module to automatically
-            assign names based on the measurements and the bin number.""" % globals()))
+                "Give each bin a name?", False, doc="""\
+Select "*%(YES)s*" to assign custom names to bins you have specified.
+
+Select "*%(NO)s*" for the module to automatically assign names based on
+the measurements and the bin number.
+""" % globals()))
 
         group.append("bin_names", cps.Text(
-                "Enter the bin names separated by commas", cps.NONE, doc="""
-            <i>(Used only if Give each bin a name? is checked)</i><br>
-            Enter names for each of the bins, separated by commas.
-            An example including three bins might be <i>First,Second,Third</i>."""))
+                "Enter the bin names separated by commas", cps.NONE, doc="""\
+*(Used only if Give each bin a name? is checked)*
+
+Enter names for each of the bins, separated by commas.
+An example including three bins might be *First,Second,Third*."""))
 
         group.append("wants_images", cps.Binary(
-                "Retain an image of the classified objects?", False, doc="""
-            Select <i>%(YES)s</i> to keep an image of the objects which is color-coded according
-            to their classification, for use later in the pipeline (for example,
-            to be saved by a <b>SaveImages</b> module).""" % globals()))
+                "Retain an image of the classified objects?", False, doc="""\
+Select "*%(YES)s*" to keep an image of the objects which is color-coded
+according to their classification, for use later in the pipeline (for
+example, to be saved by a **SaveImages** module).
+""" % globals()))
 
         group.append("image_name", cps.ImageNameProvider(
-                "Name the output image", "ClassifiedNuclei", doc="""
-            Enter the name to be given to the classified object
-            image."""))
+                "Name the output image", "ClassifiedNuclei", doc="""Enter the name to be given to the classified object image."""))
 
         group.can_delete = can_delete
 

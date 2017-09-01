@@ -309,7 +309,7 @@ the operation added by this button.""")
 
     CUSTOM_REPEATS_TEXT = "Repetition number"
     CUSTOM_REPEATS_DOC = """\
-*(Used only if Custom selected)*
+*(Used only if "Custom" selected)*
     
 Enter the number of times to repeat the operation"""
 
@@ -338,7 +338,7 @@ applied successively to the image.
 
         group.append("rescale_values", cps.Binary(
                 "Rescale values from 0 to 1?", True, doc="""\
-*(Used only for the %(F_DISTANCE)s operation).*
+*(Used only for the "%(F_DISTANCE)s" operation).*
 
 Select "*%(YES)s*" to rescale the transformed values to lie between 0 and
 1. This is the option to use if the distance transformed image is to be

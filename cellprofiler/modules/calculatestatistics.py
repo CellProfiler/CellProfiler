@@ -74,12 +74,10 @@ cytoplasm compartments per cell, which is always equal to 1.
 
 This module can create MATLAB scripts that display the EC50 curves for
 each measurement. These scripts will require MATLAB and the statistics
-toolbox in order to run. See `*Create dose/response plots?*`_ below.
+toolbox in order to run. See *Create dose/response plots?* below.
 
 References
 ^^^^^^^^^^
-
-.. _*Create dose/response plots?*: #wants_save_figure
 
 -  *Z’ factor:* Zhang JH, Chung TD, et al. (1999) “A simple statistical
    parameter for use in evaluation and validation of high throughput
@@ -113,8 +111,8 @@ References
    the form *<prefix>\_<measurement>*. Select *<prefix>* as the category
    and *<measurement>* as the measurement.
 
-| Here is an example file:
-| ````
+Here is an example file:
+| 
 
 +-------------------------+-------------------------+------------------+--------------+
 | Image\_FileName\_CY3,   | Image\_PathName\_CY3,   | Data\_Control,   | Data\_Dose   |
@@ -246,7 +244,7 @@ You will be asked for information on how to save the plots.''' % globals()))
 
 CellProfiler will create a file name by appending the measurement name
 to the prefix you enter here. For instance, if you have objects named,
-“Cells”, the “AreaShape_Area measurement”, and a prefix of “Dose_”,
+“Cells”, the “AreaShape_Area measurement”, and a prefix of “Dose\_”,
 CellProfiler will save the figure as *Dose_Cells_AreaShape_Area.m*.
 Leave this setting blank if you do not want a prefix.
 '''

@@ -18,7 +18,7 @@ module. However, old pipelines loaded into CellProfiler that contain
 this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
 
-Note that volumetric images CANNOT be loaded with LoadData; they must be 
+Note that volumetric images CANNOT be loaded with LoadData; they must be
 loaded with the Input modules.
 
 The module currently reads files in CSV (comma-separated values) format.
@@ -185,7 +185,7 @@ Measurements made by this module
 See also the **Input** modules, **LoadImages** and
 **CalculateStatistics**.
 
-.. _MetaXpress: http://www.moleculardevices.com/Products/Software/High-Content-Analysis/MetaXpress.html
+.. _MetaXpress: https://www.moleculardevices.com/systems/high-content-imaging/metaxpress-high-content-image-acquisition-and-analysis-software
 .. _Pipeline Pilot: http://accelrys.com/products/pipeline-pilot/
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment
 """
@@ -463,8 +463,8 @@ Enter the row numbers of the first and last row to be processed.""")
 
         self.clear_cache_button = cps.DoSomething(
                 "Reload cached information", "Reload", do_reload, doc="""\
-*(Used only if the CSV is loaded from a URL)*                
-                
+*(Used only if the CSV is loaded from a URL)*
+
 Press this button to reload header information saved inside
 CellProfiler. **LoadData** caches information about your .csv file in
 its memory for efficiency. The information is reloaded if a modification

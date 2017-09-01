@@ -1,7 +1,14 @@
 # coding=utf-8
 
 """
-Noise reduction performs non-local means noise reduction.
+ReduceNoise
+===========
+
+**ReduceNoise** performs non-local means noise reduction. Instead of only
+using a neighborhood of pixels around a central pixel for denoising, such
+as in **GaussianFilter**, multiple neighborhoods are pooled together. The
+neighborhood pool is determined by scanning the image for regions similar to
+the area around the central pixel using a correlation metric and a cutoff value.
 
 Single-channel images can be two-or-three-dimensional and multichannel
 images can be two-dimensional.
@@ -35,10 +42,10 @@ class ReduceNoise(cellprofiler.module.ImageProcessing):
         )
 
         self.cutoff_distance = cellprofiler.setting.Float(
-            doc="""
-                Cut-off distance is the permisssiveness in accepting patches. Increasing the cut-off distance increases
-                the smoothness of the image. Likewise, decreasing the cut-off distance decreases the smoothness of the
-                image.
+            doc="""\
+Cut-off distance is the permissiveness in accepting patches. Increasing the cut-off distance increases
+the smoothness of the image. Likewise, decreasing the cut-off distance decreases the smoothness of the
+image.
             """,
             text="Cut-off distance",
             value=0.1

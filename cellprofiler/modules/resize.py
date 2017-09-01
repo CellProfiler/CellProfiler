@@ -4,7 +4,8 @@
 Resize
 ======
 
-**Resize** resizes images (changes their resolution).
+**Resize** resizes images (changes their resolution). This module is
+compatible for both 2D and volumetric image analysis.
 
 Images are resized (made smaller or larger) based on user input. You can
 resize an image by applying a resizing factor or by specifying the
@@ -103,7 +104,7 @@ Enter the desired height of the final image, in pixels.""")
         self.specific_image = cellprofiler.setting.ImageNameSubscriber(
             "Select the image with the desired dimensions",
             cellprofiler.setting.NONE,
-            doc=""""\
+            doc="""\
 *(Used only if resizing by specifying desired final dimensions using an image)*
 
 The input image will be resized to the dimensions of the specified image.""")

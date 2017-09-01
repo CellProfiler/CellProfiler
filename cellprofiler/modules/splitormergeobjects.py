@@ -115,7 +115,7 @@ You can choose one of the following options:
 
         self.unify_option = cps.Choice(
                 "Unification method", [UNIFY_DISTANCE, UNIFY_PARENT], doc="""\
-*(Used only with the %(OPTION_UNIFY)s option)*
+*(Used only with the "%(OPTION_UNIFY)s" option)*
 
 You can unify objects in one of two ways:
 
@@ -158,9 +158,9 @@ Please note the following:
         self.distance_threshold = cps.Integer(
                 "Maximum distance within which to unify objects",
                 0, minval=0, doc="""\
-*(Used only with the "%(OPTION_UNIFY)s" option and the
+*(Used only with the "%(OPTION_UNIFY)s" option and the "%(UNIFY_DISTANCE)s"
+method)*
 
-%(UNIFY_DISTANCE)s method)*
 Objects that are less than or equal to the distance you enter here, in
 pixels, will be unified. If you choose zero (the default), only objects
 that are touching will be unified. Note that *%(OPTION_UNIFY)s* will
@@ -200,7 +200,7 @@ described for the method you choose in the next setting.""")
                 [CA_CLOSEST_POINT, CA_CENTROIDS], doc="""\
 *(Used only if a grayscale image is to be used as a guide for
 unification)*
-  
+
 You can use one of two methods to determine whether two objects should
 unified, assuming they meet the distance criteria (as specified
 above):

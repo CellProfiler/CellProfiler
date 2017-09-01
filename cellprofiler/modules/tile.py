@@ -42,7 +42,7 @@ Other packages are referenced `here`_
 
 .. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
 .. _PTGui: http://www.ptgui.com/
-.. _Autostitch: http://cvlab.epfl.ch/~brown/autostitch/autostitch.html
+.. _Autostitch: http://matthewalunbrown.com/autostitch/autostitch.html
 .. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/
 .. _here: http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm
 """

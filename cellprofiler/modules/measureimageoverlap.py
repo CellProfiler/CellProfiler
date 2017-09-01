@@ -1,14 +1,14 @@
 # coding=utf-8
 
 """
-Calculate Image Overlap
+MeasureImageOverlap
 =======================
 
-**Calculate Image Overlap** calculates how much overlap occurs between
+**MeasureImageOverlap** calculates how much overlap occurs between
 the white portions of two black and white images
 
 This module calculates overlap by determining a set of statistics that
-measure the closeness of an image or object to its’ true value. One
+measure the closeness of an image or object to its true value. One
 image/object is considered the “ground truth” (possibly the result of
 hand-segmentation) and the other is the “test” image/object; the images
 are determined to overlap most completely when the test image matches
@@ -166,70 +166,75 @@ class MeasureImageOverlap(cellprofiler.module.Module):
         self.ground_truth = cellprofiler.setting.ImageNameSubscriber(
             "Select the image to be used as the ground truth basis for calculating the amount of overlap",
             cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only when comparing foreground/background)</i><br>
-            This binary (black and white) image is known as the "ground truth" image. It can be the product of
-            segmentation performed by hand, or the result of another segmentation algorithm whose results you
-            would like to compare.
-            """
+            doc="""\
+*(Used only when comparing foreground/background)*
+
+This binary (black and white) image is known as the “ground truth”
+image. It can be the product of segmentation performed by hand, or the
+result of another segmentation algorithm whose results you would like to
+compare."""
         )
 
         self.test_img = cellprofiler.setting.ImageNameSubscriber(
             "Select the image to be used to test for overlap",
             cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only when comparing foreground/background)</i><br>
-            This binary (black and white) image is what you will compare with the ground truth image. It is
-            known as the "test image".
-            """
+            doc="""\
+*(Used only when comparing foreground/background)*
+
+This binary (black and white) image is what you will compare with the
+ground truth image. It is known as the “test image”."""
         )
 
         self.object_name_GT = cellprofiler.setting.ObjectNameSubscriber(
             "Select the objects to be used as the ground truth basis for calculating the amount of overlap",
             cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only when comparing segmented objects)</i><br>
-            Choose which set of objects will used as the "ground truth" objects. It can be the product of
-            segmentation performed by hand, or the result of another segmentation algorithm whose results you
-            would like to compare. See the <b>Load</b> modules for more details on loading objects.
-            """
+            doc="""\
+*(Used only when comparing segmented objects)*
+
+Choose which set of objects will used as the “ground truth” objects. It
+can be the product of segmentation performed by hand, or the result of
+another segmentation algorithm whose results you would like to compare.
+See the **Load** modules for more details on loading objects."""
         )
 
         self.object_name_ID = cellprofiler.setting.ObjectNameSubscriber(
             "Select the objects to be tested for overlap against the ground truth",
             cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only when comparing segmented objects)</i><br>
-            This set of objects is what you will compare with the ground truth objects. It is known as the
-            "test object."
-            """
+            doc="""\
+*(Used only when comparing segmented objects)*
+
+This set of objects is what you will compare with the ground truth
+objects. It is known as the “test object.”"""
         )
 
         self.wants_emd = cellprofiler.setting.Binary(
             "Calculate earth mover's distance?",
             False,
-            doc="""
-            The earth mover's distance computes the shortest distance that would have to be travelled to move
-            each foreground pixel in the test image to some foreground pixel in the reference image. "Earth
-            mover's" refers to an analogy: the pixels are "earth" that has to be moved by some machine at the
-            smallest possible cost.<br>
-            It would take too much memory and processing time to compute the exact earth mover's distance, so
-            <b>MeasureImageOverlap</b> chooses representative foreground pixels in each image and assigns
-            each foreground pixel to its closest representative. The earth mover's distance is then computed
-            for moving the foreground pixels associated with each representative in the test image to those in
-            the reference image.
-            """
+            doc="""\
+The earth mover’s distance computes the shortest distance that would
+have to be travelled to move each foreground pixel in the test image to
+some foreground pixel in the reference image. “Earth mover’s” refers to
+an analogy: the pixels are “earth” that has to be moved by some machine
+at the smallest possible cost.
+It would take too much memory and processing time to compute the exact
+earth mover’s distance, so **MeasureImageOverlap** chooses
+representative foreground pixels in each image and assigns each
+foreground pixel to its closest representative. The earth mover’s
+distance is then computed for moving the foreground pixels associated
+with each representative in the test image to those in the reference
+image."""
         )
 
         self.max_points = cellprofiler.setting.Integer(
             "Maximum # of points",
             value=250,
             minval=100,
-            doc="""
-            <i>(Used only when computing the earth mover's distance)</i><br>
-            This is the number of representative points that will be taken from the foreground of the test
-            image and from the foreground of the reference image using the point selection method (see below).
-            """
+            doc="""\
+*(Used only when computing the earth mover’s distance)*
+
+This is the number of representative points that will be taken from the
+foreground of the test image and from the foreground of the reference
+image using the point selection method (see below)."""
         )
 
         self.decimation_method = cellprofiler.setting.Choice(
@@ -238,23 +243,26 @@ class MeasureImageOverlap(cellprofiler.module.Module):
                 DM_KMEANS,
                 DM_SKEL
             ],
-            doc="""
-            <i>(Used only when computing the earth mover's distance)</i><br>
-            The point selection setting determines how the representative points are chosen.
-            <ul>
-                <li><i>{DM_KMEANS}:</i> Select to pick representative points using a K-Means clustering
-                technique. The foregrounds of both images are combined and representatives are picked that
-                minimize the distance to the nearest representative. The same representatives are then used for
-                the test and reference images.</li>
-                <li><i>{DM_SKEL}:</i> Select to skeletonize the image and pick points eqidistant along the
-                skeleton.</li>
-            </ul>
-            <dl>
-                <dd><img src="memory:{PROTIP_RECOMEND_ICON}">&nbsp; <i>{DM_KMEANS}</i> is a choice that's
-                generally applicable to all images. <i>{DM_SKEL}</i> is best suited to long, skinny objects
-                such as worms or neurites.</dd>
-            </dl>
-            """.format(**{
+            doc="""\
+*(Used only when computing the earth mover’s distance)*
+
+The point selection setting determines how the representative points
+are chosen.
+
+-  *{DM_KMEANS}:* Select to pick representative points using a K-Means
+   clustering technique. The foregrounds of both images are combined and
+   representatives are picked that minimize the distance to the nearest
+   representative. The same representatives are then used for the test
+   and reference images.
+-  *{DM_SKEL}:* Select to skeletonize the image and pick points
+   eqidistant along the skeleton.
+
+    |image0|  *{DM_KMEANS}* is a choice that’s generally applicable to all
+    images. *{DM_SKEL}* is best suited to long, skinny objects such as
+    worms or neurites.
+
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
                 "DM_KMEANS": DM_KMEANS,
                 "DM_SKEL": DM_SKEL,
                 "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON
@@ -265,30 +273,35 @@ class MeasureImageOverlap(cellprofiler.module.Module):
             "Maximum distance",
             value=250,
             minval=1,
-            doc="""
-            <i>(Used only when computing the earth mover's distance)</i><br>
-            This setting sets an upper bound to the distance penalty assessed during the movement calculation.
-            As an example, the score for moving 10 pixels from one location to a location that is 100 pixels
-            away is 10*100, but if the maximum distance were set to 50, the score would be 10*50 instead.<br>
-            The maximum distance should be set to the largest reasonable distance that pixels could be expected
-            to move from one image to the next.
-            """
+            doc="""\
+*(Used only when computing the earth mover’s distance)*
+
+This setting sets an upper bound to the distance penalty assessed during
+the movement calculation. As an example, the score for moving 10 pixels
+from one location to a location that is 100 pixels away is 10\*100, but
+if the maximum distance were set to 50, the score would be 10\*50
+instead.
+The maximum distance should be set to the largest reasonable distance
+that pixels could be expected to move from one image to the next."""
         )
 
         self.penalize_missing = cellprofiler.setting.Binary(
             "Penalize missing pixels",
             value=False,
-            doc="""
-            <i>(Used only when computing the earth mover's distance)</i><br>
-            If one image has more foreground pixels than the other, the earth mover's distance is not
-            well-defined because there is no destination for the extra source pixels or vice-versa. It's
-            reasonable to assess a penalty for the discrepancy when comparing the accuracy of a segmentation
-            because the discrepancy represents an error. It's also reasonable to assess no penalty if the goal
-            is to compute the cost of movement, for example between two frames in a time-lapse movie, because
-            the discrepancy is likely caused by noise or artifacts in segmentation. Set this setting to "Yes"
-            to assess a penalty equal to the maximum distance times the absolute difference in number of
-            foreground pixels in the two images. Set this setting to "No" to assess no penalty.
-            """
+            doc="""\
+*(Used only when computing the earth mover’s distance)*
+
+If one image has more foreground pixels than the other, the earth
+mover’s distance is not well-defined because there is no destination for
+the extra source pixels or vice-versa. It’s reasonable to assess a
+penalty for the discrepancy when comparing the accuracy of a
+segmentation because the discrepancy represents an error. It’s also
+reasonable to assess no penalty if the goal is to compute the cost of
+movement, for example between two frames in a time-lapse movie, because
+the discrepancy is likely caused by noise or artifacts in segmentation.
+Set this setting to “Yes” to assess a penalty equal to the maximum
+distance times the absolute difference in number of foreground pixels in
+the two images. Set this setting to “No” to assess no penalty."""
         )
 
     def settings(self):

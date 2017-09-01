@@ -22,7 +22,7 @@ together to fit the proper sized circles, for example) the grid will
 fail and processing will be canceled unless you choose to re-use a grid
 from a previous successful image cycle. *Special note on saving images:*
 You can use the settings in this module to pass object outlines along to
-the **OverlayOutlines**\ module and then save them with the
+the **OverlayOutlines** module and then save them with the
 **SaveImages** module. You can also pass along objects themselves to the
 object processing module **ConvertToImage** and then save them with the
 **SaveImages** module.

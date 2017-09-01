@@ -214,6 +214,7 @@ subsequent modules in the pipeline.
 Use this setting to choose the absorbance values for a particular stain.
 
 The stains are:
+
 +-----------------------------------+--------------------------------------------------+
 | Stain                             |Specific to                                       |
 +===================================+==================================================+

@@ -4,7 +4,7 @@
 FlagImage
 =========
 
-**Flag Image** allows you to flag an image based on properties that you
+**FlagImage** allows you to flag an image based on properties that you
 specify, for example, quality control measurements.
 
 This module allows you to assign a flag if an image meets certain

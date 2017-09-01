@@ -52,6 +52,10 @@ images to ensure they are in the proper form:
    **ImageMath** module.
 -  If you are working with color images, they must first be converted to
    grayscale using the **ColorToGray** module.
+-  If your images are brightfield/phase/DIC, they may be processed with the
+   **EnhanceOrSuppressFeatures** module with its "*Texture*" or "*DIC*" settings.
+   You may also want to check our `tutorial`_ on preprocessing these images with
+   ilastik prior to using them in CellProfiler.
 
 What are the advanced settings?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -182,7 +186,7 @@ References
    (`link <http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x>`__)
 
 .. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
-
+.. _tutorial: http://blog.cellprofiler.org/2017/01/19/cellprofiler-ilastik-superpowered-segmentation/
 
 See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, 
 **IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).

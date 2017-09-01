@@ -27,7 +27,7 @@ Measurements made by this module
 See the *Technical Notes* below for an explanation of creating an
 ellipse with the same second-moments as an object region.
 
--  *Area:* The number of pixels (2D) or voxels (3D) in the region.  
+-  *Area:* The number of pixels (2D) or voxels (3D) in the region.
 -  *Perimeter:* The total number of pixels (2D) or voxels (3D) around the boundary of each
    region in the image. In 3D, this is more commonly described as the surface area.
 -  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
@@ -37,13 +37,13 @@ ellipse with the same second-moments as an object region.
    solid object (i.e., one with no holes or has a concave boundary), or
    <1 for an object with holes or possessing a convex/irregular
    boundary.
--  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box 
-   that are also in the region. Computed as the area/volume divided by the area/volume 
+-  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box
+   that are also in the region. Computed as the area/volume divided by the area/volume
    of the bounding box.
 -  *EulerNumber:* *(2D only)* The number of objects in the region minus the number
    of holes in those objects, assuming 8-connectivity.
--  *Center\_X, Center\_Y, Center\_Z:* The *x*-, *y*-, and (for 3D objects) *z-* 
-   coordinates of the point farthest away from any object edge. Note that this 
+-  *Center\_X, Center\_Y, Center\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
+   coordinates of the point farthest away from any object edge. Note that this
    is not the same as the *Location-X* and *-Y* measurements produced by the **Identify** or **Watershed**
    modules or the *Location-Z* measurement produced by the **Watershed** module.
 -  *Eccentricity:* *(2D only)* The eccentricity of the ellipse that has the same
@@ -53,8 +53,8 @@ ellipse with the same second-moments as an object region.
    ellipse whose eccentricity is 0 is actually a circle, while an
    ellipse whose eccentricity is 1 is a line segment.)
 
-    |image0|   
-   
+    |image0|
+
 
 -  *MajorAxisLength:* *(2D only)* The length (in pixels) of the major axis of the
    ellipse that has the same normalized second central moments as the
@@ -131,7 +131,6 @@ See also **MeasureImageAreaOccupied**.
 """
 
 import cellprofiler.icons
-from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
 
 import numpy as np
 import scipy.ndimage as scind

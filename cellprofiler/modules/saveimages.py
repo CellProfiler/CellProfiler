@@ -33,12 +33,12 @@ import numpy
 import skimage.io
 import skimage.util
 
-import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
+import _help
 
 
 IF_IMAGE = "Image"
@@ -151,8 +151,8 @@ class SaveImages(cellprofiler.module.Module):
                 "FN_FROM_IMAGE": FN_FROM_IMAGE,
                 "FN_SEQUENTIAL": FN_SEQUENTIAL,
                 "FN_SINGLE_NAME": FN_SINGLE_NAME,
-                "USING_METADATA_HELP_REF": cellprofiler.gui.help.USING_METADATA_HELP_REF,
-                "USING_METADATA_TAGS_REF": cellprofiler.gui.help.USING_METADATA_TAGS_REF
+                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
+                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
             })
         )
 
@@ -184,7 +184,7 @@ class SaveImages(cellprofiler.module.Module):
             """.format(**{
                 "FN_SEQUENTIAL": FN_SEQUENTIAL,
                 "FN_SINGLE_NAME": FN_SINGLE_NAME,
-                "USING_METADATA_TAGS_REF": cellprofiler.gui.help.USING_METADATA_TAGS_REF
+                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
             })
         )
 
@@ -277,8 +277,8 @@ class SaveImages(cellprofiler.module.Module):
             """.format(**{
                 "IO_FOLDER_CHOICE_HELP_TEXT": cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT,
                 "IO_WITH_METADATA_HELP_TEXT": cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
-                "USING_METADATA_HELP_REF": cellprofiler.gui.help.USING_METADATA_HELP_REF,
-                "USING_METADATA_TAGS_REF": cellprofiler.gui.help.USING_METADATA_TAGS_REF
+                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
+                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
             })
         )
 

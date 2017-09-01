@@ -124,9 +124,6 @@ particular wavelength.
 """
 
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
-    IMAGES_FILELIST_FILLED
-
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -142,7 +139,8 @@ import uuid
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
 from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
+    TECH_NOTE_ICON
 
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
@@ -200,10 +198,18 @@ class Images(cpm.Module):
             that you want to analyze and other files that you want to ignore.</li>
             </ul></p>""" % globals())
 
-        self.filter = cps.Filter("Select the rule criteria", predicates,
-                                 FILTER_DEFAULT, doc="""
-            Specify a set of rules to narrow down the files to be analyzed.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals())
+        self.filter = cps.Filter(
+            "Select the rule criteria",
+            predicates,
+            FILTER_DEFAULT,
+            doc="""\
+Specify a set of rules to narrow down the files to be analyzed.
+
+{FILTER_RULES_BUTTONS_HELP}
+            """.format(**{
+                       "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP
+            })
+        )
 
         self.update_button = cps.PathListRefreshButton(
                 "", "Apply filters to the file list", doc="""

@@ -66,7 +66,8 @@ See also **ExportToSpreadsheet**.
 """
 
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, \
+    USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF
 import csv
 import datetime
 import hashlib
@@ -97,7 +98,6 @@ import cellprofiler.measurement as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
 from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
 from cellprofiler.preferences import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
@@ -363,7 +363,7 @@ class ExportToDatabase(cpm.Module):
                 "Database type",
                 db_choices, default_db, doc="""
                 Specify the type of database you want to use:
-                
+
                 -  *%(DB_MYSQL)s:* Writes the data directly to a MySQL database. MySQL
                    is open-source software; you may require help from your local
                    Information Technology group to set up a database server.
@@ -377,33 +377,33 @@ class ExportToDatabase(cpm.Module):
                    set up than MySQL and can more readily be run on your local computer
                    rather than requiring a database server. More information about
                    SQLite can be found `here`_.
-                
+
                 .. raw:: html
-                
+
                    <dl>
-                
+
                 .. raw:: html
-                
+
                    <dd>
-                
+
                 |image0|  If running this module on a computing cluster, there are a few
                 considerations to note:
-                
+
                 -  The *%(DB_MYSQL)s* option is well-suited for cluster use, since
                    multiple jobs can write to the database simultaneously.
                 -  The *%(DB_SQLITE)s* option is not as appropriate; a SQLite database
                    only allows access by one job at a time.
-                
+
                 .. raw:: html
-                
+
                    </dd>
-                
+
                 .. raw:: html
-                
+
                    </dl>
-                
+
                 .. _here: http://www.sqlite.org/
-                
+
                 .. |image0| image:: memory:%(TECH_NOTE_ICON)s
                 """ % globals())
 
@@ -431,13 +431,13 @@ class ExportToDatabase(cpm.Module):
                 table names are *Per\_Image* for the per-image table and *Per\_Object*
                 for the per-object table. Adding a prefix can be useful for bookkeeping
                 purposes.
-                
+
                 -  Select *%(YES)s* to add a user-specified prefix to the default table
                    names. If you want to distinguish multiple sets of data written to
                    the same database, you probably want to use a prefix.
                 -  Select *%(NO)s* to use the default table names. For a one-time export
                    of data, this option is fine.
-                
+
                 Whether you chose to use a prefix or not, CellProfiler will warn you if
                 your choice entails overwriting an existing table.""" % globals())
 
@@ -445,7 +445,7 @@ class ExportToDatabase(cpm.Module):
                 "Table prefix", "MyExpt_", doc="""
                 | *(Used if Add a prefix to table names?* is selected)
                 | Enter the table prefix you want to use.
-                
+
                 MySQL has a 64 character limit on the full name of the table. If the
                 combination of the table name and prefix exceeds this limit, you will
                 receive an error associated with this setting.""")
@@ -468,7 +468,7 @@ class ExportToDatabase(cpm.Module):
                   them directly to the database. If you request a CellProfiler Analyst
                   properties file or workspace file, it will also be saved to this
                   location. %(IO_FOLDER_CHOICE_HELP_TEXT)s
-                
+
                 | %(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s
                 | For instance, if you have a metadata tag named “Plate”, you can create
                   a per-plate folder by selecting one of the subfolder options and then
@@ -497,10 +497,10 @@ class ExportToDatabase(cpm.Module):
                   CellProfiler will save that object’s location columns in the
                   properties file so that CellProfiler Analyst centers cells using that
                   object’s center.
-                
+
                 You can manually change this choice in the properties file by editing
                 the *cell\_x\_loc* and *cell\_y\_loc* properties.
-                
+
                 Note that if there are no objects defined in the pipeline (e.g. if only
                 using MeasureImageQuality and/or Illumination Correction modules), a
                 warning will diplay until you choose *‘None’* for the subsequent
@@ -542,7 +542,7 @@ class ExportToDatabase(cpm.Module):
                   image is loaded from the path “/cellprofiler/images/” and you use a
                   url prepend of “http://mysite.com/”, CellProfiler Analyst will look
                   for your file at “http://mysite.com/cellprofiler/images/”
-                
+
                 If you are not using the web to access your files (i.e., they are
                 locally aceesible by your computer), leave this setting blank.""")
 
@@ -562,7 +562,7 @@ class ExportToDatabase(cpm.Module):
                 | If you are using a multi-well plate or microarray, you can select the
                   metadata corresponding to the plate here. If there is no plate
                   metadata associated with the image set, select *None*.
-                
+
                 %(USING_METADATA_HELP_REF)s.""" % globals())
 
         self.properties_well_metadata = cps.Choice(
@@ -572,7 +572,7 @@ class ExportToDatabase(cpm.Module):
                 | If you are using a multi-well plate or microarray, you can select the
                   metadata corresponding to the well here. If there is no well metadata
                   associated with the image set, select *None*.
-                
+
                 %(USING_METADATA_HELP_REF)s.""" % globals())
 
         self.properties_export_all_image_defaults = cps.Binary(
@@ -580,13 +580,13 @@ class ExportToDatabase(cpm.Module):
                 | *(Used only if creating a properties file)*
                 | Select *%(YES)s* to include information in the properties file for all
                   images. This option will do the following:
-                
+
                 -  All images loaded using the **Input** modules or saved in
                    **SaveImages** will be included.
                 -  The CellProfiler image name will be used for the *image\_name* field.
                 -  A channel color listed in the *image\_channel\_colors* field will be
                    assigned to the image by default order.
-                
+
                 Select *%(NO)s* to specify which images should be included or to
                 override the automatic values.""" % globals())
 
@@ -602,18 +602,18 @@ class ExportToDatabase(cpm.Module):
                 | **Please note that “groups” as defined by CellProfiler Analyst has
                   nothing to do with “grouping” as defined by CellProfiler in the Groups
                   module.**
-                
+
                 Select *%(YES)s* to define a “group” for your image data (for example,
                 when several images represent the same experimental sample), by
                 providing column(s) that identify unique images (the *image key*) to
                 another set of columns (the *group key*).
-                
+
                 | The format for a group in CPA is:
                 | ``group_SQL_<XXX> = <MySQL SELECT statement that returns image-key columns followed by group-key columns>``
                   For example, if you wanted to be able to group your data by unique
                   plate names, you could define a group called *SQL\_Plate* as follows:
                 | ``group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate FROM Per_Image``
-                
+
                 Grouping is useful, for example, when you want to aggregate counts for
                 each class of object and their scores on a per-group basis (e.g.,
                 per-well) instead of on a per-image basis when scoring with Classifier.
@@ -659,7 +659,7 @@ class ExportToDatabase(cpm.Module):
                   the objects in your data set and will be named with the label given
                   here. Note that the actual class table will be named by prepending the
                   table prefix (if any) to what you enter here.
-                
+
                 You can manually change this choice in the properties file by editing
                 the *class\_table* field. Leave this field blank if you are not using
                 the classifier or do not need the table written to the database
@@ -673,12 +673,12 @@ class ExportToDatabase(cpm.Module):
                   for. This setting will create and set a field called
                   *classification\_type*. Note that if you are not using the classifier
                   tool, this setting will be ignored.
-                
+
                 -  *%(CT_OBJECT)s:* Object-based classification, i.e., set
                    *classification\_type* to “object” (or leave it blank).
                 -  *%(CT_IMAGE)s:* Image-based classification, e.g., set
                    *classification\_type* to “image”.
-                
+
                 You can manually change this choice in the properties file by editing
                 the *classification\_type* field.
             """ % globals())
@@ -690,12 +690,12 @@ class ExportToDatabase(cpm.Module):
                   for. This setting will create and set a field called
                   *classification\_type*. Note that if you are not using the classifier
                   tool, this setting will be ignored.
-                
+
                 -  *%(CT_OBJECT)s:* Object-based classification, i.e., set
                    *classification\_type* to “object” (or leave it blank).
                 -  *%(CT_IMAGE)s:* Image-based classification, e.g., set
                    *classification\_type* to “image”.
-                
+
                 You can manually change this choice in the properties file by editing
                 the *classification\_type* field.""" % globals())
 
@@ -739,14 +739,14 @@ class ExportToDatabase(cpm.Module):
                 objects and you check the box for this option, **ExportToDatabase** will
                 create a column in the Per\_Image table called
                 “Mean\_Nuclei\_AreaShape\_Area”.
-                
+
                 You may not want to use **ExportToDatabase** to calculate these
                 population statistics if your pipeline generates a large number of
                 per-object measurements; doing so might exceed database column limits.
                 These columns can be created manually for selected measurements directly
                 in MySQL. For instance, the following SQL command creates the
                 Mean\_Nuclei\_AreaShape\_Area column:
-                
+
                 ``ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);                 UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area =                     (SELECT AVG(Nuclei_AreaShape_Area)                      FROM Per_Object                      WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);``
                      """ % globals())
 
@@ -764,11 +764,11 @@ class ExportToDatabase(cpm.Module):
                 “Per\_Well\_avg”, with a column called “Mean\_Nuclei\_AreaShape\_Area”.
                 Selecting all three aggregate measurements will create three per-well
                 tables, one for each of the measurements.
-                
+
                 The per-well functionality will create the appropriate lines in a .SQL
                 file, which can be run on your Per-Image and Per-Object tables to create
                 the desired per-well table.
-                
+
                 Note that this option is only available if you have extracted plate and
                 well metadata from the filename using the **Metadata** or **LoadData**
                 modules. It will write out a .sql file with the statements necessary to
@@ -786,11 +786,11 @@ class ExportToDatabase(cpm.Module):
                 “Median\_Nuclei\_AreaShape\_Area”. Selecting all three aggregate
                 measurements will create three per-well tables, one for each of the
                 measurements.
-                
+
                 The per-well functionality will create the appropriate lines in a .SQL
                 file, which can be run on your Per-Image and Per-Object tables to create
                 the desired per-well table.
-                
+
                 Note that this option is only available if you have extracted plate and
                 well metadata from the filename using the **Metadata** or **LoadData**
                 modules. It will write out a .sql file with the statements necessary to
@@ -808,11 +808,11 @@ class ExportToDatabase(cpm.Module):
                 “Mean\_Nuclei\_AreaShape\_Area”. Selecting all three aggregate
                 measurements will create three per-well tables, one for each of the
                 measurements.
-                
+
                 The per-well functionality will create the appropriate lines in a .SQL
                 file, which can be run on your Per-Image and Per-Object tables to create
                 the desired per-well table.
-                
+
                 Note that this option is only available if you have extracted plate and
                 well metadata from the filename using the **Metadata** or **LoadData**
                 modules. It will write out a .sql file with the statements necessary to
@@ -824,7 +824,7 @@ class ExportToDatabase(cpm.Module):
                 [O_ALL, O_NONE, O_SELECT], doc="""
                 This option lets you choose the objects whose measurements will be saved
                 in the Per\_Object and Per\_Well(s) database tables.
-                
+
                 -  *%(O_ALL)s:* Export measurements from all objects.
                 -  *%(O_NONE)s:* Do not export data to a Per\_Object table. Save only
                    Per\_Image or Per\_Well measurements (which nonetheless include
@@ -848,9 +848,9 @@ class ExportToDatabase(cpm.Module):
                   that can be exported by this setting; see the **TrackObjects**,
                   **RelateObjects**, **MeasureObjectNeighbors** and the **Identify**
                   modules for more details.
-                
+
                 This view has the following columns:
-                
+
                 -  *%(COL_MODULE_NUMBER)s*: the module number of the module that
                    produced the relationship. The first module in the pipeline is module
                    #1, etc.
@@ -878,7 +878,7 @@ class ExportToDatabase(cpm.Module):
                 [OT_COMBINE, OT_PER_OBJECT, OT_VIEW], doc="""
                 | **ExportToDatabase** can create either one table for each type of
                   object exported or a single object table.
-                
+
                 -  *%(OT_PER_OBJECT)s* creates one table for each object type you
                    export. The table name will reflect the name of your objects. The
                    table will have one row for each of your objects. You can write SQL
@@ -953,7 +953,7 @@ class ExportToDatabase(cpm.Module):
                   such as when the measurements to be written have changed, the data
                   tables must be dropped completely.
                 | You can choose fromm three options to conrtol overwriting behavior:
-                
+
                 -  *%(OVERWRITE_NEVER)s:* **ExportToDatabase** will ask before dropping
                    and recreating tables unless you are running headless. CellProfiler
                    will exit if running headless if the tables exist and this option is
@@ -982,13 +982,13 @@ class ExportToDatabase(cpm.Module):
                         | *(Used only if creating a properties file and specifiying the image
                           information)*
                         | Choose image name to include it in the properties file of images.
-                        
+
                         The images in the drop-down correspond to images that have been:
-                        
+
                         -  Loaded using one of the **Load** modules.
                         -  Saved with the **SaveImages** module, with the corresponding file and
                            path information stored.
-                        
+
                         If you do not see your desired image listed, check the settings on these
                         modules.
                         """))
@@ -1000,7 +1000,7 @@ class ExportToDatabase(cpm.Module):
                           information)*
                         | Select *%(YES)s* to use the image name as given above for the
                           displayed name.
-                        
+
                         Select *%(NO)s* to name the file yourself.
                         """ % globals()))
 
@@ -1044,7 +1044,7 @@ class ExportToDatabase(cpm.Module):
                       data group)*
                     | To define a group, enter the image key columns followed by group key
                       columns, each separated by commas.
-                    
+
                     | In CellProfiler, the image key column is always given the name as
                       *ImageNumber*; group keys are typically metadata columns which are
                       always prefixed with *Image\_Metadata\_*. For example, if you wanted
@@ -1053,7 +1053,7 @@ class ExportToDatabase(cpm.Module):
                     | ``group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate, Image_Metadata_Well FROM Per_Image``
                     | For this example, the columns to enter in this setting would be:
                     | ``ImageNumber, Image_Metadata_Plate, Image_Metadata_Well``
-                    
+
                     Groups are specified as MySQL statements in the properties file, but
                     please note that the full SELECT and FROM clauses will be added
                     automatically, so there is no need to enter them here.
@@ -1087,7 +1087,7 @@ class ExportToDatabase(cpm.Module):
                         | ``Image_Metadata_Plate = '1'``
                         | Here is a filter returns only images from with a gene column that
                           starts with CDK: ``Image_Metadata_Gene REGEXP 'CDK.*'``
-                        
+
                         Filters are specified as MySQL statements in the properties file, but
                         please note that the full SELECT and FROM clauses (as well as the WHERE
                         keyword) will be added automatically, so there is no need to enter them
@@ -1112,7 +1112,7 @@ class ExportToDatabase(cpm.Module):
                 | *(Used only if creating a workspace file)*
                 | Select what display tool in CPA you want to use to open the
                   measurements.
-                
+
                 -  %(W_SCATTERPLOT)s
                 -  %(W_HISTOGRAM)s
                 -  %(W_DENSITYPLOT)s
@@ -1123,7 +1123,7 @@ class ExportToDatabase(cpm.Module):
             return """
             | *(Used only if creating a workspace file)*
             | You can plot two types of measurements:
-            
+
             -  *Image:* For a per-image measurement, one numerical value is recorded
                for each image analyzed. Per-image measurements are produced by many
                modules. Many have **MeasureImage** in the name but others do not
@@ -1149,7 +1149,7 @@ class ExportToDatabase(cpm.Module):
             return """| *(Used only if creating a workspace file and an index is plotted)*
             | Select the index to be plot on the selected axis. Two options are
               available:
-            
+
             -  *%(C_IMAGE_NUMBER)s:* In CellProfiler, the unique identifier for
                each image is always given this name. Selecting this option allows
                you to plot a single measurement for each image indexed by the order

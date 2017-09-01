@@ -94,15 +94,6 @@ PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 OMERO_IMAGEID_PIC = 'OMERO_imageID_screenshot.png'
 OMERO_LOGIN_PIC = 'OMERO_login_screenshot.png'
 
-# Module specific help
-PROTIP_RECOMEND_ICON = "thumb-up.png"
-PROTIP_AVOID_ICON = "thumb-down.png"
-TECH_NOTE_ICON = "gear.png"
-IMAGES_FILELIST_BLANK = "Images_FilelistPanel_Blank.png"
-IMAGES_FILELIST_FILLED = "Images_FilelistPanel_Filled.png"
-MEASUREOBJSIZESHAPE_ECCENTRICITY = 'MeasureObjectSizeShape_Eccentricity.png'
-IMAGES_USING_RULES_ICON = 'Images_UsingRules.png'
-GROUPS_DISPLAY_TABLE = 'Groups_ExampleDisplayTable.png'
 
 ####################################################
 #
@@ -115,31 +106,6 @@ IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The I
 DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Named"""
-USING_METADATA_HELP_REF = """Please see the <b>Metadata</b> module for more details on metadata collection and usage"""
-
-USING_METADATA_TAGS_REF = """
-You can insert a previously defined metadata tag by either using:
-<ul><li>The insert key</li>
-<li>A right mouse button click inside the control</li>
-<li>In Windows, the Context menu key, which is between the Windows key and Ctrl key </li></ul>
-The inserted metadata tag will appear in green. To change a previously inserted metadata tag,
-navigate the cursor to just before the tag and either:
-<ul><li>Use the up and down arrows to cycle through possible values.</li>
-<li>Right-click on the tag to display and select the available values.</li></ul>"""
-
-USING_METADATA_GROUPING_HELP_REF = """Please see the <b>Groups</b> module for more details on the
-proper use of metadata for grouping"""
-
-RETAINING_OUTLINES_HELP = """Select <i>%(YES)s</i> to retain the outlines of the new objects
-for later use in the pipeline. For example, a common use is for quality control purposes by
-overlaying them on your image of choice using the <b>OverlayOutlines</b> module and then saving
-the overlay image with the <b>SaveImages</b> module.""" % locals()
-
-NAMING_OUTLINES_HELP = """
-<i>(Used only if the outline image is to be retained for later use in the pipeline)</i> <br>
-Enter a name for the outlines of the identified
-objects. The outlined image can be selected in downstream modules by selecting
-them from any drop-down image list."""
 
 ##################################################
 #
@@ -505,76 +471,6 @@ using a <b>SaveImages</b> module.</p>
 data in a format you prefer. See <i>%(USING_YOUR_OUTPUT_REF)s</i> for more details.</p>
 """ % globals()
 
-REGEXP_HELP_REF = """
-Patterns are specified using
-combinations of metacharacters and literal characters. There are a few
-classes of metacharacters, partially listed below. Some helpful links follow:
-<ul>
-<li>A more extensive explanation of regular expressions can be found
-<a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a></li>
-<li>A helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a></li>
-<li><a href="http://pythex.org/">Pythex</a> provides quick way to test your regular expressions. Here is an
-<a href="http://pythex.org/?regex=Channel%5B1-2%5D-%5B0-9%5D%7B2%7D-(%3FP%3CWellRow%3E%5BA-H%5D)-(%3FP%3CWellColumn%3E%5B0-9%5D%7B2%7D)%5C.tif&test_string=Channel1-01-A-01.tif&ignorecase=0&multiline=0&dotall=0&verbose=0">example</a>
-to capture information from a common microscope nomenclature.</li>
-</ul>
-
-<p>The following metacharacters match exactly one character from its respective set of characters:<br><br>
-<table border="1">
-<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
-<tr><td>.</td><td>Any character</td></tr>
-<tr><td>[]</td><td>Any character contained within the brackets</td></tr>
-<tr><td>[^]</td><td>Any character not contained within the brackets</td></tr>
-<tr><td>\w</td><td>A word character [a-z_A-Z0-9]</td></tr>
-<tr><td>\W</td><td>Not a word character [^a-z_A-Z0-9]</td></tr>
-<tr><td>\d</td><td>A digit [0-9]</td></tr>
-<tr><td>\D</td><td>Not a digit [^0-9]</td></tr>
-<tr><td>\s</td><td>Whitespace [ \\t\\r\\n\\f\\v]</td></tr>
-<tr><td>\S</td><td>Not whitespace [^ \\t\\r\\n\\f\\v]</td></tr>
-</table>
-
-<p>The following metacharacters are used to logically group subexpressions
-or to specify context for a position in the match. These metacharacters
-do not match any characters in the string:<br><br>
-<table border="1">
-<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
-<tr><td>( )</td><td>Group subexpression</td></tr>
-<tr><td>|</td><td>Match subexpression before or after the |</td></tr>
-<tr><td>^</td><td>Match expression at the start of string</td></tr>
-<tr><td>$</td><td>Match expression at the end of string</td></tr>
-<tr><td>\&lt;</td><td>Match expression at the start of a word</td></tr>
-<tr><td>\&gt;</td><td>Match expression at the end of a word</td></tr>
-</table>
-
-<p>The following metacharacters specify the number of times the previous
-metacharacter or grouped subexpression may be matched:<br><br>
-<table border="1">
-<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
-<tr><td>*</td><td>Match zero or more occurrences</td></tr>
-<tr><td>+</td><td>Match one or more occurrences</td></tr>
-<tr><td>?</td><td>Match zero or one occurrence</td></tr>
-<tr><td>{n,m}</td><td>Match between n and m occurrences</td></tr>
-</table>
-
-<p>Characters that are not special metacharacters are all treated literally
-in a match. To match a character that is a special metacharacter, escape
-that character with a '\\'. For example '.' matches any character, so to
-match a '.' specifically, use '\.' in your pattern.
-
-Examples:
-<ul>
-<li><code>[trm]ail</code> matches 'tail' or 'rail' or 'mail'.</li>
-<li><code>[0-9]</code> matches any digit between 0 to 9.</li>
-<li><code>[^Q-S]</code> matches any character other than 'Q' or 'R' or 'S'.</li>
-<li><code>[[]A-Z]</code> matches any upper case alphabet along with square brackets.</li>
-<li><code>[ag-i-9]</code> matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'.</li>
-<li><code>[a-p]*</code> matches '' or 'a' or 'aab' or 'p' etc.</li>
-<li><code>[a-p]+</code> matches  'a' or 'abc' or 'p' etc.</li>
-<li><code>[^0-9]</code> matches any string that is not a number.</li>
-<li><code>^[0-9]*$</code> matches either a blank string or a natural number.</li>
-<li><code>^-[0-9]+$|^\+?[0-9]+$</code> matches any integer.</li>
-</ul>
-"""
-
 SPREADSHEETS_DATABASE_HELP = """
 <p>The most common form of output for cellular analysis is a <i>spreadsheet<i>, which is an application which
 tabulates data values.
@@ -673,7 +569,8 @@ the module source code, so any changes to the code will be reflected immediately
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
 Selecting <i>Choose Image Group</i> will allow you to choose the movie file, and <i>Choose Image Set</i>
 will let you choose the individual movie frame from that file.
-<p>%(USING_METADATA_GROUPING_HELP_REF)s</p>
+<p>Please see the <b>Groups</b> module for more details on the proper use of
+metadata for grouping.</p>
 </p>
 """ % globals()
 
@@ -1830,15 +1727,6 @@ HELP_ON_MODULE_BUT_NONE_SELECTED = (
     "You do not have any modules in the pipeline, yet. Add a module to the "
     'pipeline using the "+" button or by using File > Load Pipeline.')
 
-HELP_ON_MEASURING_DISTANCES = """To measure distances in an open image, use the "Measure
-length" tool under <i>Tools</i> in the display window menu bar. If you click on an image
-and drag, a line will appear between the two endpoints, and the distance between them shown at the right-most
-portion of the bottom panel."""
-
-HELP_ON_PIXEL_INTENSITIES = """To view pixel intensities in an open image, use the
-pixel intensity tool which is available in any open display window. When you move
-your mouse over the image, the pixel intensities will appear in the bottom bar of the display window."""
-
 HELP_ON_FILE_LIST = """The <i>File List</i> panel displays the image files
 that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
 and <b>Groups</b> modules. You can drop files and directories into this window
@@ -1855,49 +1743,6 @@ list. Uncheck it to see only the files that pass the rules criteria in the
 <li><i>Expand tree</i>: Expand all of the folders in the tree</li>
 <li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
 """
-
-FILTER_RULES_BUTTONS_HELP = """
-Clicking the rule menus shows you all the file <i>attributes</i>, <i>operators</i> and <i>conditions</i> you can specify to narrow down
-the image list.
-<ol>
-<li>For each rule, first select the <i>attribute</i> that the rule is to be based on. For example, you can select "File"
-to define a rule that will filter files on the basis of their filename. </li>
-<li>The <i>operator</i> drop-down is then updated with operators applicable to the attribute you selected. For example, if you select
-"File" as the attribute, the operator
-menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
-select "Extension" as the attribute, you can choose the logical operators "Is" or "Is not" from the menu.</li>
-<li>In the operator drop-down menu, select the operator you want to use. For example,
-if you want to match data exactly, you may want the "Exactly match" or the "Is" operator. If you want the
-condition to be more loose, select an operator such as "Contains".</li>
-<li>Use the <i>condition</i> box to type the condition you want to match. The more
-you type, the more specific the condition is.
-<ul>
-<li>As an example, if you create a new filter and select
-<i>File</i> as the attribute, then select "Does" and "Contain" as the operators, and type "Channel" as the condition,
-the filter finds all files that include the text "Channel", such as "Channel1.tif" "Channel2.jpg", "1-Channel-A01.BMP" and so on.</li>
-<li>If you select "Does" and "Start with" as the operators and "Channel1" in the Condition box,
-the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
-<table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_USING_RULES_ICON)s"></td></tr>
-</table>
-</li>
-You can also create regular expressions (an advanced syntax for pattern matching; see <a href="#regexp">below</a>) in order to select particular files.
-</ol>
-<p>To add another rule, click the plus  buttons to the right of each rule. Subtract an existing rule by clicking the
-minus button.</p>
-<p>You can also link a set of rules by choosing the logical expression <i>All</i> or <i>Any</i>. If you use
-<i>All</i> logical expression, all the rules must be true for a file to be included in the File list. If
-you use the <i>Any</i> option, only one of the conditions has to be met for a file to be included.</p>
-<p>If you want to create more complex rules (e.g, some criteria matching all rules and others matching any),
-you can create sets of rules, by clicking the ellipsis button (to the right of the plus button).
-Repeat the above steps to add more rules to the filter until you have
-all the conditions you want to include.</p>
-
-<a name="regexp"><h5>Details on regular expressions</h5></a>
-<p>A <i>regular expression</i> is a general term refering to a method of searching for pattern matches in text. There is a high
-learning curve to using them, but are quite powerful once you understand the basics.</p>
-<p>%(REGEXP_HELP_REF)s</p>
-""" % globals()
 
 #########################################################
 #

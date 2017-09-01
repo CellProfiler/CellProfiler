@@ -161,6 +161,8 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
+import _help
+
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"
@@ -337,13 +339,13 @@ balance between these two considerations:
         self.use_outlines = cellprofiler.setting.Binary(
             "Retain outlines of the identified secondary objects?",
             False,
-            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+            doc=_help.RETAINING_OUTLINES_HELP
         )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
             "Name the outline image",
             "SecondaryOutlines",
-            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+            doc=_help.NAMING_OUTLINES_HELP
         )
 
         self.wants_discard_edge = cellprofiler.setting.Binary(
@@ -412,7 +414,7 @@ segmentation.""")
 *(Used only if associated primary objects are discarded)*
 
 {RETAINING_OUTLINES_HELP:s}""".format(**{
-                "RETAINING_OUTLINES_HELP": cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+                "RETAINING_OUTLINES_HELP": _help.RETAINING_OUTLINES_HELP
             })
         )
 

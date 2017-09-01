@@ -92,7 +92,7 @@ from cellprofiler.preferences import \
     IO_FOLDER_CHOICE_HELP_TEXT, \
     get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
     get_headless
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
+from cellprofiler.modules._help import REGEXP_HELP_REF, USING_METADATA_GROUPING_HELP_REF
 
 from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \

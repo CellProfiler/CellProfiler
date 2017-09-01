@@ -35,8 +35,8 @@ on metadata usage and syntax. Briefly, **LoadImages** can extract
 metadata from the image filename using pattern-matching strings, for
 grouping similar images together for the analysis run and for
 metadata-specfic options in other modules; see the settings help for
-`*Where to extract metadata*`_, and if an option for that setting is
-selected, `*Regular expression that finds metadata in the file name*`_
+*Where to extract metadata*, and if an option for that setting is
+selected, *Regular expression that finds metadata in the file name*
 for the necessary syntax.
 
 Measurements made by this module

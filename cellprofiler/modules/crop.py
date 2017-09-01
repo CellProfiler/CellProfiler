@@ -1,27 +1,32 @@
-'''<b>Crop</b> crops or masks an image.
-<hr>
-This module crops images into a rectangle, ellipse, an arbitrary shape provided by
-you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created
-using a previous <b>Crop</b> module in the pipeline.
+# coding=utf-8
 
-<p>Keep in mind that cropping changes the size of your images, which may
+"""
+**Crop** crops or masks an image.
+
+This module crops images into a rectangle, ellipse, an arbitrary shape
+provided by you, the shape of object(s) identified by an **Identify**
+module, or a shape created using a previous **Crop** module in the
+pipeline.
+
+Keep in mind that cropping changes the size of your images, which may
 have unexpected consequences. For example, identifying objects in a
 cropped image and then trying to measure their intensity in the
-<i>original</i> image will not work because the two images are not the same
-size.</p>
+*original* image will not work because the two images are not the same
+size.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>AreaRetainedAfterCropping:</i> The area of the image left after cropping.</li>
-<li><i>OriginalImageArea:</i> The area of the original input image.</li>
-</ul>
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<i>Special note on saving images:</i> You can save the cropping shape that you have
-defined in this module (e.g., an ellipse
-you drew) so that you can use the <i>Image</i> option in future analyses. To do
-this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b>
-module help for more information on saving cropping shapes.
-'''
+-  *AreaRetainedAfterCropping:* The area of the image left after
+   cropping.
+-  *OriginalImageArea:* The area of the original input image.
+
+*Special note on saving images:* You can save the cropping shape that
+you have defined in this module (e.g., an ellipse you drew) so that you
+can use the *Image* option in future analyses. To do this, save either
+the mask or cropping in **SaveImages**. See the **SaveImages** module
+help for more information on saving cropping shapes.
+"""
 
 import logging
 import math

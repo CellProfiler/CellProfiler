@@ -1,13 +1,19 @@
-"""<b>Convert Objects To Image </b> converts objects you have identified into an image.
-<hr>
+# coding=utf-8
+
+"""
+ConvertObjectsToImage
+=====================
+
+**ConvertObjectsToImage** converts objects you have identified into
+an image.
 
 This module allows you to take previously identified objects and convert
-them into an image according to a colormap you select, which can then be saved
-with the <b>SaveImages</b> modules.
+them into an image according to a colormap you select, which can then be
+saved with the **SaveImages** modules.
 
-<p>If you would like to save your objects but do not need a colormap,
-you can by bypass this module and use the <b>SaveImages</b> module directly
-by specifying "Objects" as the type of image to save.
+If you would like to save your objects but do not need a colormap, you
+can by bypass this module and use the **SaveImages** module directly by
+specifying “Objects” as the type of image to save.
 """
 
 import centrosome.cpmorphology
@@ -50,36 +56,31 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
                 "Grayscale",
                 "uint16"
             ],
-            doc="""Select which colors the resulting image should use. You have the following options:
-            <ul>
-                <li>
-                    <i>Color:</i> Allows you to choose a colormap that will produce jumbled colors for your objects.
-                </li>
-                <li>
-                    <i>Binary (black & white):</i> All object pixels will be assigned 1 and all background pixels will
-                    be assigned 0, creating a binary image.
-                </li>
-                <li>
-                    <i>Grayscale:</i> Gives each object a graylevel pixel intensity value corresponding to its
-                    number (also called label), so it usually results in objects on the left side of the image being
-                    very dark, progressing toward white on the right side of the image.
-                </li>
-                <li>
-                    <i>uint16:</i> Assigns each object a different number, from 1 to 65535 (the numbers that
-                    you can put in a 16-bit integer) and numbers all pixels in each object with the object's number.
-                    This format can be written out as a .mat or .tiff file if you want to process the label matrix
-                    image using another program.
-                </li>
-            </ul>
-            You can choose <i>Color</i> with a <i>Gray</i> colormap to produce jumbled gray objects."""
+            doc="""Select which colors the resulting image should use. You have the
+            following options:
+            -  *Color:* Allows you to choose a colormap that will produce jumbled
+               colors for your objects.
+            -  *Binary (black & white):* All object pixels will be assigned 1 and
+               all background pixels will be assigned 0, creating a binary image.
+            -  *Grayscale:* Gives each object a graylevel pixel intensity value
+               corresponding to its number (also called label), so it usually
+               results in objects on the left side of the image being very dark,
+               progressing toward white on the right side of the image.
+            -  *uint16:* Assigns each object a different number, from 1 to 65535
+               (the numbers that you can put in a 16-bit integer) and numbers all
+               pixels in each object with the object’s number. This format can be
+               written out as a .npy or .tiff file if you want to process the label
+               matrix image using another program.
+            You can choose *Color* with a *Gray* colormap to produce jumbled gray
+            objects."""
         )
 
         self.colormap = cellprofiler.setting.Colormap(
             "Select the colormap",
-            doc="""<i>(Used only if "<i>Color</i>" output image selected)</i>
-            <br>
-            Choose the colormap to be used, which affects how the objects are colored. You can look up your default
-            colormap under <i>File > Preferences</i>."""
+            doc="""*(Used only if "*Color*" output image selected)*
+            Choose the colormap to be used, which affects how the objects are
+            colored. You can look up your default colormap under *File >
+            Preferences*."""
         )
 
     def settings(self):

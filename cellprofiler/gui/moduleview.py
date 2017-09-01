@@ -3,6 +3,7 @@
 """
 
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.html.utils
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -2045,7 +2046,11 @@ class ModuleView(object):
                             name=name)
 
         def callback(event):
-            dialog = htmldialog.HTMLDialog(self.__module_panel, title, content)
+            dialog = htmldialog.HTMLDialog(
+                self.__module_panel,
+                title,
+                cellprofiler.gui.html.utils.rst_to_html_fragment(content)
+            )
             dialog.CentreOnParent()
             dialog.Show()
 
@@ -2106,9 +2111,12 @@ class ModuleView(object):
     def __on_radiobox_change(self, event, setting, control):
         if not self.__handle_change:
             return
+
         setting.on_event_fired(control.GetStringSelection() == "Yes")
-        self.on_value_change(
-            setting, control, control.GetStringSelection(), event)
+
+        self.on_value_change(setting, control, control.GetStringSelection(), event)
+
+        self.__module.on_setting_changed(setting, self.__pipeline)
 
     def __on_combobox_change(self, event, setting, control):
         if not self.__handle_change:
@@ -4455,7 +4463,7 @@ class ValidationRequest(object):
         module - module in question
         callback - call this callback if there is an error. Do it on the GUI thread
         """
-        self.pipeline = cache_pipeline(pipeline)
+        self.pipeline = pipeline
         self.module_num = module.module_num
         self.test_mode = pipeline.test_mode
         self.callback = callback
@@ -4464,18 +4472,21 @@ class ValidationRequest(object):
     def cancel(self):
         self.cancelled = True
 
-
-def cache_pipeline(pipeline):
-    """Return a single cached copy of a pipeline to limit the # of copies"""
-    d = getattr(request_pipeline_cache, "d", None)
-    if d is None:
-        d = weakref.WeakValueDictionary()
-        setattr(request_pipeline_cache, "d", d)
-    settings_hash = pipeline.settings_hash()
-    result = d.get(settings_hash)
-    if result is None:
-        result = d[settings_hash] = pipeline.copy(False)
-    return result
+#
+# Cacheing is not compatible with the current pattern of sharing state between GUI components. E.g., the pipeline object
+# stored in the ModuleView constructor will never be updated, yet it is used to validate current state.
+#
+# def cache_pipeline(pipeline):
+#     """Return a single cached copy of a pipeline to limit the # of copies"""
+#     d = getattr(request_pipeline_cache, "d", None)
+#     if d is None:
+#         d = weakref.WeakValueDictionary()
+#         setattr(request_pipeline_cache, "d", d)
+#     settings_hash = pipeline.settings_hash()
+#     result = d.get(settings_hash)
+#     if result is None:
+#         result = d[settings_hash] = pipeline.copy(False)
+#     return result
 
 
 def validate_module(pipeline, module_num, test_mode, callback):

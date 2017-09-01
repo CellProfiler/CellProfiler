@@ -1,17 +1,21 @@
-'''<b>Invert For Printing</b> inverts fluorescent images into 
+# coding=utf-8
+
+"""
+InvertForPrinting
+=================
+
+**InvertForPrinting** inverts fluorescent images into
 brightfield-looking images for printing.
-<hr>
-This module turns a single or multi-channel immunofluorescent-stained image
-into an image that resembles a brightfield image stained with similarly
-colored stains, which generally prints better.
 
-You can operate on up to three grayscale images (representing
-the red, green, and blue channels of a color image) or on an image that is
-already a color image. The module can produce either three grayscale
-images or one color image as output.
-
-If you want to invert the grayscale intensities of an image, use <b>ImageMath</b>.
-'''
+This module turns a single or multi-channel immunofluorescent-stained
+image into an image that resembles a brightfield image stained with
+similarly colored stains, which generally prints better. You can operate
+on up to three grayscale images (representing the red, green, and blue
+channels of a color image) or on an image that is already a color image.
+The module can produce either three grayscale images or one color image
+as output. If you want to invert the grayscale intensities of an image,
+use **ImageMath**.
+"""
 
 import numpy as np
 
@@ -32,64 +36,48 @@ class InvertForPrinting(cpm.Module):
 
     def create_settings(self):
         # Input settings
-        self.input_color_choice = cps.Choice(
-                "Input image type", CC_ALL, doc="""
-            Specify whether you are combining several grayscale images or
-            loading a single color image.""")
+        self.input_color_choice = cps.Choice("Input image type", CC_ALL, doc="""\
+Specify whether you are combining several grayscale images or loading a single color image.""")
 
-        self.wants_red_input = cps.Binary(
-                "Use a red image?", True, doc="""
-            Select <i>%(YES)s</i> to specify an image to use for the red channel.""" % globals())
+        self.wants_red_input = cps.Binary("Use a red image?", True, doc="""\
+Select *%(YES)s* to specify an image to use for the red channel.""" % globals())
 
         self.red_input_image = cps.ImageNameSubscriber(
-                "Select the red image", cps.NONE)
+"Select the red image", cps.NONE)
 
-        self.wants_green_input = cps.Binary(
-                "Use a green image?", True, doc="""
-            Select <i>%(YES)s</i> to specify an image to use for the green channel.""" % globals())
+        self.wants_green_input = cps.Binary("Use a green image?", True, doc="""\
+Select *%(YES)s* to specify an image to use for the green channel.""" % globals())
 
-        self.green_input_image = cps.ImageNameSubscriber(
-                "Select the green image", cps.NONE)
+        self.green_input_image = cps.ImageNameSubscriber("Select the green image", cps.NONE)
 
-        self.wants_blue_input = cps.Binary(
-                "Use a blue image?", True, doc="""
-            Select <i>%(YES)s</i> to specify an image to use for the blue channel.""" % globals())
+        self.wants_blue_input = cps.Binary("Use a blue image?", True, doc="""\
+Select *%(YES)s* to specify an image to use for the blue channel.""" % globals())
 
-        self.blue_input_image = cps.ImageNameSubscriber(
-                "Select the blue image", cps.NONE)
+        self.blue_input_image = cps.ImageNameSubscriber("Select the blue image", cps.NONE)
 
-        self.color_input_image = cps.ImageNameSubscriber(
-                "Select the color image", cps.NONE, doc='''
-            Select the color image to use.''')
+        self.color_input_image = cps.ImageNameSubscriber("Select the color image", cps.NONE, doc="""\
+Select the color image to use.""")
 
         # Output settings
-        self.output_color_choice = cps.Choice(
-                "Output image type", CC_ALL, doc="""
-            Specify whether you want to produce several grayscale images or one color image.""")
+        self.output_color_choice = cps.Choice("Output image type", CC_ALL, doc="""\
+Specify whether you want to produce several grayscale images or one color image.""")
 
-        self.wants_red_output = cps.Binary(
-                "Select <i>%(YES)s</i> to produce a red image." % globals(), True)
+        self.wants_red_output = cps.Binary("Select *%(YES)s* to produce a red image." % globals(), True)
 
-        self.red_output_image = cps.ImageNameProvider(
-                "Name the red image", "InvertedRed")
+        self.red_output_image = cps.ImageNameProvider("Name the red image", "InvertedRed")
 
-        self.wants_green_output = cps.Binary(
-                "Select <i>%(YES)s</i> to produce a green image." % globals(), True)
+        self.wants_green_output = cps.Binary("Select *%(YES)s* to produce a green image." % globals(), True)
 
-        self.green_output_image = cps.ImageNameProvider(
-                "Name the green image", "InvertedGreen")
+        self.green_output_image = cps.ImageNameProvider("Name the green image", "InvertedGreen")
 
-        self.wants_blue_output = cps.Binary(
-                "Select <i>%(YES)s</i> to produce a blue image." % globals(), True)
+        self.wants_blue_output = cps.Binary("Select *%(YES)s* to produce a blue image." % globals(), True)
 
-        self.blue_output_image = cps.ImageNameProvider(
-                "Name the blue image", "InvertedBlue")
+        self.blue_output_image = cps.ImageNameProvider("Name the blue image", "InvertedBlue")
 
-        self.color_output_image = cps.ImageNameProvider(
-                "Name the inverted color image",
-                "InvertedColor", doc='''
-            <i>(Used only when producing a color output image)</i><br>
-            Enter a name for the inverted color image.''')
+        self.color_output_image = cps.ImageNameProvider("Name the inverted color image","InvertedColor", doc="""\
+*(Used only when producing a color output image)*
+
+Enter a name for the inverted color image.""")
 
     def settings(self):
         '''Return the settings as saved in the pipeline'''

@@ -1,43 +1,50 @@
-'''<b>Unmix Colors</b> creates separate images per dye stain for histologically
-stained images.
-<hr>
+# coding=utf-8
+
+"""
+UnmixColors
+===========
+
+**Unmix Colors** creates separate images per dye stain for
+histologically stained images.
+
 This module creates separate grayscale images from a color image stained
 with light-absorbing dyes. Dyes are assumed to absorb an amount of light
-in the red, green and blue channels that increases proportionally in each
-channel with increasing amounts of stain; the hue does not shift with
-increasing staining.
+in the red, green and blue channels that increases proportionally in
+each channel with increasing amounts of stain; the hue does not shift
+with increasing staining. The module separates two or more stains from a
+background, producing grayscale images. There are several pre-set dye
+combinations as well as a custom mode that allows a user to calibrate
+using two images stained with a single dye each. Some commonly known
+stains must be specified by the individual dye components. For example:
 
-The module separates two or more stains from a background, producing grayscale
-images. There are several pre-set dye combinations as well as a custom
-mode that allows a user to calibrate using two images stained with a single
-dye each.
+-  Azan-Mallory: Anilline Blue + Azocarmine + Orange-G
+-  Giemsa: Methylene Blue or Eosin
+-  Masson Trichrome: Methyl blue + Ponceau-Fuchsin
 
-Some commonly known stains must be specified by the individual dye components. For
-example:
-<ul>
-<li>Azan-Mallory: Anilline Blue + Azocarmine + Orange-G</li>
-<li>Giemsa: Methylene Blue or Eosin</li>
-<li>Masson Trichrome: Methyl blue + Ponceau-Fuchsin</li>
-</ul>
-If there are non-stained cells/components that you also want to separate by color,
-choose the stain that closest resembles the color you want, or enter a custom value.
+If there are non-stained cells/components that you also want to separate
+by color, choose the stain that closest resembles the color you want, or
+enter a custom value. Please note that if you are looking to simply
+split a color image into red, green and blue components, use the
+**ColorToGray** module rather than **UnmixColors**.
 
-Please note that if you are looking to simply split a color image into red, green and blue
-components, use the <b>ColorToGray</b> module rather than <b>UnmixColors</b>.
+Technical notes
+^^^^^^^^^^^^^^^
 
-<h4>Technical notes</h4>
-This code is adapted from the ImageJ plugin, <i>Colour_Deconvolution.java</i>
-(described <a href="http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html">here</a>)
-written by A.C. Ruifrok, whose paper forms the basis for this code.
+This code is adapted from the ImageJ plugin,
+*Colour\_Deconvolution.java* (described `here`_) written by A.C.
+Ruifrok, whose paper forms the basis for this code.
 
-<h4>References</h4>
-<ul>
-<li>Ruifrok AC, Johnston DA. (2001) "Quantification of histochemical staining by color
-deconvolution." <i>Analytical & Quantitative Cytology & Histology</i>, 23: 291-299.</li>
-</ul>
+References
+^^^^^^^^^^
 
-See also <b>ColorToGray</b>.
-'''
+-  Ruifrok AC, Johnston DA. (2001) “Quantification of histochemical
+   staining by color deconvolution.” *Analytical & Quantitative Cytology
+   & Histology*, 23: 291-299.
+
+See also **ColorToGray**.
+
+.. _here: http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html
+"""
 
 import numpy as np
 from scipy.linalg import lstsq

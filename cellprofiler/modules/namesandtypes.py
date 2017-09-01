@@ -1,8 +1,6 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, \
-    EXAMPLE_DAPI_PIC, EXAMPLE_GFP_PIC
+# coding=utf-8
 
-__doc__ = """
+"""
 The <b>NamesAndTypes</b> module gives images and/or channels a meaningful name to a particular image or channel,
 as well as defining the relationships between images to create an image set.
 <hr>
@@ -18,8 +16,8 @@ is acquired by the microscope. Sometimes, the two channels are combined into a s
 times they are stored as two separate grayscale images, as in the figure.
 <table border="0" cellpadding="10" cellspacing="4" width="100%%">
 <tr>
-<td align="right"><img src="memory:%(EXAMPLE_DAPI_PIC)s"></td>
-<td align="left"><img src="memory:%(EXAMPLE_GFP_PIC)s"></td>
+<td align="right"><img src="memory:dapi.png"></td>
+<td align="left"><img src="memory:gfp.png"></td>
 </tr>
 </table>
 For the purposes of analysis, you want the DAPI and GFP image for a given site to be loaded and processed
@@ -67,19 +65,20 @@ to identify the channel. You can press this button as many times as needed to di
 sets obtained. When you complete your pipeline and perform an analysis run, CellProfiler will process the
 image sets in the order shown.</p>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(NAMESANDTYPES_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:NamesAndTypes_ExampleDisplayTable.png"></td></tr>
 </table>
 
-<h4>Available measurements</h4>
+<h4>Measurements made by this module</h4>
 <ul>
 <li><i>FileName, PathName:</i> The prefixes of the filename and location, respectively, of each image set
 written to the per-image table.</li>
 <li><i>ObjectFileName, ObjectPathName:</i> (For used for images loaded as objects) The prefixes of the
 filename and location, respectively, of each object set written to the per-image table.</li>
 </ul>
-""" % globals()
+"""
 
 import logging
+import cellprofiler.icons
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +198,7 @@ LOAD_AS_CHOICE_HELP_TEXT = """
     <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
     is an image which has been generated for the purpose of correcting uneven
     illumination/lighting/shading or to reduce uneven background in images. Typically,
-    is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and
+    is a file in the NumPy .npy format. See <b>CorrectIlluminationCalculate</b> and
     <b>CorrectIlluminationApply</b> for more details. </li>
     <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image
     is a label matrix and you want to obtain the objects that it defines.
@@ -540,7 +539,7 @@ class NamesAndTypes(cpm.Module):
             Duplicate the channel specification, creating a new image assignment
             with the same settings as this one.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; This button is
+            <dd><img src="memory:thumb-up.png">&nbsp; This button is
             useful if you are specifying a long series of channels which differ
             by one or two settings (e.g., an image stack with many frames). Using
             this button will help avoid the tedium of having to select the same settings

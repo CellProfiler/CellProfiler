@@ -1,7 +1,7 @@
+# coding=utf-8
+
 """
-
 Morphological skeleton thins an image into a single-pixel wide skeleton.
-
 """
 
 import cellprofiler.image
@@ -10,7 +10,7 @@ import skimage.morphology
 
 
 class MorphologicalSkeleton(cellprofiler.module.ImageProcessing):
-    category = "Mathematical morphology"
+    category = "Advanced"
 
     module_name = "Morphological skeleton"
 

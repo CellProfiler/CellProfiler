@@ -1,11 +1,27 @@
+import numpy
+import pytest
+import skimage.data
+
+import cellprofiler.__main__
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.utilities.cpjvm
 import cellprofiler.workspace
-import numpy
-import skimage.data
-import pytest
+
+
+def pytest_sessionstart(session):
+    cellprofiler.preferences.set_headless()
+
+    cellprofiler.utilities.cpjvm.cp_start_vm()
+
+
+def pytest_sessionfinish(session, exitstatus):
+    cellprofiler.__main__.stop_cellprofiler()
+
+    return exitstatus
 
 
 @pytest.fixture(

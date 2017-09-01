@@ -1,33 +1,44 @@
-'''<b>Calculate Math</b> takes measurements produced by previous modules and
+# coding=utf-8
+
+"""
+CalculateMath
+=============
+
+**CalculateMath** takes measurements produced by previous modules and
 performs basic arithmetic operations.
-<hr>
+
 The arithmetic operations available in this module include addition,
 subtraction, multiplication, and division. The result can be
 log-transformed or raised to a power and can be used in further
-calculations if another <b>CalculateMath</b> module is added to the pipeline.
+calculations if another **CalculateMath** module is added to the
+pipeline.
 
-<p>The module can make its calculations on a per-image basis (for example, multiplying the area occupied by a stain
-in the image by the total intensity in the image) or on an object-by-object basis (for example, dividing the intensity
-in the nucleus by the intensity in the cytoplasm for each cell).
+The module can make its calculations on a per-image basis (for example,
+multiplying the area occupied by a stain in the image by the total
+intensity in the image) or on an object-by-object basis (for example,
+dividing the intensity in the nucleus by the intensity in the cytoplasm
+for each cell).
 
-<h4>Available measurements</h4>
-<ul>
-<li><b>Image measurements:</b> If both input measurements are whole-image
-measurements, then the result will also be a whole-image measurement. </li>
-<li><b>Object measurements:</b> Object measurements can be produced in two ways:
-<ul>
-<li>If both input measurements are individual object measurements, then the
-result will also be an object measurement. In these cases, the measurement will
-be associated with <i>both</i> objects that were involved in the measurement.</li>
-<li>If one measure is object-based and one image-based, then the result will be
-an object measurement.</li>
-</ul>
-</li>
-</ul>
-The result of these calculations is a new measurement in the "Math" category.
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See also all <b>Measure</b> modules.
-'''
+-  **Image measurements:** If both input measurements are whole-image
+   measurements, then the result will also be a whole-image measurement.
+
+-  **Object measurements:** Object measurements can be produced in two
+   ways:
+
+   -  If both input measurements are individual object measurements,
+      then the result will also be an object measurement. In these
+      cases, the measurement will be associated with *both* objects that
+      were involved in the measurement.
+
+   -  If one measure is object-based and one image-based, then the
+      result will be an object measurement.
+
+The result of these calculations is a new measurement in the “Math”
+category. See also all **Measure** modules.
+"""
 
 import logging
 
@@ -70,27 +81,23 @@ class CalculateMath(cpm.Module):
                 self.__index = index
                 self.__operation = operation
                 self.__operand_choice = cps.Choice(
-                        self.operand_choice_text(), MC_ALL, doc="""
-                    Indicate whether the operand is an image or object measurement.""")
+                        self.operand_choice_text(), MC_ALL, doc="""Indicate whether the operand is an image or object measurement.""")
 
                 self.__operand_objects = cps.ObjectNameSubscriber(
-                        self.operand_objects_text(), cps.NONE, doc="""
-                    Choose the objects you want to measure for this operation.""")
+                        self.operand_objects_text(), cps.NONE, doc="""Choose the objects you want to measure for this operation.""")
 
                 self.__operand_measurement = cps.Measurement(
                         self.operand_measurement_text(),
-                        self.object_fn, doc="""
-                    Enter the category that was used to create the measurement. You
-                    will be prompted to add additional information depending on
-                    the type of measurement that is requested.""")
+                        self.object_fn, doc="""\
+Enter the category that was used to create the measurement. You
+will be prompted to add additional information depending on
+the type of measurement that is requested.""")
 
                 self.__multiplicand = cps.Float(
-                        "Multiply the above operand by", 1, doc="""
-                    Enter the number by which you would like to multiply the above operand.""")
+                        "Multiply the above operand by", 1, doc="""Enter the number by which you would like to multiply the above operand.""")
 
                 self.__exponent = cps.Float(
-                        "Raise the power of above operand by", 1, doc="""
-                    Enter the power by which you would like to raise the above operand.""")
+                        "Raise the power of above operand by", 1, doc="""Enter the power by which you would like to raise the above operand.""")
 
             @property
             def operand_choice(self):
@@ -177,15 +184,15 @@ class CalculateMath(cpm.Module):
 
         self.output_feature_name = cps.AlphanumericText(
                 "Name the output measurement",
-                "Measurement", doc="""
-            Enter a name for the measurement calculated by this module.""")
+                "Measurement", doc="""Enter a name for the measurement calculated by this module.""")
 
         self.operation = cps.Choice(
                 "Operation",
-                O_ALL, doc="""
-            Choose the arithmetic operation would you like to perform. <i>None</i> is useful if
-            you simply want to select some of the later options in the module, such as multiplying
-            or exponentiating your image by a constant.""")
+                O_ALL, doc="""\
+Choose the arithmetic operation would you like to perform. *None* is
+useful if you simply want to select some of the later options in the
+module, such as multiplying or exponentiating your image by a constant.
+""")
 
         self.operands = (Operand(0, self.operation), Operand(1, self.operation))
 
@@ -196,40 +203,36 @@ class CalculateMath(cpm.Module):
         self.spacer_3 = cps.Divider(line=True)
 
         self.wants_log = cps.Binary(
-                "Take log10 of result?", False, doc="""
-            Select <i>%(YES)s</i> if you want the log (base 10) of the result.""" % globals())
+                "Take log10 of result?", False, doc="""Select *%(YES)s* if you want the log (base 10) of the result.""" % globals())
 
         self.final_multiplicand = cps.Float(
-                "Multiply the result by", 1, doc="""
-            <i>(Used only for operations other than None)</i><br>
-            Enter the number by which you would like to multiply the result.""")
+                "Multiply the result by", 1, doc="""\
+*(Used only for operations other than "None")*
+
+Enter the number by which you would like to multiply the result.
+""")
 
         self.final_exponent = cps.Float(
-                "Raise the power of result by", 1, doc="""
-            <i>(Used only for operations other than None)</i><br>
-            Enter the power by which you would like to raise the result.""")
+                "Raise the power of result by", 1, doc="""\
+*(Used only for operations other than "None")*
+
+Enter the power by which you would like to raise the result.
+""")
 
         self.final_addend = cps.Float(
-                "Add to the result", 0, doc="""
-            Enter the number you like to add to the result.""")
+                "Add to the result", 0, doc="""Enter the number you like to add to the result.""")
 
         self.constrain_lower_bound = cps.Binary(
-                "Constrain the result to a lower bound?", False, doc="""
-            Select <i>%(YES)s</i> if you want the result to be
-            constrained to a lower bound.""" % globals())
+                "Constrain the result to a lower bound?", False, doc="""Select *%(YES)s* if you want the result to be constrained to a lower bound.""" % globals())
 
         self.lower_bound = cps.Float(
-                "Enter the lower bound", 0, doc="""
-            Enter the lower bound of the result here.""")
+                "Enter the lower bound", 0, doc="""Enter the lower bound of the result here.""")
 
         self.constrain_upper_bound = cps.Binary(
-                "Constrain the result to an upper bound?", False, doc="""
-            Select <i>%(YES)s</i> if you want the result to be
-            constrained to an upper bound.""" % globals())
+                "Constrain the result to an upper bound?", False, doc="""Select *%(YES)s* if you want the result to be constrained to an upper bound.""" % globals())
 
         self.upper_bound = cps.Float(
-                "Enter the upper bound", 1, doc="""
-            Enter the upper bound of the result here.""")
+                "Enter the upper bound", 1, doc="""Enter the upper bound of the result here.""")
 
     def settings(self):
         result = [self.output_feature_name, self.operation]

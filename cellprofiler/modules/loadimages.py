@@ -1,43 +1,56 @@
-'''<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
-which order.
-<hr>
-This module tells CellProfiler where to retrieve images and gives each image a
-meaningful name by which other modules can access it. You can also use <b>LoadImages</b> to extract
-or define the relationships between images and their associated
-metadata. For example, you could load a group of images (such as three channels that represent the same field
-of view) together for processing in a single CellProfiler cycle. Finally, you can use
-this module to retrieve a label matrix and give the collection
-of objects a meaningful name.
+# coding=utf-8
 
-<p><i>Disclaimer:</i> Please note that the Input modues (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
-and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into
-CellProfiler that contain this module will provide the option of preserving them;
-these pipelines will operate exactly as before.</p>
+"""
+**Load Images** allows you to specify which images or movies are to be
+loaded and in which order.
 
-<p>When used in combination with a <b>SaveImages</b> module, you can load images in one file format and
-save them in another, using CellProfiler as a file format converter.</p>
+This module tells CellProfiler where to retrieve images and gives each
+image a meaningful name by which other modules can access it. You can
+also use **LoadImages** to extract or define the relationships between
+images and their associated metadata. For example, you could load a
+group of images (such as three channels that represent the same field of
+view) together for processing in a single CellProfiler cycle. Finally,
+you can use this module to retrieve a label matrix and give the
+collection of objects a meaningful name.
 
-<h5>Using metadata in LoadImages</h5>
+*Disclaimer:* Please note that the Input modues (i.e., **Images**,
+**Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
+module. However, old pipelines loaded into CellProfiler that contain
+this module will provide the option of preserving them; these pipelines
+will operate exactly as before.
 
-<p>If you would like to use the metadata-specific settings, please see <i>Help > General help > Using
-metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadImages</b> can
-extract metadata from the image filename using pattern-matching strings, for grouping similar images
-together for the analysis run and for metadata-specfic options in other modules; see the settings help for
-<a href='#where_to_extract'><i>Where to extract metadata</i></a>, and if an option for that setting is
-selected, <a href='#regular_expression'><i>Regular expression
-that finds metadata in the file name</i></a> for the necessary syntax.</p>
+When used in combination with a **SaveImages** module, you can load
+images in one file format and save them in another, using CellProfiler
+as a file format converter.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Pathname, Filename:</i> The full path and the filename of each image.</li>
-<li><i>Metadata:</i> The metadata information extracted from the path and/or
-filename, if requested.</li>
-<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li>
-<li><i>Height, Width:</i> The height and width of the current image.</li>
-</ul>
+Using metadata in LoadImages
+''''''''''''''''''''''''''''
 
-See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
-'''
+If you would like to use the metadata-specific settings, please see
+*Help > General help > Using metadata in CellProfiler* for more details
+on metadata usage and syntax. Briefly, **LoadImages** can extract
+metadata from the image filename using pattern-matching strings, for
+grouping similar images together for the analysis run and for
+metadata-specfic options in other modules; see the settings help for
+`*Where to extract metadata*`_, and if an option for that setting is
+selected, `*Regular expression that finds metadata in the file name*`_
+for the necessary syntax.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Pathname, Filename:* The full path and the filename of each image.
+-  *Metadata:* The metadata information extracted from the path and/or
+   filename, if requested.
+-  *Scaling:* The maximum possible intensity value for the image format.
+-  *Height, Width:* The height and width of the current image.
+
+See also the **Input** modules, **LoadData**, **LoadSingleImage**,
+**SaveImages**.
+
+.. _*Where to extract metadata*: #where_to_extract
+.. _*Regular expression that finds metadata in the file name*: #regular_expression
+"""
 
 import cgi
 import hashlib
@@ -135,7 +148,7 @@ SUPPORTED_IMAGE_EXTENSIONS = set([
     '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
     '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
     '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
-SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
+SUPPORTED_IMAGE_EXTENSIONS.add(".npy")
 # The following is a list of the extensions as gathered from Bio-formats
 # Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
 # not to be images but you are welcome to add if needed
@@ -3088,13 +3101,13 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
                 raise IOError("Test for access to directory failed. Directory: %s" % path)
         if parsed_path.scheme == 'file':
             self.__cached_file = url2pathname(path)
-        elif self.is_matlab_file():
+        elif self.is_numpy_file():
             #
             # urlretrieve uses the suffix of the path component of the URL
             # to name the temporary file, so we replicate that behavior
             #
             temp_dir = preferences.get_temporary_directory()
-            tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir=temp_dir)
+            tempfd, temppath = tempfile.mkstemp(suffix=".npy", dir=temp_dir)
             self.__cached_file = temppath
             try:
                 self.__cached_file, headers = urllib.urlretrieve(
@@ -3118,10 +3131,8 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         '''Get the URL representation of the file location'''
         return self.__url
 
-    def is_matlab_file(self):
-        '''Return True if the file name ends with .mat (no Bio-formats)'''
-        path = urlparse.urlparse(self.get_url())[2]
-        return path.lower().endswith(".mat")
+    def is_numpy_file(self):
+        return os.path.splitext(self.__filename)[-1].lower() == ".npy"
 
     def get_md5_hash(self, measurements):
         '''Compute the MD5 hash of the underlying file or use cached value
@@ -3132,7 +3143,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         #
         # Cache the MD5 hash on the image reader
         #
-        if self.is_matlab_file():
+        if self.is_numpy_file():
             rdr = None
         else:
             from bioformats.formatreader import get_image_reader
@@ -3161,7 +3172,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
         Possibly delete the temporary file'''
         if self.__is_cached:
-            if self.is_matlab_file():
+            if self.is_numpy_file():
                 try:
                     os.remove(self.__cached_file)
                 except:
@@ -3202,16 +3213,8 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
-        if isinstance(self.rescale, float):
-            rescale = False
-        else:
-            rescale = self.rescale
-        if self.is_matlab_file():
-            with open(self.get_full_name(), "rb") as fd:
-                imgdata = scipy.io.matlab.mio.loadmat(
-                        fd, struct_as_record=True)
-            img = imgdata["Image"]
-            # floating point - scale = 1:1
+        if self.is_numpy_file():
+            img = np.load(self.get_full_name())
             self.scale = 1.0
             pixel_type_scale = 1.0
         else:
@@ -3263,7 +3266,12 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         return image
 
     def __provide_volume(self):
-        data = skimage.io.imread(url2pathname(self.get_url()))
+        pathname = url2pathname(self.get_url())
+
+        if self.is_numpy_file():
+            data = np.load(pathname)
+        else:
+            data = skimage.io.imread(pathname)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:

@@ -1,9 +1,11 @@
+# coding=utf-8
+
 """
+Watershed
+=========
 
-<strong>Watershed</strong>
-
-Watershed is a segmentation algorithm. It is used to separate different objects in an image.
-
+**Watershed** is a segmentation algorithm. It is used to separate
+different objects in an image.
 """
 
 import mahotas
@@ -22,6 +24,8 @@ import cellprofiler.setting
 
 
 class Watershed(cellprofiler.module.ImageSegmentation):
+    category = "Advanced"
+
     module_name = "Watershed"
 
     variable_revision_number = 1

@@ -1,19 +1,26 @@
-"""<b>Save Images </b> saves image or movie files.
-<hr>
+# coding=utf-8
+
+"""
+Save Images
+===========
+
+**SaveImages** saves image or movie files.
+
 Because CellProfiler usually performs many image analysis steps on many
-groups of images, it does <i>not</i> save any of the resulting images to the
-hard drive unless you specifically choose to do so with the <b>SaveImages</b>
-module. You can save any of the
-processed images created by CellProfiler during the analysis using this module.
+groups of images, it does *not* save any of the resulting images to the
+hard drive unless you specifically choose to do so with the
+**SaveImages** module. You can save any of the processed images created
+by CellProfiler during the analysis using this module.
 
-<p>You can choose from many different image formats for saving your files. This
-allows you to use the module as a file format converter, by loading files
-in their original format and then saving them in an alternate format.</p>
+You can choose from many different image formats for saving your files.
+This allows you to use the module as a file format converter, by loading
+files in their original format and then saving them in an alternate
+format.
 
-<p>Note that saving images in 12-bit format is not supported, and 16-bit format
-is supported for TIFF only.</p>
+Note that saving images in 12-bit format is not supported, and 16-bit
+format is supported for TIFF only.
 
-See also <b>NamesAndTypes</b>.
+See also **NamesAndTypes**.
 """
 
 import os
@@ -42,7 +49,7 @@ IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
-BIT_DEPTH_FLOAT = "64-bit floating point"
+BIT_DEPTH_FLOAT = "32-bit floating point"
 
 FN_FROM_IMAGE = "From image filename"
 FN_SEQUENTIAL = "Sequential numbers"
@@ -52,6 +59,7 @@ SINGLE_NAME_TEXT = "Enter single file name"
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 
 FF_JPEG = "jpeg"
+FF_NPY = "npy"
 FF_PNG = "png"
 FF_TIFF = "tiff"
 
@@ -65,7 +73,7 @@ WS_LAST_CYCLE = "Last cycle"
 class SaveImages(cellprofiler.module.Module):
     module_name = "SaveImages"
 
-    variable_revision_number = 12
+    variable_revision_number = 13
 
     category = "File Processing"
 
@@ -76,20 +84,23 @@ class SaveImages(cellprofiler.module.Module):
             IF_IMAGE,
             doc="""
             The following types of images can be saved as a file on the hard drive:
-            <ul>
-                <li><i>{IF_IMAGE}:</i> Any of the images produced upstream of <b>SaveImages</b> can be selected
-                for saving. Outlines created by <b>Identify</b> modules can also be saved with this option, but
-                you must select "Retain outlines..." of identified objects within the <b>Identify</b> module.
-                You might also want to use the <b>OverlayOutlines</b> module prior to saving images.</li>
-                <li><i>{IF_MASK}:</i> Relevant only if the <b>Crop</b> module is used. The <b>Crop</b> module
-                creates a mask of the pixels of interest in the image. Saving the mask will produce a binary
-                image in which the pixels of interest are set to 1; all other pixels are set to 0.</li>
-                <li><i>{IF_CROPPING}:</i> Relevant only if the <b>Crop</b> module is used. The <b>Crop</b>
-                module also creates a cropping image which is typically the same size as the original image.
-                However, since the <b>Crop</b> permits removal of the rows and columns that are left blank, the
-                cropping can be of a different size than the mask.</li>
-                <li><i>{IF_MOVIE}:</i> A sequence of images can be saved as a TIFF stack.</li>
-            </ul>
+
+            -  *{IF_IMAGE}:* Any of the images produced upstream of **SaveImages**
+               can be selected for saving. Outlines created by **Identify** modules
+               can also be saved with this option, but you must select “Retain
+               outlines…” of identified objects within the **Identify** module. You
+               might also want to use the **OverlayOutlines** module prior to saving
+               images.
+            -  *{IF_MASK}:* Relevant only if the **Crop** module is used. The
+               **Crop** module creates a mask of the pixels of interest in the
+               image. Saving the mask will produce a binary image in which the
+               pixels of interest are set to 1; all other pixels are set to 0.
+            -  *{IF_CROPPING}:* Relevant only if the **Crop** module is used. The
+               **Crop** module also creates a cropping image which is typically the
+               same size as the original image. However, since the **Crop** permits
+               removal of the rows and columns that are left blank, the cropping can
+               be of a different size than the mask.
+            -  *{IF_MOVIE}:* A sequence of images can be saved as a TIFF stack.
             """.format(**{
                 "IF_CROPPING": IF_CROPPING,
                 "IF_IMAGE": IF_IMAGE,
@@ -112,27 +123,30 @@ class SaveImages(cellprofiler.module.Module):
             ],
             FN_FROM_IMAGE,
             doc="""
-            <i>(Used only if saving non-movie files)</i><br>
-            Several choices are available for constructing the image file name:
-            <ul>
-                <li>
-                    <i>{FN_FROM_IMAGE}:</i> The filename will be constructed based on the original filename of
-                    an input image specified in <b>NamesAndTypes</b>. You will have the opportunity to prefix
-                    or append additional text.
-                    <p>If you have metadata associated with your images, you can append an text to the image
-                    filename using a metadata tag. This is especially useful if you want your output given a
-                    unique label according to the metadata corresponding to an image group. The name of the
-                    metadata to substitute can be provided for each image for each cycle using the
-                    <b>Metadata</b> module. {USING_METADATA_TAGS_REF}{USING_METADATA_HELP_REF}.</p>
-                </li>
-                <li><i>{FN_SEQUENTIAL}:</i> Same as above, but in addition, each filename will have a number
-                appended to the end that corresponds to the image cycle number (starting at 1).</li>
-                <li><i>{FN_SINGLE_NAME}:</i> A single name will be given to the file. Since the filename is
-                fixed, this file will be overwritten with each cycle. In this case, you would probably want to
-                save the image on the last cycle (see the <i>Select how often to save</i> setting). The
-                exception to this is to use a metadata tag to provide a unique label, as mentioned in the
-                <i>{FN_FROM_IMAGE}</i> option.</li>
-            </ul>
+            | *(Used only if saving non-movie files)*
+            | Several choices are available for constructing the image file name:
+
+            -  *{FN_FROM_IMAGE}:* The filename will be constructed based on the
+               original filename of an input image specified in **NamesAndTypes**.
+               You will have the opportunity to prefix or append additional text.
+
+               If you have metadata associated with your images, you can append an
+               text to the image filename using a metadata tag. This is especially
+               useful if you want your output given a unique label according to the
+               metadata corresponding to an image group. The name of the metadata to
+               substitute can be provided for each image for each cycle using the
+               **Metadata** module.
+               {USING_METADATA_TAGS_REF}{USING_METADATA_HELP_REF}.
+
+            -  *{FN_SEQUENTIAL}:* Same as above, but in addition, each filename
+               will have a number appended to the end that corresponds to the image
+               cycle number (starting at 1).
+            -  *{FN_SINGLE_NAME}:* A single name will be given to the file. Since
+               the filename is fixed, this file will be overwritten with each cycle.
+               In this case, you would probably want to save the image on the last
+               cycle (see the *Select how often to save* setting). The exception to
+               this is to use a metadata tag to provide a unique label, as mentioned
+               in the *{FN_FROM_IMAGE}* option.
             """.format(**{
                 "FN_FROM_IMAGE": FN_FROM_IMAGE,
                 "FN_SEQUENTIAL": FN_SEQUENTIAL,
@@ -146,9 +160,10 @@ class SaveImages(cellprofiler.module.Module):
             "Select image name for file prefix",
             cellprofiler.setting.NONE,
             doc="""
-            <i>(Used only when "{FN_FROM_IMAGE}" is selected for contructing the filename)</i><br>
-            Select an image loaded using <b>NamesAndTypes</b>. The original filename will be
-            used as the prefix for the output filename.
+            *(Used only when “{FN_FROM_IMAGE}” is selected for contructing the
+            filename)*
+            Select an image loaded using **NamesAndTypes**. The original filename
+            will be used as the prefix for the output filename.
             """.format(**{
                 "FN_FROM_IMAGE": FN_FROM_IMAGE
             })
@@ -159,11 +174,13 @@ class SaveImages(cellprofiler.module.Module):
             "OrigBlue",
             metadata=True,
             doc="""
-            <i>(Used only when "{FN_SEQUENTIAL}" or "{FN_SINGLE_NAME}" are selected for contructing the
-            filename)</i><br>
-            Specify the filename text here. If you have metadata associated with your images, enter the
-            filename text with the metadata tags. {USING_METADATA_TAGS_REF}<br>
-            Do not enter the file extension in this setting; it will be appended automatically.
+            *(Used only when “{FN_SEQUENTIAL}” or “{FN_SINGLE_NAME}” are selected
+            for contructing the filename)*
+            Specify the filename text here. If you have metadata associated with
+            your images, enter the filename text with the metadata tags.
+            {USING_METADATA_TAGS_REF}
+            Do not enter the file extension in this setting; it will be appended
+            automatically.
             """.format(**{
                 "FN_SEQUENTIAL": FN_SEQUENTIAL,
                 "FN_SINGLE_NAME": FN_SINGLE_NAME,
@@ -175,10 +192,12 @@ class SaveImages(cellprofiler.module.Module):
             "Number of digits",
             4,
             doc="""
-            <i>(Used only when "{FN_SEQUENTIAL}" is selected for contructing the filename)</i><br>
-            Specify the number of digits to be used for the sequential numbering. Zeros will be
-            used to left-pad the digits. If the number specified here is less than that needed to
-            contain the number of image sets, the latter will override the value entered.
+            *(Used only when “{FN_SEQUENTIAL}” is selected for contructing the
+            filename)*
+            Specify the number of digits to be used for the sequential numbering.
+            Zeros will be used to left-pad the digits. If the number specified here
+            is less than that needed to contain the number of image sets, the latter
+            will override the value entered.
             """.format(**{
                 "FN_SEQUENTIAL": FN_SEQUENTIAL
             })
@@ -188,8 +207,8 @@ class SaveImages(cellprofiler.module.Module):
             "Append a suffix to the image file name?",
             False,
             doc="""
-            Select <i>{YES}</i> to add a suffix to the image's file name.
-            Select <i>{NO}</i> to use the image name as-is.
+            Select *{YES}* to add a suffix to the image’s file name. Select *{NO}*
+            to use the image name as-is.
             """.format(**{
                 "NO": cellprofiler.setting.NO,
                 "YES": cellprofiler.setting.YES
@@ -201,7 +220,7 @@ class SaveImages(cellprofiler.module.Module):
             "",
             metadata=True,
             doc="""
-            <i>(Used only when constructing the filename from the image filename)</i><br>
+            *(Used only when constructing the filename from the image filename)*
             Enter the text that should be appended to the filename specified above.
             """
         )
@@ -210,37 +229,51 @@ class SaveImages(cellprofiler.module.Module):
             "Saved file format",
             [
                 FF_JPEG,
+                FF_NPY,
                 FF_PNG,
                 FF_TIFF
             ],
             value=FF_TIFF,
             doc="""
-            <i>(Used only when saving non-movie files)</i><br>
-            Select the image or movie format to save the image(s). Most common image formats are available.
-            """
+            *(Used only when saving non-movie files)*
+            Select the image or movie format to save the image(s). Most common image
+            formats are available.
+
+            Select *{FF_NPY}* to save an illumination correction image generated by
+            **CorrectIlluminationCalculate**.
+            """.format(**{
+                "FF_NPY": FF_NPY
+            })
         )
 
         self.pathname = SaveImagesDirectoryPath(
             "Output file location",
             self.file_image_name,
             doc="""
-            This setting lets you choose the folder for the output files. {IO_FOLDER_CHOICE_HELP_TEXT}
-            <p>An additional option is the following:</p>
-            <ul>
-                <li><i>Same folder as image</i>: Place the output file in the same folder that the source image
-                is located.</li>
-            </ul>
-            <p></p>
-            <p>{IO_WITH_METADATA_HELP_TEXT} {USING_METADATA_TAGS_REF}. For instance, if you have a metadata tag
-            named "Plate", you can create a per-plate folder by selecting one the subfolder options and then
-            specifying the subfolder name as "\g&lt;Plate&gt;". The module will substitute the metadata values
-            for the current image set for any metadata tags in the folder name.{USING_METADATA_HELP_REF}.</p>
-            <p>If the subfolder does not exist when the pipeline is run, CellProfiler will create it.</p>
-            <p>If you are creating nested subfolders using the sub-folder options, you can specify the
-            additional folders separated with slashes. For example, "Outlines/Plate1" will create a "Plate1"
-            folder in the "Outlines" folder, which in turn is under the Default Input/Output Folder. The use of
-            a forward slash ("/") as a folder separator will avoid ambiguity between the various operating
-            systems.</p>
+            This setting lets you choose the folder for the output files.
+            {IO_FOLDER_CHOICE_HELP_TEXT}
+
+            An additional option is the following:
+
+            -  *Same folder as image*: Place the output file in the same folder that
+               the source image is located.
+
+            {IO_WITH_METADATA_HELP_TEXT} {USING_METADATA_TAGS_REF}. For
+            instance, if you have a metadata tag named “Plate”, you can create a
+            per-plate folder by selecting one the subfolder options and then
+            specifying the subfolder name as “\\g<Plate>”. The module will
+            substitute the metadata values for the current image set for any
+            metadata tags in the folder name.{USING_METADATA_HELP_REF}.
+
+            If the subfolder does not exist when the pipeline is run, CellProfiler
+            will create it.
+
+            If you are creating nested subfolders using the sub-folder options, you
+            can specify the additional folders separated with slashes. For example,
+            “Outlines/Plate1” will create a “Plate1” folder in the “Outlines”
+            folder, which in turn is under the Default Input/Output Folder. The use
+            of a forward slash (“/”) as a folder separator will avoid ambiguity
+            between the various operating systems.
             """.format(**{
                 "IO_FOLDER_CHOICE_HELP_TEXT": cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT,
                 "IO_WITH_METADATA_HELP_TEXT": cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
@@ -258,11 +291,14 @@ class SaveImages(cellprofiler.module.Module):
             ],
             doc="""
             Select the bit-depth at which you want to save the images.
-            <i>{BIT_DEPTH_FLOAT}</i> saves the image as floating-point decimals
-            with 64-bit precision in its raw form, typically scaled between
-            0 and 1.
-            <b>{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only
-            for TIFF formats. Currently, saving images in 12-bit is not supported.</b>
+
+            *{BIT_DEPTH_FLOAT}* saves the image as floating-point decimals with
+            32-bit precision. When the input data is integer or binary type, pixel
+            values are scaled within the range (0, 1). Floating point data is not
+            rescaled.
+
+            **{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only for
+            TIFF formats. Currently, saving images in 12-bit is not supported.**
             """.format(**{
                 "BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT,
                 "BIT_DEPTH_16": BIT_DEPTH_16
@@ -273,10 +309,12 @@ class SaveImages(cellprofiler.module.Module):
             "Overwrite existing files without warning?",
             False,
             doc="""
-            Select <i>{YES}</i> to automatically overwrite a file if it already exists.
-            Select <i>{NO}</i> to be prompted for confirmation first.
-            <p>If you are running the pipeline on a computing cluster,
-            select <i>{YES}</i> since you will not be able to intervene and answer the confirmation prompt.</p>
+            Select *{YES}* to automatically overwrite a file if it already exists.
+            Select *{NO}* to be prompted for confirmation first.
+
+            If you are running the pipeline on a computing cluster, select *{YES}*
+            since you will not be able to intervene and answer the confirmation
+            prompt.
             """.format(**{
                 "NO": cellprofiler.setting.NO,
                 "YES": cellprofiler.setting.YES
@@ -292,18 +330,20 @@ class SaveImages(cellprofiler.module.Module):
             ],
             WS_EVERY_CYCLE,
             doc="""
-            <a id="when_to_save" name='when_to_save'><i>(Used only when saving non-movie files)</i><br>
-            Specify at what point during pipeline execution to save file(s).</a>
-            <ul>
-                <li><i>{WS_EVERY_CYCLE}:</i> Useful for when the image of interest is created every cycle and
-                is not dependent on results from a prior cycle.</li>
-                <li><i>{WS_FIRST_CYCLE}:</i> Useful for when you are saving an aggregate image created on the
-                first cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i> setting used on
-                images obtained directly from <b>NamesAndTypes</b>.</li>
-                <li><i>{WS_LAST_CYCLE}</i> Useful for when you are saving an aggregate image completed on the
-                last cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i> setting used on
-                intermediate images generated during each cycle.</li>
-            </ul>
+            *(Used only when saving non-movie files)*
+            Specify at what point during pipeline execution to save file(s).
+
+            -  *{WS_EVERY_CYCLE}:* Useful for when the image of interest is
+               created every cycle and is not dependent on results from a prior
+               cycle.
+            -  *{WS_FIRST_CYCLE}:* Useful for when you are saving an aggregate
+               image created on the first cycle, e.g.,
+               **CorrectIlluminationCalculate** with the *All* setting used on
+               images obtained directly from **NamesAndTypes**.
+            -  *{WS_LAST_CYCLE}* Useful for when you are saving an aggregate image
+               completed on the last cycle, e.g., **CorrectIlluminationCalculate**
+               with the *All* setting used on intermediate images generated during
+               each cycle.
             """.format(**{
                 "WS_EVERY_CYCLE": WS_EVERY_CYCLE,
                 "WS_FIRST_CYCLE": WS_FIRST_CYCLE,
@@ -315,15 +355,16 @@ class SaveImages(cellprofiler.module.Module):
             "Record the file and path information to the saved image?",
             False,
             doc="""
-            Select <i>{YES}</i> to store filename and pathname data for each of the new files created via this
-            module as a per-image measurement.
-            <p>Instances in which this information may be useful include:</p>
-            <ul>
-                <li>Exporting measurements to a database, allowing access to the saved image. If you are using
-                the machine-learning tools or image viewer in CellProfiler Analyst, for example, you will want
-                to enable this setting if you want the saved images to be displayed along with the original
-                images.</li>
-            </ul>
+            Select *{YES}* to store filename and pathname data for each of the new
+            files created via this module as a per-image measurement.
+
+            Instances in which this information may be useful include:
+
+            -  Exporting measurements to a database, allowing access to the saved
+               image. If you are using the machine-learning tools or image viewer in
+               CellProfiler Analyst, for example, you will want to enable this
+               setting if you want the saved images to be displayed along with the
+               original images.
             """.format(**{
                 "YES": cellprofiler.setting.YES
             })
@@ -333,7 +374,8 @@ class SaveImages(cellprofiler.module.Module):
             "Create subfolders in the output folder?",
             False,
             doc="""
-            Select <i>{YES}</i> to create subfolders to match the input image folder structure.
+            Select *{YES}* to create subfolders to match the input image folder
+            structure.
             """.format(**{
                 "YES": cellprofiler.setting.YES
             })
@@ -342,14 +384,16 @@ class SaveImages(cellprofiler.module.Module):
         self.root_dir = cellprofiler.setting.DirectoryPath(
             "Base image folder",
             doc="""
-            <i>Used only if creating subfolders in the output folder</i> In subfolder mode, <b>SaveImages</b>
-            determines the folder for an image file by examining the path of the matching input file. The path
-            that SaveImages uses is relative to the image folder chosen using this setting. As an example,
-            input images might be stored in a folder structure of "images{sep}<i>experiment-name</i>{sep}
-            <i>date</i>{sep}<i>plate-name</i>". If the image folder is "images", <b>SaveImages</b> will store
-            images in the subfolder, "<i>experiment-name</i>{sep}<i>date</i>{sep}<i>plate-name</i>". If the
-            image folder is "images{sep}<i>experiment-name</i>", <b>SaveImages</b> will store images in the
-            subfolder, <i>date</i>{sep}<i>plate-name</i>".
+            *Used only if creating subfolders in the output folder* In subfolder
+            mode, **SaveImages** determines the folder for an image file by
+            examining the path of the matching input file. The path that SaveImages
+            uses is relative to the image folder chosen using this setting. As an
+            example, input images might be stored in a folder structure of
+            "images{sep}*experiment-name*\ {sep} *date*\ {sep}*plate-name*\ “. If
+            the image folder is ”images", **SaveImages** will store images in the
+            subfolder, "*experiment-name*\ {sep}*date*\ {sep}*plate-name*\ “. If the
+            image folder is ”images{sep}\ *experiment-name*", **SaveImages** will
+            store images in the subfolder, *date*\ {sep}*plate-name*".
             """.format(sep=os.path.sep)
         )
 
@@ -538,13 +582,19 @@ class SaveImages(cellprofiler.module.Module):
         if self.show_window:
             workspace.display_data.wrote_image = False
 
+        filename = self.get_filename(workspace)
+
+        if filename is None:  # failed overwrite check
+            return
+
         image = workspace.image_set.get_image(self.image_name.value)
 
-        if image.volumetric and self.file_format.value != FF_TIFF:
+        volumetric_extensions = [FF_NPY, FF_TIFF]
+        if image.volumetric and self.file_format.value not in volumetric_extensions:
             raise RuntimeError(
                 "Unsupported file format {} for 3D pipeline. Use {} format when processing images as 3D.".format(
                     self.file_format.value,
-                    FF_TIFF
+                    ", or ".join(volumetric_extensions)
                 )
             )
 
@@ -555,19 +605,17 @@ class SaveImages(cellprofiler.module.Module):
         elif self.save_image_or_figure.value == IF_CROPPING:
             pixels = image.crop_mask
 
-        if self.get_bit_depth() == BIT_DEPTH_8:
-            pixels = skimage.util.img_as_ubyte(pixels)
-        elif self.get_bit_depth() == BIT_DEPTH_16:
-            pixels = skimage.util.img_as_uint(pixels)
-        elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-            pixels = skimage.util.img_as_float(pixels)
+        if self.file_format == FF_NPY:
+            numpy.save(filename, pixels)
+        else:
+            if self.get_bit_depth() == BIT_DEPTH_8:
+                pixels = skimage.util.img_as_ubyte(pixels)
+            elif self.get_bit_depth() == BIT_DEPTH_16:
+                pixels = skimage.util.img_as_uint(pixels)
+            elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
+                pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
 
-        filename = self.get_filename(workspace)
-
-        if filename is None:  # failed overwrite check
-            return
-
-        skimage.io.imsave(filename, pixels)
+            skimage.io.imsave(filename, pixels)
 
         if self.show_window:
             workspace.display_data.wrote_image = True
@@ -750,7 +798,18 @@ class SaveImages(cellprofiler.module.Module):
 
             setting_values = new_setting_values
 
+            if setting_values[10] == "8":
+                setting_values[10] = BIT_DEPTH_8
+            elif setting_values[10] == "16":
+                setting_values[10] = BIT_DEPTH_16
+
             variable_revision_number = 12
+
+        if variable_revision_number == 12:
+            if setting_values[10] == "64-bit floating point":
+                setting_values[10] = BIT_DEPTH_FLOAT
+
+            variable_revision_number = 13
 
         return setting_values, variable_revision_number, False
 

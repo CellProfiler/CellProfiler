@@ -1,71 +1,85 @@
-'''<b>UntangleWorms</b> untangles overlapping worms.
-<hr>
-This module either assembles a training set of sample worms in order to create a worm
-model, or takes a binary image and the results of worm training and
-labels the worms in the image, untangling them and associating all of a
-worm's pieces together.
+# coding=utf-8
 
-The results of untangling the input image will be an object set that can be used with
-downstream measurment modules. If using the <i>overlapping</i> style of objects, these
-can be saved as images using <b>SaveImages</b> to create a multi-page TIF file by
-specifying "Objects" as the type of image to save.
+"""
+UntangleWorms
+=============
 
-<h4>Available measurements</h4>
+**UntangleWorms** untangles overlapping worms.
 
-<b>Object measurements (for "Untangle" mode only)</b>:
-<ul>
-<li><i>Length:</i> The length of the worm skeleton. </li>
-<li><i>Angle:</i> The angle at each of the control points</li>
-<li><i>ControlPointX_N, ControlPointY_N:</i> The X,Y coordinate of a control point <i>N</i>.
-A control point is a sampled location along the worm shape used to construct the model.</li>
-</ul>
+This module either assembles a training set of sample worms in order to
+create a worm model, or takes a binary image and the results of worm
+training and labels the worms in the image, untangling them and
+associating all of a worm’s pieces together. The results of untangling
+the input image will be an object set that can be used with downstream
+measurment modules. If using the *overlapping* style of objects, these
+can be saved as images using **SaveImages** to create a multi-page TIF
+file by specifying “Objects” as the type of image to save.
 
-<h4>Technical notes</h4>
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<i>Training</i> involves extracting morphological information from the sample objects
-provided from the previous steps. Using the default training set weights is recommended.
-Proper creation of the model is dependent on providing a binary image as input consisting
-of single, separated objects considered to be worms. You can the <b>Identify</b> modules
-to find the tentative objects and then filter these objects to get individual worms, whether
-by using <b>FilterObjects</b>, <b>EditObjectsManually</b> or the size criteria in
-<b>IdentifyPrimaryObjects</b>. A binary image can be obtained from an object set by using
-<b>ConvertObjectsToImage</b>.
+**Object measurements (for “Untangle” mode only)**:
 
-<p>At the end of the training run, a final display window is shown displaying the following
-statistical data:
-<ul>
-<li>A boxplot of the direction angle shape costs. The direction angles (which are between -&pi; and &pi;)
-are the angles between lines joining consective control points. The angle 0 corresponds to
-the case when two adjacent line segments are parallel (and thus belong to the same line).</li>
-<li>A cumulative boxplot of the worm lengths as determined by the model.</li>
-<li>A cumulative boxplot of the worm angles as determined by the model.</li>
-<li>A heatmap of the covariance matrix of the feature vectors. For <i>N</i> control points,
-the feature vector is of length <i>N</i>-1 and contains <i>N</i>-2 elements for each of the
-angles between them, plus an element representing the worm length.</li>
-</ul></p>
+-  *Length:* The length of the worm skeleton.
+-  *Angle:* The angle at each of the control points
+-  *ControlPointX\_N, ControlPointY\_N:* The X,Y coordinate of a control
+   point *N*. A control point is a sampled location along the worm shape
+   used to construct the model.
 
-<p><i>Untangling</i> involves untangles the worms using a provided worm model, built
-from a large number of samples of single worms. If the result of the untangling is
-not satisfactory (e.g., it is unable to detect long worms or is too stringent about
-shape variation) and you do not wish to re-train, you can adjust the provided worm model
-manually by opening the .xml file in a text editor
-and changing the values for the fields defining worm length, area etc. You may also want to adjust the
-"Maximum Complexity" module setting which controls how complex clusters the untangling will handle.
-Large clusters (&gt; 6 worms) may be slow to process.</p>
+Technical notes
+^^^^^^^^^^^^^^^
 
-<h4>References</h4>
-<ul>
-<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ,
-Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
-Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
-<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.
-<a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
-</ul>
+*Training* involves extracting morphological information from the sample
+objects provided from the previous steps. Using the default training set
+weights is recommended. Proper creation of the model is dependent on
+providing a binary image as input consisting of single, separated
+objects considered to be worms. You can the **Identify** modules to find
+the tentative objects and then filter these objects to get individual
+worms, whether by using **FilterObjects**, **EditObjectsManually** or
+the size criteria in **IdentifyPrimaryObjects**. A binary image can be
+obtained from an object set by using **ConvertObjectsToImage**.
 
-<p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
-Toolbox</a> page for sample images and pipelines, as well
-as video tutorials.</p>
-'''
+At the end of the training run, a final display window is shown
+displaying the following statistical data:
+
+-  A boxplot of the direction angle shape costs. The direction angles
+   (which are between -π and π) are the angles between lines joining
+   consective control points. The angle 0 corresponds to the case when
+   two adjacent line segments are parallel (and thus belong to the same
+   line).
+-  A cumulative boxplot of the worm lengths as determined by the model.
+-  A cumulative boxplot of the worm angles as determined by the model.
+-  A heatmap of the covariance matrix of the feature vectors. For *N*
+   control points, the feature vector is of length *N*-1 and contains
+   *N*-2 elements for each of the angles between them, plus an element
+   representing the worm length.
+
+*Untangling* involves untangles the worms using a provided worm model,
+built from a large number of samples of single worms. If the result of
+the untangling is not satisfactory (e.g., it is unable to detect long
+worms or is too stringent about shape variation) and you do not wish to
+re-train, you can adjust the provided worm model manually by opening the
+.xml file in a text editor and changing the values for the fields
+defining worm length, area etc. You may also want to adjust the “Maximum
+Complexity” module setting which controls how complex clusters the
+untangling will handle. Large clusters (> 6 worms) may be slow to
+process.
+
+References
+^^^^^^^^^^
+
+-  Wählby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O’Rourke
+   EJ, Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P,
+   Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
+   for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
+   714-716. `(link)`_
+
+See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
+well as video tutorials.
+
+.. _(link): http://dx.doi.org/10.1038/nmeth.1984
+.. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
+"""
 
 import logging
 import os
@@ -208,7 +222,7 @@ class UntangleWorms(cpm.Module):
         self.image_name = cps.ImageNameSubscriber(
                 "Select the input binary image", cps.NONE, doc="""
             A binary image where the foreground indicates the worm
-            shapes. The binary image can be produced by the <b>ApplyThreshold</b>
+            shapes. The binary image can be produced by the <b>Threshold</b>
             module.""")
 
         self.overlap = cps.Choice(
@@ -1458,9 +1472,7 @@ class UntangleWorms(cpm.Module):
         coordinates of one point on the path. The path itself can be formed
         by joining these points successively to each other.
 
-        Note:
-
-        Because of the way the graph is built, the points in pixel_coords are
+        Note that because of the way the graph is built, the points in pixel_coords are
         likely to contain segments consisting of runs of pixels where each is
         close to the next (in its 8-neighbourhood), but interleaved with
         reasonably long "jumps", where there is some distance between the end
@@ -1628,7 +1640,7 @@ class UntangleWorms(cpm.Module):
         the control points (and length) are less similar to the training
         set.
 
-        Note: All the angles in question here are direction angles,
+        Note that all the angles in question here are direction angles,
         constrained to lie between -pi and pi. The angle 0 corresponds to
         the case when two adjacnet line segments are parallel (and thus
         belong to the same line); the angles can be thought of as the

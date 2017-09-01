@@ -71,7 +71,7 @@ class Setting(object):
     #
     save_to_pipeline = True
 
-    def __init__(self, text, value, doc=None, reset_view=False):
+    def __init__(self, text, value, doc="", reset_view=False):
         """Initialize a setting with the enclosing module and its string value
 
         text   - the explanatory text for the setting
@@ -1595,7 +1595,7 @@ class Binary(Setting):
         """
         str_value = (value and YES) or NO
         super(Binary, self).__init__(text, str_value, *args, **kwargs)
-        self.__callback = callback
+        self.callback = callback
 
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
@@ -1621,8 +1621,8 @@ class Binary(Setting):
         return self.value
 
     def on_event_fired(self, selection):
-        if self.__callback is not None:
-            self.__callback(selection)
+        if self.callback is not None:
+            self.callback(selection)
 
 
 class Choice(Setting):
@@ -1678,8 +1678,14 @@ class Choice(Setting):
 
 
 class StructuringElement(Setting):
-    def __init__(self, text="Structuring element", value="disk,1", doc=None):
-        super(StructuringElement, self).__init__(text, value, doc=doc)
+    def __init__(self, text="Structuring element",
+                 value="disk,1",
+                 allow_planewise=False,
+                 *args,
+                 **kwargs):
+        self.__allow_planewise = allow_planewise
+
+        super(StructuringElement, self).__init__(text, value, *args, **kwargs)
 
     @staticmethod
     def get_choices():
@@ -1726,6 +1732,21 @@ class StructuringElement(Setting):
                 "Structuring element size must be a positive integer. You provided {}.".format(self.size),
                 self
             )
+
+        if pipeline.volumetric():
+            if self.shape in ["diamond", "disk", "square", "star"] and not self.__allow_planewise:
+                raise ValidationError(
+                    "A 3 dimensional struturing element is required. You selected {}."
+                    " Please select one of \"ball\", \"cube\", or \"octahedron\".".format(self.shape),
+                    self
+                )
+        else:
+            if self.shape in ["ball", "cube", "octahedron"]:
+                raise ValidationError(
+                    "A 2 dimensional structuring element is required. You selected {}."
+                    " Please select one of \"diamond\", \"disk\", \"square\", \"star\".".format(self.shape),
+                    self
+                )
 
 
 class CustomChoice(Choice):

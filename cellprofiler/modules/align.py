@@ -1,25 +1,32 @@
-'''<b>Align</b> aligns images relative to each other, for example, to correct 
-shifts in the optical path of a microscope in each channel of a multi-channel
-set of images.
-<hr>
-For two or more input images, this module determines the optimal alignment
-among them. Aligning images is useful to obtain proper measurements of the
-intensities in one channel based on objects identified in another channel,
-for example. Alignment is often needed when the microscope is not perfectly
-calibrated. It can also be useful to align images in a time-lapse series of
-images.  The module stores the amount of shift between images as a
-measurement, which can be useful for quality control purposes.
+# coding=utf-8
 
-<p>Note that the second image (and others following) is always aligned
-with respect to the first image. That is, the X/Y offsets indicate how much
-the second image needs to be shifted by to match the first.</p>
+"""
+Align
+=====
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>XShift, Yshift:</i> The pixel shift in X and Y of the
-aligned image with respect to the original image.</li>
-</ul>
-'''
+**Align** aligns images relative to each other, for example, to correct
+shifts in the optical path of a microscope in each channel of a
+multi-channel set of images.
+
+For two or more input images, this module determines the optimal
+alignment among them. Aligning images is useful to obtain proper
+measurements of the intensities in one channel based on objects
+identified in another channel, for example. Alignment is often needed
+when the microscope is not perfectly calibrated. It can also be useful
+to align images in a time-lapse series of images. The module stores the
+amount of shift between images as a measurement, which can be useful for
+quality control purposes.
+
+Note that the second image (and others following) is always aligned with
+respect to the first image. That is, the X/Y offsets indicate how much
+the second image needs to be shifted by to match the first.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  *XShift, Yshift:* The pixel shift in X and Y of the aligned image
+   with respect to the original image.
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -55,25 +62,25 @@ class Align(cpm.Module):
 
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber(
-                "Select the first input image",
-                cps.NONE, doc="""
-            Specify the name of the first image to align.""")
+"Select the first input image",
+                cps.NONE, doc="""\
+Specify the name of the first image to align.""")
 
         self.first_output_image = cps.ImageNameProvider(
-                "Name the first output image",
-                "AlignedRed", doc="""
-            Enter the name of the first aligned image.""")
+"Name the first output image",
+                "AlignedRed", doc="""\
+Enter the name of the first aligned image.""")
 
         self.separator_1 = cps.Divider(line=False)
         self.second_input_image = cps.ImageNameSubscriber(
                 "Select the second input image",
-                cps.NONE, doc="""
-            Specify the name of the second image to align.""")
+                cps.NONE, doc="""\
+Specify the name of the second image to align.""")
 
         self.second_output_image = cps.ImageNameProvider(
-                "Name the second output image",
-                "AlignedGreen", doc="""
-            Enter the name of the second aligned image.""")
+"Name the second output image",
+                "AlignedGreen", doc="""\
+Enter the name of the second aligned image.""")
 
         self.separator_2 = cps.Divider(line=False)
         self.additional_images = []
@@ -81,71 +88,66 @@ class Align(cpm.Module):
                                           self.add_image)
 
         self.alignment_method = cps.Choice("Select the alignment method",
-                                           M_ALL, doc='''
-             Two options for the alignment method are available:<br>
-             <ul>
-             <li><i>%(M_MUTUAL_INFORMATION)s:</i> This more general method works well for aligning
-             images from different modalities that contain the same information, but are
-             expressed differently. However, this method performs better than %(M_CROSS_CORRELATION)s,
-             even in the same modality, if the images are not highly correlated.
-             It is iterative, and thus tends to be slower than other methods,
-             but is more likely to be correct.  Essentially, alignment is performed by measuring
-             how well one image "explains" the other. For example, a flourescent image
-             can be aligned to a brightfield image by this method since the relevant
-             features are bright in one modality where they are dim in the other. </li>
-             <li><i>%(M_CROSS_CORRELATION)s:</i> This is a good means
-             of alignment in the case of images acquired with the same modality
-             (e.g., all images to be aligned are fluorescent). It is fast, however
-             it can be highly influenced by a particular, possibly spurious, feature and
-             in turn generate anomalously large shifts. It allows for a
-             linear relationship between the intensities of the two images,
-             i.e., the relevant features in the images to be aligned all have
-             varying degrees of brightness.</li>
-             </ul>
-             <p>
-             <b>References</b>
-             <ul>
-             <li>Lewis JP. (1995) "Fast normalized cross-correlation." <i>Vision Interface</i>, 1-7.</li>
-             </ul>
-             </p>''' % globals())
+                                           M_ALL, doc="""\
+Two options for the alignment method are available:
+
+-  *%(M_MUTUAL_INFORMATION)s:* This more general method works well for
+   aligning images from different modalities that contain the same
+   information, but are expressed differently. However, this method
+   performs better than %(M_CROSS_CORRELATION)s, even in the same
+   modality, if the images are not highly correlated. It is iterative,
+   and thus tends to be slower than other methods, but is more likely to
+   be correct. Essentially, alignment is performed by measuring how well
+   one image “explains” the other. For example, a flourescent image can
+   be aligned to a brightfield image by this method since the relevant
+   features are bright in one modality where they are dim in the other.
+-  *%(M_CROSS_CORRELATION)s:* This is a good means of alignment in the
+   case of images acquired with the same modality (e.g., all images to
+   be aligned are fluorescent). It is fast, however it can be highly
+   influenced by a particular, possibly spurious, feature and in turn
+   generate anomalously large shifts. It allows for a linear
+   relationship between the intensities of the two images, i.e., the
+   relevant features in the images to be aligned all have varying
+   degrees of brightness.
+
+**References**
+
+-  Lewis JP. (1995) “Fast normalized cross-correlation.” *Vision
+   Interface*, 1-7.
+""" % globals())
 
         self.crop_mode = cps.Choice(
-                "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE], doc="""
-            The crop mode determines how the output images are either cropped
-            or padded after alignment. The alignment phase calculates the
-            areas in each image that are found to be overlapping. In almost
-            all cases, there will be portions of some or all of the images
-            that don't overlap with any other aligned image. These portions
-            have no counterpart and will be excluded from analysis. There
-            are three choices for cropping:
-            <ul>
-            <li><i>%(C_CROP)s:</i> Crop every image to the region that overlaps
-            in all images. This makes downstream
-            analysis simpler because all of the output images
-            have authentic pixel data at all positions, however it discards
-            parts of images. Also, the output images may not be the same size
-            as the input images which may cause problems if downstream modules
-            use aligned and unaligned images (which may be of differing sizes)
-            in combination.</li>
-            <li><i>%(C_PAD)s:</i> Align every image and pad with masked black
-            pixels to make each image the same size. This results in larger
-            images, but preserves all information in each of the images. This
-            may be the best choice if images undergo an operation such as
-            smoothing that could use the information that would otherwise be
-            cropped.</li>
-            <li><i>%(C_SAME_SIZE)s:</i> Maintain the sizes of the images but
-            align them, masking the unaligned portions with black pixels.
-            <b>Align</b> aligns all images relative to the first.
-            This is a reasonable option for alignments
-            with small displacements since it maintains a consistent image
-            size which may be useful if output images from different image sets
-            will be compared against each other after processing. The
-            reference image can also be used across image sets. For example,
-            the reference image could be loaded for all image sets in a
-            group to align the entire group's images similarly, then the
-            aligned images could be combined in a module such as
-            <b>MakeProjection</b>.</li>
-            </ul>""" % globals())
+                "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE], doc="""\
+The crop mode determines how the output images are either cropped or
+padded after alignment. The alignment phase calculates the areas in each
+image that are found to be overlapping. In almost all cases, there will
+be portions of some or all of the images that don’t overlap with any
+other aligned image. These portions have no counterpart and will be
+excluded from analysis. There are three choices for cropping:
+
+-  *%(C_CROP)s:* Crop every image to the region that overlaps in all
+   images. This makes downstream analysis simpler because all of the
+   output images have authentic pixel data at all positions, however it
+   discards parts of images. Also, the output images may not be the same
+   size as the input images which may cause problems if downstream
+   modules use aligned and unaligned images (which may be of differing
+   sizes) in combination.
+-  *%(C_PAD)s:* Align every image and pad with masked black pixels to
+   make each image the same size. This results in larger images, but
+   preserves all information in each of the images. This may be the best
+   choice if images undergo an operation such as smoothing that could
+   use the information that would otherwise be cropped.
+-  *%(C_SAME_SIZE)s:* Maintain the sizes of the images but align them,
+   masking the unaligned portions with black pixels. **Align** aligns
+   all images relative to the first. This is a reasonable option for
+   alignments with small displacements since it maintains a consistent
+   image size which may be useful if output images from different image
+   sets will be compared against each other after processing. The
+   reference image can also be used across image sets. For example, the
+   reference image could be loaded for all image sets in a group to
+   align the entire group’s images similarly, then the aligned images
+   could be combined in a module such as **MakeProjection**.
+   """ % globals())
 
     def add_image(self, can_remove=True):
         '''Add an image + associated questions and buttons'''
@@ -155,29 +157,29 @@ class Align(cpm.Module):
 
         group.append("input_image_name",
                      cps.ImageNameSubscriber(
-                             "Select the additional image",
+ "Select the additional image",
                              cps.NONE, doc="""
-                         Select the additional image to align?"""))
+ Select the additional image to align?"""))
 
         group.append("output_image_name",
                      cps.ImageNameProvider(
                              "Name the output image",
                              "AlignedBlue", doc="""
-                         Enter the name of the aligned image?"""))
+ Enter the name of the aligned image?"""))
 
         group.append("align_choice",
                      cps.Choice(
-                             "Select how the alignment is to be applied",
-                             [A_SIMILARLY, A_SEPARATELY], doc="""
-                         An additional image can either be aligned similarly to the second one or
-                         a separate alignment to the first image can be calculated:
-                         <ul>
-                         <li><i>%(A_SIMILARLY)s:</i> The same alignment measurements obtained from
-                         the first two input images are applied to this additional image.</li>
-                         <li><i>%(A_SEPARATELY)s:</i> A new set of alignment measurements are
-                         calculated for this additional image using the alignment method
-                         specified with respect to the first input image.</li>
-                         </ul>""" % globals()))
+ "Select how the alignment is to be applied",
+                             [A_SIMILARLY, A_SEPARATELY], doc="""\                         
+An additional image can either be aligned similarly to the second one or
+a separate alignment to the first image can be calculated:
+
+-  *%(A_SIMILARLY)s:* The same alignment measurements obtained from the
+   first two input images are applied to this additional image.
+-  *%(A_SEPARATELY)s:* A new set of alignment measurements are
+   calculated for this additional image using the alignment method
+   specified with respect to the first input image.         
+""" % globals()))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))

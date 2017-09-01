@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 """
-
 Remove holes
-
+============
 """
 
 import numpy
@@ -15,7 +14,7 @@ import cellprofiler.setting
 
 
 class RemoveHoles(cellprofiler.module.ImageProcessing):
-    category = "Mathematical morphology"
+    category = "Advanced"
 
     module_name = "Remove holes"
 

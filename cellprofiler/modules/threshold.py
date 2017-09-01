@@ -1,8 +1,15 @@
+# coding=utf-8
+
 """
-<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero
-<hr>
-<b>ApplyThreshold</b> produces a grayscale image based on a threshold which can be
-pre-selected or calculated automatically using one of many methods.
+Apply Threshold
+===============
+
+**Apply Threshold** sets pixel intensities below or above a certain
+threshold to zero
+
+**Threshold** produces a grayscale image based on a threshold which
+can be pre-selected or calculated automatically using one of many
+methods.
 """
 
 import centrosome.threshold
@@ -44,13 +51,13 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class ApplyThreshold(cellprofiler.module.ImageProcessing):
-    module_name = "ApplyThreshold"
+class Threshold(cellprofiler.module.ImageProcessing):
+    module_name = "Threshold"
 
     variable_revision_number = 10
 
     def create_settings(self):
-        super(ApplyThreshold, self).create_settings()
+        super(Threshold, self).create_settings()
 
         self.threshold_scope = cellprofiler.setting.Choice(
             "Threshold strategy",
@@ -180,7 +187,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
                         approach can be useful when you are certain what the cutoff should be. The difference
                         in this case is that the desired threshold does vary from image to image in the
                         experiment but can be measured using another module, such as one of the <b>Measure</b>
-                        modules, <b>ApplyThreshold</b> or an <b>Identify</b> module.</dd>
+                        modules, <b>Threshold</b> or an <b>Identify</b> module.</dd>
                     </dl>
                 </li>
             </ul>
@@ -505,7 +512,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         return self.local_operation.value
 
     def visible_settings(self):
-        visible_settings = super(ApplyThreshold, self).visible_settings()
+        visible_settings = super(Threshold, self).visible_settings()
 
         visible_settings += [self.threshold_scope]
 
@@ -544,7 +551,7 @@ class ApplyThreshold(cellprofiler.module.ImageProcessing):
         return visible_settings
 
     def settings(self):
-        settings = super(ApplyThreshold, self).settings()
+        settings = super(Threshold, self).settings()
 
         return settings + [
             self.threshold_scope,

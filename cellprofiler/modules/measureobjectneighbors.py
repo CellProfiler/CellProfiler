@@ -1,43 +1,54 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each
-object has and records various properties about the neighbors' relationships,
-including the percentage of an object's edge pixels that touch a neighbor.
-<hr>
+# coding=utf-8
+
+"""
+MeasureObjectNeighbors
+======================
+
+**MeasureObjectNeighbors** calculates how many neighbors each object
+has and records various properties about the neighbors’ relationships,
+including the percentage of an object’s edge pixels that touch a
+neighbor.
+
 Given an image with objects identified (e.g., nuclei or cells), this
 module determines how many neighbors each object has. You can specify
 the distance within which objects should be considered neighbors, or
-that objects are only considered neighbors if they are directly touching.
+that objects are only considered neighbors if they are directly
+touching.
 
-<h4>Available measurements</h4>
-<b>Object measurements</b>
-<ul>
-<li><i>NumberOfNeighbors:</i> Number of neighbor objects.</li>
-<li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch
-neighbors, after the objects have been expanded to the specified distance.
-Note: This measurement is only available if you use the same set of objects
-for both objects and neighbors.</li>
-<li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
-<li><i>FirstClosestDistance:</i> The distance to the closest object.</li>
-<li><i>SecondClosestObjectNumber:</i> The index of the second closest object.</li>
-<li><i>SecondClosestDistance:</i> The distance to the second closest object.</li>
-<li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the
-vertex and the first and second closest object centers along the vectors.</li>
-</ul>
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<b>Object relationships:</b> The identity of the neighboring objects, for
-each object. Since per-object output is one-to-one and neighbors relationships
-are often many-to-one, they may be saved as a separate file in
-<b>ExportToSpreadsheet</b> by selecting <i>Object
-relationships</i> from the list of objects to export.
+**Object measurements**
 
-<h4>Technical notes</h4>
-Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or
-<b>IdentifySecondaryObjects</b> will still register as a neighbors for the purposes
-of accurate measurement. For instance, if an object touches a single object and
-that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but
-there will not be a corresponding <i>ClosestObjectNumber</i>.
+-  *NumberOfNeighbors:* Number of neighbor objects.
+-  *PercentTouching:* Percent of the object’s boundary pixels that touch
+   neighbors, after the objects have been expanded to the specified
+   distance. Note that this measurement is only available if you use the
+   same set of objects for both objects and neighbors.
+-  *FirstClosestObjectNumber:* The index of the closest object.
+-  *FirstClosestDistance:* The distance to the closest object.
+-  *SecondClosestObjectNumber:* The index of the second closest object.
+-  *SecondClosestDistance:* The distance to the second closest object.
+-  *AngleBetweenNeighbors:* The angle formed with the object center as
+   the vertex and the first and second closest object centers along the
+   vectors.
 
-See also the <b>Identify</b> modules.
-'''
+**Object relationships:** The identity of the neighboring objects, for
+each object. Since per-object output is one-to-one and neighbors
+relationships are often many-to-one, they may be saved as a separate
+file in **ExportToSpreadsheet** by selecting *Object relationships* from
+the list of objects to export.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+Objects discarded via modules such as **IdentifyPrimaryObjects** or
+**IdentifySecondaryObjects** will still register as a neighbors for the
+purposes of accurate measurement. For instance, if an object touches a
+single object and that object had been discarded, *NumberOfNeighbors*
+will be positive, but there will not be a corresponding
+*ClosestObjectNumber*. See also the **Identify** modules.
+"""
 
 import matplotlib.cm
 import numpy as np
@@ -86,96 +97,106 @@ class MeasureObjectNeighbors(cpm.Module):
 
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
-                'Select objects to measure', cps.NONE, doc="""
-            Select the objects whose neighbors you want to measure.""")
+                'Select objects to measure', cps.NONE, doc="""\
+Select the objects whose neighbors you want to measure.""")
 
         self.neighbors_name = cps.ObjectNameSubscriber(
-                'Select neighboring objects to measure', cps.NONE, doc="""
-            This is the name of the objects that are potential
-            neighbors of the above objects. You can find the neighbors
-            within the same set of objects by selecting the same objects
-            as above.""")
+                'Select neighboring objects to measure', cps.NONE, doc="""\
+This is the name of the objects that are potential
+neighbors of the above objects. You can find the neighbors
+within the same set of objects by selecting the same objects
+as above.""")
 
         self.distance_method = cps.Choice(
                 'Method to determine neighbors',
-                D_ALL, D_EXPAND, doc="""
-            There are several methods by which to determine whether objects are neighbors:
-            <ul>
-            <li><i>%(D_ADJACENT)s:</i> In this mode, two objects must have adjacent
-            boundary pixels to be neighbors. </li>
-            <li><i>%(D_EXPAND)s:</i> The objects are expanded until all
-            pixels on the object boundaries are touching another. Two objects are
-            neighbors if any of their boundary pixels are adjacent after
-            expansion.</li>
-            <li><i>%(D_WITHIN)s:</i> Each object is expanded by
-            the number of pixels you specify. Two objects are
-            neighbors if they have adjacent pixels after expansion. </li>
-            </ul>
+                D_ALL, D_EXPAND, doc="""\
+There are several methods by which to determine whether objects are
+neighbors:
 
-            <p>For <i>%(D_ADJACENT)s</i> and <i>%(D_EXPAND)s</i>, the
-            <i>%(M_PERCENT_TOUCHING)s</i> measurement is the percentage of pixels on the boundary
-            of an object that touch adjacent objects. For <i>%(D_WITHIN)s</i>,
-            two objects are touching if any of their boundary
-            pixels are adjacent after expansion and <i>%(M_PERCENT_TOUCHING)s</i> measures the
-            percentage of boundary pixels of an <i>expanded</i> object that
-            touch adjacent objects.</p>""" % globals())
+-  *%(D_ADJACENT)s:* In this mode, two objects must have adjacent
+   boundary pixels to be neighbors.
+-  *%(D_EXPAND)s:* The objects are expanded until all pixels on the
+   object boundaries are touching another. Two objects are neighbors if
+   any of their boundary pixels are adjacent after expansion.
+-  *%(D_WITHIN)s:* Each object is expanded by the number of pixels you
+   specify. Two objects are neighbors if they have adjacent pixels after
+   expansion.
+
+For *%(D_ADJACENT)s* and *%(D_EXPAND)s*, the
+*%(M_PERCENT_TOUCHING)s* measurement is the percentage of pixels on
+the boundary of an object that touch adjacent objects. For
+*%(D_WITHIN)s*, two objects are touching if any of their boundary
+pixels are adjacent after expansion and *%(M_PERCENT_TOUCHING)s*
+measures the percentage of boundary pixels of an *expanded* object that
+touch adjacent objects.
+""" % globals())
 
         self.distance = cps.Integer(
-                'Neighbor distance', 5, 1, doc="""
-            <i>(Used only when "%(D_WITHIN)s" is selected)</i> <br>
-            The Neighbor distance is the number of pixels that each object is
-            expanded for the neighbor calculation. Expanded objects that touch
-            are considered neighbors.""" % globals())
+                'Neighbor distance', 5, 1, doc="""\
+*(Used only when “%(D_WITHIN)s” is selected)*
+
+The Neighbor distance is the number of pixels that each object is
+expanded for the neighbor calculation. Expanded objects that touch are
+considered neighbors.
+""" % globals())
 
         self.wants_count_image = cps.Binary(
                 'Retain the image of objects colored by numbers of neighbors?',
-                False, doc="""
-            An output image showing the input objects
-            colored by numbers of neighbors may be retained. A colormap of your choice shows
-            how many neighbors each object has. The background is set
-            to -1. Objects are colored with an increasing color value
-            corresponding to the number of neighbors, such that objects with no
-            neighbors are given a color corresponding to 0. Use the <b>SaveImages</b>
-            module to save this image to a file.""")
+                False, doc="""\
+An output image showing the input objects colored by numbers of
+neighbors may be retained. A colormap of your choice shows how many
+neighbors each object has. The background is set to -1. Objects are
+colored with an increasing color value corresponding to the number of
+neighbors, such that objects with no neighbors are given a color
+corresponding to 0. Use the **SaveImages** module to save this image to
+a file.""")
 
         self.count_image_name = cps.ImageNameProvider(
                 'Name the output image',
-                'ObjectNeighborCount', doc="""
-            <i>(Used only if the image of objects colored by numbers of neighbors
-            is to be retained for later use in the pipeline)</i> <br>
-            Specify a name
-            that will allow the image of objects colored by numbers of neighbors
-            to be selected later in the pipeline.""")
+                'ObjectNeighborCount', doc="""\
+*(Used only if the image of objects colored by numbers of neighbors is
+to be retained for later use in the pipeline)*
+
+Specify a name that will allow the image of objects colored by numbers
+of neighbors to be selected later in the pipeline.""")
 
         self.count_colormap = cps.Colormap(
-                'Select colormap', doc="""
-            <i>(Used only if the image of objects colored by numbers of neighbors
-            is to be retained for later use in the pipeline)</i> <br>
-            Select the colormap to use to color the neighbor number image. All available colormaps can be seen
-            <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
+                'Select colormap', doc="""\
+*(Used only if the image of objects colored by numbers of neighbors is
+to be retained for later use in the pipeline)*
+
+Select the colormap to use to color the neighbor number image. All
+available colormaps can be seen `here`_.
+
+.. _here: http://matplotlib.org/examples/color/colormaps_reference.html""")
 
         self.wants_percent_touching_image = cps.Binary(
                 'Retain the image of objects colored by percent of touching pixels?',
-                False, doc="""
-            Select <i>%(YES)s</i> to keep an image of the input objects
-            colored by the percentage of the boundary touching their neighbors.
-            A colormap of your choice is used to show the touching percentage of
-            each object. Use the <b>SaveImages</b> module to save this image to a file.""" % globals())
+                False, doc="""\
+Select *%(YES)s* to keep an image of the input objects colored by the
+percentage of the boundary touching their neighbors. A colormap of your
+choice is used to show the touching percentage of each object. Use the
+**SaveImages** module to save this image to a file.
+""" % globals())
 
         self.touching_image_name = cps.ImageNameProvider(
                 'Name the output image',
-                'PercentTouching', doc="""
-            <i>(Used only if the image of objects colored by percent touching
-            is to be retained for later use in the pipeline)</i> <br>
-            Specify a name that will allow the image of objects colored by percent of touching
-            pixels to be selected later in the pipeline.""")
+                'PercentTouching', doc="""\
+*(Used only if the image of objects colored by percent touching is to be
+retained for later use in the pipeline)*
+
+Specify a name that will allow the image of objects colored by percent
+of touching pixels to be selected later in the pipeline.""")
 
         self.touching_colormap = cps.Colormap(
-                'Select a colormap', doc="""
-            <i>(Used only if the image of objects colored by percent touching
-            is to be retained for later use in the pipeline)</i> <br>
-            Select the colormap to use to color the percent touching image. All available colormaps can be seen
-            <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
+                'Select a colormap', doc="""\
+*(Used only if the image of objects colored by percent touching is to be
+retained for later use in the pipeline)*
+
+Select the colormap to use to color the percent touching image. All
+available colormaps can be seen `here`_.
+
+.. _here: http://matplotlib.org/examples/color/colormaps_reference.html""")
 
     def settings(self):
         return [self.object_name, self.neighbors_name,

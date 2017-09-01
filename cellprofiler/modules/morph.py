@@ -1,752 +1,233 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+
 """
-<b>Morph</b> performs low-level morphological operations on binary or grayscale images
-<hr>
-This module performs a series of morphological operations on a binary image or grayscale image, resulting in an image
-of the same type. Many require some image processing knowledge to understand how best to use these morphological
-filters in order to achieve the desired result. Note that the algorithms minimize the interference of masked pixels;
-for instance, the dilate operation will only consider unmasked pixels in the neighborhood of a pixel when determining
-the maximum within that neighborhood.<br>
-<br>
-The following operations are available:<br>
-<br>
-<table border="1">
-    <tr>
-        <td><b>Operation</b></td>
-        <td><b>Description</b></td>
-        <td><b>Input image type allowed</b></td>
-    </tr>
-    <tr>
-        <td><i>Branchpoints</i></td>
-        <td>
-            Removes all pixels except those that are the branchpoints of a skeleton. This operation should be applied
-            to an image after skeletonizing. It leaves only those pixels that are at the intersection of branches.
-            Note that shown here is a window into a hypothetical larger image; the “?” symbols reflect that in this
-            small window those values cannot be calculated because the values necessary are outside the window. In
-            reality, pixels at the border are handled by padding the image with zeros for almost all operations
-            (except it is padded with 1 for hole filling).<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>?</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>?</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>?</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Bridge</i></td>
-        <td>
-            Sets a pixel to 1 if it has two non-zero neighbors that are on opposite sides of this pixel:<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Clean</i></td>
-        <td>
-            Removes isolated pixels:<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Convex hull</i></td>
-        <td>Finds the convex hull of a binary image. The convex hull is the smallest convex polygon that fits around
-        all foreground pixels of the image: it is the shape that a rubber band would take if stretched around the
-        foreground pixels. The convex hull can be used to regularize the boundary of a large, single object in an
-        image, for instance, the edge of a well.</td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Diag</i></td>
-        <td>
-            Fills in pixels whose neighbors are diagnonally connected to 4-connect pixels that are 8-connected:<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&nbsp;,&nbsp;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Distance</i></td>
-        <td>Computes the distance transform of a binary image. The distance of each foreground pixel is computed to the
-        nearest background pixel. The resulting image is then scaled so that the largest distance is 1.</td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Endpoints</i></td>
-        <td>
-            Removes all pixels except the ones that are at the end of a skeleton.
-            Note that shown here is a window into a hypothetical larger image; the “?” symbols reflect that in this
-            small window those values cannot be calculated because the values necessary are outside the window. In
-            reality, pixels at the border are handled by padding the image with zeros for almost all operations
-            (except it is padded with 1 for hole filling).<br>
-<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>?</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>?</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Fill</i></td>
-        <td>
-            Sets a pixel to 1 if all of its neighbors are 1:<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Hbreak</i></td>
-        <td>
-            Removes pixels that form vertical bridges between horizontal lines:<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Majority</i></td>
-        <td>
-            Each pixel takes on the value of the majority that surround it (keep pixel value to break ties):<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Life</i></td>
-        <td>
-            Applies the interaction rules from the <a href="http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game
-            of Life</a>, an example of a cellular automaton.
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>OpenLines</i></td>
-        <td>Performs an erosion followed by a dilation using rotating linear structural elements. The effect is to
-        return parts of the image that have a linear intensity distribution and suppress dots of the same size.</td>
-        <td>Binary, grayscale</td>
-    </tr>
-    <tr>
-        <td><i>Remove</i></td>
-        <td>
-            Removes pixels that are otherwise surrounded by others (4 connected). The effect is to leave the perimeter
-            of a solid object:<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Shrink</i></td>
-        <td>Performs a thinning operation that erodes unless that operation would change the image's Euler number. This
-        means that blobs are reduced to single points and blobs with holes are reduced to rings if shrunken
-        indefinitely.</td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>SkelPE</i></td>
-        <td>Performs a skeletonizing operation using the metric, PE * D to control the erosion order. PE is the Poisson
-        Equation (see Gorelick, "Shape representation and classification using the Poisson Equation", IEEE Transactions
-        on Pattern Analysis and Machine Intelligence V28, # 12, 2006) evaluated within the foreground with the boundary
-        condition that the background is zero. D is the distance transform (distance of a pixel to the nearest edge).
-        The resulting skeleton has fewer spurs but some bit of erosion at the endpoints in the binary image.</td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Spur</i></td>
-        <td>
-            Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor. This operation essentially
-            removes the endpoints of lines.<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Thicken</i></td>
-        <td>Dilates the exteriors of objects where that dilation does not 8-connect the object with another. The image
-        is labeled and the labeled objects are filled. Unlabeled points adjacent to uniquely labeled points change from
-        background to foreground.</td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Thin</i></td>
-        <td>Thin lines preserving the Euler number using the thinning algorithm # 1 described in Guo, "Parallel
-        Thinning with Two Subiteration Algorithms", <i>Communications of the ACM,</i> Vol 32 #3, page 359. The result
-        generally preserves the lines in an image while eroding their thickness.</td>
-        <td>Binary</td>
-    </tr>
-    <tr>
-        <td><i>Vbreak</i></td>
-        <td>
-            Removes pixels that form horizontal bridges between vertical lines:<br>
-            <table>
-                <tr>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>1</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>&rarr;</td>
-                    <td>
-                        <table border="1">
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>1</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td>Binary</td>
-    </tr>
-</table>
+Morph
+=====
+
+**Morph** performs low-level morphological operations on binary or
+grayscale images
+
+This module performs a series of morphological operations on a binary
+image or grayscale image, resulting in an image of the same type. Many
+require some image processing knowledge to understand how best to use
+these morphological filters in order to achieve the desired result. Note
+that the algorithms minimize the interference of masked pixels; for
+instance, the dilate operation will only consider unmasked pixels in the
+neighborhood of a pixel when determining the maximum within that
+neighborhood.
+
+The following operations are available:
+    
+.. list-table:: 
+  :widths: 10 100 10
+  :header-rows: 1
+
+  * - **Operation**
+    - **Description**
+    - **Input image type allowed**
+  * - *Branchpoints*
+    - Removes all pixels except those that are the branchpoints
+      of a skeleton. This operation should be applied to an image 
+      after skeletonizing. It leaves only those pixels that are at the 
+      intersection of branches.
+      
+      +---+---+---+---+---+----------------+---+---+---+---+---+         
+      | 1 | 0 | 0 | 0 | 0 |                | ? | 0 | 0 | 0 | 0 | 
+      +---+---+---+---+---+                +---+---+---+---+---+   
+      | 0 | 1 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 | 0 |  
+      +---+---+---+---+---+                +---+---+---+---+---+  
+      | 0 | 0 | 1 | 0 | 0 |        →       | 0 | 0 | 1 | 0 | 0 |  
+      +---+---+---+---+---+                +---+---+---+---+---+   
+      | 0 | 1 | 0 | 1 | 0 |                | 0 | 0 | 0 | 0 | 0 |  
+      +---+---+---+---+---+                +---+---+---+---+---+    
+      | 1 | 0 | 0 | 0 | 1 |                | ? | 0 | 0 | 0 | ? |   
+      +---+---+---+---+---+----------------+---+---+---+---+---+  
+         
+    - Binary
+  * - *Bridge*
+    - Sets a pixel to 1 if it has two non-zero neighbors that are on 
+      opposite sides of this pixel:
+  
+      +---+---+---+----------------+---+---+---+        
+      | 1 | 0 | 0 |                | 1 | 0 | 0 | 
+      +---+---+---+                +---+---+---+ 
+      | 0 | 0 | 0 |       →        | 0 | 1 | 0 |   
+      +---+---+---+                +---+---+---+   
+      | 0 | 0 | 1 |                | 0 | 0 | 1 | 
+      +---+---+---+----------------+---+---+---+  
+     
+    - Binary
+  * - *Clean*
+    - Removes isolated pixels:
+  
+      +---+---+---+----------------+---+---+---+        
+      | 0 | 0 | 0 |                | 0 | 0 | 0 | 
+      +---+---+---+                +---+---+---+ 
+      | 0 | 1 | 0 |       →        | 0 | 0 | 0 |   
+      +---+---+---+                +---+---+---+   
+      | 0 | 0 | 0 |                | 0 | 0 | 0 | 
+      +---+---+---+----------------+---+---+---+  
+     
+    - Binary
+  * - *Convex hull*
+    - Finds the convex hull of a binary image. The convex hull is the smallest convex 
+      polygon that fits around all foreground pixels of the image: it is the shape 
+      that a rubber band would take if stretched around the foreground pixels. The 
+      convex hull can be used to regularize the boundary of a large, single object 
+      in an image, for instance, the edge of a well.
+    - Binary
+  * - *Diag*
+    - Fills in pixels whose neighbors are diagnonally connected to 4-connect 
+      pixels that are 8-connected:
+  
+      +---+---+----------------+---+---+      
+      | 0 | 1 |                | 1 | 1 |
+      +---+---+                +---+---+
+      | 1 | 0 |       →        | 1 | 1 |  
+      +---+---+----------------+---+---+ 
+      
+      +---+---+----------------+---+---+      
+      | 0 | 1 |                | 1 | 1 |
+      +---+---+                +---+---+
+      | 1 | 1 |       →        | 1 | 1 |  
+      +---+---+----------------+---+---+ 
+     
+    - Binary
+  * - *Distance*
+    - Computes the distance transform of a binary image. The distance of each 
+      foreground pixel is computed to the nearest background pixel. The 
+      resulting image is then scaled so that the largest distance is 1.
+    - Binary
+  * - *Endpoints*
+    - Removes all pixels except the ones that are at the end of a skeleton:
+      
+      +---+---+---+---+---+----------------+---+---+---+---+---+         
+      | 0 | 0 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 | 0 | 
+      +---+---+---+---+---+                +---+---+---+---+---+   
+      | 0 | 1 | 0 | 1 | 0 |                | 0 | 1 | 0 | 1 | 0 |  
+      +---+---+---+---+---+                +---+---+---+---+---+  
+      | 0 | 0 | 1 | 0 | 0 |       →        | 0 | 0 | 0 | 0 | 0 |  
+      +---+---+---+---+---+                +---+---+---+---+---+   
+      | 0 | 1 | 0 | 1 | 0 |                | 0 | 0 | 0 | 0 | 0 |  
+      +---+---+---+---+---+                +---+---+---+---+---+    
+      | 0 | 1 | 0 | 0 | 1 |                | 0 | ? | 0 | 0 | ? |   
+      +---+---+---+---+---+----------------+---+---+---+---+---+  
+         
+    - Binary
+  * - *Fill*
+    - Sets a pixel to 1 if all of its neighbors are 1:
+  
+      +---+---+---+----------------+---+---+---+        
+      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
+      +---+---+---+                +---+---+---+ 
+      | 1 | 0 | 1 |       →        | 1 | 1 | 1 |   
+      +---+---+---+                +---+---+---+   
+      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
+      +---+---+---+----------------+---+---+---+  
+     
+    - Binary
+  * - *Hbreak*
+    - Removes pixels that form vertical bridges between horizontal lines:
+  
+      +---+---+---+----------------+---+---+---+        
+      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
+      +---+---+---+                +---+---+---+ 
+      | 0 | 1 | 0 |       →        | 0 | 0 | 0 |   
+      +---+---+---+                +---+---+---+   
+      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
+      +---+---+---+----------------+---+---+---+  
+     
+    - Binary
+  * - *Life*
+    - Applies the interaction rules from the `Game of Life 
+      <http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life>`__, an example of a 
+      cellular automaton.
+    - Binary
+  * - *Majority*
+    - Each pixel takes on the value of the majority that surround it (keep 
+      pixel value to break ties):
+  
+      +---+---+---+----------------+---+---+---+        
+      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
+      +---+---+---+                +---+---+---+ 
+      | 1 | 0 | 1 |       →        | 1 | 1 | 1 |   
+      +---+---+---+                +---+---+---+   
+      | 0 | 0 | 0 |                | 0 | 0 | 0 | 
+      +---+---+---+----------------+---+---+---+  
+     
+    - Binary
+  * - *OpenLines*
+    - Performs an erosion followed by a dilation using rotating linear structural 
+      elements. The effect is to return parts of the image that have a linear 
+      intensity distribution and suppress dots of the same size.
+    - Binary, grayscale
+  * - *Remove*
+    - Removes pixels that are otherwise surrounded by others (4 connected). The 
+      effect is to leave the perimeter of a solid object:
+  
+      +---+---+---+----------------+---+---+---+        
+      | 0 | 1 | 0 |                | 0 | 1 | 0 | 
+      +---+---+---+                +---+---+---+ 
+      | 1 | 1 | 1 |       →        | 1 | 0 | 1 |   
+      +---+---+---+                +---+---+---+   
+      | 0 | 1 | 0 |                | 0 | 1 | 0 | 
+      +---+---+---+----------------+---+---+---+  
+     
+    - Binary
+  * - *Shrink*
+    - Performs a thinning operation that erodes unless that operation would change 
+      the image's Euler number. This means that blobs are reduced to single points 
+      and blobs with holes are reduced to rings if shrunken indefinitely.
+    - Binary
+  * - *SkelPE*
+    - Performs a skeletonizing operation using the metric, PE * D to control the 
+      erosion order. PE is the Poisson Equation (see Gorelick, "Shape representation 
+      and classification using the Poisson Equation", IEEE Transactions on Pattern 
+      Analysis and Machine Intelligence V28, # 12, 2006) evaluated within the 
+      foreground with the boundary condition that the background is zero. D is the 
+      distance transform (distance of a pixel to the nearest edge). The resulting 
+      skeleton has fewer spurs but some bit of erosion at the endpoints in the 
+      binary image.
+    - Binary
+  * - *Spur*
+    - Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor. 
+      This operation essentially removes the endpoints of lines.
+      
+      +---+---+---+---+----------------+---+---+---+---+        
+      | 0 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 |
+      +---+---+---+---+                +---+---+---+---+   
+      | 0 | 1 | 0 | 0 |                | 0 | 0 | 0 | 0 |  
+      +---+---+---+---+                +---+---+---+---+  
+      | 0 | 0 | 1 | 0 |       →        | 0 | 0 | 1 | 0 |  
+      +---+---+---+---+                +---+---+---+---+   
+      | 1 | 1 | 1 | 1 |                | 1 | 1 | 1 | 1 |   
+      +---+---+---+---+----------------+---+---+---+---+ 
+         
+    - Binary
+  * - *Thicken*
+    - Dilates the exteriors of objects where that dilation does not 8-connect the 
+      object with another. The image is labeled and the labeled objects are filled. 
+      Unlabeled points adjacent to uniquely labeled points change from background 
+      to foreground.
+    - Binary
+  * - *Thin*
+    - Thin lines preserving the Euler number using the thinning algorithm # 1 
+      described in Guo, "Parallel Thinning with Two Subiteration Algorithms", 
+      Communications of the ACM, Vol 32 #3, page 359. The result generally preserves 
+      the lines in an image while eroding their thickness.
+    - Binary
+  * - *Vbreak*
+    - Removes pixels that form horizontal bridges between vertical lines:
+   
+      +---+---+---+----------------+---+---+---+        
+      | 1 | 0 | 1 |                | 1 | 0 | 1 | 
+      +---+---+---+                +---+---+---+ 
+      | 1 | 1 | 1 |       →        | 1 | 0 | 1 |   
+      +---+---+---+                +---+---+---+   
+      | 1 | 0 | 1 |                | 1 | 0 | 1 | 
+      +---+---+---+----------------+---+---+---+  
+     
+    - Binary
 """
 
 import logging
@@ -806,30 +287,31 @@ class Morph(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""
-            Select the image that you want to perform a morphological operation on.
-            A grayscale image can be
-            converted to binary using the <b>ApplyThreshold</b> module. Objects can be
-            converted to binary using the <b>ConvertToImage</b> module.""")
+                "Select the input image", cps.NONE, doc="""\
+Select the image that you want to perform a morphological operation on.
+A grayscale image can be converted to binary using the **Threshold**
+module. Objects can be converted to binary using the **ConvertToImage**
+module.""")
 
         self.output_image_name = cps.ImageNameProvider(
-                "Name the output image", "MorphBlue", doc="""
-            Enter the name for the output image It will be of the same type as the
-            input image.""")
+                "Name the output image", "MorphBlue", doc="""Enter the name for the output image It will be of the same type as the input image.""")
 
         self.add_button = cps.DoSomething("",
                                           "Add another operation",
-                                          self.add_function, doc="""
-            Press this button to add an operation that will be applied to the
-            image resulting from the previous operation(s). The module repeats
-            the previous operation the number of times you select before applying
-            the operation added by this button.""")
+                                          self.add_function, doc="""\
+Press this button to add an operation that will be applied to the
+image resulting from the previous operation(s). The module repeats
+the previous operation the number of times you select before applying
+the operation added by this button.""")
 
         self.functions = []
         self.add_function(can_remove=False)
 
     CUSTOM_REPEATS_TEXT = "Repetition number"
-    CUSTOM_REPEATS_DOC = "<i>(Used only if Custom selected)</i><br>Enter the number of times to repeat the operation"
+    CUSTOM_REPEATS_DOC = """\
+*(Used only if "Custom" selected)*
+    
+Enter the number of times to repeat the operation"""
 
     def add_function(self, can_remove=True):
         group = MorphSettingsGroup()
@@ -838,35 +320,34 @@ class Morph(cpm.Module):
             group.append("divider", cps.Divider(line=False))
         group.append("function", cps.Choice(
                 "Select the operation to perform",
-                F_ALL, doc="""
-            Choose one of the operations described in this module's help."""))
+                F_ALL, doc="""Choose one of the operations described in this module's help."""))
 
         group.append("repeats_choice", cps.Choice(
                 "Number of times to repeat operation",
-                R_ALL, doc="""
-            This setting controls the number of times that the same operation is applied
-            successively to the image.
-            <ul>
-            <li><i>%(R_ONCE)s:</i> Perform the operation once on the image.</li>
-            <li><i>%(R_FOREVER)s:</i> Perform the operation on the image until successive
-            iterations yield the same image.</li>
-            <li><i>%(R_CUSTOM)s:</i> Perform the operation a custom number of times.</li>
-            </ul>""" % globals()))
+                R_ALL, doc="""\
+This setting controls the number of times that the same operation is
+applied successively to the image.
+
+-  *%(R_ONCE)s:* Perform the operation once on the image.
+-  *%(R_FOREVER)s:* Perform the operation on the image until successive
+   iterations yield the same image.
+-  *%(R_CUSTOM)s:* Perform the operation a custom number of times.""" % globals()))
 
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1,
                                                    doc=self.CUSTOM_REPEATS_DOC))
 
         group.append("rescale_values", cps.Binary(
-                "Rescale values from 0 to 1?", True, doc="""
-            <i>(Used only for the %(F_DISTANCE)s operation).</i>
-            <p>Select <i>%(YES)s</i> to rescale the transformed values to lie between 0 and 1.
-            This is the option to use if the distance transformed image is to be used
-            for thresholding by an <b>Identify</b> module or the like, which assumes
-            a 0-1 scaling.</p>
-            <p>Select <i>%(NO)s</i> to leave the values in absolute pixel units.
-            This useful in cases where the actual pixel distances are to be used
-            downstream as input for a measurement module.</p>
-            """ % globals()))
+                "Rescale values from 0 to 1?", True, doc="""\
+*(Used only for the "%(F_DISTANCE)s" operation).*
+
+Select "*%(YES)s*" to rescale the transformed values to lie between 0 and
+1. This is the option to use if the distance transformed image is to be
+used for thresholding by an **Identify** module or the like, which
+assumes a 0-1 scaling.
+
+Select "*%(NO)s*" to leave the values in absolute pixel units. This useful
+in cases where the actual pixel distances are to be used downstream as
+input for a measurement module.""" % globals()))
 
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))

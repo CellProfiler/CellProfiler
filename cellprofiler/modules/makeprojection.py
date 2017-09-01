@@ -1,33 +1,41 @@
-from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
+# coding=utf-8
 
-__doc__ = '''
-<b>Make Projection</b> combines several two-dimensional images of
-the same field of view together, either by performing a mathematical operation
+"""
+**Make Projection** combines several two-dimensional images of the same
+field of view together, either by performing a mathematical operation
 upon the pixel values at each pixel position.
-<hr>
-This module combines a set of images by performing a mathematic operation of your
-choice at each pixel position; please refer to the settings help for more information on the available
-operations. The process of averaging or summing a Z-stack (3D image stack) is known as making a projection.
 
-<p>This module will create a projection of all images specified in the Input modules. For more
-information on loading image stacks and movies, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.
-To achieve per-folder projections
-i.e., creating a projection for each set of images in a folder, for all input folders,
-make the following setting specifications:
-<ol>
-<li>In the <b>Images</b> module, drag-and-drop the parent folder containing the sub-folders.</li>
-<li>In the <b>Metadata</b> module, enable metadata extraction and extract metadata from the folder name
-by using a regular expression to capture the subfolder name, e.g., <code>.*[\\\\/](?P&lt;Subfolder&gt;.*)$</code></li>
-<li>In the <b>NamesAndTypes</b> module, specify the appropriate names for any desired channels.</li>
-<li>In the <b>Groups</b> module, enable image grouping, and select the metadata tag representing
-the sub-folder name as the metadata category.</li>
-</ol>
-Keep in mind that the projection image is not immediately available in subsequent modules because the
-output of this module is not complete until all image processing cycles have completed. Therefore,
-the projection should be created with a dedicated pipeline.</p>
+This module combines a set of images by performing a mathematic
+operation of your choice at each pixel position; please refer to the
+settings help for more information on the available operations. The
+process of averaging or summing a Z-stack (3D image stack) is known as
+making a projection.
 
-See also the help for the <b>Input</b> modules.
-''' % globals()
+This module will create a projection of all images specified in the
+Input modules. For more information on loading image stacks and movies,
+see *Help > Creating a Project > Loading Image Stacks and Movies*. To
+achieve per-folder projections i.e., creating a projection for each set
+of images in a folder, for all input folders, make the following setting
+specifications:
+
+#. In the **Images** module, drag-and-drop the parent folder containing
+   the sub-folders.
+#. In the **Metadata** module, enable metadata extraction and extract
+   metadata from the folder name by using a regular expression to
+   capture the subfolder name, e.g., ``.*[\\\\/](?P<Subfolder>.*)$``
+#. In the **NamesAndTypes** module, specify the appropriate names for
+   any desired channels.
+#. In the **Groups** module, enable image grouping, and select the
+   metadata tag representing the sub-folder name as the metadata
+   category.
+
+Keep in mind that the projection image is not immediately available in
+subsequent modules because the output of this module is not complete
+until all image processing cycles have completed. Therefore, the
+projection should be created with a dedicated pipeline.
+
+See also the help for the **Input** modules.
+"""
 
 import numpy as np
 

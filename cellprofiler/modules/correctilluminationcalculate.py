@@ -1,20 +1,26 @@
-'''<b>Correct Illumination - Calculate</b> calculates an illumination function that is used to correct uneven
-illumination/lighting/shading or to reduce uneven background in images.
-<hr>
+# coding=utf-8
+
+"""
+CorrectIlluminationCalculate
+============================
+
+**CorrectIlluminationCalculate** calculates an illumination function
+that is used to correct uneven illumination/lighting/shading or to
+reduce uneven background in images.
+
 This module calculates an illumination function that can either be saved to the
-hard drive for later use or immediately applied to images later in the
-pipeline. This function will correct for the uneven illumination in images.
-If saving, select <i>.mat</i> format in <b>SaveImages</b>.
-Use the <b>CorrectIlluminationApply</b> module to apply the
-function to the image to be corrected.
+hard drive for later use or immediately applied to images later in the pipeline.
+This function will correct for the uneven illumination in images. Use the
+**CorrectIlluminationApply** module to apply the function to the image to be
+corrected. Use **SaveImages** to export an illumination function to disk using
+the "npy" file format. Illumination correction is a challenge to do properly;
+please see the `examples`_ and `tutorials`_ pages on the CellProfiler
+website for further advice. See also **CorrectIlluminationApply**,
+**EnhanceOrSuppressFeatures**.
 
-Illumination correction is a challenge to do properly; please see the
-<a href="http://www.cellprofiler.org/examples.html">examples</a> and
-<a href="http://cellprofiler.org/tutorials.html">tutorials</a> pages
-on the CellProfiler website for further advice.
-
-See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
-'''
+.. _examples: http://www.cellprofiler.org/examples.html
+.. _tutorials: http://cellprofiler.org/tutorials.html
+"""
 
 import centrosome.cpmorphology as cpmm
 import numpy as np
@@ -75,126 +81,146 @@ class CorrectIlluminationCalculate(cpm.Module):
     category = "Image Processing"
 
     def create_settings(self):
-        """Create the setting variables
-        """
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''
-            Choose the image to be used to calculate the illumination function.''')
+            "Select the input image",
+            cps.NONE,
+            doc="Choose the image to be used to calculate the illumination function."
+        )
 
         self.illumination_image_name = cps.ImageNameProvider(
-                "Name the output image", "IllumBlue", doc='''
-            Enter a name for the resultant illumination function.''',
+            "Name the output image", "IllumBlue", doc="""Enter a name for the resultant illumination function.""",
                 provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
                                      cps.AVAILABLE_ON_LAST_ATTRIBUTE: False})
 
         self.intensity_choice = cps.Choice(
-                "Select how the illumination function is calculated",
-                [IC_REGULAR, IC_BACKGROUND],
-                IC_REGULAR, doc='''
-            Choose which method you want to use to calculate the illumination function. You may chose
-            from the following options:
-            <ul>
-            <li><i>%(IC_REGULAR)s:</i> If you have objects that are evenly dispersed across your image(s) and
-             cover most of the image, the <i>Regular</i> method might be appropriate. Regular
-             intensities makes the illumination function based on the intensity at
-             each pixel of the image (or group of images if you are in <i>%(EA_ALL)s</i> mode) and
-             is most often rescaled (see below) and applied by division using
-             <b>CorrectIlluminationApply.</b> Note that if you are in <i>%(EA_EACH)s</i> mode or using a
-             small set of images with few objects, there will be regions in the
-             average image that contain no objects and smoothing by median filtering
-             is unlikely to work well.
-             <i>Note:</i> it does not make sense to choose (<i>%(IC_REGULAR)s + %(SM_NONE)s + %(EA_EACH)s</i>)
-             because the illumination function would be identical to the original
-             image and applying it will yield a blank image. You either need to smooth
-             each image, or you need to use <i>%(EA_ALL)s</i> images.</li>
-             <li><i>%(IC_BACKGROUND)s:</i>
-             If you think that the background (dim points) between objects show the
-             same pattern of illumination as your objects of interest, you can choose the
-             <i>%(IC_BACKGROUND)s</i> method. Background intensities finds the minimum pixel
-             intensities in blocks across the image (or group of images if you are in
-             <i>%(EA_ALL)s</i> mode) and is most often applied by subtraction using the
-             <b>CorrectIlluminationApply</b> module.
-             <i>Note:</i> if you will be using the <i>%(DOS_SUBTRACT)s</i> option in the
-             <b>CorrectIlluminationApply</b> module, you almost certainly do not want to
-             rescale the illumination function. </li>
-             </ul>
-             <p>Please note that if a mask was applied to the input image, the pixels outside of the
-             mask will be excluded from consideration. This is useful, for instance, in cases where
-             you have masked out the well edge in an image from a multi-well plate; the dark well
-             edge would distort the illumination correction function along the interior well edge.
-             Masking the image beforehand solves this problem.</p>''' % globals())
+            "Select how the illumination function is calculated",
+            [
+                IC_REGULAR,
+                IC_BACKGROUND
+            ],
+            IC_REGULAR,
+            doc="""\
+Choose which method you want to use to calculate the illumination
+function. You may chose from the following options:
+
+-  *{IC_REGULAR}:* If you have objects that are evenly dispersed across
+   your image(s) and cover most of the image, the *Regular* method might
+   be appropriate. Regular intensities makes the illumination function
+   based on the intensity at each pixel of the image (or group of images
+   if you are in *{EA_ALL}* mode) and is most often rescaled (see
+   below) and applied by division using **CorrectIlluminationApply.**
+   Note that if you are in *{EA_EACH}* mode or using a small set of
+   images with few objects, there will be regions in the average image
+   that contain no objects and smoothing by median filtering is unlikely
+   to work well. *Note:* it does not make sense to choose
+   (*{IC_REGULAR} + {SM_NONE} + {EA_EACH}*) because the illumination
+   function would be identical to the original image and applying it
+   will yield a blank image. You either need to smooth each image, or
+   you need to use *{EA_ALL}* images.
+-  *{IC_BACKGROUND}:* If you think that the background (dim points)
+   between objects show the same pattern of illumination as your objects
+   of interest, you can choose the *{IC_BACKGROUND}* method. Background
+   intensities finds the minimum pixel intensities in blocks across the
+   image (or group of images if you are in *{EA_ALL}* mode) and is most
+   often applied by subtraction using the **CorrectIlluminationApply**
+   module. *Note:* if you will be using the *{DOS_SUBTRACT}* option in
+   the **CorrectIlluminationApply** module, you almost certainly do not
+   want to rescale the illumination function.
+
+Please note that if a mask was applied to the input image, the pixels
+outside of the mask will be excluded from consideration. This is useful,
+for instance, in cases where you have masked out the well edge in an
+image from a multi-well plate; the dark well edge would distort the
+illumination correction function along the interior well edge. Masking
+the image beforehand solves this problem.
+""".format(**{
+                "IC_REGULAR": IC_REGULAR,
+                "EA_ALL": EA_ALL,
+                "EA_EACH": EA_EACH,
+                "SM_NONE": SM_NONE,
+                "IC_BACKGROUND": IC_BACKGROUND,
+                "DOS_SUBTRACT": DOS_SUBTRACT
+            })
+        )
 
         self.dilate_objects = cps.Binary(
-                "Dilate objects in the final averaged image?", False, doc='''
-            <i>(Used only if the Regular method is selected)</i><br>
-            For some applications, the incoming images are binary and each object
-            should be dilated with a Gaussian filter in the final averaged
-            (projection) image. This is for a sophisticated method of illumination
-            correction where model objects are produced.
-            Select <i>%(YES)s</i> to dilate objects for this approach.
-            ''' % globals())
+            "Dilate objects in the final averaged image?", False, doc="""\
+*(Used only if the Regular method is selected)*
+
+For some applications, the incoming images are binary and each object
+should be dilated with a Gaussian filter in the final averaged
+(projection) image. This is for a sophisticated method of illumination
+correction where model objects are produced. Select *%(YES)s* to dilate
+objects for this approach.
+""" % globals())
 
         self.object_dilation_radius = cps.Integer(
-                "Dilation radius", 1, 0, doc='''
-            <i>(Used only if the "%(IC_REGULAR)s" method and dilation is selected)</i><br>
-            This value should be roughly equal to the original radius of the objects''' % globals())
+            "Dilation radius", 1, 0, doc="""\
+*(Used only if the “%(IC_REGULAR)s” method and dilation is selected)*
+
+This value should be roughly equal to the original radius of the objects
+""" % globals())
 
         self.block_size = cps.Integer(
-                "Block size", 60, 1, doc='''
-            <i>(Used only if "%(IC_BACKGROUND)s" is selected)</i><br>
-            The block size should be large enough that every square block of pixels is likely
-            to contain some background pixels, where no objects are located.''' % globals())
+            "Block size", 60, 1, doc="""\
+*(Used only if “%(IC_BACKGROUND)s” is selected)*
+
+The block size should be large enough that every square block of pixels
+is likely to contain some background pixels, where no objects are
+located.
+""" % globals())
 
         self.rescale_option = cps.Choice(
-                "Rescale the illumination function?",
-                [cps.YES, cps.NO, RE_MEDIAN], doc='''
-            The illumination function can be rescaled so that the pixel intensities
-            are all equal to or greater than 1. You have the following options:
-            <ul>
-            <li><i>%(YES)s:</i> Rescaling is recommended if you plan to
-            use the <i>%(IC_REGULAR)s</i> method (and hence, the <i>%(DOS_DIVIDE)s</i> option in
-            <b>CorrectIlluminationApply</b>). Rescaling the illumination function to >1 ensures 
-            that the values in your corrected image will stay between 0-1 after division. </li>
-            <li><i>%(NO)s:</i> Rescaling is not recommended if you plan to use the <i>%(IC_BACKGROUND)s</i>
-            method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>.  
-            Because rescaling causes the illumination function to have values from 1 to infinity, 
-            subtracting those values from your image would cause the corrected images to be very dark, 
-            even negative.
-            </li>
-            <li>%(RE_MEDIAN)s<i>:</i> This option chooses the median value in the
-            image to rescale so that division increases some values and decreases others.</li>
-            </ul>''' % globals())
+            "Rescale the illumination function?",
+            [cps.YES, cps.NO, RE_MEDIAN], doc="""\
+The illumination function can be rescaled so that the pixel intensities
+are all equal to or greater than 1. You have the following options:
+
+-  *%(YES)s:* Rescaling is recommended if you plan to use the
+   *%(IC_REGULAR)s* method (and hence, the *%(DOS_DIVIDE)s* option in
+   **CorrectIlluminationApply**). Rescaling the illumination function to
+   >1 ensures that the values in your corrected image will stay between
+   0-1 after division.
+-  *%(NO)s:* Rescaling is not recommended if you plan to use the
+   *%(IC_BACKGROUND)s* method, which is paired with the
+   *%(DOS_SUBTRACT)s* option in **CorrectIlluminationApply**. Because
+   rescaling causes the illumination function to have values from 1 to
+   infinity, subtracting those values from your image would cause the
+   corrected images to be very dark, even negative.
+-  %(RE_MEDIAN)s\ *:* This option chooses the median value in the image
+   to rescale so that division increases some values and decreases others.
+""" % globals())
 
         self.each_or_all = cps.Choice(
-                "Calculate function for each image individually, or based on all images?",
-                [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc='''
-            Calculate a separate function for each image, or one for all the images?
-            You can calculate the illumination function using just the current
-            image or you can calculate the illumination function using all of
-            the images in each group.
-            The illumination function can be calculated in one of the three ways:
-            <ul>
-            <li><i>%(EA_EACH)s:</i> Calculate an illumination function for each image
-            individually. </li>
-            <li><i>%(EA_ALL_FIRST)s:</i> Calculate an illumination
-            function based on all of the images in a group, performing the
-            calculation before proceeding to the next module. This means that the
-            illumination function will be created in the first cycle (making the first
-            cycle longer than subsequent cycles), and lets you use the function in a subsequent
-            <b>CorrectIllumination_Apply</b> module in the same pipeline, but also
-            means that you will not have the ability to filter out images (e.g., by using
-            <b>FlagImage</b>). The input images need to be assembled using the <b>Input</b>
-            modules; using images produced by other modules will yield an error.</li>
-            <li><i>%(EA_ALL_ACROSS)s:</i> Calculate an illumination function
-            across all cycles in each group. This option takes any image
-            as input; however, the illumination function
-            will not be completed until the end of the last cycle in the group.
-            You can use <b>SaveImages</b> to save the illumination function
-            after the last cycle in the group and then use the resulting
-            image in another pipeline. The option is useful if you want to exclude
-            images that are filtered by a prior <b>FlagImage</b> module.</li>
-            </ul>''' % globals())
+            "Calculate function for each image individually, or based on all images?",
+            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc="""\
+Calculate a separate function for each image, or one for all the
+images? You can calculate the illumination function using just the
+current image or you can calculate the illumination function using all
+of the images in each group. The illumination function can be calculated
+in one of the three ways:
 
+-  *%(EA_EACH)s:* Calculate an illumination function for each image
+   individually.
+-  *%(EA_ALL_FIRST)s:* Calculate an illumination function based on all
+   of the images in a group, performing the calculation before
+   proceeding to the next module. This means that the illumination
+   function will be created in the first cycle (making the first cycle
+   longer than subsequent cycles), and lets you use the function in a
+   subsequent **CorrectIlluminationApply** module in the same
+   pipeline, but also means that you will not have the ability to filter
+   out images (e.g., by using **FlagImage**). The input images need to
+   be assembled using the **Input** modules; using images produced by
+   other modules will yield an error.
+-  *%(EA_ALL_ACROSS)s:* Calculate an illumination function across all
+   cycles in each group. This option takes any image as input; however,
+   the illumination function will not be completed until the end of the
+   last cycle in the group. You can use **SaveImages** to save the
+   illumination function after the last cycle in the group and then use
+   the resulting image in another pipeline. The option is useful if you
+   want to exclude images that are filtered by a prior **FlagImage**
+   module.
+""" % globals())
         self.smoothing_method = cps.Choice(
                 "Smoothing method",
                 [SM_NONE,
@@ -203,209 +229,233 @@ class CorrectIlluminationCalculate(cpm.Module):
                  SM_MEDIAN_FILTER,
                  SM_GAUSSIAN_FILTER,
                  SM_TO_AVERAGE,
-                 SM_SPLINES], doc='''
-             If requested, the resulting image is smoothed. See the
-             <b>EnhanceOrSuppressFeatures</b> module help for more details. If you are using <i>Each</i> mode,
-             this is almost certainly necessary. If you have few objects in each image or a
-             small image set, you may want to smooth.
-             <p>You should smooth to the point where the illumination function resembles a believable pattern.
-             For example, if you are trying to correct a lamp illumination problem,
-             apply smoothing until you obtain a fairly smooth pattern
-             without sharp bright or dim regions.  Note that smoothing is a
-             time-consuming process, but some methods are faster than others.
-             <ul>
-             <li><i>%(SM_FIT_POLYNOMIAL)s:</i> This methdod is fastest but does not
-             allow a very tight fit compared to the slower median and Gaussian
-             filtering methods. </li>
-             <li>%(SM_MEDIAN_FILTER)s, <i>%(SM_GAUSSIAN_FILTER)s:</i> Use a
-             median or Gaussian filter, respectively. We typically recommend <i>%(SM_MEDIAN_FILTER)s</i>
-             vs. <i>%(SM_GAUSSIAN_FILTER)s</i> because the median
-             is less sensitive to outliers, although the results are also slightly
-             less smooth and the fact that images are in the range of 0 to 1 means that
-             outliers typically will not dominate too strongly anyway.</li>
-             <li><i>%(SM_TO_AVERAGE)s:</i> A less commonly
-             used option is to completely smooth the entire image, which will create a flat,
-             smooth image where every pixel of the image is the average of what the illumination
-             function would otherwise have been.</li>
-             <li><i>%(SM_SPLINES)s:</i> This method (<i>Lindblad and Bengtsson, 2001</i>)
-             fits a grid of cubic splines to the background while
-             excluding foreground pixels from the calculation. It operates
-             iteratively, classifying pixels as background, computing a best
-             fit spline to this background and then reclassifying pixels
-             as background until the spline converges on its final value.</li>
-             <li><i>%(SM_CONVEX_HULL)s:</i> This method algorithm proceeds as follows:
-             <ul><li>Choose 256 evenly-spaced intensity levels between the
-             minimum and maximum intensity for the image</li>
-             <li>Set the intensity of the output image to the minimum intensity
-             of the input image</li>
-             <li>Iterate over the intensity levels, from lowest to highest
-             <ul>
-             <li>For a given intensity, find all pixels with
-             equal or higher intensities</li>
-             <li>Find the convex hull that encloses those pixels</li>
-             <li>Set the intensity of the output image within the convex hull
-             to the current intensity</li>
-             </ul></li>
-             </ul>
-             The Convex Hull method can be used on an image whose objects
-             are darker than their background and whose illumination
-             intensity decreases monotonically from the brightest point.</li>
-             </ul>
+                 SM_SPLINES], doc="""\
+If requested, the resulting image is smoothed. See the
+**EnhanceOrSuppressFeatures** module help for more details. If you are
+using *Each* mode, this is almost certainly necessary. If you have few
+objects in each image or a small image set, you may want to smooth.
 
-             <b>References</b>
-             <ul><li>J Lindblad and E Bengtsson (2001) "A comparison of methods for estimation of
-             intensity nonuniformities in 2D and 3D microscope images of fluorescence
-             stained cells.", Proceedings of the 12th Scandinavian Conference on Image
-             Analysis (SCIA), pp. 264-271</li>
-             </ul>
-             ''' % globals())
+You should smooth to the point where the illumination function resembles
+a believable pattern. For example, if you are trying to correct a lamp
+illumination problem, apply smoothing until you obtain a fairly smooth
+pattern without sharp bright or dim regions. Note that smoothing is a
+time-consuming process, but some methods are faster than others.
+
+-  *%(SM_FIT_POLYNOMIAL)s:* This methdod is fastest but does not allow
+   a very tight fit compared to the slower median and Gaussian filtering
+   methods.
+-  %(SM_MEDIAN_FILTER)s, *%(SM_GAUSSIAN_FILTER)s:* Use a median or
+   Gaussian filter, respectively. We typically recommend
+   *%(SM_MEDIAN_FILTER)s* vs. *%(SM_GAUSSIAN_FILTER)s* because the
+   median is less sensitive to outliers, although the results are also
+   slightly less smooth and the fact that images are in the range of 0
+   to 1 means that outliers typically will not dominate too strongly
+   anyway.
+-  *%(SM_TO_AVERAGE)s:* A less commonly used option is to completely
+   smooth the entire image, which will create a flat, smooth image where
+   every pixel of the image is the average of what the illumination
+   function would otherwise have been.
+-  *%(SM_SPLINES)s:* This method (*Lindblad and Bengtsson, 2001*) fits
+   a grid of cubic splines to the background while excluding foreground
+   pixels from the calculation. It operates iteratively, classifying
+   pixels as background, computing a best fit spline to this background
+   and then reclassifying pixels as background until the spline
+   converges on its final value.
+-  *%(SM_CONVEX_HULL)s:* This method algorithm proceeds as follows:
+
+   -  Choose 256 evenly-spaced intensity levels between the minimum and
+      maximum intensity for the image
+   -  Set the intensity of the output image to the minimum intensity of
+      the input image
+   -  Iterate over the intensity levels, from lowest to highest
+
+      -  For a given intensity, find all pixels with equal or higher
+         intensities
+      -  Find the convex hull that encloses those pixels
+      -  Set the intensity of the output image within the convex hull to
+         the current intensity
+
+   The Convex Hull method can be used on an image whose objects are
+   darker than their background and whose illumination intensity
+   decreases monotonically from the brightest point.
+
+**References**
+-  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
+of intensity nonuniformities in 2D and 3D microscope images of fluorescence
+stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
+(SCIA), pp. 264-271
+""" % globals())
 
         self.automatic_object_width = cps.Choice(
-                "Method to calculate smoothing filter size",
-                [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc='''
-            <i>(Used only if a smoothing method other than Fit Polynomial is selected)</i><br>
-            Calculate the smoothing filter size. There are three options:
-            <ul>
-            <li><i>%(FI_AUTOMATIC)s:</i> The size is computed as 1/40 the size of the image or
-            30 pixels, whichever is smaller.</li>
-            <li><i>%(FI_OBJECT_SIZE)s:</i> The size is obtained relative to the width
-            of artifacts to be smoothed.</li>
-            <li><i>%(FI_MANUALLY)s:</i> Use a manually entered value.</li>
-            </ul>''' % globals())
+            "Method to calculate smoothing filter size",
+            [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc="""\
+*(Used only if a smoothing method other than Fit Polynomial is selected)*
+
+Calculate the smoothing filter size. There are three options:
+
+-  *%(FI_AUTOMATIC)s:* The size is computed as 1/40 the size of the
+   image or 30 pixels, whichever is smaller.
+-  *%(FI_OBJECT_SIZE)s:* The size is obtained relative to the width of
+   artifacts to be smoothed.
+-  *%(FI_MANUALLY)s:* Use a manually entered value.
+""" % globals())
 
         self.object_width = cps.Integer(
-                "Approximate object size", 10, doc='''
-            <i>(Used only if %(FI_AUTOMATIC)s is selected for smoothing filter size calculation)</i><br>
-            Enter the approximate width of the artifacts to be smoothed, in pixels.''' % globals())
+            "Approximate object size", 10, doc="""\
+*(Used only if %(FI_AUTOMATIC)s is selected for smoothing filter size calculation)*
+
+Enter the approximate width of the artifacts to be smoothed, in pixels.
+""" % globals())
 
         self.size_of_smoothing_filter = cps.Integer(
-                "Smoothing filter size", 10, doc='''
-            <i>(Used only if %(FI_MANUALLY)s is selected for smoothing filter size calculation)</i><br>
-            Enter the size of the desired smoothing filter, in pixels.''' % globals())
+            "Smoothing filter size", 10, doc="""\
+*(Used only if %(FI_MANUALLY)s is selected for smoothing filter size calculation)*
+
+Enter the size of the desired smoothing filter, in pixels.
+""" % globals())
 
         self.save_average_image = cps.Binary(
-                "Retain the averaged image?", False, doc='''
-            The averaged image is the illumination function
-            prior to dilation or smoothing. It is an image produced during the calculations, not typically
-            needed for downstream modules. It can be helpful to retain it in case you wish to try several
-            different smoothing methods without taking the time to recalculate the averaged image each time.
-            <p>Select <i>%(YES)s</i> to retain this averaged image. Use the <b>SaveImages</b> module to save
-            it to your hard drive.</p>''' % globals())
+            "Retain the averaged image?", False, doc="""\
+The averaged image is the illumination function prior to dilation or
+smoothing. It is an image produced during the calculations, not
+typically needed for downstream modules. It can be helpful to retain it
+in case you wish to try several different smoothing methods without
+taking the time to recalculate the averaged image each time.
+
+Select *%(YES)s* to retain this averaged image. Use the **SaveImages**
+module to save it to your hard drive.
+""" % globals())
 
         self.average_image_name = cps.ImageNameProvider(
-                "Name the averaged image", "IllumBlueAvg", doc='''
-            <i>(Used only if the averaged image is to be retained for later use in the pipeline)</i><br>
-            Enter a name that will allow the averaged image to be selected later in the pipeline.''')
+            "Name the averaged image", "IllumBlueAvg", doc="""\
+*(Used only if the averaged image is to be retained for later use in the pipeline)*
+
+Enter a name that will allow the averaged image to be selected later in the pipeline.""")
 
         self.save_dilated_image = cps.Binary(
-                "Retain the dilated image?", False, doc='''
-            The dilated image is the illumination function after dilation but prior to smoothing.
-            It is an image produced during the calculations, and is not typically needed for downstream modules.
-            <p>Select <i>%(YES)s</i> to retain this dilated image. Use the <b>SaveImages</b> module to save it
-            to your hard drive.</p>''' % globals())
+            "Retain the dilated image?", False, doc="""\
+The dilated image is the illumination function after dilation but prior
+to smoothing. It is an image produced during the calculations, and is
+not typically needed for downstream modules.
+
+Select *%(YES)s* to retain this dilated image. Use the **SaveImages**
+module to save it to your hard drive.
+""" % globals())
 
         self.dilated_image_name = cps.ImageNameProvider(
-                "Name the dilated image", "IllumBlueDilated", doc='''
-            <i>(Used only if the dilated image is to be retained for later use in the pipeline)</i><br>
-            Enter a name that will allow the dilated image to be selected later in the pipeline.''')
+            "Name the dilated image", "IllumBlueDilated", doc="""\
+*(Used only if the dilated image is to be retained for later use in the pipeline)*
+
+Enter a name that will allow the dilated image to be selected later in
+the pipeline.""")
 
         self.automatic_splines = cps.Binary(
-                "Automatically calculate spline parameters?", True, doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method)</i><br>
-            Select <i>%(YES)s</i> to automatically calculate
-            the parameters for spline fitting.
-            <p>Select <i>%(NO)s</i> to specify the background mode, background threshold, scale,
-            maximum number of iterations and convergence.</p>""" % globals())
+"Automatically calculate spline parameters?", True, doc="""\
+*(Used only if %(SM_SPLINES)s are selected for the smoothing method)*
+
+Select *%(YES)s* to automatically calculate the parameters for spline
+fitting.
+
+Select *%(NO)s* to specify the background mode, background threshold,
+scale, maximum number of iterations and convergence.
+""" % globals())
 
         self.spline_bg_mode = cps.Choice(
-                "Background mode",
-                [MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY], doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method and
-            spline parameters are not calculated automatically)</i><br>
-            This setting determines which pixels are background
-            and which are foreground.<br>
-            <ul><li><i>%(MODE_AUTO)s</i>: Determine the mode from the image.
-            This will set the mode to %(MODE_DARK)s if most of the pixels are
-            dark, %(MODE_BRIGHT)s if most of the pixels are bright and
-            %(MODE_GRAY)s if there are relatively few dark and light pixels
-            relative to the number of mid-level pixels</li>
-            <li><i>%(MODE_DARK)s</i>: Fit the spline to the darkest pixels
-            in the image, excluding brighter pixels from consideration.
-            This may be appropriate for a fluorescent image.
-            </li>
-            <li><i>%(MODE_BRIGHT)s</i>: Fit the spline to the lightest pixels
-            in the image, excluding the darker pixels. This may be appropriate
-            for a histologically stained image.</li>
-            <li><i>%(MODE_GRAY)s</i>: Fit the spline to mid-range pixels,
-            excluding both dark and light pixels. This may be appropriate
-            for a brightfield image where the objects of interest have
-            light and dark features.</li></ul>""" % globals())
+            "Background mode",
+            [MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY], doc="""\
+*(Used only if %(SM_SPLINES)s are selected for the smoothing method
+and spline parameters are not calculated automatically)*
+
+This setting determines which pixels are background and which are
+foreground.
+
+-  *%(MODE_AUTO)s*: Determine the mode from the image. This will set
+   the mode to %(MODE_DARK)s if most of the pixels are dark,
+   %(MODE_BRIGHT)s if most of the pixels are bright and %(MODE_GRAY)s
+   if there are relatively few dark and light pixels relative to the
+   number of mid-level pixels
+-  *%(MODE_DARK)s*: Fit the spline to the darkest pixels in the image,
+   excluding brighter pixels from consideration. This may be appropriate
+   for a fluorescent image.
+-  *%(MODE_BRIGHT)s*: Fit the spline to the lightest pixels in the
+   image, excluding the darker pixels. This may be appropriate for a
+   histologically stained image.
+-  *%(MODE_GRAY)s*: Fit the spline to mid-range pixels, excluding both
+   dark and light pixels. This may be appropriate for a brightfield
+   image where the objects of interest have light and dark features.
+""" % globals())
 
         self.spline_threshold = cps.Float(
-                "Background threshold", 2, minval=.1, maxval=5.0, doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method and
-            spline parameters are not calculated automatically)</i><br>
-            This setting determines the cutoff used when excluding
-            foreground pixels from consideration. On each iteration,
-            the method computes the standard deviation of background
-            pixels from the computed background. The number entered in this
-            setting is the number of standard deviations a pixel can be
-            from the computed background on the last pass if it is to
-            be considered as background during the next pass.
-            <p>
-            You should enter a higher number to converge stabily and slowly
-            on a final background and a lower number to converge more
-            rapidly, but with lower stability. The default for this
-            parameter is two standard deviations; this will provide a fairly
-            stable background estimate.""" % globals())
+            "Background threshold", 2, minval=.1, maxval=5.0, doc="""\
+*(Used only if %(SM_SPLINES)s are selected for the smoothing method
+and spline parameters are not calculated automatically)*
+
+This setting determines the cutoff used when excluding foreground
+pixels from consideration. On each iteration, the method computes the
+standard deviation of background pixels from the computed background.
+The number entered in this setting is the number of standard
+deviations a pixel can be from the computed background on the last
+pass if it is to be considered as background during the next pass.
+
+You should enter a higher number to converge stabily and slowly on a
+final background and a lower number to converge more rapidly, but with
+lower stability. The default for this parameter is two standard
+deviations; this will provide a fairly stable background estimate.
+""" % globals())
 
         self.spline_points = cps.Integer(
-                "Number of spline points", 5, 4, doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method and
-            spline parameters are not calculated automatically)</i><br>
-            This is the number of control points for the spline.
-            A value of 5 results in a 5x5 grid of splines across the image and
-            is the value suggested by the method's authors. A lower value
-            will give you a more stable background while a higher one will
-            fit variations in the background more closely and take more time
-            to compute.""" % globals())
+            "Number of spline points", 5, 4, doc="""\
+*(Used only if %(SM_SPLINES)s are selected for the smoothing method and
+spline parameters are not calculated automatically)*
+
+This is the number of control points for the spline. A value of 5
+results in a 5x5 grid of splines across the image and is the value
+suggested by the method’s authors. A lower value will give you a more
+stable background while a higher one will fit variations in the
+background more closely and take more time to compute.
+""" % globals())
 
         self.spline_rescale = cps.Float(
-                "Image resampling factor", 2, minval=1, doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method and
-            spline parameters are not calculated automatically)</i><br>
-            This setting controls how the image is resampled to
-            make a smaller image. Resampling will speed up processing,
-            but may degrade performance if the resampling factor is larger
-            than the diameter of foreground objects. The image will
-            be downsampled by the factor you enter. For instance, a 500x600
-            image will be downsampled into a 250x300 image if a factor of 2
-            is entered.""" % globals())
+            "Image resampling factor", 2, minval=1, doc="""\
+*(Used only if %(SM_SPLINES)s are selected for the smoothing method and
+spline parameters are not calculated automatically)*
+
+This setting controls how the image is resampled to make a smaller
+image. Resampling will speed up processing, but may degrade performance
+if the resampling factor is larger than the diameter of foreground
+objects. The image will be downsampled by the factor you enter. For
+instance, a 500x600 image will be downsampled into a 250x300 image if a
+factor of 2 is entered.
+""" % globals())
 
         self.spline_maximum_iterations = cps.Integer(
-                "Maximum number of iterations", 40, minval=1, doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method and
-            spline parameters are not calculated automatically)</i><br>
-            This setting determines the maximum number of iterations
-            of the algorithm to be performed. The algorithm will perform
-            fewer iterations if it converges.""" % globals())
+            "Maximum number of iterations", 40, minval=1, doc="""\
+*(Used only if %(SM_SPLINES)s are selected for the smoothing method and
+spline parameters are not calculated automatically)*
+
+This setting determines the maximum number of iterations of the
+algorithm to be performed. The algorithm will perform fewer iterations
+if it converges.
+""" % globals())
 
         self.spline_convergence = cps.Float(
-                "Residual value for convergence", value=.001, minval=.00001, maxval=.1, doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method and
-            spline parameters are not calculated automatically)</i><br>
-            This setting determines the convergence criterion.
-            The software sets the convergence criterion to the number entered
-            here times the signal intensity; the convergence you enter is the
-            fraction of the signal intensity that indicates convergence.
-            The algorithm derives a standard deviation of the background
-            pixels from the calculated background on each iteration. The
-            algorithm terminates when the difference between the standard
-            deviation for the current iteration and the previous iteration
-            is less than the convergence criterion.
-            <p>Enter a smaller number for the convergence to calculate a
-            more accurate background. Enter a larger number to calculate
-            the background using fewer iterations, but less accuracy.""" % globals())
+            "Residual value for convergence", value=.001, minval=.00001, maxval=.1, doc="""\
+*(Used only if %(SM_SPLINES)s are selected for the smoothing method
+and spline parameters are not calculated automatically)*
+
+This setting determines the convergence criterion. The software sets
+the convergence criterion to the number entered here times the signal
+intensity; the convergence you enter is the fraction of the signal
+intensity that indicates convergence. The algorithm derives a standard
+deviation of the background pixels from the calculated background on
+each iteration. The algorithm terminates when the difference between
+the standard deviation for the current iteration and the previous
+iteration is less than the convergence criterion.
+
+Enter a smaller number for the convergence to calculate a more accurate
+background. Enter a larger number to calculate the background using
+fewer iterations, but less accuracy.
+""" % globals())
 
     def settings(self):
         return [self.image_name, self.illumination_image_name,

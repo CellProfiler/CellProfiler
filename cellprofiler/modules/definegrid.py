@@ -1,35 +1,39 @@
-'''<b>Define Grid</b> produces a grid of desired specifications either manually, or
-automatically based on previously identified objects.
-<hr>
+# coding=utf-8
+
+"""
+**Define Grid** produces a grid of desired specifications either
+manually, or automatically based on previously identified objects.
+
 This module defines the location of a grid that can be used by modules
-downstream. You can use it in combination with <b>IdentifyObjectsInGrid</b> to measure the
-size, shape, intensity and texture of each
-object or location in a grid. The grid is defined by the location of marker spots
-(control spots), which are either indicated manually or
-found automatically using previous modules in the pipeline. You can then
-use the grid to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a
-grid can be shown on top of an image using the <b>DisplayGridInfo</b> module (coming soon).
+downstream. You can use it in combination with **IdentifyObjectsInGrid**
+to measure the size, shape, intensity and texture of each object or
+location in a grid. The grid is defined by the location of marker spots
+(control spots), which are either indicated manually or found
+automatically using previous modules in the pipeline. You can then use
+the grid to make measurements (using **IdentifyObjectsInGrid**). Text
+annotation of a grid can be shown on top of an image using the
+**DisplayGridInfo** module (coming soon). If you are using images of
+plastic plates, it may be useful to precede this module with an
+**IdentifyPrimaryObjects** module to find the plastic plate, followed by
+a **Crop** module to remove the plastic edges of the plate, so that the
+grid can be defined within the smooth portion of the plate only. If the
+plates are not centered in exactly the same position from one image to
+the next, this allows the plates to be identified automatically and then
+cropped so that the interior of the plates, upon which the grids will be
+defined, are always in precise alignment with each other.
 
-If you are using images of plastic plates, it may be useful to precede
-this module with an <b>IdentifyPrimaryObjects</b> module to find the plastic
-plate, followed by a <b>Crop</b> module to remove the plastic edges of the
-plate, so that the grid can be defined within the smooth portion of the
-plate only. If the plates are not centered in exactly the same position
-from one image to the next, this allows the plates to be identified
-automatically and then cropped so that the interior of the plates, upon
-which the grids will be defined, are always in precise alignment with
-each other.
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Rows, Columns</i>: The number of rows and columns in the grid</li>
-<li><i>XSpacing, YSpacing:</i> The spacing in X and Y of the grid elements.</li>
-<li><i>XLocationOfLowestXSpot:</i> The X coordinate location of the lowest spot on the X-axis.</li>
-<li><i>YLocationOfLowestYSpot:</i> The Y coordinate location of the lowest spot on the Y-axis.</li>
-</ul>
+-  *Rows, Columns*: The number of rows and columns in the grid
+-  *XSpacing, YSpacing:* The spacing in X and Y of the grid elements.
+-  *XLocationOfLowestXSpot:* The X coordinate location of the lowest
+   spot on the X-axis.
+-  *YLocationOfLowestYSpot:* The Y coordinate location of the lowest
+   spot on the Y-axis.
 
-See also <b>IdentifyObjectsInGrid</b>.
-'''
+See also **IdentifyObjectsInGrid**.
+"""
 
 import logging
 import traceback

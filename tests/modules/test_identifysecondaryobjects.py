@@ -8,7 +8,7 @@ import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.modules.applythreshold
+import cellprofiler.modules.threshold
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifysecondaryobjects
 import cellprofiler.object
@@ -126,7 +126,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.new_primary_outlines_name, "FilteredChocolateChipOutlines")
         self.assertTrue(module.fill_holes)
         self.assertEqual(module.apply_threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
-        self.assertEqual(module.apply_threshold.global_operation.value, cellprofiler.modules.applythreshold.TM_LI)
+        self.assertEqual(module.apply_threshold.global_operation.value, cellprofiler.modules.threshold.TM_LI)
         self.assertEqual(module.apply_threshold.threshold_smoothing_scale.value, 1.3488)
         self.assertEqual(module.apply_threshold.threshold_correction_factor, 1)
         self.assertEqual(module.apply_threshold.threshold_range.min, 0.0)
@@ -196,8 +196,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels[3:6, 3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .25
         module.run(workspace)
         m = workspace.measurements
@@ -229,8 +229,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
         module.regularization_factor.value = 0  # propagate by image
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .2
         module.run(workspace)
         m = workspace.measurements
@@ -273,8 +273,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
         module.regularization_factor.value = 1000  # propagate by distance
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .2
         module.module_num = 1
         p.add_module(module)
@@ -425,8 +425,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .2
         module.module_num = 1
         p.add_module(module)
@@ -571,8 +571,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .01
         module.module_num = 1
         p.add_module(module)
@@ -1169,8 +1169,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .5
         module.module_num = 1
         p.add_module(module)
@@ -1224,8 +1224,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .5
         module.module_num = 1
         p.add_module(module)
@@ -1257,8 +1257,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                     expected[2, 5] = 0
                 workspace, module = self.make_workspace(threshold * 0.5, labels)
                 self.assertTrue(isinstance(module, cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects))
-                module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-                module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+                module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+                module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
                 module.apply_threshold.manual_threshold.value = 0.5
                 module.method.value = method
                 module.fill_holes.value = wants_fill_holes
@@ -1294,8 +1294,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels[3:6, 3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-        module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+        module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         module.apply_threshold.manual_threshold.value = .25
         module.run(workspace)
         m = workspace.measurements
@@ -1324,8 +1324,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             workspace, module = self.make_workspace(img, labels)
             self.assertTrue(isinstance(module, cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects))
             module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-            module.apply_threshold.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
-            module.apply_threshold.global_operation.value = cellprofiler.modules.applythreshold.TM_MANUAL
+            module.apply_threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+            module.apply_threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
             module.wants_discard_edge.value = True
             module.wants_discard_primary.value = False
             module.apply_threshold.manual_threshold.value = .25

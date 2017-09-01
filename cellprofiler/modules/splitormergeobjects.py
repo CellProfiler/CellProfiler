@@ -1,37 +1,45 @@
-'''<b>Reassign Object Numbers</b> renumbers previously identified objects.
-<hr>
-Objects and their measurements are associated
-with each other based on their object numbers (also known as <i>labels</i>). Typically,
-each object is assigned a single unique number, such that the exported measurements are ordered
-by this numbering.  This module
-allows the reassignment of object numbers by either unifying separate objects to share
-the same label, or splitting portions of separate objects that previously had the same label.
+# coding=utf-8
 
-<h4>Available measurements</h4>
-<b>Parent object measurements:</b>
-<ul>
-<li><i>Children Count:</i> The number of relabeled objects created from each parent object.</li>
-</ul>
+"""
+**Split or merge** previously identified objects.
 
-<b>Reassigned object measurements:</b>
-<ul>
-<li><i>Parent:</i>The label number of the parent object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
-mass of the reassigned objects.</li>
-</ul>
+Objects and their measurements are associated with each other based on
+their object numbers (also known as *labels*). Typically, each object is
+assigned a single unique number, such that the exported measurements are
+ordered by this numbering. This module allows the reassignment of object
+numbers by either unifying separate objects to share the same label, or
+splitting portions of separate objects that previously had the same
+label.
 
-<h4>Technical notes</h4>
-Reassignment means that the numerical value of every pixel within
-an object (in the label matrix version of the image) gets changed, as specified by
-the module settings. In order to ensure that objects are labeled consecutively
-without gaps in the numbering (which other modules may depend on),
-<b>ReassignObjectNumbers</b> will typically result in most of the objects having
-their numbers reordered. This reassignment information is stored as a per-object measurement
-with both the original input and reasigned output objects, in case you need to track the
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Parent object measurements:**
+
+-  *Children Count:* The number of relabeled objects created from each
+   parent object.
+
+**Reassigned object measurements:**
+
+-  *Parent:*\ The label number of the parent object.
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+   of mass of the reassigned objects.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+Reassignment means that the numerical value of every pixel within an
+object (in the label matrix version of the image) gets changed, as
+specified by the module settings. In order to ensure that objects are
+labeled consecutively without gaps in the numbering (which other modules
+may depend on), **SplitOrMergeObjects** will typically result in most
+of the objects having their numbers reordered. This reassignment
+information is stored as a per-object measurement with both the original
+input and reasigned output objects, in case you need to track the
 reassignment.
 
-<p>See also <b>RelateObjects</b>.</p>
-'''
+See also **RelateObjects**.
+"""
 
 import centrosome.cpmorphology as morph
 import centrosome.outline
@@ -66,8 +74,8 @@ UM_DISCONNECTED = "Disconnected"
 UM_CONVEX_HULL = "Convex hull"
 
 
-class ReassignObjectNumbers(cpm.Module):
-    module_name = "ReassignObjectNumbers"
+class SplitOrMergeObjects(cpm.Module):
+    module_name = "SplitOrMergeObjects"
     category = "Object Processing"
     variable_revision_number = 4
 
@@ -116,7 +124,7 @@ class ReassignObjectNumbers(cpm.Module):
                 doc="""
             <i>(Used only with the %(UNIFY_PARENT)s unification method)</i>
             <br>
-            <b>ReassignObjectNumbers</b> can either unify the child objects
+            <b>SplitOrMergeObjects</b> can either unify the child objects
             and keep them disconnected or it can find the smallest convex
             polygon (the convex hull) that encloses all of a parent's child
             objects. The convex hull will be truncated to include only those
@@ -506,66 +514,25 @@ class ReassignObjectNumbers(cpm.Module):
         new_labels[labels != 0] = new_indexes[labels[labels != 0]]
         return new_labels
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if from_matlab:
+            raise NotImplementedError("There is no automatic upgrade path for this module from MATLAB pipelines.")
 
-        setting_values - a sequence of strings representing the settings
-                         for the module as stored in the pipeline
-        variable_revision_number - the variable revision number of the
-                         module at the time the pipeline was saved. Use this
-                         to determine how the incoming setting values map
-                         to those of the current module version.
-        module_name - the name of the module that did the saving. This can be
-                      used to import the settings from another module if
-                      that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
-        '''
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'SplitIntoContiguousObjects'):
-            setting_values = setting_values + [OPTION_SPLIT, '0', cps.DO_NOT_USE]
-            variable_revision_number = 1
-            module_name = 'RelabelObjects'
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'UnifyObjects'):
-            setting_values = (setting_values[:2] + [OPTION_UNIFY] +
-                              setting_values[2:])
-            variable_revision_number = 1
-            module_name = 'RelabelObjects'
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'RelabelObjects'):
-            object_name, relabeled_object_name, relabel_option, \
-            distance_threshold, grayscale_image_name = setting_values
-            wants_image = (cps.NO if grayscale_image_name == cps.DO_NOT_USE
-                           else cps.YES)
-            setting_values = [object_name, relabeled_object_name,
-                              relabel_option, distance_threshold,
-                              wants_image, grayscale_image_name,
-                              "0.9", CA_CENTROIDS]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added outline options
             setting_values += [cps.NO, "RelabeledNucleiOutlines"]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added per-parent unification
             setting_values += [UNIFY_DISTANCE, cps.NONE]
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             setting_values = setting_values + [UM_DISCONNECTED]
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number, False
 
     def get_image(self, workspace):
         '''Get the image for image-directed merging'''
@@ -628,6 +595,3 @@ def copy_labels(labels, segmented):
     labels_new = labels.copy()
     labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]
     return labels_new
-
-
-RelabelObjects = ReassignObjectNumbers

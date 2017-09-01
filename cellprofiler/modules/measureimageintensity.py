@@ -1,40 +1,49 @@
-'''<b>Measure Image Intensity</b> measures the total intensity in an image
-by summing all of the pixel intensities (excluding masked pixels).
-<hr>
+# coding=utf-8
+
+"""
+MeasureImageIntensity
+=====================
+
+**MeasureImageIntensity** measures the total intensity in an image by
+summing all of the pixel intensities (excluding masked pixels).
+
 This module will sum all pixel values to measure the total image
 intensity. The user can measure all pixels in the image or can restrict
 the measurement to pixels within objects. If the image has a mask, only
 unmasked pixels will be measured.
 
-<p>Note that for publication purposes, the units of
-intensity from microscopy images are usually described as "Intensity
-units" or "Arbitrary intensity units" since microscopes are not
-calibrated to an absolute scale. Also, it is important to note whether
-you are reporting either the mean or the integrated intensity, so specify
-"Mean intensity units" or "Integrated intensity units" accordingly.</p>
+Note that for publication purposes, the units of intensity from
+microscopy images are usually described as “Intensity units” or
+“Arbitrary intensity units” since microscopes are not calibrated to an
+absolute scale. Also, it is important to note whether you are reporting
+either the mean or the integrated intensity, so specify “Mean intensity
+units” or “Integrated intensity units” accordingly.
 
-<p>Keep in mind that the default behavior in CellProfiler is to rescale the
+Keep in mind that the default behavior in CellProfiler is to rescale the
 image intensity from 0 to 1 by dividing all pixels in the image by the
-maximum possible intensity value. This "maximum possible" value
-is defined by the "Set intensity range from" setting in <b>NamesAndTypes</b>;
-see the help for that setting for more details.</p>
+maximum possible intensity value. This “maximum possible” value is
+defined by the “Set intensity range from” setting in **NamesAndTypes**;
+see the help for that setting for more details.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
-<li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
-<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation
-(MAD) of pixel intensity values. The MAD is defined as the median(|x<sub>i</sub> - median(x)|).</li>
-<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
-of the pixels in the object have lower values.</li>
-<li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
-of the pixels in the object have lower values.</li>
-<li><i>TotalArea:</i> Number of pixels measured, e.g., the area of the image.</li>
-</ul>
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
-'''
+-  *TotalIntensity:* Sum of all pixel intensity values.
+-  *MeanIntensity, MedianIntensity:* Mean and median of pixel intensity
+   values.
+-  *StdIntensity, MADIntensity:* Standard deviation and median absolute
+   deviation (MAD) of pixel intensity values. The MAD is defined as the
+   median(\|x\ :sub:`i` - median(x)\|).
+-  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel intensity
+   values.
+-  *LowerQuartileIntensity:* The intensity value of the pixel for which
+   25% of the pixels in the object have lower values.
+-  *UpperQuartileIntensity:* The intensity value of the pixel for which
+   75% of the pixels in the object have lower values.
+-  *TotalArea:* Number of pixels measured, e.g., the area of the image.
+
+See also **MeasureObjectIntensity**, **MaskImage**.
+"""
 
 import numpy as np
 
@@ -103,22 +112,26 @@ class MeasureImageIntensity(cpm.Module):
 
         group.append("image_name", cps.ImageNameSubscriber(
                 "Select the image to measure",
-                cps.NONE, doc='''
-            Choose an image name from the drop-down menu to calculate intensity for that
-            image. Use the <i>Add another image</i> button below to add additional images which will be
-            measured. You can add the same image multiple times if you want to measure
-            the intensity within several different objects.'''))
+                cps.NONE, doc="""\
+Choose an image name from the drop-down menu to calculate intensity for
+that image. Use the *Add another image* button below to add additional
+images which will be measured. You can add the same image multiple times
+if you want to measure the intensity within several different
+objects."""))
 
         group.append("wants_objects", cps.Binary(
                 "Measure the intensity only from areas enclosed by objects?",
-                False, doc="""
-            Select <i>%(YES)s</i> to measure only those pixels within an object of choice.""" % globals()))
+                False, doc="""\
+Select *%(YES)s* to measure only those pixels within an object of choice.
+""" % globals()))
 
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc='''
-            <i>(Used only when measuring intensity from area enclosed by objects)</i><br>
-            Select the objects that the intensity will be aggregated within. The intensity measurement will be
-            restricted to the pixels within these objects.'''))
+                "Select the input objects", cps.NONE, doc="""\
+*(Used only when measuring intensity from area enclosed by objects)*
+
+Select the objects that the intensity will be aggregated within. The
+intensity measurement will be restricted to the pixels within these
+objects."""))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("",
@@ -334,3 +347,5 @@ class MeasureImageIntensity(cpm.Module):
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
+    def volumetric(self):
+        return True

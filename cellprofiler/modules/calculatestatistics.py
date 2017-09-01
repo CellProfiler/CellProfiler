@@ -1,115 +1,136 @@
-'''<b>Calculate Statistics</b> calculates measures of assay quality 
-(V and Z' factors) and dose response data (EC50) for all measured features
-made from images.
-<hr>
-The V and Z' factors are statistical measures of assay quality and are
-calculated for each per-image measurement and for each average per-object
-measurement that you have made in the pipeline. Placing
-this module at the end of a pipeline in order to calculate these values allows
-you to identify which measured features are most powerful for distinguishing
-positive and negative control samples, or for accurately quantifying the assay's
-response to dose. These measurements will be calculated for all
-measured values (Intensity, AreaShape, Texture, etc.). These measurements
-can be exported as the "Experiment" set of data.
+# coding=utf-8
 
-<h4>Available measurements</h4>
+"""
+CalculateStatistics
+===================
 
-<ul>
-<li><b>Experiment features:</b> Whereas most CellProfiler measurements are calculated for each object (per-object)
-or for each image (per-image), this module produces <i>per-experiment</i> values;
-for example, one Z' factor is calculated for each measurement, across the entire analysis run.
-<ul>
-<li><i>Zfactor:</i> The Z'-factor indicates how well separated the positive and negative controls are.
-A Z'-factor &gt; 0 is potentially screenable; a Z'-factor &gt; 0.5 is considered an excellent assay.
-The formula is 1 &minus 3 &times; (&sigma;<sub>p</sub> + &sigma;<sub>n</sub>)/|&mu;<sub>p</sub> - &mu;<sub>n</sub>|
-where &sigma;<sub>p</sub> and &sigma;<sub>n</sub> are the standard deviations of the positive and negative controls,
-and &mu;<sub>p</sub> and &mu;<sub>n</sub> are the means of the positive and negative controls.</li>
-<li><i>Vfactor:</i> The V-factor is a generalization of the Z'-factor, and is
-calculated as 1 &minus 6 &times; mean(&sigma;)/|&mu;<sub>p</sub> - &mu;<sub>n</sub>| where
-&sigma; are the standard deviations of the data, and &mu;<sub>p</sub> and &mu;<sub>n</sub>
-are defined as above.</li>
-<li><i>EC50:</i> The half maximal effective concentration (EC50) is the concentration of a
-treatment required to induce a response which is 50%% of the maximal response.</li>
-<li><i>OneTailedZfactor:</i> This measure is an attempt to overcome a limitation of
-the original Z'-factor formulation (it assumes a Gaussian distribution) and is
-informative for populations with moderate or high amounts of skewness. In these
-cases, long tails opposite to the mid-range point lead to a high standard deviation
-for either population, which results in a low Z' factor even though the population
-means and samples between the means may be well-separated. Therefore, the
-one-tailed Z' factor is calculated with the same formula but using only those samples that lie
-between the positive/negative population means. <b>This is not yet a well established
-measure of assay robustness, and should be considered experimental.</b></li>
-</ul>
-</li>
-</ul>
+**Calculate Statistics** calculates measures of assay quality (V and Z’
+factors) and dose response data (EC50) for all measured features made
+from images.
 
-For both Z' and V factors, the highest possible value (best assay
+The V and Z’ factors are statistical measures of assay quality and are
+calculated for each per-image measurement and for each average
+per-object measurement that you have made in the pipeline. Placing this
+module at the end of a pipeline in order to calculate these values
+allows you to identify which measured features are most powerful for
+distinguishing positive and negative control samples, or for accurately
+quantifying the assay’s response to dose. These measurements will be
+calculated for all measured values (Intensity, AreaShape, Texture,
+etc.). These measurements can be exported as the “Experiment” set of
+data.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  **Experiment features:** Whereas most CellProfiler measurements are
+   calculated for each object (per-object) or for each image
+   (per-image), this module produces *per-experiment* values; for
+   example, one Z’ factor is calculated for each measurement, across the
+   entire analysis run.
+
+   -  *Zfactor:* The Z’-factor indicates how well separated the positive
+      and negative controls are. A Z’-factor > 0 is potentially
+      screenable; a Z’-factor > 0.5 is considered an excellent assay.
+      The formula is 1 &minus 3 × (σ:sub:`p` +
+      σ\ :sub:`n`)/\|μ\ :sub:`p` - μ\ :sub:`n`\ \| where σ\ :sub:`p` and
+      σ\ :sub:`n` are the standard deviations of the positive and
+      negative controls, and μ\ :sub:`p` and μ\ :sub:`n` are the means
+      of the positive and negative controls.
+   -  *Vfactor:* The V-factor is a generalization of the Z’-factor, and
+      is calculated as 1 &minus 6 × mean(σ)/\|μ\ :sub:`p` -
+      μ\ :sub:`n`\ \| where σ are the standard deviations of the data,
+      and μ\ :sub:`p` and μ\ :sub:`n` are defined as above.
+   -  *EC50:* The half maximal effective concentration (EC50) is the
+      concentration of a treatment required to induce a response which
+      is 50%% of the maximal response.
+   -  *OneTailedZfactor:* This measure is an attempt to overcome a
+      limitation of the original Z’-factor formulation (it assumes a
+      Gaussian distribution) and is informative for populations with
+      moderate or high amounts of skewness. In these cases, long tails
+      opposite to the mid-range point lead to a high standard deviation
+      for either population, which results in a low Z’ factor even
+      though the population means and samples between the means may be
+      well-separated. Therefore, the one-tailed Z’ factor is calculated
+      with the same formula but using only those samples that lie
+      between the positive/negative population means. **This is not yet
+      a well established measure of assay robustness, and should be
+      considered experimental.**
+
+For both Z’ and V factors, the highest possible value (best assay
 quality) is 1, and they can range into negative values (for assays where
 distinguishing between positive and negative controls is difficult or
-impossible). The Z' factor is based only on positive and negative controls. The V
-factor is based on an entire dose-response curve rather than on the
-minimum and maximum responses. When there are only two doses in the assay
-(positive and negative controls only), the V factor will equal the Z'
-factor.
+impossible). The Z’ factor is based only on positive and negative
+controls. The V factor is based on an entire dose-response curve rather
+than on the minimum and maximum responses. When there are only two doses
+in the assay (positive and negative controls only), the V factor will
+equal the Z’ factor.
 
-<p><i>Note:</i> If the standard deviation of a measured feature is zero for a
-particular set of samples (e.g., all the positive controls), the Z' and V
-factors will equal 1 despite the fact that the assay quality is poor.
-This can occur when there is only one sample at each dose.
-This also occurs for some non-informative measured features, like the
-number of cytoplasm compartments per cell, which is always equal to 1.</p>
+Note that if the standard deviation of a measured feature is zero for a
+particular set of samples (e.g., all the positive controls), the Z’ and
+V factors will equal 1 despite the fact that the assay quality is poor.
+This can occur when there is only one sample at each dose. This also
+occurs for some non-informative measured features, like the number of
+cytoplasm compartments per cell, which is always equal to 1.
 
-<p>This module can create MATLAB scripts that display the EC50 curves for
+This module can create MATLAB scripts that display the EC50 curves for
 each measurement. These scripts will require MATLAB and the statistics
-toolbox in order to run. See <a href='#wants_save_figure'>
-<i>Create dose/response plots?</i></a> below.</p>
+toolbox in order to run. See `*Create dose/response plots?*`_ below.
 
-<h4>References</h4>
-<ul>
-<li><i>Z' factor:</i> Zhang JH, Chung TD, et al. (1999) "A
-simple statistical parameter for use in evaluation and validation of high
-throughput screening assays" <i>J Biomolecular Screening</i> 4(2): 67-73.
-<a href="http://dx.doi.org/10.1177/108705719900400206">(link)</a></li>
-<li><i>V factor:</i> Ravkin I (2004): Poster #P12024 - Quality
-Measures for Imaging-based Cellular Assays. <i>Society for Biomolecular
-Screening Annual Meeting Abstracts</i>. </li>
-<li>Code for the calculation of Z' and V factors was kindly donated by
-<a href="http://www.ravkin.net">Ilya Ravkin</a>. Carlos
-Evangelista donated his copyrighted dose-response-related code.</li>
-</ul>
+References
+^^^^^^^^^^
 
-<p><i>Example format for a file to be loaded by <b>LoadData</b> for this module:</i><br>
+.. _*Create dose/response plots?*: #wants_save_figure
 
-<b>LoadData</b> loads information from a CSV file. The first line of this file is a
-header that names the items.
-Each subsequent line represents data for one image cycle, so your file should have
-the header line plus one line per image to be processed. You can also make a
-file for <b>LoadData</b> to load that contains the positive/negative control and
-dose designations <i>plus</i> the image file names to be processed, which is a good way
-to guarantee that images are matched with the correct data. The control and dose
-information can be designated in one of two ways:
-<ul>
-<li>As metadata (so that the column header is prefixed with
-the "Metadata_" tag). "Metadata" is the category and the name after the underscore
-is the measurement.</li>
-<li>As some other type of data, in which case the header needs
-to be of the form <i>&lt;prefix&gt;_&lt;measurement&gt;</i>. Select <i>&lt;prefix&gt;</i> as
-the category and <i>&lt;measurement&gt;</i> as the measurement.</li>
-</ul>
-Here is an example file:<br><br>
-<code>
-<tt><table>
-<tr><td>Image_FileName_CY3,</td><td>Image_PathName_CY3,</td><td>Data_Control,</td><td>Data_Dose</td></tr>
-<tr><td>"Plate1_A01.tif",</td><td>"/images",</td><td>-1,</td><td>0</td></tr>
-<tr><td>"Plate1_A02.tif",</td><td>"/images",</td><td>1,</td><td>1E10</td></tr>
-<tr><td>"Plate1_A03.tif",</td><td>"/images",</td><td>0,</td><td>3E4</td></tr>
-<tr><td>"Plate1_A04.tif",</td><td>"/images",</td><td>0,</td><td>5E5</td></tr>
-</table></tt>
-</code>
-<br>
+-  *Z’ factor:* Zhang JH, Chung TD, et al. (1999) “A simple statistical
+   parameter for use in evaluation and validation of high throughput
+   screening assays” *J Biomolecular Screening* 4(2): 67-73. `(link)`_
+-  *V factor:* Ravkin I (2004): Poster #P12024 - Quality Measures for
+   Imaging-based Cellular Assays. *Society for Biomolecular Screening
+   Annual Meeting Abstracts*.
+-  Code for the calculation of Z’ and V factors was kindly donated by
+   `Ilya Ravkin`_. Carlos Evangelista donated his copyrighted
+   dose-response-related code.
 
-See also the <b>Metadata</b> and legacy <b>LoadData</b> modules.
-'''
+| *Example format for a file to be loaded by **LoadData** for this
+  module:*
+| **LoadData** loads information from a CSV file. The first line of this
+  file is a header that names the items. Each subsequent line represents
+  data for one image cycle, so your file should have the header line
+  plus one line per image to be processed. You can also make a file for
+  **LoadData** to load that contains the positive/negative control and
+  dose designations *plus* the image file names to be processed, which
+  is a good way to guarantee that images are matched with the correct
+  data. The control and dose information can be designated in one of two
+  ways:
+
+.. _(link): http://dx.doi.org/10.1177/108705719900400206
+.. _Ilya Ravkin: http://www.ravkin.net
+
+-  As metadata (so that the column header is prefixed with the
+   “Metadata\_” tag). “Metadata” is the category and the name after the
+   underscore is the measurement.
+-  As some other type of data, in which case the header needs to be of
+   the form *<prefix>\_<measurement>*. Select *<prefix>* as the category
+   and *<measurement>* as the measurement.
+
+| Here is an example file:
+| ````
+
++-------------------------+-------------------------+------------------+--------------+
+| Image\_FileName\_CY3,   | Image\_PathName\_CY3,   | Data\_Control,   | Data\_Dose   |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A01.tif”,      | “/images”,              | -1,              | 0            |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A02.tif”,      | “/images”,              | 1,               | 1E10         |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A03.tif”,      | “/images”,              | 0,               | 3E4          |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A04.tif”,      | “/images”,              | 0,               | 5E5          |
++-------------------------+-------------------------+------------------+--------------+
+
+|
+| See also the **Metadata** and legacy **LoadData** modules.
+"""
 
 import os
 
@@ -742,7 +763,7 @@ def calc_init_params(x, y):
     # This is an estimate of the EC50, i.e. the half maximal effective
     # concentration (here denoted as x-value)
     #
-    # Note: this was originally simply mean([max(x); min(x)]).  This does not
+    # Note that this was originally simply mean([max(x); min(x)]).  This does not
     # take into account the y-values though, so it was changed to be the
     # x-value that corresponded to the y-value closest to the mean([max(y); min(y)]).
     # Unfortunately, for x-values with only two categories e.g. [0 1], this results in

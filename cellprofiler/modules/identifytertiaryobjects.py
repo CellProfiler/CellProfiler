@@ -1,57 +1,77 @@
-'''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
-objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape.
-<hr>
-<h4>What is a tertiary object?</h4>
-In CellProfiler, we use the term <i>object</i> as a generic term to refer to an identifed
-feature in an image, usually a cellular subcompartment of some kind (for example,
-nuclei, cells, colonies, worms).
-We define an object as <i>tertiary</i> when it is identified by using a prior primary and
-secondary objects for reference. A common use case is when nuclei have been found using
-<b>IdentifyPrimaryObjects</b> and the cell body has been found using <b>IdentifySecondaryObjects</b>
-but measurements from the cytoplasm, the region outside the nucleus but within the cell body,
-are desired. This module may be used to define the cytoplasm as an new object.
+# coding=utf-8
 
-<h4>What do I need as input?</h4>
-This module will take the smaller identified objects and remove them from
-the larger identified objects. For example, "subtracting" the nuclei from
-the cells will leave just the cytoplasm, the properties of which can then
-be measured by downstream <b>Measure</b> modules. The larger objects should therefore be
-equal in size or larger than the smaller objects and must completely
-contain the smaller objects; <b>IdentifySecondaryObjects</b> will produce objects that
-satisfy this constraint. Ideally, both inputs should be objects produced by prior
-<b>Identify</b> modules.
+"""
+IdentifyTertiaryObjects
+=======================
 
-<h4>What do I get as output?</h4>
-A set of tertiary objects are produced by this module, which can be used in
-downstream modules for measurement purposes or other operations. Because each
-tertiary object is produced from primary and secondary objects, there will
-always be at most one secondary object for each primary object.
-See the section <a href="#Available_measurements">"Available measurements"</a> below for
+**IdentifyTertiaryObjects** identifies tertiary objects (e.g.,
+cytoplasm) by removing smaller primary objects (e.g. nuclei) from larger
+secondary objects (e.g., cells), leaving a ring shape.
+
+What is a tertiary object?
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In CellProfiler, we use the term *object* as a generic term to refer to
+an identifed feature in an image, usually a cellular subcompartment of
+some kind (for example, nuclei, cells, colonies, worms). We define an
+object as *tertiary* when it is identified by using a prior primary and
+secondary objects for reference. A common use case is when nuclei have
+been found using **IdentifyPrimaryObjects** and the cell body has been
+found using **IdentifySecondaryObjects** but measurements from the
+cytoplasm, the region outside the nucleus but within the cell body, are
+desired. This module may be used to define the cytoplasm as an new
+object.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+This module will take the smaller identified objects and remove them
+from the larger identified objects. For example, “subtracting” the
+nuclei from the cells will leave just the cytoplasm, the properties of
+which can then be measured by downstream **Measure** modules. The larger
+objects should therefore be equal in size or larger than the smaller
+objects and must completely contain the smaller objects;
+**IdentifySecondaryObjects** will produce objects that satisfy this
+constraint. Ideally, both inputs should be objects produced by prior
+**Identify** modules.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of tertiary objects are produced by this module, which can be used
+in downstream modules for measurement purposes or other operations.
+Because each tertiary object is produced from primary and secondary
+objects, there will always be at most one secondary object for each
+primary object. See the section "Measurements made by this module" below for
 the measurements that are produced by this module.
 
-<p>Note that creating subregions using this module can result in objects with
-a single label that nonetheless are not contiguous. This may lead to unexpected
-results when running measurment modules such as <b>MeasureObjectSizeShape</b>
-because calculations of the perimeter, aspect ratio, solidity, etc. typically
-make sense only for contiguous objects. Other modules, such as <b>MeasureImageIntensity</b> and
-<b>MeasureTexture</b> modules, are not affected and will yield expected results.
+Note that creating subregions using this module can result in objects
+with a single label that nonetheless are not contiguous. This may lead
+to unexpected results when running measurment modules such as
+**MeasureObjectSizeShape** because calculations of the perimeter, aspect
+ratio, solidity, etc. typically make sense only for contiguous objects.
+Other modules, such as **MeasureImageIntensity** and **MeasureTexture**
+modules, are not affected and will yield expected results.
 
-<h4>Available measurements</h4>
-<b>Image measurements:</b>
-<ul>
-<li><i>Count:</i> The number of tertiary objects identified.</li>
-</ul>
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<b>Object measurements:</b>
-<ul>
-<li><i>Parent:</i> The identity of the primary object and secondary object associated
-with each tertiary object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the
-identified tertiary objects.</li>
-</ul>
+**Image measurements:**
 
-See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
-'''
+-  *Count:* The number of tertiary objects identified.
+
+**Object measurements:**
+
+-  *Parent:* The identity of the primary object and secondary object
+   associated with each tertiary object.
+
+-  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+   of mass of the identified tertiary objects.
+
+See also **IdentifyPrimaryObject** and **IdentifySecondaryObject**
+modules.
+"""
+
 import cellprofiler.measurement
 import matplotlib
 import matplotlib.cm
@@ -85,39 +105,40 @@ class IdentifyTertiaryObjects(cpm.Module):
         Create the settings for the module during initialization.
         """
         self.secondary_objects_name = cps.ObjectNameSubscriber(
-                "Select the larger identified objects", cps.NONE, doc="""
-            Select the larger identified objects. This will usually
-            be an object previously identified by a <b>IdentifySecondaryObjects</b>
-            module.""")
+                "Select the larger identified objects", cps.NONE, doc="""\
+Select the larger identified objects. This will usually be an object
+previously identified by a **IdentifySecondaryObjects** module.""")
 
         self.primary_objects_name = cps.ObjectNameSubscriber(
-                "Select the smaller identified objects", cps.NONE, doc="""
-            Select the smaller identified objects. This will usually
-            be an object previously identified by a <b>IdentifyPrimaryObjects</b>
-            module.""")
+                "Select the smaller identified objects", cps.NONE, doc="""\
+Select the smaller identified objects. This will usually be an object
+previously identified by a **IdentifyPrimaryObjects** module.""")
 
         self.subregion_objects_name = cps.ObjectNameProvider(
-                "Name the tertiary objects to be identified", "Cytoplasm", doc="""
-            Enter a name for the new tertiary objects. The tertiary objects
-            will consist of the smaller object subtracted from the larger object.""")
+                "Name the tertiary objects to be identified", "Cytoplasm", doc="""\
+Enter a name for the new tertiary objects. The tertiary objects
+will consist of the smaller object subtracted from the larger object.""")
 
         self.shrink_primary = cps.Binary(
-                "Shrink smaller object prior to subtraction?", True, doc="""
-            Select <i>%(YES)s</i> to shrink the smaller object by 1 pixel before subtracting the objects.
-            this approach will ensure that there is always a tertiary object produced, even if it is
-            only 1 pixel wide.
-            <p>Select <i>%(NO)s</i> to subtract the objects directly, which will ensure that no pixels
-            are shared between the primary/secondary/tertiary objects and hence measurements for all
-            three sets of objects will not use the same pixels multiple times. However, this may result
-            in the creation of objects with no area. Measurements can still be made on such objects, but
-            the results will be zero or not-a-number (NaN)</p>""" % globals())
+                "Shrink smaller object prior to subtraction?", True, doc="""\
+Select *%(YES)s* to shrink the smaller object by 1 pixel before
+subtracting the objects. this approach will ensure that there is always
+a tertiary object produced, even if it is only 1 pixel wide.
 
-        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+Select *%(NO)s* to subtract the objects directly, which will ensure that
+no pixels are shared between the primary/secondary/tertiary objects and
+hence measurements for all three sets of objects will not use the same
+pixels multiple times. However, this may result in the creation of
+objects with no area. Measurements can still be made on such objects,
+but the results will be zero or not-a-number (NaN).
+""" % globals())
+
+        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc=RETAINING_OUTLINES_HELP
+% globals())
 
         self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "CytoplasmOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+                "Name the outline image", "CytoplasmOutlines", doc=NAMING_OUTLINES_HELP
+% globals())
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

@@ -1,91 +1,131 @@
+# coding=utf-8
+
+"""
+The **Images** module specifies the location of image files to be
+analyzed by your pipeline.
+
+The **Images** module allows you to specify the location of files to be
+analyzed by the pipeline; setting this module correctly is the first
+step in creating a new project in CellProfiler. These files can be
+located on your hard drive, on a networked computer elsewhere, or
+accessible with a URL. You can also provide rules to specify only those
+files that you want analyzed out of a larger collection (for example,
+from a folder containing both images for analysis and non-image files
+that should be disregarded).
+
+What is a “digital image”?
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A *digital image* is a set of numbers arranged into a two-dimensional
+format of rows and columns; a pixel refers to the row/column location of
+a particular point in the image. Pixels in grayscale or monochrome
+(black/white) images contain a single intensity value, whereas in color
+images, each pixel contains a red, green, and blue (RGB) triplet of
+intensity values. Additionally, the term image can be used as short-hand
+for an image sequence, that is, an image collection such as a time-lapse
+series (2-D + *t*), confocal Z-stacks (3-D), etc.
+
+CellProfiler can read a wide variety of image formats by using a library
+called Bio-Formats; see `here`_ for the formats available. Some image
+formats are better than others for use in image analysis. Some are
+`“lossy”`_ (information is lost in the conversion to the format) like
+most JPG/JPEG files; others are `“lossless”`_ (no image information is
+lost). For image analysis purposes, a lossless format like TIF or PNG is
+recommended.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The most straightforward way to provide image files to the **Images**
+module is to simply drag-and-drop them on the file list panel (the blank
+space indicated by the text “Drop files and folders here”).
+
++------------+
+| |image0|   |
++------------+
+
+Using the file explorer tool of your choice (e.g., Explorer in Windows,
+Finder in Mac), you can drag-and-drop individual files and/or entire
+folders into this panel. You can also right-click in the File list panel
+to bring up a file selection window to browse for individual files; on
+the Mac, folders can be drag-and-dropped from this window and you can
+select multiple files using Ctrl-A (Windows) or Cmd-A (Mac).
+
++------------+
+| |image1|   |
++------------+
+
+Right-clicking on the file list panel will provide a context menu with
+options to modify the file list:
+
+-  *Show Selected Image:* Selecting this option (or double-clicking on
+   the file) will open the image in a new window.
+-  *Remove From List:* Removes the selected file or folder from the
+   list. Note that this does not remove the file/folder from the hard
+   drive.
+-  *Remove Unavailable Files:* Refresh the list by checking for
+   existence of file. Note that this does not remove the file from the
+   hard drive.
+-  *Browse For Images:* Use a dialog box to select an image file (though
+   drag-and-drop is recommended).
+-  *Refresh:* Shown only if folder is selected. Refresh the list of
+   files from the folder. Files that were manually removed from the list
+   for that folder are restored.
+-  *Expand All Folders:* Expand all trees shown in the file list panel.
+-  *Collapse All Folders:* Collapse all folder trees shown in the file
+   list panel.
+-  *Clear File List:* Remove all files/folders in the file list panel.
+   You will be prompted for confirmation beforehand.
+
+What do the settings mean?
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you have a subset of files that you want to analyze from the full
+listing shown in the panel, you can filter the files according to a set
+of rules. This is useful in cases such as:
+
+-  You have dragged a folder of images onto the file list panel, but the
+   folder contains images you want to analyze along with non-image files
+   that you want to disregard.
+-  You have dragged a folder of images onto the file list panel, but the
+   folder contains the images from one experiment that you want to
+   process along with images from another experiment that you want to
+   ignore for now.
+
+You may specify as many rules as necessary to define the desired list of
+images.
+
+After you have filtered the file list, press the “Apply” button to
+update the view of the file list. You can also toggle the “Show file
+excluded by filters” box to modify the display of the files:
+
+-  Checking this box will show all the files in the list, with the files
+   that have been filtered out shown as grayed-out entries.
+-  Not checking this box will only show the files in the list that pass
+   the filter(s).
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The final product of the **Images** module is a file list in which any
+files that are not intended for further processing have been removed,
+whether manually or using filtering. This list will be used when
+collecting metadata (if desired) and when assembling the image sets in
+NamesAndTypes. The list can be filtered further in NamesAndTypes to
+specify, for example, that a subset of these images represents a
+particular wavelength.
+
+.. _here: http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
+.. _“lossy”: http://www.techterms.com/definition/lossy
+.. _“lossless”: http://www.techterms.com/definition/lossless
+
+.. |image0| image:: memory:Images_FilelistPanel_Blank.png
+.. |image1| image:: memory:Images_FilelistPanel_Filled.png
+"""
+
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
     IMAGES_FILELIST_FILLED
-
-__doc__ = """
-The <b>Images</b> module specifies the location of image files to be analyzed by your pipeline.
-<hr>
-The <b>Images</b> module allows you to specify the location of files to be analyzed by the pipeline;
-setting this module correctly is the first step in creating a new project in CellProfiler.
-These files can be located on your hard drive, on a networked computer elsewhere,
-or accessible with a URL. You can also provide rules to specify only those files that you want
-analyzed out of a larger collection (for example, from a folder containing both images for
-analysis and non-image files that should be disregarded).
-
-<h4>What is a "digital image"?</h4>
-A <i>digital image</i> is a set of numbers arranged into a two-dimensional format of rows and columns;
-a pixel refers to the row/column location of a particular point in the image. Pixels in grayscale or monochrome
-(black/white) images contain a single intensity value, whereas in color images, each pixel contains a red,
-green, and blue (RGB) triplet of intensity values. Additionally, the term image can be used as short-hand
-for an image sequence, that is, an image collection such as a time-lapse series (2-D + <i>t</i>), confocal Z-stacks
-(3-D), etc.
-
-<p>CellProfiler can read a wide variety of image formats by using a library called Bio-Formats;
-see <a href="http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html">here</a>
-for the formats available. Some image formats are better than others for use in image analysis. Some are
-<a href="http://www.techterms.com/definition/lossy">"lossy"</a> (information is lost in the conversion
-to the format) like most JPG/JPEG files; others are
-<a href="http://www.techterms.com/definition/lossless">"lossless"</a> (no image information is lost).
-For image analysis purposes, a lossless format like TIF or PNG is recommended.</p>
-
-<h4>What do I need as input?</h4>
-The most straightforward way to provide image files to the <b>Images</b> module is to simply drag-and-drop
-them on the file list panel (the blank space indicated by the text "Drop files and folders here").
-<table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_BLANK)s"></td></tr>
-</table>
-
-<p>Using the file explorer tool of your choice (e.g., Explorer in Windows, Finder in Mac), you can drag-and-drop
-individual files and/or entire folders into this panel. You can also right-click in the File list panel to
-bring up a file selection window to browse for individual files; on the Mac, folders can be drag-and-dropped
-from this window and you can select multiple files using Ctrl-A (Windows) or Cmd-A (Mac).
-<table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_FILLED)s"></td></tr>
-</table>
-Right-clicking on the file list panel will provide a context menu with options to modify the file list:
-<ul>
-<li><i>Show Selected Image:</i> Selecting this option (or double-clicking on the file) will open the image
-in a new window.</li>
-<li><i>Remove From List:</i> Removes the selected file or folder from the list. Note that this does not remove
-the file/folder from the hard drive.</li>
-<li><i>Remove Unavailable Files:</i> Refresh the list by checking for existence of file. Note that this does not remove
-the file from the hard drive.</li>
-<li><i>Browse For Images:</i> Use a dialog box to select an image file (though drag-and-drop is recommended).</li>
-<li><i>Refresh:</i> Shown only if folder is selected. Refresh the list of files from the folder. Files that were
-manually removed from the list for that folder are restored.</li>
-<li><i>Expand All Folders:</i> Expand all trees shown in the file list panel.</li>
-<li><i>Collapse All Folders:</i> Collapse all folder trees shown in the file list panel.</li>
-<li><i>Clear File List:</i> Remove all files/folders in the file list panel. You will be prompted for
-confirmation beforehand.</li>
-</ul></p>
-
-<h4>What do the settings mean?</h4>
-If you have a subset of files that you want to analyze from the full listing shown in the
-panel, you can filter the files according to a set of rules. This is useful in cases such as:
-<ul>
-<li>You have dragged a folder of images onto the file list panel, but the folder contains images
-you want to analyze along with non-image files that you want to disregard.</li>
-<li>You have dragged a folder of images onto the file list panel, but the folder contains the images
-from one experiment that you want to process along with images from another experiment that you
-want to ignore for now. </li>
-</ul>
-You may specify as many rules as necessary to define the desired list of images.
-
-<p>After you have filtered the file list, press the "Apply" button to update the view of the
-file list. You can also toggle the "Show file excluded by filters" box to modify the display of the files:
-<ul>
-<li>Checking this box will show all the files in the list, with the files that have been filtered out
-shown as grayed-out entries.</li>
-<li>Not checking this box will only show the files in the list that pass the filter(s).</li>
-</ul></p>
-
-<h4>What do I get as output?</h4>
-The final product of the <b>Images</b> module is a file list in which any files that are not intended for
-further processing have been removed, whether manually or using filtering. This list will be used when
-collecting metadata (if desired) and when assembling the image sets in NamesAndTypes. The list can be
-filtered further in NamesAndTypes to specify, for example, that a subset of these images represents a
-particular wavelength.
-""" % globals()
 
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
@@ -171,6 +211,12 @@ class Images(cpm.Module):
             Re-display the file list, removing or graying out the files
             that do not pass the current filter.
             """)
+
+    def help_settings(self):
+        return [
+            self.filter,
+            self.update_button
+        ]
 
     @staticmethod
     def modpath_to_url(modpath):

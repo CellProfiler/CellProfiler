@@ -1,20 +1,6 @@
-import math
+# coding=utf-8
 
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import centrosome.threshold
-import numpy
-import scipy.ndimage
-import scipy.sparse
-import skimage.morphology
-
-import applythreshold
-import cellprofiler.gui.help
-import cellprofiler.object
-import cellprofiler.setting
-
-__doc__ = """
+"""
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images containing bright
 objects on a dark background.
 <hr>
@@ -48,11 +34,11 @@ form:
 <h4>What do the settings mean?</h4>See below for help on the individual settings. The following icons are used to call
 attention to key items:
 <ul>
-    <li><img src="memory:{protip_recommend_icon}">&nbsp;Our recommendation or example use case for which a particular
+    <li><img src="memory:thumb-up.png">&nbsp;Our recommendation or example use case for which a particular
     setting is best used.</li>
-    <li><img src="memory:{protip_avoid_icon}">&nbsp;Indicates a condition under which a particular setting may not work
+    <li><img src="memory:thumb-down.png">&nbsp;Indicates a condition under which a particular setting may not work
     well.</li>
-    <li><img src="memory:{tech_note_icon}">&nbsp;Technical note. Provides more detailed information on the
+    <li><img src="memory:gear.png">&nbsp;Technical note. Provides more detailed information on the
     setting.</li>
 </ul>
 <h4>What do I get as output?</h4>A set of primary objects are produced by this module, which can be used in downstream
@@ -76,7 +62,7 @@ the module display window will show the following panels:
     <li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as those calculated by
     the module in order to produce the objects shown.</li>
 </ul><a id="Available_measurements" name="Available_measurements">
-<h4>Available measurements</h4><b>Image measurements:</b>
+<h4>Measurements made by this module</h4><b>Image measurements:</b>
 <ul>
     <li><i>Count:</i> The number of primary objects identified.</li>
     <li><i>OriginalThreshold:</i> The global threshold for the image.</li>
@@ -133,11 +119,25 @@ where nuclei are the primary objects:</p>
 </ul>
 <p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, <b>IdentifyObjectsManually</b> and
 <b>ClassifyPixels</b></p></a>
-""".format(**{
-    "protip_recommend_icon": cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
-    "protip_avoid_icon": cellprofiler.gui.help.PROTIP_AVOID_ICON,
-    "tech_note_icon": cellprofiler.gui.help.TECH_NOTE_ICON
-})
+"""
+
+import cellprofiler.gui.help
+
+import math
+
+import centrosome.cpmorphology
+import centrosome.outline
+import centrosome.propagate
+import centrosome.threshold
+import numpy
+import scipy.ndimage
+import scipy.sparse
+import skimage.morphology
+
+import threshold
+import cellprofiler.gui.help
+import cellprofiler.object
+import cellprofiler.setting
 
 #################################################
 #
@@ -232,7 +232,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
     module_name = "IdentifyPrimaryObjects"
 
     def __init__(self):
-        self.apply_threshold = applythreshold.ApplyThreshold()
+        self.apply_threshold = threshold.Threshold()
 
         super(IdentifyPrimaryObjects, self).__init__()
 
@@ -350,7 +350,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                         </tr>
                     </table>
                     <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; The object centers are defined as local
+                        <dd><img src="memory:gear.png">&nbsp; The object centers are defined as local
                         intensity maxima in the smoothed image.</dd>
                     </dl>
                 </li>
@@ -374,7 +374,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                         </tr>
                     </table>
                     <dl>
-                        <dd><img src="memory:{TECH_NOTE_ICON}">&nbsp; The binary thresholded image is
+                        <dd><img src="memory:gear.png">&nbsp; The binary thresholded image is
                         distance-transformed and object centers are defined as peaks in this image. A
                         distance-transform gives each pixel a value equal to the distance to the nearest pixel
                         below a certain threshold, so it indicates the <i>{UN_SHAPE}</i> of the object.</dd>
@@ -530,7 +530,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         self.fill_holes = cellprofiler.setting.Choice(
             'Fill holes in identified objects?',
             FH_ALL,
-            value=FH_DECLUMP,
+            value=FH_THRESHOLDING,
             doc="""
             This option controls how holes are filled in:
             <ul>
@@ -635,12 +635,12 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
                 "THRESHOLD_CORRECTION_FACTOR_TEXT": self.apply_threshold.threshold_correction_factor.get_text(),
                 "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
                 "THRESHOLD_METHOD_TEXT": self.apply_threshold.global_operation.get_text(),
-                "THRESHOLD_METHOD_VALUE": applythreshold.TM_LI,
+                "THRESHOLD_METHOD_VALUE": threshold.TM_LI,
                 "THRESHOLD_RANGE_MAX": 1.0,
                 "THRESHOLD_RANGE_MIN": 0.0,
                 "THRESHOLD_RANGE_TEXT": self.apply_threshold.threshold_range.get_text(),
                 "THRESHOLD_SCOPE_TEXT": self.apply_threshold.threshold_scope.get_text(),
-                "THRESHOLD_SCOPE_VALUE": applythreshold.TS_GLOBAL,
+                "THRESHOLD_SCOPE_VALUE": threshold.TS_GLOBAL,
                 "THRESHOLD_SMOOTHING_SCALE_TEXT": self.apply_threshold.threshold_smoothing_scale.get_text(),
                 "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
                 "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
@@ -739,7 +739,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
-            "ApplyThreshold",
+            "Threshold",
             False
         )
 
@@ -856,17 +856,12 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         # Relabel the image
         labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
 
-        if self.advanced:
-            new_labeled_image, new_object_count = self.limit_object_count(labeled_image, object_count)
-            if new_object_count < object_count:
-                # Add the labels that were filtered out into the border
-                # image.
-                border_excluded_mask = (border_excluded_labeled_image > 0) | (
-                    (labeled_image > 0) & (new_labeled_image == 0)
-                )
-                border_excluded_labeled_image = scipy.ndimage.label(border_excluded_mask, numpy.ones((3, 3), bool))[0]
-                object_count = new_object_count
-                labeled_image = new_labeled_image
+        if self.advanced and self.limit_choice.value == LIMIT_ERASE:
+            if object_count > self.maximum_object_count.value:
+                labeled_image = numpy.zeros(labeled_image.shape, int)
+                border_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+                size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+                object_count = 0
 
         # Make an outline image
         outline_image = centrosome.outline.outline(labeled_image)
@@ -946,20 +941,6 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
         )
 
         return binary_image, global_threshold, sigma
-
-    def limit_object_count(self, labeled_image, object_count):
-        '''Limit the object count according to the rules
-
-        labeled_image - image to be limited
-        object_count - check to see if this exceeds the maximum
-
-        returns a new labeled_image and object count
-        '''
-        if object_count > self.maximum_object_count.value:
-            labeled_image = numpy.zeros(labeled_image.shape, int)
-            object_count = 0
-
-        return labeled_image, object_count
 
     def smooth_image(self, image, mask):
         """Apply the smoothing filter to the image"""

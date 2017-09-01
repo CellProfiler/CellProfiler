@@ -1,100 +1,126 @@
+# coding=utf-8
+
+"""
+The **Metadata** module connects information about the images (i.e.,
+metadata) to your list of images for processing in CellProfiler.
+
+The **Metadata** module allows you to extract and associate metadata
+with your images. The metadata can be extracted from the image file
+itself, from a part of the file name or location, and/or from a text
+file you provide.
+
+What is “metadata”?
+^^^^^^^^^^^^^^^^^^^
+
+The term *metadata* refers to “data about data.” For many assays,
+metadata is important in the context of tagging images with various
+attributes, which can include (but is not limited to) items such as the
+following:
+
+-  The row and column of the microtiter plate that the image was
+   acquired from.
+-  The experimental treatment applied to the well that the image was
+   acquired from.
+-  The number of timepoints or channels contained in the image file.
+-  The image type, i.e., RGB, indexed or separate channels.
+-  The height and width of an image, in pixels.
+-  Etc.
+
+It can be helpful to inform CellProfiler about certain metadata in order
+to define a specific relationship between the images and the associated
+metadata. For instance:
+
+-  You want images with a common tag to be matched together so they are
+   processed together during the pipeline run. E.g., the filenames for
+   fluorescent DAPI and GFP images contain different tags indicating the
+   wavelength but share ‘\_s1’ in the filename if they were acquired
+   from site #1, ‘\_s2’ from site #2, and so on.
+-  You want certain information attached to the output measurements and
+   filenames for annotation or sample-tracking purposes. E.g., some
+   images are to be identified as acquired from DMSO treated wells,
+   whereas others were collected from wells treated with Compound 1, 2,…
+   and so forth.
+
+The underlying assumption in matching metadata values to image sets is
+that there is an exact pairing (i.e., a one-to-one match) for a given
+combination of metadata tags. A common example is that for a two-channel
+microtiter plate assay, the values of the plate, well, and site tags
+from one channel get matched uniquely to the plate, well, and site tag
+values from the other channel.
+
+What are the inputs?
+^^^^^^^^^^^^^^^^^^^^
+
+If you do not have metadata that is relevant to your analysis, you can
+leave this module in the default setting, and continue on to the
+**NamesAndTypes**\ module If you do have relevant metadata, the
+**Metadata** module receives the file list produced by the **Images**
+module. It then associates information to each file in the File list,
+which can be obtained from several sources:
+
+-  From the image file name or location (e.g., as assigned by a
+   microscope). In this case, you will provide the text search pattern
+   to obtain this information.
+-  In a text file created and filled out by you or a laboratory
+   information management system. In this case, you will point the
+   module to the location of this file.
+-  In the image file itself.
+
+What do the settings mean?
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See below for help on the individual settings. In general, the settings
+serve in various forms of metadata extraction. You can extract metadata
+from all images from **Images** modules or a subset of them by using
+rules to filter the list.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The final product of the **Metadata** module is a list of files from the
+**Images**\ module, accompanied by the associated metadata retrieved
+from the source(s) provided and matched to the desired images.
+
+As you are extracting metadata from your various sources, you can click
+the “Update” button below the divider to display a table of results
+using the current settings. Each row corresponds to an image file from
+the **Images** module, and the columns display the metadata obtained for
+each tag specified. You can press this button as many times as needed to
+display the most current metadata obtained.
+
++------------+
+| |image0|   |
++------------+
+
+Some downstream use cases for metadata include the following:
+
+-  If the metadata establishes how channels are related to one another,
+   you can use them in the **NamesAndTypes** module to aid in creating
+   an image set.
+-  If the images need to be further sub-divided into groups of images
+   that share a common metadata value, the **Groups** module can be used
+   to specify which metadata is needed for this purpose.
+-  You can also use metadata to reference their values in later modules.
+   Since the metadata is stored as an image measurement and can be
+   assigned as an integer or floating-point number, any module which
+   allows measurements as input can make use of it.
+-  Several modules are also capable of using metadata for more specific
+   purposes. Refer to the module setting help for additional information
+   on how to use them in the context of the specific module.
+
+If the metadata originates from an external source such as a CSV, there
+are some caveats in the cases when metadata is either missing or
+duplicated for the referenced images; see the **NamesAndTypes** module
+for more details.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Metadata:* The prefix of each metadata tag in the per-image table.
+.. |image0| image:: memory:Metadata_ExampleDisplayTable.png
+"""
+
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
-    IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
-
-__doc__ = """
-The <b>Metadata</b> module connects information about the images (i.e., metadata)
-to your list of images for processing in CellProfiler.
-<hr>
-The <b>Metadata</b> module allows you to extract and associate metadata with your images.
-The metadata can be extracted from the image file itself, from a part of the file name
-or location, and/or from a text file you provide.
-
-<h4>What is "metadata"?</h4>
-The  term <i>metadata</i> refers to "data about data." For many assays, metadata is
-important in the context of tagging images with various attributes, which can include
-(but is not limited to) items such as the following:
-<ul>
-<li>The row and column of the microtiter plate that the image was acquired from.</li>
-<li>The experimental treatment applied to the well that the image was acquired from.</li>
-<li>The number of timepoints or channels contained in the image file.</li>
-<li>The image type, i.e., RGB, indexed or separate channels.</li>
-<li>The height and width of an image, in pixels.</li>
-<li>Etc.</li>
-</ul>
-It can be helpful to inform CellProfiler about certain metadata in order to define a
-specific relationship between the images and the associated metadata. For instance:
-<ul>
-<li>You want images with a common tag to be matched together so they are
-processed together during the pipeline run. E.g., the filenames for fluorescent
-DAPI and GFP images contain different tags indicating the wavelength but
-share '_s1' in the filename if they were acquired from site #1, '_s2' from
-site #2, and so on.</li>
-<li>You want certain information attached to the output measurements and
-filenames for annotation or sample-tracking purposes.  E.g., some images are to be
-identified as acquired from DMSO treated wells, whereas others were collected from
-wells treated with Compound 1, 2,... and so forth. </li>
-</ul>
-
-<p>The underlying assumption in matching metadata values to image sets is that there
-is an exact pairing (i.e., a one-to-one match) for a given combination of metadata
-tags. A common example is that for a two-channel microtiter plate assay,
-the values of the plate, well, and site tags from one channel get matched
-uniquely to the plate, well, and site tag values from the other channel.</p>
-
-<h4>What are the inputs?</h4>
-If you do not have metadata that is relevant to your analysis, you can leave this module
-in the default setting, and continue on to the <b>NamesAndTypes</b>module
-If you do have relevant metadata, the <b>Metadata</b> module receives the file list
-produced by the <b>Images</b> module. It then associates information to each file in the
-File list, which can be obtained from several sources:
-<ul>
-<li>From the image file name or location (e.g., as assigned by a microscope). In this
-case, you will provide the text search pattern to obtain this information.</li>
-<li>In a text file created and filled out by you or a laboratory information management
-system. In this case, you will point the module to the location of this file. </li>
-<li>In the image file itself.</li>
-</ul>
-
-<h4>What do the settings mean?</h4>
-See below for help on the individual settings. In general, the settings serve in various forms of
-metadata extraction. You can extract metadata from all images from <b>Images</b> modules or a subset
-of them by using rules to filter the list.
-
-<h4>What do I get as output?</h4>
-The final product of the <b>Metadata</b> module is a list of files from the <b>Images</b>module, accompanied by
-the associated metadata retrieved from the source(s) provided and matched to the desired images.
-
-<p>As you are extracting metadata from your various sources, you can click the "Update" button below the
-divider to display a table of results using the current settings. Each row corresponds to an image file from
-the <b>Images</b> module, and the columns display the metadata obtained for each tag specified.
-You can press this button as many times as needed to display the most current metadata obtained.</p>
-<table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(METADATA_DISPLAY_TABLE)s"></td></tr>
-</table>
-
-<p>Some downstream use cases for metadata include the following:
-<ul>
-<li>If the metadata establishes how channels are related to one another, you can use them in the <b>NamesAndTypes</b>
-module to aid in creating an image set. </li>
-<li>If the images need to be further sub-divided into groups of images that share a common metadata value,
-the <b>Groups</b> module can be used to specify which metadata is needed for this purpose. </li>
-<li>You can also use metadata to reference their values in later modules. Since the metadata is stored as an image
-measurement and can be assigned as an integer or floating-point number, any module which allows measurements
-as input can make use of it. </li>
-<li>Several modules are also capable of using metadata for more specific purposes. Refer to the module setting
-help for additional information on how to use them in the context of the specific module.</li>
-</ul></p>
-If the metadata originates from an external source such as a CSV, there are some caveats
-in the cases when metadata is either missing or duplicated for the referenced images; see the <b>NamesAndTypes</b>
-module for more details.</p>
-
-<h4>Available measurements</h4>
-<ul>
-<li><i>Metadata:</i> The prefix of each metadata tag in the per-image table.</li>
-</ul>
-""" % globals()
-
 import numpy as np
 import logging
 
@@ -256,7 +282,7 @@ class Metadata(cpm.Module):
             text patterns in the file name or path, and then assign this text as metadata for the images
             you specify. The tag for each metadata is assigned a name that is meaningful to you.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             <i>When would you want to use this option?</i> If you want to take advantage of the fact that
             acquisition software often automatically assigns a regular nomenclature to the filenames or
             the containing folders. Alternately, the researcher acquiring the images may also have a
@@ -267,7 +293,7 @@ class Metadata(cpm.Module):
             to specify the location of the CSV file. You can create such a file using a spreadsheet program
             such as Microsoft Excel.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             <i>When would you want to use this option?</i> You have information curated in software that allows for
             export to a spreadsheet. This is commonly the case for laboratories that use data management systems
             that track samples and acquisition.</dd>
@@ -294,7 +320,7 @@ class Metadata(cpm.Module):
             illumination sources.</li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             <i>When would you want to use this option?</i> You want to analyze images that are contained as
             file stacks, i.e., the images that are related to each other in some way, such as by time
             (temporal), space (spatial), or color (spectral).</dd>
@@ -465,14 +491,14 @@ class Metadata(cpm.Module):
             different images. Set the drop-downs to pair the metadata tags of the images and the
             CSV, such that each row contains the corresponding tags. This can be done for as many
             metadata correspondences as you may have for each source; press
-            <img src="memory:%(MODULE_ADD_BUTTON)s"> to add more rows.</p>""" % globals()))
+            <img src="memory:module_add.png"> to add more rows.</p>""" % globals()))
 
         group.append("wants_case_insensitive", cps.Binary(
                 "Use case insensitive matching?", False, doc="""
             This setting controls whether row matching takes the metadata case
             into account when matching.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:thumb-up.png">&nbsp;
             If you note that your CSV metadata is not being
             applied, your choice on this setting may be the culprit.</dd>
             </dl>

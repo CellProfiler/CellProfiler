@@ -1,25 +1,42 @@
+# coding=utf-8
+
 """
-<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
-<hr>
-The module expands or shrinks objects by adding or removing border pixels. You can specify a certain number of border
-pixels to be added or removed, expand objects until they are almost touching or shrink objects down to a point. Objects
-are never lost using this module (shrinking stops when an object becomes a single pixel). The module can separate
+ExpandOrShrinkObjects
+=====================
+
+**ExpandOrShrinkObjects** expands or shrinks objects by a defined
+distance.
+
+The module expands or shrinks objects by adding or removing border
+pixels. You can specify a certain number of border pixels to be added or
+removed, expand objects until they are almost touching or shrink objects
+down to a point. Objects are never lost using this module (shrinking
+stops when an object becomes a single pixel). The module can separate
 touching objects without otherwise shrinking the objects.
-<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that remove pixels without
-completely removing an object. See the Settings help (below) for more detail.</p>
-<p><i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along to the
-module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. You can also pass the identified
-objects themselves along to the object processing module <b>ConvertToImage</b> and then save them with the
-<b>SaveImages</b> module.</p>
-<h4>Available measurements</h4><b>Image measurements:</b>
-<ul>
-    <li><i>Count:</i> Number of expanded/shrunken objects in the image.</li>
-</ul><b>Object measurements:</b>
-<ul>
-    <li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of the expanded/shrunken
-    objects.</li>
-</ul>
-<p>See also <b>Identify</b> modules.</p>
+
+**ExpandOrShrinkObjects** can perform some specialized morphological
+operations that remove pixels without completely removing an object. See
+the Settings help (below) for more detail.
+
+*Note on saving images:* You can use the settings in this module
+to pass object outlines along to the module **OverlayOutlines** and then
+save them with the **SaveImages** module. You can also pass the
+identified objects themselves along to the object processing module
+**ConvertToImage** and then save them with the **SaveImages** module.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Image measurements:**
+
+-  *Count:* Number of expanded/shrunken objects in the image.
+
+**Object measurements:**
+
+-  *Location\_X, Location\_Y:* Pixel (*X,Y*) coordinates of the center
+   of mass of the expanded/shrunken objects.
+
+See also **Identify** modules.
 """
 
 import centrosome.cpmorphology
@@ -67,27 +84,32 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
             "Select the operation",
             O_ALL,
             doc="""
-            Choose the operation that you want to perform:
-            <ul>
-                <li><i>{O_SHRINK_INF}:</i> Remove all pixels but one from filled objects. Thin objects with
-                holes to loops unless the "fill" option is checked.</li>
-                <li><i>{O_EXPAND_INF}:</i> Expand objects, assigning every pixel in the image to an object.
-                Background pixels are assigned to the nearest object.</li>
-                <li><i>{O_DIVIDE}:</i> Remove pixels from an object that are adjacent to another object's
-                pixels unless doing so would change the object's Euler number (break an object in two, remove
-                the object completely or open a hole in an object).</li>
-                <li><i>{O_SHRINK}:</i> Remove pixels around the perimeter of an object unless doing so would
-                change the object's Euler number (break the object in two, remove the object completely or open
-                a hole in the object). You can specify the number of times perimeter pixels should be removed.
-                Processing stops automatically when there are no more pixels to remove.</li>
-                <li><i>{O_EXPAND}:</i> Expand each object by adding background pixels adjacent to the image.
-                You can choose the number of times to expand. Processing stops automatically if there are no
-                more background pixels.</li>
-                <li><i>{O_SKELETONIZE}:</i> Erode each object to its skeleton.</li>
-                <li><i>{O_SPUR}:</i> Remove or reduce the length of spurs in a skeletonized image. The
-                algorithm reduces spur size by the number of pixels indicated in the setting <i>Number of
-                pixels by which to expand or shrink</i>.</li>
-            </ul>
+                Choose the operation that you want to perform:
+                
+                -  *{O_SHRINK_INF}:* Remove all pixels but one from filled objects.
+                   Thin objects with holes to loops unless the “fill” option is checked.
+                -  *{O_EXPAND_INF}:* Expand objects, assigning every pixel in the
+                   image to an object. Background pixels are assigned to the nearest
+                   object.
+                -  *{O_DIVIDE}:* Remove pixels from an object that are adjacent to
+                   another object’s pixels unless doing so would change the object’s
+                   Euler number (break an object in two, remove the object completely or
+                   open a hole in an object).
+                -  *{O_SHRINK}:* Remove pixels around the perimeter of an object unless
+                   doing so would change the object’s Euler number (break the object in
+                   two, remove the object completely or open a hole in the object). You
+                   can specify the number of times perimeter pixels should be removed.
+                   Processing stops automatically when there are no more pixels to
+                   remove.
+                -  *{O_EXPAND}:* Expand each object by adding background pixels
+                   adjacent to the image. You can choose the number of times to expand.
+                   Processing stops automatically if there are no more background
+                   pixels.
+                -  *{O_SKELETONIZE}:* Erode each object to its skeleton.
+                -  *{O_SPUR}:* Remove or reduce the length of spurs in a skeletonized
+                   image. The algorithm reduces spur size by the number of pixels
+                   indicated in the setting *Number of pixels by which to expand or
+                   shrink*.
             """.format(**{
                 "O_DIVIDE": O_DIVIDE,
                 "O_EXPAND": O_EXPAND,
@@ -105,13 +127,15 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
             "Fill holes in objects so that all objects shrink to a single point?",
             False,
             doc="""
-            <i>(Used only if one of the "shrink" options selected)</i><br>
-            Select <i>{YES}</i> to ensure that each object will shrink to a single point, by filling the holes
-            in each object.
-            <p>Select <i>{NO}</i> to preserve the Euler number. in this case, the shrink algorithm preserves
-            each object's Euler number, which means that it will erode an object with a hole to a ring in order
-            to keep the hole. An object with two holes will be shrunk to two rings connected by a line in order
-            to keep from breaking up the object or breaking the hole.</p>
+                | *(Used only if one of the “shrink” options selected)*
+                | Select *{YES}* to ensure that each object will shrink to a single
+                  point, by filling the holes in each object.
+                
+                Select *{NO}* to preserve the Euler number. in this case, the shrink
+                algorithm preserves each object’s Euler number, which means that it will
+                erode an object with a hole to a ring in order to keep the hole. An
+                object with two holes will be shrunk to two rings connected by a line in
+                order to keep from breaking up the object or breaking the hole.
             """.format(**{
                 "NO": cellprofiler.setting.NO,
                 "YES": cellprofiler.setting.YES

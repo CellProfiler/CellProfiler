@@ -902,12 +902,14 @@ class ImageProcessing(Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+            "Select the input image",
+            doc="Select the image you want to use."
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
-            "Output",
-            self.__class__.__name__
+            "Name the output image",
+            self.__class__.__name__,
+            doc="Enter the name you want to call the image output by this module."
         )
 
     def display(self, workspace, figure, cmap=["gray", "gray"]):
@@ -1036,12 +1038,14 @@ class ImageSegmentation(Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+            "Select the input image",
+            doc="Select the image you want to use."
         )
 
         self.y_name = cellprofiler.setting.ObjectNameProvider(
-            "Object",
-            self.__class__.__name__
+            "Name the output object",
+            self.__class__.__name__,
+            doc="Enter the name you want to call the object output by this module."
         )
 
     def display(self, workspace, figure):
@@ -1215,7 +1219,8 @@ class ObjectProcessing(ImageSegmentation):
         super(ObjectProcessing, self).create_settings()
 
         self.x_name = cellprofiler.setting.ObjectNameSubscriber(
-            "Input"
+            "Select the input object",
+            doc="Select the object you want to use."
         )
 
     def display(self, workspace, figure):

@@ -2,7 +2,7 @@
 
 """
 MeasureImageOverlap
-=======================
+===================
 
 **MeasureImageOverlap** calculates how much overlap occurs between
 the white portions of two black and white images
@@ -160,7 +160,8 @@ class MeasureImageOverlap(cellprofiler.module.Module):
     def create_settings(self):
         self.obj_or_img = cellprofiler.setting.Choice(
             "Compare segmented objects, or foreground/background?",
-            O_ALL
+            O_ALL,
+            doc="Choose whether to compare objects or images."
         )
 
         self.ground_truth = cellprofiler.setting.ImageNameSubscriber(
@@ -257,9 +258,9 @@ are chosen.
 -  *{DM_SKEL}:* Select to skeletonize the image and pick points
    eqidistant along the skeleton.
 
-    |image0|  *{DM_KMEANS}* is a choice that’s generally applicable to all
-    images. *{DM_SKEL}* is best suited to long, skinny objects such as
-    worms or neurites.
+|image0|  *{DM_KMEANS}* is a choice that’s generally applicable to all
+images. *{DM_SKEL}* is best suited to long, skinny objects such as
+worms or neurites.
 
 .. |image0| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
@@ -281,6 +282,7 @@ the movement calculation. As an example, the score for moving 10 pixels
 from one location to a location that is 100 pixels away is 10\*100, but
 if the maximum distance were set to 50, the score would be 10\*50
 instead.
+
 The maximum distance should be set to the largest reasonable distance
 that pixels could be expected to move from one image to the next."""
         )

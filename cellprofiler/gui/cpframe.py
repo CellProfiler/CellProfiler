@@ -632,7 +632,6 @@ class CPFrame(wx.Frame):
                                  'Choose which image set group to process in test-mode')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose Image Set',
                                  'Choose any of the available image sets')
-        self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View Workspace", "Show the workspace viewer")
         if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")

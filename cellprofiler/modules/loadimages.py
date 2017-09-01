@@ -50,9 +50,6 @@ Measurements made by this module
 
 See also the **Input** modules, **LoadData**, **LoadSingleImage**,
 **SaveImages**.
-
-.. _*Where to extract metadata*: #where_to_extract
-.. _*Regular expression that finds metadata in the file name*: #regular_expression
 """
 
 import cgi
@@ -464,7 +461,7 @@ pair of fields.""")
         group.append("divider", cps.Divider(line=True))
         group.append("common_text", cps.Text(
                 'Text that these images have in common (case-sensitive)', '', doc="""\
-                
+
 *(Used only for the image-loading Text options)*
 
 For *Text-Exact match*, type the text string that all the images have

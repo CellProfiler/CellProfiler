@@ -141,6 +141,8 @@ an object created by a previous module such as
 
         self.first_measurement = cps.Measurement(
                 "Select the first measurement", object_fn, doc="""\
+*(Used only if using a pair of measurements)*
+
 Choose a measurement made on the above object. This is the first of two
 measurements that will be contrasted together. The measurement should be
 one made on the object in a prior module.
@@ -149,6 +151,8 @@ one made on the object in a prior module.
         self.first_threshold_method = cps.Choice(
                 "Method to select the cutoff",
                 [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""\
+*(Used only if using a pair of measurements)*
+
 Objects are classified as being above or below a cutoff value for a
 measurement. You can set this cutoff threshold in one of three ways:
 
@@ -160,10 +164,15 @@ measurement. You can set this cutoff threshold in one of three ways:
 """ % globals())
 
         self.first_threshold = cps.Float(
-                "Enter the cutoff value", 0.5, doc="""This is the cutoff value separating objects in the two classes.""")
+                "Enter the cutoff value", 0.5, doc="""\
+*(Used only if using a pair of measurements)*
+
+This is the cutoff value separating objects in the two classes.""")
 
         self.second_measurement = cps.Measurement(
                 "Select the second measurement", object_fn, doc="""\
+*(Used only if using a pair of measurements)*
+
 Select a measurement made on the above object. This is
 the second of two measurements that will be contrasted together.
 The measurement should be one made on the object in a prior
@@ -172,6 +181,8 @@ module.""")
         self.second_threshold_method = cps.Choice(
                 "Method to select the cutoff",
                 [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""\
+*(Used only if using a pair of measurements)*
+
 Objects are classified as being above or below a cutoff value for a
 measurement. You can set this cutoff threshold in one of three ways:
 
@@ -183,10 +194,15 @@ measurement. You can set this cutoff threshold in one of three ways:
 """ % globals())
 
         self.second_threshold = cps.Float(
-                "Enter the cutoff value", 0.5, doc="""This is the cutoff value separating objects in the two classes.""")
+                "Enter the cutoff value", 0.5, doc="""\
+*(Used only if using a pair of measurements)*
+
+This is the cutoff value separating objects in the two classes.""")
 
         self.wants_custom_names = cps.Binary(
                 "Use custom names for the bins?", False, doc="""\
+*(Used only if using a pair of measurements)*
+
 Select "*%(YES)s*" if you want to specify the names of each bin
 measurement.
 
@@ -257,7 +273,7 @@ Enter the name to be given to the classified object image.""")
                 doc="""\
 The name of the objects to be classified. You can choose from objects
 created by any previous module. See **IdentifyPrimaryObjects**,
-**IdentifySecondaryObjects**, or **IdentifyTertiaryObjects**.
+**IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, or **Watershed**
 """))
 
         def object_fn():
@@ -265,6 +281,8 @@ created by any previous module. See **IdentifyPrimaryObjects**,
 
         group.append("measurement", cps.Measurement(
                 "Select the measurement to classify by", object_fn, doc="""\
+*(Used only if using a single measurement)*
+
 Select a measurement made by a previous module. The objects will be
 classified according to their values for this measurement.
 """))
@@ -272,6 +290,8 @@ classified according to their values for this measurement.
         group.append("bin_choice", cps.Choice(
                 "Select bin spacing",
                 [BC_EVEN, BC_CUSTOM], doc="""\
+*(Used only if using a single measurement)*
+
 Select how you want to define the spacing of the bins. You have the
 following options:
 
@@ -286,13 +306,15 @@ following options:
 
         group.append("bin_count", cps.Integer(
                 "Number of bins", 3, minval=1, doc="""\
+*(Used only if using a single measurement)*
+
 This is the number of bins that will be created between
 the low and high threshold"""
         ))
 
         group.append("low_threshold", cps.Float(
                 "Lower threshold", 0, doc="""\
-*(Used only if "%(BC_EVEN)s" selected)*
+*(Used only if using a single measurement and "%(BC_EVEN)s" selected)*
 
 This is the threshold that separates the lowest bin from the others. The
 lower threshold, upper threshold, and number of bins define the
@@ -301,6 +323,8 @@ thresholds of bins between the lowest and highest.
 
         group.append("wants_low_bin", cps.Binary(
                 "Use a bin for objects below the threshold?", False, doc="""\
+*(Used only if using a single measurement)*
+
 Select "*%(YES)s*" if you want to create a bin for objects whose values
 fall below the low threshold. Select "*%(NO)s*" if you do not want a bin
 for these objects.
@@ -312,7 +336,7 @@ for these objects.
         group.append("high_threshold", cps.Float(
                 "Upper threshold", 1,
                 minval=cps.NumberConnector(min_upper_threshold), doc="""\
-*(Used only if "%(BC_EVEN)s" selected)*
+*(Used only if using a single measurement and "%(BC_EVEN)s" selected)*
 
 This is the threshold that separates the last bin from the others. Note
 that if you would like two bins, you should select "*%(BC_CUSTOM)s*".
@@ -320,6 +344,8 @@ that if you would like two bins, you should select "*%(BC_CUSTOM)s*".
 
         group.append("wants_high_bin", cps.Binary(
                 "Use a bin for objects above the threshold?", False, doc="""\
+*(Used only if using a single measurement)*
+
 Select "*%(YES)s*" if you want to create a bin for objects whose values
 are above the high threshold.
 
@@ -329,7 +355,7 @@ Select "*%(NO)s*" if you do not want a bin for these objects.
         group.append("custom_thresholds", cps.Text(
                 "Enter the custom thresholds separating the values between bins",
                 "0,1", doc="""\
-*(Used only if "%(BC_CUSTOM)s" selected)*
+*(Used only if using a single measurement and "%(BC_CUSTOM)s" selected)*
 
 This setting establishes the threshold values for the bins. You should
 enter one threshold between each bin, separating thresholds with commas
@@ -339,6 +365,8 @@ more bin than there are thresholds.
 
         group.append("wants_custom_names", cps.Binary(
                 "Give each bin a name?", False, doc="""\
+*(Used only if using a single measurement)*
+
 Select "*%(YES)s*" to assign custom names to bins you have specified.
 
 Select "*%(NO)s*" for the module to automatically assign names based on
@@ -347,7 +375,7 @@ the measurements and the bin number.
 
         group.append("bin_names", cps.Text(
                 "Enter the bin names separated by commas", cps.NONE, doc="""\
-*(Used only if Give each bin a name? is checked)*
+*(Used only if "Give each bin a name?" is checked)*
 
 Enter names for each of the bins, separated by commas.
 An example including three bins might be *First,Second,Third*."""))

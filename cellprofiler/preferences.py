@@ -473,6 +473,31 @@ created according to the pathname you have typed.
     )
 })
 
+DEFAULT_OUTPUT_FOLDER_HELP = """\
+The *Default Output Folder* is accessible by pressing the “View output
+settings” button at the bottom of the pipeline panel. The *Default Output
+Folder* is the folder that CellProfiler uses to store the output file it
+creates. Also, several File Processing modules (e.g., **SaveImages** or
+**ExportToSpreadsheet**) provide the option of saving analysis results
+to this folder on a default basis unless you specify, within the module,
+an alternate, specific folder on your computer. Within modules, we
+recommend selecting the Default Output Folder as much as possible, so
+that your pipeline will work even if you transfer your images and
+pipeline to a different computer. If, instead, you type specific folder
+path names into a module’s settings, your pipeline will not work on
+someone else’s computer until you adjust those pathnames within each
+module.
+
+Use the *Browse* button (to the right of the text box) to specify the
+folder you would like to use as the Default Output Folder, or type the
+full folder path in the edit box. If you type a folder path that cannot
+be found, the message box below will indicate this fact until you
+correct the problem. If you want to specify a folder that does not yet
+exist, type the desired name and click on the *New folder* icon to the
+right of the *Browse folder* icon. The folder will be created according
+to the pathname you have typed.\
+"""
+
 ERROR_COLOR_HELP = "Sets the color used for the error alerts associated with misconfigured settings and other errors."
 
 IJ_PLUGINS_DIRECTORY_HELP = """\
@@ -1990,29 +2015,3 @@ def cancel_progress():
     for instance, after an exception is thrown that bubbles to the top.
     '''
     report_progress(None, None, None)
-
-
-DEFAULT_OUTPUT_FOLDER_HELP = """\
-The *Default Output Folder* is accessible by pressing the “View output
-settings” button at the bottom of the pipeline panel. The *Default Output
-Folder* is the folder that CellProfiler uses to store the output file it
-creates. Also, several File Processing modules (e.g., **SaveImages** or
-**ExportToSpreadsheet**) provide the option of saving analysis results
-to this folder on a default basis unless you specify, within the module,
-an alternate, specific folder on your computer. Within modules, we
-recommend selecting the Default Output Folder as much as possible, so
-that your pipeline will work even if you transfer your images and
-pipeline to a different computer. If, instead, you type specific folder
-path names into a module’s settings, your pipeline will not work on
-someone else’s computer until you adjust those pathnames within each
-module.
-
-Use the *Browse* button (to the right of the text box) to specify the
-folder you would like to use as the Default Output Folder, or type the
-full folder path in the edit box. If you type a folder path that cannot
-be found, the message box below will indicate this fact until you
-correct the problem. If you want to specify a folder that does not yet
-exist, type the desired name and click on the *New folder* icon to the
-right of the *Browse folder* icon. The folder will be created according
-to the pathname you have typed.\
-"""

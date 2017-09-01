@@ -80,7 +80,7 @@ a corresponding secondary object, keep in mind the following points:
 -  There will always be at most one secondary object for each primary
    object.
 
-See the section "Measurements made by this module"_ below for the measurements
+See the section "Measurements made by this module" below for the measurements
 that are produced by this module. Once the module has finished
 processing, the module display window will show the following panels:
 
@@ -141,8 +141,6 @@ neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
 λ\ :sup:`2`).
 
 See also the other **Identify** modules.
-
-.. _"Measurements made by this module": #Available_measurements
 
 .. |image0| image:: memory:thumb-up.png
 .. |image1| image:: memory:thumb-down.png
@@ -299,7 +297,7 @@ identification, only the final display.
 
 This option allows to define the number of pixels by which the primary objects
 will be expanded. This option becomes useful in situations when no staining was
-used to define cell cytoplasm but is needed to be defined for further measurements. 
+used to define cell cytoplasm but is needed to be defined for further measurements.
 """.format(**{
             "M_DISTANCE_N": M_DISTANCE_N,
             "M_DISTANCE_B": M_DISTANCE_B

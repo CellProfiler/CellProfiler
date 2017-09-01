@@ -18,15 +18,14 @@
 #
 ########################################################
 
-import cellprofiler.icons
 import logging
-import os
-import sys
-import cellprofiler.icons
-from cellprofiler.setting import YES, NO
 import os.path
 
-# from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
+import sys
+
+import cellprofiler.icons
+from cellprofiler.setting import NO, YES
+
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
@@ -60,9 +59,6 @@ except:
 ####################################################
 
 # General help references
-
-BROWSE_BUTTON = 'folder_browse.png'
-CREATE_BUTTON = 'folder_create.png'
 
 MODULE_HELP_BUTTON = 'module_help.png'
 MODULE_MOVEUP_BUTTON = 'module_moveup.png'
@@ -133,8 +129,6 @@ navigate the cursor to just before the tag and either:
 
 USING_METADATA_GROUPING_HELP_REF = """Please see the <b>Groups</b> module for more details on the
 proper use of metadata for grouping"""
-
-from cellprofiler.setting import YES, NO
 
 RETAINING_OUTLINES_HELP = """Select <i>%(YES)s</i> to retain the outlines of the new objects
 for later use in the pipeline. For example, a common use is for quality control purposes by
@@ -253,59 +247,6 @@ want grouped together.</li>
 </ul>
 </p>
 """ % globals()
-
-DEFAULT_IMAGE_FOLDER_HELP = """
-<p>Please note that the Default Input Folder will be deprecated in the future. The location
-of non-image files needed by some modules will be set to an absolute path
-in future versions of CellProfiler. For specifying the location of image files, please
-use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
-
-<p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
-CellProfiler and is accessible by pressing the "View output settings"
-button at the bottom of the pipeline panel. The folder designated as the
-<i>Default Input Folder</i> contains the input image or data files
-that you want to analyze. Several File Processing modules (e.g.,
-<b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images
-from this folder on a default basis unless you specify, within the module, an alternate,
-specific folder on your computer. Within modules, we recommend selecting the
-Default Input Folder as much as possible, so that your pipeline will
-work even if you transfer your images and pipeline to a different
-computer. If, instead, you type specific folder path names into a module's settings,
-your pipeline will not work on someone else's computer until you adjust those
-pathnames within each module.</p>
-
-<p>Use the <i>Browse</i> button <img src="memory:%(BROWSE_BUTTON)s">&nbsp;to specify
-the folder you would like to use as the Default Input Folder, or
-type the full folder path in the edit box. If you type a folder path that
-cannot be found, the message box below will indicate this fact until you correct the problem.
-If you want to specify a folder that does not yet exist, type the desired name and
-click on the <i>New folder</i> button <img src="memory:%(CREATE_BUTTON)s">.
-The folder will be created according to the pathname you have typed.</p>""" % globals()
-
-DEFAULT_OUTPUT_FOLDER_HELP = """
-<p>Please note that the Default Output Folder will be deprecated in the future. The location
-of files written by the various output modules will be set to an absolute path
-in future versions of CellProfiler.</p>
-
-<p>The <i>Default Output Folder</i> is accessible by pressing the "View output settings"
-button at the bottom of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
-store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or
-<b>ExportToSpreadsheet</b>) provide the option of saving analysis results to
-this folder on a default basis unless you specify, within the module, an alternate,
-specific folder on your computer. Within modules, we recommend selecting the
-Default Output Folder as much as possible, so that your pipeline will
-work even if you transfer your images and pipeline to a different
-computer. If, instead, you type specific folder path names into a module's settings,
-your pipeline will not work on someone else's computer until you adjust those
-pathnames within each module.</p>
-
-<p>Use the <i>Browse</i> button (to the right of the text box) to specify
-the folder you would like to use as the Default Output Folder, or
-type the full folder path in the edit box. If you type a folder path that
-cannot be found, the message box below will indicate this fact until you correct the
-problem. If you want to specify a folder that does not yet exist, type the desired name and
-click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon.
-The folder will be created according to the pathname you have typed.</p>"""
 
 USING_THE_OUTPUT_FILE_HELP = """
 <p>Please note that the output file will be deprecated in the future. This setting
@@ -1417,165 +1358,6 @@ FIGURE_HELP = (
 
 WV_FIGURE_HELP = tuple(list(FIGURE_HELP))
 
-###################################################
-#
-# Help for the preferences dialog
-#
-###################################################
-
-TABLE_FONT_HELP = """
-Sets the font used in tables displayed in module figure windows."""
-
-DEFAULT_COLORMAP_HELP = """
-Specifies the color map that sets the colors for labels and other elements. See this
-<a href ="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">
-page</a> for pictures of available colormaps."""
-
-ERROR_COLOR_HELP = """
-Sets the color used for the error alerts associated with misconfigured settings and other
-errors."""
-
-PLUGINS_DIRECTORY_HELP = """
-Chooses the directory that holds dynamically-loaded CellProfiler modules. You
-can write your own module and place it in this directory and CellProfiler
-will make it available for your pipeline. You must restart CellProfiler
-after modifying this setting."""
-
-IJ_PLUGINS_DIRECTORY_HELP = """
-Sets the directory that holds ImageJ plugins (for the <b>RunImageJ</b> module).
-You can download or write your own ImageJ plugin and place it in this directory
-and CellProfiler will make it available for your pipeline. You must restart
-CellProfiler after modifying this setting."""
-
-SHOW_TELEMETRY_HELP = """
-Allow limited and anonymous usage statistics and exception reports to be sent
-to the CellProfiler team to help improve CellProfiler.
-"""
-
-SHOW_STARTUP_BLURB_HELP = """
-Controls whether CellProfiler displays an orientation message on startup."""
-
-SHOW_ANALYSIS_COMPLETE_HELP = """
-Determines whether CellProfiler displays a message box at the
-end of a run. Check this preference to show the message box or uncheck it
-to stop display."""
-
-SHOW_EXITING_TEST_MODE_HELP = """
-Determines whether CellProfiler displays a message box to inform you
-that a change made to the pipeline will cause test mode to end. Check this preference
-to show the message box or uncheck it to stop display."""
-
-SHOW_REPORT_BAD_SIZES_DLG_HELP = """
-Determines whether CellProfiler will display a warning dialog
-if images of different sizes are loaded together in an image set.
-Check this preference to show the message box or uncheck it to stop display."""
-
-PRIMARY_OUTLINE_COLOR_HELP = """
-Sets the color used for the outline of the object of interest in the
-<b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> and
-<b>IdentifyTertiaryObjects</b> displays."""
-
-SECONDARY_OUTLINE_COLOR_HELP = """
-Sets the color used for objects other than the ones of interest. In
-<b>IdentifyPrimaryObjects</b>, these are the objects that are too small or
-too large. In <b>IdentifySecondaryObjects</b> and <b>IdentifyTertiaryObjects</b>,
-this is the color of the secondary objects' outline."""
-
-TERTIARY_OUTLINE_COLOR_HELP = """
-Sets the color used for the objects touching the image border or image mask
-in <b>IdentifyPrimaryObjects</b>."""
-
-INTERPOLATION_MODE_HELP = """
-Sets the way CellProfiler displays image pixels. If you choose <i>Nearest</i>,
-CellProfiler will display each pixel as a square block of uniform intensity.
-This is truest to the data, but the resulting images look blocky and
-pixelated. You can choose either <i>Bilinear</i> or <i>Bicubic</i> to see
-images where the a bilinear or bicubic spline model has been used to interpolate
-the screen pixel value for screen pixels that do not fall exactly in the
-center of the image pixel. The result, for bilinear or bicubic interpolation is
-an image that is more visually appealing and easier to interpret, but obscures
-the true pixel nature of the real data.
-"""
-
-INTENSITY_MODE_HELP = """
-Sets the way CellProfiler normalizes pixel intensities when displaying.
-If you choose "raw", CellProfiler will display a pixel with a value of "1" or
-above with the maximum brightness and a pixel with a value of "0" or below
-as black. If you choose "normalize", CellProfiler will find the minimum and
-maximum intensities in the display image and show pixels at maximum intensity
-with the maximum brightness and pixels at the minimum intensity as black. This
-can be used to view dim images. If you choose "log", CellProfiler will use
-the full brightness range and will use a log scale to scale the intensities.
-This can be used to view the image background in more detail.
-"""
-
-REPORT_JVM_ERROR_HELP = """
-Determines whether CellProfiler will display a warning on startup
-if CellProfiler can't locate the Java installation on your computer. Check
-this box if you want to be warned. Uncheck this box to hide warnings."""
-
-MAX_WORKERS_HELP = """
-Controls the maximum number of <i>workers</i> (i.e., copies of CellProfiler)
-that will be started at the outset of an analysis run. CellProfiler uses these
-copies to process multiple image
-sets in parallel, utilizing the computer's CPUs and memory fully. The default
-value is the number of CPUs detected on your computer. Use fewer workers for
-pipelines that require a large amount of memory. Use more workers for
-pipelines that are accessing image data over a slow connection.
-
-<p>If using the <b>Groups</b> module, only one worker will be allocated to
-handle each group. This means that you may have multiple workers created,
-but only a subset of them may actually be active, depending on the number of
-groups you have.</p>
-"""
-
-TEMP_DIR_HELP = """
-Sets the folder that CellProfiler uses when storing temporary files. CellProfiler will
-create a temporary measurements file for analyses when the user specifies that
-a MATLAB measurements file should be created or when the user asks that no
-measurements file should be permanently saved. CellProfiler will also save
-images accessed by http URL temporarily to disk (but will efficiently access
-OMERO image planes directly from the server).
-"""
-
-JVM_HEAP_HELP = """
-Sets the maximum amount of memory that can be used by the Java virtual machine.
-CellProfiler uses Java for loading images, for running ImageJ and for
-processing image sets. If you load extremely large images, use the RunImageJ
-module extensively or process large image set lists, you can use this option
-to start Java with a larger amount of memory. By default, CellProfiler starts
-Java with 512 MB, but you can override this by specifying the number of megabytes
-to load. You can also start CellProfiler from the command-line with the
---jvm-heap-size switch to get the same effect.
-"""
-
-SAVE_PIPELINE_WITH_PROJECT_HELP = """
-Controls whether a pipeline and/or file list file is saved whenever the user
-saves the project file. Users may find it handy to have the pipeline and/or file
-list saved in a readable format, for instance, for version control whenever
-the project file is saved. Your project can be restored by importing both
-the pipeline and file list, and your pipeline can be run using a different
-file list, and your file list can be reused by importing it into a different
-project.
-Note: When using LoadData, it is not recommended to auto-save the file list,
-as this feature only saves the file list existing in the Input Modules, not
-LoadData input files.
-<ul>
-<li><i>Neither:</i> Refrain from saving either file. </li>
-<li><i>Pipeline:</i> Save the pipeline, using the project's file name and
-path and a .cppipe extension. </li>
-<li><i>File list:</i> Save the file list, using the project's file name and
-path and a .txt extension.</li>
-<li><i>Pipeline and file list:</i> Save both files.</li>
-</ul>
-"""
-
-BATCHPROFILER_URL_HELP = """
-The base URL for BatchProfiler. BatchProfiler is a set of CGI scripts for
-running CellProfiler on a GridEngine cluster or compatible. If BatchProfiler
-is available, the CreateBatchFiles module can optionally launch a browser
-to display the appropriate batch configuration page."""
-
 #########################################################
 #
 # Help re: projects
@@ -2174,8 +1956,6 @@ MAIN_HELP = (
     ("Batch Processing", BATCHPROCESSING_HELP),
     ("Legacy Modules and Features", (
         ("Load Modules", LEGACY_LOAD_MODULES_HELP),
-        ("Setting the Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-        ("Setting the Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
         ("Setting the Output Filename", USING_THE_OUTPUT_FILE_HELP))),
     ("Other Features", (
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),

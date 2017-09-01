@@ -5,7 +5,7 @@ Resize
 ======
 
 **Resize** resizes images (changes their resolution). This module is
-compatible for both 2D and volumetric image analysis.
+compatible with 2D and 3D/volumetric images.
 
 Images are resized (made smaller or larger) based on user input. You can
 resize an image by applying a resizing factor or by specifying the

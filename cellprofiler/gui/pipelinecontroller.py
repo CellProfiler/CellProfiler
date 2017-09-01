@@ -1620,16 +1620,6 @@ class PipelineController(object):
             return
         path = url2pathname(paths[0])
         ext = os.path.splitext(path)[1]
-        if ext.lower() == ".mat":
-            # Maybe it's an image?
-            from scipy.io.matlab.mio import loadmat
-            try:
-                maybe_image = loadmat(os.path.abspath(path))
-                if "Image" in maybe_image.keys():
-                    show_image(paths[0], self.__frame)
-                    return
-            except:
-                pass
         if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PROJECT_CHOICES:
             result = wx.MessageBox(
                 'Do you want to load the project, \n'
@@ -1651,7 +1641,7 @@ class PipelineController(object):
             if result == wx.YES:
                 self.do_load_pipeline(path)
             return
-        show_image(paths[0], self.__frame)
+        show_image(paths[0], self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2)
 
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_urls(paths)

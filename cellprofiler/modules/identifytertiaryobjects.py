@@ -1,11 +1,12 @@
 # coding=utf-8
 
 """
-**Identify Tertiary Objects** identifies tertiary objects (e.g.,
+IdentifyTertiaryObjects
+=======================
+
+**IdentifyTertiaryObjects** identifies tertiary objects (e.g.,
 cytoplasm) by removing smaller primary objects (e.g. nuclei) from larger
 secondary objects (e.g., cells), leaving a ring shape.
-
---------------
 
 What is a tertiary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,7 +42,7 @@ A set of tertiary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations.
 Because each tertiary object is produced from primary and secondary
 objects, there will always be at most one secondary object for each
-primary object. See the section `“Measurements made by this module”`_ below for
+primary object. See the section "Measurements made by this module" below for
 the measurements that are produced by this module.
 
 Note that creating subregions using this module can result in objects
@@ -69,8 +70,6 @@ Measurements made by this module
 
 See also **IdentifyPrimaryObject** and **IdentifySecondaryObject**
 modules.
-
-.. _“Measurements made by this module”: #Available_measurements
 """
 
 import cellprofiler.measurement
@@ -106,39 +105,40 @@ class IdentifyTertiaryObjects(cpm.Module):
         Create the settings for the module during initialization.
         """
         self.secondary_objects_name = cps.ObjectNameSubscriber(
-                "Select the larger identified objects", cps.NONE, doc="""
-            Select the larger identified objects. This will usually
-            be an object previously identified by a <b>IdentifySecondaryObjects</b>
-            module.""")
+                "Select the larger identified objects", cps.NONE, doc="""\
+Select the larger identified objects. This will usually be an object
+previously identified by a **IdentifySecondaryObjects** module.""")
 
         self.primary_objects_name = cps.ObjectNameSubscriber(
-                "Select the smaller identified objects", cps.NONE, doc="""
-            Select the smaller identified objects. This will usually
-            be an object previously identified by a <b>IdentifyPrimaryObjects</b>
-            module.""")
+                "Select the smaller identified objects", cps.NONE, doc="""\
+Select the smaller identified objects. This will usually be an object
+previously identified by a **IdentifyPrimaryObjects** module.""")
 
         self.subregion_objects_name = cps.ObjectNameProvider(
-                "Name the tertiary objects to be identified", "Cytoplasm", doc="""
-            Enter a name for the new tertiary objects. The tertiary objects
-            will consist of the smaller object subtracted from the larger object.""")
+                "Name the tertiary objects to be identified", "Cytoplasm", doc="""\
+Enter a name for the new tertiary objects. The tertiary objects
+will consist of the smaller object subtracted from the larger object.""")
 
         self.shrink_primary = cps.Binary(
-                "Shrink smaller object prior to subtraction?", True, doc="""
-            Select <i>%(YES)s</i> to shrink the smaller object by 1 pixel before subtracting the objects.
-            this approach will ensure that there is always a tertiary object produced, even if it is
-            only 1 pixel wide.
-            <p>Select <i>%(NO)s</i> to subtract the objects directly, which will ensure that no pixels
-            are shared between the primary/secondary/tertiary objects and hence measurements for all
-            three sets of objects will not use the same pixels multiple times. However, this may result
-            in the creation of objects with no area. Measurements can still be made on such objects, but
-            the results will be zero or not-a-number (NaN)</p>""" % globals())
+                "Shrink smaller object prior to subtraction?", True, doc="""\
+Select *%(YES)s* to shrink the smaller object by 1 pixel before
+subtracting the objects. this approach will ensure that there is always
+a tertiary object produced, even if it is only 1 pixel wide.
 
-        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+Select *%(NO)s* to subtract the objects directly, which will ensure that
+no pixels are shared between the primary/secondary/tertiary objects and
+hence measurements for all three sets of objects will not use the same
+pixels multiple times. However, this may result in the creation of
+objects with no area. Measurements can still be made on such objects,
+but the results will be zero or not-a-number (NaN).
+""" % globals())
+
+        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc=RETAINING_OUTLINES_HELP
+% globals())
 
         self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "CytoplasmOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+                "Name the outline image", "CytoplasmOutlines", doc=NAMING_OUTLINES_HELP
+% globals())
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

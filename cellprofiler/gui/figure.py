@@ -2086,8 +2086,8 @@ class Figure(wx.Frame):
 class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
     """Navigation toolbar for EditObjectsDialog"""
 
-    def __init__(self, **kwargs):
-        super(NavigationToolbar, self).__init__(kwargs)
+    def __init__(self, canvas):
+        super(NavigationToolbar, self).__init__(canvas)
 
     def set_cursor(self, cursor):
         """Set the cursor based on the mode"""

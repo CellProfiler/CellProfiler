@@ -36,8 +36,10 @@ import wx.grid
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
+import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.gui.tools
+import cellprofiler.modules.loadimages
 import cellprofiler.object
 import cellprofiler.preferences
 
@@ -216,48 +218,47 @@ def format_plate_data_as_array(plate_dict, plate_type):
     return data
 
 
-def show_image(url, parent=None, needs_raise_after=True):
-    """Show an image in a figure frame
-
-    url - url of the image
-    parent - parent frame to this one.
-    """
+def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     filename = url[(url.rfind("/") + 1):]
+
     try:
-        if url.lower().endswith(".mat"):
-            from scipy.io.matlab.mio import loadmat
-            from cellprofiler.modules.loadimages import url2pathname
-            image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
-        else:
-            from bioformats import load_image_url
-            image = load_image_url(url)
+        provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
+            filename=filename,
+            name=os.path.splitext(filename)[0],
+            pathname=os.path.dirname(url),
+            volume=True if dimensions == 3 else False
+        )
+        image = provider.provide_image(None).pixel_data
     except IOError:
-        wx.MessageBox('Failed to open file, "%s"' % filename,
-                      caption="File open error")
+        wx.MessageBox(u'Failed to open file, "{}"'.format(filename), caption="File open error")
         return
     except javabridge.JavaException, je:
-        wx.MessageBox(
-                'Could not open "%s" as an image.' % filename,
-                caption="File format error")
+        wx.MessageBox(u'Could not open "{}" as an image.'.format(filename), caption="File format error")
+        return
+    except Exception, e:
+        cellprofiler.gui.errordialog.display_error_dialog(
+            None,
+            e,
+            None,
+            u"Failed to load {}".format(url),
+            continue_only=True
+        )
         return
 
-    except Exception, e:
-        from cellprofiler.gui.errordialog import display_error_dialog
-        display_error_dialog(None, e, None,
-                             "Failed to load %s" % url,
-                             continue_only=True)
-        return
-    frame = Figure(parent=parent,
-                   title=filename,
-                   subplots=(1, 1))
-    if image.ndim == 2:
-        frame.subplot_imshow_grayscale(0, 0, image, title=filename)
-    else:
+    frame = Figure(parent=parent, title=filename)
+    frame.set_subplots(dimensions=dimensions, subplots=(1, 1))
+
+    if dimensions == 2 and image.ndim == 3:  # multichannel images
         frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename)
+    else:  # grayscale image or volume
+        frame.subplot_imshow_grayscale(0, 0, image, title=filename, dimensions=dimensions)
+
     frame.panel.draw()
+
     if needs_raise_after:
         # %$@ hack hack hack
         wx.CallAfter(lambda: frame.Raise())
+
     return True
 
 
@@ -2086,8 +2087,8 @@ class Figure(wx.Frame):
 class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
     """Navigation toolbar for EditObjectsDialog"""
 
-    def __init__(self, **kwargs):
-        super(NavigationToolbar, self).__init__(kwargs)
+    def __init__(self, canvas):
+        super(NavigationToolbar, self).__init__(canvas)
 
     def set_cursor(self, cursor):
         """Set the cursor based on the mode"""

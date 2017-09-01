@@ -54,8 +54,8 @@ the other methods:
 
 -  *%(FIT_POLYNOMIAL)s:* This method treats the intensity of the image
    pixels as a polynomial function of the x and y position of each
-   pixel. It fits the intensity to the polynomial, *A x :sup:`2` + B
-   y :sup:`2` + C xy + D x + E y + F*. This will produce a smoothed
+   pixel. It fits the intensity to the polynomial, *A x* :sup:`2` *+ B
+   y* :sup:`2` *+ C xy + D x + E y + F*. This will produce a smoothed
    image with a single peak or trough of intensity that tapers off
    elsewhere in the image. For many microscopy images (where the
    illumination of the lamp is brightest in the center of field of

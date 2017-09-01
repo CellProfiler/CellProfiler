@@ -61,7 +61,6 @@ except:
 
 # General help references
 
-REFRESH_BUTTON = 'folder_refresh.png'
 BROWSE_BUTTON = 'folder_browse.png'
 CREATE_BUTTON = 'folder_create.png'
 
@@ -107,11 +106,7 @@ IMAGES_FILELIST_BLANK = "Images_FilelistPanel_Blank.png"
 IMAGES_FILELIST_FILLED = "Images_FilelistPanel_Filled.png"
 MEASUREOBJSIZESHAPE_ECCENTRICITY = 'MeasureObjectSizeShape_Eccentricity.png'
 IMAGES_USING_RULES_ICON = 'Images_UsingRules.png'
-METADATA_DISPLAY_TABLE = 'Metadata_ExampleDisplayTable.png'
-NAMESANDTYPES_DISPLAY_TABLE = 'NamesAndTypes_ExampleDisplayTable.png'
 GROUPS_DISPLAY_TABLE = 'Groups_ExampleDisplayTable.png'
-EXAMPLE_DAPI_PIC = "dapi.png"
-EXAMPLE_GFP_PIC = "gfp.png"
 
 ####################################################
 #
@@ -122,11 +117,9 @@ BATCH_PROCESSING_HELP_REF = """Help > Batch Processing"""
 TEST_MODE_HELP_REF = """Help > Testing Your Pipeline"""
 IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools"""
 DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
-PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Named"""
 USING_METADATA_HELP_REF = """Please see the <b>Metadata</b> module for more details on metadata collection and usage"""
-LOADING_IMAGE_SEQ_HELP_REF = """Help > Creating a Project > Loading Image Stacks and Movies"""
 
 USING_METADATA_TAGS_REF = """
 You can insert a previously defined metadata tag by either using:
@@ -363,164 +356,93 @@ after the analysis is completed and can take a very long time for a lot of measu
 If you do not need this file and/or notice this behavior, select "<i>%(DO_NOT_WRITE_MEASUREMENTS)s</i>"
 from the "Measurements file format" drop-down box.</p>""" % globals()
 
-NEW_FEATURES_HELP = """
-A number of new features have been incorporated into this re-engineered Python
-version of CellProfiler:
-<h3>Interface</h3>
-<ul>
-<li><i>Resizable user interface: </i>The main CellProfiler interface can now be resized
-by dragging the window corner.</li>
-<li><i>Help for individual module settings:</i> Every setting in every module now has
-a help button that you can click to display information and advice for that setting.</li>
-<li><i>Settings verification:</i> CellProfiler constantly checks for setting values
-that are not allowed, and immediately flags them for you.</li>
-<li><i>Context-dependent module settings</i>: Prior versions of CellProfiler
-displayed all settings for each module, whether or not the values were necessary,
-given existing choices for other settings. Now, only those settings
-you require are displayed, simplifying the interface.</li>
-<li><i>Test mode for assay development:</i> This feature allows you to
-preview the effect of a module setting on your data. You can step backward or forward
-in the pipeline as you modify settings, optimizing your results prior to running an
-actual analysis.</li>
-<li><i>Unlimited number of images/objects as module input:</i> Some modules can accept an arbitrary number
-of images or objects as input, and you can dynamically add or remove any of these inputs as needed.
-For example, you can specify any number of single images in LoadSingleImage; previously,
-the module could accept only three input images at a time. For example, in OverlayOutlines, you can specify that any number of outlines be
-overlaid on an image; previously, you would have had to string multiple OverlayOutline modules
-together.</li>
-<li><i>Image grouping:</i> Images which share common metadata tags, whether
-provided in the filename or in an accompanying text data file, can be processed together.
-This is useful for any situation in which the images are organized
-in groups  and each group needs to be analyzed as an individual set, such as
-illumination correction for multiple plates.</li>
-<li><i>Module drag and drop:</i> You can drag and drop selected modules
-within a pipeline or into another instance of CellProfiler, keeping their associated
-settings intact.</li>
-<li><i>Listing of recent pipelines:</i> A selectable list of recently used pipelines
-is available from the menu bar, for easy access.</li>
-<li><i>Figure display choice:</i> Easier access to which module figure display windows are shown.
-This functionality is now controlled within the pipeline, and is saved as part of the pipeline.
-<li><i>Context menus:</i>  The pipeline panel responds to right-clicks, providing
-easy access to module manipulation or help.</li>
-<li><i>Error handling:</i> This feature sends bug reports (stack traces) to our developers.
-<li><i>Better access for developers:</i> We are providing a developer's guide
-as a practical introduction for programming in the CellProfiler environment, an
-email list, and wiki, in addition to the available user <a href="http://cellprofiler.org/forum/viewforum.php?f=15">forum</a>.
-</ul>
+WHEN_CAN_I_USE_CELLPROFILER_HELP = """\
+Most laboratories studying biological processes and human disease use
+light/fluorescence microscopes to image cells and other biological
+samples. There is strong and growing demand for software to analyze
+these images, as automated microscopes collect images faster than can be
+examined by eye and the information sought from images is increasingly
+quantitative and complex.
 
-<h3>Module improvements</h3>
-<ul>
-<li><i>Improved Otsu thresholding:</i> Choose two- or three-class thresholding to handle
-images where there might be an intermediate intensity level between foreground and
-background.</li>
-<li>Secondary object identification now permits discarding of objects touching
-the image border, along with the associated primary objects.</li>
-<li>Filtering objects by measurements now permits a set of objects to be filtered
-with any number of measurements. </li>
-<li><i>Masking of images/objects:</i> You can create masks for use with both
-images and objects such that image/object measurements will include only those
-regions within the masked area.</li>
-<li><i>Improved loading of text information:</i> Previously, you could load only a
-limited amount of annotation relevant to your images, via a text file. Now you can use
-comma-delimited files to load tables of metadata, in addition to lists of input
-images for analysis.</li>
-<li><i>Convex hull</i> has been included as an image morphological operation.</li>
-<li>A new module, MeasureObjectSkeleton, has been added, which measures the number
-of trunks and branches for each neuron in an image.</li>
-<li><i>Detection of new features:</i> Neurites can be extracted from images of neurons.
-Branching points of line segments can be found as an image morphological operation.
-Also, "dark holes" (dark spots surrounded bright rings) can be detected. </li>
-<li><i>Improvements to object tracking:</i> A new tracking algorithm has been added
-to the TrackObjects module which is capable of bridging temporal gaps in trajectories
-and accounting for splitting/merging events.</li>
-<li><i>Per-object data exporting:<i> Object data can be exported to a database as a single table containing
-all user-defined object measurements, or as separate tables, one for each object.
-<li><i>SQLite support:</i> Data can be exported in SQLite, a
-self-contained database format. Users can create their own local databases and
-no longer need access to a separate database server. Because CellProfiler
-Analyst also supports SQLite, any user can access CellProfiler Analyst's
-suite of data exploration and machine-leaning tools without installing a complicated database server.</li>
-</ul>
-"""
+CellProfiler is a versatile, open-source software tool for quantifying
+data from biological images, particularly in high-throughput
+experiments. CellProfiler is designed for modular, flexible,
+high-throughput analysis of images, measuring size, shape, intensity,
+and texture of every cell (or other object) in every image. Using the
+point-and-click graphical user interface (GUI), users construct an image
+analysis “pipeline”, a sequential series of modules that each perform an
+image processing function such as illumination correction, object
+identification (segmentation), and object measurement. Users mix and
+match modules and adjust their settings to measure the phenotype of
+interest. While originally designed for high-throughput images, it is
+equally appropriate for low-throughput assays as well (i.e., assays of <
+100 images).
 
-WHEN_CAN_I_USE_CELLPROFILER_HELP = """
+CellProfiler can extract valuable biological information from images
+quickly while increasing the objectivity and statistical power of
+assays. It helps researchers approach a variety of biological questions
+quantitatively, including standard assays (e.g., cell count, size,
+per-cell protein levels) as well as complex morphological assays (e.g.,
+cell/organelle shape or subcellular patterns of DNA or protein
+staining).
 
-<p>Most laboratories studying biological processes and human disease use
-light/fluorescence microscopes to image cells and other biological samples. There
-is strong and growing demand for software to analyze these images, as automated
-microscopes collect images faster than can be examined by eye and the information
-sought from images is increasingly quantitative and complex.</p>
+The wide variety of measurements produced by CellProfiler serves as
+useful “raw material” for machine learning algorithms. CellProfiler’s
+companion software, CellProfiler Analyst, has an interactive machine
+learning tool called Classifier which can learn to recognize a phenotype
+of interest based on your guidance. Once you complete the training
+phase, CellProfiler Analyst will score every object in your images based
+on CellProfiler’s measurements. CellProfiler Analyst also contains tools
+for the interactive visualization of the data produced by CellProfiler.
 
-<p>CellProfiler is a versatile, open-source software tool for quantifying data
-from biological images, particularly in high-throughput experiments. CellProfiler
-is designed for modular, flexible, high-throughput analysis of images, measuring
-size, shape, intensity, and texture of every cell (or other object) in every image.
-Using the point-and-click graphical user interface (GUI), users construct an image
-analysis "pipeline", a sequential series of modules that each perform
-an image processing function such as illumination correction, object identification
-(segmentation), and object measurement. Users mix and match modules and adjust
-their settings to measure the phenotype of interest. While originally designed for
-high-throughput images, it is equally appropriate for low-throughput assays as
-well (i.e., assays of &lt; 100 images).</p>
+In summary, CellProfiler contains:
 
-<p>CellProfiler can extract valuable biological information from images quickly
-while increasing the objectivity and statistical power of assays. It helps researchers
-approach a variety of biological questions quantitatively, including standard
-assays (e.g., cell count, size, per-cell protein levels) as well as complex
-morphological assays (e.g., cell/organelle shape or subcellular patterns of DNA
-or protein staining).</p>
+-  Advanced algorithms for image analysis that are able to accurately
+   identify crowded cells and non-mammalian cell types.
+-  A modular, flexible design allowing analysis of new assays and
+   phenotypes.
+-  Open-source code so the underlying methodology is known and can be
+   modified or improved by others.
+-  A user-friendly interface.
+-  The capability to make use of clusters of computers when available.
+-  A design that eliminates the tedium of the many steps typically
+   involved in image analysis, many of which are not easily transferable
+   from one project to another (for example, image formatting, combining
+   several image analysis steps, or repeating the analysis with slightly
+   different parameters).
 
-<p>The wide variety of measurements produced by CellProfiler serves as useful "raw material"
-for machine learning algorithms. CellProfiler's companion software, CellProfiler Analyst,
-has an interactive machine learning tool called Classifier which can learn to recognize a
-phenotype of interest based on your guidance. Once you complete the training phase,
-CellProfiler Analyst will score every object in your images based on CellProfiler's
-measurements.  CellProfiler Analyst also contains tools for the interactive visualization
-of the data produced by CellProfiler.</p>
+References
+^^^^^^^^^^
 
-<p>In summary, CellProfiler contains:
-<ul>
-<li>Advanced algorithms for image analysis that are able to accurately identify
-crowded cells and non-mammalian cell types.</li>
-<li>A modular, flexible design allowing analysis of new assays and phenotypes.</li>
-<li>Open-source code so the underlying methodology is known and can be modified
-or improved by others.</li>
-<li>A user-friendly interface.</li>
-<li>The capability to make use of clusters of computers when available.</li>
-<li>A design that eliminates the tedium of the many steps typically involved in
-image analysis, many of which are not easily transferable from one project to
-another (for example, image formatting, combining several image analysis steps,
-or repeating the analysis with slightly different parameters).</li>
-</ul>
-</p>
+For a full list of references, visit our `citation`_ page.
 
+-  Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
+   Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM
+   (2006) “CellProfiler: image analysis software for identifying and
+   quantifying cell phenotypes” *Genome Biology* 7:R100 (`link`_)
+-  Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V,
+   Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) “Improved
+   structure, function, and compatibility for CellProfiler: modular
+   high-throughput image analysis software” *Bioinformatics*
+   27(8):1179-1180
+   (`link <http://dx.doi.org/10.1093/bioinformatics/btr095>`__)
+-  Lamprecht MR, Sabatini DM, Carpenter AE (2007) “CellProfiler: free,
+   versatile software for automated biological image analysis”
+   *Biotechniques* 42(1):71-75.
+   [`link <http://dx.doi.org/10.2144/000112257>`__)
+-  Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J,
+   Root D, Golland P, Sabatini DM (2009) “Scoring diverse cellular
+   morphologies in image-based screens with iterative feedback and
+   machine learning” *PNAS* 106(6):1826-1831
+   (`link <http://dx.doi.org/10.1073/pnas.0808843106>`__)
+-  Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM,
+   Golland P, Carpenter AE (2008) “CellProfiler Analyst: data
+   exploration and analysis software for complex image-based screens”
+   *BMC Bioinformatics* 9(1):482
+   (`link <http://dx.doi.org/10.1186/1471-2105-9-482>`__)
 
-<h5>References</h5>
-<p>For a full list of references, visit our
-<a href="http://www.cellprofiler.org/citations.html">citation</a> page.</p>
-<ul>
-<li>Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
-Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM (2006)
-"CellProfiler: image analysis software for identifying and quantifying cell
-phenotypes" <i>Genome Biology</i> 7:R100
-(<a href="http://dx.doi.org/10.1186/gb-2006-7-10-r100">link</a>)</li>
-<li>Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V,
-Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) "Improved structure,
-function, and compatibility for CellProfiler: modular high-throughput image
-analysis software" <i>Bioinformatics</i> 27(8):1179-1180
-(<a href="http://dx.doi.org/10.1093/bioinformatics/btr095">link</a>)</li>
-<li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) "CellProfiler: free, versatile
-software for automated biological image analysis" <i>Biotechniques</i>
-42(1):71-75. [<a href="http://dx.doi.org/10.2144/000112257">link</a>)</li>
-<li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D,
-Golland P, Sabatini DM (2009) "Scoring diverse cellular morphologies in image-based
-screens with iterative feedback and machine learning" <i>PNAS</i> 106(6):1826-1831
-(<a href="http://dx.doi.org/10.1073/pnas.0808843106">link</a>)</li>
-<li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P,
-Carpenter AE (2008) "CellProfiler Analyst: data exploration and analysis software for
-complex image-based screens" <i>BMC Bioinformatics</i> 9(1):482
-(<a href="http://dx.doi.org/10.1186/1471-2105-9-482">link</a>)</li>
-</ul>
+.. _citation: http://www.cellprofiler.org/citations.html
+.. _link: http://dx.doi.org/10.1186/gb-2006-7-10-r100
 """
 
 BUILDING_A_PIPELINE_HELP = """
@@ -1501,9 +1423,6 @@ WV_FIGURE_HELP = tuple(list(FIGURE_HELP))
 #
 ###################################################
 
-TITLE_FONT_HELP = """
-Sets the font used in titles above plots displayed in module figure windows."""
-
 TABLE_FONT_HELP = """
 Sets the font used in tables displayed in module figure windows."""
 
@@ -1511,9 +1430,6 @@ DEFAULT_COLORMAP_HELP = """
 Specifies the color map that sets the colors for labels and other elements. See this
 <a href ="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">
 page</a> for pictures of available colormaps."""
-
-WINDOW_BACKGROUND_HELP = """
-Sets the window background color of the CellProfiler main window."""
 
 ERROR_COLOR_HELP = """
 Sets the color used for the error alerts associated with misconfigured settings and other
@@ -1530,21 +1446,6 @@ Sets the directory that holds ImageJ plugins (for the <b>RunImageJ</b> module).
 You can download or write your own ImageJ plugin and place it in this directory
 and CellProfiler will make it available for your pipeline. You must restart
 CellProfiler after modifying this setting."""
-
-IJ_VERSION_HELP = """
-Chooses which version of ImageJ to use in the <b>RunImageJ</b> module. You must restart CellProfiler
-after changing this preference for the preference to take effect.<p>
-<ul><li><b>ImageJ 1.x:</b> This is a version of ImageJ 1.44 with added support
-for <code>&amp;parameter</code> plugin decorations. You should use this if you only have
-ImageJ 1.0 plugins.</li>
-<li><b>ImageJ 2.0:</b> This is an alpha release of ImageJ 2.0. ImageJ 2.0
-has better interoperability with CellProfiler. CellProfiler will display
-ImageJ 2.0 plugin settings as part of the RunImageJ module interface and
-will let you use regular and masked images in ImageJ 2.0 plugins. ImageJ 2.0
-can run ImageJ 1.0 plugins, but there may be incompatibilities.</li></ul>"""
-
-CHECK_FOR_UPDATES_HELP = """
-Controls whether CellProfiler looks for updates on startup."""
 
 SHOW_TELEMETRY_HELP = """
 Allow limited and anonymous usage statistics and exception reports to be sent
@@ -1674,40 +1575,6 @@ The base URL for BatchProfiler. BatchProfiler is a set of CGI scripts for
 running CellProfiler on a GridEngine cluster or compatible. If BatchProfiler
 is available, the CreateBatchFiles module can optionally launch a browser
 to display the appropriate batch configuration page."""
-
-EACH_PREFERENCE_HELP = (
-    ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-    ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-    ("Title font", TITLE_FONT_HELP),
-    ("Table font", TABLE_FONT_HELP),
-    ("Default colormap", DEFAULT_COLORMAP_HELP),
-    ("Window background", WINDOW_BACKGROUND_HELP),
-    ("Error color", ERROR_COLOR_HELP),
-    ("Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
-    ("Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
-    ("Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
-    ("Interpolation mode", INTERPOLATION_MODE_HELP),
-    ("Intensity mode", INTENSITY_MODE_HELP),
-    ("CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP),
-    ("ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
-    # ( "ImageJ version", IJ_VERSION_HELP),
-    ("Check for updates", CHECK_FOR_UPDATES_HELP),
-    ("Display welcome text on startup", SHOW_STARTUP_BLURB_HELP),
-    ("Warn if Java runtime environment not present", REPORT_JVM_ERROR_HELP),
-    ('Show the "Analysis complete" message at the end of a run', SHOW_ANALYSIS_COMPLETE_HELP),
-    ('Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
-    ("Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
-    ("Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
-    ("Maximum number of workers", MAX_WORKERS_HELP),
-    ("Temporary folder", TEMP_DIR_HELP),
-    ("Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
-    ("BatchProfiler URL", BATCHPROFILER_URL_HELP)
-)
-PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
-<ul>"""
-for key, value in enumerate(EACH_PREFERENCE_HELP):
-    PREFERENCES_HELP += """<li><b>""" + value[0] + """:</b>""" + value[1] + """</li>"""
-PREFERENCES_HELP += """</ul>"""
 
 #########################################################
 #
@@ -2291,7 +2158,6 @@ MAIN_HELP = (
         ("Using the Parameter Sampling Menu", PARAMETER_SAMPLING_MENU_HELP),
         ("Using the Data Tools Menu", MENU_BAR_DATATOOLS_HELP))),
     ("Using Module Display Windows", FIGURE_HELP),
-    # ("Setting the Preferences", PREFERENCES_HELP),
     (CREATING_A_PROJECT_CAPTION, (
         ("Introduction to Projects", INTRODUCTION_TO_PROJECTS_HELP),
         ("Selecting Images for Input", SELECTING_IMAGES_HELP),

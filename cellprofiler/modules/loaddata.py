@@ -12,12 +12,14 @@ with the images to be processed, e.g., sample names, plate names, well
 identifiers, or even a list of image filenames to be processed in the
 analysis run.
 
-
 *Disclaimer:* Please note that the Input modues (i.e., **Images**,
 **Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
 module. However, old pipelines loaded into CellProfiler that contain
 this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
+
+Note that volumetric images CANNOT be loaded with LoadData; they must be
+loaded with the Input modules.
 
 The module currently reads files in CSV (comma-separated values) format.
 These files can be produced by saving a spreadsheet from Excel as
@@ -31,11 +33,6 @@ Subsequent rows provide the values for each image cycle.
 There are many reasons why you might want to prepare a CSV file and load
 it via **LoadData**. Below, we describe how the column nomenclature
 allows for special functionality for some downstream modules:
-
--  *Columns with any name:* Any data loaded via **LoadData** will be
-   exported as a per-image measurement along with
-   CellProfiler-calculated data. This is a convenient way for you to add
-   data from your own sources to the files exported by CellProfiler.
 
 -  *Columns whose name begins with Image\_FileName or Image\_PathName:*
    A column whose name begins with “Image\_FileName” or
@@ -53,6 +50,11 @@ allows for special functionality for some downstream modules:
    Image\_ObjectsPathName:* The behavior of these columns is identical
    to that of “Image\_FileName” or “Image\_PathName” except that it is
    used to specify an image that you want to load as objects.
+
+-  *Columns with any name:* Any data loaded via **LoadData** will be
+   exported as a per-image measurement along with
+   CellProfiler-calculated data. This is a convenient way for you to add
+   data from your own sources to the files exported by CellProfiler.
 
 -  *Columns whose name begins with Metadata:* A column whose name begins
    with “Metadata” can be used to group or associate files loaded by
@@ -108,13 +110,13 @@ allows for special functionality for some downstream modules:
 Example CSV file
 ^^^^^^^^^^^^^^^^
 
-+--------------------------+--------------------------+--------------------+-----------------------+
-| Image\_FileName\_FITC,   | Image\_PathName\_FITC,   | Metadata\_Plate,   | Titration\_NaCl\_uM   |
-+--------------------------+--------------------------+--------------------+-----------------------+
-| “04923\_d1.tif”,         | “2009-07-08”,            | “P-12345”,         | 750                   |
-+--------------------------+--------------------------+--------------------+-----------------------+
-| “51265\_d1.tif”,         | “2009-07-09”,            | “P-12345”,         | 2750                  |
-+--------------------------+--------------------------+--------------------+-----------------------+
++-------------------------+-------------------------+-------------------+-----------------------+
+| Image\_FileName\_FITC   | Image\_PathName\_FITC   | Metadata\_Plate   | Titration\_NaCl\_uM   |
++-------------------------+-------------------------+-------------------+-----------------------+
+| “04923\_d1.tif”         | “2009-07-08”            | “P-12345”         | 750                   |
++-------------------------+-------------------------+-------------------+-----------------------+
+| “51265\_d1.tif”         | “2009-07-09”            | “P-12345”         | 2750                  |
++-------------------------+-------------------------+-------------------+-----------------------+
 
 After the first row of header information (the column names), the first
 image-specific row specifies the file, “2009-07-08/04923\_d1.tif” for
@@ -183,9 +185,9 @@ Measurements made by this module
 See also the **Input** modules, **LoadImages** and
 **CalculateStatistics**.
 
-.. _MetaXpress: http://www.moleculardevices.com/Products/Software/High-Content-Analysis/MetaXpress.html
+.. _MetaXpress: https://www.moleculardevices.com/systems/high-content-imaging/metaxpress-high-content-image-acquisition-and-analysis-software
 .. _Pipeline Pilot: http://accelrys.com/products/pipeline-pilot/
-.. _wiki: https://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment
+.. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment
 """
 
 import csv
@@ -358,8 +360,8 @@ class LoadData(cpm.Module):
     def create_settings(self):
         self.csv_directory = cps.DirectoryPath(
                 "Input data file location", allow_metadata=False, support_urls=True,
-                doc="""Select the folder containing the CSV file to be loaded.
-%(IO_FOLDER_CHOICE_HELP_TEXT)s
+                doc="""\
+Select the folder containing the CSV file to be loaded. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 """ % globals())
 
         def get_directory_fn():
@@ -372,8 +374,7 @@ class LoadData(cpm.Module):
 
         self.csv_file_name = cps.FilenameText(
                 "Name of the file",
-                cps.NONE, doc="""
-            Provide the file name of the CSV file containing the data.""",
+                cps.NONE, doc="""Provide the file name of the CSV file containing the data.""",
                 get_directory_fn=get_directory_fn,
                 set_directory_fn=set_directory_fn,
                 browse_msg="Choose CSV file",
@@ -383,14 +384,14 @@ class LoadData(cpm.Module):
         self.browse_csv_button = cps.DoSomething(
                 "Press to view CSV file contents", "View...", self.browse_csv)
 
-        self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
-            Select *%(YES)s* to have **LoadData** load images using the
+        self.wants_images = cps.Binary("Load images based on this data?", True, doc="""\
+Select *%(YES)s* to have **LoadData** load images using the
 *Image\_FileName* field and the *Image\_PathName* fields (the latter is
 optional).""" % globals())
 
         self.rescale = cps.Binary(
-                "Rescale intensities?", True, doc="""
-            This option determines whether image metadata should be used to rescale
+                "Rescale intensities?", True, doc="""\
+This option determines whether image metadata should be used to rescale
 the image’s intensities. Some image formats save the maximum possible
 intensity value along with the pixel data. For instance, a microscope
 might acquire images using a 12-bit A/D converter which outputs
@@ -407,8 +408,8 @@ to store the image.""" % globals())
 
         self.image_directory = cps.DirectoryPath(
                 "Base image location",
-                dir_choices=DIR_ALL, allow_metadata=False, doc="""
-            The parent (base) folder where images are located. If images are
+                dir_choices=DIR_ALL, allow_metadata=False, doc="""\
+The parent (base) folder where images are located. If images are
 contained in subfolders, then the file you load with this module should
 contain a column with path names relative to the base image folder (see
 the general help for this module for more details). You can choose among
@@ -421,16 +422,17 @@ the following options:
 -  *Elsewhere…*: Use a particular folder you specify.""")
 
         self.wants_image_groupings = cps.Binary(
-                "Group images by metadata?", False, doc="""
-            Select *%(YES)s* to break the image sets in an experiment into groups
+                "Group images by metadata?", False, doc="""\
+Select *%(YES)s* to break the image sets in an experiment into groups
 that can be processed by different nodes on a computing cluster. Each
 set of files that share your selected metadata tags will be processed
 together. See **CreateBatchFiles** for details on submitting a
 CellProfiler pipeline to a computing cluster for processing.""" % globals())
 
         self.metadata_fields = cps.MultiChoice(
-                "Select metadata tags for grouping", None, doc="""
-            *(Used only if images are to be grouped by metadata)*
+                "Select metadata tags for grouping", None, doc="""\
+*(Used only if images are to be grouped by metadata)*
+
 Select the tags by which you want to group the image files here. You can
 select multiple tags. For example, if a set of images had metadata for
 “Run”, “Plate”, “Well”, and “Site”, selecting *Run* and *Plate* will
@@ -439,15 +441,16 @@ pair of tags.""")
 
         self.wants_rows = cps.Binary(
                 "Process just a range of rows?",
-                False, doc="""
-            Select *%(YES)s* if you want to process a subset of the rows in the CSV
+                False, doc="""\
+Select *%(YES)s* if you want to process a subset of the rows in the CSV
 file. Rows are numbered starting at 1 (but do not count the header
 line). **LoadData** will process up to and including the end row.""" % globals())
 
         self.row_range = cps.IntegerRange(
                 "Rows to process",
-                (1, 100000), 1, doc="""
-            *(Used only if a range of rows is to be specified)*
+                (1, 100000), 1, doc="""\
+*(Used only if a range of rows is to be specified)*
+
 Enter the row numbers of the first and last row to be processed.""")
 
         def do_reload():
@@ -459,8 +462,10 @@ Enter the row numbers of the first and last row to be processed.""")
                 pass
 
         self.clear_cache_button = cps.DoSomething(
-                "Reload cached information", "Reload", do_reload, doc="""
-            Press this button to reload header information saved inside
+                "Reload cached information", "Reload", do_reload, doc="""\
+*(Used only if the CSV is loaded from a URL)*
+
+Press this button to reload header information saved inside
 CellProfiler. **LoadData** caches information about your .csv file in
 its memory for efficiency. The information is reloaded if a modification
 is detected. **LoadData** might fail to detect a modification on a file
@@ -469,8 +474,7 @@ accessed through HTTP or FTP. In this case, you will have to use this
 button to reload the header information after changing the file.
 
 This button will never destroy any information on disk. It is always
-safe to press it.
-            """)
+safe to press it.""")
 
     def settings(self):
         return [self.csv_directory,

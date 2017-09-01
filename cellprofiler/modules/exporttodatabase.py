@@ -361,164 +361,151 @@ class ExportToDatabase(cpm.Module):
         default_db = DB_MYSQL if HAS_MYSQL_DB else DB_MYSQL_CSV
         self.db_type = cps.Choice(
                 "Database type",
-                db_choices, default_db, doc="""
-                Specify the type of database you want to use:
+                db_choices, default_db, doc="""\
+Specify the type of database you want to use:
+
+-  *%(DB_MYSQL)s:* Writes the data directly to a MySQL database. MySQL
+   is open-source software; you may require help from your local
+   Information Technology group to set up a database server.
+-  *%(DB_MYSQL_CSV)s:* Writes a script file that contains SQL
+   statements for creating a database and uploading the Per\_Image and
+   Per\_Object tables. This option will write out the Per\_Image and
+   Per\_Object table data to two CSV files; you can use these files can
+   be used to import the data directly into an application that accepts
+   CSV data.
+-  *%(DB_SQLITE)s:* Writes SQLite files directly. SQLite is simpler to
+   set up than MySQL and can more readily be run on your local computer
+   rather than requiring a database server. More information about
+   SQLite can be found `here`_.
                 
-                -  *%(DB_MYSQL)s:* Writes the data directly to a MySQL database. MySQL
-                   is open-source software; you may require help from your local
-                   Information Technology group to set up a database server.
-                -  *%(DB_MYSQL_CSV)s:* Writes a script file that contains SQL
-                   statements for creating a database and uploading the Per\_Image and
-                   Per\_Object tables. This option will write out the Per\_Image and
-                   Per\_Object table data to two CSV files; you can use these files can
-                   be used to import the data directly into an application that accepts
-                   CSV data.
-                -  *%(DB_SQLITE)s:* Writes SQLite files directly. SQLite is simpler to
-                   set up than MySQL and can more readily be run on your local computer
-                   rather than requiring a database server. More information about
-                   SQLite can be found `here`_.
-                
-                .. raw:: html
-                
-                   <dl>
-                
-                .. raw:: html
-                
-                   <dd>
-                
-                |image0|  If running this module on a computing cluster, there are a few
-                considerations to note:
-                
-                -  The *%(DB_MYSQL)s* option is well-suited for cluster use, since
-                   multiple jobs can write to the database simultaneously.
-                -  The *%(DB_SQLITE)s* option is not as appropriate; a SQLite database
-                   only allows access by one job at a time.
-                
-                .. raw:: html
-                
-                   </dd>
-                
-                .. raw:: html
-                
-                   </dl>
-                
-                .. _here: http://www.sqlite.org/
-                
-                .. |image0| image:: memory:%(TECH_NOTE_ICON)s
+    |image0|  If running this module on a computing cluster, there are a few
+    considerations to note:
+    
+    -  The *%(DB_MYSQL)s* option is well-suited for cluster use, since
+       multiple jobs can write to the database simultaneously.
+    -  The *%(DB_SQLITE)s* option is not as appropriate; a SQLite database
+       only allows access by one job at a time.
+               
+.. _here: http://www.sqlite.org/
+
+.. |image0| image:: memory:%(TECH_NOTE_ICON)s
                 """ % globals())
 
         self.test_connection_button = cps.DoSomething(
                 "Press this button to test the connection to the remote server using the current settings",
-                "Test connection", self.test_connection, doc="""
-            This button test the connection to MySQL server specified using
-            the settings entered by the user.""")
+                "Test connection", self.test_connection, doc="""\
+This button test the connection to MySQL server specified using
+the settings entered by the user.""")
 
         self.db_name = cps.Text(
-                "Database name", "DefaultDB", doc="""
-            Select a name for the database you want to use""")
+                "Database name", "DefaultDB", doc="""Select a name for the database you want to use""")
 
         self.experiment_name = cps.Text(
-                "Experiment name", "MyExpt", doc="""
-                Select a name for the experiment. This name will be registered in the
-                database and linked to the tables that **ExportToDatabase** creates. You
-                will be able to select the experiment by name in CellProfiler Analyst
-                and will be able to find the experiment’s tables through database
-                queries.""")
+                "Experiment name", "MyExpt", doc="""\
+Select a name for the experiment. This name will be registered in the
+database and linked to the tables that **ExportToDatabase** creates. You
+will be able to select the experiment by name in CellProfiler Analyst
+and will be able to find the experiment’s tables through database
+queries.""")
 
         self.want_table_prefix = cps.Binary(
-                "Add a prefix to table names?", True, doc="""
-                Select whether you want to add a prefix to your table names. The default
-                table names are *Per\_Image* for the per-image table and *Per\_Object*
-                for the per-object table. Adding a prefix can be useful for bookkeeping
-                purposes.
-                
-                -  Select *%(YES)s* to add a user-specified prefix to the default table
-                   names. If you want to distinguish multiple sets of data written to
-                   the same database, you probably want to use a prefix.
-                -  Select *%(NO)s* to use the default table names. For a one-time export
-                   of data, this option is fine.
-                
-                Whether you chose to use a prefix or not, CellProfiler will warn you if
-                your choice entails overwriting an existing table.""" % globals())
+                "Add a prefix to table names?", True, doc="""\
+Select whether you want to add a prefix to your table names. The default
+table names are *Per\_Image* for the per-image table and *Per\_Object*
+for the per-object table. Adding a prefix can be useful for bookkeeping
+purposes.
+
+-  Select *%(YES)s* to add a user-specified prefix to the default table
+   names. If you want to distinguish multiple sets of data written to
+   the same database, you probably want to use a prefix.
+-  Select *%(NO)s* to use the default table names. For a one-time export
+   of data, this option is fine.
+
+Whether you chose to use a prefix or not, CellProfiler will warn you if
+your choice entails overwriting an existing table.""" % globals())
 
         self.table_prefix = cps.Text(
-                "Table prefix", "MyExpt_", doc="""
-                | *(Used if Add a prefix to table names?* is selected)
-                | Enter the table prefix you want to use.
-                
-                MySQL has a 64 character limit on the full name of the table. If the
-                combination of the table name and prefix exceeds this limit, you will
-                receive an error associated with this setting.""")
+                "Table prefix", "MyExpt_", doc="""\
+*(Used if "Add a prefix to table names?" is selected)*
+
+Enter the table prefix you want to use.
+
+MySQL has a 64 character limit on the full name of the table. If the
+combination of the table name and prefix exceeds this limit, you will
+receive an error associated with this setting.""")
 
         self.sql_file_prefix = cps.Text(
-                "SQL file prefix", "SQL_", doc="""
-                *(Used if %(DB_MYSQL_CSV)s is selected as the database type)*
-                Enter the prefix to be used to name the SQL file.""" % globals())
+                "SQL file prefix", "SQL_", doc="""\
+*(Used if %(DB_MYSQL_CSV)s is selected as the database type)*
+
+Enter the prefix to be used to name the SQL file.""" % globals())
 
         self.directory = cps.DirectoryPath(
                 "Output file location",
                 dir_choices=[
                     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,
                     ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
-                | *(Used only when using a CSV or a SQLite database, and/or creating a
-                  properties or workspace file)*
-                | This setting determines where the CSV files or SQLite database is
-                  saved if you decide to write measurements to files instead of writing
-                  them directly to the database. If you request a CellProfiler Analyst
-                  properties file or workspace file, it will also be saved to this
-                  location. %(IO_FOLDER_CHOICE_HELP_TEXT)s
-                
-                | %(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s
-                | For instance, if you have a metadata tag named “Plate”, you can create
-                  a per-plate folder by selecting one of the subfolder options and then
-                  specifying the subfolder name with the “Plate” metadata tag. The
-                  module will substitute the metadata values for the last image set
-                  processed for any metadata tags in the folder name.
-                  %(USING_METADATA_HELP_REF)s.""" % globals())
+                    DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
+*(Used only when using a CSV or a SQLite database, and/or creating a
+properties or workspace file)*
+
+This setting determines where the CSV files or SQLite database is
+saved if you decide to write measurements to files instead of writing
+them directly to the database. If you request a CellProfiler Analyst
+properties file or workspace file, it will also be saved to this
+location. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+
+%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s
+For instance, if you have a metadata tag named “Plate”, you can create
+a per-plate folder by selecting one of the subfolder options and then
+specifying the subfolder name with the “Plate” metadata tag. The
+module will substitute the metadata values for the last image set
+processed for any metadata tags in the folder name.
+%(USING_METADATA_HELP_REF)s.""" % globals())
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
         self.save_cpa_properties = cps.Binary(
                 "Create a CellProfiler Analyst properties file?",
-                False, doc="""
-                Select *%(YES)s* to generate a template properties file that will allow
-                you to use your new database with CellProfiler Analyst (a data
-                exploration tool which can also be downloaded from
-                http://www.cellprofiler.org/). The module will attempt to fill in as
-                many as the entries as possible based on the pipeline’s settings,
-                including the server name, username and password if MySQL is used.""" % globals())
+                False, doc="""\
+Select *%(YES)s* to generate a template properties file that will allow
+you to use your new database with CellProfiler Analyst (a data
+exploration tool which can also be downloaded from
+http://www.cellprofiler.org/). The module will attempt to fill in as
+many as the entries as possible based on the pipeline’s settings,
+including the server name, username and password if MySQL is used.""" % globals())
 
         self.location_object = cps.ObjectNameSubscriber(
-                "Which objects should be used for locations?", cps.NONE, doc="""
-                | *(Used only if creating a properties file)*
-                | CellProfiler Analyst displays cells during classification. This
-                  setting determines which object centers will be used as the center of
-                  the cells to be displayed. Choose one of the listed objects and
-                  CellProfiler will save that object’s location columns in the
-                  properties file so that CellProfiler Analyst centers cells using that
-                  object’s center.
-                
-                You can manually change this choice in the properties file by editing
-                the *cell\_x\_loc* and *cell\_y\_loc* properties.
-                
-                Note that if there are no objects defined in the pipeline (e.g. if only
-                using MeasureImageQuality and/or Illumination Correction modules), a
-                warning will diplay until you choose *‘None’* for the subsequent
-                setting: ‘Export measurements for all objects to the database?’.
-                """ % globals())
+                "Which objects should be used for locations?", cps.NONE, doc="""\
+*(Used only if creating a properties file)*
+
+CellProfiler Analyst displays cells during classification. This
+setting determines which object centers will be used as the center of
+the cells to be displayed. Choose one of the listed objects and
+CellProfiler will save that object’s location columns in the
+properties file so that CellProfiler Analyst centers cells using that
+object’s center.
+
+You can manually change this choice in the properties file by editing
+the *cell\_x\_loc* and *cell\_y\_loc* properties.
+
+Note that if there are no objects defined in the pipeline (e.g. if only
+using MeasureImageQuality and/or Illumination Correction modules), a
+warning will diplay until you choose *‘None’* for the subsequent
+setting: ‘Export measurements for all objects to the database?’.
+""" % globals())
 
         self.wants_properties_image_url_prepend = cps.Binary(
                 "Access CPA images via URL?", False,
-                doc="""
-                *(Used only if creating a properties file)*
-                The image paths written to the database will be the absolute path the
-                image files on your computer. If you plan to make these files accessible
-                via the web, you can have CellProfiler Analyst prepend a URL to your
-                file name. Eg: If an image is loaded from the path
-                “/cellprofiler/images/” and you use a url prepend of
-                “http://mysite.com/”, CellProfiler Analyst will look for your file at
-                “http://mysite.com/cellprofiler/images/”
-                """
+                doc="""\
+*(Used only if creating a properties file)*
+
+The image paths written to the database will be the absolute path the
+image files on your computer. If you plan to make these files accessible
+via the web, you can have CellProfiler Analyst prepend a URL to your
+file name. Eg: If an image is loaded from the path
+“/cellprofiler/images/” and you use a url prepend of
+“http://mysite.com/”, CellProfiler Analyst will look for your file at
+“http://mysite.com/cellprofiler/images/”  """
         )
         #
         # Hack: if user is on Broad IP, then plug in the imageweb url prepend
@@ -534,46 +521,50 @@ class ExportToDatabase(cpm.Module):
 
         self.properties_image_url_prepend = cps.Text(
                 "Enter an image url prepend if you plan to access your files via http",
-                default_prepend, doc="""
-                | *(Used only if accessing CellProfiler Analyst images via URL)*
-                | The image paths written to the database will be the absolute path the
-                  image files on your computer. If you plan to make these files
-                  accessible via the web, you can enter a url prefix here. Eg: If an
-                  image is loaded from the path “/cellprofiler/images/” and you use a
-                  url prepend of “http://mysite.com/”, CellProfiler Analyst will look
-                  for your file at “http://mysite.com/cellprofiler/images/”
-                
-                If you are not using the web to access your files (i.e., they are
-                locally aceesible by your computer), leave this setting blank.""")
+                default_prepend, doc="""\
+*(Used only if accessing CellProfiler Analyst images via URL)*
+
+The image paths written to the database will be the absolute path the
+image files on your computer. If you plan to make these files
+accessible via the web, you can enter a url prefix here. Eg: If an
+image is loaded from the path “/cellprofiler/images/” and you use a
+url prepend of “http://mysite.com/”, CellProfiler Analyst will look
+for your file at “http://mysite.com/cellprofiler/images/”
+
+If you are not using the web to access your files (i.e., they are
+locally aceesible by your computer), leave this setting blank.""")
 
         self.properties_plate_type = cps.Choice(
                 "Select the plate type",
-                PLATE_TYPES, doc="""
-                *(Used only if creating a properties file)*
-                If you are using a multi-well plate or microarray, you can select the
-                plate type here. Supported types in CellProfiler Analyst are 96- and
-                384-well plates, as well as 5600-spot microarrays. If you are not using
-                a plate or microarray, select *None*.""")
+                PLATE_TYPES, doc="""\
+*(Used only if creating a properties file)*
+
+If you are using a multi-well plate or microarray, you can select the
+plate type here. Supported types in CellProfiler Analyst are 96- and
+384-well plates, as well as 5600-spot microarrays. If you are not using
+a plate or microarray, select *None*.""")
 
         self.properties_plate_metadata = cps.Choice(
                 "Select the plate metadata",
-                ["None"], choices_fn=self.get_metadata_choices, doc="""
-                | *(Used only if creating a properties file)*
-                | If you are using a multi-well plate or microarray, you can select the
-                  metadata corresponding to the plate here. If there is no plate
-                  metadata associated with the image set, select *None*.
-                
-                %(USING_METADATA_HELP_REF)s.""" % globals())
+                ["None"], choices_fn=self.get_metadata_choices, doc="""\
+*(Used only if creating a properties file)*
+
+If you are using a multi-well plate or microarray, you can select the
+metadata corresponding to the plate here. If there is no plate
+metadata associated with the image set, select *None*.
+
+%(USING_METADATA_HELP_REF)s.""" % globals())
 
         self.properties_well_metadata = cps.Choice(
                 "Select the well metadata",
-                ["None"], choices_fn=self.get_metadata_choices, doc="""
-                | *(Used only if creating a properties file)*
-                | If you are using a multi-well plate or microarray, you can select the
-                  metadata corresponding to the well here. If there is no well metadata
-                  associated with the image set, select *None*.
-                
-                %(USING_METADATA_HELP_REF)s.""" % globals())
+                ["None"], choices_fn=self.get_metadata_choices, doc="""\
+*(Used only if creating a properties file)*
+
+If you are using a multi-well plate or microarray, you can select the
+metadata corresponding to the well here. If there is no well metadata
+associated with the image set, select *None*.
+
+%(USING_METADATA_HELP_REF)s.""" % globals())
 
         self.properties_export_all_image_defaults = cps.Binary(
                 "Include information for all images, using default values?", True, doc="""

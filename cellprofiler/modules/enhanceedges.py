@@ -4,7 +4,7 @@
 EnhanceEdges
 ============
 
-**Enhance Edges** enhances or identifies edges in an image, which can
+**EnhanceEdges** enhances or identifies edges in an image, which can
 improve object identification or other downstream image processing.
 
 This module enhances the edges (gradients) in a grayscale image. All
@@ -50,12 +50,10 @@ class EnhanceEdges(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''\
-            What did you call the image in which you want to enhance the edges?''')
+                "Select the input image", cps.NONE, doc='''What did you call the image in which you want to enhance the edges?''')
 
         self.output_image_name = cps.ImageNameProvider(
-                "Name the output image", "EdgedImage", doc='''\
-            What do you want to call the image with edges enhanced?''')
+                "Name the output image", "EdgedImage", doc='''What do you want to call the image with edges enhanced?''')
 
         self.wants_automatic_threshold = cps.Binary(
                 "Automatically calculate the threshold?", True, doc='''\
@@ -132,7 +130,7 @@ The direction of the edges are you are identifying in the image
 Select *%(YES)s* to automatically calculate the Gaussian's sigma.
 
 Select *%(NO)s* to manually enter the value.
-        """)
+""" % globals())
 
         self.sigma = cps.Float("Gaussian's sigma value", 10, doc="""Set a value for Gaussian's sigma""")
 

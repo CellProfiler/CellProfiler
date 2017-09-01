@@ -417,10 +417,10 @@ table names are *Per\_Image* for the per-image table and *Per\_Object*
 for the per-object table. Adding a prefix can be useful for bookkeeping
 purposes.
 
--  Select *%(YES)s* to add a user-specified prefix to the default table
+-  Select "*%(YES)s*" to add a user-specified prefix to the default table
    names. If you want to distinguish multiple sets of data written to
    the same database, you probably want to use a prefix.
--  Select *%(NO)s* to use the default table names. For a one-time export
+-  Select "*%(NO)s*" to use the default table names. For a one-time export
    of data, this option is fine.
 
 Whether you chose to use a prefix or not, CellProfiler will warn you if
@@ -469,7 +469,7 @@ processed for any metadata tags in the folder name.
         self.save_cpa_properties = cps.Binary(
                 "Create a CellProfiler Analyst properties file?",
                 False, doc="""\
-Select *%(YES)s* to generate a template properties file that will allow
+Select "*%(YES)s*" to generate a template properties file that will allow
 you to use your new database with CellProfiler Analyst (a data
 exploration tool which can also be downloaded from
 http://www.cellprofiler.org/). The module will attempt to fill in as
@@ -572,7 +572,7 @@ associated with the image set, select *None*.
                 "Include information for all images, using default values?", True, doc="""\
 *(Used only if creating a properties file)*
 
-Select *%(YES)s* to include information in the properties file for all
+Select "*%(YES)s*" to include information in the properties file for all
 images. This option will do the following:
 
 -  All images loaded using the **Input** modules or saved in
@@ -581,7 +581,7 @@ images. This option will do the following:
 -  A channel color listed in the *image\_channel\_colors* field will be
    assigned to the image by default order.
 
-Select *%(NO)s* to specify which images should be included or to
+Select "*%(NO)s*" to specify which images should be included or to
 override the automatic values.""" % globals())
 
         self.image_groups = []
@@ -598,7 +598,7 @@ override the automatic values.""" % globals())
 nothing to do with “grouping” as defined by CellProfiler in the Groups
 module.**
 
-Select *%(YES)s* to define a “group” for your image data (for example,
+Select "*%(YES)s*" to define a “group” for your image data (for example,
 when several images represent the same experimental sample), by
 providing column(s) that identify unique images (the *image key*) to
 another set of columns (the *group key*).
@@ -628,7 +628,7 @@ fetch objects from images with specific values for the group columns.""" % globa
                 "Do you want to add filter fields?", False, doc="""\
 *(Used only if creating a properties file)*
 
-Select *%(YES)s* to specify a subset of the images in your experiment by
+Select "*%(YES)s*" to specify a subset of the images in your experiment by
 defining a *filter*. Filters are useful, for example, for fetching and
 scoring objects in Classifier or making graphs using the plotting tools
 that satisfy a specific metadata constraint.
@@ -638,7 +638,7 @@ that satisfy a specific metadata constraint.
                 "Automatically create a filter for each plate?", False, doc="""\
 *(Used only if creating a properties file and specifiying an image data filter)*
 
-If you have specified a plate metadata tag, selecting *%(YES)s* to
+If you have specified a plate metadata tag, selecting "*%(YES)s*" to
 create a set of filters in the properties file, one for each plate.
 """ % globals())
 
@@ -732,7 +732,7 @@ Enter the name of the SQLite database filename to which you want to write.""")
 
         self.wants_agg_mean = cps.Binary(
                 "Calculate the per-image mean values of object measurements?", True, doc="""\
-Select *%(YES)s* for **ExportToDatabase** to calculate population
+Select "*%(YES)s*" for **ExportToDatabase** to calculate population
 statistics over all the objects in each image and store the results in
 the database. For instance, if you are measuring the area of the Nuclei
 objects and you check the box for this option, **ExportToDatabase** will
@@ -751,7 +751,7 @@ Mean_Nuclei_AreaShape_Area = (SELECT AVG(Nuclei_AreaShape_Area) FROM Per_Object
 WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);`` """ % globals())
 
         self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False, doc="""\
-Select *%(YES)s* for **ExportToDatabase** to calculate population
+Select "*%(YES)s*" for **ExportToDatabase** to calculate population
 statistics over all the objects in each image and store the results in
 the database. For instance, if you are measuring the area of the Nuclei
 objects and you check the box for this option, **ExportToDatabase** will
@@ -766,7 +766,7 @@ built in median operation in MySQL to create these values manually.""" % globals
             
         self.wants_agg_std_dev = cps.Binary("Calculate the per-image standard deviation values of object measurements?",
                                             False, doc="""\
-Select *%(YES)s* for **ExportToDatabase** to calculate population
+Select "*%(YES)s*" for **ExportToDatabase** to calculate population
 statistics over all the objects in each image and store the results in
 the database. For instance, if you are measuring the area of the Nuclei
 objects and you check the box for this option, **ExportToDatabase** will
@@ -786,7 +786,7 @@ WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);`` """ % globals())
 
         self.wants_agg_mean_well = cps.Binary(
                 "Calculate the per-well mean values of object measurements?", False, doc='''\
-Select *%(YES)s* for **ExportToDatabase** to calculate statistics over
+Select "*%(YES)s*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
 area of the Nuclei objects and you check the aggregate mean box in this
@@ -807,7 +807,7 @@ create the Per\_Well table, regardless of the option chosen above.
 
         self.wants_agg_median_well = cps.Binary(
                 "Calculate the per-well median values of object measurements?", False, doc='''\
-Select *%(YES)s* for **ExportToDatabase** to calculate statistics over
+Select "*%(YES)s*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
 area of the Nuclei objects and you check the aggregate median box in
@@ -829,7 +829,7 @@ create the Per\_Well table, regardless of the option chosen above.
 
         self.wants_agg_std_dev_well = cps.Binary(
                 "Calculate the per-well standard deviation values of object measurements?", False, doc='''\
-Select *%(YES)s* for **ExportToDatabase** to calculate statistics over
+Select "*%(YES)s*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
 area of the Nuclei objects and you check the aggregate standard
@@ -875,7 +875,7 @@ otherwise, the object’s measurements will be skipped.""")
                 "Export object relationships?", True, doc="""\
 *(Used only for pipelines which relate objects to each other)*
 
-Select *%(YES)s* to export object relationships to the
+Select "*%(YES)s*" to export object relationships to the
 RelationshipsView view. Only certain modules produce relationships
 that can be exported by this setting; see the **TrackObjects**,
 **RelateObjects**, **MeasureObjectNeighbors** and the **Identify**
@@ -967,7 +967,7 @@ dropdown.""" % globals())
 *(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database
 type and writing thumbnails is selected)*
 
-Select *%(YES)s* if you’d like to automatically rescale the thumbnail
+Select "*%(YES)s*" if you’d like to automatically rescale the thumbnail
 pixel intensities to the range 0-1, where 0 is black/unsaturated, and 1
 is white/saturated.""" % globals())
 
@@ -1028,10 +1028,10 @@ modules."""))
                         "Use the image name for the display?", True, doc="""\
 *(Used only if creating a properties file and specifiying the image information)*
 
-Select *%(YES)s* to use the image name as given above for the
+Select "*%(YES)s*" to use the image name as given above for the
 displayed name.
 
-Select *%(NO)s* to name the file yourself.""" % globals()))
+Select "*%(NO)s*" to name the file yourself.""" % globals()))
 
         group.append(
                 "image_name", cps.Text(

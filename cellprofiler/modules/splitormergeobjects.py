@@ -4,7 +4,10 @@
 SplitOrMergeObjects
 ===================
 
-**SplitOrMergeObjects** previously identified objects.
+**SplitOrMergeObjects** separates or combines a set of objects that
+were identified earlier in a pipeline. Objects that share a label, but
+are not touching will be relabeled into separate. Objects that share a
+boundary will be combined into a single object.
 
 Objects and their measurements are associated with each other based on
 their object numbers (also known as *labels*). Typically, each object is
@@ -38,7 +41,7 @@ labeled consecutively without gaps in the numbering (which other modules
 may depend on), **SplitOrMergeObjects** will typically result in most
 of the objects having their numbers reordered. This reassignment
 information is stored as a per-object measurement with both the original
-input and reasigned output objects, in case you need to track the
+input and reassigned output objects, in case you need to track the
 reassignment.
 
 See also **RelateObjects**.
@@ -128,7 +131,8 @@ You can unify objects in one of two ways:
         self.unification_method = cps.Choice(
                 "Output object type", [UM_DISCONNECTED, UM_CONVEX_HULL],
                 doc="""\
-*(Used only with the %(UNIFY_PARENT)s unification method)*
+*(Used only with the "%(UNIFY_PARENT)s" unification method)*
+
 **SplitOrMergeObjects** can either unify the child objects and keep them
 disconnected or it can find the smallest convex polygon (the convex
 hull) that encloses all of a parent’s child objects. The convex hull
@@ -154,7 +158,8 @@ Please note the following:
         self.distance_threshold = cps.Integer(
                 "Maximum distance within which to unify objects",
                 0, minval=0, doc="""\
-*(Used only with the %(OPTION_UNIFY)s option and the
+*(Used only with the "%(OPTION_UNIFY)s" option and the
+
 %(UNIFY_DISTANCE)s method)*
 Objects that are less than or equal to the distance you enter here, in
 pixels, will be unified. If you choose zero (the default), only objects
@@ -167,7 +172,7 @@ components.""" % globals()
 
         self.wants_image = cps.Binary(
                 "Unify using a grayscale image?", False, doc="""\
-*(Used only with the %(OPTION_UNIFY)s option)*
+*(Used only with the "%(OPTION_UNIFY)s" option)*
 
 Select *%(YES)s* to use the objects’ intensity features to determine
 whether two objects should be unified. If you choose to use a grayscale
@@ -234,7 +239,7 @@ above):
 
         self.outlines_name = cps.OutlineNameProvider(
                 'Name the outlines',
-                'RelabeledNucleiOutlines', doc="""%(NAMING_OUTLINES_HELP)s""" % globals())
+                'RelabeledNucleiOutlines', doc=NAMING_OUTLINES_HELP % globals())
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()

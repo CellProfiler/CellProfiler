@@ -129,8 +129,7 @@ classifications decision for each object:
                 "Select the object name", cps.NONE, doc="""\
 Choose the object that you want to measure from the list. This should be
 an object created by a previous module such as
-**IdentifyPrimaryObjects**, **IdentifySecondaryObjects**, or
-**IdentifyTertiaryObjects**.
+**IdentifyPrimaryObjects**, **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, or **Watershed**
 """)
 
         #

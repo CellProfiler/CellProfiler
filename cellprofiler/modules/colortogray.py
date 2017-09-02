@@ -48,8 +48,8 @@ class ColorToGray(cellprofiler.module.Module):
     category = "Image Processing"
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""Select the multichannel image you want to convert to grayscale.""")
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE, doc="""Select the multichannel image you want to convert to grayscale.""")
 
         self.combine_or_split = cellprofiler.setting.Choice(
                 "Conversion method",
@@ -61,7 +61,7 @@ How do you want to convert the color image?
 -  *%(COMBINE)s* Converts a color image to a grayscale image by
    combining the three channels (red, green, blue) together.''' % globals())
 
-        self.rgb_or_channels = cps.Choice(
+        self.rgb_or_channels = cellprofiler.setting.Choice(
                 "Image type", [CH_RGB, CH_HSV, CH_CHANNELS], doc="""\
 Many images contain color channels other than red, green and blue. For
 instance, GIF and PNG formats can have an alpha channel that encodes
@@ -80,7 +80,7 @@ lighting conditions. This setting provides three options to choose from:
    involve more than three channels.""" % globals())
 
         # The following settings are used for the combine option
-        self.grayscale_name = cps.ImageNameProvider(
+        self.grayscale_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "OrigGray", doc="""\
 *(Used only when combining channels)*
 
@@ -114,57 +114,57 @@ contribute equally in the final image. To weight colors relative to each
 other, increase or decrease the relative weights.''')
 
         # The following settings are used for the split RGB option
-        self.use_red = cps.Binary('Convert red to gray?', True, doc="""\
+        self.use_red = cellprofiler.setting.Binary('Convert red to gray?', True, doc="""\
 *(Used only when splitting RGB images)*
 
 Select *"%(YES)s"* to extract the red channel to grayscale.""" % globals())
-        self.red_name = cps.ImageNameProvider('Name the output image', "OrigRed", doc="""\
+        self.red_name = cellprofiler.setting.ImageNameProvider('Name the output image', "OrigRed", doc="""\
 *(Used only when splitting RGB images)*
 
 Enter a name for the resulting grayscale image coming from the red channel.""")
 
-        self.use_green = cps.Binary('Convert green to gray?', True, doc="""\
+        self.use_green = cellprofiler.setting.Binary('Convert green to gray?', True, doc="""\
 *(Used only when splitting RGB images)*
 
 Select *"%(YES)s"* to extract the green channel to grayscale.""" % globals())
-        self.green_name = cps.ImageNameProvider('Name the output image', "OrigGreen", doc="""\
+        self.green_name = cellprofiler.setting.ImageNameProvider('Name the output image', "OrigGreen", doc="""\
 *(Used only when splitting RGB images)*
 
 Enter a name for the resulting grayscale image coming from the green channel.""")
 
-        self.use_blue = cps.Binary('Convert blue to gray?', True, doc="""\
+        self.use_blue = cellprofiler.setting.Binary('Convert blue to gray?', True, doc="""\
 *(Used only when splitting RGB images)*
 
 Select *"%(YES)s"* to extract the blue channel to grayscale.""" % globals())
-        self.blue_name = cps.ImageNameProvider('Name the output image', "OrigBlue", doc="""\
+        self.blue_name = cellprofiler.setting.ImageNameProvider('Name the output image', "OrigBlue", doc="""\
 *(Used only when splitting RGB images)*
 
 Enter a name for the resulting grayscale image coming from the blue channel.""")
 
         # The following settings are used for the split HSV ption
-        self.use_hue = cps.Binary('Convert hue to gray?', True, doc="""\
+        self.use_hue = cellprofiler.setting.Binary('Convert hue to gray?', True, doc="""\
 *(Used only when splitting HSV images)*
 
 Select *"%(YES)s"* to extract the hue to grayscale.""" % globals())
-        self.hue_name = cps.ImageNameProvider('Name the output image', "OrigHue", doc="""\
+        self.hue_name = cellprofiler.setting.ImageNameProvider('Name the output image', "OrigHue", doc="""\
 *(Used only when splitting HSV images)*
 
 Enter a name for the resulting grayscale image coming from the hue.""")
 
-        self.use_saturation = cps.Binary('Convert saturation to gray?', True, doc="""\
+        self.use_saturation = cellprofiler.setting.Binary('Convert saturation to gray?', True, doc="""\
 *(Used only when splitting HSV images)*
 
 Select *"%(YES)s"* to extract the saturation to grayscale.""" % globals())
-        self.saturation_name = cps.ImageNameProvider('Name the output image', "OrigSaturation", doc="""\
+        self.saturation_name = cellprofiler.setting.ImageNameProvider('Name the output image', "OrigSaturation", doc="""\
 *(Used only when splitting HSV images)*
 
 Enter a name for the resulting grayscale image coming from the saturation.""")
 
-        self.use_value = cps.Binary('Convert value to gray?', True, doc="""\
+        self.use_value = cellprofiler.setting.Binary('Convert value to gray?', True, doc="""\
 *(Used only when splitting HSV images)*
 
 Select *"%(YES)s"* to extract the value to grayscale.""" % globals())
-        self.value_name = cps.ImageNameProvider('Name the output image', "OrigValue", doc="""\
+        self.value_name = cellprofiler.setting.ImageNameProvider('Name the output image', "OrigValue", doc="""\
 *(Used only when splitting HSV images)*
 
 Enter a name for the resulting grayscale image coming from the value.""")
@@ -198,7 +198,7 @@ channel # 4 for a .TIF file. **ColorToGray** will fail to process an
 image if you select a channel that is not supported by that image, for
 example, “5” for a .PNG file"""))
 
-        group.append("contribution", cps.Float(
+        group.append("contribution", cellprofiler.setting.Float(
                 "Relative weight of the channel", 1, 0, doc='''\
 *(Used only when combining channels)*
 
@@ -206,7 +206,7 @@ Relative weights: If all relative weights are equal, all three colors
 contribute equally in the final image. To weight colors relative to each
 other, increase or decrease the relative weights.'''))
 
-        group.append("image_name", cps.ImageNameProvider(
+        group.append("image_name", cellprofiler.setting.ImageNameProvider(
                 "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""\
 *(Used only when splitting images)*                
                 

@@ -4,6 +4,7 @@
 
 import cellprofiler
 import cellprofiler.analysis
+import cellprofiler.gui.help.content
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.gui.addmoduleframe
@@ -1227,7 +1228,7 @@ class PipelineController(object):
 
             def do_help(event):
                 cellprofiler.gui.htmldialog.HTMLDialog(self.__frame, "Help for plate viewer",
-                                                       cellprofiler.gui.help.PLATEVIEWER_HELP).Show()
+                                                       cellprofiler.gui.help.content.PLATEVIEWER_HELP).Show()
 
             ok_button.Bind(wx.EVT_BUTTON, do_ok)
             help_button.Bind(wx.EVT_BUTTON, do_help)

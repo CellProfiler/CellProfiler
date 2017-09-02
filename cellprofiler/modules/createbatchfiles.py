@@ -25,7 +25,7 @@ For more details on batch processing, please see *Help > Batch
 Processing*.
 """
 
-from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
+from cellprofiler.gui.help.content import BATCH_PROCESSING_HELP_REF
 import logging
 logger = logging.getLogger(__name__)
 import httplib

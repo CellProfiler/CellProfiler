@@ -38,6 +38,7 @@ import cellprofiler.gui
 import cellprofiler.gui.artist
 import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
+import cellprofiler.gui.help.content
 import cellprofiler.gui.tools
 import cellprofiler.modules.loadimages
 import cellprofiler.object
@@ -301,7 +302,7 @@ class Figure(wx.Frame):
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
                  subplots=None, on_close=None,
                  secret_panel_class=None,
-                 help_menu_items=cellprofiler.gui.help.FIGURE_HELP):
+                 help_menu_items=cellprofiler.gui.help.content.FIGURE_HELP):
         """Initialize the frame:
 
         parent   - parent window to this one, typically CPFrame
@@ -389,7 +390,7 @@ class Figure(wx.Frame):
                         wx.EVT_MENU(parent, window_id, on_menu_command)
                         self.remove_menu.append([menu, window_id])
 
-    def create_menu(self, figure_help=cellprofiler.gui.help.FIGURE_HELP):
+    def create_menu(self, figure_help=cellprofiler.gui.help.content.FIGURE_HELP):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE, "&Save")

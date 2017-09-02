@@ -1229,6 +1229,8 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
+        self.figure.tight_layout(w_pad=3.0)
+
         if dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax

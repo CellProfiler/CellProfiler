@@ -164,8 +164,7 @@ clicking with the mouse.
         self.individual_or_once = cps.Choice(
                 "Apply which cycle's cropping pattern?",
                 [IO_INDIVIDUALLY, IO_FIRST], IO_INDIVIDUALLY, doc="""\
-Specify how a given cropping pattern should be applied to other image
-cycles:
+Specify how a given cropping pattern should be applied to other image cycles:
 
 -  *%(IO_FIRST)s:* The cropping pattern from the first image cycle is
    applied to all subsequent cyles. This is useful if the first image is

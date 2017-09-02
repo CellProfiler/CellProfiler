@@ -1,9 +1,12 @@
 # coding=utf-8
 
 """
-**Display Platemap** displays a desired measurement in a plate map view.
+DisplayPlatemap
+===============
 
-**Display Platemap** is a tool for browsing image-based data laid out on
+**DisplayPlatemap** displays a desired measurement in a plate map view.
+
+**DisplayPlatemap** is a tool for browsing image-based data laid out on
 multi-well plates common to high-throughput biological screens. The
 display window for this module shows a plate map with each well
 color-coded according to the measurement chosen.
@@ -48,103 +51,110 @@ class DisplayPlatemap(cpm.Module):
     def create_settings(self):
         self.objects_or_image = cps.Choice(
                 "Display object or image measurements?",
-                [OI_OBJECTS, OI_IMAGE], doc="""
-            <ul>
-            <li><i>%(OI_IMAGE)s</i> allows you to select an image
-            measurement to display for each well.</li>
-            <li><i>%(OI_OBJECTS)s</i> allows you to select an object measurement to display
-            for each well.</li>
-            </ul>""" % globals())
+                [OI_OBJECTS, OI_IMAGE], doc="""\
+-  *%(OI_IMAGE)s* allows you to select an image measurement to display
+   for each well.
+-  *%(OI_OBJECTS)s* allows you to select an object measurement to
+   display for each well.
+""" % globals())
 
         self.object = cps.ObjectNameSubscriber(
                 'Select the object whose measurements will be displayed',
-                cps.NONE, doc='''
-            Choose the name of objects identified by some previous
-            module (such as <b>IdentifyPrimaryObjects</b> or
-            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
+                cps.NONE, doc='''\
+Choose the name of objects identified by some previous module (such as
+**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**)
+whose measurements are to be displayed.
+''')
 
         self.plot_measurement = cps.Measurement(
                 'Select the measurement to plot',
-                self.get_object, cps.NONE, doc='''
-            Choose the image or object measurement made by a previous module to plot.''')
+                self.get_object, cps.NONE, doc='''Choose the image or object measurement made by a previous module to plot.''')
 
         self.plate_name = cps.Measurement('Select your plate metadata',
                                           lambda: cpmeas.IMAGE,
-                                          'Metadata_Plate', doc='''
-            Choose the metadata tag that corresponds to the plate identifier. That is,
-            each plate should have a metadata tag containing a specifier corresponding
-            uniquely to that plate.
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+                                          'Metadata_Plate', doc='''\
+Choose the metadata tag that corresponds to the plate identifier. That
+is, each plate should have a metadata tag containing a specifier
+corresponding uniquely to that plate.
+
+%(USING_METADATA_HELP_REF)s.
+''' % globals())
 
         self.plate_type = cps.Choice(
                 'Multiwell plate format',
-                ['96', '384'], doc=
-                '''The module assumes that your data is laid out in a multi-well plate format
-                common to high-throughput biological screens. Supported formats are:
-                <ul>
-                <li><i>96:</i> A 96-well plate with 8 rows &times; 12 columns</li>
-                <li><i>384:</i> A 384-well plate with 16 rows &times; 24 columns</li>
-                </ul>''')
+                ['96', '384'], doc='''\
+The module assumes that your data is laid out in a multi-well plate
+format common to high-throughput biological screens. Supported formats
+are:
+
+-  *96:* A 96-well plate with 8 rows × 12 columns
+-  *384:* A 384-well plate with 16 rows × 24 columns
+''')
 
         self.well_format = cps.Choice(
                 "Well metadata format",
-                [WF_NAME, WF_ROWCOL], doc="""
-            <ul>
-            <li> <i>%(WF_NAME)s</i> allows you to select an image
-            measurement to display for each well.</li>
-            <li><i>%(WF_ROWCOL)s</i> allows you to select an object measurement to display
-            for each well.</li>
-            </ul>""" % globals())
+                [WF_NAME, WF_ROWCOL], doc="""\
+-  *%(WF_NAME)s* allows you to select an image measurement to display
+   for each well.
+-  *%(WF_ROWCOL)s* allows you to select an object measurement to
+   display for each well.
+""" % globals())
 
         self.well_name = cps.Measurement(
                 'Select your well metadata',
-                lambda: cpmeas.IMAGE, 'Metadata_Well', doc='''
-            Choose the metadata tag that corresponds to the well identifier.
-            The row-column format of these entries should be an
-            alphabetical character (specifying the plate row), followed by two integer
-            characters (specifying the plate column). For example, a standard format
-            96-well plate would span from "A1" to "H12", whereas a 384-well plate (16
-            rows and 24 columns) would span from well "A01" to well "P24"."
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+                lambda: cpmeas.IMAGE, 'Metadata_Well', doc='''\
+Choose the metadata tag that corresponds to the well identifier. The
+row-column format of these entries should be an alphabetical character
+(specifying the plate row), followed by two integer characters
+(specifying the plate column). For example, a standard format 96-well
+plate would span from “A1” to “H12”, whereas a 384-well plate (16 rows
+and 24 columns) would span from well “A01” to well “P24”."
+
+%(USING_METADATA_HELP_REF)s.
+''' % globals())
 
         self.well_row = cps.Measurement('Select your well row metadata',
-                                        lambda: cpmeas.IMAGE, 'Metadata_WellRow', doc='''
-            Choose the metadata tag that corresponds to the well row identifier, typically
-            specified as an alphabetical character. For example, a standard format
-            96-well plate would span from  row "A" to "H", whereas a 384-well plate (16
-            rows and 24 columns) would span from row "A" to "P".
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+                                        lambda: cpmeas.IMAGE, 'Metadata_WellRow', doc='''\
+Choose the metadata tag that corresponds to the well row identifier,
+typically specified as an alphabetical character. For example, a
+standard format 96-well plate would span from row “A” to “H”, whereas a
+384-well plate (16 rows and 24 columns) would span from row “A” to “P”.
+
+%(USING_METADATA_HELP_REF)s.
+''' % globals())
 
         self.well_col = cps.Measurement('Select your well column metadata',
-                                        lambda: cpmeas.IMAGE, 'Metadata_WellCol', doc='''
-            Choose the metadata tag that corresponds to the well column identifier, typically
-            specified with two integer characters. For example, a standard format
-            96-well plate would span from column "01" to "12", whereas a 384-well plate (16
-            rows and 24 columns) would span from column "01" to "24".
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+                                        lambda: cpmeas.IMAGE, 'Metadata_WellCol', doc='''\
+Choose the metadata tag that corresponds to the well column identifier,
+typically specified with two integer characters. For example, a standard
+format 96-well plate would span from column “01” to “12”, whereas a
+384-well plate (16 rows and 24 columns) would span from column “01” to
+“24”.
+
+%(USING_METADATA_HELP_REF)s.
+''' % globals())
 
         self.agg_method = cps.Choice(
                 'How should the values be aggregated?',
-                AGG_NAMES, AGG_NAMES[0], doc='''
-            Measurements must be aggregated to a
-            single number for each well so that they can be represented by a color.
-            Options are:
-            <ul>
-            <li><i>%(AGG_AVG)s:</i> Average</li>
-            <li><i>%(AGG_STDEV)s:</i> Standard deviation</li>
-            <li><i>%(AGG_MEDIAN)s</i></li>
-            <li><i>%(AGG_CV)s:</i> Coefficient of variation, defined as the ratio of the standard
-            deviation to the mean. This is useful for comparing between data sets with
-            different units or widely different means.</li>
-            </ul>''' % globals())
+                AGG_NAMES, AGG_NAMES[0], doc='''\
+Measurements must be aggregated to a single number for each well so that
+they can be represented by a color. Options are:
+
+-  *%(AGG_AVG)s:* Average
+-  *%(AGG_STDEV)s:* Standard deviation
+-  *%(AGG_MEDIAN)s*
+-  *%(AGG_CV)s:* Coefficient of variation, defined as the ratio of the
+   standard deviation to the mean. This is useful for comparing between
+   data sets with different units or widely different means.
+''' % globals())
 
         self.title = cps.Text(
                 'Enter a title for the plot, if desired', '',
-                doc='''
-            Enter a title for the plot. If you leave this blank,
-            the title will default
-            to <i>(cycle N)</i> where <i>N</i> is the current image
-            cycle being executed.''')
+                doc='''\
+Enter a title for the plot. If you leave this blank, the title will
+default to *(cycle N)* where *N* is the current image cycle being
+executed.
+''')
 
     def settings(self):
         return [self.objects_or_image, self.object, self.plot_measurement,

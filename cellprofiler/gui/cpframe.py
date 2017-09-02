@@ -10,6 +10,7 @@ import cellprofiler.gui.dialog
 import cellprofiler.gui.help
 import cellprofiler.gui.html
 import cellprofiler.gui.html.htmlwindow
+import cellprofiler.gui.html.utils
 import cellprofiler.gui.imagesetctrl
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pathlist
@@ -35,6 +36,36 @@ import wx.html
 import wx.lib.scrolledpanel
 
 logger = logging.getLogger(__name__)
+
+HELP_ON_FILE_LIST = """\
+The *File List* panel displays the image files that are managed by the
+**Images**, **Metadata**, **NamesAndTypes** and **Groups** modules.
+You can drop files and directories into this window or use the
+*Browse…* button to add files to the list. The context menu for the
+window lets you display or remove files and lets you remove folders.
+
+The buttons and checkbox along the bottom have the following
+functions:
+
+-  *Browse…*: Browse for files and folders to add.
+-  *Clear*: Clear all entries from the File list
+-  *Show files excluded by filters*: *(Only shown if filtered based on
+   rules is selected)* Check this to see all files in the list. Uncheck
+   it to see only the files that pass the rules criteria in the
+   **Images** module.
+-  *Expand tree*: Expand all of the folders in the tree
+-  *Collapse tree*: Collapse the folders in the tree
+"""
+
+HELP_ON_MODULE_BUT_NONE_SELECTED = """\
+The help button can be used to obtain help for the currently selected
+module in the pipeline panel on the left side of the CellProfiler
+interface.
+
+You do not have any modules in the pipeline, yet. Add a
+module to the pipeline using the “+” button or by using File > Load
+Pipeline.\
+"""
 
 ID_FILE_NEW_WORKSPACE = wx.ID_NEW
 ID_FILE_LOAD = wx.ID_OPEN
@@ -88,7 +119,6 @@ ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
 ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
 ID_DEBUG_PDB = wx.NewId()
-ID_DEBUG_VIEW_WORKSPACE = wx.NewId()
 
 # ~*~
 ID_SAMPLE_INIT = wx.NewId()
@@ -632,7 +662,6 @@ class CPFrame(wx.Frame):
                                  'Choose which image set group to process in test-mode')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose Image Set',
                                  'Choose any of the available image sets')
-        self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View Workspace", "Show the workspace viewer")
         if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
@@ -647,7 +676,6 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, False)
-        self.__menu_debug.Enable(ID_DEBUG_VIEW_WORKSPACE, False)
 
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L",
@@ -872,8 +900,7 @@ class CPFrame(wx.Frame):
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
                       ID_DEBUG_NEXT_GROUP, ID_DEBUG_CHOOSE_GROUP,
                       ID_DEBUG_CHOOSE_IMAGE_SET,
-                      ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
-                      ID_DEBUG_VIEW_WORKSPACE)
+                      ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET)
 
     def enable_debug_commands(self):
         """Enable or disable the debug commands (like ID_DEBUG_STEP)"""
@@ -952,7 +979,11 @@ class CPFrame(wx.Frame):
 
     def __on_help_path_list(self, event):
         import htmldialog
-        dlg = htmldialog.HTMLDialog(self, "Help on file list", cellprofiler.gui.help.HELP_ON_FILE_LIST)
+        dlg = htmldialog.HTMLDialog(
+            self,
+            "Help on file list",
+            cellprofiler.gui.html.utils.rst_to_html_fragment(cellprofiler.gui.cpframe.HELP_ON_FILE_LIST)
+        )
         dlg.Show()
 
     @staticmethod
@@ -973,7 +1004,7 @@ class CPFrame(wx.Frame):
             self.do_help_module(active_module.module_name,
                                 active_module.get_help())
         else:
-            wx.MessageBox(cellprofiler.gui.help.HELP_ON_MODULE_BUT_NONE_SELECTED,
+            wx.MessageBox(cellprofiler.gui.cpframe.HELP_ON_MODULE_BUT_NONE_SELECTED,
                           "No module selected",
                           style=wx.OK | wx.ICON_INFORMATION)
 

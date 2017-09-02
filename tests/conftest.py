@@ -12,15 +12,16 @@ import cellprofiler.utilities.cpjvm
 import cellprofiler.workspace
 
 
-@pytest.fixture(autouse=True, scope="session")
-def setup_and_teardown():
+def pytest_sessionstart(session):
     cellprofiler.preferences.set_headless()
 
     cellprofiler.utilities.cpjvm.cp_start_vm()
 
-    yield
 
+def pytest_sessionfinish(session, exitstatus):
     cellprofiler.__main__.stop_cellprofiler()
+
+    return exitstatus
 
 
 @pytest.fixture(

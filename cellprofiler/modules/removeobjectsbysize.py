@@ -16,15 +16,15 @@ import cellprofiler.module
 import cellprofiler.setting
 
 
-class RemoveObjects(cellprofiler.module.ObjectProcessing):
-    category = ["Mathematical morphology", "Object Processing"]
+class RemoveObjectsBySize(cellprofiler.module.ObjectProcessing):
+    category = "Advanced"
 
-    module_name = "Remove objects"
+    module_name = "RemoveObjectsBySize"
 
     variable_revision_number = 1
 
     def create_settings(self):
-        super(RemoveObjects, self).create_settings()
+        super(RemoveObjectsBySize, self).create_settings()
 
         self.size = cellprofiler.setting.FloatRange(
             text="Size",
@@ -36,14 +36,14 @@ class RemoveObjects(cellprofiler.module.ObjectProcessing):
         )
 
     def settings(self):
-        __settings__ = super(RemoveObjects, self).settings()
+        __settings__ = super(RemoveObjectsBySize, self).settings()
 
         return __settings__ + [
             self.size
         ]
 
     def visible_settings(self):
-        __settings__ = super(RemoveObjects, self).visible_settings()
+        __settings__ = super(RemoveObjectsBySize, self).visible_settings()
 
         return __settings__ + [
             self.size
@@ -52,7 +52,7 @@ class RemoveObjects(cellprofiler.module.ObjectProcessing):
     def run(self, workspace):
         self.function = lambda labels, diameter: remove_objects(labels, diameter)
 
-        super(RemoveObjects, self).run(workspace)
+        super(RemoveObjectsBySize, self).run(workspace)
 
 
 def remove_objects(labels, diameter):

@@ -1,14 +1,14 @@
-import cellprofiler.modules.noisereduction
+import cellprofiler.modules.reducenoise
 import numpy.testing
 import skimage.restoration
 
-instance = cellprofiler.modules.noisereduction.NoiseReduction()
+instance = cellprofiler.modules.reducenoise.ReduceNoise()
 
 
 def test_run(image, module, image_set, workspace):
     module.x_name.value = "example"
 
-    module.y_name.value = "NoiseReduction"
+    module.y_name.value = "ReduceNoise"
 
     module.size.value = 7
 
@@ -18,7 +18,7 @@ def test_run(image, module, image_set, workspace):
 
     module.run(workspace)
 
-    actual = image_set.get_image("NoiseReduction")
+    actual = image_set.get_image("ReduceNoise")
 
     desired = skimage.restoration.denoise_nl_means(
         fast_mode=True,

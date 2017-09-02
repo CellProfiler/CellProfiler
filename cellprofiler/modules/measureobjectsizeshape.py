@@ -5,13 +5,14 @@ MeasureObjectSizeShape
 ======================
 
 **MeasureObjectSizeShape** measures several area and shape features
-of identified objects.
+of identified objects.  Some measurements are available for 3D and 2D
+objects, while some are 2D only.
 
 Given an image with identified objects (e.g. nuclei or cells), this
 module extracts area and shape features of each one. Note that these
 features are only reliable for objects that are completely inside the
 image borders, so you may wish to exclude objects touching the edge of
-the image using **IdentifyPrimaryObjects**.
+the image using **Identify** settings for 2D objects or **ClearBorder** for 3D objects.
 
 Please note that the display window for this module shows per-image
 aggregates for the per-object measurements. If you want to view the
@@ -26,62 +27,62 @@ Measurements made by this module
 See the *Technical Notes* below for an explanation of creating an
 ellipse with the same second-moments as an object region.
 
--  *Area:* The number of pixels in the region.
--  *Perimeter:* The total number of pixels around the boundary of each
-   region in the image.
--  *FormFactor:* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
+-  *Area:* The number of pixels (2D) or voxels (3D) in the region.
+-  *Perimeter:* The total number of pixels (2D) or voxels (3D) around the boundary of each
+   region in the image. In 3D, this is more commonly described as the surface area.
+-  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
    for a perfectly circular object.
--  *Solidity:* The proportion of the pixels in the convex hull that are
+-  *Solidity:* *(2D only)* The proportion of the pixels in the convex hull that are
    also in the object, i.e. *ObjectArea/ConvexHullArea*. Equals 1 for a
    solid object (i.e., one with no holes or has a concave boundary), or
    <1 for an object with holes or possessing a convex/irregular
    boundary.
--  *Extent:* The proportion of the pixels in the bounding box that are
-   also in the region. Computed as the Area divided by the area of the
-   bounding box.
--  *EulerNumber:* The number of objects in the region minus the number
+-  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box
+   that are also in the region. Computed as the area/volume divided by the area/volume
+   of the bounding box.
+-  *EulerNumber:* *(2D only)* The number of objects in the region minus the number
    of holes in those objects, assuming 8-connectivity.
--  *Center\_X, Center\_Y:* The *x*- and *y*-coordinates of the point
-   farthest away from any object edge. Note that this is not the same as
-   the *Location-X* and *-Y* measurements produced by the **Identify**
-   modules.
--  *Eccentricity:* The eccentricity of the ellipse that has the same
+-  *Center\_X, Center\_Y, Center\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
+   coordinates of the point farthest away from any object edge. Note that this
+   is not the same as the *Location-X* and *-Y* measurements produced by the **Identify** or **Watershed**
+   modules or the *Location-Z* measurement produced by the **Watershed** module.
+-  *Eccentricity:* *(2D only)* The eccentricity of the ellipse that has the same
    second-moments as the region. The eccentricity is the ratio of the
    distance between the foci of the ellipse and its major axis length.
    The value is between 0 and 1. (0 and 1 are degenerate cases; an
    ellipse whose eccentricity is 0 is actually a circle, while an
    ellipse whose eccentricity is 1 is a line segment.)
-   +------------+
-   | |image0|   |
-   +------------+
 
--  *MajorAxisLength:* The length (in pixels) of the major axis of the
+    |image0|
+
+
+-  *MajorAxisLength:* *(2D only)* The length (in pixels) of the major axis of the
    ellipse that has the same normalized second central moments as the
    region.
--  *MinorAxisLength:* The length (in pixels) of the minor axis of the
+-  *MinorAxisLength:* *(2D only)* The length (in pixels) of the minor axis of the
    ellipse that has the same normalized second central moments as the
    region.
--  *Orientation:* The angle (in degrees ranging from -90 to 90 degrees)
+-  *Orientation:* *(2D only)* The angle (in degrees ranging from -90 to 90 degrees)
    between the x-axis and the major axis of the ellipse that has the
    same second-moments as the region.
--  *Compactness:* The mean squared distance of the object’s pixels from
+-  *Compactness:* *(2D only)* The mean squared distance of the object’s pixels from
    the centroid divided by the area. A filled circle will have a
    compactness of 1, with irregular objects or objects with holes having
    a value greater than 1.
--  *MaximumRadius:* The maximum distance of any pixel in the object to
+-  *MaximumRadius:* *(2D only)* The maximum distance of any pixel in the object to
    the closest pixel outside of the object. For skinny objects, this is
    1/2 of the maximum width of the object.
--  *MedianRadius:* The median distance of any pixel in the object to the
+-  *MedianRadius:* *(2D only)* The median distance of any pixel in the object to the
    closest pixel outside of the object.
--  *MeanRadius:* The mean distance of any pixel in the object to the
+-  *MeanRadius:* *(2D only)* The mean distance of any pixel in the object to the
    closest pixel outside of the object.
--  *MinFeretDiameter, MaxFeretDiameter:* The Feret diameter is the
+-  *MinFeretDiameter, MaxFeretDiameter:* *(2D only)* The Feret diameter is the
    distance between two parallel lines tangent on either side of the
    object (imagine taking a caliper and measuring the object at various
    angles). The minimum and maximum Feret diameters are the smallest and
    largest possible diameters, rotating the calipers along all possible
    angles.
--  *Zernike shape features:* Measure shape by describing a binary object
+-  *Zernike shape features:* *(2D only)* Measure shape by describing a binary object
    (or more precisely, a patch with background and an object in the
    center) in a basis of Zernike polynomials, using the coefficients as
    features (*Boland et al., 1998*). Currently, Zernike polynomials from
@@ -130,7 +131,6 @@ See also **MeasureImageAreaOccupied**.
 """
 
 import cellprofiler.icons
-from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
 
 import numpy as np
 import scipy.ndimage as scind
@@ -206,11 +206,11 @@ class MeasureObjectSizeShape(cpm.Module):
         self.add_objects = cps.DoSomething("", "Add another object", self.add_object)
 
         self.calculate_zernikes = cps.Binary(
-                'Calculate the Zernike features?', True, doc="""
-                Select *%(YES)s* to calculate the Zernike shape features. Since the
-                first 10 Zernike polynomials (from order 0 to order 9) are calculated,
-                this operation can be time consuming if the image contains a lot of
-                objects.""" % globals())
+                'Calculate the Zernike features?', True, doc="""\
+Select *%(YES)s* to calculate the Zernike shape features. Since the
+first 10 Zernike polynomials (from order 0 to order 9) are calculated,
+this operation can be time consuming if the image contains a lot of
+objects.""" % globals())
 
     def add_object(self, can_remove=True):
         """Add a slot for another object"""
@@ -219,8 +219,7 @@ class MeasureObjectSizeShape(cpm.Module):
             group.append("divider", cps.Divider(line=False))
 
         group.append("name", cps.ObjectNameSubscriber(
-                "Select objects to measure", cps.NONE, doc="""
-            Select the objects that you want to measure."""))
+                "Select objects to measure", cps.NONE, doc="""Select the objects that you want to measure."""))
 
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))

@@ -3841,6 +3841,51 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         self.assertTrue(np.all(expected == image.pixel_data))
 
+    def test_provide_npy(self):
+        resource_directory = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "resources"
+            )
+        )
+
+        provider = LI.LoadImagesImageProvider(
+            name="neurite",
+            pathname=resource_directory,
+            filename="neurite.npy",
+            rescale=False
+        )
+
+        actual = provider.provide_image(None).pixel_data
+
+        expected = np.load(os.path.join(resource_directory, "neurite.npy")) / 255.
+
+        np.testing.assert_array_almost_equal(actual, expected)
+
+    def test_provide_npy_volume(self):
+        resource_directory = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "resources"
+            )
+        )
+
+        provider = LI.LoadImagesImageProvider(
+            name="volume",
+            pathname=resource_directory,
+            filename="volume.npy",
+            rescale=False,
+            volume=True
+        )
+
+        actual = provider.provide_image(None).pixel_data
+
+        expected = np.load(os.path.join(resource_directory, "volume.npy"))
+
+        np.testing.assert_array_equal(actual, expected)
+
 
 class TestLoadImagesImageProviderURL(unittest.TestCase):
     def test_provide_volume(self):

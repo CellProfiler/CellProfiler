@@ -1,21 +1,23 @@
 # coding=utf-8
 
 """
-**Make Projection** combines several two-dimensional images of the same
-field of view together, either by performing a mathematical operation
+MakeProjection
+==============
+**MakeProjection** combines several two-dimensional images of the same
+field of view by performing a mathematical operation
 upon the pixel values at each pixel position.
 
-This module combines a set of images by performing a mathematic
+This module combines a set of images by performing a mathematical
 operation of your choice at each pixel position; please refer to the
 settings help for more information on the available operations. The
 process of averaging or summing a Z-stack (3D image stack) is known as
-making a projection.
+making a projection. **MakeProjection** is meant to be used only on single image Z-slices across image cycles; it will not work on images that have been loaded as 3D volumes in **NamesAndTypes**.
 
 This module will create a projection of all images specified in the
 Input modules. For more information on loading image stacks and movies,
 see *Help > Creating a Project > Loading Image Stacks and Movies*. To
-achieve per-folder projections i.e., creating a projection for each set
-of images in a folder, for all input folders, make the following setting
+achieve per-folder projections (i.e., creating a projection for each set
+of images in a folder, for all input folders), make the following setting
 specifications:
 
 #. In the **Images** module, drag-and-drop the parent folder containing
@@ -64,73 +66,76 @@ class MakeProjection(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                'Select the input image', cps.NONE, doc='''
-            Select the image to be made into a projection.''')
+                'Select the input image', cps.NONE, doc="Select the image to be made into a projection.")
 
         self.projection_type = cps.Choice(
                 'Type of projection',
-                P_ALL, doc='''
-            The final projection image can be created by the following methods:
-            <ul>
-            <li><i>%(P_AVERAGE)s:</i> Use the average pixel intensity at each pixel position.</li>
-            <li><i>%(P_MAXIMUM)s:</i> Use the maximum pixel value at each pixel position.</li>
-            <li><i>%(P_MINIMUM)s:</i> Use the minimum pixel value at each pixel position.</li>
-            <li><i>%(P_SUM)s:</i> Add the pixel values at each pixel position.</li>
-            <li><i>%(P_VARIANCE)s:</i> Compute the variance at each pixel position. <br>
-            The variance  method is described in Selinummi et al (2009).
-            The method is designed to operate on a z-stack of brightfield images taken
-            at different focus planes. Background pixels will have relatively uniform
-            illumination whereas cytoplasm pixels will have higher variance across the
-            z-stack.</li>
-            <li><i>%(P_POWER)s:</i> Compute the power at a given frequency at each pixel position.<br>
-            The power method is experimental. The method computes the power at a given
-            frequency through the z-stack. It might be used with a phase contrast image
-            where the signal at a given pixel will vary sinusoidally with depth. The
-            frequency is measured in z-stack steps and pixels that vary with the given
-            frequency will have a higher score than other pixels with similar variance,
-            but different frequencies.</li>
-            <li><i>%(P_BRIGHTFIELD)s:</i> Perform the brightfield projection at each pixel position.<br>
-            Artifacts such as dust appear as black spots which are most strongly resolved
-            at their focal plane with gradually increasing signals below. The brightfield
-            method scores these as zero since the dark appears in the early z-stacks.
-            These pixels have a high score for the variance method but have a reduced
-            score when using the brightfield method.</li>
-            <li><i>%(P_MASK)s:</i> Compute a binary image of the pixels that are
-            masked in any of the input images.<br>
-            The mask method operates on any masks that might have been applied to the
-            images in a group. The output is a binary image where the "1" pixels are
-            those that are not masked in all of the images and the "0" pixels are those
-            that are masked in one or more of the images.<br>
-            You can use the output of the mask method to mask or crop all of the
-            images in a group similarly. Use the mask method to combine all of the
-            masks in a group, save the image and then use <b>Crop</b>, <b>MaskImage</b> or
-            <b>MaskObjects</b> in another pipeline to mask all images or objects in the
-            group similarly.</li>
-            </ul>
-            <p>
-            <b>References</b>
-            <ul>
-            <li>Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009)
-            "Bright field microscopy as an alternative to whole cell fluorescence in
-            automated analysis of macrophage images", <i>PLoS ONE</i> 4(10): e7497
-            <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
-            </ul>
-            </p>''' % globals())
+                P_ALL, doc="""\
+The final projection image can be created by the following methods:
+
+    -  *%(P_AVERAGE)s:* Use the average pixel intensity at each pixel
+       position.
+    -  *%(P_MAXIMUM)s:* Use the maximum pixel value at each pixel position.
+    -  *%(P_MINIMUM)s:* Use the minimum pixel value at each pixel position.
+    -  *%(P_SUM)s:* Add the pixel values at each pixel position.
+    -  *%(P_VARIANCE)s:* Compute the variance at each pixel position.
+       The variance method is described in Selinummi et al (2009). The
+       method is designed to operate on a z-stack of brightfield images
+       taken at different focus planes. Background pixels will have
+       relatively uniform illumination whereas cytoplasm pixels will have
+       higher variance across the z-stack.
+    -  *%(P_POWER)s:* Compute the power at a given frequency at each pixel
+       position.
+       The power method is experimental. The method computes the power at a
+       given frequency through the z-stack. It might be used with a phase
+       contrast image where the signal at a given pixel will vary
+       sinusoidally with depth. The frequency is measured in z-stack steps
+       and pixels that vary with the given frequency will have a higher
+       score than other pixels with similar variance, but different
+       frequencies.
+    -  *%(P_BRIGHTFIELD)s:* Perform the brightfield projection at each
+       pixel position.
+       Artifacts such as dust appear as black spots which are most strongly
+       resolved at their focal plane with gradually increasing signals
+       below. The brightfield method scores these as zero since the dark
+       appears in the early z-stacks. These pixels have a high score for the
+       variance method but have a reduced score when using the brightfield
+       method.
+    -  *%(P_MASK)s:* Compute a binary image of the pixels that are masked
+       in any of the input images.
+       The mask method operates on any masks that might have been applied to
+       the images in a group. The output is a binary image where the “1”
+       pixels are those that are not masked in all of the images and the “0”
+       pixels are those that are masked in one or more of the images.
+       You can use the output of the mask method to mask or crop all of the
+       images in a group similarly. Use the mask method to combine all of
+       the masks in a group, save the image and then use **Crop**,
+       **MaskImage** or **MaskObjects** in another pipeline to mask all
+       images or objects in the group similarly.
+
+**References**
+    -  Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al.
+       (2009) “Bright field microscopy as an alternative to whole cell
+       fluorescence in automated analysis of macrophage images”, *PLoS ONE*
+       4(10): e7497 `(link)`_.
+
+.. _(link): http://dx.doi.org/10.1371/journal.pone.0007497
+"""% globals())
 
         self.projection_image_name = cps.ImageNameProvider(
                 'Name the output image',
-                'ProjectionBlue', doc='''
-            Enter the name for the projected image.''',
+                'ProjectionBlue', doc="Enter the name for the projected image.",
                 provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
                                      cps.AVAILABLE_ON_LAST_ATTRIBUTE: True})
         self.frequency = cps.Float(
-                "Frequency", 6.0, minval=1.0, doc="""
-            <i>(Used only if %(P_POWER)s is selected as the projection method)</i><br>
-            This setting controls the frequency at which the power
-            is measured. A frequency of 2 will respond most strongly to
-            pixels that alternate between dark and light in successive
-            z-stack slices. A frequency of N will respond most strongly
-            to pixels whose brightness cycle every N slices.""" % globals())
+                "Frequency", 6.0, minval=1.0, doc="""\
+*(Used only if "%(P_POWER)s" is selected as the projection method)*
+
+This setting controls the frequency at which the power is measured. A
+frequency of 2 will respond most strongly to pixels that alternate
+between dark and light in successive z-stack slices. A frequency of N
+will respond most strongly to pixels whose brightness cycle every N
+slices.""" % globals())
 
     def settings(self):
         return [self.image_name, self.projection_type,

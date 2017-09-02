@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Flip and rotate** flips (mirror image) and/or rotates an image
+FlipAndRotate
+=============
+
+**FlipAndRotate** flips (mirror image) and/or rotates an image
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -61,47 +64,47 @@ class FlipAndRotate(cpm.Module):
 
         self.flip_choice = cps.Choice(
                 "Select method to flip image",
-                FLIP_ALL, doc="""
-            Select how the image is to be flipped.""")
+                FLIP_ALL, doc="""\
+Select how the image is to be flipped.""")
 
         self.rotate_choice = cps.Choice(
                 "Select method to rotate image",
-                ROTATE_ALL, doc='''
-            <ul>
-            <li><i>%(ROTATE_NONE)s:</i> Leave the image unrotated. This should be used
-            if you want to flip the image only.</li>
-            <li><i>%(ROTATE_ANGLE)s:</i> Provide the numerical angle by which the
-            image should be rotated.</li>
-            <li><i>%(ROTATE_COORDINATES)s:</i> Provide the X,Y pixel locations of
-            two points in the image that should be aligned horizontally or
-            vertically.</li>
-            <li><i>%(ROTATE_MOUSE)s:</i> CellProfiler will pause so you can select the
-            rotation interactively. When prompted during the analysis run, grab the image by
-            clicking the left mouse button, rotate the image by
-            dragging with the mouse, then release the mouse button. Press the <i>Done</i> button on the image
-            after rotating the image appropriately.</li>
-            </ul>''' % globals())
+                ROTATE_ALL, doc="""\
+-  *%(ROTATE_NONE)s:* Leave the image unrotated. This should be used if
+   you want to flip the image only.
+-  *%(ROTATE_ANGLE)s:* Provide the numerical angle by which the image
+   should be rotated.
+-  *%(ROTATE_COORDINATES)s:* Provide the X,Y pixel locations of two
+   points in the image that should be aligned horizontally or
+   vertically.
+-  *%(ROTATE_MOUSE)s:* CellProfiler will pause so you can select the
+   rotation interactively. When prompted during the analysis run, grab
+   the image by clicking the left mouse button, rotate the image by
+   dragging with the mouse, then release the mouse button. Press the
+   *Done* button on the image after rotating the image appropriately.
+""" % globals())
 
         self.wants_crop = cps.Binary(
-                "Crop away the rotated edges?", True, doc='''
-            <i>(Used only when rotating images)</i> <br>
-            When an image is rotated, there will be black space at the
-            corners/edges; select <i>%(YES)s</i> to crop away the incomplete rows
-            and columns of the image, or select <i>%(NO)s</i> to leave it as-is.
-            <p>This cropping will produce an image that
-            is not exactly the same size as the original, which may affect
-            downstream modules.</p>''' % globals())
+                "Crop away the rotated edges?", True, doc="""\
+*(Used only when rotating images)*
+
+When an image is rotated, there will be black space at the
+corners/edges; select *%(YES)s* to crop away the incomplete rows and
+columns of the image, or select *%(NO)s* to leave it as-is.
+
+This cropping will produce an image that is not exactly the same size as
+the original, which may affect downstream modules.
+""" % globals())
 
         self.how_often = cps.Choice("Calculate rotation",
-                                    IO_ALL, doc='''
-            <i>(Used only when using "%(ROTATE_MOUSE)s" to rotate images)</i> <br>
-            Select the cycle(s) at which the calculation is requested and calculated.
-            <ul>
-            <li><i>%(IO_INDIVIDUALLY)s:</i> Determine the amount of rotation for each image
-            individually, e.g., for each cycle.</li>
-            <li><i>%(IO_ONCE)s:</i> Define the rotation only once (on the first image), then
-            then apply it to all images.</li>
-            </ul>''' % globals())
+                                    IO_ALL, doc="""\
+*(Used only when using “%(ROTATE_MOUSE)s” to rotate images)*
+
+Select the cycle(s) at which the calculation is requested and
+calculated.
+-  *%(IO_INDIVIDUALLY)s:* Determine the amount of rotation for each image individually, e.g., for each cycle.
+-  *%(IO_ONCE)s:* Define the rotation only once (on the first image), then then apply it to all images.
+""" % globals())
 
         self.first_pixel = cps.Coordinates(
                 "Enter coordinates of the top or left pixel", (0, 0))
@@ -111,18 +114,19 @@ class FlipAndRotate(cpm.Module):
 
         self.horiz_or_vert = cps.Choice(
                 "Select how the specified points should be aligned",
-                C_ALL, doc="""
-            <i>(Used only when using "%(ROTATE_COORDINATES)s" to rotate images)</i><br>
-            Specify whether you would like the coordinate points that
-            you entered to be horizontally or
-            vertically aligned after the rotation is complete.""" % globals())
+                C_ALL, doc="""\
+*(Used only when using “%(ROTATE_COORDINATES)s” to rotate images)*
+
+Specify whether you would like the coordinate points that you entered to
+be horizontally or vertically aligned after the rotation is complete.""" % globals())
 
         self.angle = cps.Float(
-                "Enter angle of rotation", 0, doc="""
-            <i>(Used only when using "%(ROTATE_ANGLE)s" to rotate images)</i> <br>
-            Enter the angle you would like to rotate the image.
-            This setting is in degrees, with positive angles corresponding
-            to counterclockwise and negative as clockwise.""" % globals())
+                "Enter angle of rotation", 0, doc="""\
+*(Used only when using “%(ROTATE_ANGLE)s” to rotate images)*
+
+Enter the angle you would like to rotate the image. This setting is in
+degrees, with positive angles corresponding to counterclockwise and
+negative as clockwise.""" % globals())
 
     def settings(self):
         return [self.image_name, self.output_name, self.flip_choice,

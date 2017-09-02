@@ -15,8 +15,8 @@ mask is composed of the foreground (white portions); if using a masking
 object, the mask is composed of the area within the object. Note that
 the image created by this module for further processing downstream is
 grayscale. If a binary mask is desired in subsequent modules, use the
-**ApplyThreshold** module instead of **MaskImage**. See also
-**ApplyThreshold**, **IdentifyPrimaryObjects**,
+**Threshold** module instead of **MaskImage**. See also
+**Threshold**, **IdentifyPrimaryObjects**,
 **IdentifyObjectsManually**.
 """
 
@@ -52,7 +52,7 @@ class MaskImage(cpm.Module):
                portions of the image (false or zero-value pixels) will be masked
                out. If the image is not binary, the module will use all pixels whose
                intensity is greater than 0.5 as the mask’s foreground (white area).
-               You can use **ApplyThreshold** instead to create a binary image and
+               You can use **Threshold** instead to create a binary image and
                have finer control over the intensity choice.""" % globals())
 
         self.object_name = cps.ObjectNameSubscriber(

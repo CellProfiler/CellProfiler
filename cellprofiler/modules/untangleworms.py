@@ -111,9 +111,9 @@ from centrosome.propagate import propagate
 from centrosome.outline import outline
 from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+    ABSOLUTE_FOLDER_NAME
+from cellprofiler.modules._help import NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, USING_METADATA_GROUPING_HELP_REF, \
+    IO_FOLDER_CHOICE_HELP_TEXT
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"

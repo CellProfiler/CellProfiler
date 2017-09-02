@@ -42,7 +42,7 @@ Other packages are referenced `here`_
 
 .. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
 .. _PTGui: http://www.ptgui.com/
-.. _Autostitch: http://cvlab.epfl.ch/~brown/autostitch/autostitch.html
+.. _Autostitch: http://matthewalunbrown.com/autostitch/autostitch.html
 .. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/
 .. _here: http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm
 """
@@ -94,112 +94,111 @@ class Tile(cpm.Module):
     def create_settings(self):
         self.input_image = cps.ImageNameSubscriber(
                 "Select an input image",
-                cps.NONE, doc="""
-            Select the image to be tiled. Additional images within the cycle can be added
-            later by choosing the "<i>%(T_ACROSS_CYCLES)s</i>"option below.""" % globals())
+                cps.NONE, doc="""Select the image to be tiled. Additional images within the cycle can be
+added later by choosing the "*%(T_ACROSS_CYCLES)s*"option below.
+""" % globals())
 
         self.output_image = cps.ImageNameProvider(
                 "Name the output image",
-                "TiledImage", doc="""
-            Enter a name for the final tiled image.""")
+                "TiledImage", doc="""Enter a name for the final tiled image.""")
 
         self.additional_images = []
 
-        self.add_button = cps.DoSomething("", "Add another image",
-                                          self.add_image)
+        self.add_button = cps.DoSomething("", "Add another image", self.add_image, doc="""Add images from other channels to perform similar tiling""")
 
         self.tile_method = cps.Choice(
                 "Tile assembly method",
-                T_ALL, doc='''
-            This setting controls the method by which the final tiled image is asembled:
-            <ul>
-            <li><i>%(T_WITHIN_CYCLES)s:</i> If you have loaded more than one image for each cycle
-            using modules upstream in the pipeline,
-            the images can be tiled. For example, you may tile three different channels
-            (OrigRed, OrigBlue, and OrigGreen), and a new tiled image will
-            be created for every image cycle.  </li>
-            <li><i>%(T_ACROSS_CYCLES)s:</i> If you want to tile images from multiple
-            cycles together, select this option. For example, you may tile all the
-            images of the same type (e.g., OrigBlue) across all fields of view in your
-            experiment, which will result in one final tiled image
-            when processing is complete.</li>
-            </ul>''' % globals())
+                T_ALL, doc='''\
+This setting controls the method by which the final tiled image is
+asembled:
+
+-  *%(T_WITHIN_CYCLES)s:* If you have loaded more than one image for
+   each cycle using modules upstream in the pipeline, the images can be
+   tiled. For example, you may tile three different channels (OrigRed,
+   OrigBlue, and OrigGreen), and a new tiled image will be created for
+   every image cycle.
+-  *%(T_ACROSS_CYCLES)s:* If you want to tile images from multiple
+   cycles together, select this option. For example, you may tile all
+   the images of the same type (e.g., OrigBlue) across all fields of
+   view in your experiment, which will result in one final tiled image
+   when processing is complete.
+''' % globals())
 
         self.rows = cps.Integer(
-                "Final number of rows", 8, doc='''
-            Specify the number of rows would you like to have in the tiled image.
-            For example, if you want to show your images in a 96-well format,
-            enter 8.
-            <p><i>Special cases:</i> Let <i>M</i> be the total number of slots for images
-            (i.e, number of rows x number of columns) and <i>N</i> be the number
-            of actual images.
-            <ul>
-            <li>If <i>M</i> &gt; <i>N</i>, blanks will be used for the
-            empty slots.</li>
-            <li>If the <i>M</i> &lt; <i>N</i>, an error will occur since there are
-            not enough image slots. Check "Automatically calculate number of rows?"
-            to avoid this error.</li>
-            </ul></p>''')
+                "Final number of rows", 8, doc='''\
+Specify the number of rows would you like to have in the tiled image.
+For example, if you want to show your images in a 96-well format, enter
+8.
+
+*Special cases:* Let *M* be the total number of slots for images (i.e,
+number of rows x number of columns) and *N* be the number of actual
+images.
+
+-  If *M* > *N*, blanks will be used for the empty slots.
+-  If the *M* < *N*, an error will occur since there are not enough
+   image slots. Check “Automatically calculate number of rows?” to avoid
+   this error.
+''')
 
         self.columns = cps.Integer(
                 "Final number of columns",
-                12, doc='''
-            Specify the number of columns you like to have in the tiled image.
-            For example, if you want to show your images in a 96-well format,
-            enter 12.
-            <p><i>Special cases:</i> Let <i>M</i> be the total number of slots for images
-            (i.e, number of rows x number of columns) and <i>N</i> be the number
-            of actual images.
-            <ul>
-            <li>If <i>M</i> &gt; <i>N</i>, blanks will be used for the
-            empty slots.</li>
-            <li>If the <i>M</i> &lt; <i>N</i>, an error will occur since there are
-            not enough image slots. Check "Automatically calculate number of columns?"
-            to avoid this error.</li>
-            </ul></p>''')
+                12, doc='''\
+Specify the number of columns you like to have in the tiled image. For
+example, if you want to show your images in a 96-well format, enter 12.
+
+*Special cases:* Let *M* be the total number of slots for images (i.e,
+number of rows x number of columns) and *N* be the number of actual
+images.
+
+-  If *M* > *N*, blanks will be used for the empty slots.
+-  If the *M* < *N*, an error will occur since there are not enough
+   image slots. Check “Automatically calculate number of columns?” to
+   avoid this error.
+''')
 
         self.place_first = cps.Choice(
-                "Image corner to begin tiling", P_ALL, doc='''
-            Where do you want the first image to be placed?  Begin in the upper left-hand corner
-            for a typical multi-well plate format where the first image is A01.''')
+                "Image corner to begin tiling", P_ALL, doc='''Where do you want the first image to be placed? Begin in the upper
+left-hand corner for a typical multi-well plate format where the first image is A01.
+''')
 
         self.tile_style = cps.Choice(
-                "Direction to begin tiling", S_ALL, doc='''
-            This setting specifies the order that the images are to be arranged.
-            If your images are named A01, A02, etc,
-            enter <i>%(S_ROW)s</i>".''' % globals())
+                "Direction to begin tiling", S_ALL, doc='''This setting specifies the order that the images are to be arranged. If
+your images are named A01, A02, etc, enter *%(S_ROW)s*".
+''' % globals())
 
         self.meander = cps.Binary(
-                "Use meander mode?", False, doc='''
-            Select <i>%(YES)s</i> to tile adjacent images in one direction,
-            then the next row/column is tiled in the opposite direction.
-            Some microscopes capture images
-            in this fashion. The default mode is "comb", or "typewriter"
-            mode; in this mode, when one row is completely tiled in one direction,
-            the next row starts near where the first row started and tiles
-            again in the same direction.''' % globals())
+                "Use meander mode?", False, doc='''\
+Select "*%(YES)s*" to tile adjacent images in one direction, then the next
+row/column is tiled in the opposite direction. Some microscopes capture
+images in this fashion. The default mode is “comb”, or “typewriter”
+mode; in this mode, when one row is completely tiled in one direction,
+the next row starts near where the first row started and tiles again in
+the same direction.
+''' % globals())
 
         self.wants_automatic_rows = cps.Binary(
-                "Automatically calculate number of rows?", False, doc="""
-            <b>Tile</b> can automatically calculate the number of rows
-            in the grid based on the number of image cycles that will be processed.
-            Select <i>%(YES)s</i> to create a grid that has the number of columns
-            that you entered and enough rows to display all of your images.
-            Select <i>%(NO)s</i> to specify the number of rows.
-            <p>If you check both automatic rows and automatic columns, <b>Tile</b>
-            will create a grid that has roughly the same number of rows
-            and columns.</p>""" % globals())
+                "Automatically calculate number of rows?", False, doc="""\
+**Tile** can automatically calculate the number of rows in the grid
+based on the number of image cycles that will be processed. Select
+"*%(YES)s*" to create a grid that has the number of columns that you
+entered and enough rows to display all of your images. Select "*%(NO)s*"
+to specify the number of rows.
+
+If you check both automatic rows and automatic columns, **Tile** will
+create a grid that has roughly the same number of rows and columns.
+""" % globals())
 
         self.wants_automatic_columns = cps.Binary(
-                "Automatically calculate number of columns?", False, doc="""
-            <b>Tile</b> can automatically calculate the number of columns
-            in the grid from the number of image cycles that will be processed.
-            Select <i>%(YES)s</i> to create a grid that has the number of rows
-            that you entered and enough columns to display all of your images.
-            Select <i>%(NO)s</i> to specify the number of rows.
-            <p>If you check both automatic rows and automatic columns, <b>Tile</b>
-            will create a grid that has roughly the same number of rows
-            and columns.</p>""" % globals())
+                "Automatically calculate number of columns?", False, doc="""\
+**Tile** can automatically calculate the number of columns in the grid
+from the number of image cycles that will be processed. Select "*%(YES)s*"
+to create a grid that has the number of rows that you entered and enough
+columns to display all of your images. Select "*%(NO)s*" to specify the
+number of rows.
+
+If you check both automatic rows and automatic columns, **Tile** will
+create a grid that has roughly the same number of rows and columns.
+""" % globals())
 
     def add_image(self, can_remove=True):
         '''Add an image + associated questions and buttons'''
@@ -209,8 +208,7 @@ class Tile(cpm.Module):
 
         group.append("input_image_name",
                      cps.ImageNameSubscriber("Select an additional image to tile",
-                                             cps.NONE, doc="""
-                                            Select an additional image to tile?"""))
+                                             cps.NONE, doc="""Select an additional image to tile?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
         self.additional_images.append(group)

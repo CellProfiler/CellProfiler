@@ -1,64 +1,15 @@
 # coding=utf-8
-""" help.py - contains menu structures for help menus in CP
-"""
-
-#######################################################
-#
-# There are different windows in CP and many of them
-# have help categories that need their text populated.
-# This file holds that help. First, there are lists
-# of tuples where the first item in the tuple
-# is whatever goes into the menu and the second item
-# is either another list or it is
-# HTML text to be displayed.
-#
-# At the bottom of this file is the uber-dictionary which
-# has all of the help and that one is used when we generate
-# the HTML manual.
-#
-########################################################
-
-import logging
-import os.path
-
-import sys
-
-import cellprofiler.icons
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
-DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
 VIEW_OUTPUT_SETTINGS_BUTTON_NAME = "View output settings"
-
-logger = logging.getLogger(__name__)
-
-# For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
-# Also, Firefox doesn't like displaying the HTML image links using abs paths either.
-# So I have use relative ones. Should check this to see if works on the
-# compiled version
-try:
-    path = os.path.relpath(cellprofiler.icons.get_builtin_images_path())
-except:
-    if any([x == "--html" for x in sys.argv]) and sys.platform.startswith("win"):
-        if hasattr(sys, "frozen"):
-            drive = sys.argv[0][0]
-        else:
-            drive = __file__[0][0]
-        logger.warning(
-                ("Warning: HTML being written with absolute paths. You must\n"
-                 "change the current drive to %s: to get image links with\n"
-                 "relative paths.\n") % drive)
-    path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
 
 ####################################################
 #
 # Module icon references
 #
 ####################################################
-
-# General help references
-
 MODULE_HELP_BUTTON = 'module_help.png'
 MODULE_MOVEUP_BUTTON = 'module_moveup.png'
 MODULE_MOVEDOWN_BUTTON = 'module_movedown.png'
@@ -106,12 +57,12 @@ DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Named"""
 
+
 ##################################################
 #
 # Help for the main window
 #
 ##################################################
-
 LEGACY_LOAD_MODULES_HELP = """
 <p>Historically, two modules served the same functionality as the current project structure:
 <b>LoadImages</b> and <b>LoadData</b>.
@@ -259,7 +210,7 @@ overwrite?</i> box to the right.</p>
 that even though the analysis completes, CellProfiler continues to use
 an inordinate amount of your CPU and RAM. This is because the output file is written
 after the analysis is completed and can take a very long time for a lot of measurements.
-If you do not need this file and/or notice this behavior, select "<i>%(DO_NOT_WRITE_MEASUREMENTS)s</i>"
+If you do not need this file and/or notice this behavior, select "<i>Do not write measurements</i>"
 from the "Measurements file format" drop-down box.</p>""" % globals()
 
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """\
@@ -1112,8 +1063,6 @@ module help.</p>""" % globals()
 # Help for the module figure windows
 #
 ####################################################
-'''The help menu for the figure window'''
-
 MODULE_DISPLAY_MENU_BAR_HELP = """
 From the menu bar of each module display window, you have the following options:
 <ul>
@@ -1251,8 +1200,6 @@ FIGURE_HELP = (
     ("Using The Display Window Menu Bar", MODULE_DISPLAY_MENU_BAR_HELP),
     ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP),
     ("How To Use The Image Tools", MODULE_DISPLAY_IMAGE_TOOLS_HELP))
-
-WV_FIGURE_HELP = tuple(list(FIGURE_HELP))
 
 #########################################################
 #

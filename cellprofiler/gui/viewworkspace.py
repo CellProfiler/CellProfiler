@@ -226,7 +226,7 @@ class ViewWorkspace(object):
                 parent,
                 title="CellProfiler Workspace",
                 secret_panel_class=wx.lib.scrolledpanel.ScrolledPanel,
-                help_menu_items=cellprofiler.gui.help.WV_FIGURE_HELP)
+                help_menu_items=cellprofiler.gui.help.FIGURE_HELP)
         self.workspace = workspace
         self.ignore_redraw = False
         self.image_rows = []

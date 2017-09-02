@@ -118,7 +118,7 @@ plotted linearly.
 Select the color map for the density plot. See `this page`_ for pictures
 of the available colormaps.
 
-.. _this page: https://matplotlib.org/users/colormaps.html
+.. _this page: http://matplotlib.org/users/colormaps.html
 ''')
 
         self.title = cps.Text(

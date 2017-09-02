@@ -1445,6 +1445,8 @@ class Figure(wx.Frame):
 
                 hist_fig.figure.canvas.draw()
 
+            subplot.figure.tight_layout(w_pad=3.0)
+
             return subplot
         else:
             self.gridshow(x, y, image, title, colormap, colorbar)

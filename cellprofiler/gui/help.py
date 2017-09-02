@@ -1711,9 +1711,8 @@ MAIN_HELP = (
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),
     ("Using Your Output", (
         ("How Measurements are Named", MEASUREMENT_NOMENCLATURE_HELP),
-        ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
-        ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),
-    ("Troubleshooting Memory and Speed Issues", MEMORY_AND_SPEED_HELP),
+        ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP)
+    ("Troubleshooting Memory and Speed Issues", MEMORY_AND_SPEED_HELP))),
     ("Batch Processing", BATCHPROCESSING_HELP),
     ("Legacy Modules and Features", (
         ("Load Modules", LEGACY_LOAD_MODULES_HELP),

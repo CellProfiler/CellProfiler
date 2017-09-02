@@ -21,7 +21,7 @@ import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import USING_METADATA_HELP_REF
+from cellprofiler.modules._help import USING_METADATA_HELP_REF
 
 AGG_AVG = 'avg'
 AGG_MEDIAN = 'median'

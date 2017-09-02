@@ -68,7 +68,6 @@ measurements, see *Help > General Help > How Measurements Are Named*.
 See also **ExportToDatabase**.
 """
 
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF
 import logging
 
 logger = logging.getLogger(__name__)
@@ -87,12 +86,13 @@ from cellprofiler.setting import YES, NO
 from cellprofiler.measurement import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
 from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
+from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP
+from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
+    IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.preferences import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
@@ -171,7 +171,7 @@ within your data (for example, in file names).""")
                     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
 This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
-%(IO_WITH_METADATA_HELP_TEXT)s 
+%(IO_WITH_METADATA_HELP_TEXT)s
 
 %(USING_METADATA_TAGS_REF)s
 
@@ -197,7 +197,7 @@ Select *"%(NO)s"* to use filenames without prefixes (e.g. “Images.csv”).
         self.prefix = cps.Text(
                 "Filename prefix", "MyExpt_",
                 doc="""\
-(*Used only if “Add a prefix to file names?” is "%(YES)s"*) 
+(*Used only if “Add a prefix to file names?” is "%(YES)s"*)
 
 The text you enter here is prepended to the names of each file produced by
 **ExportToSpreadsheet**.
@@ -262,7 +262,7 @@ called “Mean\_Nuclei\_AreaShape\_Area”.
 
 You may not want to use **ExportToSpreadsheet** to calculate these
 measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on 
+measurements; doing so might exceed older versions of Excel’s limits on
 the number of columns (256).
 
 Keep in mind that if you chose to select the specific measurements to
@@ -280,7 +280,7 @@ called “Median\_Nuclei\_AreaShape\_Area”.
 
 You may not want to use **ExportToSpreadsheet** to calculate these
 measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on 
+measurements; doing so might exceed older versions of Excel’s limits on
 the number of columns (256).
 
 Keep in mind that if you chose to select the specific measurements to
@@ -298,7 +298,7 @@ called “StDev\_Nuclei\_AreaShape\_Area”.
 
 You may not want to use **ExportToSpreadsheet** to calculate these
 measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on 
+measurements; doing so might exceed older versions of Excel’s limits on
 the number of columns (256).
 
 Keep in mind that if you chose to select the specific measurements to

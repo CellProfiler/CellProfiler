@@ -20,11 +20,11 @@ of images/movies, you will need to do the following:
 
 -  Define each individual movie using metadata either contained within
    the image file itself or as part of the images nomenclature or folder
-   structure.  Please see the **Metadata** module for more details on metadata 
-   collection and usage. 
+   structure.  Please see the **Metadata** module for more details on metadata
+   collection and usage.
 -  Group the movies to make sure that each image sequence is handled
-   individually. Please see the **Groups** module for more details on the 
-   proper use of metadata for grouping. 
+   individually. Please see the **Groups** module for more details on the
+   proper use of metadata for grouping.
 
 For complete details, see *Help > Creating a Project > Loading Image Stacks and Movies*.
 
@@ -67,7 +67,7 @@ Available measurements
    frame of the object's life (or the movie ends, whichever comes
    first). At this point, the final age of the object is output; no
    values are stored for earlier frames.
-   
+
        |image0|  This value is useful if you want to plot a histogram of the
        object lifetimes; all but the final age can be ignored or filtered out.
 
@@ -105,21 +105,21 @@ tracking method:
 
 -  *LinkingDistance:* The difference between the propagated position of
    an object and the object to which it is matched.
-   
+
        |image1| A slowly decaying histogram of these distances indicates
        that the search radius is large enough. A cut-off histogram is a sign
        that the search radius is too small.
-       
+
 -  *StandardDeviation:* The Kalman filter maintains a running estimate
    of the variance of the error in estimated position for each model.
    This measurement records the linking distance divided by the standard
    deviation of the error when linking the object with its parent.
-   
+
        |image2| This value is multiplied by the
        "*Number of standard deviations for search radius*" setting to constrain the search
        distance. A histogram of this value can help determine if the
        "*Search radius limit, in pixel units (Min,Max)*" setting is appropriate.
-       
+
 -  *GapLength:* The number of frames between an object and its parent.
    For instance, an object in frame 3 with a parent in frame 1 has a gap
    length of 2.
@@ -196,7 +196,7 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 
 # if neighmovetrack is not available remove it from options
 TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
@@ -318,20 +318,20 @@ is most consistent from frame to frame of your movie.
    objects in the previous frame with those in the current frame. The
    object with the greatest amount of spatial overlap will be assigned
    the same number (label).
-   
+
        |image0| Recommended when there is a high degree of overlap of an
        object from one frame to the next, which is the case for movies with
        high frame rates relative to object motion.
-   
+
 -  *Distance:* Compares the distance between each identified object in
    the previous frame with that of the current frame. The closest
    objects to each other will be assigned the same number (label).
    Distances are measured from the perimeter of each object.
-   
+
        |image1| Recommended for cases where the objects are not very
        crowded but where *Overlap* does not work sufficiently well, which is
        the case for movies with low frame rates relative to object motion.
-       
+
 -  *Measurements:* Compares each object in the current frame with
    objects in the previous frame based on a particular feature you have
    measured for the objects (for example, a particular intensity or
@@ -348,11 +348,11 @@ is most consistent from frame to frame of your movie.
    directions of its "neighbors". The problem is formulated as an
    optimization problem and solved using LAP algorithm (same as in LAP
    method).
-   
+
        |image2| Recommended for cases where the objects are moving in
        synchronized way. In this case it may work better than *LAP*. This
        approach works well for yeast colonies grown on agar.
-   
+
 -  *LAP:* Uses the linear assignment problem (LAP) framework. The linear
    assignment problem (LAP) algorithm (*Jaqaman et al., 2008*) addresses
    the challenges of high object density, motion heterogeneity,
@@ -413,7 +413,7 @@ is most consistent from frame to frame of your movie.
 
       -  The `R <http://cran.r-project.org/>`__ open-source software
          package has analysis and visualization tools that can query a
-         database. 
+         database.
       -  `CellProfiler Tracer <http://cellprofiler.org/tracer/>`__ is a
          version of CellProfiler Analyst that contains tools for
          visualizing time-lapse data that has been exported using the
@@ -533,7 +533,7 @@ constrains the search radius to reasonable values.
        the data.
     -  The lower limit should be set to a radius (in pixels) that is a
        reasonable displacement for any object from one frame to the next.
-    
+
        -  If you notice that a frame-to-frame linkage is not being made for
           a steadily-moving object, it may be that this value needs to be
           *decreased* such that the displacement falls above the lower
@@ -542,7 +542,7 @@ constrains the search radius to reasonable values.
           being made for a roughly stationary object, this value may need to
           be *increased* so that the small displacement error is offset by
           the object diameter.
-    
+
     -  The upper limit should be set to the maximum reasonable displacement
        (in pixels) under any circumstances. Hence, if you notice that a
        frame-to-frame linkage is not being made in the case of a unusually
@@ -578,7 +578,7 @@ missing frames). The cost of bridging a gap is the distance, in
 pixels, of the displacement of the object between frames.
 
     |image0|  Recommendations:
-    
+
     -  Set the gap closing cost higher if tracks from objects in previous
        frames are being erroneously joined, across a gap, to tracks from
        objects in subsequent frames.
@@ -606,7 +606,7 @@ The split cost is roughly measured in pixels. The split alternative cost
 is (conceptually) subtracted from the cost of making the split.
 
     |image0|  Recommendations:
-    
+
     -  The split cost should be set lower if objects are being split that
        should not be split.
     -  The split cost should be set higher if objects that should be split
@@ -634,7 +634,7 @@ The merge cost is measured in pixels. The merge alternative cost is
 (conceptually) subtracted from the cost of making the merge.
 
     |image0|  Recommendations:
-    
+
     -  Set the merge alternative cost lower if objects are being merged when
        they should otherwise be kept separate.
     -  Set the merge alternative cost higher if objects that are not merged
@@ -659,7 +659,7 @@ inequality ratio of the parent and daughters (the larger of
 Area(daughters) / Area(parent) and Area(parent) / Area(daughters)).
 
     |image0|  Recommendations:
-    
+
     -  An accepted mitosis closes two gaps, so all things being equal, the
        mitosis alternative cost should be approximately double the gap
        closing cost.
@@ -683,7 +683,7 @@ This setting acts as a filter for unreasonably large displacements
 during the second phase.
 
     |image0|  Recommendations:
-    
+
     -  The maximum gap displacement should be set to roughly the maximum
        displacement of an object’s center from frame to frame. An object
        that makes large frame-to-frame jumps should have a higher value for
@@ -712,7 +712,7 @@ merge score has two components:
    object.
 
     |image0|  Recommendations:
-    
+
     -  The LAP algorithm will run more slowly with a higher maximum merge
        score value.
     -  Objects that would have been merged at a lower maximum merge score
@@ -732,7 +732,7 @@ split score has two components:
 -  The distances between the original and resulting objects.
 
     |image0|  Recommendations:
-    
+
     -  The LAP algorithm will run more slowly with a maximum split score
        value.
     -  Objects that would have been split at a lower maximum split score
@@ -752,7 +752,7 @@ gaps occur when an image is mis-segmented and identification fails to
 find an object in one or more frames.
 
     |image0|  Recommendations:
-    
+
     -  Set the maximum gap higher in order to have more chance of correctly
        recapturing an object after erroneously losing the original for a few
        frames.
@@ -791,7 +791,7 @@ Increasing this value leads to more cells (from t) being matched with
 cells (from t+1) rather then classified as missing.
 
     |image0|  Recommendations:
-    
+
     -  A value which is too high might cause incorrect cells to match
        between the frames.
     -  A value which is too low might make the algorithm not to match cells
@@ -816,7 +816,7 @@ which transiently appear and disappear, such as the results of a
 mis-segmentation.
 
     |image0|  Recommendations:
-    
+
     -  This operation does not actually delete the filtered object, but
        merely removes its label from the tracked object list; the filtered
        object’s per-object measurements are retained.

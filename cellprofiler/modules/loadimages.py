@@ -50,9 +50,6 @@ Measurements made by this module
 
 See also the **Input** modules, **LoadData**, **LoadSingleImage**,
 **SaveImages**.
-
-.. _*Where to extract metadata*: #where_to_extract
-.. _*Regular expression that finds metadata in the file name*: #regular_expression
 """
 
 import cgi

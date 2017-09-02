@@ -1109,7 +1109,7 @@ class CPFrame(wx.Frame):
         result = save_dlg.ShowModal()
 
         if result == wx.ID_OK:
-            with codecs.open(save_dlg.GetPath(), "w+", encoding="utf-8") as fd:
+            with codecs.open(save_dlg.GetPath(), "w", encoding="utf-8") as fd:
                 fd.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />")
                 fd.write(help_text)
 

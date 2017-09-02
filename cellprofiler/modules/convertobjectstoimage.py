@@ -69,7 +69,7 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
             -  *uint16:* Assigns each object a different number, from 1 to 65535
                (the numbers that you can put in a 16-bit integer) and numbers all
                pixels in each object with the object’s number. This format can be
-               written out as a .mat or .tiff file if you want to process the label
+               written out as a .npy or .tiff file if you want to process the label
                matrix image using another program.
             You can choose *Color* with a *Gray* colormap to produce jumbled gray
             objects."""

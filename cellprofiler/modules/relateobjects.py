@@ -1,10 +1,10 @@
 # coding=utf-8
 
 """
-Relate Objects
-==============
+RelateObjects
+=============
 
-**Relate Objects** assigns relationships; all objects (e.g. speckles)
+**RelateObjects** assigns relationships; all objects (e.g. speckles)
 within a parent object (e.g. nucleus) become its children.
 
 This module allows you to associate *child* objects with *parent*
@@ -17,6 +17,8 @@ touching a parent object. If an child object is touching multiple parent
 objects, the object will be assigned to the parent with maximal overlap.
 For an alternate approach to assigning parent/child relationships,
 consider using the **MaskObjects** module.
+
+This module supports 2D and 3D objects
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -32,7 +34,7 @@ Measurements made by this module
 **Child object measurements:**
 
 -  *Parent:* The label number of the parent object, as assigned by an
-   **Identify** module.
+   **Identify** or **Watershed** module.
 
 See also: **SplitOrMergeObjects**, **MaskObjects**.
 """
@@ -87,34 +89,32 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
         self.x_name.text = "Parent objects"
 
-        self.x_name.doc = """
-        Parent objects are defined as those objects which encompass the child object.
-        For example, when relating speckles to the nuclei that contains them, the nuclei are the parents.
+        self.x_name.doc = """\
+Parent objects are defined as those objects which encompass the child object.
+For example, when relating speckles to the nuclei that contains them, the nuclei are the parents.
         """
 
         self.y_name = cellprofiler.setting.ObjectNameSubscriber(
             "Child objects",
-            doc="""
-            Child objects are defined as those objects contained within the parent object. For example, when relating
-            speckles to the nuclei that contains them, the speckles are the children.
+            doc="""\
+Child objects are defined as those objects contained within the parent object. For example, when relating
+speckles to the nuclei that contains them, the speckles are the children.
             """
         )
 
         self.find_parent_child_distances = cellprofiler.setting.Choice(
             "Calculate child-parent distances?",
             D_ALL,
-            doc="""
-            Choose the method to calculate distances of each child to its parent.
-            <ul>
-                <li><i>{D_NONE}:</i> Do not calculate any distances.</li>
-                <li><i>{D_MINIMUM}:</i> The distance from the centroid of the child object to the closest
-                perimeter point on the parent object.</li>
-                <li><i>{D_CENTROID}:</i> The distance from the centroid of the child object to the centroid of
-                the parent.</li>
-                <li><i>{D_BOTH}:</i> Calculate both the <i>{D_MINIMUM}</i> and <i>{D_CENTROID}</i>
-                distances.</li>
-            </ul>
-            """.format(**{
+            doc="""\
+Choose the method to calculate distances of each child to its parent.
+
+-  *{D_NONE}:* Do not calculate any distances.
+-  *{D_MINIMUM}:* The distance from the centroid of the child object to
+   the closest perimeter point on the parent object.
+-  *{D_CENTROID}:* The distance from the centroid of the child object
+   to the centroid of the parent.
+-  *{D_BOTH}:* Calculate both the *{D_MINIMUM}* and *{D_CENTROID}*
+   distances.""".format(**{
                 "D_NONE": D_NONE,
                 "D_MINIMUM": D_MINIMUM,
                 "D_CENTROID": D_CENTROID,
@@ -125,17 +125,19 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
         self.wants_step_parent_distances = cellprofiler.setting.Binary(
             "Calculate distances to other parents?",
             False,
-            doc="""
-            <i>(Used only if calculating distances)</i><br>
-            Select <i>{YES}</i> to calculate the distances of the child objects to some other objects. These
-            objects must be either parents or children of your parent object in order for this module to
-            determine the distances. For instance, you might find "Nuclei" using <b>IdentifyPrimaryObjects</b>,
-            find "Cells" using <b>IdentifySecondaryObjects</b> and find "Cytoplasm" using
-            <b>IdentifyTertiaryObjects</b>. You can use <b>Relate</b> to relate speckles to cells and then
-            measure distances to nuclei and cytoplasm. You could not use <b>RelateObjects</b> to relate
-            speckles to cytoplasm and then measure distances to nuclei, because nuclei is neither a direct
-            parent or child of cytoplasm.
-            """.format(**{
+            doc="""\
+*(Used only if calculating distances)*
+
+Select "*{YES}*" to calculate the distances of the child objects to some
+other objects. These objects must be either parents or children of your
+parent object in order for this module to determine the distances. For
+instance, you might find “Nuclei” using **IdentifyPrimaryObjects**, find
+“Cells” using **IdentifySecondaryObjects** and find “Cytoplasm” using
+**IdentifyTertiaryObjects**. You can use **Relate** to relate speckles
+to cells and then measure distances to nuclei and cytoplasm. You could
+not use **RelateObjects** to relate speckles to cytoplasm and then
+measure distances to nuclei, because nuclei is neither a direct parent
+or child of cytoplasm.""".format(**{
                 "YES": cellprofiler.setting.YES
             })
         )
@@ -153,13 +155,13 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
         self.wants_per_parent_means = cellprofiler.setting.Binary(
             "Calculate per-parent means for all child measurements?",
             False,
-            doc="""
-            Select <i>{YES}</i> to calculate the per-parent mean values of every upstream measurement made with
-            the children objects and stores them as a measurement for the parent; the nomenclature of this new
-            measurements is "Mean_&lt;child&gt;_&lt;category&gt;_&lt;feature&gt;". For this reason, this module
-            should be placed <i>after</i> all <b>Measure</b> modules that make measurements of the children
-            objects.
-            """.format(**{
+            doc="""\
+Select "*{YES}*" to calculate the per-parent mean values of every upstream
+measurement made with the children objects and stores them as a
+measurement for the parent; the nomenclature of this new measurements is
+“Mean_<child>_<category>_<feature>”. For this reason, this module
+should be placed *after* all **Measure** modules that make measurements
+of the children objects.""".format(**{
                 "YES": cellprofiler.setting.YES
             })
         )
@@ -173,12 +175,13 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
                 "Parent name",
                 [cellprofiler.setting.NONE],
                 choices_fn=self.get_step_parents,
-                doc="""
-                <i>(Used only if calculating distances to another parent)</i><br>
-                Choose the name of the other parent. The <b>RelateObjects</b> module will measure the distance from
-                this parent to the child objects in the same manner as it does to the primary parents. You can only
-                choose the parents or children of the parent object.
-                """
+                doc="""\
+*(Used only if calculating distances to another parent)*
+
+Choose the name of the other parent. The **RelateObjects** module will
+measure the distance from this parent to the child objects in the same
+manner as it does to the primary parents. You can only choose the
+parents or children of the parent object."""
             )
         )
 

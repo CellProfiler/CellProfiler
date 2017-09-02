@@ -11,6 +11,8 @@ import scipy.signal
 
 
 class MedianFilter(cellprofiler.module.ImageProcessing):
+    category = "Advanced"
+
     module_name = "MedianFilter"
 
     variable_revision_number = 1

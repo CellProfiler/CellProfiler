@@ -68,17 +68,24 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             pipeline_filename = href[12:]
 
             try:
-                import cellprofiler.modules.loaddata
-                fd = urllib.urlopen(pipeline_filename)
+                import cellprofiler
+
+                # Try loading an example pipeline corresponding to the running version of CellProfiler.
+                fd = urllib.urlopen(pipeline_filename.format(cellprofiler.__version__))
+                if fd.code < 200 or fd.code > 200:
+                    # Try loading the example pipeline from CellProfiler/examples master branch.
+                    fd = urllib.urlopen(pipeline_filename.format("master"))
+
                 if fd.code < 200 or fd.code > 299:
                     wx.MessageBox(
                             "Sorry, the link, \"%s\" is broken, please contact the webmaster" %
-                            pipeline_filename,
+                            pipeline_filename.format("master"),
                             caption="Unable to access pipeline via internet",
                             style=wx.OK | wx.ICON_INFORMATION)
                     return
 
                 def fn(fd=fd):
+                    import cellprofiler.modules.loaddata
                     pipeline = wx.GetApp().frame.pipeline
                     pipeline.load(fd)
                     for module in pipeline.modules():
@@ -95,14 +102,10 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                             '', wx.ICON_INFORMATION)
 
                 wx.CallAfter(fn)
-                # try:
-                # wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(pipeline_filename))
-                # wx.CallAfter(wx.MessageBox,
-                # 'Now that you have loaded an example pipeline, press the "Analyze images" button to access and process a small image set from the CellProfiler website so you can see how CellProfiler works.', '', wx.ICON_INFORMATION)
             except:
                 wx.MessageBox(
                         'CellProfiler was unable to load %s' %
-                        pipeline_filename, "Error loading pipeline",
+                        pipeline_filename.format("master"), "Error loading pipeline",
                         style=wx.OK | wx.ICON_ERROR)
         else:
             newpage = content.find_link(href)

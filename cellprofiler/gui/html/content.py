@@ -74,7 +74,7 @@ are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;but
     <tr align="center"><td><i>Intensity</i></td><td> In fluorescence assays, the intensity of a pixel is related to the substance labeled with
     a fluorescence marker at that location. The maximal, minimal, mean, and integrated (total) intensity of each marker
     can be measured as well as correlations in intensity between channels.</td>
-    <td><b>MeasureObjectIntensity</b>, <b>MeasureImageIntensity</b>, <b>MeasureObjectRadialDistribution</b>, <b>MeasureCorrelation</b></td></tr>
+    <td><b>MeasureObjectIntensity</b>, <b>MeasureImageIntensity</b>, <b>MeasureObjectRadialDistribution</b>, <b>MeasureColocalization</b></td></tr>
     <tr align="center"><td><i>Texture</i></td><td> These quantities characterize spatial smoothness and regularity across an object, and are often useful
     for characterizing the fine patterns of localization.</td><td><b>MeasureTexture</b></td></tr>
     <tr align="center"><td><i>Clustering</i></td><td> Spatial relationships can be characterized by adjacency descriptors, such as the number of neighboring
@@ -148,7 +148,7 @@ startup_main = '''<html>
 </tr>
 <tr>
     <td width="1">&nbsp;</td>
-    <td colspan="2"><a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe">Load</a> an example pipeline, then click on the "Analyze Images" button.</td>
+    <td colspan="2"><a href="loadexample:https://raw.githubusercontent.com/CellProfiler/examples/{}/ExampleFly/ExampleFlyURL.cppipe">Load</a> an example pipeline, then click on the "Analyze Images" button.</td>
 </tr>
 <tr>
     <td colspan="3"><b><font size="+2">Build your own pipeline</font></b></td>

@@ -57,7 +57,6 @@ setuptools.setup(
         "inflect",
         "javabridge",
         "joblib",
-        "libtiff",
         "mahotas",
         "matplotlib",
         "MySQL-python",

@@ -18,15 +18,13 @@
 #
 ########################################################
 
-import cellprofiler.icons
 import logging
-import os
-import sys
-import cellprofiler.icons
-from cellprofiler.setting import YES, NO
 import os.path
 
-# from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
+import sys
+
+import cellprofiler.icons
+
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
@@ -60,10 +58,6 @@ except:
 ####################################################
 
 # General help references
-
-REFRESH_BUTTON = 'folder_refresh.png'
-BROWSE_BUTTON = 'folder_browse.png'
-CREATE_BUTTON = 'folder_create.png'
 
 MODULE_HELP_BUTTON = 'module_help.png'
 MODULE_MOVEUP_BUTTON = 'module_moveup.png'
@@ -99,19 +93,6 @@ PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 OMERO_IMAGEID_PIC = 'OMERO_imageID_screenshot.png'
 OMERO_LOGIN_PIC = 'OMERO_login_screenshot.png'
 
-# Module specific help
-PROTIP_RECOMEND_ICON = "thumb-up.png"
-PROTIP_AVOID_ICON = "thumb-down.png"
-TECH_NOTE_ICON = "gear.png"
-IMAGES_FILELIST_BLANK = "Images_FilelistPanel_Blank.png"
-IMAGES_FILELIST_FILLED = "Images_FilelistPanel_Filled.png"
-MEASUREOBJSIZESHAPE_ECCENTRICITY = 'MeasureObjectSizeShape_Eccentricity.png'
-IMAGES_USING_RULES_ICON = 'Images_UsingRules.png'
-METADATA_DISPLAY_TABLE = 'Metadata_ExampleDisplayTable.png'
-NAMESANDTYPES_DISPLAY_TABLE = 'NamesAndTypes_ExampleDisplayTable.png'
-GROUPS_DISPLAY_TABLE = 'Groups_ExampleDisplayTable.png'
-EXAMPLE_DAPI_PIC = "dapi.png"
-EXAMPLE_GFP_PIC = "gfp.png"
 
 ####################################################
 #
@@ -122,37 +103,8 @@ BATCH_PROCESSING_HELP_REF = """Help > Batch Processing"""
 TEST_MODE_HELP_REF = """Help > Testing Your Pipeline"""
 IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools"""
 DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
-PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Named"""
-USING_METADATA_HELP_REF = """Please see the <b>Metadata</b> module for more details on metadata collection and usage"""
-LOADING_IMAGE_SEQ_HELP_REF = """Help > Creating a Project > Loading Image Stacks and Movies"""
-
-USING_METADATA_TAGS_REF = """
-You can insert a previously defined metadata tag by either using:
-<ul><li>The insert key</li>
-<li>A right mouse button click inside the control</li>
-<li>In Windows, the Context menu key, which is between the Windows key and Ctrl key </li></ul>
-The inserted metadata tag will appear in green. To change a previously inserted metadata tag,
-navigate the cursor to just before the tag and either:
-<ul><li>Use the up and down arrows to cycle through possible values.</li>
-<li>Right-click on the tag to display and select the available values.</li></ul>"""
-
-USING_METADATA_GROUPING_HELP_REF = """Please see the <b>Groups</b> module for more details on the
-proper use of metadata for grouping"""
-
-from cellprofiler.setting import YES, NO
-
-RETAINING_OUTLINES_HELP = """Select <i>%(YES)s</i> to retain the outlines of the new objects
-for later use in the pipeline. For example, a common use is for quality control purposes by
-overlaying them on your image of choice using the <b>OverlayOutlines</b> module and then saving
-the overlay image with the <b>SaveImages</b> module.""" % locals()
-
-NAMING_OUTLINES_HELP = """
-<i>(Used only if the outline image is to be retained for later use in the pipeline)</i> <br>
-Enter a name for the outlines of the identified
-objects. The outlined image can be selected in downstream modules by selecting
-them from any drop-down image list."""
 
 ##################################################
 #
@@ -261,59 +213,6 @@ want grouped together.</li>
 </p>
 """ % globals()
 
-DEFAULT_IMAGE_FOLDER_HELP = """
-<p>Please note that the Default Input Folder will be deprecated in the future. The location
-of non-image files needed by some modules will be set to an absolute path
-in future versions of CellProfiler. For specifying the location of image files, please
-use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
-
-<p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
-CellProfiler and is accessible by pressing the "View output settings"
-button at the bottom of the pipeline panel. The folder designated as the
-<i>Default Input Folder</i> contains the input image or data files
-that you want to analyze. Several File Processing modules (e.g.,
-<b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images
-from this folder on a default basis unless you specify, within the module, an alternate,
-specific folder on your computer. Within modules, we recommend selecting the
-Default Input Folder as much as possible, so that your pipeline will
-work even if you transfer your images and pipeline to a different
-computer. If, instead, you type specific folder path names into a module's settings,
-your pipeline will not work on someone else's computer until you adjust those
-pathnames within each module.</p>
-
-<p>Use the <i>Browse</i> button <img src="memory:%(BROWSE_BUTTON)s">&nbsp;to specify
-the folder you would like to use as the Default Input Folder, or
-type the full folder path in the edit box. If you type a folder path that
-cannot be found, the message box below will indicate this fact until you correct the problem.
-If you want to specify a folder that does not yet exist, type the desired name and
-click on the <i>New folder</i> button <img src="memory:%(CREATE_BUTTON)s">.
-The folder will be created according to the pathname you have typed.</p>""" % globals()
-
-DEFAULT_OUTPUT_FOLDER_HELP = """
-<p>Please note that the Default Output Folder will be deprecated in the future. The location
-of files written by the various output modules will be set to an absolute path
-in future versions of CellProfiler.</p>
-
-<p>The <i>Default Output Folder</i> is accessible by pressing the "View output settings"
-button at the bottom of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
-store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or
-<b>ExportToSpreadsheet</b>) provide the option of saving analysis results to
-this folder on a default basis unless you specify, within the module, an alternate,
-specific folder on your computer. Within modules, we recommend selecting the
-Default Output Folder as much as possible, so that your pipeline will
-work even if you transfer your images and pipeline to a different
-computer. If, instead, you type specific folder path names into a module's settings,
-your pipeline will not work on someone else's computer until you adjust those
-pathnames within each module.</p>
-
-<p>Use the <i>Browse</i> button (to the right of the text box) to specify
-the folder you would like to use as the Default Output Folder, or
-type the full folder path in the edit box. If you type a folder path that
-cannot be found, the message box below will indicate this fact until you correct the
-problem. If you want to specify a folder that does not yet exist, type the desired name and
-click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon.
-The folder will be created according to the pathname you have typed.</p>"""
-
 USING_THE_OUTPUT_FILE_HELP = """
 <p>Please note that the output file will be deprecated in the future. This setting
 is temporarily present for those needing HDF5 or MATLAB formats, and will be moved to
@@ -363,164 +262,93 @@ after the analysis is completed and can take a very long time for a lot of measu
 If you do not need this file and/or notice this behavior, select "<i>%(DO_NOT_WRITE_MEASUREMENTS)s</i>"
 from the "Measurements file format" drop-down box.</p>""" % globals()
 
-NEW_FEATURES_HELP = """
-A number of new features have been incorporated into this re-engineered Python
-version of CellProfiler:
-<h3>Interface</h3>
-<ul>
-<li><i>Resizable user interface: </i>The main CellProfiler interface can now be resized
-by dragging the window corner.</li>
-<li><i>Help for individual module settings:</i> Every setting in every module now has
-a help button that you can click to display information and advice for that setting.</li>
-<li><i>Settings verification:</i> CellProfiler constantly checks for setting values
-that are not allowed, and immediately flags them for you.</li>
-<li><i>Context-dependent module settings</i>: Prior versions of CellProfiler
-displayed all settings for each module, whether or not the values were necessary,
-given existing choices for other settings. Now, only those settings
-you require are displayed, simplifying the interface.</li>
-<li><i>Test mode for assay development:</i> This feature allows you to
-preview the effect of a module setting on your data. You can step backward or forward
-in the pipeline as you modify settings, optimizing your results prior to running an
-actual analysis.</li>
-<li><i>Unlimited number of images/objects as module input:</i> Some modules can accept an arbitrary number
-of images or objects as input, and you can dynamically add or remove any of these inputs as needed.
-For example, you can specify any number of single images in LoadSingleImage; previously,
-the module could accept only three input images at a time. For example, in OverlayOutlines, you can specify that any number of outlines be
-overlaid on an image; previously, you would have had to string multiple OverlayOutline modules
-together.</li>
-<li><i>Image grouping:</i> Images which share common metadata tags, whether
-provided in the filename or in an accompanying text data file, can be processed together.
-This is useful for any situation in which the images are organized
-in groups  and each group needs to be analyzed as an individual set, such as
-illumination correction for multiple plates.</li>
-<li><i>Module drag and drop:</i> You can drag and drop selected modules
-within a pipeline or into another instance of CellProfiler, keeping their associated
-settings intact.</li>
-<li><i>Listing of recent pipelines:</i> A selectable list of recently used pipelines
-is available from the menu bar, for easy access.</li>
-<li><i>Figure display choice:</i> Easier access to which module figure display windows are shown.
-This functionality is now controlled within the pipeline, and is saved as part of the pipeline.
-<li><i>Context menus:</i>  The pipeline panel responds to right-clicks, providing
-easy access to module manipulation or help.</li>
-<li><i>Error handling:</i> This feature sends bug reports (stack traces) to our developers.
-<li><i>Better access for developers:</i> We are providing a developer's guide
-as a practical introduction for programming in the CellProfiler environment, an
-email list, and wiki, in addition to the available user <a href="http://cellprofiler.org/forum/viewforum.php?f=15">forum</a>.
-</ul>
+WHEN_CAN_I_USE_CELLPROFILER_HELP = """\
+Most laboratories studying biological processes and human disease use
+light/fluorescence microscopes to image cells and other biological
+samples. There is strong and growing demand for software to analyze
+these images, as automated microscopes collect images faster than can be
+examined by eye and the information sought from images is increasingly
+quantitative and complex.
 
-<h3>Module improvements</h3>
-<ul>
-<li><i>Improved Otsu thresholding:</i> Choose two- or three-class thresholding to handle
-images where there might be an intermediate intensity level between foreground and
-background.</li>
-<li>Secondary object identification now permits discarding of objects touching
-the image border, along with the associated primary objects.</li>
-<li>Filtering objects by measurements now permits a set of objects to be filtered
-with any number of measurements. </li>
-<li><i>Masking of images/objects:</i> You can create masks for use with both
-images and objects such that image/object measurements will include only those
-regions within the masked area.</li>
-<li><i>Improved loading of text information:</i> Previously, you could load only a
-limited amount of annotation relevant to your images, via a text file. Now you can use
-comma-delimited files to load tables of metadata, in addition to lists of input
-images for analysis.</li>
-<li><i>Convex hull</i> has been included as an image morphological operation.</li>
-<li>A new module, MeasureNeurons, has been added, which measures the number
-of trunks and branches for each neuron in an image.</li>
-<li><i>Detection of new features:</i> Neurites can be extracted from images of neurons.
-Branching points of line segments can be found as an image morphological operation.
-Also, "dark holes" (dark spots surrounded bright rings) can be detected. </li>
-<li><i>Improvements to object tracking:</i> A new tracking algorithm has been added
-to the TrackObjects module which is capable of bridging temporal gaps in trajectories
-and accounting for splitting/merging events.</li>
-<li><i>Per-object data exporting:<i> Object data can be exported to a database as a single table containing
-all user-defined object measurements, or as separate tables, one for each object.
-<li><i>SQLite support:</i> Data can be exported in SQLite, a
-self-contained database format. Users can create their own local databases and
-no longer need access to a separate database server. Because CellProfiler
-Analyst also supports SQLite, any user can access CellProfiler Analyst's
-suite of data exploration and machine-leaning tools without installing a complicated database server.</li>
-</ul>
-"""
+CellProfiler is a versatile, open-source software tool for quantifying
+data from biological images, particularly in high-throughput
+experiments. CellProfiler is designed for modular, flexible,
+high-throughput analysis of images, measuring size, shape, intensity,
+and texture of every cell (or other object) in every image. Using the
+point-and-click graphical user interface (GUI), users construct an image
+analysis “pipeline”, a sequential series of modules that each perform an
+image processing function such as illumination correction, object
+identification (segmentation), and object measurement. Users mix and
+match modules and adjust their settings to measure the phenotype of
+interest. While originally designed for high-throughput images, it is
+equally appropriate for low-throughput assays as well (i.e., assays of <
+100 images).
 
-WHEN_CAN_I_USE_CELLPROFILER_HELP = """
+CellProfiler can extract valuable biological information from images
+quickly while increasing the objectivity and statistical power of
+assays. It helps researchers approach a variety of biological questions
+quantitatively, including standard assays (e.g., cell count, size,
+per-cell protein levels) as well as complex morphological assays (e.g.,
+cell/organelle shape or subcellular patterns of DNA or protein
+staining).
 
-<p>Most laboratories studying biological processes and human disease use
-light/fluorescence microscopes to image cells and other biological samples. There
-is strong and growing demand for software to analyze these images, as automated
-microscopes collect images faster than can be examined by eye and the information
-sought from images is increasingly quantitative and complex.</p>
+The wide variety of measurements produced by CellProfiler serves as
+useful “raw material” for machine learning algorithms. CellProfiler’s
+companion software, CellProfiler Analyst, has an interactive machine
+learning tool called Classifier which can learn to recognize a phenotype
+of interest based on your guidance. Once you complete the training
+phase, CellProfiler Analyst will score every object in your images based
+on CellProfiler’s measurements. CellProfiler Analyst also contains tools
+for the interactive visualization of the data produced by CellProfiler.
 
-<p>CellProfiler is a versatile, open-source software tool for quantifying data
-from biological images, particularly in high-throughput experiments. CellProfiler
-is designed for modular, flexible, high-throughput analysis of images, measuring
-size, shape, intensity, and texture of every cell (or other object) in every image.
-Using the point-and-click graphical user interface (GUI), users construct an image
-analysis "pipeline", a sequential series of modules that each perform
-an image processing function such as illumination correction, object identification
-(segmentation), and object measurement. Users mix and match modules and adjust
-their settings to measure the phenotype of interest. While originally designed for
-high-throughput images, it is equally appropriate for low-throughput assays as
-well (i.e., assays of &lt; 100 images).</p>
+In summary, CellProfiler contains:
 
-<p>CellProfiler can extract valuable biological information from images quickly
-while increasing the objectivity and statistical power of assays. It helps researchers
-approach a variety of biological questions quantitatively, including standard
-assays (e.g., cell count, size, per-cell protein levels) as well as complex
-morphological assays (e.g., cell/organelle shape or subcellular patterns of DNA
-or protein staining).</p>
+-  Advanced algorithms for image analysis that are able to accurately
+   identify crowded cells and non-mammalian cell types.
+-  A modular, flexible design allowing analysis of new assays and
+   phenotypes.
+-  Open-source code so the underlying methodology is known and can be
+   modified or improved by others.
+-  A user-friendly interface.
+-  The capability to make use of clusters of computers when available.
+-  A design that eliminates the tedium of the many steps typically
+   involved in image analysis, many of which are not easily transferable
+   from one project to another (for example, image formatting, combining
+   several image analysis steps, or repeating the analysis with slightly
+   different parameters).
 
-<p>The wide variety of measurements produced by CellProfiler serves as useful "raw material"
-for machine learning algorithms. CellProfiler's companion software, CellProfiler Analyst,
-has an interactive machine learning tool called Classifier which can learn to recognize a
-phenotype of interest based on your guidance. Once you complete the training phase,
-CellProfiler Analyst will score every object in your images based on CellProfiler's
-measurements.  CellProfiler Analyst also contains tools for the interactive visualization
-of the data produced by CellProfiler.</p>
+References
+^^^^^^^^^^
 
-<p>In summary, CellProfiler contains:
-<ul>
-<li>Advanced algorithms for image analysis that are able to accurately identify
-crowded cells and non-mammalian cell types.</li>
-<li>A modular, flexible design allowing analysis of new assays and phenotypes.</li>
-<li>Open-source code so the underlying methodology is known and can be modified
-or improved by others.</li>
-<li>A user-friendly interface.</li>
-<li>The capability to make use of clusters of computers when available.</li>
-<li>A design that eliminates the tedium of the many steps typically involved in
-image analysis, many of which are not easily transferable from one project to
-another (for example, image formatting, combining several image analysis steps,
-or repeating the analysis with slightly different parameters).</li>
-</ul>
-</p>
+For a full list of references, visit our `citation`_ page.
 
+-  Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
+   Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM
+   (2006) “CellProfiler: image analysis software for identifying and
+   quantifying cell phenotypes” *Genome Biology* 7:R100 (`link`_)
+-  Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V,
+   Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) “Improved
+   structure, function, and compatibility for CellProfiler: modular
+   high-throughput image analysis software” *Bioinformatics*
+   27(8):1179-1180
+   (`link <http://dx.doi.org/10.1093/bioinformatics/btr095>`__)
+-  Lamprecht MR, Sabatini DM, Carpenter AE (2007) “CellProfiler: free,
+   versatile software for automated biological image analysis”
+   *Biotechniques* 42(1):71-75.
+   [`link <http://dx.doi.org/10.2144/000112257>`__)
+-  Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J,
+   Root D, Golland P, Sabatini DM (2009) “Scoring diverse cellular
+   morphologies in image-based screens with iterative feedback and
+   machine learning” *PNAS* 106(6):1826-1831
+   (`link <http://dx.doi.org/10.1073/pnas.0808843106>`__)
+-  Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM,
+   Golland P, Carpenter AE (2008) “CellProfiler Analyst: data
+   exploration and analysis software for complex image-based screens”
+   *BMC Bioinformatics* 9(1):482
+   (`link <http://dx.doi.org/10.1186/1471-2105-9-482>`__)
 
-<h5>References</h5>
-<p>For a full list of references, visit our
-<a href="http://www.cellprofiler.org/citations.html">citation</a> page.</p>
-<ul>
-<li>Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
-Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM (2006)
-"CellProfiler: image analysis software for identifying and quantifying cell
-phenotypes" <i>Genome Biology</i> 7:R100
-(<a href="http://dx.doi.org/10.1186/gb-2006-7-10-r100">link</a>)</li>
-<li>Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V,
-Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) "Improved structure,
-function, and compatibility for CellProfiler: modular high-throughput image
-analysis software" <i>Bioinformatics</i> 27(8):1179-1180
-(<a href="http://dx.doi.org/10.1093/bioinformatics/btr095">link</a>)</li>
-<li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) "CellProfiler: free, versatile
-software for automated biological image analysis" <i>Biotechniques</i>
-42(1):71-75. [<a href="http://dx.doi.org/10.2144/000112257">link</a>)</li>
-<li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D,
-Golland P, Sabatini DM (2009) "Scoring diverse cellular morphologies in image-based
-screens with iterative feedback and machine learning" <i>PNAS</i> 106(6):1826-1831
-(<a href="http://dx.doi.org/10.1073/pnas.0808843106">link</a>)</li>
-<li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P,
-Carpenter AE (2008) "CellProfiler Analyst: data exploration and analysis software for
-complex image-based screens" <i>BMC Bioinformatics</i> 9(1):482
-(<a href="http://dx.doi.org/10.1186/1471-2105-9-482">link</a>)</li>
-</ul>
+.. _citation: http://www.cellprofiler.org/citations.html
+.. _link: http://dx.doi.org/10.1186/gb-2006-7-10-r100
 """
 
 BUILDING_A_PIPELINE_HELP = """
@@ -642,76 +470,6 @@ using a <b>SaveImages</b> module.</p>
 data in a format you prefer. See <i>%(USING_YOUR_OUTPUT_REF)s</i> for more details.</p>
 """ % globals()
 
-REGEXP_HELP_REF = """
-Patterns are specified using
-combinations of metacharacters and literal characters. There are a few
-classes of metacharacters, partially listed below. Some helpful links follow:
-<ul>
-<li>A more extensive explanation of regular expressions can be found
-<a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a></li>
-<li>A helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a></li>
-<li><a href="http://pythex.org/">Pythex</a> provides quick way to test your regular expressions. Here is an
-<a href="http://pythex.org/?regex=Channel%5B1-2%5D-%5B0-9%5D%7B2%7D-(%3FP%3CWellRow%3E%5BA-H%5D)-(%3FP%3CWellColumn%3E%5B0-9%5D%7B2%7D)%5C.tif&test_string=Channel1-01-A-01.tif&ignorecase=0&multiline=0&dotall=0&verbose=0">example</a>
-to capture information from a common microscope nomenclature.</li>
-</ul>
-
-<p>The following metacharacters match exactly one character from its respective set of characters:<br><br>
-<table border="1">
-<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
-<tr><td>.</td><td>Any character</td></tr>
-<tr><td>[]</td><td>Any character contained within the brackets</td></tr>
-<tr><td>[^]</td><td>Any character not contained within the brackets</td></tr>
-<tr><td>\w</td><td>A word character [a-z_A-Z0-9]</td></tr>
-<tr><td>\W</td><td>Not a word character [^a-z_A-Z0-9]</td></tr>
-<tr><td>\d</td><td>A digit [0-9]</td></tr>
-<tr><td>\D</td><td>Not a digit [^0-9]</td></tr>
-<tr><td>\s</td><td>Whitespace [ \\t\\r\\n\\f\\v]</td></tr>
-<tr><td>\S</td><td>Not whitespace [^ \\t\\r\\n\\f\\v]</td></tr>
-</table>
-
-<p>The following metacharacters are used to logically group subexpressions
-or to specify context for a position in the match. These metacharacters
-do not match any characters in the string:<br><br>
-<table border="1">
-<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
-<tr><td>( )</td><td>Group subexpression</td></tr>
-<tr><td>|</td><td>Match subexpression before or after the |</td></tr>
-<tr><td>^</td><td>Match expression at the start of string</td></tr>
-<tr><td>$</td><td>Match expression at the end of string</td></tr>
-<tr><td>\&lt;</td><td>Match expression at the start of a word</td></tr>
-<tr><td>\&gt;</td><td>Match expression at the end of a word</td></tr>
-</table>
-
-<p>The following metacharacters specify the number of times the previous
-metacharacter or grouped subexpression may be matched:<br><br>
-<table border="1">
-<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
-<tr><td>*</td><td>Match zero or more occurrences</td></tr>
-<tr><td>+</td><td>Match one or more occurrences</td></tr>
-<tr><td>?</td><td>Match zero or one occurrence</td></tr>
-<tr><td>{n,m}</td><td>Match between n and m occurrences</td></tr>
-</table>
-
-<p>Characters that are not special metacharacters are all treated literally
-in a match. To match a character that is a special metacharacter, escape
-that character with a '\\'. For example '.' matches any character, so to
-match a '.' specifically, use '\.' in your pattern.
-
-Examples:
-<ul>
-<li><code>[trm]ail</code> matches 'tail' or 'rail' or 'mail'.</li>
-<li><code>[0-9]</code> matches any digit between 0 to 9.</li>
-<li><code>[^Q-S]</code> matches any character other than 'Q' or 'R' or 'S'.</li>
-<li><code>[[]A-Z]</code> matches any upper case alphabet along with square brackets.</li>
-<li><code>[ag-i-9]</code> matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'.</li>
-<li><code>[a-p]*</code> matches '' or 'a' or 'aab' or 'p' etc.</li>
-<li><code>[a-p]+</code> matches  'a' or 'abc' or 'p' etc.</li>
-<li><code>[^0-9]</code> matches any string that is not a number.</li>
-<li><code>^[0-9]*$</code> matches either a blank string or a natural number.</li>
-<li><code>^-[0-9]+$|^\+?[0-9]+$</code> matches any integer.</li>
-</ul>
-"""
-
 SPREADSHEETS_DATABASE_HELP = """
 <p>The most common form of output for cellular analysis is a <i>spreadsheet<i>, which is an application which
 tabulates data values.
@@ -810,7 +568,8 @@ the module source code, so any changes to the code will be reflected immediately
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
 Selecting <i>Choose Image Group</i> will allow you to choose the movie file, and <i>Choose Image Set</i>
 will let you choose the individual movie frame from that file.
-<p>%(USING_METADATA_GROUPING_HELP_REF)s</p>
+<p>Please see the <b>Groups</b> module for more details on the proper use of
+metadata for grouping.</p>
 </p>
 """ % globals()
 
@@ -911,7 +670,7 @@ for more details on how to use this utility.</li>""" % globals() + \
                        to the directory where you have installed CellProfiler on the cluster. <br>
                        A single batch can be submitted with the following command:<br>
                        <code>
-                       ./python CellProfiler.py -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
+                       ./python -m cellprofiler -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
                        </code>
                        This command submits the batch file to CellProfiler and specifies that CellProfiler run in a
                        batch mode without its user interface to process the pipeline.
@@ -944,7 +703,7 @@ for more details on how to use this utility.</li>""" % globals() + \
                        processed to generate a script that can invoke the jobs in a cluster-computing context.<br>
                        The above notes assume that you are running CellProfiler using our source code (see
                        "Developer's Guide" under Help for more details). If you are using the compiled version,
-                       you would replace <code>./python CellProfiler.py</code> with the CellProfiler
+                       you would replace <code>./python -m cellprofiler</code> with the CellProfiler
                        executable file itself and run it from the installation folder.</p></li>
                        </ol>
 
@@ -956,7 +715,7 @@ for more details on how to use this utility.</li>""" % globals() + \
                        processes to make sure all batches complete. Batches that fail for transient reasons
                        can be resubmitted.</p>
 
-                       <p>To see documentation for all available arguments to CellProfiler, type <code>CellProfiler.py
+                       <p>To see documentation for all available arguments to CellProfiler, type <code>cellprofiler
                        --help</code> to see a listing.</p>
 
                        <p>For additional help on batch processing, refer to our
@@ -1493,399 +1252,7 @@ FIGURE_HELP = (
     ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP),
     ("How To Use The Image Tools", MODULE_DISPLAY_IMAGE_TOOLS_HELP))
 
-WORKSPACE_VIEWER_HELP = """
-The workspace viewer is a flexible tool that you can use to explore your
-images, objects and measurements in test mode. To use the viewer, select
-<i>View Workspace</i> from the <i>Test</i> menu after starting test mode. This
-will display the CellProfiler Workspace, a window with an image pane to the
-left and a panel of controls to the right.
-
-<h3>Key concepts</h3>
-<p>
-The workspace viewer lets you examine the CellProfiler workspace as you
-progress through your pipeline's execution. A pipeline's <i>workspace</i>
-is the collection of images, objects and measurements that are produced
-by the modules. At the start of the pipeline,
-the only things that are available are the images and objects loaded by the
-input modules. New images, objects and measurements are added to the workspace
-as you step through modules. If you modify a module's setting and re-execute
-the module, the images, objects and measurements produced by that module
-will be overwritten.</p>
-
-<p>The selected views are persistent across image cycles. That is, you can set up the viewer to view
-the workspace at the end of a pipeline cycle, then start a new cycle and
-CellProfiler will fill in the images, objects and measurements that you have chosen to
-display as they become available. You can also zoom in on a particular region
-and change settings and the viewer will remain focused on that region with
-the same settings across modules or image cycles.</p>
-
-<p>All elements of the display are configurable, either through the Subplots menu
-on the viewer, or through the context menu available by right-clicking on the figure
-window.</p>
-
-<h3>Available displays</h3>
-
-<p>A number of displays are available on the right-side of the workspace viewer. You
-can add, remove and modify displays of <i>images</i>, <i>objects</i>, <i>masks</i> and
-<i>measurements</i>,
-
-<h4>Images</h4>
-
-<p>The workspace viewer can display any image that is available from the input
-modules or from modules previously executed. To display a single image, select
-it from the <i>Images</i> drop down and check the <i>Show</i> checkbox. Initially,
-the image will be displayed in color, using the color shown in the "Color" box.
-This color can be changed by clicking on the color box.
-<br>
-You can add images to the display by clicking the <i>Add Image</i> button. You
-can remove images other than the first by hitting the button in the
-<i>Remove</i> column. You can toggle the image display using the checkbox in the
-<i>Show</i> column. You can also set the interpolation mode by selecting
-<i>Interpolation</i> from the <i>Subplots</i> menu. </p>
-
-<h4>Objects</h4>
-
-<p>You can display the objects that have been created or loaded by all modules
-that have been executed. To display a set of objects, select them from the
-<i>Objects</i> drop-down and check the <i>Show</i> checkbox. You can add
-additional objects by pressing the <i>Add Objects</i> button.</p>
-
-<h4>Masks</h4>
-
-<p>You can display the mask for any image produced by any of the modules that
-have been executed. Most images are not masked. In these cases, you can
-display the mask, but the display will show that the whole image is unmasked.
-You can mask an image with the <b>MaskImage</b> or <b>Crop</b> modules.</p>
-
-<p>To display the mask of an image, select it from the <i>Masks</i> dropdown and
-check the <i>Show</i> checkbox. You can add additional masks by pressing the
-<i>Add Mask</i> button. The options for masks are the same as that for
-objects with the addition that you can invert and overlay the mask by choosing
-<i>Inverted</i> from the mask's menu; the masked portion will be displayed
-in color.</p>
-
-<h4>Measurements</h4>
-
-<p>You can display any measurement produced by any of the modules that have
-been executed. Image measurements will be displayed in the title bar above
-the image. Object measurements will be displayed centered over the measurement's
-object. To display a measurement, select it from the <i>Measurements</i>
-drop-down and check the <i>Show</i> checkbox next to the measurement. You can
-add a measurement by pressing the <i>Add Measurement</i> button or remove it
-by checking the button in the <i>Remove</i> column.</p>
-
-<p>You can configure the font used to display an object measurement, the color
-of the text, and the color, transparency and shape of the background behind
-the text. To configure the measurement's appearance, press the <i>Font</i>
-button to the right of the measurement. Press the <i>Font</i> button in the
-<i>Measurement appearance</i> dialog to choose the font and its size, press
-the <i>Text color</i> and <i>Background color</i> to change the color used
-to display the text and background. Use the <i>Alpha</i> slider to control the
-transparency of the background behind the measurement text. The <i>Box shape</i>
-drop-down controls the shape of the background box. The <i>Precision</i>
-control determines the number of digits displayed to the right of the
-decimal point.</p>
-
-<h3>Using the Subplot menu to configure the display</h3>
-
-<p>The following items modify how the display is rendered. You can configure
-them through the Subplots menu on the viewer, or through the context menu
-available by right-clicking on the figure window.</p>
-
-<h4>Interpolation</h4>
-
-The interpolation mode used to render images, objects and masks is a
-configuration option that applies to the entire workspace. Interpolation
-controls how the intensities of pixels are blended together. You can set
-the interpolation mode by selecting <i>Interpolation</i> from the
-<i>Subplots</i> menu. The available modes are:
-%(INTERPOLATION_MODE_HELP_LIST)s
-
-<h4>Images</h4>
-
-<p>You can change the way an image is scaled, you can change its display mode
-and you can change its color and transparency from the menus. To do this,
-select the image from the <i>Subplots</i> menu. The images that are shown
-will appear in the menu under the <i>--- Images ---</i> heading. Select the
-image you want to configure from the menu to display the options that are
-available for that image. There are three categories in the menu, one for
-intensity normalization, one for the display mode and one to adjust color
-and transparency.</p>
-
-<p>The intensity normalization mode controls how the pixel's intensity value is
-translated into the brightness of a pixel on the screen. The modes that are
-available are:
-%(INTENSITY_MODE_HELP_LIST)s</p>
-
-<p>The <i>Mode</i> controls how pixel intensities are mapped to colors in the
-image. You can display each image using the following modes:
-<ul>
-<li><i>Color:</i> Pixels will have a uniform color which can be selected
-by either clicking on the <i>Color</i> button next to the image name or
-by choosing the image's <i>Color</i> menu entry.</li>
-<li><i>Grayscale:</i> The image will be rendered in shades of gray. The
-color choice will have no effect and the image's <i>Color</i> menu entry will
-be unavailable.</li>
-<li><i>Color map:</i> The image will be rendered using a palette. Your default
-color map will be used initially. To change the color map, select
-the image's <i>Color</i> menu entry from its menu and choose one of the
-color maps from the drop-down. The display will change interactively as you
-change the selection, allowing you to see the image as rendered by your choice.
-Hit <i>OK</i> to accept the new color map or hit <i>Cancel</i> to use the
-color map that was originally selected.</li>
-</ul></p>
-
-<p>The image's <i>Alpha</i> menu entry lets you control the image's transparency.
-This will let you blend colors when the palettes overlap and choose which
-image's intensity has the highest priority. To change the transparency, select
-<i>Alpha</i> from the image's menu. Adjust the transparency interactively
-using the slider bar and hit <i>OK</i> to accept the new value or <i>Cancel</i>
-to restore the value that was originally selected.</p>
-
-<h4>Objects</h4>
-
-<p>You can configure the appearance of objects using the context or <i>Subplots</i>
-menu. Choose the objects you wish to configure from the <i>--- Objects ---</i>
-list in the menu. You will see configuration menu items for the objects'
-display mode, color and alpha value. You can display objects using one of the
-following modes:
-<ul>
-<li><i>Lines:</i> This mode draws a line through the center of each pixel
-that borders the background of the object or another object. It does not
-display holes in the object. The line is drawn using the color shown in
-the <i>Color</i> button next to the objects' name. This option does not
-obscure the border pixels, but can take longer to render, especially if there
-are a large number of objects.</li>
-<li><i>Outlines:</i> This mode displays each pixel in the object's border using
-the color shown in the <i>Color</i> button next to the objects' name. This
-option will display holes in unfilled objects, but the display obscures the
-image underneath the border pixels.</li>
-<li><i>Overlay:</i> This mode displays a different color overlay over each
-object's pixels. Each object is assigned a color using the default color map
-initially. You can choose the color map by
-selecting <i>Color</i> from the objects' menu and choosing one of the available
-color maps. You can change the transparency of the overlay by choosing
-<i>Alpha</i> from the objects' menu.</li>
-</ul></p>
-
-""" % globals()
-
-WV_FIGURE_HELP = tuple(list(FIGURE_HELP) + [(
-    "How To Use The Workspace Viewer", WORKSPACE_VIEWER_HELP)])
-
-###################################################
-#
-# Help for the preferences dialog
-#
-###################################################
-
-TITLE_FONT_HELP = """
-Sets the font used in titles above plots displayed in module figure windows."""
-
-TABLE_FONT_HELP = """
-Sets the font used in tables displayed in module figure windows."""
-
-DEFAULT_COLORMAP_HELP = """
-Specifies the color map that sets the colors for labels and other elements. See this
-<a href ="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">
-page</a> for pictures of available colormaps."""
-
-WINDOW_BACKGROUND_HELP = """
-Sets the window background color of the CellProfiler main window."""
-
-ERROR_COLOR_HELP = """
-Sets the color used for the error alerts associated with misconfigured settings and other
-errors."""
-
-PLUGINS_DIRECTORY_HELP = """
-Chooses the directory that holds dynamically-loaded CellProfiler modules. You
-can write your own module and place it in this directory and CellProfiler
-will make it available for your pipeline. You must restart CellProfiler
-after modifying this setting."""
-
-IJ_PLUGINS_DIRECTORY_HELP = """
-Sets the directory that holds ImageJ plugins (for the <b>RunImageJ</b> module).
-You can download or write your own ImageJ plugin and place it in this directory
-and CellProfiler will make it available for your pipeline. You must restart
-CellProfiler after modifying this setting."""
-
-IJ_VERSION_HELP = """
-Chooses which version of ImageJ to use in the <b>RunImageJ</b> module. You must restart CellProfiler
-after changing this preference for the preference to take effect.<p>
-<ul><li><b>ImageJ 1.x:</b> This is a version of ImageJ 1.44 with added support
-for <code>&amp;parameter</code> plugin decorations. You should use this if you only have
-ImageJ 1.0 plugins.</li>
-<li><b>ImageJ 2.0:</b> This is an alpha release of ImageJ 2.0. ImageJ 2.0
-has better interoperability with CellProfiler. CellProfiler will display
-ImageJ 2.0 plugin settings as part of the RunImageJ module interface and
-will let you use regular and masked images in ImageJ 2.0 plugins. ImageJ 2.0
-can run ImageJ 1.0 plugins, but there may be incompatibilities.</li></ul>"""
-
-CHECK_FOR_UPDATES_HELP = """
-Controls whether CellProfiler looks for updates on startup."""
-
-SHOW_TELEMETRY_HELP = """
-Allow limited and anonymous usage statistics and exception reports to be sent
-to the CellProfiler team to help improve CellProfiler.
-"""
-
-SHOW_STARTUP_BLURB_HELP = """
-Controls whether CellProfiler displays an orientation message on startup."""
-
-SHOW_ANALYSIS_COMPLETE_HELP = """
-Determines whether CellProfiler displays a message box at the
-end of a run. Check this preference to show the message box or uncheck it
-to stop display."""
-
-SHOW_EXITING_TEST_MODE_HELP = """
-Determines whether CellProfiler displays a message box to inform you
-that a change made to the pipeline will cause test mode to end. Check this preference
-to show the message box or uncheck it to stop display."""
-
-SHOW_REPORT_BAD_SIZES_DLG_HELP = """
-Determines whether CellProfiler will display a warning dialog
-if images of different sizes are loaded together in an image set.
-Check this preference to show the message box or uncheck it to stop display."""
-
-PRIMARY_OUTLINE_COLOR_HELP = """
-Sets the color used for the outline of the object of interest in the
-<b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> and
-<b>IdentifyTertiaryObjects</b> displays."""
-
-SECONDARY_OUTLINE_COLOR_HELP = """
-Sets the color used for objects other than the ones of interest. In
-<b>IdentifyPrimaryObjects</b>, these are the objects that are too small or
-too large. In <b>IdentifySecondaryObjects</b> and <b>IdentifyTertiaryObjects</b>,
-this is the color of the secondary objects' outline."""
-
-TERTIARY_OUTLINE_COLOR_HELP = """
-Sets the color used for the objects touching the image border or image mask
-in <b>IdentifyPrimaryObjects</b>."""
-
-INTERPOLATION_MODE_HELP = """
-Sets the way CellProfiler displays image pixels. If you choose <i>Nearest</i>,
-CellProfiler will display each pixel as a square block of uniform intensity.
-This is truest to the data, but the resulting images look blocky and
-pixelated. You can choose either <i>Bilinear</i> or <i>Bicubic</i> to see
-images where the a bilinear or bicubic spline model has been used to interpolate
-the screen pixel value for screen pixels that do not fall exactly in the
-center of the image pixel. The result, for bilinear or bicubic interpolation is
-an image that is more visually appealing and easier to interpret, but obscures
-the true pixel nature of the real data.
-"""
-
-INTENSITY_MODE_HELP = """
-Sets the way CellProfiler normalizes pixel intensities when displaying.
-If you choose "raw", CellProfiler will display a pixel with a value of "1" or
-above with the maximum brightness and a pixel with a value of "0" or below
-as black. If you choose "normalize", CellProfiler will find the minimum and
-maximum intensities in the display image and show pixels at maximum intensity
-with the maximum brightness and pixels at the minimum intensity as black. This
-can be used to view dim images. If you choose "log", CellProfiler will use
-the full brightness range and will use a log scale to scale the intensities.
-This can be used to view the image background in more detail.
-"""
-
-REPORT_JVM_ERROR_HELP = """
-Determines whether CellProfiler will display a warning on startup
-if CellProfiler can't locate the Java installation on your computer. Check
-this box if you want to be warned. Uncheck this box to hide warnings."""
-
-MAX_WORKERS_HELP = """
-Controls the maximum number of <i>workers</i> (i.e., copies of CellProfiler)
-that will be started at the outset of an analysis run. CellProfiler uses these
-copies to process multiple image
-sets in parallel, utilizing the computer's CPUs and memory fully. The default
-value is the number of CPUs detected on your computer. Use fewer workers for
-pipelines that require a large amount of memory. Use more workers for
-pipelines that are accessing image data over a slow connection.
-
-<p>If using the <b>Groups</b> module, only one worker will be allocated to
-handle each group. This means that you may have multiple workers created,
-but only a subset of them may actually be active, depending on the number of
-groups you have.</p>
-"""
-
-TEMP_DIR_HELP = """
-Sets the folder that CellProfiler uses when storing temporary files. CellProfiler will
-create a temporary measurements file for analyses when the user specifies that
-a MATLAB measurements file should be created or when the user asks that no
-measurements file should be permanently saved. CellProfiler will also save
-images accessed by http URL temporarily to disk (but will efficiently access
-OMERO image planes directly from the server).
-"""
-
-JVM_HEAP_HELP = """
-Sets the maximum amount of memory that can be used by the Java virtual machine.
-CellProfiler uses Java for loading images, for running ImageJ and for
-processing image sets. If you load extremely large images, use the RunImageJ
-module extensively or process large image set lists, you can use this option
-to start Java with a larger amount of memory. By default, CellProfiler starts
-Java with 512 MB, but you can override this by specifying the number of megabytes
-to load. You can also start CellProfiler from the command-line with the
---jvm-heap-size switch to get the same effect.
-"""
-
-SAVE_PIPELINE_WITH_PROJECT_HELP = """
-Controls whether a pipeline and/or file list file is saved whenever the user
-saves the project file. Users may find it handy to have the pipeline and/or file
-list saved in a readable format, for instance, for version control whenever
-the project file is saved. Your project can be restored by importing both
-the pipeline and file list, and your pipeline can be run using a different
-file list, and your file list can be reused by importing it into a different
-project.
-Note: When using LoadData, it is not recommended to auto-save the file list,
-as this feature only saves the file list existing in the Input Modules, not
-LoadData input files.
-<ul>
-<li><i>Neither:</i> Refrain from saving either file. </li>
-<li><i>Pipeline:</i> Save the pipeline, using the project's file name and
-path and a .cppipe extension. </li>
-<li><i>File list:</i> Save the file list, using the project's file name and
-path and a .txt extension.</li>
-<li><i>Pipeline and file list:</i> Save both files.</li>
-</ul>
-"""
-
-BATCHPROFILER_URL_HELP = """
-The base URL for BatchProfiler. BatchProfiler is a set of CGI scripts for
-running CellProfiler on a GridEngine cluster or compatible. If BatchProfiler
-is available, the CreateBatchFiles module can optionally launch a browser
-to display the appropriate batch configuration page."""
-
-EACH_PREFERENCE_HELP = (
-    ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-    ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-    ("Title font", TITLE_FONT_HELP),
-    ("Table font", TABLE_FONT_HELP),
-    ("Default colormap", DEFAULT_COLORMAP_HELP),
-    ("Window background", WINDOW_BACKGROUND_HELP),
-    ("Error color", ERROR_COLOR_HELP),
-    ("Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
-    ("Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
-    ("Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
-    ("Interpolation mode", INTERPOLATION_MODE_HELP),
-    ("Intensity mode", INTENSITY_MODE_HELP),
-    ("CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP),
-    ("ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
-    # ( "ImageJ version", IJ_VERSION_HELP),
-    ("Check for updates", CHECK_FOR_UPDATES_HELP),
-    ("Display welcome text on startup", SHOW_STARTUP_BLURB_HELP),
-    ("Warn if Java runtime environment not present", REPORT_JVM_ERROR_HELP),
-    ('Show the "Analysis complete" message at the end of a run', SHOW_ANALYSIS_COMPLETE_HELP),
-    ('Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
-    ("Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
-    ("Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
-    ("Maximum number of workers", MAX_WORKERS_HELP),
-    ("Temporary folder", TEMP_DIR_HELP),
-    ("Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
-    ("BatchProfiler URL", BATCHPROFILER_URL_HELP)
-)
-PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
-<ul>"""
-for key, value in enumerate(EACH_PREFERENCE_HELP):
-    PREFERENCES_HELP += """<li><b>""" + value[0] + """:</b>""" + value[1] + """</li>"""
-PREFERENCES_HELP += """</ul>"""
+WV_FIGURE_HELP = tuple(list(FIGURE_HELP))
 
 #########################################################
 #
@@ -2348,88 +1715,6 @@ to set up the input modules to handle these files is as follows:</p>
 
 #########################################################
 #
-# Misc. help
-#
-#########################################################
-
-'''The help to be displayed if someone asks for help on a module but none is selected'''
-HELP_ON_MODULE_BUT_NONE_SELECTED = (
-    "The help button can be used to obtain help for the currently selected module "
-    "in the pipeline panel on the left side of the CellProfiler interface.\n\n"
-    "You do not have any modules in the pipeline, yet. Add a module to the "
-    'pipeline using the "+" button or by using File > Load Pipeline.')
-
-HELP_ON_MEASURING_DISTANCES = """To measure distances in an open image, use the "Measure
-length" tool under <i>Tools</i> in the display window menu bar. If you click on an image
-and drag, a line will appear between the two endpoints, and the distance between them shown at the right-most
-portion of the bottom panel."""
-
-HELP_ON_PIXEL_INTENSITIES = """To view pixel intensities in an open image, use the
-pixel intensity tool which is available in any open display window. When you move
-your mouse over the image, the pixel intensities will appear in the bottom bar of the display window."""
-
-HELP_ON_FILE_LIST = """The <i>File List</i> panel displays the image files
-that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
-and <b>Groups</b> modules. You can drop files and directories into this window
-or use the <i>Browse...</i> button to add files to the list. The context menu
-for the window lets you display or remove files and lets you remove folders.
-<br>
-The buttons and checkbox along the bottom have the following functions:<br>
-<ul><li><i>Browse...</i>: Browse for files and folders to add.</li>
-<li><i>Clear</i>: Clear all entries from the File list</li>
-<li><i>Show files excluded by filters</i>: <i>(Only shown if filtered based on rules is selected)</i>
-Check this to see all files in the
-list. Uncheck it to see only the files that pass the rules criteria in the
-<b>Images</b> module.</li>
-<li><i>Expand tree</i>: Expand all of the folders in the tree</li>
-<li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
-"""
-
-FILTER_RULES_BUTTONS_HELP = """
-Clicking the rule menus shows you all the file <i>attributes</i>, <i>operators</i> and <i>conditions</i> you can specify to narrow down
-the image list.
-<ol>
-<li>For each rule, first select the <i>attribute</i> that the rule is to be based on. For example, you can select "File"
-to define a rule that will filter files on the basis of their filename. </li>
-<li>The <i>operator</i> drop-down is then updated with operators applicable to the attribute you selected. For example, if you select
-"File" as the attribute, the operator
-menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
-select "Extension" as the attribute, you can choose the logical operators "Is" or "Is not" from the menu.</li>
-<li>In the operator drop-down menu, select the operator you want to use. For example,
-if you want to match data exactly, you may want the "Exactly match" or the "Is" operator. If you want the
-condition to be more loose, select an operator such as "Contains".</li>
-<li>Use the <i>condition</i> box to type the condition you want to match. The more
-you type, the more specific the condition is.
-<ul>
-<li>As an example, if you create a new filter and select
-<i>File</i> as the attribute, then select "Does" and "Contain" as the operators, and type "Channel" as the condition,
-the filter finds all files that include the text "Channel", such as "Channel1.tif" "Channel2.jpg", "1-Channel-A01.BMP" and so on.</li>
-<li>If you select "Does" and "Start with" as the operators and "Channel1" in the Condition box,
-the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
-<table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_USING_RULES_ICON)s"></td></tr>
-</table>
-</li>
-You can also create regular expressions (an advanced syntax for pattern matching; see <a href="#regexp">below</a>) in order to select particular files.
-</ol>
-<p>To add another rule, click the plus  buttons to the right of each rule. Subtract an existing rule by clicking the
-minus button.</p>
-<p>You can also link a set of rules by choosing the logical expression <i>All</i> or <i>Any</i>. If you use
-<i>All</i> logical expression, all the rules must be true for a file to be included in the File list. If
-you use the <i>Any</i> option, only one of the conditions has to be met for a file to be included.</p>
-<p>If you want to create more complex rules (e.g, some criteria matching all rules and others matching any),
-you can create sets of rules, by clicking the ellipsis button (to the right of the plus button).
-Repeat the above steps to add more rules to the filter until you have
-all the conditions you want to include.</p>
-
-<a name="regexp"><h5>Details on regular expressions</h5></a>
-<p>A <i>regular expression</i> is a general term refering to a method of searching for pattern matches in text. There is a high
-learning curve to using them, but are quite powerful once you understand the basics.</p>
-<p>%(REGEXP_HELP_REF)s</p>
-""" % globals()
-
-#########################################################
-#
 # Plate viewer help
 #
 #########################################################
@@ -2469,7 +1754,6 @@ MAIN_HELP = (
         ("Using the Parameter Sampling Menu", PARAMETER_SAMPLING_MENU_HELP),
         ("Using the Data Tools Menu", MENU_BAR_DATATOOLS_HELP))),
     ("Using Module Display Windows", FIGURE_HELP),
-    # ("Setting the Preferences", PREFERENCES_HELP),
     (CREATING_A_PROJECT_CAPTION, (
         ("Introduction to Projects", INTRODUCTION_TO_PROJECTS_HELP),
         ("Selecting Images for Input", SELECTING_IMAGES_HELP),
@@ -2486,8 +1770,6 @@ MAIN_HELP = (
     ("Batch Processing", BATCHPROCESSING_HELP),
     ("Legacy Modules and Features", (
         ("Load Modules", LEGACY_LOAD_MODULES_HELP),
-        ("Setting the Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-        ("Setting the Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
         ("Setting the Output Filename", USING_THE_OUTPUT_FILE_HELP))),
     ("Other Features", (
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),

@@ -1,11 +1,15 @@
 # coding=utf-8
 
 """
-**Identify Objects Manually** allows you to identify objects in an image
+IdentifyObjectsManually
+=======================
+
+**IdentifyObjectsManually** allows you to identify objects in an image
 by hand rather than automatically.
 
-| This module lets you outline the objects in an image using the mouse.
-  The user interface has several mouse tools:
+This module lets you outline the objects in an image using the mouse.
+
+The user interface has several mouse tools:
 
 -  *Outline:* Lets you draw an outline around an object. Press the left
    mouse button at the start of the outline and draw the outline around
@@ -28,7 +32,7 @@ import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import identify as I
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.modules._help import NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
@@ -42,23 +46,18 @@ class IdentifyObjectsManually(I.Identify):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""
-            Choose the name of the image to display in the object
-            selection user interface.""")
+                "Select the input image", cps.NONE, doc="""Choose the name of the image to display in the object selection user interface.""")
 
         self.objects_name = cps.ObjectNameProvider(
-                "Name the objects to be identified", "Cells", doc="""
-            What do you want to call the objects
-            that you identify using this module? You can use this name to
-            refer to your objects in subsequent modules.""")
+                "Name the objects to be identified", "Cells", doc="""\
+What do you want to call the objects that you identify using this module? You can use this name to
+refer to your objects in subsequent modules.""")
 
         self.wants_outlines = cps.Binary(
-                "Retain outlines of the identified objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+                "Retain outlines of the identified objects?", False, doc="""%(RETAINING_OUTLINES_HELP)s""" % globals())
 
         self.outlines_name = cps.OutlineNameProvider(
-                "Name the outlines", "CellOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+                "Name the outlines", "CellOutlines", doc="""%(NAMING_OUTLINES_HELP)s""" % globals())
 
     def settings(self):
         '''The settings as saved in the pipeline'''

@@ -43,7 +43,7 @@ class PreferencesView(object):
             cellprofiler.preferences.get_default_image_directory(),
             lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY),
             'Default Input Folder',
-            cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP,
+            cellprofiler.preferences.DEFAULT_IMAGE_FOLDER_HELP,
             [cellprofiler.preferences.set_default_image_directory,
              self.__notify_pipeline_list_view_directory_change],
             refresh_action=self.refresh_input_directory)
@@ -54,7 +54,7 @@ class PreferencesView(object):
             cellprofiler.preferences.get_default_output_directory(),
             lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY),
             'Default Output Folder',
-            cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP,
+            cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_HELP,
             [cellprofiler.preferences.set_default_output_directory,
              self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel)

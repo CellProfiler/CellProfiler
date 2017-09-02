@@ -7,12 +7,12 @@ import skimage.morphology
 import skimage.segmentation
 
 import cellprofiler.image
-import cellprofiler.modules.removeobjects
+import cellprofiler.modules.removeobjectsbysize
 import cellprofiler.object
 
 numpy.random.seed(23)
 
-instance = cellprofiler.modules.removeobjects.RemoveObjects()
+instance = cellprofiler.modules.removeobjectsbysize.RemoveObjectsBySize()
 
 
 @pytest.fixture(scope="module")

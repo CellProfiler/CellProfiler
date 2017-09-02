@@ -16,7 +16,7 @@ from cellprofiler.knime_bridge import KnimeBridgeServer, \
 import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
 from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
-from cellprofiler.modules.applythreshold import TS_GLOBAL, TM_MANUAL
+from cellprofiler.modules.threshold import TS_GLOBAL, TM_MANUAL
 from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
 from cellprofiler.modules.loadimages import LoadImages
 from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape

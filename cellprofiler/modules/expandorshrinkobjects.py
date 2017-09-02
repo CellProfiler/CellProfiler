@@ -44,13 +44,14 @@ import centrosome.outline
 import numpy
 import scipy.ndimage
 
-import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.object
 import cellprofiler.setting
+import _help
+
 
 O_SHRINK_INF = "Shrink objects to a point"
 O_EXPAND_INF = "Expand objects until touching"
@@ -85,7 +86,7 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
             O_ALL,
             doc="""
                 Choose the operation that you want to perform:
-                
+
                 -  *{O_SHRINK_INF}:* Remove all pixels but one from filled objects.
                    Thin objects with holes to loops unless the “fill” option is checked.
                 -  *{O_EXPAND_INF}:* Expand objects, assigning every pixel in the
@@ -130,7 +131,7 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
                 | *(Used only if one of the “shrink” options selected)*
                 | Select *{YES}* to ensure that each object will shrink to a single
                   point, by filling the holes in each object.
-                
+
                 Select *{NO}* to preserve the Euler number. in this case, the shrink
                 algorithm preserves each object’s Euler number, which means that it will
                 erode an object with a hole to a ring in order to keep the hole. An
@@ -145,13 +146,13 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
         self.wants_outlines = cellprofiler.setting.Binary(
             "Retain the outlines of the identified objects?",
             False,
-            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+            doc=_help.RETAINING_OUTLINES_HELP
         )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
             "Name the outline image",
             "ShrunkenNucleiOutlines",
-            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+            doc=_help.NAMING_OUTLINES_HELP
         )
 
     def settings(self):

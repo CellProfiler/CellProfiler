@@ -4,7 +4,8 @@
 Resize
 ======
 
-**Resize** resizes images (changes their resolution).
+**Resize** resizes images (changes their resolution). This module is
+compatible with 2D and 3D/volumetric images.
 
 Images are resized (made smaller or larger) based on user input. You can
 resize an image by applying a resizing factor or by specifying the
@@ -50,39 +51,32 @@ class Resize(cellprofiler.module.ImageProcessing):
         self.size_method = cellprofiler.setting.Choice(
             "Resizing method",
             R_ALL,
-            doc="""
-            The following options are available:
-            <ul>
-                <li><i>Resize by a fraction or multiple of the original size:</i> Enter a single value which
-                specifies the scaling.</li>
-                <li><i>Resize by specifying desired final dimensions:</i></li>
-                <li style="list-style: none">Enter the new height and width of the resized image.</li>
-            </ul>
-            """
-        )
+            doc="""\
+The following options are available:
+
+-  *Resize by a fraction or multiple of the original size:* Enter a single value which specifies the scaling.
+-  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image.""")
 
         self.resizing_factor = cellprofiler.setting.Float(
             "Resizing factor",
             0.25,
             minval=0,
-            doc="""
-            <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
-            Numbers less than one (that is, fractions) will shrink the image; numbers greater than one (that
-            is, multiples) will enlarge the image.
-            """
-        )
+            doc="""\
+*(Used only if resizing by a fraction or multiple of the original size)*
+
+Numbers less than one (that is, fractions) will shrink the image;
+numbers greater than one (that is, multiples) will enlarge the image.""")
 
         self.use_manual_or_image = cellprofiler.setting.Choice(
             "Method to specify the dimensions",
             C_ALL,
-            doc="""
-            <i>(Used only if resizing by specifying the dimensions)</i><br>
-            You have two options on how to resize your image:
-            <ul>
-                <li><i>{C_MANUAL}:</i> Specify the height and width of the output image.</li>
-                <li><i>{C_IMAGE}:</i> Specify an image and the input image will be resized to the same
-                dimensions.</li>
-            </ul>
+            doc="""\
+*(Used only if resizing by specifying the dimensions)*
+
+You have two options on how to resize your image:
+
+-  *{C_MANUAL}:* Specify the height and width of the output image.
+-  *{C_IMAGE}:* Specify an image and the input image will be resized to the same dimensions.
             """.format(**{
                 "C_IMAGE": C_IMAGE,
                 "C_MANUAL": C_MANUAL
@@ -93,45 +87,40 @@ class Resize(cellprofiler.module.ImageProcessing):
             "Width of the final image",
             100,
             minval=1,
-            doc="""
-            <i>(Used only if resizing by specifying desired final dimensions)</i><br>
-            Enter the desired width of the final image, in pixels.
-            """
-        )
+            doc="""\
+*(Used only if resizing by specifying desired final dimensions)*
+
+Enter the desired width of the final image, in pixels.""")
 
         self.specific_height = cellprofiler.setting.Integer(
             "Height of the final image",
             100,
             minval=1,
-            doc="""
-            <i>(Used only if resizing by specifying desired final dimensions)</i><br>
-            Enter the desired height of the final image, in pixels.
-            """
-        )
+            doc="""\
+*(Used only if resizing by specifying desired final dimensions)*
+
+Enter the desired height of the final image, in pixels.""")
 
         self.specific_image = cellprofiler.setting.ImageNameSubscriber(
             "Select the image with the desired dimensions",
             cellprofiler.setting.NONE,
-            doc=""""
-            <i>(Used only if resizing by specifying desired final dimensions using an image)</i><br>
-            The input image will be resized to the dimensions of the specified image.
-            """
-        )
+            doc="""\
+*(Used only if resizing by specifying desired final dimensions using an image)*
+
+The input image will be resized to the dimensions of the specified image.""")
 
         self.interpolation = cellprofiler.setting.Choice(
             "Interpolation method",
             I_ALL,
-            doc="""
-            <ul>
-                <li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
-                corresponding pixel in the input image.</li>
-                <li><i>Bilinear:</i> Each output pixel is given the intensity of the weighted average of the
-                2x2 neighborhood at the corresponding position in the input image.</li>
-                <li><i>Bicubic:</i> Each output pixel is given the intensity of the weighted average of the 4x4
-                neighborhood at the corresponding position in the input image.</li>
-            </ul>
-            """
-        )
+            doc="""\
+-  *Nearest Neighbor:* Each output pixel is given the intensity of the
+   nearest corresponding pixel in the input image.
+-  *Bilinear:* Each output pixel is given the intensity of the weighted
+   average of the 2x2 neighborhood at the corresponding position in the
+   input image.
+-  *Bicubic:* Each output pixel is given the intensity of the weighted
+   average of the 4x4 neighborhood at the corresponding position in the
+   input image.""")
 
         self.separator = cellprofiler.setting.Divider(line=False)
 
@@ -152,21 +141,16 @@ class Resize(cellprofiler.module.ImageProcessing):
             cellprofiler.setting.ImageNameSubscriber(
                 "Select the additional image?",
                 cellprofiler.setting.NONE,
-                doc="""
-                What is the name of the additional image to resize? This image will be
-                resized with the same settings as the first image.
-                """
-            )
-        )
+                doc="""\
+What is the name of the additional image to resize? This image will be
+resized with the same settings as the first image."""))
 
         group.append(
             "output_image_name",
             cellprofiler.setting.ImageNameProvider(
                 "Name the output image",
                 "ResizedBlue",
-                doc="What is the name of the additional resized image?"
-            )
-        )
+                doc="What is the name of the additional resized image?"))
 
         if can_remove:
             group.append(

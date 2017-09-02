@@ -127,7 +127,7 @@ number of groups you have.
 """
 
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
+from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 import logging
 
 logger = logging.getLogger(__name__)

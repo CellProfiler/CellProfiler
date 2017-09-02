@@ -102,8 +102,8 @@ from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, \
+    USING_METADATA_HELP_REF
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J
@@ -198,7 +198,7 @@ LOAD_AS_CHOICE_HELP_TEXT = """
     <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
     is an image which has been generated for the purpose of correcting uneven
     illumination/lighting/shading or to reduce uneven background in images. Typically,
-    is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and
+    is a file in the NumPy .npy format. See <b>CorrectIlluminationCalculate</b> and
     <b>CorrectIlluminationApply</b> for more details. </li>
     <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image
     is a label matrix and you want to obtain the objects that it defines.
@@ -483,16 +483,27 @@ class NamesAndTypes(cpm.Module):
                                doc="Has metadata matching the value you enter")
         mp.set_metadata_keys(self.metadata_keys)
 
-        group.append("rule_filter", cps.Filter(
+        group.append(
+            "rule_filter",
+            cps.Filter(
                 "Select the rule criteria",
-                [FilePredicate(),
-                 DirectoryPredicate(),
-                 ExtensionPredicate(),
-                 ImagePredicate(),
-                 mp],
-                'and (file does contain "")', doc="""
-            Specify a filter using rules to narrow down the files to be analyzed.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals()))
+                [
+                    FilePredicate(),
+                    DirectoryPredicate(),
+                    ExtensionPredicate(),
+                    ImagePredicate(),
+                    mp]
+                ,
+                'and (file does contain "")',
+                doc="""\
+Specify a filter using rules to narrow down the files to be analyzed.
+
+{FILTER_RULES_BUTTONS_HELP}
+""".format(**{
+                    "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP
+                })
+            )
+        )
 
         group.append("image_name", cps.FileImageNameProvider(
                 "Name to assign these images", unique_image_name, doc="""

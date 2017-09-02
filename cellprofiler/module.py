@@ -902,12 +902,14 @@ class ImageProcessing(Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+            "Select the input image",
+            doc="Select the image you want to use."
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
-            "Output",
-            self.__class__.__name__
+            "Name the output image",
+            self.__class__.__name__,
+            doc="Enter the name you want to call the image output by this module."
         )
 
     def display(self, workspace, figure, cmap=["gray", "gray"]):
@@ -922,6 +924,7 @@ class ImageProcessing(Module):
             colormap=cmap[0],
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
+            title=self.x_name.value,
             x=0,
             y=0
         )
@@ -930,6 +933,7 @@ class ImageProcessing(Module):
             colormap=cmap[1],
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            title=self.y_name.value,
             x=1,
             y=0
         )
@@ -1036,32 +1040,18 @@ class ImageSegmentation(Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+            "Select the input image",
+            doc="Select the image you want to use."
         )
 
         self.y_name = cellprofiler.setting.ObjectNameProvider(
-            "Object",
-            self.__class__.__name__
+            "Name the output object",
+            self.__class__.__name__,
+            doc="Enter the name you want to call the object output by this module."
         )
 
     def display(self, workspace, figure):
         layout = (2, 1)
-
-        if workspace.display_data.dimensions == 3:
-            overlay = numpy.zeros(workspace.display_data.x_data.shape + (3,))
-
-            for index, data in enumerate(workspace.display_data.x_data):
-                overlay[index] = skimage.color.label2rgb(
-                    workspace.display_data.y_data[index],
-                    image=data,
-                    bg_label=0
-                )
-        else:
-            overlay = skimage.color.label2rgb(
-                workspace.display_data.y_data,
-                image=workspace.display_data.x_data,
-                bg_label=0
-            )
 
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions,
@@ -1072,13 +1062,16 @@ class ImageSegmentation(Module):
             colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
+            title=self.x_name.value,
             x=0,
             y=0
         )
 
-        figure.subplot_imshow(
+        figure.subplot_imshow_labels(
+            background_image=workspace.display_data.x_data,
             dimensions=workspace.display_data.dimensions,
-            image=overlay,
+            image=workspace.display_data.y_data,
+            title=self.y_name.value,
             x=1,
             y=0
         )
@@ -1230,7 +1223,8 @@ class ObjectProcessing(ImageSegmentation):
         super(ObjectProcessing, self).create_settings()
 
         self.x_name = cellprofiler.setting.ObjectNameSubscriber(
-            "Input"
+            "Select the input object",
+            doc="Select the object you want to use."
         )
 
     def display(self, workspace, figure):

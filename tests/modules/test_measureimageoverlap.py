@@ -7,7 +7,7 @@ import scipy.ndimage
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules.calculateimageoverlap
+import cellprofiler.modules.measureimageoverlap
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -25,13 +25,13 @@ GROUND_TRUTH_OBJ = 'Nuclei'
 ID_OBJ = 'Protein'
 
 
-class TestCalculateImageOverlap(unittest.TestCase):
+class TestMeasureImageOverlap(unittest.TestCase):
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9169
 
-CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+MeasureImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
     Which image do you want to use as the basis for calculating the amount of overlap? :GroundTruth
     Which image do you want to compare for overlap?:Segmentation
 """
@@ -44,7 +44,7 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
         self.assertEqual(module.ground_truth, "GroundTruth")
         self.assertEqual(module.test_img, "Segmentation")
 
@@ -56,14 +56,14 @@ GitHash:63ec479
 ModuleCount:2
 HasImagePlaneDetails:False
 
-CalculateImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
     Compare segmented objects, or foreground/background?:Segmented objects
     Select the image to be used as the ground truth basis for calculating the amount of overlap:Bar
     Select the image to be used to test for overlap:Foo
     Select the objects to be used as the ground truth basis for calculating the amount of overlap:Nuclei2_0
     Select the objects to be tested for overlap against the ground truth:Nuclei2_1
 
-CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+MeasureImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
     Compare segmented objects, or foreground/background?:Foreground/background segmentation
     Select the image to be used as the ground truth basis for calculating the amount of overlap:Foo
     Select the image to be used to test for overlap:Bar
@@ -79,21 +79,21 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
-        self.assertEqual(module.obj_or_img, cellprofiler.modules.calculateimageoverlap.O_OBJ)
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
+        self.assertEqual(module.obj_or_img, cellprofiler.modules.measureimageoverlap.O_OBJ)
         self.assertEqual(module.ground_truth, "Bar")
         self.assertEqual(module.test_img, "Foo")
         self.assertEqual(module.object_name_GT, "Nuclei2_0")
         self.assertEqual(module.object_name_ID, "Nuclei2_1")
         self.assertFalse(module.wants_emd)
-        self.assertEqual(module.decimation_method, cellprofiler.modules.calculateimageoverlap.DM_KMEANS)
+        self.assertEqual(module.decimation_method, cellprofiler.modules.measureimageoverlap.DM_KMEANS)
         self.assertEqual(module.max_distance, 250)
         self.assertEqual(module.max_points, 250)
         self.assertFalse(module.penalize_missing)
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
-        self.assertEqual(module.obj_or_img, cellprofiler.modules.calculateimageoverlap.O_IMG)
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
+        self.assertEqual(module.obj_or_img, cellprofiler.modules.measureimageoverlap.O_IMG)
         self.assertEqual(module.ground_truth, "Foo")
         self.assertEqual(module.test_img, "Bar")
         self.assertEqual(module.object_name_GT, "Cell2_0")
@@ -108,7 +108,7 @@ GitHash:051040e
 ModuleCount:2
 HasImagePlaneDetails:False
 
-CalculateImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Compare segmented objects, or foreground/background?:Segmented objects
     Select the image to be used as the ground truth basis for calculating the amount of overlap:Bar
     Select the image to be used to test for overlap:Foo
@@ -120,7 +120,7 @@ CalculateImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
     Maximum distance:202
     Penalize missing pixels:No
 
-CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+MeasureImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Compare segmented objects, or foreground/background?:Foreground/background segmentation
     Select the image to be used as the ground truth basis for calculating the amount of overlap:Foo
     Select the image to be used to test for overlap:Bar
@@ -141,27 +141,27 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
-        self.assertEqual(module.obj_or_img, cellprofiler.modules.calculateimageoverlap.O_OBJ)
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
+        self.assertEqual(module.obj_or_img, cellprofiler.modules.measureimageoverlap.O_OBJ)
         self.assertEqual(module.ground_truth, "Bar")
         self.assertEqual(module.test_img, "Foo")
         self.assertEqual(module.object_name_GT, "Nuclei2_0")
         self.assertEqual(module.object_name_ID, "Nuclei2_1")
         self.assertFalse(module.wants_emd)
-        self.assertEqual(module.decimation_method, cellprofiler.modules.calculateimageoverlap.DM_KMEANS)
+        self.assertEqual(module.decimation_method, cellprofiler.modules.measureimageoverlap.DM_KMEANS)
         self.assertEqual(module.max_distance, 202)
         self.assertEqual(module.max_points, 201)
         self.assertFalse(module.penalize_missing)
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
-        self.assertEqual(module.obj_or_img, cellprofiler.modules.calculateimageoverlap.O_IMG)
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
+        self.assertEqual(module.obj_or_img, cellprofiler.modules.measureimageoverlap.O_IMG)
         self.assertEqual(module.ground_truth, "Foo")
         self.assertEqual(module.test_img, "Bar")
         self.assertEqual(module.object_name_GT, "Cell2_0")
         self.assertEqual(module.object_name_ID, "Cell2_1")
         self.assertTrue(module.wants_emd)
-        self.assertEqual(module.decimation_method, cellprofiler.modules.calculateimageoverlap.DM_SKEL)
+        self.assertEqual(module.decimation_method, cellprofiler.modules.measureimageoverlap.DM_SKEL)
         self.assertEqual(module.max_distance, 102)
         self.assertEqual(module.max_points, 101)
         self.assertTrue(module.penalize_missing)
@@ -176,7 +176,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
 
         returns a workspace and module
         '''
-        module = cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap()
+        module = cellprofiler.modules.measureimageoverlap.MeasureImageOverlap()
         module.module_num = 1
         module.obj_or_img.value = O_IMG
         module.ground_truth.value = GROUND_TRUTH_IMAGE_NAME
@@ -213,7 +213,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         j - j component of pixel coordinates
         l - label '''
 
-        module = cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap()
+        module = cellprofiler.modules.measureimageoverlap.MeasureImageOverlap()
         module.module_num = 1
         module.obj_or_img.value = O_OBJ
         module.object_name_GT.value = GROUND_TRUTH_OBJ
@@ -256,7 +256,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=numpy.ones((20, 10), bool)),
                 dict(image=numpy.ones((20, 10), bool)))
 
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue(isinstance(measurements, cellprofiler.measurement.Measurements))
@@ -264,11 +264,11 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 measurements.get_current_image_measurement("Overlap_FalseNegRate_test"),
                 0)
         features = measurements.get_feature_names(cellprofiler.measurement.IMAGE)
-        for feature in cellprofiler.modules.calculateimageoverlap.FTR_ALL + [cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE]:
-            field = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature in cellprofiler.modules.measureimageoverlap.FTR_ALL + [cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE]:
+            field = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             self.assertTrue(field in features,
                             "Missing feature: %s" % feature)
-        ftr_emd = module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)
+        ftr_emd = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)
         self.assertEqual(measurements[cellprofiler.measurement.IMAGE, ftr_emd], 0)
 
     def test_03_02_ones(self):
@@ -278,23 +278,23 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=numpy.zeros((20, 10), bool)),
                 dict(image=numpy.zeros((20, 10), bool)))
 
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue(isinstance(measurements, cellprofiler.measurement.Measurements))
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertEqual(expected, value)
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_ADJUSTED_RAND_INDEX,
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX,
                           TEST_IMAGE_NAME))
         self.assertTrue(numpy.isnan(measurements.get_current_image_measurement(
                 mname)))
@@ -307,23 +307,23 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=numpy.zeros((20, 10), bool),
                      mask=numpy.zeros((20, 10), bool)))
 
-        self.assertTrue(isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue(isinstance(measurements, cellprofiler.measurement.Measurements))
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertEqual(expected, value)
-        for feature in (cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX, cellprofiler.modules.calculateimageoverlap.FTR_ADJUSTED_RAND_INDEX):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature in (cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX, cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertTrue(numpy.isnan(value))
 
@@ -335,17 +335,17 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue(isinstance(measurements, cellprofiler.measurement.Measurements))
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_ADJUSTED_RAND_INDEX, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertEqual(expected, value)
 
@@ -360,15 +360,15 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         measurements = workspace.measurements
         precision = 100.0 / 101.0
         f_factor = 2 * precision / (1 + precision)
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0.01),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 0.99),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, precision),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, f_factor),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0.01),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 0.99),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, precision),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, f_factor),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertAlmostEqual(expected, value,
                                    msg="%s is wrong" % feature)
@@ -384,15 +384,15 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         measurements = workspace.measurements
         recall = 0.99
         f_factor = 2 * recall / (1 + recall)
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0.01),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 0.99),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, recall),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, f_factor),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0.01),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 0.99),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, recall),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, f_factor),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE, 0)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertAlmostEqual(expected, value,
                                    msg="%s is wrong" % feature)
@@ -409,14 +409,14 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         measurements = workspace.measurements
         precision = 50.0 / 51.0
         f_factor = 2 * precision / (1 + precision)
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0.02),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 0.98),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, precision),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, f_factor)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0.02),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 0.98),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, precision),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, f_factor)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertAlmostEqual(expected, value,
                                    msg="%s is wrong" % feature)
@@ -433,14 +433,14 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         measurements = workspace.measurements
         recall = 0.98
         f_factor = 2 * recall / (1 + recall)
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0.02),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 0.98),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, recall),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, f_factor)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0.02),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 0.98),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, recall),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, f_factor)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertAlmostEqual(expected, value,
                                    msg="%s is wrong" % feature)
@@ -455,14 +455,14 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=ground_truth), dict(image=test, mask=mask))
         module.run(workspace)
         measurements = workspace.measurements
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, 1)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, 1)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertAlmostEqual(expected, value,
                                    msg="%s is wrong" % feature)
@@ -484,14 +484,14 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         measurements = workspace.measurements
         precision = 100.0 / 101.0
         f_factor = 2 * precision / (1 + precision)
-        for feature, expected in ((cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE, 0.01),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE, 0),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_POS_RATE, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE, 0.99),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_RECALL, 1),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_PRECISION, precision),
-                                  (cellprofiler.modules.calculateimageoverlap.FTR_F_FACTOR, f_factor)):
-            mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+        for feature, expected in ((cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0.01),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE, 0.99),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_RECALL, 1),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_PRECISION, precision),
+                                  (cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR, f_factor)):
+            mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertAlmostEqual(expected, value,
                                    msg="%s is wrong. Expected %f, got %f" %
@@ -527,11 +527,11 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=test))
         module.run(workspace)
         measurements = workspace.measurements
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX, TEST_IMAGE_NAME))
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX, TEST_IMAGE_NAME))
         self.assertAlmostEqual(
                 measurements.get_current_image_measurement(mname),
                 expected_rand_index, 6)
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_ADJUSTED_RAND_INDEX,
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX,
                           TEST_IMAGE_NAME))
         self.assertAlmostEqual(
                 measurements.get_current_image_measurement(mname),
@@ -567,11 +567,11 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         measurements = workspace.measurements
 
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX, TEST_IMAGE_NAME))
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX, TEST_IMAGE_NAME))
         self.assertAlmostEqual(
                 measurements.get_current_image_measurement(mname),
                 expected_rand_index, 6)
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_ADJUSTED_RAND_INDEX,
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX,
                           TEST_IMAGE_NAME))
         self.assertAlmostEqual(
                 measurements.get_current_image_measurement(mname),
@@ -582,7 +582,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=numpy.zeros((20, 10), bool)),
                 dict(image=numpy.zeros((20, 10), bool)))
 
-        assert isinstance(module, cellprofiler.modules.calculateimageoverlap.CalculateImageOverlap)
+        assert isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap)
         module.object_name_GT.value = GROUND_TRUTH_OBJ
         module.object_name_ID.value = ID_OBJ
         for obj_or_img, name in ((O_IMG, TEST_IMAGE_NAME),
@@ -594,8 +594,8 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             # All columns should be floats and done on images
             self.assertTrue(all([x[0] == cellprofiler.measurement.IMAGE]))
             self.assertTrue(all([x[2] == cellprofiler.measurement.COLTYPE_FLOAT]))
-            for feature in cellprofiler.modules.calculateimageoverlap.FTR_ALL:
-                field = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, feature, name))
+            for feature in cellprofiler.modules.measureimageoverlap.FTR_ALL:
+                field = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, name))
                 self.assertTrue(field in [x[1] for x in columns])
 
     def test_04_02_get_categories(self):
@@ -606,23 +606,23 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(len(categories), 0)
         categories = module.get_categories(workspace.pipeline, cellprofiler.measurement.IMAGE)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP)
+        self.assertEqual(categories[0], cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP)
 
     def test_04_03_get_measurements(self):
         workspace, module = self.make_workspace(
                 dict(image=numpy.zeros((20, 10), bool)),
                 dict(image=numpy.zeros((20, 10), bool)))
         for wants_emd, features in (
-                (True, list(cellprofiler.modules.calculateimageoverlap.FTR_ALL) + [cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE]),
-                (False, cellprofiler.modules.calculateimageoverlap.FTR_ALL)):
+                (True, list(cellprofiler.modules.measureimageoverlap.FTR_ALL) + [cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE]),
+                (False, cellprofiler.modules.measureimageoverlap.FTR_ALL)):
             module.wants_emd.value = wants_emd
             mnames = module.get_measurements(workspace.pipeline,
-                                             cellprofiler.measurement.IMAGE, cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP)
+                                             cellprofiler.measurement.IMAGE, cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP)
             self.assertEqual(len(mnames), len(features))
             self.assertTrue(all(n in features for n in mnames))
             self.assertTrue(all(f in mnames for f in features))
             mnames = module.get_measurements(workspace.pipeline, "Foo",
-                                             cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP)
+                                             cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP)
             self.assertEqual(len(mnames), 0)
             mnames = module.get_measurements(workspace.pipeline, cellprofiler.measurement.IMAGE,
                                              "Foo")
@@ -633,47 +633,47 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=numpy.zeros((20, 10), bool)),
                 dict(image=numpy.zeros((20, 10), bool)))
 
-        for feature in cellprofiler.modules.calculateimageoverlap.FTR_ALL:
+        for feature in cellprofiler.modules.measureimageoverlap.FTR_ALL:
             imnames = module.get_measurement_images(workspace.pipeline,
                                                     cellprofiler.measurement.IMAGE,
-                                                    cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP,
+                                                    cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
                                                     feature)
             self.assertEqual(len(imnames), 1)
             self.assertEqual(imnames[0], TEST_IMAGE_NAME)
         imnames = module.get_measurement_images(workspace.pipeline,
                                                 cellprofiler.measurement.IMAGE,
-                                                cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP,
+                                                cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
                                                 "Foo")
         self.assertEqual(len(imnames), 0)
         imnames = module.get_measurement_images(workspace.pipeline,
                                                 cellprofiler.measurement.IMAGE,
                                                 "Foo",
-                                                cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE)
+                                                cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE)
         self.assertEqual(len(imnames), 0)
         imnames = module.get_measurement_images(workspace.pipeline,
                                                 "Foo",
-                                                cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP,
-                                                cellprofiler.modules.calculateimageoverlap.FTR_FALSE_NEG_RATE)
+                                                cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
+                                                cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE)
         self.assertEqual(len(imnames), 0)
 
     def test_04_05_get_measurement_scales(self):
         workspace, module = self.make_workspace(
                 dict(image=numpy.zeros((20, 10), bool)),
                 dict(image=numpy.zeros((20, 10), bool)))
-        module.obj_or_img.value = cellprofiler.modules.calculateimageoverlap.O_OBJ
+        module.obj_or_img.value = cellprofiler.modules.measureimageoverlap.O_OBJ
         module.object_name_GT.value = GROUND_TRUTH_OBJ
         module.object_name_ID.value = ID_OBJ
 
         scales = module.get_measurement_scales(
-                workspace.pipeline, cellprofiler.measurement.IMAGE, cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP,
-                cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX, None)
+                workspace.pipeline, cellprofiler.measurement.IMAGE, cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
+                cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX, None)
         self.assertEqual(len(scales), 1)
         self.assertEqual(scales[0], "_".join((GROUND_TRUTH_OBJ, ID_OBJ)))
 
-        module.obj_or_img.value = cellprofiler.modules.calculateimageoverlap.O_IMG
+        module.obj_or_img.value = cellprofiler.modules.measureimageoverlap.O_IMG
         scales = module.get_measurement_scales(
-                workspace.pipeline, cellprofiler.measurement.IMAGE, cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP,
-                cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX, None)
+                workspace.pipeline, cellprofiler.measurement.IMAGE, cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
+                cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX, None)
         self.assertEqual(len(scales), 0)
 
     def test_05_00_test_measure_overlap_no_objects(self):
@@ -685,12 +685,12 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=numpy.zeros((20, 10), bool)))
         module.run(workspace)
         m = workspace.measurements
-        for feature in cellprofiler.modules.calculateimageoverlap.FTR_ALL:
+        for feature in cellprofiler.modules.measureimageoverlap.FTR_ALL:
             mname = module.measurement_name(feature)
             value = m[cellprofiler.measurement.IMAGE, mname, 1]
-            if feature == cellprofiler.modules.calculateimageoverlap.FTR_TRUE_NEG_RATE:
+            if feature == cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE:
                 self.assertEqual(value, 1)
-            elif feature == cellprofiler.modules.calculateimageoverlap.FTR_FALSE_POS_RATE:
+            elif feature == cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE:
                 self.assertEqual(value, 0)
             else:
                 self.assertTrue(
@@ -750,10 +750,10 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
 
         measurements = workspace.measurements
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX,
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX,
                           TEST_IMAGE_NAME))
         expected_rand_index = measurements.get_current_image_measurement(mname)
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_ADJUSTED_RAND_INDEX,
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX,
                           TEST_IMAGE_NAME))
         expected_adjusted_rand_index = \
             measurements.get_current_image_measurement(mname)
@@ -767,11 +767,11 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=numpy.ones(test_labels.shape)))
         module.run(workspace)
         measurements = workspace.measurements
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_RAND_INDEX,
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX,
                           GROUND_TRUTH_OBJ, ID_OBJ))
         rand_index = measurements.get_current_image_measurement(mname)
         self.assertAlmostEqual(rand_index, expected_rand_index)
-        mname = '_'.join((cellprofiler.modules.calculateimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.calculateimageoverlap.FTR_ADJUSTED_RAND_INDEX,
+        mname = '_'.join((cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX,
                           GROUND_TRUTH_OBJ, ID_OBJ))
         adjusted_rand_index = \
             measurements.get_current_image_measurement(mname)
@@ -785,7 +785,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         self.assertFalse(workspace.measurements.has_feature(
                 cellprofiler.measurement.IMAGE,
-                module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)))
+                module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)))
 
     def test_06_01_one_pixel(self):
         #
@@ -800,7 +800,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         self.assertEqual(workspace.measurements[
                              cellprofiler.measurement.IMAGE,
-                             module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 5)
+                             module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 5)
 
     def test_06_02_missing_penalty(self):
         #
@@ -819,7 +819,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         self.assertEqual(workspace.measurements[
                              cellprofiler.measurement.IMAGE,
-                             module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 16)
+                             module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 16)
 
     def test_06_03_max_distance(self):
         src = numpy.zeros((20, 10), bool)
@@ -834,7 +834,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         self.assertEqual(workspace.measurements[
                              cellprofiler.measurement.IMAGE,
-                             module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 11)
+                             module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 11)
 
     def test_06_04_decimate_k_means(self):
         r = numpy.random.RandomState()
@@ -850,7 +850,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         self.assertEqual(workspace.measurements[
                              cellprofiler.measurement.IMAGE,
-                             module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 0)
+                             module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)], 0)
         #
         # Pick a large number of points to get the real EMD
         #
@@ -861,7 +861,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         emd = workspace.measurements[
             cellprofiler.measurement.IMAGE,
-            module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)]
+            module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)]
         #
         # The EMD after decimation is going to be randomly different,
         # but not by much.
@@ -873,7 +873,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         decimated_emd = workspace.measurements[
             cellprofiler.measurement.IMAGE,
-            module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)]
+            module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)]
         self.assertLess(decimated_emd, emd * 2)
         self.assertGreater(decimated_emd, emd / 2)
 
@@ -888,10 +888,10 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=image1), dict(image=image2))
         module.max_points._Number__minval = 1
         module.max_points.value = 5
-        module.decimation_method.value = cellprofiler.modules.calculateimageoverlap.DM_SKEL
+        module.decimation_method.value = cellprofiler.modules.measureimageoverlap.DM_SKEL
         module.run(workspace)
         emd = workspace.measurements[
             cellprofiler.measurement.IMAGE,
-            module.measurement_name(cellprofiler.modules.calculateimageoverlap.FTR_EARTH_MOVERS_DISTANCE)]
+            module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)]
         self.assertGreater(emd, numpy.sum(image1) * 3)
         self.assertLess(emd, numpy.sum(image1) * 6)

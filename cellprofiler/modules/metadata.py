@@ -145,7 +145,7 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import \
     well_metadata_tokens, urlfilename, urlpathname
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
@@ -451,13 +451,27 @@ class Metadata(cpm.Module):
             matching metadata.</li>
             </ul></p>""" % globals()))
 
-        group.append("filter", cps.Filter(
-                "Select the filtering criteria", [FilePredicate(),
-                                                  DirectoryPredicate(),
-                                                  ExtensionPredicate()],
-                'and (file does contain "")', doc="""
-            Select <i>%(YES)s</i> to display and use rules to select files for metadata extraction.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals()))
+        group.append(
+            "filter",
+            cps.Filter(
+                "Select the filtering criteria",
+                [
+                    FilePredicate(),
+                    DirectoryPredicate(),
+                    ExtensionPredicate()
+                ],
+                'and (file does contain "")',
+                doc="""\
+Select *{YES}* to display and use rules to select files for metadata
+extraction.
+
+{FILTER_RULES_BUTTONS_HELP}
+""".format(**{
+                    "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP,
+                    "YES": YES
+                })
+            )
+        )
 
         group.append("csv_location", cps.PathnameOrURL(
                 "Metadata file location",

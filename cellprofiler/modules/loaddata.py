@@ -185,7 +185,7 @@ Measurements made by this module
 See also the **Input** modules, **LoadImages** and
 **CalculateStatistics**.
 
-.. _MetaXpress: https://www.moleculardevices.com/systems/high-content-imaging/metaxpress-high-content-image-acquisition-and-analysis-software
+.. _MetaXpress: http://www.moleculardevices.com/systems/high-content-imaging/metaxpress-high-content-image-acquisition-and-analysis-software
 .. _Pipeline Pilot: http://accelrys.com/products/pipeline-pilot/
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment
 """

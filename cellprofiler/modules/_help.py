@@ -20,7 +20,7 @@ below. Some helpful links follow:
    is an `example`_ to capture information from a common microscope
    nomenclature.
 
-.. _here: https://docs.python.org/2/howto/regex.html
+.. _here: http://docs.python.org/2/howto/regex.html
 .. _Pythex: http://pythex.org/
 .. _example: http://pythex.org/?regex=Channel%5B1-2%5D-%5B0-9%5D%7B2%7D-(%3FP%3CWellRow%3E%5BA-H%5D)-(%3FP%3CWellColumn%3E%5B0-9%5D%7B2%7D)%5C.tif&test_string=Channel1-01-A-01.tif&ignorecase=0&multiline=0&dotall=0&verbose=0
 """

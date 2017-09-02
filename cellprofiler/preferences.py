@@ -400,7 +400,7 @@ DEFAULT_COLORMAP_HELP = """\
 Specifies the color map that sets the colors for labels and other
 elements. See this `page`_ for pictures of available colormaps.
 
-.. _page: https://matplotlib.org/users/colormaps.html\
+.. _page: http://matplotlib.org/users/colormaps.html\
 """
 
 DEFAULT_IMAGE_FOLDER_HELP = """\

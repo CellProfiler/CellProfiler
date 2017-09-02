@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Display Data On Image** produces an image with measured data on top of
+DisplayDataOnImage
+==================
+
+**DisplayDataOnImage** produces an image with measured data on top of
 identified objects.
 
 This module displays either a single image measurement on an image of
@@ -55,20 +58,18 @@ class DisplayDataOnImage(cpm.Module):
         """
         self.objects_or_image = cps.Choice(
                 "Display object or image measurements?",
-                [OI_OBJECTS, OI_IMAGE], doc="""
-            <ul>
-            <li><i>%(OI_OBJECTS)s</i> displays measurements made on
-            objects.</li>
-            <li><i>%(OI_IMAGE)s</i> displays a single measurement made
-            on an image.</li>
-            </ul>""" % globals())
+                [OI_OBJECTS, OI_IMAGE], doc="""\
+-  *%(OI_OBJECTS)s* displays measurements made on objects.
+-  *%(OI_IMAGE)s* displays a single measurement made on an image.
+""" % globals())
 
         self.objects_name = cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc="""
-            <i>(Used only when displaying object measurements)</i><br>
-            Choose the name of objects identified by some previous
-            module (such as <b>IdentifyPrimaryObjects</b> or
-            <b>IdentifySecondaryObjects</b>).""")
+                "Select the input objects", cps.NONE, doc="""\
+*(Used only when displaying object measurements)*
+
+Choose the name of objects identified by some previous module (such as
+**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**).
+""")
 
         def object_fn():
             if self.objects_or_image == OI_OBJECTS:
@@ -77,109 +78,115 @@ class DisplayDataOnImage(cpm.Module):
                 return cpmeas.IMAGE
 
         self.measurement = cps.Measurement(
-                "Measurement to display", object_fn, doc="""
-            Choose the measurement to display. This will be a measurement
-            made by some previous module on either the whole image (if
-            displaying a single image measurement) or on the objects you
-            selected.""")
+                "Measurement to display", object_fn, doc="""\
+Choose the measurement to display. This will be a measurement made by
+some previous module on either the whole image (if displaying a single
+image measurement) or on the objects you selected.
+""")
 
         self.wants_image = cps.Binary(
                 "Display background image?", True,
-                doc="""Choose whether or not to display the measurements on
-            a background image. Usually, you will want to see the image
-            context for the measurements, but it may be useful to save
-            just the overlay of the text measurements and composite the
-            overlay image and the original image later. Choose "Yes" to
-            display the measurements on top of a background image or "No"
-            to display the measurements on a black background.""")
+                doc="""\
+Choose whether or not to display the measurements on
+a background image. Usually, you will want to see the image
+context for the measurements, but it may be useful to save
+just the overlay of the text measurements and composite the
+overlay image and the original image later. Choose "Yes" to
+display the measurements on top of a background image or "No"
+to display the measurements on a black background.""")
+
         self.image_name = cps.ImageNameSubscriber(
-                "Select the image on which to display the measurements", cps.NONE, doc="""
-            Choose the image to be displayed behind the measurements.
-            This can be any image created or loaded by a previous module.
-            If you have chosen not to display the background image, the image
-            will only be used to determine the dimensions of the displayed image""")
+                "Select the image on which to display the measurements", cps.NONE, doc="""\
+Choose the image to be displayed behind the measurements.
+This can be any image created or loaded by a previous module.
+If you have chosen not to display the background image, the image
+will only be used to determine the dimensions of the displayed image""")
 
         self.color_or_text = cps.Choice(
                 "Display mode", [CT_TEXT, CT_COLOR],
-                doc="""<i>(Used only when displaying object measurements)</i><br>
-            Choose how to display the measurement information. If you choose
-            %(CT_TEXT)s, <b>DisplayDataOnImage</b> will display the numeric
-            value on top of each object. If you choose %(CT_COLOR)s,
-            <b>DisplayDataOnImage</b> will convert the image to grayscale, if
-            necessary, and display the portion of the image within each object
-            using a hue that indicates the measurement value relative to
-            the other objects in the set using the default color map.
-            """ % globals()
-        )
+                doc="""\
+*(Used only when displaying object measurements)*
+
+Choose how to display the measurement information. If you choose
+%(CT_TEXT)s, **DisplayDataOnImage** will display the numeric value on
+top of each object. If you choose %(CT_COLOR)s, **DisplayDataOnImage**
+will convert the image to grayscale, if necessary, and display the
+portion of the image within each object using a hue that indicates the
+measurement value relative to the other objects in the set using the
+default color map.
+""" % globals())
 
         self.colormap = cps.Colormap(
                 "Color map",
-                doc="""<i>(Used only when displaying object measurements)</i><br>
-            This is the color map used as the color gradient for coloring the
-            objects by their measurement values.
+                doc="""\
+*(Used only when displaying object measurements)*
+
+This is the color map used as the color gradient for coloring the
+objects by their measurement values.
             """)
         self.text_color = cps.Color(
-                "Text color", "red", doc="""
-            This is the color that will be used when displaying the text.
-            """)
+                "Text color", "red", doc="""This is the color that will be used when displaying the text.""")
 
         self.display_image = cps.ImageNameProvider(
-                "Name the output image that has the measurements displayed", "DisplayImage", doc="""
-            The name that will be given to the image with
-            the measurements superimposed. You can use this name to refer to the image in
-            subsequent modules (such as <b>SaveImages</b>).""")
+                "Name the output image that has the measurements displayed", "DisplayImage", doc="""\
+The name that will be given to the image with the measurements
+superimposed. You can use this name to refer to the image in subsequent
+modules (such as **SaveImages**).
+""")
 
         self.font_size = cps.Integer(
-                "Font size (points)", 10, minval=1)
+                "Font size (points)", 10, minval=1, doc="""Set the font size of the letters to be displayed""")
 
         self.decimals = cps.Integer(
-                "Number of decimals", 2, minval=0)
+                "Number of decimals", 2, minval=0, doc="""Set how many decimals to be displayed, for example 2 decimals for 0.01; 3 decimals for 0.001 """)
 
         self.saved_image_contents = cps.Choice(
                 "Image elements to save",
-                [E_IMAGE, E_FIGURE, E_AXES], doc="""
-            This setting controls the level of annotation on the image:
-            <ul>
-            <li><i>%(E_IMAGE)s:</i> Saves the image with the overlaid measurement annotations.</li>
-            <li><i>%(E_AXES)s:</i> Adds axes with tick marks and image coordinates.</li>
-            <li><i>%(E_FIGURE)s:</i> Adds a title and other decorations.</li></ul>""" % globals())
+                [E_IMAGE, E_FIGURE, E_AXES], doc="""\
+This setting controls the level of annotation on the image:
+
+-  *%(E_IMAGE)s:* Saves the image with the overlaid measurement
+   annotations.
+-  *%(E_AXES)s:* Adds axes with tick marks and image coordinates.
+-  *%(E_FIGURE)s:* Adds a title and other decorations.
+""" % globals())
 
         self.offset = cps.Integer(
-                "Annotation offset (in pixels)", 0, doc="""
-            Add a pixel offset to the measurement. Normally, the text is
-            placed at the object (or image) center, which can obscure relevant features of
-            the object. This setting adds a specified offset to the text, in a random
-            direction.""")
+                "Annotation offset (in pixels)", 0, doc="""\
+Add a pixel offset to the measurement. Normally, the text is
+placed at the object (or image) center, which can obscure relevant features of
+the object. This setting adds a specified offset to the text, in a random
+direction.""")
 
         self.color_map_scale_choice = cps.Choice(
                 "Color map scale",
                 [CMS_USE_MEASUREMENT_RANGE, CMS_MANUAL],
-                doc="""<i>(Used only when displaying object measurements as a
-            colormap)</i><br>
-            <b>DisplayDataOnImage</b> assigns a color to each object's
-            measurement value from a colormap when in colormap-mode, mapping
-            the value to a color along the colormap's continuum. This mapping
-            has implicit upper and lower bounds to its range which are the
-            extremes of the colormap. This setting determines whether the
-            extremes are the minimum and maximum values of the measurement
-            from among the objects in the current image or manually-entered
-            extremes.
-            <ul>
-            <li><i>%(CMS_USE_MEASUREMENT_RANGE)s:</i> Use
-            the full range of colors to get the maximum contrast within the
-            image. </li>
-            <li><i>%(CMS_MANUAL)s:</i> Manually set the upper and
-            lower bounds so that images with different maxima and minima
-            can be compared by a uniform color mapping.</li>
-            </ul>
-            """ % globals())
+                doc="""\
+*(Used only when displaying object measurements as a colormap)*
+
+**DisplayDataOnImage** assigns a color to each object’s measurement
+value from a colormap when in colormap-mode, mapping the value to a
+color along the colormap’s continuum. This mapping has implicit upper
+and lower bounds to its range which are the extremes of the colormap.
+This setting determines whether the extremes are the minimum and
+maximum values of the measurement from among the objects in the
+current image or manually-entered extremes.
+
+-  *%(CMS_USE_MEASUREMENT_RANGE)s:* Use the full range of colors to
+   get the maximum contrast within the image.
+-  *%(CMS_MANUAL)s:* Manually set the upper and lower bounds so that
+   images with different maxima and minima can be compared by a uniform
+   color mapping.
+""" % globals())
         self.color_map_scale = cps.FloatRange(
                 "Color map range",
                 value=(0.0, 1.0),
-                doc="""<i>(Used only when setting a manual colormap range)</i><br>
-            This setting determines the lower and upper bounds of the values
-            for the color map.
-            """)
+                doc="""\
+*(Used only when setting a manual colormap range)*
+
+This setting determines the lower and upper bounds of the values for the
+color map.
+""")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

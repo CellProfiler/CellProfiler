@@ -59,7 +59,7 @@ and *conditions* you can specify to narrow down the image list.
    +------------+
 
    You can also create regular expressions (an advanced syntax for
-   pattern matching; see `below`_) in order to select particular files.
+   pattern matching) in order to select particular files.
 
 To add another rule, click the plus buttons to the right of each rule.
 Subtract an existing rule by clicking the minus button.

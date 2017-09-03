@@ -431,7 +431,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.Table.workspace.refresh_image_set()
         n_imagesets = self.Table.workspace.measurements.image_set_count
         if n_imagesets == 0:
-            from help import CREATING_A_PROJECT_CAPTION
+            from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
             wx.MessageBox(
                     "Sorry, your pipeline doesn't produce any valid image sets "
                     "as currently configured. Check your Input module settings, "

@@ -1,6 +1,7 @@
 import cellprofiler.gui.artist
 import cellprofiler.gui.figure
 import cellprofiler.gui.help
+import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
 import cellprofiler.measurement
 import cellprofiler.modules.identify
@@ -226,7 +227,7 @@ class ViewWorkspace(object):
                 parent,
                 title="CellProfiler Workspace",
                 secret_panel_class=wx.lib.scrolledpanel.ScrolledPanel,
-                help_menu_items=cellprofiler.gui.help.WV_FIGURE_HELP)
+                help_menu_items=cellprofiler.gui.help.content.FIGURE_HELP)
         self.workspace = workspace
         self.ignore_redraw = False
         self.image_rows = []

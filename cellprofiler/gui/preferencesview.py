@@ -4,6 +4,7 @@
 
 import cellprofiler.analysis
 import cellprofiler.gui.help
+import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
 import cellprofiler.preferences
 import numpy
@@ -284,7 +285,7 @@ class PreferencesView(object):
             wx.EVT_CHECKBOX, on_allow_checkbox)
         output_filename_help_button.Bind(
             wx.EVT_BUTTON,
-            lambda event: self.__on_help(event, cellprofiler.gui.help.USING_THE_OUTPUT_FILE_HELP))
+            lambda event: self.__on_help(event, cellprofiler.gui.help.content.USING_THE_OUTPUT_FILE_HELP))
         output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)

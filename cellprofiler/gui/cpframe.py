@@ -7,11 +7,13 @@ import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.datatoolframe
 import cellprofiler.gui.dialog
-import cellprofiler.gui.help
+import cellprofiler.gui.help.content
+import cellprofiler.gui.help.menu
 import cellprofiler.gui.html
 import cellprofiler.gui.html.htmlwindow
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.imagesetctrl
+import cellprofiler.gui.menu
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
@@ -19,6 +21,7 @@ import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.gui.preferencesview
+import cellprofiler.gui.welcome
 import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler.modules
@@ -134,12 +137,8 @@ ID_WINDOW_ALL = (ID_WINDOW_CLOSE_ALL, ID_WINDOW_SHOW_ALL_WINDOWS,
 
 window_ids = []
 
-ID_HELP_WELCOME = wx.NewId()
 ID_HELP_MODULE = wx.NewId()
-ID_HELP_SEARCH = wx.NewId()
 ID_HELP_DATATOOLS = wx.NewId()
-ID_HELP_ONLINE_MANUAL = wx.NewId()
-ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
 ID_HELP_ABOUT = wx.ID_ABOUT
 
@@ -328,8 +327,7 @@ class CPFrame(wx.Frame):
         self.__set_properties()
         self.__set_icon()
         self.__do_layout()
-        self.__make_search_frame()
-        self.__make_startup_blurb_frame()
+        self.startup_blurb_frame = cellprofiler.gui.welcome.Welcome(self)
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
@@ -687,26 +685,7 @@ class CPFrame(wx.Frame):
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
 
-        self.__menu_help = wx.Menu()
-        # We must add a non-submenu menu item before
-        # make_help_menu adds submenus, otherwise the submenus
-        # will disappear on the Mac.
-        self.__menu_help.Append(ID_HELP_WELCOME, "Show Welcome Screen", "Display the welcome screen shown at startup")
-        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual", "Launch the HTML help in a browser")
-        self.__menu_help.AppendSeparator()
-        cellprofiler.gui.help.make_help_menu(cellprofiler.gui.help.MAIN_HELP, self, self.__menu_help)
-        self.__menu_help.AppendSeparator()
-        self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help',
-                                       'Display documentation for available data tools')
-        self.__menu_help.Append(ID_HELP_MODULE, 'Module Help', 'Display Documentation for the Current Module')
-        self.__menu_help.Append(ID_HELP_SEARCH, "Search Help...",
-                                "Search for help pages that match a search term.")
-        self.__menu_help.AppendSeparator()
-        self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE, "Developer's Guide",
-                                "Launch the developer's guide webpage")
-        self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source Code",
-                                "Visit CellProfiler's Github repository")
-        self.__menu_help.Append(wx.ID_ABOUT, "&About CellProfiler", "About CellProfiler")
+        self.__menu_help = cellprofiler.gui.help.menu.Menu(self)
 
         self.__menu_bar = wx.MenuBar()
         self.__menu_bar.Append(self.__menu_file, '&File')
@@ -740,13 +719,7 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_select_all_ui,
                   id=wx.ID_SELECTALL)
 
-        wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
-        wx.EVT_MENU(self, ID_HELP_MODULE, self.__on_help_module)
         wx.EVT_BUTTON(self, ID_HELP_MODULE, self.__on_help_module)
-        wx.EVT_MENU(self, ID_HELP_ONLINE_MANUAL, self.__on_help_online_manual)
-        wx.EVT_MENU(self, ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
-        wx.EVT_MENU(self, ID_HELP_SOURCE_CODE, self.__on_help_source_code)
-        wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.about)
         wx.EVT_MENU(self, ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self, ID_WINDOW_CLOSE_ALL, self.__on_close_all)
@@ -778,7 +751,7 @@ class CPFrame(wx.Frame):
             def on_plate_viewer_help(event):
                 import htmldialog
                 dlg = htmldialog.HTMLDialog(
-                        self, "Help on plate viewer", cellprofiler.gui.help.PLATEVIEWER_HELP)
+                        self, "Help on plate viewer", cellprofiler.gui.help.content.PLATEVIEWER_HELP)
                 dlg.Show()
 
             new_id = wx.NewId()
@@ -803,7 +776,7 @@ class CPFrame(wx.Frame):
 
             def on_data_tool_overview(event):
                 import htmldialog
-                from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
+                from cellprofiler.gui.help.content import MENU_BAR_DATATOOLS_HELP
                 dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
                 dlg.Show()
 
@@ -962,21 +935,6 @@ class CPFrame(wx.Frame):
             os.system('open CellProfiler_python.command')
         else:
             os.system('open -na CellProfiler.app')
-
-    @staticmethod
-    def __on_help_online_manual(event):
-        import webbrowser
-        webbrowser.open("http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html")
-
-    @staticmethod
-    def __on_help_developers_guide(event):
-        import webbrowser
-        webbrowser.open("https://github.com/CellProfiler/CellProfiler/wiki")
-
-    @staticmethod
-    def __on_help_source_code(event):
-        import webbrowser
-        webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_help_path_list(self, event):
         import htmldialog
@@ -1212,99 +1170,6 @@ class CPFrame(wx.Frame):
 
     def __set_icon(self):
         self.SetIcon(cellprofiler.gui.get_cp_icon())
-
-    def __make_search_frame(self):
-        """Make and hide the "search the help" frame"""
-        background_color = cellprofiler.preferences.get_background_color()
-        size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
-                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
-        self.search_frame = wx.Frame(
-                self, title = "Search CellProfiler help",
-                size = size,
-                style = wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
-        self.search_frame.AutoLayout = True
-        self.search_frame.SetIcon(cellprofiler.gui.get_cp_icon())
-        self.search_frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.search_frame.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 4)
-        sizer.Add(wx.StaticText(self.search_frame, label="Search:"), 0,
-                  wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-        sizer.AddSpacer(2)
-        search_text_ctrl = wx.TextCtrl(self.search_frame)
-        sizer.Add(search_text_ctrl, 1, wx.EXPAND)
-        search_button = wx.Button(self.search_frame, label="Search")
-        search_button.SetDefault()
-        sizer.AddSpacer(2)
-        sizer.Add(search_button, 0, wx.EXPAND)
-
-        html_window = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(self.search_frame)
-        self.search_frame.Sizer.Add(html_window, 1, wx.EXPAND | wx.ALL, 4)
-
-        def on_search(event):
-            from cellprofiler.gui.html.manual import search_module_help
-            search_text = search_text_ctrl.Value
-            html = search_module_help(search_text)
-            if html is None:
-                so_sorry = """<html>
-      <header><title>"%s" not found in help</title></header>
-      <body>Could not find "%s" in CellProfiler's help documentation</body>
-      </html>""" % (search_text, search_text)
-                html_window.SetPage(so_sorry)
-            else:
-                html_window.SetPage(html)
-
-        search_button.Bind(wx.EVT_BUTTON, on_search)
-
-        def on_link_clicked(event):
-            """Handle anchor clicks manually
-
-            The HTML window (on Windows at least) jams the anchor to the
-            top of the window which obscures it.
-            """
-            linkinfo = event.GetLinkInfo()
-            if linkinfo.GetHref()[0] != "#":
-                event.Skip()
-                return
-            html_window.ScrollToAnchor(linkinfo.GetHref()[1:])
-            html_window.ScrollLines(-1)
-
-        html_window.Bind(wx.html.EVT_HTML_LINK_CLICKED, on_link_clicked)
-
-        def on_close(event):
-            assert isinstance(event, wx.CloseEvent)
-            self.search_frame.Hide()
-            event.Veto()
-
-        self.search_frame.Bind(wx.EVT_CLOSE, on_close)
-        self.search_frame.Layout()
-        self.search_frame.SetIcon(cellprofiler.gui.get_cp_icon())
-
-    def __on_search_help(self, event):
-        if self.search_frame is not None:
-            self.search_frame.Show()
-            self.search_frame.Raise()
-
-    def __make_startup_blurb_frame(self):
-        """Make the frame surrounding the startup blurb panel"""
-        background_color = cellprofiler.preferences.get_background_color()
-        frame = self.startup_blurb_frame = wx.Frame(
-                self, title="Welcome to CellProfiler",
-                size=(640, 480),
-                name=cellprofiler.gui.html.htmlwindow.WELCOME_SCREEN_FRAME)
-        # frame.BackgroundColour = background_color
-        frame.Sizer = wx.BoxSizer()
-        content = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(frame)
-        content.load_startup_blurb()
-        frame.Sizer.Add(content, 1, wx.EXPAND)
-        frame.SetIcon(cellprofiler.gui.get_cp_icon())
-
-        def on_close(event):
-            assert isinstance(event, wx.CloseEvent)
-            event.EventObject.Hide()
-            event.Veto()
-
-        frame.Bind(wx.EVT_CLOSE, on_close)
-        frame.Layout()
 
     def __on_data_tool(self, event, tool_name):
         module = cellprofiler.modules.instantiate_module(tool_name)

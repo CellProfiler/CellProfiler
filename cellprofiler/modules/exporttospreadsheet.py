@@ -86,7 +86,7 @@ from cellprofiler.setting import YES, NO
 from cellprofiler.measurement import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
 from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
-from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP
+from cellprofiler.gui.help.content import MEASUREMENT_NAMING_HELP
 from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
     IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.preferences import \

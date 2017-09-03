@@ -1,10 +1,6 @@
-"""AddModuleFrame.py - this is the window frame and the subwindows
-that give you the GUI to add a module to a pipeline
-"""
-
 import cellprofiler.module
 import cellprofiler.gui
-import cellprofiler.gui.html.manual
+import cellprofiler.gui.help.search
 import cellprofiler.modules
 import cellprofiler.preferences
 import cpframe
@@ -189,7 +185,7 @@ class AddModuleFrame(wx.Frame):
             self.search_text.SetFocus()
             return
 
-        html = cellprofiler.gui.html.manual.search_module_help(self.search_text.Value)
+        html = cellprofiler.gui.help.search.search_module_help(self.search_text.Value)
         if html is None:
             wx.MessageBox('No references found for "%s".' % self.search_text.Value,
                           caption="Text not found",

@@ -21,6 +21,7 @@ import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.gui.preferencesview
+import cellprofiler.gui.welcome
 import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler.modules
@@ -326,7 +327,7 @@ class CPFrame(wx.Frame):
         self.__set_properties()
         self.__set_icon()
         self.__do_layout()
-        self.__make_startup_blurb_frame()
+        self.startup_blurb_frame = cellprofiler.gui.welcome.Welcome(self)
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
@@ -1169,28 +1170,6 @@ class CPFrame(wx.Frame):
 
     def __set_icon(self):
         self.SetIcon(cellprofiler.gui.get_cp_icon())
-
-    def __make_startup_blurb_frame(self):
-        """Make the frame surrounding the startup blurb panel"""
-        background_color = cellprofiler.preferences.get_background_color()
-        frame = self.startup_blurb_frame = wx.Frame(
-                self, title="Welcome to CellProfiler",
-                size=(640, 480),
-                name=cellprofiler.gui.html.htmlwindow.WELCOME_SCREEN_FRAME)
-        # frame.BackgroundColour = background_color
-        frame.Sizer = wx.BoxSizer()
-        content = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(frame)
-        content.load_startup_blurb()
-        frame.Sizer.Add(content, 1, wx.EXPAND)
-        frame.SetIcon(cellprofiler.gui.get_cp_icon())
-
-        def on_close(event):
-            assert isinstance(event, wx.CloseEvent)
-            event.EventObject.Hide()
-            event.Veto()
-
-        frame.Bind(wx.EVT_CLOSE, on_close)
-        frame.Layout()
 
     def __on_data_tool(self, event, tool_name):
         module = cellprofiler.modules.instantiate_module(tool_name)

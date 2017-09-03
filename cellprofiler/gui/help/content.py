@@ -130,7 +130,7 @@ the plate, well and site in the fields *Date* and *Run*:
 ``.\*[\\\\\\/](?P<Date>.\\*)[\\\\\\\\/](?P<Run>.\\*)$``
 
 =============   ============
-Subexpression   Explaination
+Subexpression   Explanation
 =============   ============
 .\\*[\\\\\\\\/]      Skip characters at the beginning of the pathname until either a slash (/) or backslash (\\\\) is encountered (depending on the OS). The extra slash for the backslash is used as an escape sequence.
 (?P<Date>       Name the captured field *Date*
@@ -286,7 +286,7 @@ In summary, CellProfiler contains:
 -  Open-source code so the underlying methodology is known and can be
    modified or improved by others.
 -  A user-friendly interface.
--  The capability to make use of clusters of computers when available.
+-  The ability to use high-throughput computing (clusters, cloud).
 -  A design that eliminates the tedium of the many steps typically
    involved in image analysis, many of which are not easily transferable
    from one project to another (for example, image formatting, combining
@@ -323,7 +323,7 @@ For a full list of references, visit our `citation`_ page.
    *BMC Bioinformatics* 9(1):482
    (`link <http://dx.doi.org/10.1186/1471-2105-9-482>`__)
 
-.. _citation: http://www.cellprofiler.org/citations.html
+.. _citation: http://cellprofiler.org/citations/
 .. _link: http://dx.doi.org/10.1186/gb-2006-7-10-r100
 """
 
@@ -806,7 +806,7 @@ pipelines which will be run consecutively. Please note the following:
    *Export > Pipeline…*, and under the “Save as type” dropdown, select
    “CellProfiler pipeline and file list”.
 
-You can invoke **Run multiple pipelines** by selecting it from thefile menu. The dialog has three parts to it:
+You can invoke **Run multiple pipelines** by selecting it from the file menu. The dialog has three parts to it:
 
 -  *File chooser*: The file chooser lets you select the pipeline files
    to be run. The *Select all* and *Deselect all* buttons to the right

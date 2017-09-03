@@ -2,7 +2,7 @@
 
 """
 Groups
-------
+======
 
 The **Groups** module organizes sets of images into groups.
 
@@ -159,36 +159,64 @@ class Groups(cpm.Module):
         self.set_notes([" ".join(module_explanation)])
 
         self.wants_groups = cps.Binary(
-                "Do you want to group your images?", False, doc="""
-            Select <i>%(YES)s</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
-            group is processed independently of each other. See the main module
-            help for more details.""" % globals())
+            "Do you want to group your images?",
+            False,
+            doc="""\
+Select *{YES}* if you need to split your images into image subsets (or
+*groups*) such that each group is processed independently of each other.
+See the main module help for more details.
+""".format(**{
+                "YES": YES
+            })
+        )
 
         self.grouping_text = cps.HTMLText(
-                "", content="""
-            Each unique metadata value (or combination of values)
-            will be defined as a group""", size=(30, 2))
+            "",
+            content="Each unique metadata value (or combination of values) will be defined as a group",
+            size=(30, 2)
+        )
+
         self.grouping_metadata = []
+
         self.grouping_metadata_count = cps.HiddenCount(
-                self.grouping_metadata,
-                "grouping metadata count")
+            self.grouping_metadata,
+            "grouping metadata count"
+        )
+
         self.add_grouping_metadata(can_remove=False)
+
         self.add_grouping_metadata_button = cps.DoSomething(
-                "", "Add another metadata item", self.add_grouping_metadata)
+            "",
+            "Add another metadata item",
+            self.add_grouping_metadata
+        )
 
-        self.grouping_list = cps.Table("Grouping list", min_size=(300, 100), doc="""
-            This list shows the unique values of the selected metadata under the "Group" column; each of the unique values
-            comprises a group. The "Count" column shows the number of image sets that included in a given group; this
-            is useful as a "sanity check", to make sure that the expected number of images are present. For example,
-            if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well consisting of 3 plates,
-            you would expect to see 3 groups (each from the 3 unique plate IDs), with 384 wells &times; 2 sites/well
-            = 768 image sets in each.""")
+        self.grouping_list = cps.Table(
+            "Grouping list",
+            min_size=(300, 100),
+            doc="""\
+This list shows the unique values of the selected metadata under the
+“Group” column; each of the unique values comprises a group. The “Count”
+column shows the number of image sets that included in a given group;
+this is useful as a “sanity check”, to make sure that the expected
+number of images are present. For example, if you are grouping by
+per-plate metadata from a 384-well assay with 2 sites per well
+consisting of 3 plates, you would expect to see 3 groups (each from the
+3 unique plate IDs), with 384 wells × 2 sites/well = 768 image sets in
+each.
+"""
+        )
 
-        self.image_set_list = cps.Table("Image sets", doc="""
-            This list displays the file name and location of each of the image sets that comprise the
-            group. For example, if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well
-            consisting of 3 plates, you would expect to see a table consisting of 3 plates &times; 384 wells/plate
-            &times;2 sites/well = 2304 rows.""")
+        self.image_set_list = cps.Table(
+            "Image sets",
+            doc="""\
+This list displays the file name and location of each of the image sets
+that comprise the group. For example, if you are grouping by per-plate
+metadata from a 384-well assay with 2 sites per well consisting of 3
+plates, you would expect to see a table consisting of 3 plates × 384
+wells/plate ×2 sites/well = 2304 rows.
+"""
+        )
 
     def add_grouping_metadata(self, can_remove=True):
         group = cps.SettingsGroup()
@@ -205,70 +233,113 @@ class Groups(cpm.Module):
         else:
             choices = [cps.NONE]
 
-        group.append("metadata_choice", cps.Choice(
-                "Metadata category", choices,
-                choices_fn=get_group_metadata_choices, doc="""
-            Specify the metadata category with which to define a group. Once a selection
-            is made, the two listings below will display the updated values:
-            <ul>
-            <li>The <i>grouping list</i> (top table) shows the unique values of the selected metadata under the
-            "Group" column; each of the unique values comprises a group. The "Count" column shows the number of
-            image sets included in a given group; this is useful as a "sanity check" to make sure that the
-            expected numbers of images are present.</li>
-            <li>The <i>image set list</i> (bottom table) shows the file name and location of each of the image
-            sets that comprise the groups. In this example, the table has 26 rows, one for each of the DNA and
-            GFP image sets defined by the <b>NamesAndTypes</b> module. </li>
-            </ul>
-            You may specify multiple metadata tags to group with by clicking the "Add" button. This would
-            be necessary if a combination of metadata is required in order to define a group. Upon adding a
-            metadata category, the two tables will update in the panels below showing the resulting organization
-            of the image data for each group.
+        group.append(
+            "metadata_choice",
+            cps.Choice(
+                "Metadata category",
+                choices,
+                choices_fn=get_group_metadata_choices,
+                doc="""\
+Specify the metadata category with which to define a group. Once a
+selection is made, the two listings below will display the updated
+values:
 
-            <p>As an example, an time-lapse experiment consists of a set of movie images (indexed by a frame number), collected
-            on a per-well basis. The plate, well, wavelength and frame number metadata have been extracted using the
-            <b>Metadata</b> module. Using the <b>NamesAndTypes</b>
-            module, the two image channels (OrigBlue, <i>w1</i> and OrigGreen, <i>w2</i>) have been
-            set up in the following way:
-            <table border="1" align="center">
-            <tr><th><b>Image set number</b></th><th><b>OrigBlue (w1) file name</b></th><th><b>OrigGreen (w2) file name</b></th><th><b>Plate</b></th><th><b>Well</b></th><th><b>FrameNumber</b></th></tr>
-            <tr><td>1</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td><td>P-12345</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t001</font></td></tr>
-            <tr><td>2</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td><td>P-12345</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t002</font></td></tr>
-            <tr><td>3</td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td><td>P-12345</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t001</font></td></tr>
-            <tr><td>4</td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td><td>P-12345</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t002</font></td></tr>
-            <tr><td>5</td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t001</font></td></tr>
-            <tr><td>6</td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t002</font></td></tr>
-            <tr><td>7</td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t001</font></td></tr>
-            <tr><td>8</td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t002</font></td></tr>
-            </table>
-            We would like to perform object tracking for each movie, i.e., for each plate and well.
-            Without the use of groups, even though image sets 1&ndash;2, 3&ndash;4, 5&ndash;6, and 7&ndash;8
-            represent different movies, image set 3 will get processed immediately after image set 2,
-            image set 5 after 4, and so on. For an object tracking assay, failure to recognize where the movies
-            start and end would lead to incorrect tracking results.</p>
+-  The *grouping list* (top table) shows the unique values of the
+   selected metadata under the “Group” column; each of the unique values
+   comprises a group. The “Count” column shows the number of image sets
+   included in a given group; this is useful as a “sanity check” to make
+   sure that the expected numbers of images are present.
+-  The *image set list* (bottom table) shows the file name and location
+   of each of the image sets that comprise the groups. In this example,
+   the table has 26 rows, one for each of the DNA and GFP image sets
+   defined by the **NamesAndTypes** module.
 
-            <p>Selecting the <i>Plate</i> followed by the <i>Well</i> metadata as the metadata categories will
-            create four groups based on the unique plate and well combinations:
-            <table border="1" align="center">
-            <tr><th colspan="2"><b>Grouping tags</b></th><th colspan="4"><b>Image set tags</b></th><th colspan="2"><b>Channels</b></th></tr>
-            <tr><th><b>Group number</b></th><th><b>Group index</b></th><th><b>Image set number</b></th><th><b>Plate</b></th><th><b>Well</b></th><th><b>FrameNumber</b></th><th><b>OrigBlue</b></th><th><b>OrigGreen</b></th></tr>
-            <tr><td rowspan="2">1</td><td>1</td><td>1</td><td>P-12345</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t001</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td>2</td><td>2</td><td>P-12345</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t002</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td rowspan="2">2</td><td>1</td><td>3</td><td>P-12345</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t001</font></td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td>2</td><td>4</td><td>P-12345</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t002</font></td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td rowspan="2">3</td><td>1</td><td>5</td><td>2-ABCDF</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t001</font></td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td>2</td><td>6</td><td>2-ABCDF</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t002</font></td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td rowspan="2">4</td><td>1</td><td>7</td><td>2-ABCDF</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t001</font></td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td>2</td><td>8</td><td>2-ABCDF</td><td><font color="#ce5f33">B01</font></td><td><font color="#3dce33">t002</font></td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>2-ABCDF_<font color="#ce5f33">B01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            </table>
-            Each group will be processed independently from the others, which is the desired behavior.
-            </p>"""))
+You may specify multiple metadata tags to group with by clicking the
+“Add” button. This would be necessary if a combination of metadata is
+required in order to define a group. Upon adding a metadata category,
+the two tables will update in the panels below showing the resulting
+organization of the image data for each group.
+
+As an example, an time-lapse experiment consists of a set of movie
+images (indexed by a frame number), collected on a per-well basis. The
+plate, well, wavelength and frame number metadata have been extracted
+using the **Metadata** module. Using the **NamesAndTypes** module, the
+two image channels (OrigBlue, *w1* and OrigGreen, *w2*) have been set up
+in the following way:
+
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| **Image set number**   | **OrigBlue (w1) file name**   | **OrigGreen (w2) file name**   | **Plate**   | **Well**   | **FrameNumber**   |
++========================+===============================+================================+=============+============+===================+
+| 1                      | P-12345\_A01\_t001\_w1.tif    | P-12345\_A01\_t001\_w2.tif     | P-12345     | A01        | t001              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| 2                      | P-12345\_A01\_t002\_w1.tif    | P-12345\_A01\_t002\_w2.tif     | P-12345     | A01        | t002              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| 3                      | P-12345\_B01\_t001\_w1.tif    | P-12345\_B01\_t001\_w2.tif     | P-12345     | B01        | t001              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| 4                      | P-12345\_B01\_t002\_w1.tif    | P-12345\_B01\_t002\_w2.tif     | P-12345     | B01        | t002              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| 5                      | 2-ABCDF\_A01\_t001\_w1.tif    | 2-ABCDF\_A01\_t001\_w2.tif     | 2-ABCDF\_   | A01        | t001              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| 6                      | 2-ABCDF\_A01\_t002\_w1.tif    | 2-ABCDF\_A01\_t002\_w2.tif     | 2-ABCDF\_   | A01        | t002              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| 7                      | 2-ABCDF\_B01\_t001\_w1.tif    | 2-ABCDF\_B01\_t001\_w2.tif     | 2-ABCDF\_   | B01        | t001              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+| 8                      | 2-ABCDF\_B01\_t002\_w1.tif    | 2-ABCDF\_B01\_t002\_w2.tif     | 2-ABCDF\_   | B01        | t002              |
++------------------------+-------------------------------+--------------------------------+-------------+------------+-------------------+
+
+We would like to perform object tracking for each movie, i.e., for each
+plate and well. Without the use of groups, even though image sets 1–2,
+3–4, 5–6, and 7–8 represent different movies, image set 3 will get
+processed immediately after image set 2, image set 5 after 4, and so on.
+For an object tracking assay, failure to recognize where the movies
+start and end would lead to incorrect tracking results.
+
+Selecting the *Plate* followed by the *Well* metadata as the metadata
+categories will create four groups based on the unique plate and well
+combinations:
+
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| **Grouping tags**   | **Image set tags**   | **Channels**                                                                                                                                   |
++=====================+======================+========================+=============+============+==============================+==============================+==============================+
+| **Group number**    | **Group index**      | **Image set number**   | **Plate**   | **Well**   | **FrameNumber**              | **OrigBlue**                 | **OrigGreen**                |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 1                   | 1                    | 1                      | P-12345     | A01        | t001                         | P-12345\_A01\_t001\_w1.tif   | P-12345\_A01\_t001\_w2.tif   |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 2                   | 2                    | P-12345                | A01         | t002       | P-12345\_A01\_t002\_w1.tif   | P-12345\_A01\_t002\_w2.tif   |                              |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 2                   | 1                    | 3                      | P-12345     | B01        | t001                         | P-12345\_B01\_t001\_w1.tif   | P-12345\_B01\_t001\_w2.tif   |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 2                   | 4                    | P-12345                | B01         | t002       | P-12345\_B01\_t002\_w1.tif   | P-12345\_B01\_t002\_w2.tif   |                              |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 3                   | 1                    | 5                      | 2-ABCDF     | A01        | t001                         | 2-ABCDF\_A01\_t001\_w1.tif   | 2-ABCDF\_A01\_t001\_w2.tif   |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 2                   | 6                    | 2-ABCDF                | A01         | t002       | 2-ABCDF\_A01\_t002\_w1.tif   | 2-ABCDF\_A01\_t002\_w2.tif   |                              |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 4                   | 1                    | 7                      | 2-ABCDF     | B01        | t001                         | 2-ABCDF\_B01\_t001\_w1.tif   | 2-ABCDF\_B01\_t001\_w2.tif   |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+| 2                   | 8                    | 2-ABCDF                | B01         | t002       | 2-ABCDF\_B01\_t002\_w1.tif   | 2-ABCDF\_B01\_t002\_w2.tif   |                              |
++---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
+
+Each group will be processed independently from the others, which is the
+desired behavior.
+"""
+            )
+        )
 
         group.append("divider", cps.Divider())
+
         group.can_remove = can_remove
+
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
-                    "", "Remove this metadata item",
-                    self.grouping_metadata, group))
+            group.append(
+                "remover",
+                cps.RemoveSettingButton(
+                    "",
+                    "Remove this metadata item",
+                    self.grouping_metadata,
+                    group
+                )
+            )
 
     def get_metadata_choices(self, pipeline, group):
         if self.pipeline is not None:

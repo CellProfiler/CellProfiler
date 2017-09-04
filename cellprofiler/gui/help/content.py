@@ -74,10 +74,10 @@ described above supersedes these modules in part, old pipelines loaded
 into CellProfiler that contain these modules will provide the option of
 preserving them; these pipelines will operate exactly as before.
 
-Alternately, the user can choose to convert these modules into the
+Alternately, you can choose to convert these modules into the
 project equivalent as closely as possible. Both modules remain accesible
 via the “Add module” and |image0|  button at the bottom of the pipeline
-panel. The section details information relevant for users who would like
+panel. The section details information relevant for those who would like
 to continue using these modules. Please note, however, that these
 modules are deprecated and may be removed in the future.
 
@@ -97,9 +97,9 @@ Two sources of metadata are:
 
 -  *Metadata provided in the image filename or location (pathname).* For
    example, images produced by an automated microscope can be given
-   names similar to “Experiment1\_A01\_w1\_s1.tif” in which the metadata
+   names such as “Experiment1\_A01\_w1\_s1.tif” in which the metadata
    about the plate (“Experiment1”), the well (“A01”), the wavelength
-   number (“w1”) and the imaging site (“s1”) are encapsulated. The name
+   number (“w1”) and the imaging site (“s1”) are captured. The name
    of the folder in which the images are saved may be meaningful and may
    also be considered metadata as well. If this is the case for your
    data, use **LoadImages** to extract this information for use in the
@@ -230,8 +230,8 @@ For analysis runs that generate a large number of measurements, you may
 notice that even though the analysis completes, CellProfiler continues
 to use an inordinate amount of your CPU and RAM. This is because the
 output file is written after the analysis is completed and can take a
-very long time for a lot of measurements. If you do not need this file
-and/or notice this behavior, select "*Do not write measurements*" from
+very long time for a lot of measurements. If you do not need this file,
+select "*Do not write measurements*" from
 the “Measurements file format” drop-down box.
 
 .. _MATLAB: http://www.mathworks.com/products/matlab/
@@ -330,7 +330,8 @@ For a full list of references, visit our `citation`_ page.
 BUILDING_A_PIPELINE_HELP = u"""\
 A *pipeline* is a sequential set of image analysis modules. The best way
 to learn how to use CellProfiler is to load an example pipeline from the
-CellProfiler website’s Examples page and try it out, then adapt it for
+CellProfiler website’s Examples page and try it with its included images,
+then adapt it for
 your own images. You can also build a pipeline from scratch. Click the
 *Help* |image0|  button in the main window to get help for a specific
 module.
@@ -343,15 +344,17 @@ Loading an existing pipeline
    the folder where you want to place your output (preferably a
    different location than in the input images).
 #. Load the pipeline using *File > Import Pipeline > From File…* in the
-   main menu of CellProfiler.
+   main menu of CellProfiler, or drag and drop it to the pipeline window.
 #. Click the *Analyze Images* button to start processing.
 #. Examine the measurements using *Data tools*. The *Data tools* options
    are accessible in the main menu of CellProfiler and allow you to
    plot, view, or export your measurements (e.g., to Excel).
+#. Alternately, you can load data into CellProfiler Analyst for more
+   complex analysis. Please refer to its help for instructions.
 #. If you modify the modules or settings in the pipeline, you can save
    the pipeline using *File > Export > Pipeline…*. Alternately, you can
    save the project as a whole using *File > Save Project* or *Save
-   Project As…* which also saves the file list.
+   Project As…* which also saves the file list, i.e., the list of images.
 #. To learn how to use a cluster of computers to process large batches
    of images, see *{BATCH_PROCESSING_HELP_REF}*.
 
@@ -379,7 +382,8 @@ panel* (located on the left-hand side of the CellProfiler window).
    |image3| buttons. The *Remove Module* |image4| button will delete the
    selected module(s) from the pipeline.
 
-   Most pipelines depend on one major step: identifying the objects. In
+   Most pipelines depend on one major step: identifying the objects,
+   (otherwise known as “segmentation”). In
    CellProfiler, the objects you identify are called *primary*,
    *secondary*, or *tertiary*:
 
@@ -393,7 +397,7 @@ panel* (located on the left-hand side of the CellProfiler window).
       identification is based on the location of nuclei).
    -  **IdentifyTertiary** modules require images in which two sets of
       objects have already been identified (e.g., nuclei and cell
-      regions are used to define the cytoplasm objects, which are
+      regions are used to define cytoplasm objects, which are
       tertiary objects).
 
 #. *Adjust the settings in each module.*
@@ -422,18 +426,15 @@ panel* (located on the left-hand side of the CellProfiler window).
 #. *Click *Analyze images* to start processing.*
 
    All of the images in your selected folder(s) will be analyzed using
-   the modules and settings you have specified. A status window will
-   appear which has the following:
+   the modules and settings you have specified. The bottom of the
+   CellProfiler window will show:
 
-   -  A *progress bar* which gives the elapsed time and estimates the
-      time remaining to process the full image set.
    -  A *pause button* |image8|  which pauses execution and allows you
       to subsequently resume the analysis.
    -  A *stop button* |image9|  which cancels execution after prompting
       you for a place to save the measurements collected to that point.
-   -  A *save measurements* button |image10|  which will prompt you for a
-      place to save the measurements collected to that point while
-      continuing the analysis run.
+   -  A *progress bar* which gives the elapsed time and estimates the
+      time remaining to process the full image set.
 
    At the end of each cycle, CellProfiler saves the measurements in the
    output file.
@@ -486,32 +487,19 @@ automatically export data in a format you prefer. See
 })
 
 SPREADSHEETS_DATABASE_HELP = u"""\
-The most common form of output for cellular analysis is a *spreadsheet*,
-which is an application which tabulates data values. CellProfiler can
-also output data into a *database*, which is a collection of data that
-is stored for retrieval by users. Which format you use will depend on
-some of the considerations below:
+CellProfiler can save measurements as a spreadsheet or as a *database*.
+Which format you use will depend on some of the considerations below:
 
--  *Assessibility:* Spreadsheet applications are typically designed to
-   allow easy user interaction with the data, to edit values, make
-   graphs and the like. In contrast, the values in databases are
-   typically not modified after the fact. Instead, database applications
-   typically allow for viewing a specific data range.
+-  *Learning curve:* Applications that handle spreadsheets (e.g., Excel,
+   `Calc`_ or `Google Docs`_) are easy for beginners to use. Databases
+   are more sophisticated and require knowledge of specialized languages
+   (e.g., MySQL, Oracle, etc); a popular freeware access tool is
+   `SQLyog`_.
 -  *Capacity and speed:* Databases are designed to hold larger amounts
-   of data than spreadsheets. Spreadsheets may contain hundreds to a few
-   thousand rows of data, whereas databases can hold mnay millions of
-   rows of data. Due to the high capacity, accessing a particular
-   portion of data in a database is optimized for speed.
--  *Learning curve:* The applications that access spreadsheets are
-   usually made for ease-of-use to allow for user edits. Databases are
-   more sophisticated and are not typically edited or modified; to do so
-   require knowledge of specialized languages made for this purpose
-   (e.g., MySQL, Oracle, etc).
-
-For spreadsheets, the most widely used program to open these files is
-Microsoft’s Excel program. Since the file is plain text, other editors
-can also be used, such as `Calc`_ or `Google Docs`_. For databases, a
-popular freeware access tool is `SQLyog`_.
+   of data than spreadsheets. Spreadsheets may contain a few
+   thousand rows of data, whereas databases can hold many millions of
+   rows of data. Accessing a particular portion of data in a database
+   is optimized for speed.
 
 .. _Calc: http://www.libreoffice.org/features/calc/
 .. _Google Docs: https://docs.google.com
@@ -520,9 +508,8 @@ popular freeware access tool is `SQLyog`_.
 
 MEMORY_AND_SPEED_HELP = u"""\
 If you find that you are running into out-of-memory errors and/or speed
-issues associated with your analysis run, we have detailed a number of
-solutions on our forum `FAQ`_ on this issue. We will continue to add
-more tips and tricks to this page over time.
+issues associated with your analysis run, check out a number of
+solutions on our forum `FAQ`_ .
 
 .. _FAQ: http://forum.cellprofiler.org/t/cellprofiler-2-0-faq/664/6
 """

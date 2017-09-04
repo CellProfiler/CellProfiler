@@ -19,11 +19,13 @@ datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
 datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
 datas += [
-    ("CellProfiler/cellprofiler/data/images/*", "cellprofiler/data/images")
+    ("CellProfiler/cellprofiler/data/images/*", "cellprofiler/data/images"),
+    ("CellProfiler/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
 hiddenimports = []
 
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.gui')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
 
@@ -90,7 +92,7 @@ exe = EXE(
     a.datas,
     console=False,
     debug=False,
-    icon="CellProfiler.icns",
+    icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
     name="CellProfiler",
     strip=False,
     upx=True
@@ -99,6 +101,6 @@ exe = EXE(
 app = BUNDLE(
     exe,
     bundle_identifier=None,
-    icon="CellProfiler.icns",
+    icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
     name="CellProfiler.app"
 )

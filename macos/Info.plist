@@ -7,7 +7,7 @@
     <key>CFBundleExecutable</key>
     <string>MacOS/CellProfiler</string>
     <key>CFBundleIconFile</key>
-    <string>CellProfilerIcon.icns</string>
+    <string>CellProfiler.icns</string>
     <key>CFBundleIdentifier</key>
     <string>org.cellprofiler.CellProfiler</string>
     <key>CFBundleInfoDictionaryVersion</key>

@@ -15,6 +15,8 @@ identity = "Developer ID Application: Allen Goodman (MERWFR65Q3)"
 CellProfiler:
 	git clone git@github.com:CellProfiler/CellProfiler.git $@
 
+	cd $@ && git checkout tags/v3.0.0rc3
+
 .PHONY: dependencies
 dependencies: CellProfiler
 	pip2 install --upgrade cython
@@ -35,7 +37,7 @@ CellProfiler.dmg: dist/CellProfiler.app
 		-format UDRW                \
 		-fs HFS+                    \
 		-fsargs "-c c=64,a=16,e=16" \
-		-size 170000k               \
+		-size 190000k               \
 		-srcfolder $<               \
 		-volname CellProfiler       \
 		$@

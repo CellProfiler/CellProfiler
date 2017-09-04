@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "CellProfiler"
-#define MyAppVersion "3.0.0"
+#define MyAppVersion "3.0.0rc3"
 #define MyAppPublisher "Broad Institute"
 #define MyAppURL "http://cellprofiler.org/"
 #define MyAppExeName "CellProfiler.exe"
@@ -23,7 +23,7 @@ DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=CellProfiler\LICENSE
 OutputBaseFilename=CellProfiler
-SetupIconFile=CellProfiler.ico
+SetupIconFile=.\CellProfiler\cellprofiler\data\icons\CellProfiler.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -34,8 +34,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Administrator\Documents\CellProfiler\dist\CellProfiler\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Administrator\Documents\CellProfiler\dist\CellProfiler\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

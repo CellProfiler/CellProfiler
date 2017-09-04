@@ -1,80 +1,112 @@
 # coding=utf-8
 
 """
-The <b>NamesAndTypes</b> module gives images and/or channels a meaningful name to a particular image or channel,
-as well as defining the relationships between images to create an image set.
-<hr>
-Once the relevant images have been identified using the <b>Images</b> module (and/or has
-had metadata associated with the images using the <b>Metadata</b> module), the <b>NamesAndTypes</b> module
-gives each image a meaningful name by which modules in the analysis pipeline will refer to it.
+NamesAndTypes
+=============
 
-<h4>What is an "image set"?</h4>
-An <i>image set</i> is the collection of channels that represent a single
-field of view. For example, a fluorescent assay may have samples using DAPI and GFP to label separate
-cellular sub-compartments (see figure below), and for each site imaged, one DAPI (left) and one GFP image (right)
-is acquired by the microscope. Sometimes, the two channels are combined into a single color images and other
-times they are stored as two separate grayscale images, as in the figure.
-<table border="0" cellpadding="10" cellspacing="4" width="100%%">
-<tr>
-<td align="right"><img src="memory:dapi.png"></td>
-<td align="left"><img src="memory:gfp.png"></td>
-</tr>
-</table>
-For the purposes of analysis, you want the DAPI and GFP image for a given site to be loaded and processed
-together. Therefore, the DAPI and GFP image for a given site comprise an image set for that site.
+The **NamesAndTypes** module gives images and/or channels a meaningful
+name to a particular image or channel, as well as defining the
+relationships between images to create an image set.
 
-<h4>What do I need as input?</h4>
-The <b>NamesAndTypes</b> module receives the file list produced by the <b>Images</b> module. If you
-used the <b>Metadata</b> module to attach metadata to the images, this information is also received by
-<b>NamesAndTypes</b> and available for its use.
+Once the relevant images have been identified using the **Images**
+module (and/or has had metadata associated with the images using the
+**Metadata** module), the **NamesAndTypes** module gives each image a
+meaningful name by which modules in the analysis pipeline will refer to
+it.
 
-<h4>What do the settings mean?</h4>
-In the above example, the <b>NamesAndTypes</b> module allows you to assign each of these channels a unique name,
-provided by you. All files of a given channel will be referred to by the chosen name within the pipeline,
-and the data exported by the pipeline will also be labeled according to this name. This simplifies the
-bookkeeping of your pipeline and results by making the input and output data more intuitive: a large
-number of images are referred to by a small collection of names, which are hopefully easier for you
-to recognize.
+What is an “image set”?
+^^^^^^^^^^^^^^^^^^^^^^^
 
-<p>The most common way to perform this assignment is by specifying the pattern in the filename which
-the channel(s) of interest have in common. This is done using user-defined rules in a similar manner
-to that of the <b>Images</b> module; other attributes of the file may also be used. If you have multiple
-channels, you then assign the relationship between channels.
-For example, in the case mentioned above, the DAPI and GFP images are named in such a way that it
-is apparent to the researcher which is which, e.g., "_w1" is contained in the file for the DAPI images,
-and "_w1" in the file name for the GFP images.</p>
+An *image set* is the collection of channels that represent a single
+field of view. For example, a fluorescent assay may have samples using
+DAPI and GFP to label separate cellular sub-compartments (see figure
+below), and for each site imaged, one DAPI (left) and one GFP image
+(right) is acquired by the microscope. Sometimes, the two channels are
+combined into a single color images and other times they are stored as
+two separate grayscale images, as in the figure.
 
-<p>You can also use <b>NamesAndTypes</b> to define the relationships between images. For example,
-if you have acquired multiple wavelengths for your assay, you will need to
-match the channels to each other for each field of view so that they are loaded and processed together.
-This can be done by using their
-associated metadata. If you would like to use the metadata-specific settings, please see the <b>Metadata</b> module
-or <i>Help > General help > Using Metadata in CellProfiler</i> for more details on metadata usage
-and syntax. </p>
++------------+------------+
+| |image0|   | |image1|   |
++------------+------------+
 
-<h4>What do I get as output?</h4>
-The <b>NamesAndTypes</b> module is the last of the required input modules. After this module, you can choose
-any of the names you defined from a drop-down list in any downstream analysis module which requires an
-image as input. If you defined a set of objects using this module, those names are also available for analysis
-modules that require an object as input.
+For the purposes of analysis, you want the DAPI and GFP image for a
+given site to be loaded and processed together. Therefore, the DAPI and
+GFP image for a given site comprise an image set for that site.
 
-<p>In order to see whether the images are matched up correctly to form the image sets you would expect, press
-the "Update" button below the divider to display a table of results using the current settings. Each row
-corresponds to a unique image set, and the columns correspond to the name you specified for CellProfiler
-to identify the channel. You can press this button as many times as needed to display the most current image
-sets obtained. When you complete your pipeline and perform an analysis run, CellProfiler will process the
-image sets in the order shown.</p>
-<table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:NamesAndTypes_ExampleDisplayTable.png"></td></tr>
-</table>
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-<h4>Measurements made by this module</h4>
-<ul>
-<li><i>FileName, PathName:</i> The prefixes of the filename and location, respectively, of each image set
-written to the per-image table.</li>
-<li><i>ObjectFileName, ObjectPathName:</i> (For used for images loaded as objects) The prefixes of the
-filename and location, respectively, of each object set written to the per-image table.</li>
-</ul>
+The **NamesAndTypes** module receives the file list produced by the
+**Images** module. If you used the **Metadata** module to attach
+metadata to the images, this information is also received by
+**NamesAndTypes** and available for its use.
+
+What do the settings mean?
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the above example, the **NamesAndTypes** module allows you to assign
+each of these channels a unique name, provided by you. All files of a
+given channel will be referred to by the chosen name within the
+pipeline, and the data exported by the pipeline will also be labeled
+according to this name. This simplifies the bookkeeping of your pipeline
+and results by making the input and output data more intuitive: a large
+number of images are referred to by a small collection of names, which
+are hopefully easier for you to recognize.
+
+The most common way to perform this assignment is by specifying the
+pattern in the filename which the channel(s) of interest have in common.
+This is done using user-defined rules in a similar manner to that of the
+**Images** module; other attributes of the file may also be used. If you
+have multiple channels, you then assign the relationship between
+channels. For example, in the case mentioned above, the DAPI and GFP
+images are named in such a way that it is apparent to the researcher
+which is which, e.g., “\_w1” is contained in the file for the DAPI
+images, and “\_w1” in the file name for the GFP images.
+
+You can also use **NamesAndTypes** to define the relationships between
+images. For example, if you have acquired multiple wavelengths for your
+assay, you will need to match the channels to each other for each field
+of view so that they are loaded and processed together. This can be done
+by using their associated metadata. If you would like to use the
+metadata-specific settings, please see the **Metadata** module or *Help
+> General help > Using Metadata in CellProfiler* for more details on
+metadata usage and syntax.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The **NamesAndTypes** module is the last of the required input modules.
+After this module, you can choose any of the names you defined from a
+drop-down list in any downstream analysis module which requires an image
+as input. If you defined a set of objects using this module, those names
+are also available for analysis modules that require an object as input.
+
+In order to see whether the images are matched up correctly to form the
+image sets you would expect, press the “Update” button below the divider
+to display a table of results using the current settings. Each row
+corresponds to a unique image set, and the columns correspond to the
+name you specified for CellProfiler to identify the channel. You can
+press this button as many times as needed to display the most current
+image sets obtained. When you complete your pipeline and perform an
+analysis run, CellProfiler will process the image sets in the order
+shown.
+
++------------+
+| |image2|   |
++------------+
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  *FileName, PathName:* The prefixes of the filename and location,
+   respectively, of each image set written to the per-image table.
+-  *ObjectFileName, ObjectPathName:* (For used for images loaded as
+   objects) The prefixes of the filename and location, respectively, of
+   each object set written to the per-image table.
+
+.. |image0| image:: memory:dapi.png
+.. |image1| image:: memory:gfp.png
+.. |image2| image:: memory:NamesAndTypes_ExampleDisplayTable.png
 """
 
 import logging
@@ -133,94 +165,112 @@ INTENSITY_ALL = [INTENSITY_RESCALING_BY_METADATA,
                  INTENSITY_MANUAL]
 MANUAL_INTENSITY_LABEL = "Maximum intensity"
 
-RESCALING_HELP_TEXT = """
-This option determines how the image intensity should be
-rescaled from 0.0 &ndash; 1.0.
-<ul>
-<li><i>%(INTENSITY_RESCALING_BY_METADATA)s:</i> Rescale the image
-intensity so that saturated values are rescaled to 1.0 by dividing
-all pixels in the image by the maximum possible intensity value
-allowed by the imaging hardware. Some image formats save the maximum
-possible intensity value along with the pixel data.
-For instance, a microscope might acquire images using a 12-bit
-A/D converter which outputs intensity values between zero and 4095,
-but stores the values in a field that can take values up to 65535.
-Choosing this setting ensures that the intensity scaling value is
-the maximum allowed by the hardware, and not the maximum allowable
-by the file format. </li>
-<li><i>%(INTENSITY_RESCALING_BY_DATATYPE)s:</i> Ignore the image
-metadata and rescale the image to 0 &ndash; 1 by dividing by 255
-or 65535, depending on the number of bits used to store the image.</li>
-<li><i>%(INTENSITY_MANUAL)s:</i> Divide each pixel value by the value entered
-in the <i>%(MANUAL_INTENSITY_LABEL)s</i> setting. <i>%(INTENSITY_MANUAL)s</i> can be
-used to rescale an image whose maximum intensity metadata value is absent or
-incorrect, but is less than the value that would be supplied if
-<i>%(INTENSITY_RESCALING_BY_DATATYPE)s</i> were specified.</li>
-</ul>
-Please note that CellProfiler does not provide the option of loading
-the image as the raw, unscaled values. If you wish to make measurements
-on the unscaled image, use the <b>ImageMath</b> module to multiply the
-scaled image by the actual image bit-depth.""" % globals()
+RESCALING_HELP_TEXT = """\
+This option determines how the image intensity should be rescaled from
+0.0 – 1.0.
 
-MANUAL_RESCALE_HELP_TEXT = """
-<i>(Used only if %(INTENSITY_MANUAL)s is chosen)</i><br>
-<b>NamesAndTypes</b> divides the pixel value, as read from the image file, by
-this value to get the loaded image's per-pixel intensity.
-""" % globals()
+-  *{INTENSITY_RESCALING_BY_METADATA}:* Rescale the image intensity
+   so that saturated values are rescaled to 1.0 by dividing all pixels
+   in the image by the maximum possible intensity value allowed by the
+   imaging hardware. Some image formats save the maximum possible
+   intensity value along with the pixel data. For instance, a microscope
+   might acquire images using a 12-bit A/D converter which outputs
+   intensity values between zero and 4095, but stores the values in a
+   field that can take values up to 65535. Choosing this setting ensures
+   that the intensity scaling value is the maximum allowed by the
+   hardware, and not the maximum allowable by the file format.
+-  *{INTENSITY_RESCALING_BY_DATATYPE}:* Ignore the image metadata and
+   rescale the image to 0 – 1 by dividing by 255 or 65535, depending on
+   the number of bits used to store the image.
+-  *{INTENSITY_MANUAL}:* Divide each pixel value by the value entered
+   in the *{MANUAL_INTENSITY_LABEL}* setting. *{INTENSITY_MANUAL}*
+   can be used to rescale an image whose maximum intensity metadata
+   value is absent or incorrect, but is less than the value that would
+   be supplied if *{INTENSITY_RESCALING_BY_DATATYPE}* were specified.
 
-LOAD_AS_CHOICE_HELP_TEXT = """
-    You can specify how these images should be treated:
-    <ul>
-    <li><i>%(LOAD_AS_GRAYSCALE_IMAGE)s:</i> An image in which each pixel
-    represents a single intensity value. Most of the modules in CellProfiler
-    operate on images of this type. <br>
-    If this option is applied to a color image, the red, green and blue
-    pixel intensities will be averaged to produce a single intensity value.</li>
-    <li><i>%(LOAD_AS_COLOR_IMAGE)s:</i> An image in which each pixel
-    repesents a red, green and blue (RGB) triplet of intensity values.
-    Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
-    expect a grayscale image, so if you want to identify objects, you
-    should use the <b>ColorToGray</b> module in the analysis pipeline
-    to split the color image into its component channels.<br>
-    You can use the <i>%(LOAD_AS_GRAYSCALE_IMAGE)s</i> option to collapse the
-    color channels to a single grayscale value if you don't need CellProfiler
-    to treat the image as color.</li>
-    <li><i>%(LOAD_AS_MASK)s:</i> A <i>mask</i> is an image where some of the
-    pixel intensity values are zero, and others are non-zero. The most common
-    use for a mask is to exclude particular image regions from consideration. By
-    applying a mask to another image, the portion of the image that overlaps with
-    the non-zero regions of the mask are included. Those that overlap with the
-    zeroed region are "hidden" and not included in downstream calculations.
-    For this option, the input image should be a binary image, i.e, foreground is
-    white, background is black. The module will convert any nonzero values
-    to 1, if needed. You can use this option to load a foreground/background
-    segmentation produced by one of the <b>Identify</b> modules.</li>
-    <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
-    is an image which has been generated for the purpose of correcting uneven
-    illumination/lighting/shading or to reduce uneven background in images. Typically,
-    is a file in the NumPy .npy format. See <b>CorrectIlluminationCalculate</b> and
-    <b>CorrectIlluminationApply</b> for more details. </li>
-    <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image
-    is a label matrix and you want to obtain the objects that it defines.
-    A label matrix is a grayscale or color image in which the connected
-    regions share the same label, which defines how objects are represented
-    in CellProfiler. The labels are integer values greater than or equal
-    to 0. The elements equal to 0 are the background, whereas the elements
-    equal to 1 make up one object, the elements equal to 2 make up a second
-    object, and so on. This option allows you to use the objects
-    immediately without needing to insert an <b>Identify</b> module to
-    extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
-    This option can load objects created by the <b>SaveImages</b> module. These objects
-    can take two forms, with different considerations for each:
-    <ul>
-    <li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be
-    saved as grayscale, rather than color.</li>
-    <li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of which consists of a
-    grayscale label matrix. The frames are constructed so that objects that overlap are placed
-    in different frames.</li>
-    </ul></li>
-    </ul>
-    """ % globals()
+Please note that CellProfiler does not provide the option of loading the
+image as the raw, unscaled values. If you wish to make measurements on
+the unscaled image, use the **ImageMath** module to multiply the scaled
+image by the actual image bit-depth.
+""".format(**{
+    "INTENSITY_MANUAL": INTENSITY_MANUAL,
+    "INTENSITY_RESCALING_BY_DATATYPE": INTENSITY_RESCALING_BY_DATATYPE,
+    "INTENSITY_RESCALING_BY_METADATA": INTENSITY_RESCALING_BY_METADATA,
+    "MANUAL_INTENSITY_LABEL": MANUAL_INTENSITY_LABEL
+})
+
+MANUAL_RESCALE_HELP_TEXT = """\
+*(Used only if “{INTENSITY_MANUAL}” is chosen)*
+
+**NamesAndTypes** divides the pixel value, as read from the image file,
+by this value to get the loaded image’s per-pixel intensity.
+""".format(**{
+    "INTENSITY_MANUAL": INTENSITY_MANUAL
+})
+
+LOAD_AS_CHOICE_HELP_TEXT = """\
+You can specify how these images should be treated:
+
+-  *{LOAD_AS_GRAYSCALE_IMAGE}:* An image in which each pixel
+   represents a single intensity value. Most of the modules in
+   CellProfiler operate on images of this type.
+   If this option is applied to a color image, the red, green and blue
+   pixel intensities will be averaged to produce a single intensity
+   value.
+-  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel repesents a
+   red, green and blue (RGB) triplet of intensity values. Please note
+   that the object detection modules such as **IdentifyPrimaryObjects**
+   expect a grayscale image, so if you want to identify objects, you
+   should use the **ColorToGray** module in the analysis pipeline to
+   split the color image into its component channels.
+   You can use the *{LOAD_AS_GRAYSCALE_IMAGE}* option to collapse the
+   color channels to a single grayscale value if you don’t need
+   CellProfiler to treat the image as color.
+-  *{LOAD_AS_MASK}:* A *mask* is an image where some of the pixel
+   intensity values are zero, and others are non-zero. The most common
+   use for a mask is to exclude particular image regions from
+   consideration. By applying a mask to another image, the portion of
+   the image that overlaps with the non-zero regions of the mask are
+   included. Those that overlap with the zeroed region are “hidden” and
+   not included in downstream calculations. For this option, the input
+   image should be a binary image, i.e, foreground is white, background
+   is black. The module will convert any nonzero values to 1, if needed.
+   You can use this option to load a foreground/background segmentation
+   produced by one of the **Identify** modules.
+-  *{LOAD_AS_ILLUMINATION_FUNCTION}:* An *illumination correction
+   function* is an image which has been generated for the purpose of
+   correcting uneven illumination/lighting/shading or to reduce uneven
+   background in images. Typically, is a file in the NumPy .npy format.
+   See **CorrectIlluminationCalculate** and **CorrectIlluminationApply**
+   for more details.
+-  *{LOAD_AS_OBJECTS}:* Use this option if the input image is a label
+   matrix and you want to obtain the objects that it defines. A label
+   matrix is a grayscale or color image in which the connected regions
+   share the same label, which defines how objects are represented in
+   CellProfiler. The labels are integer values greater than or equal to
+   0. The elements equal to 0 are the background, whereas the elements
+   equal to 1 make up one object, the elements equal to 2 make up a
+   second object, and so on. This option allows you to use the objects
+   immediately without needing to insert an **Identify** module to
+   extract them first. See **IdentifyPrimaryObjects** for more details.
+   This option can load objects created by the **SaveImages** module.
+   These objects can take two forms, with different considerations for
+   each:
+
+   -  *Non-overalapping* objects are stored as a label matrix. This
+      matrix should be saved as grayscale, rather than color.
+   -  *Overlapping objects* are stored in a multi-frame TIF, each frame
+      of which consists of a grayscale label matrix. The frames are
+      constructed so that objects that overlap are placed in different
+      frames.
+""".format(**{
+    "LOAD_AS_COLOR_IMAGE": LOAD_AS_COLOR_IMAGE,
+    "LOAD_AS_GRAYSCALE_IMAGE": LOAD_AS_GRAYSCALE_IMAGE,
+    "LOAD_AS_ILLUMINATION_FUNCTION": LOAD_AS_ILLUMINATION_FUNCTION,
+    "LOAD_AS_MASK": LOAD_AS_MASK,
+    "LOAD_AS_OBJECTS": LOAD_AS_OBJECTS
+
+})
 
 IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT_V3 = 6
@@ -285,41 +335,53 @@ class NamesAndTypes(cpm.Module):
         self.metadata_keys = []
 
         self.assignment_method = cps.Choice(
-                "Assign a name to", [ASSIGN_ALL, ASSIGN_RULES], doc="""
-            This setting allows the user to specify a name to images or subsets
-            of images so they can be treated separately by downstream modules.
-            For example, giving a different name to a GFP stain image and a
-            brightfield image of the same site allows each to be processed
-            independently.
-            <p>The choices are:<br>
-            <ul><li><i>%(ASSIGN_ALL)s</i>: Give every image the same name.
-            This is the simplest choice and the appropriate one if you have
-            only one kind of image (or only one image). CellProfiler will
-            give each image the same name and the pipeline will load only
-            one of the images per iteration.</li>
-            <li><i>%(ASSIGN_RULES)s</i>: Give images one of several names
-            depending on the file name, directory and metadata. This is the
-            appropriate choice if more than one image was acquired from each
-            imaging site. You will be asked for distinctive criteria for
-            each image and will be able to assign each category of image
-            a name that can be referred to in downstream modules.</li>
-            </ul></p>
-            """ % globals())
+            "Assign a name to",
+            [
+                ASSIGN_ALL,
+                ASSIGN_RULES
+            ],
+            doc="""\
+This setting allows the user to specify a name to images or subsets of
+images so they can be treated separately by downstream modules. For
+example, giving a different name to a GFP stain image and a brightfield
+image of the same site allows each to be processed independently.
+
+The choices are:
+
+-  *{ASSIGN_ALL}*: Give every image the same name. This is the simplest
+   choice and the appropriate one if you have only one kind of image (or
+   only one image). CellProfiler will give each image the same name and
+   the pipeline will load only one of the images per iteration.
+-  *{ASSIGN_RULES}*: Give images one of several names depending on the
+   file name, directory and metadata. This is the appropriate choice if
+   more than one image was acquired from each imaging site. You will be
+   asked for distinctive criteria for each image and will be able to
+   assign each category of image a name that can be referred to in
+   downstream modules.
+""".format(**{
+                "ASSIGN_ALL": ASSIGN_ALL,
+                "ASSIGN_RULES": ASSIGN_RULES
+            })
+        )
 
         self.single_load_as_choice = cps.Choice(
-                "Select the image type", [LOAD_AS_GRAYSCALE_IMAGE,
-                                          LOAD_AS_COLOR_IMAGE,
-                                          LOAD_AS_MASK],
-                doc=LOAD_AS_CHOICE_HELP_TEXT)
+            "Select the image type",
+            [
+                LOAD_AS_GRAYSCALE_IMAGE,
+                LOAD_AS_COLOR_IMAGE,
+                LOAD_AS_MASK
+            ],
+            doc=LOAD_AS_CHOICE_HELP_TEXT
+        )
 
         self.process_as_3d = cps.Binary(
             text="Process as 3D",
             value=False,
-            doc="""
-            If you want to treat the data as three-dimensional, select "Yes" to
-            load files as volumes. Otherwise, select "No" to load files as separate,
-            two-dimensional images.
-            """,
+            doc="""\
+If you want to treat the data as three-dimensional, select "Yes" to
+load files as volumes. Otherwise, select "No" to load files as separate,
+two-dimensional images.
+""",
             callback=lambda value: self.pipeline.set_volumetric(value)
         )
 
@@ -327,146 +389,223 @@ class NamesAndTypes(cpm.Module):
             text="x",
             value=1.0,
             minval=0.0,
-            doc="Spacing between voxels in the x-dimension."
+            doc="""\
+*(Used only if "Process as 3D" is "Yes")*
+
+Spacing between voxels in the x-dimension.
+"""
         )
 
         self.y = cps.Float(
             text="y",
             value=1.0,
             minval=0.0,
-            doc="Spacing between voxels in the y-dimension."
+            doc="""\
+*(Used only if "Process as 3D" is "Yes")*
+
+Spacing between voxels in the y-dimension.
+"""
         )
 
         self.z = cps.Float(
             text="z",
             value=1.0,
             minval=0.0,
-            doc="Spacing between voxels in the z-dimension."
+            doc="""\
+*(Used only if "Process as 3D" is "Yes")*
+
+Spacing between voxels in the z-dimension.
+"""
         )
 
         self.single_image_provider = cps.FileImageNameProvider(
-                "Name to assign these images", IMAGE_NAMES[0])
+            "Name to assign these images",
+            IMAGE_NAMES[0]
+        )
 
         self.single_rescale = cps.Choice(
-                "Set intensity range from",
-                INTENSITY_ALL,
-                value=INTENSITY_RESCALING_BY_METADATA,
-                doc=RESCALING_HELP_TEXT)
+            "Set intensity range from",
+            INTENSITY_ALL,
+            value=INTENSITY_RESCALING_BY_METADATA,
+            doc=RESCALING_HELP_TEXT
+        )
 
         self.manual_rescale = cps.Float(
-                MANUAL_INTENSITY_LABEL, DEFAULT_MANUAL_RESCALE,
-                minval=np.finfo(np.float32).eps,
-                doc=MANUAL_RESCALE_HELP_TEXT)
+            MANUAL_INTENSITY_LABEL,
+            DEFAULT_MANUAL_RESCALE,
+            minval=np.finfo(np.float32).eps,
+            doc=MANUAL_RESCALE_HELP_TEXT
+        )
 
         self.assignments = []
+
         self.single_images = []
 
-        self.assignments_count = cps.HiddenCount(self.assignments,
-                                                 "Assignments count")
+        self.assignments_count = cps.HiddenCount(
+            self.assignments,
+            "Assignments count"
+        )
+
         self.single_images_count = cps.HiddenCount(
-                self.single_images, "Single images count")
+            self.single_images,
+            "Single images count"
+        )
+
         self.add_assignment(can_remove=False)
 
         self.add_assignment_divider = cps.Divider()
+
         self.add_assignment_button = cps.DoThings(
-                "", (("Add another image", self.add_assignment),
-                     ("Add a single image", self.add_single_image)))
+            "",
+            (
+                ("Add another image", self.add_assignment),
+                ("Add a single image", self.add_single_image)
+            )
+        )
 
         self.matching_choice = cps.Choice(
-                "Image set matching method",
-                [MATCH_BY_ORDER, MATCH_BY_METADATA], doc="""
-            Select how you want to match the image from one channel with
-            the images from other channels.
-            <p>This setting controls how CellProfiler picks which images
-            should be matched together when analyzing all of the images
-            from one site. </p>
-            <p>You can match corresponding channels to each other in one of two ways:
-            <ul>
-            <li><i>%(MATCH_BY_ORDER)s</i>: CellProfiler will order the images in
-            each channel alphabetically by their file path name and, for movies
-            or TIF stacks, will order the frames by their order in the file.
-            CellProfiler will then match the first from one channel to the
-            first from another channel. <br>
-            This approach is sufficient for most applications, but
-            will match the wrong images if any of the files are missing or misnamed.
-            The image set list will then get truncated according to the channel with
-            the fewer number of files.</li>
+            "Image set matching method",
+            [
+                MATCH_BY_ORDER,
+                MATCH_BY_METADATA
+            ],
+            doc="""\
+Choose how you want to match the image from one channel with the images
+from other channels.
 
-            <li><i>%(MATCH_BY_METADATA)s</i>: CellProfiler will match files with
-            the same metadata values. This option is more complex to use than
-            <i>%(MATCH_BY_ORDER)s</i> but is more flexible and less prone to inadvertent
-            errors. %(USING_METADATA_HELP_REF)s.
-            <p>As an example, an experiment is run on a single multiwell plate with two
-            image channels (OrigBlue, <i>w1</i> and OrigGreen, <i>w2</i>) containing
-            well and site metadata extracted using the <b>Metadata</b> module. A set of
-            images from two sites in well A01 might be described using the following:
-            <table border="1" align="center">
-            <tr><th><b>File name</b></th><th><b>Well</b></th><th><b>Site</b></th><th><b>Wavelength</b></th></tr>
-            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w1</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s1</font></td><td><font color="#33bbce">w1</font></td></tr>
-            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w2</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s1</font></td><td><font color="#33bbce">w2</font></td></tr>
-            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w1</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s2</font></td><td><font color="#33bbce">w1</font></td></tr>
-            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w2</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s2</font></td><td><font color="#33bbce">w2</font></td></tr>
-            </table>
-            </p>
-            <p>We want to match the channels so that each field of view in uniquely represented by the two channels. In this case,
-            to match the <i>w1</i> and <i>w2</i> channels with their respective well and site metadata,
-            you would select the <i>Well</i> metadata for both channels, followed by the <i>Site</i> metadata
-            for both channels. In other words:
-            <table border="1" align="center">
-            <tr><th><b>OrigBlue</b></th><th><b>OrigGreen</b></th></tr>
-            <tr><td>Well</td><td>Well</td></tr>
-            <tr><td>Site</td><td>Site</td></tr>
-            </table>
-            In this way, CellProfiler will match up files that have the same
-            well and site metadata combination, so that the <i>w1</i> channel belonging to well A01 and site 1
-            will be paired with the <i>w2</i> channel belonging to well A01 and site 1. This will occur for all
-            unique well and site pairings, to create an image set similar to the following:
-            <table border="1" align="center">
-            <tr><th colspan="2"><b>Image set tags</b></th><th colspan="2"><b>Channels</b></th></tr>
-            <tr><td><b>Well</b></td><td><b>Site</b></td><td><b>OrigBlue (w1)</b></td><td><b>OrigGreen (w2)</b></td></tr>
-            <tr><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s1</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            <tr><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s2</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w2</font>.tif</td></tr>
-            </table>
-            Image sets for which a given metadata value combination (e.g., well, site) is either
-            missing or duplicated for a given channel will simply be omitted.</p>
-            <p>In addition, CellProfiler can match a single file for one channel against many files from
-            another channel. This is useful, for instance, for applying an illumination correction file
-            for an entire plate against every image file for that plate. In this instance, this would be
-            done by selecting <i>Plate</i> as the common metadata tag and <i>(None)</i> for the rest:
-            <table border="1" align="center">
-            <tr><th><b>OrigBlue</b></th><th><b>IllumBlue</b></th></tr>
-            <tr><td>Plate</td><td>Plate</td></tr>
-            <tr><td>Well</td><td>(None)</td></tr>
-            <tr><td>Site</td><td>(None)</td></tr>
-            </table>
-            </p>
-            <p>The order of metadata matching is determined by the metadata data type (which is set in the
-            <b>Metadata</b> module). The default is <i>text</i>, which means that the metadata is matched
-            in alphabetical order. However, this can pose a problem if you need an image with a metadata value
-            of "2" to be processed before one with "10", since the latter is alphabetically first. To do
-            this, you can set the metadata type to <i>integer</i> rather than <i>text</i>; the images will
-            then be matched in numerical order.</p>
-            <p>There are two special cases in metadata handling worth mentioning:
-            <ul>
-            <li><i>Missing metadata:</i> For a particular metadata tag, one image from a given
-            image set has metadata values defined but another image does not. An example is when a microscope
-            aborts acquisition prematurely in the middle of scanning two channels for a site, and captures
-            one channel but not the other. In this case, plate, well and site metadata value exists for one
-            image but not for the other since it was never acquired. </li>
-            <li><i>Duplicate metadata:</i> For a particular metadata tag, the same metadata values exist
-            for multiple image sets such that they are not uniquely defined. An example is when a microscope
-            re-scans a site in order to recover from a prior error. In this case, there may be one image from
-            one channel but <i>two</i> images for the other channel, for the same site. Therefore, multiple instances
-            of the same plate, well and site metadata values exist for the same image set.</li>
-            </ul>
-            In both of these cases, the exact pairing between channels no longer exists. For missing metadata, the pairing is one-to-none,
-            and for duplicate metadata, the pairing is one-to-two. In these instances where a match cannot be
-            made, <b>NamesAndTypes</b> will simply omit the confounding metadata values from consideration. In the above
-            example, an image set will not be created for the plate, well and site combination in question.
-            </p>
-            </li>
-            </ul>""" % globals())
+This setting controls how CellProfiler picks which images should be
+matched together when analyzing all of the images from one site.
+
+You can match corresponding channels to each other in one of two ways:
+
+-  *{MATCH_BY_ORDER}*: CellProfiler will order the images in each
+   channel alphabetically by their file path name and, for movies or TIF
+   stacks, will order the frames by their order in the file.
+   CellProfiler will then match the first from one channel to the first
+   from another channel.
+   This approach is sufficient for most applications, but will match the
+   wrong images if any of the files are missing or misnamed. The image
+   set list will then get truncated according to the channel with the
+   fewer number of files.
+-  *{MATCH_BY_METADATA}*: CellProfiler will match files with the same
+   metadata values. This option is more complex to use than
+   *{MATCH_BY_ORDER}* but is more flexible and less prone to
+   inadvertent errors.
+
+   As an example, an experiment is run on a single multiwell plate with
+   two image channels (OrigBlue, *w1* and OrigGreen, *w2*) containing
+   well and site metadata extracted using the **Metadata** module. A set
+   of images from two sites in well A01 might be described using the
+   following:
+
+   +----------------------------+------------+------------+------------------+
+   | **File name**              | **Well**   | **Site**   | **Wavelength**   |
+   +============================+============+============+==================+
+   | P-12345\_A01\_s1\_w1.tif   | A01        | s1         | w1               |
+   +----------------------------+------------+------------+------------------+
+   | P-12345\_A01\_s1\_w2.tif   | A01        | s1         | w2               |
+   +----------------------------+------------+------------+------------------+
+   | P-12345\_A01\_s2\_w1.tif   | A01        | s2         | w1               |
+   +----------------------------+------------+------------+------------------+
+   | P-12345\_A01\_s2\_w2.tif   | A01        | s2         | w2               |
+   +----------------------------+------------+------------+------------------+
+
+   We want to match the channels so that each field of view in uniquely
+   represented by the two channels. In this case, to match the *w1* and
+   *w2* channels with their respective well and site metadata, you would
+   select the *Well* metadata for both channels, followed by the *Site*
+   metadata for both channels. In other words:
+
+   +----------------+-----------------+
+   | **OrigBlue**   | **OrigGreen**   |
+   +================+=================+
+   | Well           | Well            |
+   +----------------+-----------------+
+   | Site           | Site            |
+   +----------------+-----------------+
+
+   In this way, CellProfiler will match up files that have the same well
+   and site metadata combination, so that the *w1* channel belonging to
+   well A01 and site 1 will be paired with the *w2* channel belonging to
+   well A01 and site 1. This will occur for all unique well and site
+   pairings, to create an image set similar to the following:
+
+   +----------------------+----------------+----------------------------+----------------------------+
+   | **Image set tags**   | **Channels**   |                                                         |
+   +======================+================+============================+============================+
+   | **Well**             | **Site**       | **OrigBlue (w1)**          | **OrigGreen (w2)**         |
+   +----------------------+----------------+----------------------------+----------------------------+
+   | A01                  | s1             | P-12345\_A01\_s1\_w1.tif   | P-12345\_A01\_s1\_w2.tif   |
+   +----------------------+----------------+----------------------------+----------------------------+
+   | A01                  | s2             | P-12345\_A01\_s2\_w1.tif   | P-12345\_A01\_s2\_w2.tif   |
+   +----------------------+----------------+----------------------------+----------------------------+
+
+   Image sets for which a given metadata value combination (e.g., well,
+   site) is either missing or duplicated for a given channel will simply
+   be omitted.
+
+   In addition, CellProfiler can match a single file for one channel
+   against many files from another channel. This is useful, for
+   instance, for applying an illumination correction file for an entire
+   plate against every image file for that plate. In this instance, this
+   would be done by selecting *Plate* as the common metadata tag and
+   *(None)* for the rest:
+
+   +----------------+-----------------+
+   | **OrigBlue**   | **IllumBlue**   |
+   +================+=================+
+   | Plate          | Plate           |
+   +----------------+-----------------+
+   | Well           | (None)          |
+   +----------------+-----------------+
+   | Site           | (None)          |
+   +----------------+-----------------+
+
+   The order of metadata matching is determined by the metadata data
+   type (which is set in the **Metadata** module). The default is
+   *text*, which means that the metadata is matched in alphabetical
+   order. However, this can pose a problem if you need an image with a
+   metadata value of “2” to be processed before one with “10”, since the
+   latter is alphabetically first. To do this, you can set the metadata
+   type to *integer* rather than *text*; the images will then be matched
+   in numerical order.
+
+   There are two special cases in metadata handling worth mentioning:
+
+   -  *Missing metadata:* For a particular metadata tag, one image from
+      a given image set has metadata values defined but another image
+      does not. An example is when a microscope aborts acquisition
+      prematurely in the middle of scanning two channels for a site, and
+      captures one channel but not the other. In this case, plate, well
+      and site metadata value exists for one image but not for the other
+      since it was never acquired.
+   -  *Duplicate metadata:* For a particular metadata tag, the same
+      metadata values exist for multiple image sets such that they are
+      not uniquely defined. An example is when a microscope re-scans a
+      site in order to recover from a prior error. In this case, there
+      may be one image from one channel but *two* images for the other
+      channel, for the same site. Therefore, multiple instances of the
+      same plate, well and site metadata values exist for the same image
+      set.
+
+   In both of these cases, the exact pairing between channels no longer
+   exists. For missing metadata, the pairing is one-to-none, and for
+   duplicate metadata, the pairing is one-to-two. In these instances
+   where a match cannot be made, **NamesAndTypes** will simply omit the
+   confounding metadata values from consideration. In the above example,
+   an image set will not be created for the plate, well and site
+   combination in question.
+
+{USING_METADATA_HELP_REF}
+""".format(**{
+                "MATCH_BY_METADATA": MATCH_BY_METADATA,
+                "MATCH_BY_ORDER": MATCH_BY_ORDER,
+                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+            })
+        )
+
         self.join = cps.Joiner("Match metadata")
+
         self.imageset_setting = cps.ImageSetDisplay("", "Update image set table")
 
     def add_assignment(self, can_remove=True):
@@ -479,8 +618,12 @@ class NamesAndTypes(cpm.Module):
         if can_remove:
             group.append("divider", cps.Divider())
 
-        mp = MetadataPredicate("Metadata", "Have %s matching",
-                               doc="Has metadata matching the value you enter")
+        mp = MetadataPredicate(
+            "Metadata",
+            "Have %s matching",
+            doc="Has metadata matching the value you enter"
+        )
+
         mp.set_metadata_keys(self.metadata_keys)
 
         group.append(
@@ -505,64 +648,117 @@ Specify a filter using rules to narrow down the files to be analyzed.
             )
         )
 
-        group.append("image_name", cps.FileImageNameProvider(
-                "Name to assign these images", unique_image_name, doc="""
-            Enter the name that you want to call this image.
-            After this point, this image will be referred to by this
-            name, and can be selected from any drop-down menu that
-            requests an image selection."""))
+        group.append(
+            "image_name",
+            cps.FileImageNameProvider(
+                "Name to assign these images",
+                unique_image_name,
+                doc="""\
+Enter the name that you want to call this image.
+After this point, this image will be referred to by this
+name, and can be selected from any drop-down menu that
+requests an image selection.
+"""
+            )
+        )
 
-        group.append("object_name", cps.ObjectNameProvider(
-                "Name to assign these objects", unique_object_name, doc="""
-            Enter the name that you want to call this set of objects.
-            After this point, this object will be referred to by this
-            name, and can be selected from any drop-down menu that
-            requests an object selection."""))
+        group.append(
+            "object_name",
+            cps.ObjectNameProvider(
+                "Name to assign these objects",
+                unique_object_name,
+                doc="""\
+Enter the name that you want to call this set of objects.
+After this point, this object will be referred to by this
+name, and can be selected from any drop-down menu that
+requests an object selection.
+"""
+            )
+        )
 
-        group.append("load_as_choice", cps.Choice(
-                "Select the image type", LOAD_AS_ALL,
-                doc=LOAD_AS_CHOICE_HELP_TEXT))
+        group.append(
+            "load_as_choice",
+            cps.Choice(
+                "Select the image type",
+                LOAD_AS_ALL,
+                doc=LOAD_AS_CHOICE_HELP_TEXT
+            )
+        )
 
-        group.append("rescale", cps.Choice(
+        group.append(
+            "rescale",
+            cps.Choice(
                 "Set intensity range from",
                 INTENSITY_ALL,
                 value=INTENSITY_RESCALING_BY_METADATA,
-                doc=RESCALING_HELP_TEXT))
+                doc=RESCALING_HELP_TEXT
+            )
+        )
 
-        group.append("manual_rescale", cps.Float(
-                MANUAL_INTENSITY_LABEL, value=DEFAULT_MANUAL_RESCALE,
+        group.append(
+            "manual_rescale",
+            cps.Float(
+                MANUAL_INTENSITY_LABEL,
+                value=DEFAULT_MANUAL_RESCALE,
                 minval=np.finfo(np.float32).eps,
-                doc=MANUAL_RESCALE_HELP_TEXT))
+                doc=MANUAL_RESCALE_HELP_TEXT
+            )
+        )
 
-        group.append("should_save_outlines", cps.Binary(
-                "Retain outlines of loaded objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals()))
+        group.append(
+            "should_save_outlines",
+            cps.Binary(
+                "Retain outlines of loaded objects?",
+                False,
+                doc=RETAINING_OUTLINES_HELP
+            )
+        )
 
-        group.append("save_outlines", cps.OutlineNameProvider(
-                "Name the outline image", "LoadedOutlines", doc=
-                """%(NAMING_OUTLINES_HELP)s""" % globals()))
+        group.append(
+            "save_outlines",
+            cps.OutlineNameProvider(
+                "Name the outline image",
+                "LoadedOutlines",
+                doc=NAMING_OUTLINES_HELP
+            )
+        )
 
         def copy_assignment(group=group):
             self.copy_assignment(group, self.assignments, self.add_assignment)
 
-        group.append("copy_button", cps.DoSomething(
-                "", "Duplicate this image", copy_assignment, doc="""
-            Duplicate the channel specification, creating a new image assignment
-            with the same settings as this one.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; This button is
-            useful if you are specifying a long series of channels which differ
-            by one or two settings (e.g., an image stack with many frames). Using
-            this button will help avoid the tedium of having to select the same settings
-            multiple times.</dd>
-            </dl>""" % globals()))
+        group.append(
+            "copy_button",
+            cps.DoSomething(
+                "",
+                "Duplicate this image",
+                copy_assignment,
+                doc="""\
+Duplicate the channel specification, creating a new image assignment
+with the same settings as this one.
+
+|image0| This button is useful if
+you are specifying a long series of channels which differ by one or two
+settings (e.g., an image stack with many frames). Using this button will
+help avoid the tedium of having to select the same settings multiple
+times.
+
+.. |image0| image:: memory:thumb-up.png
+"""
+            )
+        )
 
         group.can_remove = can_remove
+
         if can_remove:
             group.append(
-                    "remover",
-                    cps.RemoveSettingButton(
-                            '', "Remove this image", self.assignments, group))
+                "remover",
+                cps.RemoveSettingButton(
+                    '',
+                    "Remove this image",
+                    self.assignments,
+                    group
+                )
+            )
 
     def copy_assignment(self, assignment, assignment_list, add_assignment_fn):
         '''Make a copy of an assignment
@@ -619,54 +815,107 @@ Specify a filter using rules to narrow down the files to be analyzed.
         self.single_images.append(group)
 
         group.append("divider", cps.Divider())
-        group.append("image_plane", cps.ImagePlane(
+
+        group.append(
+            "image_plane",
+            cps.ImagePlane(
                 "Single image location",
-                doc="""Choose the single image to add to all image sets. You can
-            either drag an image onto the setting to select it and add it
-            to the image file list or you can press the "Browse" button to
-            select an existing image from the file list."""))
-        group.append("image_name", cps.FileImageNameProvider(
-                "Name to assign this image", unique_image_name, doc="""
-            Enter the name that you want to call this image.
-            After this point, this image will be referred to by this
-            name, and can be selected from any drop-down menu that
-            requests an image selection."""))
+                doc="""\
+Choose the single image to add to all image sets. You can
+either drag an image onto the setting to select it and add it
+to the image file list or you can press the "Browse" button to
+select an existing image from the file list.
+"""
+            )
+        )
+        group.append(
+            "image_name",
+            cps.FileImageNameProvider(
+                "Name to assign this image",
+                unique_image_name,
+                doc="""\
+Enter the name that you want to call this image.
+After this point, this image will be referred to by this
+name, and can be selected from any drop-down menu that
+requests an image selection.
+"""
+            )
+        )
 
-        group.append("object_name", cps.ObjectNameProvider(
-                "Name to assign these objects", unique_object_name, doc="""
-            Enter the name that you want to call this set of objects.
-            After this point, this object will be referred to by this
-            name, and can be selected from any drop-down menu that
-            requests an object selection."""))
+        group.append(
+            "object_name",
+            cps.ObjectNameProvider(
+                "Name to assign these objects",
+                unique_object_name,
+                doc="""\
+Enter the name that you want to call this set of objects.
+After this point, this object will be referred to by this
+name, and can be selected from any drop-down menu that
+requests an object selection.
+"""
+            )
+        )
 
-        group.append("load_as_choice", cps.Choice(
-                "Select the image type", LOAD_AS_ALL,
-                doc=LOAD_AS_CHOICE_HELP_TEXT))
+        group.append(
+            "load_as_choice",
+            cps.Choice(
+                "Select the image type",
+                LOAD_AS_ALL,
+                doc=LOAD_AS_CHOICE_HELP_TEXT
+            )
+        )
 
-        group.append("rescale", cps.Choice(
+        group.append(
+            "rescale",
+            cps.Choice(
                 "Set intensity range from",
                 INTENSITY_ALL,
-                value=INTENSITY_RESCALING_BY_METADATA, doc=RESCALING_HELP_TEXT))
+                value=INTENSITY_RESCALING_BY_METADATA,
+                doc=RESCALING_HELP_TEXT
+            )
+        )
 
-        group.append("manual_rescale", cps.Float(
-                MANUAL_INTENSITY_LABEL, value=DEFAULT_MANUAL_RESCALE,
+        group.append(
+            "manual_rescale",
+            cps.Float(
+                MANUAL_INTENSITY_LABEL,
+                value=DEFAULT_MANUAL_RESCALE,
                 minval=np.finfo(np.float32).eps,
-                doc=MANUAL_RESCALE_HELP_TEXT))
+                doc=MANUAL_RESCALE_HELP_TEXT
+            )
+        )
 
-        group.append("should_save_outlines", cps.Binary(
-                "Retain object outlines?", False, doc=RETAINING_OUTLINES_HELP))
+        group.append(
+            "should_save_outlines",
+            cps.Binary(
+                "Retain object outlines?",
+                False,
+                doc=RETAINING_OUTLINES_HELP
+            )
+        )
 
-        group.append("save_outlines", cps.OutlineNameProvider(
-                "Name the outline image", "LoadedOutlines",
-                doc=NAMING_OUTLINES_HELP))
+        group.append(
+            "save_outlines",
+            cps.OutlineNameProvider(
+                "Name the outline image",
+                "LoadedOutlines",
+                doc=NAMING_OUTLINES_HELP
+            )
+        )
 
         def copy_assignment(group=group):
             self.copy_assignment(
                     group, self.single_images, self.add_single_image)
 
-        group.append("copy_button", cps.DoSomething(
-                "", "Copy", copy_assignment,
-                doc="Make a copy of this channel specification"))
+        group.append(
+            "copy_button",
+            cps.DoSomething(
+                "",
+                "Copy",
+                copy_assignment,
+                doc="Make a copy of this channel specification"
+            )
+        )
 
         group.can_remove = True
         group.append(

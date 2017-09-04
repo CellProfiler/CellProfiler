@@ -39,13 +39,13 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
             "Select the input objects",
             cellprofiler.setting.NONE,
-            doc="""Choose the name of the objects you want to convert to an image."""
+            doc="Choose the name of the objects you want to convert to an image."
         )
 
         self.image_name = cellprofiler.setting.ImageNameProvider(
             "Name the output image",
             "CellImage",
-            doc="""Enter the name of the resulting image."""
+            doc="Enter the name of the resulting image."
         )
 
         self.image_mode = cellprofiler.setting.Choice(
@@ -56,31 +56,38 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
                 "Grayscale",
                 "uint16"
             ],
-            doc="""Select which colors the resulting image should use. You have the
-            following options:
-            -  *Color:* Allows you to choose a colormap that will produce jumbled
-               colors for your objects.
-            -  *Binary (black & white):* All object pixels will be assigned 1 and
-               all background pixels will be assigned 0, creating a binary image.
-            -  *Grayscale:* Gives each object a graylevel pixel intensity value
-               corresponding to its number (also called label), so it usually
-               results in objects on the left side of the image being very dark,
-               progressing toward white on the right side of the image.
-            -  *uint16:* Assigns each object a different number, from 1 to 65535
-               (the numbers that you can put in a 16-bit integer) and numbers all
-               pixels in each object with the object’s number. This format can be
-               written out as a .npy or .tiff file if you want to process the label
-               matrix image using another program.
-            You can choose *Color* with a *Gray* colormap to produce jumbled gray
-            objects."""
+            doc="""\
+Select which colors the resulting image should use. You have the
+following options:
+
+-  *Color:* Allows you to choose a colormap that will produce jumbled
+   colors for your objects.
+-  *Binary (black & white):* All object pixels will be assigned 1 and
+   all background pixels will be assigned 0, creating a binary image.
+-  *Grayscale:* Gives each object a graylevel pixel intensity value
+   corresponding to its number (also called label), so it usually
+   results in objects on the left side of the image being very dark,
+   progressing toward white on the right side of the image.
+-  *uint16:* Assigns each object a different number, from 1 to 65535
+   (the numbers that you can put in a 16-bit integer) and numbers all
+   pixels in each object with the object’s number. This format can be
+   written out as a .npy or .tiff file if you want to process the label
+   matrix image using another program.
+
+You can choose *Color* with a *Gray* colormap to produce jumbled gray
+objects.
+            """
         )
 
         self.colormap = cellprofiler.setting.Colormap(
             "Select the colormap",
-            doc="""*(Used only if "*Color*" output image selected)*
-            Choose the colormap to be used, which affects how the objects are
-            colored. You can look up your default colormap under *File >
-            Preferences*."""
+            doc="""\
+*(Used only if "Color" output image selected)*
+
+Choose the colormap to be used, which affects how the objects are
+colored. You can look up your default colormap under *File >
+Preferences*
+"""
         )
 
     def settings(self):

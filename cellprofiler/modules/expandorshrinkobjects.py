@@ -84,34 +84,34 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
         self.operation = cellprofiler.setting.Choice(
             "Select the operation",
             O_ALL,
-            doc="""
-                Choose the operation that you want to perform:
+            doc="""\
+Choose the operation that you want to perform:
 
-                -  *{O_SHRINK_INF}:* Remove all pixels but one from filled objects.
-                   Thin objects with holes to loops unless the “fill” option is checked.
-                -  *{O_EXPAND_INF}:* Expand objects, assigning every pixel in the
-                   image to an object. Background pixels are assigned to the nearest
-                   object.
-                -  *{O_DIVIDE}:* Remove pixels from an object that are adjacent to
-                   another object’s pixels unless doing so would change the object’s
-                   Euler number (break an object in two, remove the object completely or
-                   open a hole in an object).
-                -  *{O_SHRINK}:* Remove pixels around the perimeter of an object unless
-                   doing so would change the object’s Euler number (break the object in
-                   two, remove the object completely or open a hole in the object). You
-                   can specify the number of times perimeter pixels should be removed.
-                   Processing stops automatically when there are no more pixels to
-                   remove.
-                -  *{O_EXPAND}:* Expand each object by adding background pixels
-                   adjacent to the image. You can choose the number of times to expand.
-                   Processing stops automatically if there are no more background
-                   pixels.
-                -  *{O_SKELETONIZE}:* Erode each object to its skeleton.
-                -  *{O_SPUR}:* Remove or reduce the length of spurs in a skeletonized
-                   image. The algorithm reduces spur size by the number of pixels
-                   indicated in the setting *Number of pixels by which to expand or
-                   shrink*.
-            """.format(**{
+-  *{O_SHRINK_INF}:* Remove all pixels but one from filled objects.
+   Thin objects with holes to loops unless the “fill” option is checked.
+-  *{O_EXPAND_INF}:* Expand objects, assigning every pixel in the
+   image to an object. Background pixels are assigned to the nearest
+   object.
+-  *{O_DIVIDE}:* Remove pixels from an object that are adjacent to
+   another object’s pixels unless doing so would change the object’s
+   Euler number (break an object in two, remove the object completely or
+   open a hole in an object).
+-  *{O_SHRINK}:* Remove pixels around the perimeter of an object unless
+   doing so would change the object’s Euler number (break the object in
+   two, remove the object completely or open a hole in the object). You
+   can specify the number of times perimeter pixels should be removed.
+   Processing stops automatically when there are no more pixels to
+   remove.
+-  *{O_EXPAND}:* Expand each object by adding background pixels
+   adjacent to the image. You can choose the number of times to expand.
+   Processing stops automatically if there are no more background
+   pixels.
+-  *{O_SKELETONIZE}:* Erode each object to its skeleton.
+-  *{O_SPUR}:* Remove or reduce the length of spurs in a skeletonized
+   image. The algorithm reduces spur size by the number of pixels
+   indicated in the setting *Number of pixels by which to expand or
+   shrink*.
+""".format(**{
                 "O_DIVIDE": O_DIVIDE,
                 "O_EXPAND": O_EXPAND,
                 "O_EXPAND_INF": O_EXPAND_INF,
@@ -127,17 +127,18 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
         self.wants_fill_holes = cellprofiler.setting.Binary(
             "Fill holes in objects so that all objects shrink to a single point?",
             False,
-            doc="""
-                | *(Used only if one of the “shrink” options selected)*
-                | Select *{YES}* to ensure that each object will shrink to a single
-                  point, by filling the holes in each object.
+            doc="""\
+*(Used only if one of the “shrink” options selected)*
 
-                Select *{NO}* to preserve the Euler number. in this case, the shrink
-                algorithm preserves each object’s Euler number, which means that it will
-                erode an object with a hole to a ring in order to keep the hole. An
-                object with two holes will be shrunk to two rings connected by a line in
-                order to keep from breaking up the object or breaking the hole.
-            """.format(**{
+Select *{YES}* to ensure that each object will shrink to a single
+point, by filling the holes in each object.
+
+Select *{NO}* to preserve the Euler number. in this case, the shrink
+algorithm preserves each object’s Euler number, which means that it will
+erode an object with a hole to a ring in order to keep the hole. An
+object with two holes will be shrunk to two rings connected by a line in
+order to keep from breaking up the object or breaking the hole.
+""".format(**{
                 "NO": cellprofiler.setting.NO,
                 "YES": cellprofiler.setting.YES
             })

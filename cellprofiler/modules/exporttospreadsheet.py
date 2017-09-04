@@ -334,9 +334,12 @@ specified in one of two ways:
 
 -  *Metadata:* If you used the **Metadata** modules to add metadata to
    your images, you may specify a metadata tag that corresponds to the
-   identifier for this column. %(USING_METADATA_HELP_REF)s.
+   identifier for this column.
 -  *Image filename:* If the gene name is not available, the image
-   filename can be used as a surrogate identifier.""" % globals())
+   filename can be used as a surrogate identifier.
+
+%(USING_METADATA_HELP_REF)s
+""" % globals())
 
         self.gene_name_column = cps.Measurement(
                 "Select the metadata to use as the identifier",
@@ -414,7 +417,12 @@ Enter a file name for the named objects’ measurements.
 **ExportToSpreadsheet** will prepend the name of the measurements file
 to this if you asked to do so above. If you have metadata associated
 with your images, this setting will also substitute metadata tags if
-desired. %(USING_METADATA_TAGS_REF)s %(USING_METADATA_HELP_REF)s.""" % globals()))
+desired.
+
+%(USING_METADATA_TAGS_REF)s
+
+%(USING_METADATA_HELP_REF)s
+""" % globals()))
 
         group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))

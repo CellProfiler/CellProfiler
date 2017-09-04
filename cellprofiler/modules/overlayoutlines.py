@@ -170,7 +170,14 @@ maximal brightness already occurring in the image.
 
         default_color = (COLOR_ORDER[len(self.outlines)] if len(self.outlines) < len(COLOR_ORDER) else COLOR_ORDER[0])
 
-        group.append("color", cellprofiler.setting.Color("Select outline color", default_color))
+        group.append(
+            "color",
+            cellprofiler.setting.Color(
+                "Select outline color",
+                default_color,
+                doc="Objects will be outlined in this color."
+            )
+        )
 
         if can_remove:
             group.append(

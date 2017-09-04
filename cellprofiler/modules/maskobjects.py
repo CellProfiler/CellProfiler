@@ -93,107 +93,157 @@ class MaskObjects(I.Identify):
     def create_settings(self):
         '''Create the settings that control this module'''
         self.object_name = cps.ObjectNameSubscriber(
-                "Select objects to be masked", cps.NONE, doc="""
-                Select the objects that will be masked (that is, excluded in whole or in
-                part based on the other settings in the module). You can choose from any
-                objects created by a previous object processing module, such as
-                **IdentifyPrimaryObjects**, **IdentifySecondaryObjects** or
-                **IdentifyTertiaryObjects**.""")
+            "Select objects to be masked",
+            cps.NONE,
+            doc="""\
+Select the objects that will be masked (that is, excluded in whole or in
+part based on the other settings in the module). You can choose from any
+objects created by a previous object processing module, such as
+**IdentifyPrimaryObjects**, **IdentifySecondaryObjects** or
+**IdentifyTertiaryObjects**.
+"""
+        )
 
         self.remaining_objects = cps.ObjectNameProvider(
-                "Name the masked objects", "MaskedNuclei", doc="""
-                Enter a name for the objects that remain after
-                the masking operation. You can refer to the masked objects in
-                subsequent modules by this name.""")
+            "Name the masked objects",
+            "MaskedNuclei",
+            doc="""\
+Enter a name for the objects that remain after
+the masking operation. You can refer to the masked objects in
+subsequent modules by this name.
+"""
+        )
 
         self.mask_choice = cps.Choice(
-                "Mask using a region defined by other objects or by binary image?",
-                [MC_OBJECTS, MC_IMAGE], doc="""
-                You can mask your objects by defining a region using objects you
-                previously identified in your pipeline (*%(MC_OBJECTS)s*) or by
-                defining a region based on the white regions in a binary image
-                (*%(MC_IMAGE)s*).""" % globals())
+            "Mask using a region defined by other objects or by binary image?",
+            [
+                MC_OBJECTS,
+                MC_IMAGE
+            ],
+            doc="""\
+You can mask your objects by defining a region using objects you
+previously identified in your pipeline (*%(MC_OBJECTS)s*) or by
+defining a region based on the white regions in a binary image
+(*%(MC_IMAGE)s*).
+""" % globals()
+        )
 
         self.masking_objects = cps.ObjectNameSubscriber(
-                "Select the masking object", cps.NONE, doc="""
-                Select the objects that will be used to define the masking region. You
-                can choose from any objects created by a previous object processing
-                module, such as **IdentifyPrimaryObjects**,
-                **IdentifySecondaryObjects**, or **IdentifyTertiaryObjects**.""")
+            "Select the masking object",
+            cps.NONE,
+            doc="""\
+Select the objects that will be used to define the masking region. You
+can choose from any objects created by a previous object processing
+module, such as **IdentifyPrimaryObjects**,
+**IdentifySecondaryObjects**, or **IdentifyTertiaryObjects**.
+"""
+        )
 
         self.masking_image = cps.ImageNameSubscriber(
-                "Select the masking image", cps.NONE, doc="""
-                Select an image that was either loaded or created by a previous module.
-                The image should be a binary image where the white portion of the image
-                is the region(s) you will use for masking. Binary images can be loaded
-                from disk using the **NamesAndTypes** module by selecting “Binary mask”
-                for the image type. You can also create a binary image from a grayscale
-                image using **ApplyThreshold**.""")
+            "Select the masking image",
+            cps.NONE,
+            doc="""\
+Select an image that was either loaded or created by a previous module.
+The image should be a binary image where the white portion of the image
+is the region(s) you will use for masking. Binary images can be loaded
+from disk using the **NamesAndTypes** module by selecting “Binary mask”
+for the image type. You can also create a binary image from a grayscale
+image using **ApplyThreshold**.
+"""
+        )
 
         self.wants_inverted_mask = cps.Binary(
-                "Invert the mask?", False, doc="""
-            This option reverses the foreground/background relationship of the mask.
-            -  Select *%(NO)s* for the mask to be composed of the foregound (white
-               portion) of the masking image or the area within the masking objects.
-            -  Select *%(YES)s* for the mask to instead be composed of the
-               *background* (black portions) of the masking image or the area
-               *outside* the masking objects.""" % globals())
+            "Invert the mask?",
+            False,
+            doc="""\
+This option reverses the foreground/background relationship of the mask.
+
+-  Select *%(NO)s* for the mask to be composed of the foregound (white
+   portion) of the masking image or the area within the masking objects.
+-  Select *%(YES)s* for the mask to instead be composed of the
+   *background* (black portions) of the masking image or the area
+   *outside* the masking objects.
+   """ % globals()
+        )
 
         self.overlap_choice = cps.Choice(
-                "Handling of objects that are partially masked",
-                [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE], doc="""
-                | An object might partially overlap the mask region, with pixels both
-                  inside and outside the region. **MaskObjects** can handle this in one
-                  of three ways:
+            "Handling of objects that are partially masked",
+            [
+                P_MASK,
+                P_KEEP,
+                P_REMOVE,
+                P_REMOVE_PERCENTAGE
+            ],
+            doc="""
+An object might partially overlap the mask region, with pixels both
+inside and outside the region. **MaskObjects** can handle this in one
+of three ways:
 
-                -  *%(P_MASK)s:* Choosing this option will reduce the size of partially
-                   overlapping objects. The part of the object that overlaps the region
-                   will be retained. The part of the object that is outside of the
-                   region will be removed.
-                -  *%(P_KEEP)s:* If you choose this option, **MaskObjects** will keep
-                   the whole object if any part of it overlaps the masking region.
-                -  *%(P_REMOVE)s:* Objects that are partially outside of the masking
-                   region will be completely removed if you choose this option.
-                -  *%(P_REMOVE_PERCENTAGE)s:* Determine whether to remove or keep an
-                   object depending on how much of the object overlaps the masking
-                   region. **MaskObjects** will keep an object if at least a certain
-                   fraction (which you enter below) of the object falls within the
-                   masking region. **MaskObjects** completely removes the object if too
-                   little of it overlaps the masking region.""" % globals())
+-  *%(P_MASK)s:* Choosing this option will reduce the size of partially
+   overlapping objects. The part of the object that overlaps the region
+   will be retained. The part of the object that is outside of the
+   region will be removed.
+-  *%(P_KEEP)s:* If you choose this option, **MaskObjects** will keep
+   the whole object if any part of it overlaps the masking region.
+-  *%(P_REMOVE)s:* Objects that are partially outside of the masking
+   region will be completely removed if you choose this option.
+-  *%(P_REMOVE_PERCENTAGE)s:* Determine whether to remove or keep an
+   object depending on how much of the object overlaps the masking
+   region. **MaskObjects** will keep an object if at least a certain
+   fraction (which you enter below) of the object falls within the
+   masking region. **MaskObjects** completely removes the object if too
+   little of it overlaps the masking region.""" % globals()
+        )
 
         self.overlap_fraction = cps.Float(
-                "Fraction of object that must overlap", .5,
-                minval=0, maxval=1, doc="""
-                *(Used only if removing based on a overlap)*
-                Specify the minimum fraction of an object that must overlap the masking
-                region for that object to be retained. For instance, if the fraction is
-                0.75, then 3/4 of an object must be within the masking region for that
-                object to be retained.""")
+            "Fraction of object that must overlap",
+            .5,
+            minval=0,
+            maxval=1,
+            doc="""\
+*(Used only if removing based on a overlap)*
+
+Specify the minimum fraction of an object that must overlap the masking
+region for that object to be retained. For instance, if the fraction is
+0.75, then 3/4 of an object must be within the masking region for that
+object to be retained.
+"""
+        )
 
         self.retain_or_renumber = cps.Choice(
-                "Numbering of resulting objects",
-                [R_RENUMBER, R_RETAIN], doc="""
-                Choose how to number the objects that remain after masking, which
-                controls how remaining objects are associated with their predecessors:
-                -  *%(R_RENUMBER)s:* The objects that remain will be renumbered using
-                   consecutive numbers. This is a good choice if you do not plan to use
-                   measurements from the original objects; your object measurements for
-                   the masked objects will not have gaps (where removed objects are
-                   missing).
-                -  *%(R_RETAIN)s:*: The original labels for the objects will be
-                   retained. This allows any measurements you make from the masked
-                   objects to be directly aligned with measurements you might have made
-                   of the original, unmasked objects (or objects directly associated
-                   with them).
-                   """ % globals())
+            "Numbering of resulting objects",
+            [
+                R_RENUMBER,
+                R_RETAIN
+            ],
+            doc="""\
+Choose how to number the objects that remain after masking, which
+controls how remaining objects are associated with their predecessors:
+
+-  *%(R_RENUMBER)s:* The objects that remain will be renumbered using
+   consecutive numbers. This is a good choice if you do not plan to use
+   measurements from the original objects; your object measurements for
+   the masked objects will not have gaps (where removed objects are
+   missing).
+-  *%(R_RETAIN)s:*: The original labels for the objects will be
+   retained. This allows any measurements you make from the masked
+   objects to be directly aligned with measurements you might have made
+   of the original, unmasked objects (or objects directly associated
+   with them).
+""" % globals()
+        )
 
         self.wants_outlines = cps.Binary(
-                "Retain outlines of the resulting objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            "Retain outlines of the resulting objects?",
+            False,
+            doc=RETAINING_OUTLINES_HELP
+        )
 
         self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "MaskedOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            "Name the outline image",
+            "MaskedOutlines",
+            doc=NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
         '''The settings as they appear in the pipeline'''

@@ -175,7 +175,7 @@ Specify how a given cropping pattern should be applied to other image cycles:
         self.horizontal_limits = cps.IntegerOrUnboundedRange(
                 "Left and right rectangle positions",
                 minval=0, doc="""\
-*(Used only if %(SH_RECTANGLE)s selected as cropping shape, or if using Plate Fix)*
+*(Used only if "%(SH_RECTANGLE)s" selected as cropping shape, or if using Plate Fix)*
 
 Specify the left and right positions for the bounding rectangle by selecting one of the following:
 
@@ -192,7 +192,7 @@ Specify the left and right positions for the bounding rectangle by selecting one
         self.vertical_limits = cps.IntegerOrUnboundedRange(
                 "Top and bottom rectangle positions",
                 minval=0, doc="""\
-*(Used only if %(SH_RECTANGLE)s selected as cropping shape, or if using Plate Fix)*
+*(Used only if "%(SH_RECTANGLE)s" selected as cropping shape, or if using Plate Fix)*
 
 Specify the top and bottom positions for the bounding rectangle by selecting one of the following:
 
@@ -207,37 +207,37 @@ Specify the top and bottom positions for the bounding rectangle by selecting one
         self.ellipse_center = cps.Coordinates(
                 "Coordinates of ellipse center",
                 (500, 500), doc="""\
-*(Used only if %(SH_ELLIPSE)s selected as cropping shape)*
+*(Used only if "%(SH_ELLIPSE)s" selected as cropping shape)*
 
 Specify the center pixel position of the ellipse.""" % globals())
 
         self.ellipse_x_radius = cps.Integer(
                 "Ellipse radius, X direction", 400, doc="""\
-*(Used only if %(SH_ELLIPSE)s selected as cropping shape)*
+*(Used only if "%(SH_ELLIPSE)s" selected as cropping shape)*
 
 Specify the radius of the ellipse in the X direction.""" % globals())
 
         self.ellipse_y_radius = cps.Integer(
                 "Ellipse radius, Y direction", 200, doc="""\
-*(Used only if %(SH_ELLIPSE)s selected as cropping shape)*
+*(Used only if "%(SH_ELLIPSE)s" selected as cropping shape)*
 
 Specify the radius of the ellipse in the Y direction.""" % globals())
 
         self.image_mask_source = cps.ImageNameSubscriber(
                 "Select the masking image", cps.NONE, doc="""\
-*(Used only if %(SH_IMAGE)s selected as cropping shape)*
+*(Used only if "%(SH_IMAGE)s" selected as cropping shape)*
 
 Select the image to be use as a cropping mask.""" % globals())
 
         self.cropping_mask_source = cps.CroppingNameSubscriber(
                 "Select the image with a cropping mask", cps.NONE, doc="""\
-*(Used only if %(SH_CROPPING)s selected as cropping shape)*
+*(Used only if "%(SH_CROPPING)s" selected as cropping shape)*
 
 Select the image associated with the cropping mask that you want to use.""" % globals())
 
         self.objects_source = cps.ObjectNameSubscriber(
                 "Select the objects", cps.NONE, doc="""\
-*(Used only if %(SH_OBJECTS)s selected as cropping shape)*
+*(Used only if "%(SH_OBJECTS)s" selected as cropping shape)*
 
 Select the objects that are to be used as a cropping mask.""" % globals())
 

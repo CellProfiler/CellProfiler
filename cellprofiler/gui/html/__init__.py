@@ -1,8 +1,7 @@
 # coding=utf-8
 """cellprofiler.gui.html.__init__
 """
-
-import content
+import cellprofiler.gui.help
 import htmlwindow
 import wx
 
@@ -11,4 +10,4 @@ import wx
 __all__ = ['HtmlClickableWindow']
 
 if wx.VERSION <= (2, 8, 10, 1, '') and wx.Platform == '__WXMAC__':
-    content.startup_main = content.startup_main.replace('<i>Help</i> menu', '<i>CellProfiler Help</i> menu')
+    cellprofiler.gui.help.startup_main = cellprofiler.gui.help.startup_main.replace('<i>Help</i> menu', '<i>CellProfiler Help</i> menu')

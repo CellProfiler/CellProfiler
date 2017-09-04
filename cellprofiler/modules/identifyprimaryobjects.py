@@ -333,9 +333,8 @@ which can be used in conjunction with the
 *{EXCLUDE_SIZE_SETTING_TEXT}* setting below to remove objects that
 fail this criteria.
 
-    |image0|  The units used here are pixels so that it is easy to zoom in
-    on objects and determine typical diameters.
-    {HELP_ON_MEASURING_DISTANCES}
+|image0| The units used here are pixels so that it is easy to zoom in
+on objects and determine typical diameters. {HELP_ON_MEASURING_DISTANCES}
     
 A few important notes:
 
@@ -372,9 +371,9 @@ Objects discarded based on size are outlined in magenta in the module’s
 display. See also the **FilterObjects** module to further discard
 objects based on some other measurement.
 
-    |image0|  Select "*{YES}*" allows you to exclude small objects (e.g.,
-    dust, noise, and debris) or large objects (e.g., large clumps) if
-    desired.
+|image0| Select "*{YES}*" allows you to exclude small objects (e.g.,
+dust, noise, and debris) or large objects (e.g., large clumps) if
+desired.
 
 .. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{
@@ -392,15 +391,15 @@ objects based on some other measurement.
 Choose "*{YES}*" to discard objects that touch the border of the image.
 Choose "*{NO}*" to ignore this criterion.
 
-    |image0| Removing objects that touch the image border is useful when
-    you do not want to make downstream measurements of objects that are not
-    fully within the field of view. For example, morphological measurements
-    obtained from a portion of an object would not be accurate.
-
 Objects discarded due to border touching are outlined in yellow in the
 module’s display. Note that if a per-object thresholding method is used
 or if the image has been previously cropped or masked, objects that
 touch the border of the cropped or masked region may also discarded.
+
+|image0| Removing objects that touch the image border is useful when
+you do not want to make downstream measurements of objects that are not
+fully within the field of view. For example, morphological measurements
+obtained from a portion of an object would not be accurate.
 
 .. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
             """.format(**{

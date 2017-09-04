@@ -68,8 +68,8 @@ Available measurements
    first). At this point, the final age of the object is output; no
    values are stored for earlier frames.
 
-       |image0|  This value is useful if you want to plot a histogram of the
-       object lifetimes; all but the final age can be ignored or filtered out.
+   |image0|  This value is useful if you want to plot a histogram of the
+   object lifetimes; all but the final age can be ignored or filtered out.
 
 The following object measurements are specific to the LAP
 tracking method:
@@ -106,19 +106,19 @@ tracking method:
 -  *LinkingDistance:* The difference between the propagated position of
    an object and the object to which it is matched.
 
-       |image1| A slowly decaying histogram of these distances indicates
-       that the search radius is large enough. A cut-off histogram is a sign
-       that the search radius is too small.
+   |image1| A slowly decaying histogram of these distances indicates
+   that the search radius is large enough. A cut-off histogram is a sign
+   that the search radius is too small.
 
 -  *StandardDeviation:* The Kalman filter maintains a running estimate
    of the variance of the error in estimated position for each model.
    This measurement records the linking distance divided by the standard
    deviation of the error when linking the object with its parent.
 
-       |image2| This value is multiplied by the
-       "*Number of standard deviations for search radius*" setting to constrain the search
-       distance. A histogram of this value can help determine if the
-       "*Search radius limit, in pixel units (Min,Max)*" setting is appropriate.
+   |image2| This value is multiplied by the
+   "*Number of standard deviations for search radius*" setting to constrain the search
+   distance. A histogram of this value can help determine if the
+   "*Search radius limit, in pixel units (Min,Max)*" setting is appropriate.
 
 -  *GapLength:* The number of frames between an object and its parent.
    For instance, an object in frame 3 with a parent in frame 1 has a gap
@@ -319,18 +319,18 @@ is most consistent from frame to frame of your movie.
    object with the greatest amount of spatial overlap will be assigned
    the same number (label).
 
-       |image0| Recommended when there is a high degree of overlap of an
-       object from one frame to the next, which is the case for movies with
-       high frame rates relative to object motion.
+   |image0| Recommended when there is a high degree of overlap of an
+   object from one frame to the next, which is the case for movies with
+   high frame rates relative to object motion.
 
 -  *Distance:* Compares the distance between each identified object in
    the previous frame with that of the current frame. The closest
    objects to each other will be assigned the same number (label).
    Distances are measured from the perimeter of each object.
 
-       |image1| Recommended for cases where the objects are not very
-       crowded but where *Overlap* does not work sufficiently well, which is
-       the case for movies with low frame rates relative to object motion.
+   |image1| Recommended for cases where the objects are not very
+   crowded but where *Overlap* does not work sufficiently well, which is
+   the case for movies with low frame rates relative to object motion.
 
 -  *Measurements:* Compares each object in the current frame with
    objects in the previous frame based on a particular feature you have
@@ -349,9 +349,9 @@ is most consistent from frame to frame of your movie.
    optimization problem and solved using LAP algorithm (same as in LAP
    method).
 
-       |image2| Recommended for cases where the objects are moving in
-       synchronized way. In this case it may work better than *LAP*. This
-       approach works well for yeast colonies grown on agar.
+   |image2| Recommended for cases where the objects are moving in
+   synchronized way. In this case it may work better than *LAP*. This
+   approach works well for yeast colonies grown on agar.
 
 -  *LAP:* Uses the linear assignment problem (LAP) framework. The linear
    assignment problem (LAP) algorithm (*Jaqaman et al., 2008*) addresses
@@ -459,7 +459,9 @@ which the measurements originated or the measurement scale.""")
 Objects in the subsequent frame will be considered potential matches if
 they are within this distance. To determine a suitable pixel distance,
 you can look at the axis increments on each image (shown in pixel units)
-or use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
+or use the distance measurement tool.
+%(HELP_ON_MEASURING_DISTANCES)s
+""" % globals())
 
         self.model = cps.Choice(
             "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""\
@@ -492,7 +494,8 @@ variance in position that follows a Gaussian distribution.
 
 .. |image0| image:: memory:thumb-up.png
 .. |image1| image:: memory:thumb-up.png
-.. |image2| image:: memory:thumb-up.png""" % globals())
+.. |image2| image:: memory:thumb-up.png
+""" % globals())
 
         self.radius_std = cps.Float(
             "Number of standard deviations for search radius", 3, minval=1, doc="""\
@@ -506,11 +509,11 @@ each movement model. The module will constrain the search for matching
 objects from one frame to the next to the standard deviation of the
 error times the number of standard deviations that you enter here.
 
-    |image0| Recommendations:
+|image0| Recommendations:
 
-    -  If the standard deviation is quite small, but the object makes a
-       large spatial jump, this value may need to be set higher in order to
-       increase the search area and thereby make the frame-to-frame linkage.
+-  If the standard deviation is quite small, but the object makes a
+   large spatial jump, this value may need to be set higher in order to
+   increase the search area and thereby make the frame-to-frame linkage.
 
 .. |image0| image:: memory:thumb-up.png""" % globals())
 
@@ -527,28 +530,29 @@ small estimated error by chance, leading to a maximum radius that does
 not track the object in a subsequent frame. The radius limit
 constrains the search radius to reasonable values.
 
-    |image0| Recommendations:
+|image0| Recommendations:
 
-    -  Special care must be taken to adjust the upper limit appropriate to
-       the data.
-    -  The lower limit should be set to a radius (in pixels) that is a
-       reasonable displacement for any object from one frame to the next.
+-  Special care must be taken to adjust the upper limit appropriate to
+   the data.
+-  The lower limit should be set to a radius (in pixels) that is a
+   reasonable displacement for any object from one frame to the next.
 
-       -  If you notice that a frame-to-frame linkage is not being made for
-          a steadily-moving object, it may be that this value needs to be
-          *decreased* such that the displacement falls above the lower
-          limit.
-       -  Alternately, if you notice that a frame-to-frame linkage is not
-          being made for a roughly stationary object, this value may need to
-          be *increased* so that the small displacement error is offset by
-          the object diameter.
+   -  If you notice that a frame-to-frame linkage is not being made for
+      a steadily-moving object, it may be that this value needs to be
+      *decreased* such that the displacement falls above the lower
+      limit.
+   -  Alternately, if you notice that a frame-to-frame linkage is not
+      being made for a roughly stationary object, this value may need to
+      be *increased* so that the small displacement error is offset by
+      the object diameter.
 
-    -  The upper limit should be set to the maximum reasonable displacement
-       (in pixels) under any circumstances. Hence, if you notice that a
-       frame-to-frame linkage is not being made in the case of a unusually
-       large displacement, this value may need to be increased.
+-  The upper limit should be set to the maximum reasonable displacement
+   (in pixels) under any circumstances. Hence, if you notice that a
+   frame-to-frame linkage is not being made in the case of a unusually
+   large displacement, this value may need to be increased.
 
-.. |image0| image:: memory:thumb-up.png""" % globals())
+.. |image0| image:: memory:thumb-up.png
+""" % globals())
 
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""\
@@ -577,15 +581,16 @@ the gap is to bridge it by connecting the tracks on either side of the
 missing frames). The cost of bridging a gap is the distance, in
 pixels, of the displacement of the object between frames.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  Set the gap closing cost higher if tracks from objects in previous
-       frames are being erroneously joined, across a gap, to tracks from
-       objects in subsequent frames.
-    -  Set the gap closing cost lower if tracks are not properly joined due
-       to gaps caused by mis-segmentation.
+-  Set the gap closing cost higher if tracks from objects in previous
+   frames are being erroneously joined, across a gap, to tracks from
+   objects in subsequent frames.
+-  Set the gap closing cost lower if tracks are not properly joined due
+   to gaps caused by mis-segmentation.
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc='''\
@@ -605,16 +610,17 @@ into account:
 The split cost is roughly measured in pixels. The split alternative cost
 is (conceptually) subtracted from the cost of making the split.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  The split cost should be set lower if objects are being split that
-       should not be split.
-    -  The split cost should be set higher if objects that should be split
-       are not.
-    -  If you are confident that there should be no splits present in the
-       data, the cost can be set to 1 (the minimum value possible)
+-  The split cost should be set lower if objects are being split that
+   should not be split.
+-  The split cost should be set higher if objects that should be split
+   are not.
+-  If you are confident that there should be no splits present in the
+   data, the cost can be set to 1 (the minimum value possible)
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1, doc='''\
@@ -633,16 +639,17 @@ subsequent frame. The merge score takes two components into account:
 The merge cost is measured in pixels. The merge alternative cost is
 (conceptually) subtracted from the cost of making the merge.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  Set the merge alternative cost lower if objects are being merged when
-       they should otherwise be kept separate.
-    -  Set the merge alternative cost higher if objects that are not merged
-       should be merged.
-    -  If you are confident that there should be no merges present in the
-       data, the cost can be set to 1 (the minimum value possible)
+-  Set the merge alternative cost lower if objects are being merged when
+   they should otherwise be kept separate.
+-  Set the merge alternative cost higher if objects that are not merged
+   should be merged.
+-  If you are confident that there should be no merges present in the
+   data, the cost can be set to 1 (the minimum value possible)
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.mitosis_cost = cps.Integer(
             'Mitosis alternative cost', 80, minval=1, doc='''\
@@ -658,15 +665,16 @@ mitosis score is the distance error of the parent times the area
 inequality ratio of the parent and daughters (the larger of
 Area(daughters) / Area(parent) and Area(parent) / Area(daughters)).
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  An accepted mitosis closes two gaps, so all things being equal, the
-       mitosis alternative cost should be approximately double the gap
-       closing cost.
-    -  Increase the mitosis alternative cost to favor more mitoses and
-       decrease it to prevent more mitoses candidates from being accepted.
+-  An accepted mitosis closes two gaps, so all things being equal, the
+   mitosis alternative cost should be approximately double the gap
+   closing cost.
+-  Increase the mitosis alternative cost to favor more mitoses and
+   decrease it to prevent more mitoses candidates from being accepted.
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.mitosis_max_distance = cps.Integer(
             'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''\
@@ -682,22 +690,23 @@ daughter candidate centroids after mitosis from the parent candidate.''' % globa
 This setting acts as a filter for unreasonably large displacements
 during the second phase.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  The maximum gap displacement should be set to roughly the maximum
-       displacement of an object’s center from frame to frame. An object
-       that makes large frame-to-frame jumps should have a higher value for
-       this setting than one that only moves slightly.
-    -  Be aware that the LAP algorithm will run more slowly with a higher
-       maximum gap displacement value, since the higher this value, the more
-       objects that must be compared at each step.
-    -  Objects that would have been tracked between successive frames for a
-       lower maximum displacement may not be tracked if the value is set
-       higher.
-    -  This setting may be the culprit if an object is not tracked
-       fame-to-frame despite optimizing the LAP first-pass settings.
+-  The maximum gap displacement should be set to roughly the maximum
+   displacement of an object’s center from frame to frame. An object
+   that makes large frame-to-frame jumps should have a higher value for
+   this setting than one that only moves slightly.
+-  Be aware that the LAP algorithm will run more slowly with a higher
+   maximum gap displacement value, since the higher this value, the more
+   objects that must be compared at each step.
+-  Objects that would have been tracked between successive frames for a
+   lower maximum displacement may not be tracked if the value is set
+   higher.
+-  This setting may be the culprit if an object is not tracked
+   fame-to-frame despite optimizing the LAP first-pass settings.
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.max_merge_score = cps.Integer(
             'Maximum merge score', 50, minval=1, doc='''\
@@ -711,14 +720,15 @@ merge score has two components:
 -  The distances between the objects to be merged and the resulting
    object.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  The LAP algorithm will run more slowly with a higher maximum merge
-       score value.
-    -  Objects that would have been merged at a lower maximum merge score
-       will not be considered for merging.
+-  The LAP algorithm will run more slowly with a higher maximum merge
+   score value.
+-  Objects that would have been merged at a lower maximum merge score
+   will not be considered for merging.
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.max_split_score = cps.Integer(
             'Maximum split score', 50, minval=1, doc='''\
@@ -731,14 +741,15 @@ split score has two components:
    objects resulting from the split.
 -  The distances between the original and resulting objects.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  The LAP algorithm will run more slowly with a maximum split score
-       value.
-    -  Objects that would have been split at a lower maximum split score
-       will not be considered for splitting.
+-  The LAP algorithm will run more slowly with a maximum split score
+   value.
+-  Objects that would have been split at a lower maximum split score
+   will not be considered for splitting.
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.max_frame_distance = cps.Integer(
             'Maximum temporal gap, in frames', 5, minval=1, doc='''\
@@ -751,16 +762,17 @@ when merging a temporal gap caused by an unsegmented object. These
 gaps occur when an image is mis-segmented and identification fails to
 find an object in one or more frames.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  Set the maximum gap higher in order to have more chance of correctly
-       recapturing an object after erroneously losing the original for a few
-       frames.
-    -  Set the maximum gap lower to reduce the chance of erroneously
-       connecting to the wrong object after correctly losing the original
-       object (e.g., if the cell dies or moves off-screen).
+-  Set the maximum gap higher in order to have more chance of correctly
+   recapturing an object after erroneously losing the original for a few
+   frames.
+-  Set the maximum gap lower to reduce the chance of erroneously
+   connecting to the wrong object after correctly losing the original
+   object (e.g., if the cell dies or moves off-screen).
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.average_cell_diameter = cps.Float(
             "Average cell diameter in pixels",
@@ -768,7 +780,7 @@ find an object in one or more frames.
 *(Used only if Follow Neighbors tracking method is applied*
 
 The average cell diameter is used to scale many Follow Neighbors
-algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s'''
+algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s''' % globals()
         )
 
         self.advanced_parameters = cps.Binary(
@@ -790,14 +802,15 @@ The cost of considering cell (from frame t) not present in frame t+1.
 Increasing this value leads to more cells (from t) being matched with
 cells (from t+1) rather then classified as missing.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  A value which is too high might cause incorrect cells to match
-       between the frames.
-    -  A value which is too low might make the algorithm not to match cells
-       between the frames.
+-  A value which is too high might cause incorrect cells to match
+   between the frames.
+-  A value which is too low might make the algorithm not to match cells
+   between the frames.
 
-.. |image0| image:: memory:thumb-up.png'''
+.. |image0| image:: memory:thumb-up.png
+'''
         )
 
         self.area_weight = cps.Float(
@@ -815,16 +828,17 @@ i.e., total duration in frames. This is useful for marking objects
 which transiently appear and disappear, such as the results of a
 mis-segmentation.
 
-    |image0|  Recommendations:
+|image0|  Recommendations:
 
-    -  This operation does not actually delete the filtered object, but
-       merely removes its label from the tracked object list; the filtered
-       object’s per-object measurements are retained.
-    -  An object can be filtered only if it is tracked as an unique object.
-       Splits continue the lifetime count from their parents, so the minimum
-       lifetime value does not apply to them.
+-  This operation does not actually delete the filtered object, but
+   merely removes its label from the tracked object list; the filtered
+   object’s per-object measurements are retained.
+-  An object can be filtered only if it is tracked as an unique object.
+   Splits continue the lifetime count from their parents, so the minimum
+   lifetime value does not apply to them.
 
-.. |image0| image:: memory:thumb-up.png''' % globals())
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.wants_minimum_lifetime = cps.Binary(
             'Filter using a minimum lifetime?', True, doc='''\

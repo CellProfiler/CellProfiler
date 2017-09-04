@@ -2,7 +2,7 @@
 
 """
 MeasureColocalization
-=====
+=====================
 
 **MeasureColocalization** measures the colocalization and correlation
 between intensities in different images (e.g., different color channels)
@@ -113,23 +113,33 @@ class MeasureColocalization(cpm.Module):
         self.add_image_button = cps.DoSomething("", 'Add another image', self.add_image)
         self.spacer_2 = cps.Divider()
         self.thr = cps.Float(
-                "Set threshold as percentage of maximum intensity for the images",
-                15, minval=0, maxval=99, doc='''
-                \\ Select the threshold as a percentage of the maximum intensity of the
-                above image [0-99].''')
+            "Set threshold as percentage of maximum intensity for the images",
+            15,
+            minval=0,
+            maxval=99,
+            doc='Select the threshold as a percentage of the maximum intensity of the above image [0-99].'
+        )
 
         self.images_or_objects = cps.Choice(
-                'Select where to measure correlation',
-                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''You can measure the correlation in several ways:
+            'Select where to measure correlation',
+            [
+                M_IMAGES,
+                M_OBJECTS,
+                M_IMAGES_AND_OBJECTS
+            ],
+            doc='''\
+You can measure the correlation in several ways:
 
-                -  *%(M_OBJECTS)s:* Measure correlation only in those pixels previously
-                   identified as an object. You will be asked to specify which object to
-                   measure from.
-                -  *%(M_IMAGES)s:* Measure the correlation across all pixels in the
-                   images.
-                -  *%(M_IMAGES_AND_OBJECTS)s:* Calculate both measurements above.
+-  *%(M_OBJECTS)s:* Measure correlation only in those pixels previously
+   identified as an object. You will be asked to specify which object to
+   measure from.
+-  *%(M_IMAGES)s:* Measure the correlation across all pixels in the
+   images.
+-  *%(M_IMAGES_AND_OBJECTS)s:* Calculate both measurements above.
 
-                All methods measure correlation on a pixel by pixel basis.''' % globals())
+All methods measure correlation on a pixel by pixel basis.
+''' % globals()
+        )
 
         self.object_groups = []
         self.add_object(can_delete=False)
@@ -148,9 +158,14 @@ class MeasureColocalization(cpm.Module):
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
-        group.append("image_name", cps.ImageNameSubscriber(
-                'Select an image to measure', cps.NONE, doc='''
-            Select an image to measure the correlation from.'''))
+        group.append(
+            "image_name",
+            cps.ImageNameSubscriber(
+                'Select an image to measure',
+                cps.NONE,
+                doc='Select an image to measure the correlation from.'
+            )
+        )
 
         if len(self.image_groups) == 0:  # Insert space between 1st two images for aesthetics
             group.append("extra_divider", cps.Divider(line=False))
@@ -166,9 +181,14 @@ class MeasureColocalization(cpm.Module):
         if can_delete:
             group.append("divider", cps.Divider(line=False))
 
-        group.append("object_name", cps.ObjectNameSubscriber(
-                'Select an object to measure', cps.NONE, doc='''
-            Select the objects to be measured.'''))
+        group.append(
+            "object_name",
+            cps.ObjectNameSubscriber(
+                'Select an object to measure',
+                cps.NONE,
+                doc='Select the objects to be measured.'
+            )
+        )
 
         if can_delete:
             group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))

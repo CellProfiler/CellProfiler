@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Edit Objects Manually** allows you create, remove and edit objects
+EditObjectsManually
+===================
+
+**EditObjectsManually** allows you create, remove and edit objects
 previously defined.
 
 The interface will show the image that you selected as the guiding
@@ -83,69 +86,76 @@ class EditObjectsManually(I.Identify):
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
         self.object_name = cps.ObjectNameSubscriber(
-                "Select the objects to be edited", cps.NONE, doc="""
-            Choose a set of previously identified objects
-            for editing, such as those produced by one of the
-            <b>Identify</b> modules.""")
+                "Select the objects to be edited", cps.NONE, doc="""\
+Choose a set of previously identified objects
+for editing, such as those produced by one of the
+**Identify** modules (e.g. "*IdentifyPrimaryObjects*", "*IdentifySecondaryObjects*" etc.).""")
 
         self.filtered_objects = cps.ObjectNameProvider(
-                "Name the edited objects", "EditedObjects", doc="""
-            Enter the name for the objects that remain
-            after editing. These objects will be available for use by
-            subsequent modules.""")
+                "Name the edited objects", "EditedObjects", doc="""\
+Enter the name for the objects that remain
+after editing. These objects will be available for use by
+subsequent modules.""")
 
         self.allow_overlap = cps.Binary(
-                "Allow overlapping objects?", False, doc="""
-            <b>EditObjectsManually</b> can allow you to edit an
-            object so that it overlaps another or it can prevent you from
-            overlapping one object with another. Objects such as worms or
-            the neurites of neurons may cross each other and might need to
-            be edited with overlapping allowed, whereas a monolayer of cells
-            might be best edited with overlapping off. <br>
-            Select <i>%(YES)s</i> to allow overlaps or select <i>%(NO)s</i>
-            to prevent them.""" % globals())
+                "Allow overlapping objects?", False, doc="""\
+**EditObjectsManually** can allow you to edit an object so that it
+overlaps another or it can prevent you from overlapping one object with
+another. Objects such as worms or the neurites of neurons may cross each
+other and might need to be edited with overlapping allowed, whereas a
+monolayer of cells might be best edited with overlapping off.
+Select "*%(YES)s*" to allow overlaps or select "*%(NO)s*" to prevent them.
+""" % globals())
 
         self.wants_outlines = cps.Binary(
-                "Retain outlines of the edited objects?", False, doc="""
-            Select <i>%(YES)s</i> if you want to keep images of the outlines
-            of the objects that remain after editing. This image
-            can be saved by downstream modules or overlayed on other images
-            using the <b>OverlayOutlines</b> module.""" % globals())
+                "Retain outlines of the edited objects?", False, doc="""\
+Select "*%(YES)s*" if you want to keep images of the outlines of the
+objects that remain after editing. This image can be saved by downstream
+modules or overlayed on other images using the **OverlayOutlines**
+module.
+""" % globals())
 
         self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "EditedObjectOutlines", doc="""
-            <i>(Used only if you have selected to retain outlines of edited objects)</i><br>
-            Enter a name for the outline image.""")
+                "Name the outline image", "EditedObjectOutlines", doc="""\
+*(Used only if you have selected to retain outlines of edited objects)*
+
+Enter a name for the outline image.
+""")
 
         self.renumber_choice = cps.Choice(
                 "Numbering of the edited objects",
-                [R_RENUMBER, R_RETAIN], doc="""
-            Choose how to number the objects that
-            remain after editing, which controls how edited objects are associated with their predecessors:
-            <ul>
-            <li><i>%(R_RENUMBER)s:</i> The module will number the objects that remain
-            using consecutive numbers. This
-            is a good choice if you do not plan to use measurements from the
-            original objects and you only want to use the edited objects in downstream modules; the
-            objects that remain after editing will not have gaps in numbering
-            where removed objects are missing.</li>
-            <li><i>%(R_RETAIN)s:</i> This option will retain each object's original number so that the
-            edited object's number matches its original number. This allows any measurements you make from
-            the edited objects to be directly aligned with measurements you might
-            have made of the original, unedited objects (or objects directly
-            associated with them).</li>
-            </ul>""" % globals())
+                [R_RENUMBER, R_RETAIN], doc="""\
+Choose how to number the objects that remain after editing, which
+controls how edited objects are associated with their predecessors:
+
+-  *%(R_RENUMBER)s:* The module will number the objects that remain
+   using consecutive numbers. This is a good choice if you do not plan
+   to use measurements from the original objects and you only want to
+   use the edited objects in downstream modules; the objects that remain
+   after editing will not have gaps in numbering where removed objects
+   are missing.
+-  *%(R_RETAIN)s:* This option will retain each object’s original
+   number so that the edited object’s number matches its original
+   number. This allows any measurements you make from the edited objects
+   to be directly aligned with measurements you might have made of the
+   original, unedited objects (or objects directly associated with
+   them).
+""" % globals())
 
         self.wants_image_display = cps.Binary(
-                "Display a guiding image?", True, doc="""
-            Select <i>%(YES)s</i> to display an image and outlines of the objects. <br>
-            Select <i>%(NO)s</i> if you do not want a guide image while editing""" % globals())
+                "Display a guiding image?", True, doc="""\
+Select "*%(YES)s*" to display an image and outlines of the objects.
+
+Select "*%(NO)s*" if you do not want a guide image while editing.
+""" % globals())
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the guiding image", cps.NONE, doc="""
-            <i>(Used only if a guiding image is desired)</i><br>
-            This is the image that will appear when editing objects.
-            Choose an image supplied by a previous module.""")
+                "Select the guiding image", cps.NONE, doc="""\
+*(Used only if a guiding image is desired)*
+
+This is the image that will appear when editing objects. Choose an image
+supplied by a previous module.
+""")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

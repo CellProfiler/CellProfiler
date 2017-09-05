@@ -77,7 +77,7 @@ the input image for local maximum. The footprint can be interpreted as a
 region, window, structuring element or volume that subsamples the input
 image. The distance transform will create local maximum from a binary
 image that will be at the centers of objects. A large connectivity will
-suppress local maximum that are close together leading, but requires
+suppress local maximum that are close together into a single maximum, but this will require
 more memory and time to run. A small connectivity will preserve local
 maximum that are close together, but this can lead to oversegmentation.
 If speed and memory are issues, choosing a lower connectivity can be

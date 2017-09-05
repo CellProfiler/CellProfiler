@@ -35,4 +35,4 @@ deployment:
           --acl public-read                         \
           --delete                                  \
           --exclude "*"                             \
-          --include "CellProfiler-nightly.dmg"
+          --include "CellProfiler-3.0.0rc3.dmg"

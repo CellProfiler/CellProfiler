@@ -123,6 +123,6 @@ class ShrinkObjectsToPoints(cellprofiler.module.ObjectProcessing):
 
         for ind, arr in enumerate(input_centroids):
 
-            output_segmented[arr[0], arr[1], arr[2]] = ind + 1
+            output_segmented[tuple(arr)] = ind + 1
 
         return output_segmented

@@ -1044,6 +1044,10 @@ class Pipeline(object):
                 module.set_settings_from_values(settings,
                                                 variable_revision_number,
                                                 module_name, from_matlab)
+
+                if module_name == "NamesAndTypes":
+                    self.__volumetric = module.process_as_3d.value
+
             except Exception, instance:
                 if raise_on_error:
                     raise

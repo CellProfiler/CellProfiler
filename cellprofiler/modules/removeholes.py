@@ -16,7 +16,7 @@ import cellprofiler.setting
 class RemoveHoles(cellprofiler.module.ImageProcessing):
     category = "Advanced"
 
-    module_name = "Remove holes"
+    module_name = "RemoveHoles"
 
     variable_revision_number = 1
 

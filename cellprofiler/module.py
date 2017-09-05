@@ -1237,7 +1237,7 @@ class ObjectProcessing(ImageSegmentation):
 
         figure.subplot_imshow_labels(
             dimensions=workspace.display_data.dimensions,
-            labels=workspace.display_data.x_data,
+            image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
             y=0
@@ -1245,7 +1245,7 @@ class ObjectProcessing(ImageSegmentation):
 
         figure.subplot_imshow_labels(
             dimensions=workspace.display_data.dimensions,
-            labels=workspace.display_data.y_data,
+            image=workspace.display_data.y_data,
             title=self.y_name.value,
             x=1,
             y=0

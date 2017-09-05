@@ -635,6 +635,11 @@ of images into separate batches, then submitting each of these batches
 as individual jobs to a cluster. Each individual batch can be separately
 analyzed from the rest.
 
+The following describes the workflow for running your pipeline on a cluster 
+that's physically located at your local institution; for running in a cloud-based 
+cluster using Amazon Web Services, please see our `blog post`_ on Distributed 
+CellProfiler, a tool designed to streamline that process. 
+
 Submitting files for batch processing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -773,6 +778,7 @@ forum`_.
 
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Source-installation-%28Linux%29
 .. _CPCluster forum: http://forum.cellprofiler.org/c/cellprofiler/cpcluster-help
+.. _blog post: http://blog.cellprofiler.org/2016/12/28/making-it-easier-to-run-image-analysis-in-the-cloud-announcing-distributed-cellprofiler/
 """.format(**{
     "TEST_MODE_HELP_REF": TEST_MODE_HELP_REF,
     "VIEW_OUTPUT_SETTINGS_BUTTON_NAME": VIEW_OUTPUT_SETTINGS_BUTTON_NAME

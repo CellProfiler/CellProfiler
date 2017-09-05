@@ -417,11 +417,11 @@ panel* (located on the left-hand side of the CellProfiler window).
    not. Once the errors/warnings have been resolved, a |image7|  icon will
    appear indicating that the module is ready to run.
 
-#. *Set your Default Input Folder, Default Output Folder and output
-   filename.*
+#. *Set your Default Output Folder and, if necessary, you Default Input Folder*
 
-   For more help, click their nearby *Help* buttons in the main
-   window.
+   Both of these can be set via *File > Preferences…*.  Default Output Folder can
+   be accitionally changed by clicking the *View output settings* button directly
+   below the list of modules in the pipeline.
 
 #. *Click *Analyze images* to start processing.*
 

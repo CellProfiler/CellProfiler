@@ -749,8 +749,8 @@ class CPFrame(wx.Frame):
             self.__menu_data_tools_help_menu = wx.Menu()
 
             def on_plate_viewer_help(event):
-                import htmldialog
-                dlg = htmldialog.HTMLDialog(
+                import cellprofiler.gui.htmldialog
+                dlg = cellprofiler.gui.htmldialog.HTMLDialog(
                         self, "Help on plate viewer", cellprofiler.gui.help.content.PLATEVIEWER_HELP)
                 dlg.Show()
 
@@ -775,9 +775,9 @@ class CPFrame(wx.Frame):
             self.__data_tools_menu = wx.Menu()
 
             def on_data_tool_overview(event):
-                import htmldialog
+                import cellprofiler.gui.htmldialog
                 from cellprofiler.gui.help.content import MENU_BAR_DATATOOLS_HELP
-                dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
+                dlg = cellprofiler.gui.htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
                 dlg.Show()
 
             new_id = wx.NewId()
@@ -937,8 +937,8 @@ class CPFrame(wx.Frame):
             os.system('open -na CellProfiler.app')
 
     def __on_help_path_list(self, event):
-        import htmldialog
-        dlg = htmldialog.HTMLDialog(
+        import cellprofiler.gui.htmldialog
+        dlg = cellprofiler.gui.htmldialog.HTMLDialog(
             self,
             "Help on file list",
             cellprofiler.gui.html.utils.rst_to_html_fragment(cellprofiler.gui.cpframe.HELP_ON_FILE_LIST)

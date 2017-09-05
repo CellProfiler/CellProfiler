@@ -6,7 +6,8 @@ EnhanceOrSuppressFeatures
 
 **EnhanceOrSuppressFeatures** enhances or suppresses certain image
 features (such as speckles, ring shapes, and neurites), which can
-improve subsequent identification of objects.
+improve subsequent identification of objects. It can operate on
+two- and three-dimensional images.
 
 This module enhances or suppresses the intensity of certain pixels
 relative to the rest of the image, by applying image processing filters
@@ -205,7 +206,7 @@ holes whose diameters fall between these two values.
 |image0| Smoothing can be turned off by entering a value of zero, but
 this is not recommended.
 
-.. |image0| image:: memory:{PROTIP_AVOID_ICON}
+.. |image0| image:: {PROTIP_AVOID_ICON}
 """.format(**{
                 "E_DIC": E_DIC,
                 "E_NEURITES": E_NEURITES,

@@ -1613,7 +1613,7 @@ class Figure(wx.Frame):
         if image.dtype.type == numpy.float64:
             image = image.astype(numpy.float32)
         kwargs = kwargs.copy()
-        kwargs['colormap'] = "Greys"
+        kwargs['colormap'] = "Greys_r"
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     @allow_sharexy
@@ -1630,7 +1630,7 @@ class Figure(wx.Frame):
                      our own artist.
         """
         kwargs = kwargs.copy()
-        kwargs['colormap'] = "binary"
+        kwargs['colormap'] = "binary_r"
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     @staticmethod

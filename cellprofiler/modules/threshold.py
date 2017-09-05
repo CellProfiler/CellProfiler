@@ -103,7 +103,7 @@ The choices for the threshold strategy are:
             ],
             value=TM_LI,
             doc="""\
-*(Used only if "{TS_GLOBAL}" is selected for thresholding scope)*
+*(Used only if "{TS_GLOBAL}" is selected for thresholding strategy)*
 
 The intensity threshold affects the decision of whether each pixel
 will be considered foreground (region(s) of interest) or background. A
@@ -160,9 +160,11 @@ There are a number of methods for finding thresholds automatically:
 
 -  *{TM_ROBUST_BACKGROUND}:* This method assumes that the background
    distribution approximates a Gaussian by trimming the brightest and
-   dimmest 5% of pixel intensities. It then calculates the mean and
+   dimmest X% of pixel intensities, where you choose a suitable percentage.
+   It then calculates the mean and
    standard deviation of the remaining pixels and calculates the
-   threshold as the mean + 2 times the standard deviation.
+   threshold as the mean + N times the standard deviation, where again you
+   choose the number of standard deviations to suit your images.
 
    |image4| This thresholding method can be helpful if the majority of the image
    is background. It can also be helpful if your images vary in overall
@@ -178,7 +180,7 @@ There are a number of methods for finding thresholds automatically:
    arbitrary intensity, the likelihood it came from the foreground or background would be at its highest.
 
 -  *{TM_MANUAL}:* Enter a single value between zero and one that
-   applies to all cycles and is independent of the input image.
+   applies to all images and is thus independent of the input image.
 
    |image5|  This approach is useful if the input image has a stable or
    negligible background, or if the input image is the probability map
@@ -189,8 +191,8 @@ There are a number of methods for finding thresholds automatically:
 
 -  *{TM_MEASUREMENT}:* Use a prior image measurement as the threshold.
    The measurement should have values between zero and one. This
-   strategy can be used to apply a pre-calculated threshold imported as
-   per-image
+   strategy can also be used to apply a pre-calculated threshold imported as
+   per-image metadata.
 
 **References**
 
@@ -226,35 +228,20 @@ There are a number of methods for finding thresholds automatically:
             ],
             value=centrosome.threshold.TM_OTSU,
             doc="""\
-*(Used only if "{TS_ADAPTIVE}" is selected for thresholding scope)*
+*(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
 
 The intensity threshold affects the decision of whether each pixel
 will be considered foreground (region(s) of interest) or background. A
 higher threshold value will result in only the brightest regions being
 identified, whereas a lower threshold value will include dim regions.
-You can have the threshold automatically calculated from a choice of
-several methods, or you can enter a number manually between 0 and 1
-for the threshold.
-
-Both the automatic and manual options have advantages and disadvantages.
-
-|image0|  An automatically-calculated threshold adapts to changes in
-lighting/staining conditions between images and is usually more
-robust/accurate. In the vast majority of cases, an automatic method is
-sufficient to achieve the desired thresholding, once the proper method
-is selected. In contrast, an advantage of a manually-entered number is
-that it treats every image identically, so use this option when you have
-a good sense for what the threshold should be across all images. To help
-determine the choice of threshold manually, you can inspect the pixel
-intensities in an image of your choice.
+When using the strategy "Global", you can have the threshold
+automatically calculated from a choice of several methods, however,
+when you choose "Adaptive" as the thresholding strategy, your only
+option is Otsu automatic thresholding. See the help for the Global
+thresholding strategy for more details, including advantages and
+disadvantages of the various thresholding options there.
 
 {HELP_ON_PIXEL_INTENSITIES}
-
-|image1|  The manual method is not robust with regard to slight changes
-in lighting/staining conditions between images. The automatic methods
-may occasionally produce a poor threshold for unusual or artifactual
-images. It also takes a small amount of time to calculate, which can add
-to processing time for analysis runs on a large number of images.
 
 .. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
 .. |image1| image:: memory:{PROTIP_AVOID_ICON}
@@ -265,8 +252,6 @@ your images, you might check whether the automatically calculated
 threshold was unusually high or low compared to the other images. See
 the **FlagImage** module if you would like to flag an image based on the
 threshold value.
-
-There are a number of methods for finding thresholds automatically:
 
 -  *{TM_OTSU}:* This approach calculates the threshold separating the
    two classes of pixels (foreground and background) by minimizing the
@@ -399,7 +384,8 @@ value from 0 to 1.
 *(Used only if Measurement is selected for thresholding method)*
 
 Choose the image measurement that will act as an absolute threshold for
-the images.
+the images, for example, the mean intensity calculated from an image in
+a prior module.
 """
         )
 
@@ -419,15 +405,18 @@ the images.
    in order to generate the final two-class output.
 
 Note that whether two- or three-class thresholding is chosen, the image
-pixels are always finally assigned two classes: foreground and
+pixels are always finally assigned to only two classes: foreground and
 background.
 
 |image0|  Three-class thresholding may be useful for images
 in which you have nuclear staining along with low-intensity non-specific
-cell staining. Where two-class thresholding might incorrectly assign
-this intermediate staining to the nuclei objects for some cells,
-three-class thresholding allows you to assign it to the foreground or
-background as desired.
+cell staining. In such a case, the background is one class, dim cell
+staining is the second class, and bright nucleus staining is the third
+class. Depending on your goals, you might wish to identify the nuclei only,
+in which case you use three-class thresholding with the middle class
+assigned as background. If you want to identify the entire cell, you
+use three-class thresholding with the middle class
+assigned as foreground.
 
 |image1|  However, in extreme cases where either
 there are almost no objects or the entire field of view is covered with
@@ -553,7 +542,7 @@ intensities.
             "Size of adaptive window",
             50,
             doc="""\
-*(Used only if "{TS_ADAPTIVE}" is selected for thresholding scope)*
+*(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
 
 Enter the window for the adaptive method. For example, you may want to use a multiple of the
 largest expected object size.

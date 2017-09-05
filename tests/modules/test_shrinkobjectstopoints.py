@@ -79,22 +79,6 @@ def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, 
 
     numpy.testing.assert_array_equal(object_set.get_objects("ShrinkObjectsToPoints").segmented, expected_labels)
 
-    numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
-            "InputObjects",
-            cellprofiler.measurement.FF_CHILDREN_COUNT % "ShrinkObjectsToPoints"
-        ),
-        [1, 1, 1, 1]
-    )
-
-    numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
-            "ShrinkObjectsToPoints",
-            cellprofiler.measurement.FF_PARENT % "InputObjects"
-        ),
-        [1, 2, 3, 4]
-    )
-
 
 def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volume_labels, workspace):
     objects.segmented = volume_labels
@@ -115,18 +99,3 @@ def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volu
 
     numpy.testing.assert_array_equal(object_set.get_objects("ShrinkObjectsToPoints").segmented, expected_labels)
 
-    numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
-            "InputObjects",
-            cellprofiler.measurement.FF_CHILDREN_COUNT % "ShrinkObjectsToPoints"
-        ),
-        [1, 1, 1, 1]
-    )
-
-    numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
-            "ShrinkObjectsToPoints",
-            cellprofiler.measurement.FF_PARENT % "InputObjects"
-        ),
-        [1, 2, 3, 4]
-    )

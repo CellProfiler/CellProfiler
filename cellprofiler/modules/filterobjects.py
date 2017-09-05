@@ -505,7 +505,8 @@ value will be retained.""".format(**{
             self.rules_directory,
             self.rules_file_name,
             self.rules_class,
-            self.enclosing_object_name
+            self.enclosing_object_name,
+            self.additional_object_button
         ]
 
     def visible_settings(self):

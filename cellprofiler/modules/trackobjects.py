@@ -196,7 +196,7 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 # if neighmovetrack is not available remove it from options
 TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
@@ -434,10 +434,12 @@ is most consistent from frame to frame of your movie.
       Spring Harb Protoc. 2009(12):pdb.top65.
       `(link) <http://dx.doi.org/10.1101/pdb.top65>`__
 
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-up.png
-.. |image2| image:: memory:thumb-up.png
-.. |image3| image:: memory:thumb-up.png""")
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |image3| image:: {PROTIP_RECOMEND_ICON}""".format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.object_name = cps.ObjectNameSubscriber(
             'Select the objects to track', cps.NONE, doc="""Select the objects to be tracked by this module.""")
@@ -471,7 +473,7 @@ This setting controls how to predict an object’s position in the next
 frame, assuming that each object moves randomly with a frame-to-frame
 variance in position that follows a Gaussian distribution.
 
--  *%(M_RANDOM)s:* A model in which objects move due to Brownian Motion
+-  *{M_RANDOM}s:* A model in which objects move due to Brownian Motion
    or a similar process where the variance in position differs between
    objects.
 
@@ -492,10 +494,13 @@ variance in position that follows a Gaussian distribution.
    |image2| Use this option if both models above are applicable over
    time.
 
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-up.png
-.. |image2| image:: memory:thumb-up.png
-""" % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
+                    "M_RANDOM": M_RANDOM,
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.radius_std = cps.Float(
             "Number of standard deviations for search radius", 3, minval=1, doc="""\
@@ -515,7 +520,10 @@ error times the number of standard deviations that you enter here.
    large spatial jump, this value may need to be set higher in order to
    increase the search area and thereby make the frame-to-frame linkage.
 
-.. |image0| image:: memory:thumb-up.png""" % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.radius_limit = cps.FloatRange(
             "Search radius limit, in pixel units (Min,Max)", (2, 10), minval=0, doc="""\
@@ -551,8 +559,10 @@ constrains the search radius to reasonable values.
    frame-to-frame linkage is not being made in the case of a unusually
    large displacement, this value may need to be increased.
 
-.. |image0| image:: memory:thumb-up.png
-""" % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""\
@@ -589,8 +599,10 @@ pixels, of the displacement of the object between frames.
 -  Set the gap closing cost lower if tracks are not properly joined due
    to gaps caused by mis-segmentation.
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc='''\
@@ -619,8 +631,10 @@ is (conceptually) subtracted from the cost of making the split.
 -  If you are confident that there should be no splits present in the
    data, the cost can be set to 1 (the minimum value possible)
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1, doc='''\
@@ -648,8 +662,10 @@ The merge cost is measured in pixels. The merge alternative cost is
 -  If you are confident that there should be no merges present in the
    data, the cost can be set to 1 (the minimum value possible)
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.mitosis_cost = cps.Integer(
             'Mitosis alternative cost', 80, minval=1, doc='''\
@@ -673,8 +689,10 @@ Area(daughters) / Area(parent) and Area(parent) / Area(daughters)).
 -  Increase the mitosis alternative cost to favor more mitoses and
    decrease it to prevent more mitoses candidates from being accepted.
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.mitosis_max_distance = cps.Integer(
             'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''\
@@ -705,8 +723,10 @@ during the second phase.
 -  This setting may be the culprit if an object is not tracked
    fame-to-frame despite optimizing the LAP first-pass settings.
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.max_merge_score = cps.Integer(
             'Maximum merge score', 50, minval=1, doc='''\
@@ -727,8 +747,10 @@ merge score has two components:
 -  Objects that would have been merged at a lower maximum merge score
    will not be considered for merging.
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.max_split_score = cps.Integer(
             'Maximum split score', 50, minval=1, doc='''\
@@ -748,8 +770,10 @@ split score has two components:
 -  Objects that would have been split at a lower maximum split score
    will not be considered for splitting.
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.max_frame_distance = cps.Integer(
             'Maximum temporal gap, in frames', 5, minval=1, doc='''\
@@ -771,8 +795,10 @@ find an object in one or more frames.
    connecting to the wrong object after correctly losing the original
    object (e.g., if the cell dies or moves off-screen).
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.average_cell_diameter = cps.Float(
             "Average cell diameter in pixels",
@@ -809,8 +835,10 @@ cells (from t+1) rather then classified as missing.
 -  A value which is too low might make the algorithm not to match cells
    between the frames.
 
-.. |image0| image:: memory:thumb-up.png
-'''
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                })
         )
 
         self.area_weight = cps.Float(
@@ -837,15 +865,19 @@ mis-segmentation.
    Splits continue the lifetime count from their parents, so the minimum
    lifetime value does not apply to them.
 
-.. |image0| image:: memory:thumb-up.png
-''' % globals())
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.wants_minimum_lifetime = cps.Binary(
             'Filter using a minimum lifetime?', True, doc='''\
 *(Used only if objects are filtered by lifetime)*
 
 Select "*%(YES)s*" to filter the object on the basis of a minimum number
-of frames.''' % globals())
+of frames.'''.format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                }))
 
         self.min_lifetime = cps.Integer(
             'Minimum lifetime', 1, minval=1, doc="""\

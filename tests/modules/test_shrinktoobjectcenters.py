@@ -4,11 +4,11 @@ import pytest
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.modules.shrinkobjectstopoints
+import cellprofiler.modules.shrinktoobjectcenters
 import cellprofiler.object
 
 
-instance = cellprofiler.modules.shrinkobjectstopoints.ShrinkObjectsToPoints()
+instance = cellprofiler.modules.shrinktoobjectcenters.ShrinkObjectsToPoints()
 
 
 @pytest.fixture(scope="module")
@@ -60,7 +60,7 @@ def volume_labels():
     return labels
 
 
-def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, objects, workspace):
+def test_shrink_image_labels(image_labels, module, object_set, objects, workspace):
     objects.segmented = image_labels
 
     module.x_name.value = "InputObjects"
@@ -80,7 +80,7 @@ def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, 
     numpy.testing.assert_array_equal(object_set.get_objects("ShrinkObjectsToPoints").segmented, expected_labels)
 
 
-def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volume_labels, workspace):
+def test_shrink_volume_labels(module, object_set, objects, volume_labels, workspace):
     objects.segmented = volume_labels
 
     module.x_name.value = "InputObjects"

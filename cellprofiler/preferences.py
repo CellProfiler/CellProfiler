@@ -331,11 +331,9 @@ INTENSITY_MODE = "IntensityMode"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
-BATCHPROFILER_URL = "BatchProfilerURL"
 CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
 
 '''Default URL root for BatchProfiler'''
-BATCHPROFILER_URL_DEFAULT = "http://imageweb/batchprofiler"
 
 IM_NEAREST = "Nearest"
 IM_BILINEAR = "Bilinear"
@@ -388,14 +386,6 @@ SPP_ALL = [SPP_NEITHER, SPP_PIPELINE_ONLY, SPP_FILE_LIST_ONLY,
 # Preferences help text
 #
 #######################
-
-BATCHPROFILER_URL_HELP = """\
-The base URL for BatchProfiler. BatchProfiler is a set of CGI scripts for
-running CellProfiler on a GridEngine cluster or compatible. If BatchProfiler
-is available, the CreateBatchFiles module can optionally launch a browser
-to display the appropriate batch configuration page.\
-"""
-
 DEFAULT_COLORMAP_HELP = """\
 Specifies the color map that sets the colors for labels and other
 elements. See this `page`_ for pictures of available colormaps.
@@ -1766,32 +1756,6 @@ def set_pathname_re_guess_file(value):
     global __pathname_re_guess_file
     __pathname_re_guess_file = value
     config_write(PATHNAME_RE_GUESSES_FILE, value)
-
-
-__batchprofiler_url = None
-
-
-def get_batchprofiler_url():
-    '''Get the URL base for BatchProfiler
-
-    For example: "http://<dns-name>/BatchProfiler/cgi-bin"
-
-    Append /NewBatch.py?data_dir=... to get the URL for the batch
-    '''
-    global __batchprofiler_url
-    if __batchprofiler_url is None:
-        if config_exists(BATCHPROFILER_URL):
-            __batchprofiler_url = config_read(BATCHPROFILER_URL)
-        else:
-            __batchprofiler_url = BATCHPROFILER_URL_DEFAULT
-    return __batchprofiler_url
-
-
-def set_batchprofiler_url(value):
-    global __batchprofiler_url
-    __batchprofiler_url = value
-    config_write(BATCHPROFILER_URL, value)
-
 
 __image_set_filename = None
 

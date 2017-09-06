@@ -135,7 +135,7 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, \
-    USING_METADATA_HELP_REF
+    USING_METADATA_HELP_REF,PROTIP_RECOMEND_ICON
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J
@@ -742,8 +742,10 @@ settings (e.g., an image stack with many frames). Using this button will
 help avoid the tedium of having to select the same settings multiple
 times.
 
-.. |image0| image:: memory:thumb-up.png
-"""
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                })
             )
         )
 

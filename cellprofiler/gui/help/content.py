@@ -417,7 +417,7 @@ panel* (located on the left-hand side of the CellProfiler window).
    not. Once the errors/warnings have been resolved, a |image7|  icon will
    appear indicating that the module is ready to run.
 
-#. *Set your Default Output Folder and, if necessary, you Default Input Folder*
+#. *Set your Default Output Folder and, if necessary, your Default Input Folder*
 
    Both of these can be set via *File > Preferences…*.  Default Output Folder can
    be accitionally changed by clicking the *View output settings* button directly
@@ -438,11 +438,11 @@ panel* (located on the left-hand side of the CellProfiler window).
 
    At the end of each cycle:
    -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the
-   output file.
+      output file.
    -  If you are using the **ExportToDatabase** module, CellProfiler saves the measurements in the
-   output database.
+      output database.
    -  If you are using the **ExportToSpreadsheet** module, CellProfiler saves the measurements *into a 
-   temporary file*; spreadsheets are not written until all modules have been processed.
+      temporary file*; spreadsheets are not written until all modules have been processed.
 
 #. *Click *Start Test Mode* to preview results.*
 

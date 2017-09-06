@@ -18,6 +18,8 @@ grayscale. If a binary mask is desired in subsequent modules, use the
 **Threshold** module instead of **MaskImage**. See also
 **Threshold**, **IdentifyPrimaryObjects**,
 **IdentifyObjectsManually**.
+
+This module can be used both on 2D and volumetric images.
 """
 
 import numpy as np
@@ -41,46 +43,72 @@ class MaskImage(cpm.Module):
 
         """
         self.source_choice = cps.Choice(
-                "Use objects or an image as a mask?",
-                [IO_OBJECTS, IO_IMAGE], doc="""
-            You can mask an image in two ways:
-            -  *%(IO_OBJECTS)s*: Using objects created by another module (for
-               instance **IdentifyPrimaryObjects**). The module will mask out all
-               parts of the image that are not within one of the objects (unless you
-               invert the mask).
-            -  *%(IO_IMAGE)s*: Using a binary image as the mask, where black
-               portions of the image (false or zero-value pixels) will be masked
-               out. If the image is not binary, the module will use all pixels whose
-               intensity is greater than 0.5 as the mask’s foreground (white area).
-               You can use **Threshold** instead to create a binary image and
-               have finer control over the intensity choice.""" % globals())
+            "Use objects or an image as a mask?",
+            [
+                IO_OBJECTS,
+                IO_IMAGE
+            ],
+            doc="""\
+You can mask an image in two ways:
+
+-  *%(IO_OBJECTS)s*: Using objects created by another module (for
+   instance **IdentifyPrimaryObjects**). The module will mask out all
+   parts of the image that are not within one of the objects (unless you
+   invert the mask).
+-  *%(IO_IMAGE)s*: Using a binary image as the mask, where black
+   portions of the image (false or zero-value pixels) will be masked
+   out. If the image is not binary, the module will use all pixels whose
+   intensity is greater than 0.5 as the mask’s foreground (white area).
+   You can use **Threshold** instead to create a binary image and
+   have finer control over the intensity choice.
+   """ % globals()
+        )
 
         self.object_name = cps.ObjectNameSubscriber(
-                "Select object for mask", cps.NONE, doc="""
-                *(Used only if mask is to be made from objects)*
-                Select the objects you would like to use to mask the input image.""")
+            "Select object for mask",
+            cps.NONE,
+            doc="""\
+*(Used only if mask is to be made from objects)*
+
+Select the objects you would like to use to mask the input image.
+"""
+        )
 
         self.masking_image_name = cps.ImageNameSubscriber(
-                "Select image for mask", cps.NONE, doc="""
-                *(Used only if mask is to be made from an image)*
-                Select the image that you like to use to mask the input image.""")
+            "Select image for mask",
+            cps.NONE,
+            doc="""\
+*(Used only if mask is to be made from an image)*
+
+Select the image that you like to use to mask the input image.
+"""
+        )
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""
-                Select the image that you want to mask.""")
+            "Select the input image",
+            cps.NONE,
+            doc="Select the image that you want to mask."
+        )
 
         self.masked_image_name = cps.ImageNameProvider(
-                "Name the output image", "MaskBlue", doc="""
-                Enter the name for the output masked image.""")
+            "Name the output image",
+            "MaskBlue",
+            doc="Enter the name for the output masked image."
+        )
 
         self.invert_mask = cps.Binary(
-                "Invert the mask?", False, doc=
-                """This option reverses the foreground/background relationship of the mask.
-                -  Select *%(NO)s* to produce the mask from the foregound (white
-                   portion) of the masking image or the area within the masking objects.
-                -  Select *%(YES)s*\ to instead produce the mask from the *background*
-                   (black portions) of the masking image or the area *outside* the
-                   masking objects.""" % globals())
+            "Invert the mask?",
+            False,
+            doc="""\
+This option reverses the foreground/background relationship of the mask.
+
+-  Select "*%(NO)s*" to produce the mask from the foregound (white
+   portion) of the masking image or the area within the masking objects.
+-  Select "*%(YES)s*"\ to instead produce the mask from the *background*
+   (black portions) of the masking image or the area *outside* the
+   masking objects.
+       """ % globals()
+        )
 
     def settings(self):
         """Return the settings in the order that they will be saved or loaded

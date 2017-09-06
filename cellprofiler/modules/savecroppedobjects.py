@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-SaveCroppedObjects crops objects into masks. Each object is saved as a mask
+SaveCroppedObjects
+==================
+
+**SaveCroppedObjects** crops objects into masks. Each object is saved as a mask
 where the object is labeled as “255” and the background is labeled as “0.”
 The dimensions of the mask are the same as the parent image. The filename
 for a mask is formatted like “{object name}_{label index}_{timestamp}.tiff”
@@ -26,7 +29,7 @@ class SaveCroppedObjects(cellprofiler.module.Module):
     def create_settings(self):
         self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
             "Objects",
-            doc="Select the objects you want to export per-object crops of."
+            doc="Select the objects you want to export as per-object crops."
         )
 
         self.directory = cellprofiler.setting.DirectoryPath(

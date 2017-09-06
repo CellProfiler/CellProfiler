@@ -128,6 +128,7 @@ builtin_modules = ['align',
                    'dilation',
                    'displaydataonimage',
                    'displaydensityplot',
+                   'displayhistogram',
                    'displayplatemap',
                    'displayscatterplot',
                    'editobjectsmanually',
@@ -188,6 +189,7 @@ builtin_modules = ['align',
                    'relateobjects',
                    'removeholes',
                    'rescaleintensity',
+                   'resizeobjects',
                    'resize',
                    "removeobjectsbysize",
                    'savecroppedobjects',
@@ -379,7 +381,7 @@ def add_module_for_tst(module_class):
 fill_modules()
 
 __all__ = ['instantiate_module', 'get_module_names', 'reload_modules',
-           'output_module_html', 'add_module_for_tst', 'builtin_modules']
+           'add_module_for_tst', 'builtin_modules']
 
 replaced_modules = {
     'LoadImageDirectory': ['LoadImages', 'LoadData'],

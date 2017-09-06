@@ -12,7 +12,7 @@ import skimage.morphology
 class MorphologicalSkeleton(cellprofiler.module.ImageProcessing):
     category = "Advanced"
 
-    module_name = "Morphological skeleton"
+    module_name = "MorphologicalSkeleton"
 
     variable_revision_number = 1
 

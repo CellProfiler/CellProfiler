@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Measure Image Quality** measures features that indicate image quality.
+MeasureImageQuality
+===================
+
+**MeasureImageQuality** measures features that indicate image quality.
 
 This module can collect measurements indicating possible image
 abberations, e.g. blur (poor focus), intensity, saturation (i.e., the
@@ -88,7 +91,8 @@ from loadimages import C_FILE_NAME, C_SCALING
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
+    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 ##############################################
 #
@@ -142,15 +146,16 @@ class MeasureImageQuality(cpm.Module):
     def create_settings(self):
         self.images_choice = cps.Choice(
                 "Calculate metrics for which images?",
-                [O_ALL_LOADED, O_SELECT], doc="""
-            This option lets you choose which images will have quality metrics calculated.
-            <ul>
-            <li><i>%(O_ALL_LOADED)s:</i> Use all images loaded with the <b>Input</b> modules.
-            The quality metrics selected below will be applied to all loaded images.</li>
-            <li><i>%(O_SELECT)s:</i> Select the desired images from a list. The quality
-            metric settings selected will be applied to all these images. Additional lists
-            can be added with separate settings.</li>
-            </ul>""" % globals())
+                [O_ALL_LOADED, O_SELECT], doc="""\
+This option lets you choose which images will have quality metrics
+calculated.
+
+-  *%(O_ALL_LOADED)s:* Use all images loaded with the **Input**
+   modules. The quality metrics selected below will be applied to all
+   loaded images.
+-  *%(O_SELECT)s:* Select the desired images from a list. The quality
+   metric settings selected will be applied to all these images.
+   Additional lists can be added with separate settings.""" % globals())
 
         self.divider = cps.Divider(line=True)
 
@@ -167,77 +172,85 @@ class MeasureImageQuality(cpm.Module):
             group.append("divider", cps.Divider(line=True))
 
         group.append("image_names", cps.ImageNameSubscriberMultiChoice(
-                "Select the images to measure", doc="""
-            <i>(Used only if "%(O_SELECT)s" is chosen for selecting images)</i><br>
-            Choose one or more images from this list. You can select multiple images by clicking
-            using the shift or command keys. In addition to loaded images, the list includes
-            the images that were created by prior modules.""" % globals()))
+                "Select the images to measure", doc="""\
+*(Used only if “%(O_SELECT)s” is chosen for selecting images)*
+
+Choose one or more images from this list. You can select multiple images
+by clicking using the shift or command keys. In addition to loaded
+images, the list includes the images that were created by prior modules.""" % globals()))
 
         group.append("include_image_scalings", cps.Binary(
                 "Include the image rescaling value?",
-                True, doc="""
-            Select <i>%(YES)s</i> to add the image's rescaling
-            value as a quality control metric. This value is set only for images
-            that loaded using the <b>Input</b> modules. This is useful in confirming
-            that all images are rescaled by the same value, since some acquisition
-            device vendors may output this value differently.
-            See <b>NamesAndTypes</b> for more information.""" % globals()))
+                True, doc="""\
+Select *%(YES)s* to add the image’s rescaling value as a quality control
+metric. This value is set only for images that loaded using the
+**Input** modules. This is useful in confirming that all images are
+rescaled by the same value, since some acquisition device vendors may
+output this value differently. See **NamesAndTypes** for more
+information.""" % globals()))
 
         group.append("check_blur", cps.Binary(
                 "Calculate blur metrics?",
-                True, doc="""
-            Select <i>%(YES)s</i> to compute a series of blur metrics. The blur metrics are the
-            following, along with recomendations on their use:
-            <ul>
-            <li><i>%(F_POWER_SPECTRUM_SLOPE)s:</i> The power spectrum contains the frequency information
-            of the image, and the slope gives a measure of image blur. A higher slope indicates
-            more lower frequency components, and hence more blur (<i>Field, 1997</i>). This metric is
-            recommended for blur detection in most cases.</li>
-            <li><i>%(F_CORRELATION)s:</i> This is a measure of the image spatial intensity distribution
-            computed across sub-regions of an image for a given spatial scale (<i>Haralick, 1973</i>).
-            If an image is blurred, the correlation between neighboring pixels becomes high,
-            producing a high correlation value. A similar approach was found to give optimal
-            performance for fluorescence microscopy applications (<i>Vollath, 1987</i>). <br>
-            Some care is required in selecting an appropriate spatial scale because differences
-            in the spatial scale capture various features: moderate scales capture the
-            blurring of intracellular features better than small scales and larger scales
-            are more likely to reflect intercellular confluence than focal blur. A spatial scale
-            no bigger than the feature of interest is recommended, although you can select as
-            many scales as desired.</li>
-            <li><i>%(F_FOCUS_SCORE)s:</i> This score is calculated using a normalized variance,
-            which was the best-ranking algorithm for brightfield, phase contrast, and DIC images
-            (<i>Sun, 2004</i>). Higher focus scores correspond to lower bluriness. <br>
-            More specifically, the focus score computes the intensity variance of the entire
-            image divided by mean image intensity. Since it is tailored for autofocusing
-            applications (difference focus for the same field of view), it assumes that the
-            overall intensity and the number of objects in the image is constant, making it less
-            useful for comparison images of different fields of view. For distinguishing
-            extremely blurry images, however, it performs well.</li>
-            <li><i>%(F_LOCAL_FOCUS_SCORE)s:</i> A local version of the Focus Score, it subdivides the
-            image into non-overlapping tiles, computes the normalized variance for each, and
-            takes the mean of these values as the final metric. It is potentially more useful
-            for comparing focus between images of different fields of view, but is subject
-            to the same caveats as the Focus Score. It can be useful in differentiating good versus
-            badly segmented images in the cases when badly segmented images usually contain no cell
-            objects with high background noise.</li>
-            </ul>
-            <p><b>References</b><br>
-            <ul>
-            <li>Field DJ (1997) "Relations between the statistics of natural
-            images and the response properties of cortical cells" <i>Journal of the Optical
-            Society of America. A, Optics, image science, and vision</i>, 4(12):2379-94.
-            <a href="http://redwood.psych.cornell.edu/papers/field_87.pdf"><(pdf)</a></li>
-            <li>Haralick RM (1979) "Statistical and structural approaches to texture"
-            Proc. IEEE, 67(5):786-804.
-            <a href="http://dx.doi.org/10.1109/PROC.1979.11328">(link)</a></li>
-            <li>Vollath D (1987) "Automatic focusing by correlative methods" <i>Journal of Microscopy</i>
-            147(3):279-288.
-            <a href="http://dx.doi.org/10.1111/j.1365-2818.1987.tb02839.x">(link)</a></li>
-            <li>Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in computer microscopy:
-            Selecting the optimal focus algorithm" <i>Microscopy Research and
-            Technique</i>, 65:139-149
-            <a href="http://dx.doi.org/10.1002/jemt.20118">(link)</a></li>
-            </ul>""" % globals()))
+                True, doc="""\
+Select *%(YES)s* to compute a series of blur metrics. The blur metrics
+are the following, along with recomendations on their use:
+
+-  *%(F_POWER_SPECTRUM_SLOPE)s:* The power spectrum contains the
+   frequency information of the image, and the slope gives a measure of
+   image blur. A higher slope indicates more lower frequency components,
+   and hence more blur (*Field, 1997*). This metric is recommended for
+   blur detection in most cases.
+-  *%(F_CORRELATION)s:* This is a measure of the image spatial
+   intensity distribution computed across sub-regions of an image for a
+   given spatial scale (*Haralick, 1973*). If an image is blurred, the
+   correlation between neighboring pixels becomes high, producing a high
+   correlation value. A similar approach was found to give optimal
+   performance for fluorescence microscopy applications (*Vollath,
+   1987*).
+   Some care is required in selecting an appropriate spatial scale
+   because differences in the spatial scale capture various features:
+   moderate scales capture the blurring of intracellular features better
+   than small scales and larger scales are more likely to reflect
+   intercellular confluence than focal blur. A spatial scale no bigger
+   than the feature of interest is recommended, although you can select
+   as many scales as desired.
+-  *%(F_FOCUS_SCORE)s:* This score is calculated using a normalized
+   variance, which was the best-ranking algorithm for brightfield, phase
+   contrast, and DIC images (*Sun, 2004*). Higher focus scores
+   correspond to lower bluriness.
+   More specifically, the focus score computes the intensity variance of
+   the entire image divided by mean image intensity. Since it is
+   tailored for autofocusing applications (difference focus for the same
+   field of view), it assumes that the overall intensity and the number
+   of objects in the image is constant, making it less useful for
+   comparison images of different fields of view. For distinguishing
+   extremely blurry images, however, it performs well.
+-  *%(F_LOCAL_FOCUS_SCORE)s:* A local version of the Focus Score, it
+   subdivides the image into non-overlapping tiles, computes the
+   normalized variance for each, and takes the mean of these values as
+   the final metric. It is potentially more useful for comparing focus
+   between images of different fields of view, but is subject to the
+   same caveats as the Focus Score. It can be useful in differentiating
+   good versus badly segmented images in the cases when badly segmented
+   images usually contain no cell objects with high background noise.
+
+**References**
+
+-  Field DJ (1997) "Relations between the statistics of natural images
+   and the response properties of cortical cells" *Journal of the
+   Optical Society of America. A, Optics, image science, and vision*,
+   4(12):2379-94.
+   `(pdf) <http://redwood.psych.cornell.edu/papers/field_87.pdf>`__
+-  Haralick RM (1979) "Statistical and structural approaches to texture"
+   Proc. IEEE, 67(5):786-804.
+   `(link) <http://dx.doi.org/10.1109/PROC.1979.11328>`__
+-  Vollath D (1987) "Automatic focusing by correlative methods" *Journal
+   of Microscopy* 147(3):279-288.
+   `(link) <http://dx.doi.org/10.1111/j.1365-2818.1987.tb02839.x>`__
+-  Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in computer
+   microscopy: Selecting the optimal focus algorithm" *Microscopy
+   Research and Technique*, 65:139-149
+   `(link) <http://dx.doi.org/10.1002/jemt.20118>`__""" % globals()))
 
         group.append("include_local_blur", cps.Binary(
                 "Include local blur metrics?",
@@ -260,50 +273,53 @@ class MeasureImageQuality(cpm.Module):
 
         group.append("check_saturation", cps.Binary(
                 "Calculate saturation metrics?",
-                True, doc="""
-            Select <i>%(YES)s</i> to calculate the saturation metrics <i>%(F_PERCENT_MAXIMAL)s</i>
-            and <i>%(F_PERCENT_MINIMAL)s</i>, i.e., the percentage of pixels at
-            the upper or lower limit of each individual image.
-            <p>For this calculation, the hard limits of 0 and 1 are not used because images often
-            have undergone some kind of transformation such that no pixels
-            ever reach the absolute maximum or minimum of the image format.  Given
-            the noise typical in images, both these measures should be a low percentage but if the
-            images were saturated during imaging, a higher than usual
-            <i>%(F_PERCENT_MAXIMAL)s</i> will be observed, and if there are no objects, the
-            <i>%(F_PERCENT_MINIMAL)s</i> value will increase.</p>""" % globals()))
+                True, doc="""\
+Select *%(YES)s* to calculate the saturation metrics
+*%(F_PERCENT_MAXIMAL)s* and *%(F_PERCENT_MINIMAL)s*, i.e., the
+percentage of pixels at the upper or lower limit of each individual
+image.
+
+For this calculation, the hard limits of 0 and 1 are not used because
+images often have undergone some kind of transformation such that no
+pixels ever reach the absolute maximum or minimum of the image format.
+Given the noise typical in images, both these measures should be a low
+percentage but if the images were saturated during imaging, a higher
+than usual *%(F_PERCENT_MAXIMAL)s* will be observed, and if there are
+no objects, the *%(F_PERCENT_MINIMAL)s* value will increase.""" % globals()))
 
         group.append("check_intensity", cps.Binary(
                 "Calculate intensity metrics?",
-                True, doc="""
-            Select <i>%(YES)s</i> to calculate image-based
-            intensity measures, namely the mean, maximum, minimum, standard deviation
-            and median absolute deviation of pixel intensities. These measures
-            are identical to those calculated by <b>MeasureImageIntensity</b>.""" % globals()))
+                True, doc="""\
+Select *%(YES)s* to calculate image-based intensity measures, namely the
+mean, maximum, minimum, standard deviation and median absolute deviation
+of pixel intensities. These measures are identical to those calculated
+by **MeasureImageIntensity**.""" % globals()))
 
         group.append("calculate_threshold", cps.Binary(
                 "Calculate thresholds?",
-                True, doc="""
-            Automatically calculate a suggested
-            threshold for each image. One indicator of image quality is that these threshold
-            values lie within a typical range.
-            Outlier images with high or low thresholds often contain artifacts."""))
+                True, doc="""\
+Automatically calculate a suggested threshold for each image. One
+indicator of image quality is that these threshold values lie within a
+typical range. Outlier images with high or low thresholds often contain
+artifacts."""))
 
         group.append("use_all_threshold_methods", cps.Binary(
                 "Use all thresholding methods?",
-                False, doc="""
-            <i>(Used only if image thresholds are calculcated)</i><br>
-            Select <i>%(YES)s</i> to calculate thresholds using all the available methods. Only the global methods
-            are used. <br>
-            While most methods are straightfoward, some methods have additional
-            parameters that require special handling:
-            <ul>
-            <li><i>%(TM_OTSU)s:</i> Thresholds for all combinations of class number, minimzation
-            parameter and middle class assignment are computed.</li>
-            <li><i>Mixture of Gaussians (%(TM_MOG)s):</i> Thresholds for image coverage fractions
-            of 0.05, 0.25, 0.75 and 0.95 are computed.</li>
-            </ul>
-            See the <b>IdentifyPrimaryObjects</b> module for more information on thresholding
-            methods.""" % globals()))
+                False, doc="""\
+*(Used only if image thresholds are calculcated)*
+
+Select *%(YES)s* to calculate thresholds using all the available
+methods. Only the global methods are used.
+While most methods are straightfoward, some methods have additional
+parameters that require special handling:
+
+-  *%(TM_OTSU)s:* Thresholds for all combinations of class number,
+   minimzation parameter and middle class assignment are computed.
+-  *Mixture of Gaussians (%(TM_MOG)s):* Thresholds for image coverage
+   fractions of 0.05, 0.25, 0.75 and 0.95 are computed.
+
+See the **IdentifyPrimaryObjects** module for more information on
+thresholding methods.""" % globals()))
 
         group.threshold_groups = []
 
@@ -335,16 +351,18 @@ class MeasureImageQuality(cpm.Module):
 
         group.append('scale', cps.Integer(
                 "Spatial scale for blur measurements",
-                len(image_group.scale_groups) * 10 + 10, doc="""
-            <i>(Used only if blur measurements are to be calculated)</i> <br>
-            The <i>%(F_LOCAL_FOCUS_SCORE)s</i> is measured within an <i>N &times; N</i> pixel
-            window applied to the image, whereas the <i>%(F_CORRELATION)s</i> of a pixel is
-            measured with repsect to its neighbors <i>N</i> pixels away.
-            <p>A higher number for the window size measures larger patterns of
-            image blur whereas smaller numbers measure more localized patterns of
-            blur. We suggest selecting a window size that is on the order of the feature of interest
-            (e.g., the object diameter). You can measure these metrics for multiple window sizes
-            by selecting additional scales for each image.</p>""" % globals()))
+                len(image_group.scale_groups) * 10 + 10, doc="""\
+*(Used only if blur measurements are to be calculated)*
+
+The *%(F_LOCAL_FOCUS_SCORE)s* is measured within an *N × N* pixel
+window applied to the image, whereas the *%(F_CORRELATION)s* of a
+pixel is measured with repsect to its neighbors *N* pixels away.
+
+A higher number for the window size measures larger patterns of image
+blur whereas smaller numbers measure more localized patterns of blur. We
+suggest selecting a window size that is on the order of the feature of
+interest (e.g., the object diameter). You can measure these metrics for
+multiple window sizes by selecting additional scales for each image.""" % globals()))
 
         group.can_remove = can_remove
         if can_remove:
@@ -362,45 +380,55 @@ class MeasureImageQuality(cpm.Module):
 
         group.append("threshold_method", cps.Choice("Select a thresholding method",
                                                     cpthresh.TM_METHODS,
-                                                    cpthresh.TM_OTSU, doc="""
-            <i>(Used only if particular thresholds are to be calculated)</i> <br>
-            This setting allows you to apply automatic thresholding
-            methods used in the <b>Identify</b> modules. Only the global methods are applied.
-            For more help on thresholding, see the <b>Identify</b> modules."""))
+                                                    cpthresh.TM_OTSU, doc="""\
+*(Used only if particular thresholds are to be calculated)*
+
+This setting allows you to apply automatic thresholding methods used in
+the **Identify** modules. Only the global methods are applied. For more
+help on thresholding, see the **Identify** modules."""))
 
         group.append("object_fraction", cps.Float(
-                "Typical fraction of the image covered by objects", 0.1, 0, 1, doc="""
-            <i>(Used only if threshold are calculated and %(TM_MOG)s thresholding is chosen)</i> <br>
-            Enter the approximate fraction of the typical image in the set
-            that is covered by objects.""" % globals()))
+                "Typical fraction of the image covered by objects", 0.1, 0, 1, doc="""\
+*(Used only if threshold are calculated and %(TM_MOG)s thresholding is
+chosen)*
+
+Enter the approximate fraction of the typical image in the set that is
+covered by objects.""" % globals()))
 
         group.append("two_class_otsu", cps.Choice(
                 'Two-class or three-class thresholding?',
-                [O_TWO_CLASS, O_THREE_CLASS], doc="""
-            <i>(Used only if thresholds are calculcated and the %(TM_OTSU)s thresholding method is used)</i> <br>
-            Select <i>%(O_TWO_CLASS)s</i> if the grayscale levels are readily distinguishable into foregound
-            (i.e., objects) and background. Select <i>%(O_THREE_CLASS)s</i> if there is a
-            middle set of grayscale levels that belongs to neither the
-            foreground nor background.
-            <p>For example, three-class thresholding may
-            be useful for images in which you have nuclear staining along with a
-            low-intensity non-specific cell staining. Where two-class thresholding
-            might incorrectly assign this intemediate staining to the nuclei
-            objects, three-class thresholding allows you to assign it to the
-            foreground or background as desired. However, in extreme cases where either
-            there are almost no objects or the entire field of view is covered with
-            objects, three-class thresholding may perform worse than two-class.""" % globals()))
+                [O_TWO_CLASS, O_THREE_CLASS], doc="""\
+*(Used only if thresholds are calculcated and the %(TM_OTSU)s
+thresholding method is used)*
+
+Select *%(O_TWO_CLASS)s* if the grayscale levels are readily
+distinguishable into foregound (i.e., objects) and background. Select
+*%(O_THREE_CLASS)s* if there is a middle set of grayscale levels
+that belongs to neither the foreground nor background.
+
+For example, three-class thresholding may be useful for images in which
+you have nuclear staining along with a low-intensity non-specific cell
+staining. Where two-class thresholding might incorrectly assign this
+intemediate staining to the nuclei objects, three-class thresholding
+allows you to assign it to the foreground or background as desired.
+However, in extreme cases where either there are almost no objects or
+the entire field of view is covered with objects, three-class
+thresholding may perform worse than two-class.""" % globals()))
 
         group.append("use_weighted_variance", cps.Choice(
                 'Minimize the weighted variance or the entropy?',
-                [O_WEIGHTED_VARIANCE, O_ENTROPY]))
+                [O_WEIGHTED_VARIANCE, O_ENTROPY], doc="""\
+Choose whether to minimize the weighted variance or the entropy when selecting
+the threshold"""))
 
         group.append("assign_middle_to_foreground", cps.Choice(
                 'Assign pixels in the middle intensity class to the foreground or the background?',
-                [O_FOREGROUND, O_BACKGROUND], doc="""
-            <i>(Used only if thresholds are calculcated and the %(TM_OTSU)s thresholding method with %(O_THREE_CLASS)s is used)</i><br>
-            Choose whether you want the middle grayscale intensities to be assigned
-            to the foreground pixels or the background pixels.""" % globals()))
+                [O_FOREGROUND, O_BACKGROUND], doc="""\
+*(Used only if thresholds are calculcated and the %(TM_OTSU)s
+thresholding method with %(O_THREE_CLASS)s is used)*
+
+Choose whether you want the middle grayscale intensities to be assigned
+to the foreground pixels or the background pixels.""" % globals()))
 
         group.can_remove = can_remove
         if can_remove and image_group is not None:

@@ -13,6 +13,7 @@ import numpy
 import scipy.ndimage
 import skimage.color
 import skimage.feature
+import skimage.filters
 import skimage.measure
 import skimage.morphology
 import skimage.transform
@@ -60,19 +61,29 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
             "Markers",
-            doc="An image marking the approximate centers of the objects for segmentation."
+            doc="An image marking the approximate centers of the objects for "
+                "segmentation. "
         )
 
         self.mask_name = cellprofiler.setting.ImageNameSubscriber(
             "Mask",
             can_be_blank=True,
-            doc="Optional. Only regions not blocked by the mask will be segmented."
+            doc="Optional. Only regions not blocked by the mask will be "
+                "segmented. "
         )
 
         self.connectivity = cellprofiler.setting.Integer(
             minval=1,
             text="Connectivity",
             value=8,
+        )
+
+        self.downsample = cellprofiler.setting.Integer(
+            doc="Downsample an n-dimensional image by local averaging. If "
+                "the downsampling factor is 1, the image is not downsampled.",
+            minval=1,
+            text="Downsample",
+            value=1
         )
 
     def settings(self):
@@ -82,7 +93,8 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             self.operation,
             self.markers_name,
             self.mask_name,
-            self.connectivity
+            self.connectivity,
+            self.downsample
         ]
 
     def visible_settings(self):
@@ -94,7 +106,8 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         if self.operation.value == "Distance":
             __settings__ = __settings__ + [
-                self.connectivity
+                self.connectivity,
+                self.downsample
             ]
         else:
             __settings__ = __settings__ + [
@@ -120,8 +133,22 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         if self.operation.value == "Distance":
             original_shape = x_data.shape
 
-            if x.volumetric:
-                x_data = skimage.transform.resize(x_data, (original_shape[0], 256, 256), order=0, mode="edge")
+            factor = self.downsample.value
+
+            if factor > 1:
+                if x.volumetric:
+                    factors = (1, factor, factor)
+                else:
+                    factors = (factor, factor)
+
+                x_data = skimage.transform.downscale_local_mean(
+                    x_data,
+                    factors
+                )
+
+            threshold = skimage.filters.threshold_otsu(x_data)
+
+            x_data = x_data > threshold
 
             distance = scipy.ndimage.distance_transform_edt(x_data)
 
@@ -130,9 +157,20 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             surface = distance.max() - distance
 
             if x.volumetric:
-                footprint = numpy.ones((self.connectivity.value, self.connectivity.value, self.connectivity.value))
+                footprint = numpy.ones(
+                    (
+                        self.connectivity.value,
+                        self.connectivity.value,
+                        self.connectivity.value
+                    )
+                )
             else:
-                footprint = numpy.ones((self.connectivity.value, self.connectivity.value))
+                footprint = numpy.ones(
+                    (
+                        self.connectivity.value,
+                        self.connectivity.value
+                    )
+                )
 
             peaks = mahotas.regmax(distance, footprint)
 
@@ -145,8 +183,16 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
             y_data = y_data * x_data
 
-            if x.volumetric:
-                y_data = skimage.transform.resize(y_data, original_shape, order=0, mode="edge")
+            if factor > 1:
+                y_data = skimage.transform.resize(
+                    y_data,
+                    original_shape,
+                    mode="edge",
+                    order=0,
+                    preserve_range=True
+                )
+
+                y_data = numpy.rint(y_data).astype(numpy.uint16)
         else:
             markers_name = self.markers_name.value
 

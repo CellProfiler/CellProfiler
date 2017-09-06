@@ -120,9 +120,6 @@ def test_run_distance(image, module, image_set, workspace):
 
     original_shape = binary.shape
 
-    if image.volumetric:
-        binary = skimage.transform.resize(binary, (original_shape[0], 256, 256), order=0, mode="edge")
-
     distance = scipy.ndimage.distance_transform_edt(binary)
 
     distance = mahotas.stretch(distance)
@@ -144,9 +141,6 @@ def test_run_distance(image, module, image_set, workspace):
     expected = mahotas.cwatershed(surface, markers)
 
     expected = expected * binary
-
-    if image.volumetric:
-        expected = skimage.transform.resize(expected, original_shape, order=0, mode="edge")
 
     expected = skimage.measure.label(expected)
 

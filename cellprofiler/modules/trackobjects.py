@@ -1,17 +1,17 @@
 # coding=utf-8
 
 """
-Track Objects
-=============
+TrackObjects
+============
 
-**Track Objects** allows tracking objects throughout sequential frames
+**TrackObjects** allows tracking objects throughout sequential frames
 of a series of images, so that from frame to frame each object maintains
 a unique identity in the output measurements
 
 This module must be placed downstream of a module that identifies
 objects (e.g., **IdentifyPrimaryObjects**). **TrackObjects** will
 associate each object with the same object in the frames before and
-after. This allows the study of objects’ lineages and the timing and
+after. This allows the study of objects' lineages and the timing and
 characteristics of dynamic events in movies.
 
 Images in CellProfiler are processed sequentially by frame (whether
@@ -20,20 +20,20 @@ of images/movies, you will need to do the following:
 
 -  Define each individual movie using metadata either contained within
    the image file itself or as part of the images nomenclature or folder
-   structure. Please see the **Metadata** module for more details on
-   metadata collection and usage.
+   structure.  Please see the **Metadata** module for more details on metadata
+   collection and usage.
 -  Group the movies to make sure that each image sequence is handled
-   individually. Please see the **Groups** module for more details on
-   the proper use of metadata for grouping.
+   individually. Please see the **Groups** module for more details on the
+   proper use of metadata for grouping.
 
-For complete details, see *Help > Creating a Project > Loading Image
-Stacks and Movies*.
+For complete details, see *Help > Creating a Project > Loading Image Stacks and Movies*.
 
 For an example pipeline using TrackObjects, see the CellProfiler
-`Examples`_ webpage.
+`Examples <http://cellprofiler.org/examples/#Tracking>`__
+webpage.
 
-Measurements made by this module
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Available measurements
+^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements**
 
@@ -64,49 +64,34 @@ Measurements made by this module
    with each frame that the object persists. At the final frame of the
    image set/movie, the lifetimes of all remaining objects are output.
 -  *FinalAge:* Similar to *LifeTime* but is only output at the final
-   frame of the object’s life (or the movie ends, whichever comes
+   frame of the object's life (or the movie ends, whichever comes
    first). At this point, the final age of the object is output; no
    values are stored for earlier frames.
 
-   .. raw:: html
+   |image0|  This value is useful if you want to plot a histogram of the
+   object lifetimes; all but the final age can be ignored or filtered out.
 
-      <dl>
-
-   .. raw:: html
-
-      <dd>
-
-   |image0| This value is useful if you want to plot a histogram of the
-   object lifetimes; all but the final age can be ignored or filtered
-   out.
-
-   .. raw:: html
-
-      </dd>
-
-   .. raw:: html
-
-      </dl>
-
-The following object measurements are specific to the LAP tracking
-method:
+The following object measurements are specific to the LAP
+tracking method:
 
 -  *LinkType:* The linking method used to link the object to its parent.
    Possible values are
 
    -  **0**: The object was not linked to a parent.
-   -  **1**: The object was linked to a parent in the previous frame.
-   -  **2**: The object is linked as the start of a split path.
-   -  **3**: The object was linked to its parent as a daughter of a
-      mitotic pair.
-   -  **4**: The object was linked to a parent in a frame prior to the
-      previous frame (a gap).
+   -  **1**: The object was linked to a parent in the
+      previous frame.
+   -  **2**: The object is linked as the start of a split
+      path.
+   -  **3**: The object was linked to its parent as a
+      daughter of a mitotic pair.
+   -  **4**: The object was linked to a parent in a frame
+      prior to the previous frame (a gap).
 
    Under some circumstances, multiple linking methods may apply to a
    given object, e.g, an object may be both the beginning of a split
    path and not have a parent. However, only one linking method is
    assigned.
--  *MovementModel:*\ The movement model used to track the object.
+-  *MovementModel:* The movement model used to track the object.
 
    -  **0**: The *Random* model was used.
    -  **1**: The *Velocity* model was used.
@@ -118,55 +103,22 @@ method:
       -  At the beginning of a closed gap, since a model was not
          actually applied to make the link in the first phase.
 
--  *LinkingDistance:*\ The difference between the propagated position of
+-  *LinkingDistance:* The difference between the propagated position of
    an object and the object to which it is matched.
-
-   .. raw:: html
-
-      <dl>
-
-   .. raw:: html
-
-      <dd>
 
    |image1| A slowly decaying histogram of these distances indicates
    that the search radius is large enough. A cut-off histogram is a sign
    that the search radius is too small.
 
-   .. raw:: html
-
-      </dd>
-
-   .. raw:: html
-
-      </dl>
-
--  *StandardDeviation:*\ The Kalman filter maintains a running estimate
+-  *StandardDeviation:* The Kalman filter maintains a running estimate
    of the variance of the error in estimated position for each model.
    This measurement records the linking distance divided by the standard
    deviation of the error when linking the object with its parent.
 
-   .. raw:: html
-
-      <dl>
-
-   .. raw:: html
-
-      <dd>
-
-   |image2|  This value is multiplied by the *“Number of standard
-   deviations for search radius”* setting to constrain the search
+   |image2| This value is multiplied by the
+   "*Number of standard deviations for search radius*" setting to constrain the search
    distance. A histogram of this value can help determine if the
-   *“Search radius limit, in pixel units (Min,Max)”* setting is
-   appropriate.
-
-   .. raw:: html
-
-      </dd>
-
-   .. raw:: html
-
-      </dl>
+   "*Search radius limit, in pixel units (Min,Max)*" setting is appropriate.
 
 -  *GapLength:* The number of frames between an object and its parent.
    For instance, an object in frame 3 with a parent in frame 1 has a gap
@@ -194,12 +146,19 @@ method:
 See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
 **Groups**.
 
-.. _Examples: http://www.cellprofiler.org/examples.html#Tracking
-
 .. |image0| image:: memory:thumb-up.png
 .. |image1| image:: memory:thumb-up.png
 .. |image2| image:: memory:thumb-up.png
 """
+
+TM_OVERLAP = 'Overlap'
+TM_DISTANCE = 'Distance'
+TM_MEASUREMENTS = 'Measurements'
+TM_LAP = "LAP"
+TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS, TM_LAP]
+RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
+RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
+ONLY_IF_2ND_PHASE_LAP_TEXT = '''*(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)*''' % globals()
 
 LT_NONE = 0
 LT_PHASE_1 = 1
@@ -237,7 +196,7 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 
 # if neighmovetrack is not available remove it from options
 TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
@@ -346,546 +305,590 @@ class TrackObjects(cpm.Module):
     def create_settings(self):
         self.tracking_method = cps.Choice(
             'Choose a tracking method',
-            TM_ALL, doc="""
-            When trying to track an object in an image,
-            <b>TrackObjects</b> will search within a maximum
-            specified distance (see the <i>distance within which to search</i> setting)
-            of the object's location in the previous image, looking for a "match".
-            Objects that match are assigned the same number, or label, throughout the
-            entire movie.
-            There are several options for the method used to find a match. Choose
-            among these options based on which is most consistent from frame
-            to frame of your movie.
-            <ul>
-            <li><i>Overlap:</i> Compares the amount of spatial overlap between identified objects in
-            the previous frame with those in the current frame. The object with the
-            greatest amount of spatial overlap will be assigned the same number (label).
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;
-            Recommended when there is a high degree of overlap of an object from one frame to the next,
-            which is the case for movies with high frame rates relative to object motion.</dd>
-            </dl></li>
+            TM_ALL, doc="""\
+When trying to track an object in an image, **TrackObjects** will search
+within a maximum specified distance (see the *distance within which to
+search* setting) of the object's location in the previous image, looking
+for a "match". Objects that match are assigned the same number, or
+label, throughout the entire movie. There are several options for the
+method used to find a match. Choose among these options based on which
+is most consistent from frame to frame of your movie.
 
-            <li><i>Distance:</i> Compares the distance between each identified
-            object in the previous frame with that of the current frame. The
-            closest objects to each other will be assigned the same number (label).
-            Distances are measured from the perimeter of each object.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;
-            Recommended for cases where the objects are not very crowded but where
-            <i>Overlap</i> does not work sufficiently well, which is the case
-            for movies with low frame rates relative to object motion.</dd>
-            </dl></li>
+-  *Overlap:* Compares the amount of spatial overlap between identified
+   objects in the previous frame with those in the current frame. The
+   object with the greatest amount of spatial overlap will be assigned
+   the same number (label).
 
-            <li><i>Measurements:</i> Compares each object in the
-            current frame with objects in the previous frame based on a particular
-            feature you have measured for the objects (for example, a particular intensity
-            or shape measurement that can distinguish nearby objects). The object
-            with the closest-matching measurement will be selected as a match and will be
-            assigned the same number (label). This selection requires that you run the
-            specified <b>Measure</b> module previous to this module in the pipeline so
-            that the measurement values can be used to track the objects.</li>
+   |image0| Recommended when there is a high degree of overlap of an
+   object from one frame to the next, which is the case for movies with
+   high frame rates relative to object motion.
 
-            <li><i>Follow Neighbors:</i> Uses the multiobject tracking approach described by
-            <i> Delgado-Gonzalo et al., 2010</i>. This approach assumes objects move in a coordinated
-            way (contrary to LAP). An object's movement direction is more likely to be in agreement with
-            the movement directions of its "neighbors". The problem is formulated as an optimization problem
-            and solved using LAP algorithm (same as in LAP method).
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;
-            Recommended for cases where the objects are moving in synchronized way. In this case
-            it may work better than <i>LAP</i>. This approach works well for yeast colonies grown on agar. </dd>
-            </dl></li>
+-  *Distance:* Compares the distance between each identified object in
+   the previous frame with that of the current frame. The closest
+   objects to each other will be assigned the same number (label).
+   Distances are measured from the perimeter of each object.
 
-            <li><i>LAP:</i> Uses the linear assignment problem (LAP) framework. The
-            linear assignment problem (LAP) algorithm (<i>Jaqaman et al., 2008</i>)
-            addresses the challenges of high object density, motion heterogeneity,
-            temporary disappearances, and object merging and splitting.
-            The algorithm first links objects between consecutive frames and then links
-            the resulting partial trajectories into complete trajectories. Both steps are formulated
-            as global combinatorial optimization problems whose solution identifies the overall
-            most likely set of object trajectories throughout a movie.
+   |image1| Recommended for cases where the objects are not very
+   crowded but where *Overlap* does not work sufficiently well, which is
+   the case for movies with low frame rates relative to object motion.
 
-            <p>Tracks are constructed from an image sequence by detecting objects in each
-            frame and linking objects between consecutive frames as a first step. This step alone
-            may result in incompletely tracked objects due to the appearance and disappearance
-            of objects, either in reality or apparently because of noise and imaging limitations.
-            To correct this, you may apply an optional second step which closes temporal gaps
-            between tracked objects and captures merging and splitting events. This step takes
-            place at the end of the analysis run.</p>
+-  *Measurements:* Compares each object in the current frame with
+   objects in the previous frame based on a particular feature you have
+   measured for the objects (for example, a particular intensity or
+   shape measurement that can distinguish nearby objects). The object
+   with the closest-matching measurement will be selected as a match and
+   will be assigned the same number (label). This selection requires
+   that you run the specified **Measure** module previous to this module
+   in the pipeline so that the measurement values can be used to track
+   the objects.
+-  *Follow Neighbors:* Uses the multiobject tracking approach described
+   by *Delgado-Gonzalo et al., 2010*. This approach assumes objects move
+   in a coordinated way (contrary to LAP). An object's movement
+   direction is more likely to be in agreement with the movement
+   directions of its "neighbors". The problem is formulated as an
+   optimization problem and solved using LAP algorithm (same as in LAP
+   method).
 
-            <p><img src="memory:thumb-up.png">&nbsp; Some recommendations on optimizing
-            the LAP settings<br>
-            <ul>
-            <li><i>Work with a minimal subset of your data:</i> Attempting to optimize these settings
-            by examining a dataset containing many objects may be complicated and frustrating.
-            Therefore, it is a good idea to work with a smaller portion of the data containing the
-            behavior of interest.
-            <ul>
-            <li>For example, if splits characterize your data, trying narrowing down to following just
-            one cell that undergoes a split and examine a few frames before and after the event.</li>
-            <li>You can insert the <b>Crop</b> module to zoom in a region of interest, optimize the
-            settings and then either remove or disable the module when done.</li>
-            <li>You can also use the <b>Input</b> modules to limit yourself to a few frames under
-            consideration. For example, use the filtering settings in the <b>Images</b> module to
-            use only certain files from the movie in the pipeline.</li>
-            </ul></li>
-            <li><i>Begin by optimzing the settings for the first phase of the LAP:</i> The 2nd phase of
-            the LAP method depends on the results of the first phase. Therefore, it is a good idea to
-            optimize the first phase settings as the initial step.
-            <ul>
-            <li>You can disable 2nd phase calculation by selecting <i>%(NO)s</i> for "Run the second
-            phase of the LAP algorithm?"</li>
-            <li>By maximizing the number of correct frame-to-frame links in the first phase, the
-            2nd phase will have less candidates to consider for linking and have a better chance of
-            closing gaps correctly. </li>
-            <li>If tracks are not being linked in the first phase, you may need to adjust the number
-            of standard deviations for the search radius and/or the radius limits (most likely
-            the maximum limit). See the help for these settings for details.</li>
-            </ul></li>
-            <li><i>Use any visualization tools at your disposal:</i> Visualizing the data often allows for
-            easier decision making as opposed to sorting through tabular data alone.
-            <ul>
-            <li>The <a href="http://cran.r-project.org/">R</a> open-source software package has
-            analysis and visualization tools that can query a database. See <a href=
-            "http://www.broadinstitute.org/~leek/rtracking.html">here</a> for a use case by our
-            lead software engineer.</li>
-            <li><a href="http://cellprofiler.org/tracer/">CellProfiler Tracer</a> is a version of
-            CellProfiler Analyst that contains tools for visualizing time-lapse data that has been exported
-            using the <b>ExportToDatabase</b> module.</li>
-            </ul></li>
-            </ul>
-            </p>
+   |image2| Recommended for cases where the objects are moving in
+   synchronized way. In this case it may work better than *LAP*. This
+   approach works well for yeast colonies grown on agar.
 
-            <p>This Nearest Neighborhood method of this module was prepared by Filip Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at
-            <a href="http://www.let-your-data-speak.com/">Scopem, ETH</a> for inquires.
-            <p><b>References</b>
-            <ul>
-            <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
-            "Robust single-particle tracking in live-cell time-lapse sequences."
-            <i>Nature Methods</i> 5(8),695-702.
-            <a href="http://dx.doi.org/10.1038/nmeth.1237">(link)</a></li>
-            <li>Jaqaman K, Danuser G. (2009) "Computational image analysis of cellular dynamics:
-            a case study based on particle tracking." Cold Spring Harb Protoc. 2009(12):pdb.top65.
-            <a href="http://dx.doi.org/10.1101/pdb.top65">(link)</a></li>
-            </ul></p>
-            </li>
-            </ul>""")
+-  *LAP:* Uses the linear assignment problem (LAP) framework. The linear
+   assignment problem (LAP) algorithm (*Jaqaman et al., 2008*) addresses
+   the challenges of high object density, motion heterogeneity,
+   temporary disappearances, and object merging and splitting. The
+   algorithm first links objects between consecutive frames and then
+   links the resulting partial trajectories into complete trajectories.
+   Both steps are formulated as global combinatorial optimization
+   problems whose solution identifies the overall most likely set of
+   object trajectories throughout a movie.
+
+   Tracks are constructed from an image sequence by detecting objects in
+   each frame and linking objects between consecutive frames as a first
+   step. This step alone may result in incompletely tracked objects due
+   to the appearance and disappearance of objects, either in reality or
+   apparently because of noise and imaging limitations. To correct this,
+   you may apply an optional second step which closes temporal gaps
+   between tracked objects and captures merging and splitting events.
+   This step takes place at the end of the analysis run.
+
+   |image3| Some recommendations on optimizing the LAP settings
+
+   -  *Work with a minimal subset of your data:* Attempting to optimize
+      these settings by examining a dataset containing many objects may
+      be complicated and frustrating. Therefore, it is a good idea to
+      work with a smaller portion of the data containing the behavior of
+      interest.
+
+      -  For example, if splits characterize your data, trying narrowing
+         down to following just one cell that undergoes a split and
+         examine a few frames before and after the event.
+      -  You can insert the **Crop** module to zoom in a region of
+         interest, optimize the settings and then either remove or
+         disable the module when done.
+      -  You can also use the **Input** modules to limit yourself to a
+         few frames under consideration. For example, use the filtering
+         settings in the **Images** module to use only certain files
+         from the movie in the pipeline.
+
+   -  *Begin by optimzing the settings for the first phase of the LAP:*
+      The 2nd phase of the LAP method depends on the results of the
+      first phase. Therefore, it is a good idea to optimize the first
+      phase settings as the initial step.
+
+      -  You can disable 2nd phase calculation by selecting *%(NO)s* for
+         "Run the second phase of the LAP algorithm?"
+      -  By maximizing the number of correct frame-to-frame links in the
+         first phase, the 2nd phase will have less candidates to
+         consider for linking and have a better chance of closing gaps
+         correctly.
+      -  If tracks are not being linked in the first phase, you may need
+         to adjust the number of standard deviations for the search
+         radius and/or the radius limits (most likely the maximum
+         limit). See the help for these settings for details.
+
+   -  *Use any visualization tools at your disposal:* Visualizing the
+      data often allows for easier decision making as opposed to sorting
+      through tabular data alone.
+
+      -  The `R <http://cran.r-project.org/>`__ open-source software
+         package has analysis and visualization tools that can query a
+         database.
+      -  `CellProfiler Tracer <http://cellprofiler.org/tracer/>`__ is a
+         version of CellProfiler Analyst that contains tools for
+         visualizing time-lapse data that has been exported using the
+         **ExportToDatabase** module.
+
+   This Nearest Neighborhood method of this module was prepared by Filip
+   Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at `Scopem,
+   ETH <http://www.let-your-data-speak.com/>`__ for inquires.
+
+   **References**
+
+   -  Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL,
+      Danuser G. (2008) "Robust single-particle tracking in live-cell
+      time-lapse sequences." *Nature Methods* 5(8),695-702.
+      `(link) <http://dx.doi.org/10.1038/nmeth.1237>`__
+   -  Jaqaman K, Danuser G. (2009) "Computational image analysis of
+      cellular dynamics: a case study based on particle tracking." Cold
+      Spring Harb Protoc. 2009(12):pdb.top65.
+      `(link) <http://dx.doi.org/10.1101/pdb.top65>`__
+
+.. |image0| image:: memory:thumb-up.png
+.. |image1| image:: memory:thumb-up.png
+.. |image2| image:: memory:thumb-up.png
+.. |image3| image:: memory:thumb-up.png""")
 
         self.object_name = cps.ObjectNameSubscriber(
-            'Select the objects to track', cps.NONE, doc="""
-            Select the objects to be tracked by this module.""")
+            'Select the objects to track', cps.NONE, doc="""Select the objects to be tracked by this module.""")
 
         self.measurement = cps.Measurement(
             'Select object measurement to use for tracking',
-            lambda: self.object_name.value, doc="""
-            <i>(Used only if Measurements is the tracking method)</i><br>
-            Select which type of measurement (category) and which specific feature from the
-            <b>Measure</b> module will be used for tracking. Select the feature name from
-            the popup box or see each <b>Measure</b> module's help for the list of
-            the features measured by that module. If necessary, you will also be asked
-            to specify additional details such as the
-            image from which the measurements originated or the measurement scale.""")
+            lambda: self.object_name.value, doc="""\
+*(Used only if Measurements is the tracking method)*
+
+Select which type of measurement (category) and which specific feature
+from the **Measure** module will be used for tracking. Select the
+feature name from the popup box or see each **Measure** module’s help
+for the list of the features measured by that module. If necessary, you
+will also be asked to specify additional details such as the image from
+which the measurements originated or the measurement scale.""")
 
         self.pixel_radius = cps.Integer(
-            'Maximum pixel distance to consider matches', 50, minval=1, doc="""
-            Objects in the subsequent frame will be considered potential matches if
-            they are within this distance. To determine a suitable pixel distance, you can look
-            at the axis increments on each image (shown in pixel units) or
-            use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
+            'Maximum pixel distance to consider matches', 50, minval=1, doc="""\
+Objects in the subsequent frame will be considered potential matches if
+they are within this distance. To determine a suitable pixel distance,
+you can look at the axis increments on each image (shown in pixel units)
+or use the distance measurement tool.
+%(HELP_ON_MEASURING_DISTANCES)s
+""" % globals())
 
         self.model = cps.Choice(
-            "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""
-            <i>(Used only if the LAP tracking method is applied)</i><br>
-            This setting controls how to predict an object's position in
-            the next frame, assuming that each object moves randomly with
-            a frame-to-frame variance in position that follows a Gaussian
-            distribution.<br>
-            <ul>
-            <li><i>%(M_RANDOM)s:</i> A model in which objects move due to
-            Brownian Motion or a similar process where the variance in position
-            differs between objects.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;
-            Use this model if the objects move with some
-            random jitter around a stationary location.</dd>
-            </dl></li>
-            <li><i>Velocity:</i> A model in which the object moves with
-            a velocity. Both velocity and position (after correcting for
-            velocity) vary following a Gaussian distribution.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;Use this model if
-            the objects move along a spatial trajectory in some direction over time.</dd>
-            </dl></li>
-            <li><i>Both:</i> <b>TrackObjects</b> will predict each
-            object's position using both models and use the model with the
-            lowest penalty to join an object in one frame with one in another.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;Use this
-            option if both models above are applicable over time.</dd>
-            </dl></li>
-            </ul>""" % globals())
+            "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""\
+*(Used only if the LAP tracking method is applied)*
+
+This setting controls how to predict an object’s position in the next
+frame, assuming that each object moves randomly with a frame-to-frame
+variance in position that follows a Gaussian distribution.
+
+-  *%(M_RANDOM)s:* A model in which objects move due to Brownian Motion
+   or a similar process where the variance in position differs between
+   objects.
+
+   |image0|  Use this model if the objects move with some random jitter
+   around a stationary location.
+
+-  *Velocity:* A model in which the object moves with a velocity. Both
+   velocity and position (after correcting for velocity) vary following
+   a Gaussian distribution.
+
+   |image1| Use this model if the objects move along a spatial
+   trajectory in some direction over time.
+
+-  *Both:* **TrackObjects** will predict each object’s position using
+   both models and use the model with the lowest penalty to join an
+   object in one frame with one in another.
+
+   |image2| Use this option if both models above are applicable over
+   time.
+
+.. |image0| image:: memory:thumb-up.png
+.. |image1| image:: memory:thumb-up.png
+.. |image2| image:: memory:thumb-up.png
+""" % globals())
 
         self.radius_std = cps.Float(
-            "Number of standard deviations for search radius", 3, minval=1, doc="""
-            <i>(Used only if the LAP tracking method is applied)</i>
-            <br>
-            <b>TrackObjects</b> derives a search radius from an error
-            estimation based on (a) the standard deviation of the movement and
-            (b) the diameter of the object. The standard deviation is a measure of
-            the error between the observed and predicted positions of an object for
-            each movement model. The module will constrain the search for matching
-            objects from one frame to the next to the standard deviation
-            of the error times the number of standard
-            deviations that you enter here.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;Recommendations:
-            <ul>
-            <li>If the standard deviation is quite small, but the object makes a
-            large spatial jump, this value may need to be set higher in order
-            to increase the search area and thereby make the frame-to-frame
-            linkage.</li>
-            </ul></dd>
-            </dl>""" % globals())
+            "Number of standard deviations for search radius", 3, minval=1, doc="""\
+*(Used only if the LAP tracking method is applied)*
+
+**TrackObjects** derives a search radius from an error estimation
+based on (a) the standard deviation of the movement and (b) the
+diameter of the object. The standard deviation is a measure of the
+error between the observed and predicted positions of an object for
+each movement model. The module will constrain the search for matching
+objects from one frame to the next to the standard deviation of the
+error times the number of standard deviations that you enter here.
+
+|image0| Recommendations:
+
+-  If the standard deviation is quite small, but the object makes a
+   large spatial jump, this value may need to be set higher in order to
+   increase the search area and thereby make the frame-to-frame linkage.
+
+.. |image0| image:: memory:thumb-up.png""" % globals())
 
         self.radius_limit = cps.FloatRange(
-            "Search radius limit, in pixel units (Min,Max)", (2, 10), minval=0, doc="""
-            <i>(Used only if the LAP tracking method is applied)</i><br>
-            <b>TrackObjects</b> derives a search radius from an error
-            estimation based on (a) the standard deviation of the movement and
-            (b) the diameter of the object. Potentially, the module can make an erroneous assignment
-            with a large error, leading to a large estimated error for
-            the object in the next frame. Conversely, the module can arrive
-            at a small estimated error by chance, leading to a maximum radius
-            that does not track the object in a subsequent frame. The radius
-            limit constrains the search radius to reasonable values.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp;Recommendations:
-            <ul>
-            <li>Special care must be taken to adjust the upper limit appropriate
-            to the data.</li>
-            <li>The lower limit should be set to a radius (in pixels) that is a
-            reasonable displacement for any object from one frame to the next.
-            <ul>
-            <li>If you notice that a frame-to-frame linkage is not being made for a
-            steadily-moving object, it may be that this value needs to be <i>decreased</i>
-            such that the displacement falls above the lower limit.</li>
-            <li>Alternately, if you notice that a frame-to-frame linkage is not
-            being made for a roughly stationary object, this value may need to be
-            <i>increased</i> so that the small displacement error is offset by the
-            object diameter.</li>
-            </ul></li>
-            <li>The upper limit should be set to the maximum reasonable
-            displacement (in pixels) under any circumstances. Hence, if you notice that
-            a frame-to-frame linkage is not being made in the case of a unusually
-            large displacement, this value may need to be increased.</li>
-            </ul></dd>
-            </dl>""" % globals())
+            "Search radius limit, in pixel units (Min,Max)", (2, 10), minval=0, doc="""\
+*(Used only if the LAP tracking method is applied)*
+
+**TrackObjects** derives a search radius from an error estimation
+based on (a) the standard deviation of the movement and (b) the
+diameter of the object. Potentially, the module can make an erroneous
+assignment with a large error, leading to a large estimated error for
+the object in the next frame. Conversely, the module can arrive at a
+small estimated error by chance, leading to a maximum radius that does
+not track the object in a subsequent frame. The radius limit
+constrains the search radius to reasonable values.
+
+|image0| Recommendations:
+
+-  Special care must be taken to adjust the upper limit appropriate to
+   the data.
+-  The lower limit should be set to a radius (in pixels) that is a
+   reasonable displacement for any object from one frame to the next.
+
+   -  If you notice that a frame-to-frame linkage is not being made for
+      a steadily-moving object, it may be that this value needs to be
+      *decreased* such that the displacement falls above the lower
+      limit.
+   -  Alternately, if you notice that a frame-to-frame linkage is not
+      being made for a roughly stationary object, this value may need to
+      be *increased* so that the small displacement error is offset by
+      the object diameter.
+
+-  The upper limit should be set to the maximum reasonable displacement
+   (in pixels) under any circumstances. Hence, if you notice that a
+   frame-to-frame linkage is not being made in the case of a unusually
+   large displacement, this value may need to be increased.
+
+.. |image0| image:: memory:thumb-up.png
+""" % globals())
 
         self.wants_second_phase = cps.Binary(
-            "Run the second phase of the LAP algorithm?", True, doc="""
-            <i>(Used only if the LAP tracking method is applied)</i><br>
-            Select <i>%(YES)s</i> to run the second phase of the LAP algorithm
-            after processing all images. Select <i>%(NO)s</i> to omit the
-            second phase or to perform the second phase when running the module
-            as a data tool.
+            "Run the second phase of the LAP algorithm?", True, doc="""\
+*(Used only if the LAP tracking method is applied)*
 
-            <p>Since object tracks may start and end not only because of the true appearance
-            and disappearance of objects, but also because of apparent disappearances due
-            to noise and limitations in imaging, you may want to run the second phase
-            which attempts to close temporal gaps between tracked objects and tries to
-            capture merging and splitting events.</p>
+Select "*%(YES)s*" to run the second phase of the LAP algorithm after
+processing all images. Select *%(NO)s* to omit the second phase or to
+perform the second phase when running the module as a data tool.
 
-            <p>For additional details on optimizing the LAP settings, see the help for each
-            the settings.</p>""" % globals())
+Since object tracks may start and end not only because of the true
+appearance and disappearance of objects, but also because of apparent
+disappearances due to noise and limitations in imaging, you may want to
+run the second phase which attempts to close temporal gaps between
+tracked objects and tries to capture merging and splitting events.
+
+For additional details on optimizing the LAP settings, see the help for
+each the settings.""" % globals())
 
         self.gap_cost = cps.Integer(
-            'Gap closing cost', 40, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting assigns a cost to keeping a gap caused
-            when an object is missing from one of the frames of a track (the
-            alternative to keeping the gap is to bridge it by connecting
-            the tracks on either side of the missing frames).
-            The cost of bridging a gap is the distance, in pixels, of the
-            displacement of the object between frames.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>Set the gap closing cost higher if tracks from objects in previous
-            frames are being erroneously joined, across a gap, to tracks from
-            objects in subsequent frames. </li>
-            <li>Set the gap closing cost lower if tracks
-            are not properly joined due to gaps caused by mis-segmentation.</li>
-            </ul></dd>
-            </dl></p>''' % globals())
+            'Gap closing cost', 40, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting assigns a cost to keeping a gap caused when an object is
+missing from one of the frames of a track (the alternative to keeping
+the gap is to bridge it by connecting the tracks on either side of the
+missing frames). The cost of bridging a gap is the distance, in
+pixels, of the displacement of the object between frames.
+
+|image0|  Recommendations:
+
+-  Set the gap closing cost higher if tracks from objects in previous
+   frames are being erroneously joined, across a gap, to tracks from
+   objects in subsequent frames.
+-  Set the gap closing cost lower if tracks are not properly joined due
+   to gaps caused by mis-segmentation.
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.split_cost = cps.Integer(
-            'Split alternative cost', 40, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting is the cost of keeping two tracks distinct
-            when the alternative is to make them into one track that
-            splits. A split occurs when an object in one frame is assigned
-            to the same track as two objects in a subsequent frame.
-            The split cost takes two components into account:
-            <ul>
-            <li>The area of the split object relative to the area of
-            the resulting objects.</li>
-            <li>The displacement of the resulting
-            objects relative to the position of the original object.</li>
-            </ul>
-            The split cost is roughly measured in pixels. The split alternative cost is
-            (conceptually) subtracted from the cost of making the split.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>The split cost should be set lower if objects are being split
-            that should not be split. </li>
-            <li>The split cost should be set higher if objects
-            that should be split are not.</li>
-            <li>If you are confident that there should be no splits present in the data,
-            the cost can be set to 1 (the minimum value possible)</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Split alternative cost', 40, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting is the cost of keeping two tracks distinct when the
+alternative is to make them into one track that splits. A split occurs
+when an object in one frame is assigned to the same track as two
+objects in a subsequent frame. The split cost takes two components
+into account:
+
+-  The area of the split object relative to the area of the resulting
+   objects.
+-  The displacement of the resulting objects relative to the position of
+   the original object.
+
+The split cost is roughly measured in pixels. The split alternative cost
+is (conceptually) subtracted from the cost of making the split.
+
+|image0|  Recommendations:
+
+-  The split cost should be set lower if objects are being split that
+   should not be split.
+-  The split cost should be set higher if objects that should be split
+   are not.
+-  If you are confident that there should be no splits present in the
+   data, the cost can be set to 1 (the minimum value possible)
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.merge_cost = cps.Integer(
-            'Merge alternative cost', 40, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting is the cost of keeping two tracks
-            distinct when the alternative is to merge them into one.
-            A merge occurs when two objects in one frame are assigned to
-            the same track as a single object in a subsequent frame.
-            The merge score takes two components into account:
-            <ul>
-            <li>The area of the two objects
-            to be merged relative to the area of the resulting objects.</li>
-            <li>The displacement of the original objects relative to the final
-            object. </li>
-            </ul>
-            The merge cost is measured in pixels. The merge
-            alternative cost is (conceptually) subtracted from the
-            cost of making the merge.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>Set the merge alternative cost lower if objects are being
-            merged when they should otherwise be kept separate. </li>
-            <li>Set the merge alternative cost
-            higher if objects that are not merged should be merged.</li>
-            <li>If you are confident that there should be no merges present in the data,
-            the cost can be set to 1 (the minimum value possible)</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Merge alternative cost', 40, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting is the cost of keeping two tracks distinct when the
+alternative is to merge them into one. A merge occurs when two objects
+in one frame are assigned to the same track as a single object in a
+subsequent frame. The merge score takes two components into account:
+
+-  The area of the two objects to be merged relative to the area of the
+   resulting objects.
+-  The displacement of the original objects relative to the final
+   object.
+
+The merge cost is measured in pixels. The merge alternative cost is
+(conceptually) subtracted from the cost of making the merge.
+
+|image0|  Recommendations:
+
+-  Set the merge alternative cost lower if objects are being merged when
+   they should otherwise be kept separate.
+-  Set the merge alternative cost higher if objects that are not merged
+   should be merged.
+-  If you are confident that there should be no merges present in the
+   data, the cost can be set to 1 (the minimum value possible)
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.mitosis_cost = cps.Integer(
-            'Mitosis alternative cost', 80, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting is the cost of not linking a parent and two daughters
-            via the mitosis model. the LAP tracking method weighs this
-            cost against the score of a potential mitosis. The model expects
-            the daughters to be equidistant from the parent after mitosis,
-            so the parent location is expected to be midway between the daughters.
-            In addition, the model expects the daughters' areas to be equal
-            to the parent's area. The mitosis score is the distance error
-            of the parent times the area inequality ratio of the parent and
-            daughters (the larger of Area(daughters) / Area(parent) and
-            Area(parent) / Area(daughters)).<br>
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>An accepted mitosis closes two gaps, so all things being equal,
-            the mitosis alternative cost should be approximately double the
-            gap closing cost.</li>
-            <li>Increase the mitosis alternative cost to favor more mitoses
-            and decrease it to prevent more mitoses candidates from being
-            accepted.</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Mitosis alternative cost', 80, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting is the cost of not linking a parent and two daughters via
+the mitosis model. the LAP tracking method weighs this cost against
+the score of a potential mitosis. The model expects the daughters to
+be equidistant from the parent after mitosis, so the parent location
+is expected to be midway between the daughters. In addition, the model
+expects the daughters’ areas to be equal to the parent’s area. The
+mitosis score is the distance error of the parent times the area
+inequality ratio of the parent and daughters (the larger of
+Area(daughters) / Area(parent) and Area(parent) / Area(daughters)).
+
+|image0|  Recommendations:
+
+-  An accepted mitosis closes two gaps, so all things being equal, the
+   mitosis alternative cost should be approximately double the gap
+   closing cost.
+-  Increase the mitosis alternative cost to favor more mitoses and
+   decrease it to prevent more mitoses candidates from being accepted.
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.mitosis_max_distance = cps.Integer(
-            'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting is the maximum allowed distance in pixels of either
-            of the daughter candidate centroids after mitosis from the parent candidate.
-            ''' % globals())
+            'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting is the maximum allowed distance in pixels of either of the
+daughter candidate centroids after mitosis from the parent candidate.''' % globals())
 
         self.max_gap_score = cps.Integer(
-            'Maximum gap displacement, in pixel units', 5, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting acts as a filter for unreasonably large
-            displacements during the second phase.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>The maximum gap displacement should be set to roughly
-            the maximum displacement of an object's center from frame to frame. An object that makes large
-            frame-to-frame jumps should have a higher value for this setting than one that only moves slightly.</li>
-            <li>Be aware that the LAP algorithm will run more slowly with a higher maximum gap displacement
-            value, since the higher this value, the more objects that must be compared at each step.</li>
-            <li>Objects that would have been tracked between successive frames for a lower maximum displacement
-            may not be tracked if the value is set higher.</li>
-            <li>This setting may be the culprit if an object is not tracked fame-to-frame despite optimizing
-            the LAP first-pass settings.</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Maximum gap displacement, in pixel units', 5, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting acts as a filter for unreasonably large displacements
+during the second phase.
+
+|image0|  Recommendations:
+
+-  The maximum gap displacement should be set to roughly the maximum
+   displacement of an object’s center from frame to frame. An object
+   that makes large frame-to-frame jumps should have a higher value for
+   this setting than one that only moves slightly.
+-  Be aware that the LAP algorithm will run more slowly with a higher
+   maximum gap displacement value, since the higher this value, the more
+   objects that must be compared at each step.
+-  Objects that would have been tracked between successive frames for a
+   lower maximum displacement may not be tracked if the value is set
+   higher.
+-  This setting may be the culprit if an object is not tracked
+   fame-to-frame despite optimizing the LAP first-pass settings.
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.max_merge_score = cps.Integer(
-            'Maximum merge score', 50, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting acts as a filter for unreasonably large
-            merge scores. The merge score has two components:
-            <ul>
-            <li>The area of the resulting merged object relative to the area of the
-            two objects to be merged.</li>
-            <li>The distances between the objects to be merged and the resulting object. </li>
-            </ul>
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
-            <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Maximum merge score', 50, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting acts as a filter for unreasonably large merge scores. The
+merge score has two components:
+
+-  The area of the resulting merged object relative to the area of the
+   two objects to be merged.
+-  The distances between the objects to be merged and the resulting
+   object.
+
+|image0|  Recommendations:
+
+-  The LAP algorithm will run more slowly with a higher maximum merge
+   score value.
+-  Objects that would have been merged at a lower maximum merge score
+   will not be considered for merging.
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.max_split_score = cps.Integer(
-            'Maximum split score', 50, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            This setting acts as a filter for unreasonably large split scores. The split score has two components:
-            <ul>
-            <li>The area of the initial object relative to the area of the
-            two objects resulting from the split.</li>
-            <li>The distances between the original and resulting objects. </li>
-            </ul>
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
-            <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Maximum split score', 50, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+This setting acts as a filter for unreasonably large split scores. The
+split score has two components:
+
+-  The area of the initial object relative to the area of the two
+   objects resulting from the split.
+-  The distances between the original and resulting objects.
+
+|image0|  Recommendations:
+
+-  The LAP algorithm will run more slowly with a maximum split score
+   value.
+-  Objects that would have been split at a lower maximum split score
+   will not be considered for splitting.
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.max_frame_distance = cps.Integer(
-            'Maximum temporal gap, in frames', 5, minval=1, doc='''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
-            <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
-            This setting controls the maximum number of frames that can
-            be skipped when merging a temporal gap caused by an unsegmented object.
-            These gaps occur when an image is mis-segmented and identification
-            fails to find an object in one or more frames.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>Set the maximum gap higher in order to have more chance of correctly recapturing an object after
-            erroneously losing the original for a few frames.</li>
-            <li>Set the maximum gap lower to reduce the chance of erroneously connecting to the wrong object after
-            correctly losing the original object (e.g., if the cell dies or moves off-screen).</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Maximum temporal gap, in frames', 5, minval=1, doc='''\
+*(Used only if the LAP tracking method is applied and the second phase is run)*
+
+**Care must be taken to adjust this setting appropriate to the data.**
+
+This setting controls the maximum number of frames that can be skipped
+when merging a temporal gap caused by an unsegmented object. These
+gaps occur when an image is mis-segmented and identification fails to
+find an object in one or more frames.
+
+|image0|  Recommendations:
+
+-  Set the maximum gap higher in order to have more chance of correctly
+   recapturing an object after erroneously losing the original for a few
+   frames.
+-  Set the maximum gap lower to reduce the chance of erroneously
+   connecting to the wrong object after correctly losing the original
+   object (e.g., if the cell dies or moves off-screen).
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.average_cell_diameter = cps.Float(
             "Average cell diameter in pixels",
             35.0, minval=5, doc='''\
-            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
-            The average cell diameter is used to scale many Follow Neighbors algorithm parameters.
-            Please use e.g. ImageJ to measure the average cell diameter in pixels.
-            '''
+*(Used only if Follow Neighbors tracking method is applied*
+
+The average cell diameter is used to scale many Follow Neighbors
+algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s''' % globals()
         )
 
         self.advanced_parameters = cps.Binary(
-            'Use advanced configuration parameters', False, doc="""
-            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
-            Do you want to use advanced parameters to configure plugin? The default values should be sufficient
-            in most cases. You may want to use advanced parameters when cells are incorrectly marked missing between
-            frames or cells of different sizes are falsely matched.
-            """
+            'Use advanced configuration parameters', False, doc="""\
+*(Used only if Follow Neighbors tracking method is applied*
+
+Do you want to use advanced parameters to configure plugin? The default
+values should be sufficient in most cases. You may want to use advanced
+parameters when cells are incorrectly marked missing between frames or
+cells of different sizes are falsely matched."""
         )
 
         self.drop_cost = cps.Float(
             "Cost of cell to empty matching",
             15, minval=1, maxval=200, doc='''\
-            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
-            The cost of considering cell (from frame t) not present in frame t+1. Increasing this value leads to more
-            cells (from t) being matched with cells (from t+1) rather then classified as missing.
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>A value which is too high might cause incorrect cells to match between the frames. </li>
-            <li>A value which is too low might make the algorithm not to match cells between the frames.</li>
-            </ul></dd>
-            </dl>
-            '''
+*(Used only if Follow Neighbors tracking method is applied)*
+
+The cost of considering cell (from frame t) not present in frame t+1.
+Increasing this value leads to more cells (from t) being matched with
+cells (from t+1) rather then classified as missing.
+
+|image0|  Recommendations:
+
+-  A value which is too high might cause incorrect cells to match
+   between the frames.
+-  A value which is too low might make the algorithm not to match cells
+   between the frames.
+
+.. |image0| image:: memory:thumb-up.png
+'''
         )
 
         self.area_weight = cps.Float(
             "Weight of area difference in function matching cost",
             25, minval=1, doc='''\
-            "<i>(Used only if Follow Neighbors tracking method is applied</i>"<br>
-            Increasing this value will make differences in position favored over differences in area when
-            identifying objects between frames.
-            '''
+*(Used only if Follow Neighbors tracking method is applied)*
+Increasing this value will make differences in position favored over
+differences in area when identifying objects between frames.'''
         )
 
         self.wants_lifetime_filtering = cps.Binary(
-            'Filter objects by lifetime?', False, doc='''
-            Select <i>%(YES)s</i> if you want objects to be filtered by their
-            lifetime, i.e., total duration in frames. This is useful for
-            marking objects which transiently appear and disappear, such
-            as the results of a mis-segmentation. <br>
-            <dl>
-            <dd><img src="memory:thumb-up.png">&nbsp; Recommendations:
-            <ul>
-            <li>This operation does not actually delete the filtered object,
-            but merely removes its label from the tracked object list;
-            the filtered object's per-object measurements are retained.</li>
-            <li>An object can be filtered only if it is tracked as an unique object.
-            Splits continue the lifetime count from their parents, so the minimum
-            lifetime value does not apply to them.</li>
-            </ul></dd>
-            </dl>''' % globals())
+            'Filter objects by lifetime?', False, doc='''\
+Select "*%(YES)s*" if you want objects to be filtered by their lifetime,
+i.e., total duration in frames. This is useful for marking objects
+which transiently appear and disappear, such as the results of a
+mis-segmentation.
+
+|image0|  Recommendations:
+
+-  This operation does not actually delete the filtered object, but
+   merely removes its label from the tracked object list; the filtered
+   object’s per-object measurements are retained.
+-  An object can be filtered only if it is tracked as an unique object.
+   Splits continue the lifetime count from their parents, so the minimum
+   lifetime value does not apply to them.
+
+.. |image0| image:: memory:thumb-up.png
+''' % globals())
 
         self.wants_minimum_lifetime = cps.Binary(
-            'Filter using a minimum lifetime?', True, doc='''
-            <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(YES)s</i> to filter the object on the basis of a minimum number of frames.''' % globals())
+            'Filter using a minimum lifetime?', True, doc='''\
+*(Used only if objects are filtered by lifetime)*
+
+Select "*%(YES)s*" to filter the object on the basis of a minimum number
+of frames.''' % globals())
 
         self.min_lifetime = cps.Integer(
-            'Minimum lifetime', 1, minval=1, doc="""
-            Enter the minimum number of frames an object is permitted to persist. Objects
-            which last this number of frames or lower are filtered out.""")
+            'Minimum lifetime', 1, minval=1, doc="""\
+Enter the minimum number of frames an object is permitted to persist. Objects
+which last this number of frames or lower are filtered out.""")
 
         self.wants_maximum_lifetime = cps.Binary(
-            'Filter using a maximum lifetime?', False, doc='''
-            <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(YES)s</i> to filter the object on the basis of a maximum number of frames.''' % globals())
+            'Filter using a maximum lifetime?', False, doc='''\
+*(Used only if objects are filtered by lifetime)*
+
+Select "*%(YES)s*" to filter the object on the basis of a maximum number
+of frames.''' % globals())
 
         self.max_lifetime = cps.Integer(
-            'Maximum lifetime', 100, doc="""
-            Enter the maximum number of frames an object is permitted to persist. Objects
-            which last this number of frames or more are filtered out.""")
+            'Maximum lifetime', 100, doc="""\
+Enter the maximum number of frames an object is permitted to persist. Objects
+which last this number of frames or more are filtered out.""")
 
         self.display_type = cps.Choice(
-            'Select display option', DT_ALL, doc="""
-            The output image can be saved as:
-            <ul>
-            <li><i>%(DT_COLOR_ONLY)s:</i> A color-labeled image, with each tracked
-            object assigned a unique color</li>
-            <li><i>%(DT_COLOR_AND_NUMBER)s:</i> Same as above but with the tracked object
-            number superimposed.</li>
-            </ul>""" % globals())
+            'Select display option', DT_ALL, doc="""\
+The output image can be saved as:
+
+-  *%(DT_COLOR_ONLY)s:* A color-labeled image, with each tracked
+   object assigned a unique color
+-  *%(DT_COLOR_AND_NUMBER)s:* Same as above but with the tracked
+   object number superimposed.""" % globals())
 
         self.wants_image = cps.Binary(
-            "Save color-coded image?", False, doc="""
-            Select <i>%(YES)s</i> to retain the image showing the tracked objects
-            for later use in the pipeline. For example, a common use is for quality control purposes
-            saving the image with the <b>SaveImages</b> module.
-            <p>Please note that if you are using the second phase of the LAP method,
-            the final labels are not assigned until <i>after</i> the pipeline has
-            completed the analysis run. That means that saving the color-coded image
-            will only show the penultimate result and not the final product.</p>.""" % globals())
+            "Save color-coded image?", False, doc="""\
+Select "*%(YES)s*" to retain the image showing the tracked objects for
+later use in the pipeline. For example, a common use is for quality
+control purposes saving the image with the **SaveImages** module.
+
+Please note that if you are using the second phase of the LAP method,
+the final labels are not assigned until *after* the pipeline has
+completed the analysis run. That means that saving the color-coded image
+will only show the penultimate result and not the final product.""" % globals())
 
         self.image_name = cps.ImageNameProvider(
-            "Name the output image", "TrackedCells", doc='''
-            <i>(Used only if saving the color-coded image)</i><br>
-            Enter a name to give the color-coded image of tracked labels.''')
+            "Name the output image", "TrackedCells", doc='''\
+*(Used only if saving the color-coded image)*
+
+Enter a name to give the color-coded image of tracked labels.''')
 
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,

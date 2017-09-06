@@ -4,9 +4,6 @@
 Metadata
 ========
 
-The **Metadata** module connects information about the images (i.e.,
-metadata) to your list of images for processing in CellProfiler.
-
 The **Metadata** module allows you to extract and associate metadata
 with your images. The metadata can be extracted from the image file
 itself, from a part of the file name or location, and/or from a text
@@ -27,7 +24,6 @@ following:
 -  The number of timepoints or channels contained in the image file.
 -  The image type, i.e., RGB, indexed or separate channels.
 -  The height and width of an image, in pixels.
--  Etc.
 
 It can be helpful to inform CellProfiler about certain metadata in order
 to define a specific relationship between the images and the associated
@@ -55,10 +51,10 @@ What are the inputs?
 ^^^^^^^^^^^^^^^^^^^^
 
 If you do not have metadata that is relevant to your analysis, you can
-leave this module in the default setting, and continue on to the
-**NamesAndTypes**\ module If you do have relevant metadata, the
+leave this module in the default "*No*" setting, and continue on to the
+**NamesAndTypes** module If you do have relevant metadata, the
 **Metadata** module receives the file list produced by the **Images**
-module. It then associates information to each file in the File list,
+module. It then associates information to each file in the file list,
 which can be obtained from several sources:
 
 -  From the image file name or location (e.g., as assigned by a
@@ -81,7 +77,7 @@ What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The final product of the **Metadata** module is a list of files from the
-**Images**\ module, accompanied by the associated metadata retrieved
+**Images** module, accompanied by the associated metadata retrieved
 from the source(s) provided and matched to the desired images.
 
 As you are extracting metadata from your various sources, you can click
@@ -91,9 +87,8 @@ the **Images** module, and the columns display the metadata obtained for
 each tag specified. You can press this button as many times as needed to
 display the most current metadata obtained.
 
-+------------+
-| |image0|   |
-+------------+
+.. image:: memory:Metadata_ExampleDisplayTable.png
+   :width: 100%
 
 Some downstream use cases for metadata include the following:
 
@@ -103,7 +98,7 @@ Some downstream use cases for metadata include the following:
 -  If the images need to be further sub-divided into groups of images
    that share a common metadata value, the **Groups** module can be used
    to specify which metadata is needed for this purpose.
--  You can also use metadata to reference their values in later modules.
+-  You can also use the numerical values of pieces of metadata in later modules.
    Since the metadata is stored as an image measurement and can be
    assigned as an integer or floating-point number, any module which
    allows measurements as input can make use of it.
@@ -120,8 +115,6 @@ Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Metadata:* The prefix of each metadata tag in the per-image table.
-
-.. |image0| image:: memory:Metadata_ExampleDisplayTable.png
 """
 
 import cellprofiler.icons
@@ -207,7 +200,7 @@ class Metadata(cpm.Module):
             "Extract metadata?",
             False,
             doc="""\
-Select *{YES}* if your file or path names or file headers contain
+Select "*{YES}*" if your file or path names or file headers contain
 information (i.e., metadata) you would like to extract and store along
 with your measurements. See the main module help for more details.
 """.format(**{
@@ -250,7 +243,7 @@ Metadata can be stored as either a text or numeric value:
    to be used for an arithmetic calculation or index, the name would
    need to be converted to a number and you would select “Integer” as
    the data type. On the other hand, if it important that the leading
-   zeroes be retained, setting it to an integer would them upon
+   zeroes be retained, setting it to an integer would remove them upon
    conversion to a number. In this case, storing the metadata values as
    “Text” would be more appropriate.
 """.format(**{
@@ -264,6 +257,7 @@ Metadata can be stored as either a text or numeric value:
             name_fn=self.get_metadata_keys,
             doc="""\
 *(Used only when “{DTC_CHOOSE}” is selected for the metadata data type)*
+
 This setting determines the data type of each metadata field when
 stored as a measurement.
 
@@ -343,11 +337,12 @@ the images in any of three ways:
    the internal structure of the file format itself. Typically, image
    metadata is embedded in the image file as header information; this
    information includes the dimensions and color depth among other
-   things. If you select this method, press the “Update metadata” button
-   to extract the metadata. Note that this extraction process can take a
-   while for assays with lots of images since each one needs to read for
-   extraction. Since the metadata is often image-format specific, this
-   option will extract information that is common to most image types:
+   things. **If you select this method, you must press the “Update metadata” button
+   (as opposed to the "Update" button beneath it) to extract the metadata.** 
+   Note that this extraction process can take a while for assays with lots 
+   of images since each one needs to read for extraction. Since the metadata 
+   is often image-format specific, this option will extract information that 
+   is common to most image types:
 
    -  *Series:* The series index of the image. This value is set to
       “None” if not applicable. Some image formats can store more than
@@ -402,23 +397,21 @@ extraction method” button to add more.
         group.append(
             "file_regexp",
             cps.RegexpText(
-                "Regular expression",
+                "Regular expression to extract from file name",
                 '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])',
                 get_example_fn=self.example_file_fn,
                 doc="""\
 *(Used only if you want to extract metadata from the file name)*
 
 The regular expression to extract the metadata from the file name is
-entered here. Note that this field is available whether you have
-selected *Text-Regular expressions* to load the files or not. Please see
-the general module help for more information on construction of a
-regular expression.
+entered here. Please see the general module help for more information on 
+construction of a regular expression.
 
 Clicking the magnifying glass icon to the right will bring up a tool for
 checking the accuracy of your regular expression. The regular expression
 syntax can be used to name different parts of your expression. The
 syntax *(?P<fieldname>expr)* will extract whatever matches *expr* and
-assign it to the measurement,\ *fieldname* for the image.
+assign it to the measurement *fieldname* for the image.
 
 For instance, a researcher uses plate names composed of a string of
 letters and numbers, followed by an underscore, then the well,
@@ -428,13 +421,13 @@ representing the site taken within the well (e.g.,
 the plate, well, and site in the fields “Plate”, “Well”, and “Site”:
 
 +----------------------------------------------------------------+------------------------------------------------------------------+
-| ^(?P<Plate>.\*)\_(?P<Well>[A-P][0-9]{1,2})\_s(?P<Site>[0-9])   |                                                                  |
+| ^(?P<Plate>.\*)\_(?P<Well>[A-P][0-9]{1,2})\_s(?P<Site>[0-9])                                                                      |
 +----------------------------------------------------------------+------------------------------------------------------------------+
 | ^                                                              | Start only at beginning of the file name                         |
 +----------------------------------------------------------------+------------------------------------------------------------------+
 | (?P<Plate>                                                     | Name the captured field *Plate*                                  |
 +----------------------------------------------------------------+------------------------------------------------------------------+
-| .\*                                                            | Capture as many characters as follow                             |
+| .\*)                                                           | Capture as many characters as follow                             |
 +----------------------------------------------------------------+------------------------------------------------------------------+
 | \_                                                             | Discard the underbar separating plate from well                  |
 +----------------------------------------------------------------+------------------------------------------------------------------+
@@ -442,31 +435,19 @@ the plate, well, and site in the fields “Plate”, “Well”, and “Site”:
 +----------------------------------------------------------------+------------------------------------------------------------------+
 | [A-P]                                                          | Capture exactly one letter between A and P                       |
 +----------------------------------------------------------------+------------------------------------------------------------------+
-| [0-9]{1,2}                                                     | Capture one or two digits that follow                            |
+| [0-9]{1,2} )                                                   | Capture one or two digits that follow                            |
 +----------------------------------------------------------------+------------------------------------------------------------------+
 | \_s                                                            | Discard the underbar followed by *s* separating well from site   |
 +----------------------------------------------------------------+------------------------------------------------------------------+
 | (?P<Site>                                                      | Name the captured field *Site*                                   |
 +----------------------------------------------------------------+------------------------------------------------------------------+
-| [0-9]                                                          | Capture one digit following                                      |
+| [0-9])                                                         | Capture one digit following                                      |
 +----------------------------------------------------------------+------------------------------------------------------------------+
 
 The regular expression can be typed in the upper text box, with a sample
 file name given in the lower text box. Provided the syntax is correct,
 the corresponding fields will be highlighted in the same color in the
 two boxes. Press *Submit* to enter the typed regular expression.
-
-You can create metadata tags for any portion of the filename or path,
-but if you are specifying metadata for multiple images, an image cycle
-can only have one set of values for each metadata tag. This means that
-you can only specify the metadata tags which have the same value across
-all images listed in the module. For example, in the example above, you
-might load two wavelengths of data, one named *TE12345\_A05\_s1\_w1.tif*
-and the other *TE12345\_A05\_s1\_w2.tif*, where the number following the
-*w* is the wavelength. In this case, a “Wavelength” tag *should not* be
-included in the regular expression because while the “Plate”, “Well” and
-“Site” metadata is identical for both images, the wavelength metadata is
-not.
 
 Note that if you use the special fieldnames *<WellColumn>* and
 *<WellRow>* together, LoadImages will automatically create a *<Well>*
@@ -482,7 +463,7 @@ the standard well nomenclature.
         group.append(
             "folder_regexp",
             cps.RegexpText(
-                "Regular expression",
+                "Regular expression to extract from folder name",
                 '(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$',
                 get_example_fn=self.example_directory_fn,
                 guess=cps.RegexpText.GUESS_FOLDER,
@@ -505,19 +486,19 @@ subfolders containing the images with the run ID (e.g.,
 the plate, well, and site in the fields *Date* and *Run*:
 
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| .\*[\\\\\\/](?P<Date>.\*)[\\\\\\\\/](?P<Run>.\*)$          |                                                                                                                                                                                |
+| .\*[\\\\\\\\/](?P<Date>.\*)[\\\\\\\\/](?P<Run>.\*)$                                                                                                                                                                                          |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | .\*[\\\\\\\\/]                                          | Skip characters at the beginning of the pathname until either a slash (/) or backslash (\\\\) is encountered (depending on the operating system)                                 |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | (?P<Date>                                           | Name the captured field *Date*                                                                                                                                                 |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| .\*                                                 | Capture as many characters that follow                                                                                                                                         |
+| .\*)                                                | Capture as many characters that follow                                                                                                                                         |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | [\\\\\\\\/]                                             | Discard the slash/backslash character                                                                                                                                          |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | (?P<Run>                                            | Name the captured field *Run*                                                                                                                                                  |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| .\*                                                 | Capture as many characters as follow                                                                                                                                           |
+| .\* )                                               | Capture as many characters as follow                                                                                                                                           |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | $                                                   | The *Run* field must be at the end of the path string, i.e., the last folder on the path. This also means that the Date field contains the parent folder of the Date folder.   |
 +-----------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -568,7 +549,7 @@ There are two choices:
                 ],
                 'and (file does contain "")',
                 doc="""\
-Select *{YES}* to display and use rules to select files for metadata
+Select "*{YES}*" to display and use rules to select files for metadata
 extraction.
 
 {FILTER_RULES_BUTTONS_HELP}
@@ -585,6 +566,8 @@ extraction.
                 "Metadata file location",
                 wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*",
                 doc="""\
+*(Used only if you want to extract metadata from a file)*
+                
 The file containing the metadata must be a comma-delimited file (CSV).
 You can create or edit such a file using a spreadsheet program such as
 Microsoft Excel.
@@ -612,6 +595,9 @@ the file as “Windows CSV” or “Windows Comma Separated”.
                 "Match file and image metadata",
             allow_none=False,
             doc="""\
+*(Used only if you want to extract metadata from the file and/or folder name
+AND you're extracting metadata from a file)*
+
 Match columns in your .csv file to image metadata items. If you are
 using a CSV in conjunction with the filename/path metadata matching, you
 might want to capture the metadata in common with both sources. For
@@ -638,12 +624,14 @@ source; press |image0| to add more rows.
                 "Use case insensitive matching?",
                 False,
                 doc="""\
+*(Used only if "Match file and image metadata" is set)*                
+                
 This setting controls whether row matching takes the metadata case into
 account when matching.
 
--  Select *{NO}* so that metadata entries that only differ by case (for
+-  Select "*{NO}*" so that metadata entries that only differ by case (for
    instance, “A01” and “a01”) will not match.
--  Select *{YES}* to match metadata entries that only differ by case.
+-  Select "*{YES}*" to match metadata entries that only differ by case.
 
 |image0| If you note that your CSV metadata is
 not being applied, your choice on this setting may be the culprit.

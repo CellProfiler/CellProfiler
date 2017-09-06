@@ -1190,7 +1190,7 @@ safe to press it.""")
         return None
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements output by this module'''
+        '''Return column definitions for measurements produced by this module'''
         entry = None
         try:
             entry = self.get_cache_info()

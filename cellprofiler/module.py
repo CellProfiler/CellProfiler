@@ -909,7 +909,7 @@ class ImageProcessing(Module):
         self.y_name = cellprofiler.setting.ImageNameProvider(
             "Name the output image",
             self.__class__.__name__,
-            doc="Enter the name you want to call the image output by this module."
+            doc="Enter the name you want to call the image produced by this module."
         )
 
     def display(self, workspace, figure, cmap=["gray", "gray"]):
@@ -1047,7 +1047,7 @@ class ImageSegmentation(Module):
         self.y_name = cellprofiler.setting.ObjectNameProvider(
             "Name the output object",
             self.__class__.__name__,
-            doc="Enter the name you want to call the object output by this module."
+            doc="Enter the name you want to call the object produced by this module."
         )
 
     def display(self, workspace, figure):

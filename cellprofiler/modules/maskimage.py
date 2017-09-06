@@ -18,6 +18,8 @@ grayscale. If a binary mask is desired in subsequent modules, use the
 **Threshold** module instead of **MaskImage**. See also
 **Threshold**, **IdentifyPrimaryObjects**,
 **IdentifyObjectsManually**.
+
+This module can be used both on 2D and volumetric images.
 """
 
 import numpy as np
@@ -100,9 +102,9 @@ Select the image that you like to use to mask the input image.
             doc="""\
 This option reverses the foreground/background relationship of the mask.
 
--  Select *%(NO)s* to produce the mask from the foregound (white
+-  Select "*%(NO)s*" to produce the mask from the foregound (white
    portion) of the masking image or the area within the masking objects.
--  Select *%(YES)s*\ to instead produce the mask from the *background*
+-  Select "*%(YES)s*"\ to instead produce the mask from the *background*
    (black portions) of the masking image or the area *outside* the
    masking objects.
        """ % globals()

@@ -298,8 +298,8 @@ SMOOTHING_FILTER_SIZE_SETTING_TEXT = "Size of smoothing filter"
 AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT = "Automatically calculate minimum allowed distance between local maxima?"
 
 # Icons for use in the help
-INTENSITY_DECLUMPING_ICON = "IdentifyPrimaryObjects_IntensityDeclumping.png"
-SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
+INTENSITY_DECLUMPING_ICON = _help.__image_resource("IdentifyPrimaryObjects_IntensityDeclumping.png")
+SHAPE_DECLUMPING_ICON = _help.__image_resource("IdentifyPrimaryObjects_ShapeDeclumping.png")
 
 
 class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
@@ -349,7 +349,7 @@ A few important notes:
    diameter”, i.e., the diameter of a circle with the same area as the
    object.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
                 "EXCLUDE_SIZE_SETTING_TEXT": EXCLUDE_SIZE_SETTING_TEXT,
                 "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
@@ -375,7 +375,7 @@ objects based on some other measurement.
 dust, noise, and debris) or large objects (e.g., large clumps) if
 desired.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
@@ -401,7 +401,7 @@ you do not want to make downstream measurements of objects that are not
 fully within the field of view. For example, morphological measurements
 obtained from a portion of an object would not be accurate.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO,
@@ -480,12 +480,12 @@ see the results of each.
    | settings below.                                                             |
    +--------------------------------------+--------------------------------------+
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image1| image:: memory:{INTENSITY_DECLUMPING_ICON}
-.. |image2| image:: memory:gear.png
-.. |image3| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image4| image:: memory:{SHAPE_DECLUMPING_ICON}
-.. |image5| image:: memory:gear.png
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {INTENSITY_DECLUMPING_ICON}
+.. |image2| image:: {TECH_NOTE_ICON}
+.. |image3| image:: {PROTIP_RECOMEND_ICON}
+.. |image4| image:: {SHAPE_DECLUMPING_ICON}
+.. |image5| image:: {TECH_NOTE_ICON}
             """.format(**{
                 "UN_INTENSITY": UN_INTENSITY,
                 "UN_SHAPE": UN_SHAPE,

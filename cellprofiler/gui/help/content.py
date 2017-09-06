@@ -420,8 +420,9 @@ panel* (located on the left-hand side of the CellProfiler window).
 #. *Set your Default Output Folder and, if necessary, your Default Input Folder*
 
    Both of these can be set via *File > Preferences…*.  Default Output Folder can
-   be accitionally changed by clicking the *View output settings* button directly
-   below the list of modules in the pipeline.
+   be additionally changed by clicking the *View output settings* button directly
+   below the list of modules in the pipeline; if any modules in your pipeline have 
+   referenced the Default Input Folder it will also appear in *View output settings*.
 
 #. *Click *Analyze images* to start processing.*
 

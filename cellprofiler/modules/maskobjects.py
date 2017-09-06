@@ -158,9 +158,9 @@ image using **ApplyThreshold**.
             doc="""\
 This option reverses the foreground/background relationship of the mask.
 
--  Select *%(NO)s* for the mask to be composed of the foregound (white
+-  Select "*%(NO)s*" for the mask to be composed of the foregound (white
    portion) of the masking image or the area within the masking objects.
--  Select *%(YES)s* for the mask to instead be composed of the
+-  Select "*%(YES)s*" for the mask to instead be composed of the
    *background* (black portions) of the masking image or the area
    *outside* the masking objects.
    """ % globals()
@@ -174,7 +174,7 @@ This option reverses the foreground/background relationship of the mask.
                 P_REMOVE,
                 P_REMOVE_PERCENTAGE
             ],
-            doc="""
+            doc="""\
 An object might partially overlap the mask region, with pixels both
 inside and outside the region. **MaskObjects** can handle this in one
 of three ways:

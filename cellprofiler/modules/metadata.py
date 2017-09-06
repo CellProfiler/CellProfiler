@@ -149,7 +149,8 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import \
     well_metadata_tokens, urlfilename, urlpathname
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP,PROTIP_RECOMEND_ICON
+from cellprofiler.gui.help import content
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
@@ -376,13 +377,14 @@ Specifics on the metadata extraction options are described below. Any or
 all of these options may be used at time; press the “Add another
 extraction method” button to add more.
 
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-up.png
-.. |image2| image:: memory:thumb-up.png
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
                     "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
                     "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
-                    "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION
+                    "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION,
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
                 })
             )
         )
@@ -627,8 +629,10 @@ the CSV, such that each row contains the corresponding tags. This can be
 done for as many metadata correspondences as you may have for each
 source; press |image0| to add more rows.
 
-.. |image0| image:: memory:module_add.png
-"""
+.. |image0| image:: {MODULE_ADD_BUTTON}
+""".format(**{
+                    "MODULE_ADD_BUTTON": content.MODULE_ADD_BUTTON
+                })
             )
         )
 
@@ -648,10 +652,11 @@ account when matching.
 |image0| If you note that your CSV metadata is
 not being applied, your choice on this setting may be the culprit.
 
-.. |image0| image:: memory:thumb-up.png
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
                     "NO": NO,
-                    "YES": YES
+                    "YES": YES,
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
                 })
             )
         )

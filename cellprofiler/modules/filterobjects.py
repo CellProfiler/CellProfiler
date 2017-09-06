@@ -42,8 +42,6 @@ See also any of the **MeasureObject** modules, **MeasureTexture**,
 import logging
 import os
 
-import centrosome.cpmorphology
-import centrosome.outline
 import numpy
 import scipy
 import scipy.ndimage

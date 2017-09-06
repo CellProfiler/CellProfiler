@@ -96,7 +96,7 @@ R_REMOVED = "Removed"
 
 class IdentifyTertiaryObjects(cpm.Module):
     module_name = "IdentifyTertiaryObjects"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Object Processing"
 
     def create_settings(self):
@@ -133,41 +133,21 @@ objects with no area. Measurements can still be made on such objects,
 but the results will be zero or not-a-number (NaN).
 """ % globals())
 
-        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc=RETAINING_OUTLINES_HELP
-% globals())
-
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "CytoplasmOutlines", doc=NAMING_OUTLINES_HELP
-% globals())
-
     def settings(self):
-        """All of the settings to be loaded and saved in the pipeline file
-
-        Returns a list of the settings in the order that they should be
-        saved or loaded in the pipeline file.
-        """
-        return [self.secondary_objects_name, self.primary_objects_name,
-                self.subregion_objects_name, self.outlines_name,
-                self.use_outlines, self.shrink_primary]
+        return [
+            self.secondary_objects_name,
+            self.primary_objects_name,
+            self.subregion_objects_name,
+            self.shrink_primary
+        ]
 
     def visible_settings(self):
-        """The settings that should be visible on-screen
-
-        Returns the list of settings in the order that they should be
-        displayed in the module setting editor. These can be tailored
-        to only display relevant settings (see use_outlines/outlines_name
-        below)
-        """
-        result = [self.secondary_objects_name, self.primary_objects_name,
-                  self.subregion_objects_name, self.shrink_primary,
-                  self.use_outlines]
-        #
-        # display the name of the outlines image only if the user
-        # has asked to use outlines
-        #
-        if self.use_outlines.value:
-            result.append(self.outlines_name)
-        return result
+        return [
+            self.secondary_objects_name,
+            self.primary_objects_name,
+            self.subregion_objects_name,
+            self.shrink_primary
+        ]
 
     def run(self, workspace):
         """Run the module on the current data set
@@ -322,13 +302,6 @@ but the results will be zero or not-a-number (NaN).
         cpmi.add_object_location_measurements(workspace.measurements,
                                               self.subregion_objects_name.value,
                                               tertiary_labels)
-        #
-        # The outlines
-        #
-        if self.use_outlines.value:
-            out_img = cpi.Image(tertiary_outlines.astype(bool),
-                                parent_image=tertiary_image)
-            workspace.image_set.add(self.outlines_name.value, out_img)
 
         if self.show_window:
             workspace.display_data.primary_labels = primary_labels
@@ -422,6 +395,11 @@ but the results will be zero or not-a-number (NaN).
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = setting_values + [cps.YES]
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            setting_values = setting_values[:3] + setting_values[5:]
+
+            variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
 

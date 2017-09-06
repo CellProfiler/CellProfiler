@@ -88,7 +88,7 @@ def s_lookup(x):
 class MaskObjects(I.Identify):
     category = "Object Processing"
     module_name = "MaskObjects"
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         '''Create the settings that control this module'''
@@ -233,33 +233,26 @@ controls how remaining objects are associated with their predecessors:
 """ % globals()
         )
 
-        self.wants_outlines = cps.Binary(
-            "Retain outlines of the resulting objects?",
-            False,
-            doc=RETAINING_OUTLINES_HELP
-        )
-
-        self.outlines_name = cps.OutlineNameProvider(
-            "Name the outline image",
-            "MaskedOutlines",
-            doc=NAMING_OUTLINES_HELP
-        )
-
     def settings(self):
         '''The settings as they appear in the pipeline'''
-        return [self.object_name, self.remaining_objects, self.mask_choice,
-                self.masking_objects, self.masking_image, self.overlap_choice,
-                self.overlap_fraction, self.retain_or_renumber,
-                self.wants_outlines, self.outlines_name,
-                self.wants_inverted_mask]
+        return [
+            self.object_name,
+            self.remaining_objects,
+            self.mask_choice,
+            self.masking_objects,
+            self.masking_image,
+            self.overlap_choice,
+            self.overlap_fraction,
+            self.retain_or_renumber,
+            self.wants_inverted_mask
+        ]
 
     def help_settings(self):
         '''The settings as they appear in the pipeline'''
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image,
                 self.wants_inverted_mask,
-                self.overlap_choice, self.overlap_fraction, self.retain_or_renumber,
-                self.wants_outlines, self.outlines_name]
+                self.overlap_choice, self.overlap_fraction, self.retain_or_renumber]
 
     def visible_settings(self):
         '''The settings as they appear in the UI'''
@@ -271,9 +264,8 @@ controls how remaining objects are associated with their predecessors:
         if self.overlap_choice == P_REMOVE_PERCENTAGE:
             result += [self.overlap_fraction]
 
-        result += [self.retain_or_renumber, self.wants_outlines]
-        if self.wants_outlines.value:
-            result += [self.outlines_name]
+        result += [self.retain_or_renumber]
+
         return result
 
     def run(self, workspace):
@@ -370,13 +362,6 @@ controls how remaining objects are associated with their predecessors:
         I.add_object_count_measurements(m, remaining_object_name,
                                         remaining_object_count)
         I.add_object_location_measurements(m, remaining_object_name, labels)
-        #
-        # Add an outline if asked to do so
-        #
-        if self.wants_outlines.value:
-            outline_image = cpi.Image(outline(labels) > 0,
-                                      parent_image=original_objects.parent_image)
-            workspace.image_set.add(self.outlines_name.value, outline_image)
         #
         # Save the input, mask and output images for display
         #
@@ -497,6 +482,11 @@ controls how remaining objects are associated with their predecessors:
             # Added "wants_inverted_mask"
             setting_values = setting_values + [cps.NO]
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            setting_values = setting_values[:-3] + setting_values[-1:]
+
+            variable_revision_number = 3
 
         setting_values = list(setting_values)
         setting_values[5] = s_lookup(setting_values[5])

@@ -53,10 +53,9 @@ and *conditions* you can specify to narrow down the image list.
    -  If you select “Does” and “Start with” as the operators and
       “BBBC013-1” in the Condition box, the rule will includes such files
       as “BBBC013-1.tif” “BBBC013-1-A01.png”, and so on.
-
-   +------------+
-   | |image0|   |
-   +------------+
+      
+.. image:: {IMAGES_USING_RULES_ICON}
+   :width: 100%
 
 You can also create regular expressions (an advanced syntax for
 pattern matching) in order to select particular files.
@@ -84,7 +83,6 @@ using them, but are quite powerful once you understand the basics.
 
 {REGEXP_HELP_REF}
 
-.. |image0| image:: {IMAGES_USING_RULES_ICON}
 
 """.format(**{
     "IMAGES_USING_RULES_ICON": pkg_resources.resource_filename(

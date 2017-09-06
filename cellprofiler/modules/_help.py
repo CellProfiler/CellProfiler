@@ -140,8 +140,14 @@ file location relative to a directory):
 IO_WITH_METADATA_HELP_TEXT = """\
 For *{ABSOLUTE_FOLDER_NAME}*, *{DEFAULT_INPUT_SUBFOLDER_NAME}* and
 *{DEFAULT_OUTPUT_SUBFOLDER_NAME}*, if you have metadata associated
-with your images via **Metadata** module, you can name the folder using
-metadata tags.
+with your images via **Metadata** module, you can name the folder using any
+metadata tags for which all images in each individual image set have the same value.
+
+-  Example: if you had extracted "*Plate*", "*Well*", and "*Channel*" metadata
+   from your images, for most pipelines folders based on "*Plate*" or "*Well*" would work since
+   each individual image set would come only from a single well on a single plate, but 
+   folders based on "*Channel*" would not work as each individual image set might
+   contain many channels.
 """.format(**{
     "ABSOLUTE_FOLDER_NAME": ABSOLUTE_FOLDER_NAME,
     "DEFAULT_INPUT_SUBFOLDER_NAME": DEFAULT_INPUT_SUBFOLDER_NAME,

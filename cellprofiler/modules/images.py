@@ -4,9 +4,6 @@
 Images
 ======
 
-The **Images** module specifies the location of image files to be
-analyzed by your pipeline.
-
 The **Images** module allows you to specify the location of files to be
 analyzed by the pipeline; setting this module correctly is the first
 step in creating a new project in CellProfiler. These files can be
@@ -228,9 +225,9 @@ Specify a set of rules to narrow down the files to be analyzed.
         )
 
         self.update_button = cps.PathListRefreshButton(
-            "",
             "Apply filters to the file list",
-            doc="""
+            "Apply filters to the file list",
+            doc="""\
 *(Only displayed if filtering based on rules)*
 
 Re-display the file list, removing or graying out the files that do not

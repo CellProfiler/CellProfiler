@@ -15,7 +15,7 @@ below. Some helpful links follow:
 -  A more extensive explanation of regular expressions can be found
    `here`_
 -  A helpful quick reference can be found
-   `here <http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/>`__
+   `here <http://www.cheatography.com/davechild/cheat-sheets/regular-expressions/>`__
 -  `Pythex`_ provides quick way to test your regular expressions. Here
    is an `example`_ to capture information from a common microscope
    nomenclature.
@@ -47,19 +47,18 @@ and *conditions* you can specify to narrow down the image list.
 
    -  As an example, if you create a new filter and select *File* as the
       attribute, then select “Does” and “Contain” as the operators, and
-      type “Channel” as the condition, the filter finds all files that
-      include the text “Channel”, such as “Channel1.tif” “Channel2.jpg”,
-      “1-Channel-A01.BMP” and so on.
+      type “BBBC013” as the condition, the filter finds all files that
+      include the text “BBBC013”, such as “BBBC013-1.tif” “BBBC013-2.jpg”,
+      “1-BBBC013-A01.BMP” and so on.
    -  If you select “Does” and “Start with” as the operators and
-      “Channel1” in the Condition box, the rule will includes such files
-      as “Channel1.tif” “Channel1-A01.png”, and so on.
+      “BBBC013-1” in the Condition box, the rule will includes such files
+      as “BBBC013-1.tif” “BBBC013-1-A01.png”, and so on.
+      
+.. image:: {IMAGES_USING_RULES_ICON}
+   :width: 100%
 
-   +------------+
-   | |image0|   |
-   +------------+
-
-   You can also create regular expressions (an advanced syntax for
-   pattern matching) in order to select particular files.
+You can also create regular expressions (an advanced syntax for
+pattern matching) in order to select particular files.
 
 To add another rule, click the plus buttons to the right of each rule.
 Subtract an existing rule by clicking the minus button.
@@ -76,8 +75,7 @@ clicking the ellipsis button (to the right of the plus button). Repeat
 the above steps to add more rules to the filter until you have all the
 conditions you want to include.
 
-Details on regular expressions
-''''''''''''''''''''''''''''''
+**Details on regular expressions:**
 
 A *regular expression* is a general term refering to a method of
 searching for pattern matches in text. There is a high learning curve to
@@ -85,7 +83,7 @@ using them, but are quite powerful once you understand the basics.
 
 {REGEXP_HELP_REF}
 
-.. |image0| image:: {IMAGES_USING_RULES_ICON}
+
 """.format(**{
     "IMAGES_USING_RULES_ICON": pkg_resources.resource_filename(
         "cellprofiler",

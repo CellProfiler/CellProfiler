@@ -4,9 +4,6 @@
 Images
 ======
 
-The **Images** module specifies the location of image files to be
-analyzed by your pipeline.
-
 The **Images** module allows you to specify the location of files to be
 analyzed by the pipeline; setting this module correctly is the first
 step in creating a new project in CellProfiler. These files can be
@@ -43,9 +40,8 @@ The most straightforward way to provide image files to the **Images**
 module is to simply drag-and-drop them on the file list panel (the blank
 space indicated by the text “Drop files and folders here”).
 
-+------------+
-| |image0|   |
-+------------+
+.. image:: memory:Images_FilelistPanel_Blank.png
+   :width: 100%
 
 Using the file explorer tool of your choice (e.g., Explorer in Windows,
 Finder in Mac), you can drag-and-drop individual files and/or entire
@@ -54,9 +50,8 @@ to bring up a file selection window to browse for individual files; on
 the Mac, folders can be drag-and-dropped from this window and you can
 select multiple files using Ctrl-A (Windows) or Cmd-A (Mac).
 
-+------------+
-| |image1|   |
-+------------+
+.. image:: memory:Images_FilelistPanel_Filled.png
+   :width: 100%
 
 Right-clicking on the file list panel will provide a context menu with
 options to modify the file list:
@@ -121,9 +116,6 @@ particular wavelength.
 .. _here: http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
 .. _“lossy”: http://www.techterms.com/definition/lossy
 .. _“lossless”: http://www.techterms.com/definition/lossless
-
-.. |image0| image:: memory:Images_FilelistPanel_Blank.png
-.. |image1| image:: memory:Images_FilelistPanel_Filled.png
 """
 
 import cellprofiler.icons
@@ -228,9 +220,9 @@ Specify a set of rules to narrow down the files to be analyzed.
         )
 
         self.update_button = cps.PathListRefreshButton(
-            "",
             "Apply filters to the file list",
-            doc="""
+            "Apply filters to the file list",
+            doc="""\
 *(Only displayed if filtering based on rules)*
 
 Re-display the file list, removing or graying out the files that do not

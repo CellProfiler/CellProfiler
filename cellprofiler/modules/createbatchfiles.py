@@ -1,25 +1,32 @@
 # coding=utf-8
 
 """
-**Create Batch Files** produces files that allow individual batches of
+CreateBatchFiles
+================
+
+**CreateBatchFiles** produces files that allow individual batches of
 images to be processed separately on a cluster of computers.
 
 This module creates files that can be submitted in parallel to a cluster
 for faster processing. It should be placed at the end of an image
 processing pipeline.
 
-| If your computer mounts the file system differently than the cluster
-  computers, **CreateBatchFiles** can replace the necessary parts of the
-  paths to the image and output files. For instance, a Windows machine
-  might access files images by mounting the file system using a drive
-  letter, like this:
-| ``Z:\your_data\images``
-| and the cluster computers access the same file system like this:
-| ``/server_name/your_name/your_data/images``
-| In this case, since the ``your_data\images`` portion of the path is
-  the same for both, the local root path is the portion prior, i.e.,
-  ``Z:\`` and similarly for the cluster root path, i.e.,
-  ``/server_name/your_name/``.
+If your computer mounts the file system differently than the cluster
+computers, **CreateBatchFiles** can replace the necessary parts of the
+paths to the image and output files. For instance, a Windows machine
+might access files images by mounting the file system using a drive
+letter, like this:
+    
+``Z:\your_data\images``
+
+and the cluster computers access the same file system like this:
+    
+``/server_name/your_name/your_data/images``
+
+In this case, since the ``your_data\images`` portion of the path is
+the same for both, the local root path is the portion prior, i.e.,
+``Z:\`` and similarly for the cluster root path, i.e.,
+``/server_name/your_name/``.
 
 For more details on batch processing, please see *Help > Batch
 Processing*.
@@ -78,26 +85,25 @@ class CreateBatchFiles(cpm.Module):
     def create_settings(self):
         '''Create the module settings and name the module'''
         self.wants_default_output_directory = cps.Binary(
-                "Store batch files in default output folder?", True, doc="""
-            Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
-            Select <i>%(NO)s</i> to enter the path to the folder that will be used to store
-            these files.""" % globals())
+                "Store batch files in default output folder?", True, doc="""\
+Select "*%(YES)s*" to store batch files in the Default Output folder.
+Select "*%(NO)s*" to enter the path to the folder that will be used to
+store these files.""" % globals())
 
         self.custom_output_directory = cps.Text(
                 "Output folder path",
-                cpprefs.get_default_output_directory(), doc="""
-            Enter the path to the output folder.""")
+                cpprefs.get_default_output_directory(), doc="Enter the path to the output folder.")
 
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
         self.remote_host_is_windows = cps.Binary(
                 "Are the cluster computers running Windows?",
-                False, doc="""
-            Select <i>%(YES)s</i> if the cluster computers are running one of the Microsoft
-            Windows operating systems. In this case, <b>CreateBatchFiles</b> will
-            modify all paths to use the Windows file separator (backslash &#92;). <br>
-            Select <i>%(NO)s</i> for <b>CreateBatchFiles</b> to modify all paths to use
-            the Unix or Macintosh file separator (slash &#47;).""" % globals())
+                False, doc="""\
+Select "*%(YES)s*" if the cluster computers are running one of the
+Microsoft Windows operating systems. In this case, **CreateBatchFiles**
+will modify all paths to use the Windows file separator (backslash \\\\ ).
+Select "*%(NO)s*" for **CreateBatchFiles** to modify all paths to use the
+Unix or Macintosh file separator (slash / ).""" % globals())
 
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)
@@ -111,57 +117,62 @@ class CreateBatchFiles(cpm.Module):
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("",
-                                                  "Add another path mapping", self.add_mapping, doc="""
-            Use this option if another path must be mapped because there is a difference
-            between how the local computer sees a folder location vs. how the cluster
-            computer sees the folder location.""")
+                                                  "Add another path mapping", self.add_mapping, doc="""\
+Use this option if another path must be mapped because there is a difference
+between how the local computer sees a folder location vs. how the cluster
+computer sees the folder location.""")
 
         self.go_to_website = cps.Binary(
                 "Launch BatchProfiler", True,
-                doc="""Launch BatchProfiler after creating the batch file. This
-            setting will launch a web browser to the BatchProfiler URL to
-            allow you to create batch jobs to run the analysis on a cluster.
-            """)
+                doc="""\
+Launch BatchProfiler after creating the batch file. This
+setting will launch a web browser to the BatchProfiler URL to
+allow you to create batch jobs to run the analysis on a cluster.""")
 
         self.check_path_button = cps.DoSomething(
                 "Press this button to check pathnames on the remote server",
-                "Check paths", self.check_paths, doc="""
-            This button will start a routine that will ask the
-            webserver to check whether the default input and default output
-            folders exist. It will also check whether all remote
-            path mappings exist.""")
+                "Check paths", self.check_paths, doc="""\
+This button will start a routine that will ask the
+webserver to check whether the default input and default output
+folders exist. It will also check whether all remote
+path mappings exist.""")
 
     def add_mapping(self):
         group = cps.SettingsGroup()
         group.append("local_directory",
                      cps.Text(
                              "Local root path",
-                             cpprefs.get_default_image_directory(), doc="""
-                        Enter the path to files on this computer.
-                        This is the root path on the local machine (i.e., the computer setting up
-                        the batch files). If <b>CreateBatchFiles</b> finds
-                        any pathname that matches the local root path at the begining, it will replace the
-                        start with the cluster root path.
-                        <p>For example, if you have mapped the remote cluster machine like this:<br><br>
-                        <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
-                        and the cluster machine sees the same folder like this:<br><br>
-                        <tt>/server_name/your_name/your_data/images</tt><br><br>
-                        you would enter <tt>Z:\</tt> here and <t>/server_name/your_name/</tt>
-                        for the cluster path in the next setting."""))
+                             cpprefs.get_default_image_directory(), doc="""\
+Enter the path to files on this computer. This is the root path on the
+local machine (i.e., the computer setting up the batch files). If
+**CreateBatchFiles** finds any pathname that matches the local root path
+at the begining, it will replace the start with the cluster root path.
+
+For example, if you have mapped the remote cluster machine like this:
+
+``Z:\your_data\images`` 
+
+(on a Windows machine, for instance) and the cluster machine sees the same folder like this:
+
+``/server_name/your_name/your_data/images``
+
+you would enter ``Z:\`` here and ``/server_name/your_name/`` for the
+cluster path in the next setting."""))
 
         group.append("remote_directory",
                      cps.Text(
                              "Cluster root path",
-                             cpprefs.get_default_image_directory(), doc="""
-                        Enter the path to files on the cluster. This is the cluster
-                        root path, i.e., how the cluster machine sees the
-                        top-most folder where your input/output files are stored.
-                        <p>For example, if you have mapped the remote cluster machine like this:<br><br>
-                        <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
-                        and the cluster machine sees the same folder like this:<br><br>
-                        <tt>/server_name/your_name/your_data/images</tt><br><br>
-                        you would enter <tt>Z:\</tt> in the previous setting for the
-                        local machine path and <t>/server_name/your_name/</tt> here. """))
+                             cpprefs.get_default_image_directory(), doc="""\
+Enter the path to files on the cluster. This is the cluster root path,
+i.e., how the cluster machine sees the top-most folder where your
+input/output files are stored.
+
+For example, if you have mapped the remote cluster machine like this:
+``Z:\your_data\images`` (on a Windows machine, for instance)
+and the cluster machine sees the same folder like this:
+``/server_name/your_name/your_data/images``
+you would enter ``Z:\`` in the previous setting for the local machine
+path and ``/server_name/your_name/`` here ."""))
         group.append("remover",
                      cps.RemoveSettingButton("", "Remove this path mapping", self.mappings, group))
         group.append("divider", cps.Divider(line=False))
@@ -201,6 +212,16 @@ class CreateBatchFiles(cpm.Module):
             result += mapping.visible_settings()
         result += [self.add_mapping_button, self.check_path_button]
         return result
+    
+    def help_settings(self):
+        help_settings = [
+            self.wants_default_output_directory,
+            self.custom_output_directory, 
+            self.remote_host_is_windows]
+        for mapping in self.mappings:
+            help_settings += [mapping.local_directory, mapping.remote_directory]
+
+        return help_settings
 
     def prepare_run(self, workspace):
         '''Invoke the image_set_list pickling mechanism and save the pipeline'''

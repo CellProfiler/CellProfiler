@@ -6,29 +6,32 @@ IdentifyPrimaryObjects
 
 **IdentifyPrimaryObjects** identifies biological components of
 interest in grayscale images containing bright objects on a dark
-background.  This module is designed to identify objects in 2D images;
+background.  This module currently identifies objects in 2D images only
+(including 2D slices of 3D images);
 please use the **Watershed** module for identification of objects in 3D.
 
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually a cellular subcompartment of
-some kind (for example, nuclei, cells, colonies, worms). We define an
+an identifed feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms). We define an
 object as *primary* when it can be found in an image without needing the
 assistance of another cellular feature as a reference. For example:
 
--  The nuclei of cells are usually more easily identifiable due to their
+-  The nuclei of cells are usually more easily identifiable than whole-
+   cell stains due to their
    more uniform morphology, high contrast relative to the background
    when stained, and good separation between adjacent nuclei. These
    qualities typically make them appropriate candidates for primary
    object identification.
--  In contrast, cells often have irregular intensity patterns and are
-   lower-contrast with more diffuse staining, making them more
-   challenging to identify than nuclei. In addition, cells often touch
+-  In contrast, whole-cell stains often yield irregular intensity patterns
+   and are lower-contrast with more diffuse staining, making them more
+   challenging to identify than nuclei without some supplemental image 
+   information being provided. In addition, cells often touch or even overlap
    their neighbors making it harder to delineate the cell borders. For
    these reasons, cell bodies are better suited for *secondary object*
-   identification, since they are best identified by using a
+   identification, because they are best identified by using a
    previously-identified primary object (i.e, the nuclei) as a
    reference. See the **IdentifySecondaryObjects** module for details on
    how to do this.
@@ -42,7 +45,9 @@ the following qualities:
 -  The image should be grayscale.
 -  The foreground (i.e, regions of interest) are lighter than the
    background.
--  The image should be 2D, not volumetric.
+-  The image should be 2D. 2D slices of 3D images are acceptable if
+   loaded as such in the **Images** module. For volumetric analysis
+   of 3D images, please see the **Watershed** module.
 
 If this is not the case, other modules can be used to pre-process the
 images to ensure they are in the proper form:

@@ -7,7 +7,7 @@ MeasureObjectIntensity
 **MeasureObjectIntensity** measures several intensity features for
 identified objects.
 
-Given an image with objects identified (e.g. nuclei or cells), this
+Given an image with objects identified (e.g., nuclei or cells), this
 module extracts intensity features for each object based on one or more
 corresponding grayscale images. Measurements are recorded for each
 object.
@@ -19,9 +19,9 @@ measurements desired.
 
 Note that for publication purposes, the units of intensity from
 microscopy images are usually described as “Intensity units” or
-“Arbitrary intensity units” since microscopes are not calibrated to an
+“Arbitrary intensity units” because microscopes are not calibrated to an
 absolute scale. Also, it is important to note whether you are reporting
-either the mean or the integrated intensity, so specify “Mean intensity
+the mean vs. the integrated intensity, so specify “Mean intensity
 units” or “Integrated intensity units” accordingly.
 
 Keep in mind that the default behavior in CellProfiler is to rescale the
@@ -52,16 +52,16 @@ Measurements made by this module
    representation of the object.
 -  *LowerQuartileIntensity:* The intensity value of the pixel for which
    25% of the pixels in the object have lower values.
--  *MedianIntensity:* The median intensity value within the object
+-  *MedianIntensity:* The median intensity value within the object.
 -  *MADIntensity:* The median absolute deviation (MAD) value of the
    intensities within the object. The MAD is defined as the
    median(\|x\ :sub:`i` - median(x)\|).
 -  *UpperQuartileIntensity:* The intensity value of the pixel for which
    75% of the pixels in the object have lower values.
 -  *Location\_CenterMassIntensity\_X, Location\_CenterMassIntensity\_Y:*
-   The pixel (X,Y) coordinates of the intensity weighted centroid (=
+   The (X,Y) coordinates of the intensity weighted centroid (=
    center of mass = first moment) of all pixels within the object.
--  *Location\_MaxIntensity\_X, Location\_MaxIntensity\_Y:* The pixel
+-  *Location\_MaxIntensity\_X, Location\_MaxIntensity\_Y:* The
    (X,Y) coordinates of the pixel with the maximum intensity within the
    object.
 

@@ -48,7 +48,6 @@ See also **RelateObjects**.
 """
 
 import centrosome.cpmorphology as morph
-import centrosome.outline
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.filter import stretch
@@ -83,7 +82,7 @@ UM_CONVEX_HULL = "Convex hull"
 class SplitOrMergeObjects(cpm.Module):
     module_name = "SplitOrMergeObjects"
     category = "Object Processing"
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
@@ -234,13 +233,6 @@ above):
    the same intensity as the boundary pixels of both (such as an axon
    connecting two neurons).""" % globals())
 
-        self.wants_outlines = cps.Binary(
-                "Retain outlines of the relabeled objects?", False, doc="""%(RETAINING_OUTLINES_HELP)s""" % globals())
-
-        self.outlines_name = cps.OutlineNameProvider(
-                'Name the outlines',
-                'RelabeledNucleiOutlines', doc=NAMING_OUTLINES_HELP % globals())
-
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()
         choices = [cps.NONE]
@@ -263,7 +255,6 @@ above):
                 self.wants_image, self.image_name,
                 self.minimum_intensity_fraction,
                 self.where_algorithm,
-                self.wants_outlines, self.outlines_name,
                 self.unify_option, self.parent_object,
                 self.unification_method]
 
@@ -279,9 +270,6 @@ above):
                                self.where_algorithm]
             elif self.unify_option == UNIFY_PARENT:
                 result += [self.unification_method, self.parent_object]
-        result += [self.wants_outlines]
-        if self.wants_outlines:
-            result += [self.outlines_name]
         return result
 
     def run(self, workspace):
@@ -349,11 +337,6 @@ above):
         measurements.add_measurement(self.output_objects_name.value,
                                      FF_PARENT % self.objects_name.value,
                                      parents_of_children)
-        if self.wants_outlines:
-            outlines = centrosome.outline.outline(output_labels)
-            outline_image = cpi.Image(outlines.astype(bool))
-            workspace.image_set.add(self.outlines_name.value,
-                                    outline_image)
 
         if self.show_window:
             workspace.display_data.orig_labels = objects.segmented
@@ -548,6 +531,10 @@ above):
         if variable_revision_number == 3:
             setting_values = setting_values + [UM_DISCONNECTED]
             variable_revision_number = 4
+
+        if variable_revision_number == 4:
+            setting_values = setting_values[:8] + setting_values[10:]
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number, False
 

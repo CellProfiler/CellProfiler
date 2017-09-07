@@ -49,8 +49,6 @@ EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|s
         self.assertTrue(isinstance(module, E.EditObjectsManually))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.filtered_objects, "EditedNuclei")
-        self.assertTrue(module.wants_outlines)
-        self.assertEqual(module.outlines_name, "EditedNucleiOutlines")
         self.assertEqual(module.renumber_choice, E.R_RENUMBER)
         self.assertFalse(module.wants_image_display)
 
@@ -80,7 +78,6 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         self.assertTrue(isinstance(module, E.EditObjectsManually))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.filtered_objects, "EditedNuclei")
-        self.assertFalse(module.wants_outlines)
         self.assertEqual(module.renumber_choice, E.R_RETAIN)
         self.assertTrue(module.wants_image_display)
         self.assertEqual(module.image_name, "DNA")
@@ -113,11 +110,42 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         self.assertTrue(isinstance(module, E.EditObjectsManually))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.filtered_objects, "EditedNuclei")
-        self.assertFalse(module.wants_outlines)
         self.assertEqual(module.renumber_choice, E.R_RETAIN)
         self.assertTrue(module.wants_image_display)
         self.assertEqual(module.image_name, "DNA")
         self.assertTrue(module.allow_overlap)
+
+    def test_01_04_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150319195827
+GitHash:d8289bf
+ModuleCount:1
+HasImagePlaneDetails:False
+
+EditObjectsManually:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the objects to be edited:IdentifyPrimaryObjects
+    Name the edited objects:EditedObjects
+    Numbering of the edited objects:Renumber
+    Display a guiding image?:Yes
+    Select the guiding image:DNA
+    Allow overlapping objects?:No
+    """
+        pipeline = cpp.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.loadtxt(StringIO(data))
+        module = pipeline.modules()[0]
+
+        assert module.object_name.value == "IdentifyPrimaryObjects"
+        assert module.filtered_objects.value == "EditedObjects"
+        assert module.renumber_choice.value == "Renumber"
+        assert module.wants_image_display.value
+        assert module.image_name.value == "DNA"
+        assert not module.allow_overlap.value
 
     def test_02_02_measurements(self):
         module = E.EditObjectsManually()

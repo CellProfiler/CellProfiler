@@ -1243,6 +1243,11 @@ provide the location of the output file. Once specified, the user is
 then prompted to enter the desired settings. The settings behave
 identically as those from the corresponding module.
 
+set at a time. If you want to use data tool modules to examine and/or 
+graph data on the whole experiment level, you should instead consider using 
+CellProfiler Analyst; see the *ExportToDatabase* help to learn more about exporting 
+your data into a database that CellProfiler Analyst can access and about creating a 
+
 Help for each *Data Tool* is available under *{DATA_TOOL_HELP_REF}*
 or the corresponding module help.
 """.format(**{

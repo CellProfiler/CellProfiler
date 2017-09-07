@@ -45,8 +45,9 @@ the following qualities:
 -  The image should be grayscale.
 -  The foreground (i.e, regions of interest) are lighter than the
    background.
--  The image should be 2D. 2D slices of 3D images are acceptable if
-   loaded as such in the **Images** module. For volumetric analysis
+-  The image should be 2D. 2D slices of 3D images are acceptable if the
+   image has not been loaded as volumetric in the **NamesAndTypes**
+   module. For volumetric analysis
    of 3D images, please see the **Watershed** module.
 
 If this is not the case, other modules can be used to pre-process the

@@ -1470,6 +1470,10 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     text_color = text_color_selected
                 else:
                     text_color = text_color
+            if self.test_mode and index == self.running_item:
+                flags = wx.CONTROL_CURRENT | wx.CONTROL_FOCUSED
+
+                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
             else:
                 text_color = text_color
 

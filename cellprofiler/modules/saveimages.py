@@ -135,8 +135,6 @@ Several choices are available for constructing the image file name:
    metadata corresponding to an image group. The name of the metadata to
    substitute can be provided for each image for each cycle using the
    **Metadata** module.
-   {USING_METADATA_TAGS_REF}{USING_METADATA_HELP_REF}.
-
 -  *{FN_SEQUENTIAL}:* Same as above, but in addition, each filename
    will have a number appended to the end that corresponds to the image
    cycle number (starting at 1).
@@ -145,7 +143,12 @@ Several choices are available for constructing the image file name:
    In this case, you would probably want to save the image on the last
    cycle (see the *Select how often to save* setting). The exception to
    this is to use a metadata tag to provide a unique label, as mentioned
-   in the *{FN_FROM_IMAGE}* option.""".format(**{
+   in the *{FN_FROM_IMAGE}* option.
+
+{USING_METADATA_TAGS_REF}
+   
+{USING_METADATA_HELP_REF}
+""".format(**{
                 "FN_FROM_IMAGE": FN_FROM_IMAGE,
                 "FN_SEQUENTIAL": FN_SEQUENTIAL,
                 "FN_SINGLE_NAME": FN_SINGLE_NAME,
@@ -262,8 +265,11 @@ An additional option is the following:
 -  *Same folder as image*: Place the output file in the same folder that
    the source image is located.
 
-{IO_WITH_METADATA_HELP_TEXT} {USING_METADATA_TAGS_REF}. For
-instance, if you have a metadata tag named “Plate”, you can create a
+{IO_WITH_METADATA_HELP_TEXT}
+
+{USING_METADATA_TAGS_REF}
+ 
+For instance, if you have a metadata tag named “Plate”, you can create a
 per-plate folder by selecting one the subfolder options and then
 specifying the subfolder name as “\\g<Plate>”. The module will
 substitute the metadata values for the current image set for any

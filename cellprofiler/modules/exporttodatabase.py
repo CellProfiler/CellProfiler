@@ -366,16 +366,16 @@ class ExportToDatabase(cpm.Module):
                 db_choices, default_db, doc="""\
 Specify the type of database you want to use:
 
--  *%(DB_MYSQL)s:* Writes the data directly to a MySQL database. MySQL
+-  *{DB_MYSQL}:* Writes the data directly to a MySQL database. MySQL
    is open-source software; you may require help from your local
    Information Technology group to set up a database server.
--  *%(DB_MYSQL_CSV)s:* Writes a script file that contains SQL
+-  *{DB_MYSQL_CSV}:* Writes a script file that contains SQL
    statements for creating a database and uploading the Per\_Image and
    Per\_Object tables. This option will write out the Per\_Image and
    Per\_Object table data to two CSV files; you can use these files can
    be used to import the data directly into an application that accepts
    CSV data.
--  *%(DB_SQLITE)s:* Writes SQLite files directly. SQLite is simpler to
+-  *{DB_SQLITE}:* Writes SQLite files directly. SQLite is simpler to
    set up than MySQL and can more readily be run on your local computer
    rather than requiring a database server. More information about
    SQLite can be found `here`_.
@@ -383,15 +383,20 @@ Specify the type of database you want to use:
 |image0|  If running this module on a computing cluster, there are a few
 considerations to note:
 
--  The *%(DB_MYSQL)s* option is well-suited for cluster use, since
+-  The *{DB_MYSQL}* option is well-suited for cluster use, since
    multiple jobs can write to the database simultaneously.
--  The *%(DB_SQLITE)s* option is not as appropriate; a SQLite database
+-  The *{DB_SQLITE}* option is not as appropriate; a SQLite database
    only allows access by one job at a time.
 
 .. _here: http://www.sqlite.org/
 
-.. |image0| image:: memory:%(TECH_NOTE_ICON)s
-                """ % globals())
+.. |image0| image:: {TECH_NOTE_ICON}
+                """.format(**{
+                "TECH_NOTE_ICON": TECH_NOTE_ICON,
+                "DB_MYSQL": DB_MYSQL,
+                "DB_MYSQL_CSV": DB_MYSQL_CSV,
+                "DB_SQLITE": DB_SQLITE
+            }))
 
         self.test_connection_button = cps.DoSomething(
                 "Press this button to test the connection to the remote server using the current settings",

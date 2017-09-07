@@ -161,20 +161,22 @@ image can be selected in downstream modules by selecting them from any
 drop-down image list.
 """
 
-PROTIP_RECOMEND_ICON = pkg_resources.resource_filename(
-    "cellprofiler",
-    os.path.join("data", "images", "thumb-up.png")
-)
+####################
+#
+# ICONS
+#
+####################
+def __image_resource(filename):
+    return pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "images", filename)
+    )
 
-PROTIP_AVOID_ICON = pkg_resources.resource_filename(
-    "cellprofiler",
-    os.path.join("data", "images", "thumb-down.png")
-)
+PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")
 
-TECH_NOTE_ICON = pkg_resources.resource_filename(
-    "cellprofiler",
-    os.path.join("data", "images", "gear.png")
-)
+PROTIP_AVOID_ICON = __image_resource("thumb-down.png")
+
+TECH_NOTE_ICON = __image_resource("gear.png")
 
 RETAINING_OUTLINES_HELP = """\
 Select *{YES}* to retain the outlines of the new objects for later use

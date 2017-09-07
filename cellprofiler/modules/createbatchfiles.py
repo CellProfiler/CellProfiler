@@ -16,11 +16,11 @@ computers, **CreateBatchFiles** can replace the necessary parts of the
 paths to the image and output files. For instance, a Windows machine
 might access files images by mounting the file system using a drive
 letter, like this:
-    
+
 ``Z:\your_data\images``
 
 and the cluster computers access the same file system like this:
-    
+
 ``/server_name/your_name/your_data/images``
 
 In this case, since the ``your_data\images`` portion of the path is
@@ -56,7 +56,7 @@ import cellprofiler.workspace as cpw
 from cellprofiler.measurement import F_BATCH_DATA, F_BATCH_DATA_H5
 
 '''# of settings aside from the mappings'''
-S_FIXED_COUNT = 9
+S_FIXED_COUNT = 8
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
@@ -79,7 +79,7 @@ class CreateBatchFiles(cpm.Module):
     #     directory.
     module_name = "CreateBatchFiles"
     category = 'File Processing'
-    variable_revision_number = 7
+    variable_revision_number = 8
 
     #
     def create_settings(self):
@@ -122,21 +122,6 @@ Use this option if another path must be mapped because there is a difference
 between how the local computer sees a folder location vs. how the cluster
 computer sees the folder location.""")
 
-        self.go_to_website = cps.Binary(
-                "Launch BatchProfiler", True,
-                doc="""\
-Launch BatchProfiler after creating the batch file. This
-setting will launch a web browser to the BatchProfiler URL to
-allow you to create batch jobs to run the analysis on a cluster.""")
-
-        self.check_path_button = cps.DoSomething(
-                "Press this button to check pathnames on the remote server",
-                "Check paths", self.check_paths, doc="""\
-This button will start a routine that will ask the
-webserver to check whether the default input and default output
-folders exist. It will also check whether all remote
-path mappings exist.""")
-
     def add_mapping(self):
         group = cps.SettingsGroup()
         group.append("local_directory",
@@ -150,7 +135,7 @@ at the begining, it will replace the start with the cluster root path.
 
 For example, if you have mapped the remote cluster machine like this:
 
-``Z:\your_data\images`` 
+``Z:\your_data\images``
 
 (on a Windows machine, for instance) and the cluster machine sees the same folder like this:
 
@@ -183,7 +168,7 @@ path and ``/server_name/your_name/`` here ."""))
                   self.custom_output_directory, self.remote_host_is_windows,
                   self.batch_mode, self.distributed_mode,
                   self.default_image_directory, self.revision,
-                  self.from_old_matlab, self.go_to_website]
+                  self.from_old_matlab]
         for mapping in self.mappings:
             result += [mapping.local_directory, mapping.remote_directory]
         return result
@@ -207,16 +192,16 @@ path and ``/server_name/your_name/`` here ."""))
         result = [self.wants_default_output_directory]
         if not self.wants_default_output_directory.value:
             result += [self.custom_output_directory]
-        result += [self.remote_host_is_windows, self.go_to_website]
+        result += [self.remote_host_is_windows]
         for mapping in self.mappings:
             result += mapping.visible_settings()
-        result += [self.add_mapping_button, self.check_path_button]
+        result += [self.add_mapping_button]
         return result
-    
+
     def help_settings(self):
         help_settings = [
             self.wants_default_output_directory,
-            self.custom_output_directory, 
+            self.custom_output_directory,
             self.remote_host_is_windows]
         for mapping in self.mappings:
             help_settings += [mapping.local_directory, mapping.remote_directory]
@@ -242,18 +227,6 @@ path and ``/server_name/your_name/`` here ."""))
                         "CreateBatchFiles saved pipeline to %s" % path,
                         caption="CreateBatchFiles: Batch file saved",
                         style=wx.OK | wx.ICON_INFORMATION)
-            if self.go_to_website:
-                try:
-                    import webbrowser
-                    import urllib
-                    server_path = self.alter_path(os.path.dirname(path))
-                    query = urllib.urlencode(dict(data_dir=server_path))
-                    url = cpprefs.get_batchprofiler_url() + \
-                          "/NewBatch.py?" + query
-                    webbrowser.open_new(url)
-                except:
-                    import traceback
-                    traceback.print_exc()
             return False
 
     def run(self, workspace):
@@ -370,39 +343,6 @@ path and ``/server_name/your_name/`` here ."""))
         self.batch_mode.value = False
         self.batch_state = np.zeros((0,), np.uint8)
 
-    def check_paths(self):
-        '''Check to make sure the default directories are remotely accessible'''
-        import wx
-
-        def check(path):
-            more = urllib.urlencode(dict(path=path))
-            url = ("/batchprofiler/cgi-bin/development/"
-                   "CellProfiler_2.0/PathExists.py?%s") % more
-            conn = httplib.HTTPConnection("imageweb")
-            conn.request("GET", url)
-            result = conn.getresponse()
-            if result.status != httplib.OK:
-                raise RuntimeError("HTTP failed: %s" % result.reason)
-            body = result.read()
-            return body.find("OK") != -1
-
-        all_ok = True
-        for mapping in self.mappings:
-            path = mapping.remote_directory.value
-            if not check(path):
-                wx.MessageBox("Cannot find %s on the server." % path)
-                all_ok = False
-        for path, name in (
-                (cpprefs.get_default_image_directory(), "default image folder"),
-                (cpprefs.get_default_output_directory(), "default output folder")):
-            if not check(self.alter_path(path)):
-                wx.MessageBox("Cannot find the %s, \"%s\", on the server." %
-                              (name, path))
-                all_ok = False
-
-        if all_ok:
-            wx.MessageBox("All paths are accessible")
-
     def alter_path(self, path, **varargs):
         '''Modify the path passed so that it can be executed on the remote host
 
@@ -497,4 +437,8 @@ path and ``/server_name/your_name/`` here ."""))
             # added go_to_website
             setting_values = setting_values[:8] + [False] + setting_values[8:]
             variable_revision_number = 7
+        if variable_revision_number == 7:
+            setting_values = setting_values[:8] + setting_values[9:]
+            variable_revision_number = 8
+
         return setting_values, variable_revision_number, from_matlab

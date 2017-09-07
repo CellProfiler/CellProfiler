@@ -344,8 +344,9 @@ setting.
             maxval=1,
             doc="""\
 Enter the minimum and maximum allowable threshold, a value from 0 to 1.
-This is helpful as a safety precaution when the threshold is calculated
-automatically, by overriding the automatic threshold.
+This is helpful as a safety precaution: when the threshold as calculated
+automatically is clearly outside a reasonable range, the min/max allowable
+threshold will override the automatic threshold.
 
 |image0| For example, if there are no objects in the field of view, the automatic
 threshold might be calculated as unreasonably low; the algorithm will
@@ -526,13 +527,11 @@ difference of the pixel intensities from their median).
 
 Robust background calculates the variance, multiplies it by the value
 given by this setting and adds it to the average. Adding several
-deviations raises the background value above the average, which should
-be close to the average background, excluding most background pixels.
-Use a larger number to exclude more background pixels. Use a smaller
-number to include more low-intensity foreground pixels. It’s possible to
-use a negative number to lower the threshold if the averaging method
-picks a threshold that is within the range of foreground pixel
-intensities.
+deviations raises the threshold well above the average.
+Use a larger number to be more stringent about identifying foreground pixels.
+Use a smaller number to be less stringent. It’s even possible to
+use a negative number if you want the threshold to be lower than the average
+(e.g., for images that are densely covered by foreground).
 """.format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
@@ -544,8 +543,8 @@ intensities.
             doc="""\
 *(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
 
-Enter the window for the adaptive method. For example, you may want to use a multiple of the
-largest expected object size.
+Enter the size of the window (in pixels) to be used for the adaptive method.
+Often a good choice is some multiple of the largest expected object size.
 """.format(**{
                 "TS_ADAPTIVE": TS_ADAPTIVE
             })

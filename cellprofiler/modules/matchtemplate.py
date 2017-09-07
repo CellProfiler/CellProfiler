@@ -7,8 +7,8 @@ multi-channel two-dimensional image. The output of the module is an
 image where each pixel corresponds to the `Pearson product-moment
 correlation coefficient`_ between the image and the template.
 
-.. _normalized cross-correlation: https://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation
-.. _Pearson product-moment correlation coefficient: https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
+.. _normalized cross-correlation: http://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation
+.. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 """
 
 import cellprofiler.image

@@ -20,6 +20,7 @@ the analysis worker runs three threads:
 import logging
 import os
 import sys
+import pkg_resources
 
 logger = logging.getLogger(__name__)
 
@@ -167,8 +168,8 @@ def main():
     #
     if sys.platform == "darwin":
         from cellprofiler.icons import get_builtin_images_path
-
-        icon_path = os.path.join(get_builtin_images_path(), "data/CellProfilerIcon.png")
+        import os.path
+        icon_path = pkg_resources.resource_filename("cellprofiler", os.path.join("data", "icons", "CellProfiler.png"))
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
 

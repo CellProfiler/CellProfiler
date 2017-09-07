@@ -64,9 +64,9 @@ class OverlayOutlines(cellprofiler.module.Module):
             "Display outlines on a blank image?",
             False,
             doc="""\
-Select *{YES}* to produce an image of the outlines on a black background.
+Select "*{YES}*" to produce an image of the outlines on a black background.
 
-Select *{NO}*, the module will overlay the outlines on an image of your choosing.
+Select "*{NO}*", the module will overlay the outlines on an image of your choosing.
 """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO
@@ -105,7 +105,7 @@ Specify how to mark the boundaries around an object:
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
             "Name the output image",
             "OrigOverlay",
-            doc="""
+            doc="""\
 Enter the name of the output image with the outlines overlaid. This
 image can be selected in later modules (for instance, **SaveImages**).
 """
@@ -114,7 +114,7 @@ image can be selected in later modules (for instance, **SaveImages**).
         self.wants_color = cellprofiler.setting.Choice(
             "Outline display mode",
             [WANTS_COLOR, WANTS_GRAYSCALE],
-            doc="""
+            doc="""\
 Specify how to display the outline contours around your objects. Color
 outlines produce a clearer display for images where the cell borders
 have a high intensity, but take up more space in memory. Grayscale
@@ -128,7 +128,7 @@ same intensity as the brightest pixel in the image.
         self.max_type = cellprofiler.setting.Choice(
             "Select method to determine brightness of outlines",
             [MAX_IMAGE, MAX_POSSIBLE],
-            doc="""
+            doc="""\
 *(Used only when outline display mode is grayscale)*
 
 The following options are possible for setting the intensity
@@ -170,7 +170,14 @@ maximal brightness already occurring in the image.
 
         default_color = (COLOR_ORDER[len(self.outlines)] if len(self.outlines) < len(COLOR_ORDER) else COLOR_ORDER[0])
 
-        group.append("color", cellprofiler.setting.Color("Select outline color", default_color))
+        group.append(
+            "color",
+            cellprofiler.setting.Color(
+                "Select outline color",
+                default_color,
+                doc="Objects will be outlined in this color."
+            )
+        )
 
         if can_remove:
             group.append(

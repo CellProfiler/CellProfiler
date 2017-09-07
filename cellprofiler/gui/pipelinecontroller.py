@@ -4,6 +4,7 @@
 
 import cellprofiler
 import cellprofiler.analysis
+import cellprofiler.gui.help.content
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.gui.addmoduleframe
@@ -165,7 +166,6 @@ class PipelineController(object):
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_VIEW_WORKSPACE, self.on_debug_view_workspace)
 
         # ~*~
         wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)
@@ -386,12 +386,6 @@ class PipelineController(object):
         self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
-
-        view_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FIND, wx.ART_BUTTON)
-        self.__tcp_view = wx.lib.buttons.GenBitmapTextButton(panel, label="Viewer", bitmap=view_bitmap)
-        self.__tcp_view.SetToolTip(wx.ToolTip("Open the workspace viewer"))
-        self.__tcp_view.Bind(wx.EVT_BUTTON, self.on_debug_view_workspace)
-        sub_sizer.Add(self.__tcp_view)
 
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
@@ -1234,7 +1228,7 @@ class PipelineController(object):
 
             def do_help(event):
                 cellprofiler.gui.htmldialog.HTMLDialog(self.__frame, "Help for plate viewer",
-                                                       cellprofiler.gui.help.PLATEVIEWER_HELP).Show()
+                                                       cellprofiler.gui.help.content.PLATEVIEWER_HELP).Show()
 
             ok_button.Bind(wx.EVT_BUTTON, do_ok)
             help_button.Bind(wx.EVT_BUTTON, do_help)
@@ -1627,16 +1621,6 @@ class PipelineController(object):
             return
         path = url2pathname(paths[0])
         ext = os.path.splitext(path)[1]
-        if ext.lower() == ".mat":
-            # Maybe it's an image?
-            from scipy.io.matlab.mio import loadmat
-            try:
-                maybe_image = loadmat(os.path.abspath(path))
-                if "Image" in maybe_image.keys():
-                    show_image(paths[0], self.__frame)
-                    return
-            except:
-                pass
         if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PROJECT_CHOICES:
             result = wx.MessageBox(
                 'Do you want to load the project, \n'
@@ -1658,7 +1642,7 @@ class PipelineController(object):
             if result == wx.YES:
                 self.do_load_pipeline(path)
             return
-        show_image(paths[0], self.__frame)
+        show_image(paths[0], self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2)
 
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_urls(paths)
@@ -3288,17 +3272,6 @@ class PipelineController(object):
                            "See the log for details."),
                           "Error reloading modules.",
                           wx.ICON_ERROR | wx.OK)
-
-    def on_debug_view_workspace(self, event):
-        """Show the workspace viewer"""
-        workspace = cellprofiler.gui.workspace.Workspace(
-            self.__pipeline,
-            None,
-            self.__debug_measurements,
-            self.__debug_object_set,
-            self.__debug_measurements,
-            self.__debug_image_set_list)
-        cellprofiler.gui.viewworkspace.show_workspace_viewer(self.__frame, workspace)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

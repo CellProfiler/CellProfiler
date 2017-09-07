@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Display Histogram** plots a histogram of the desired measurement.
+DisplayHistogram
+================
+
+**DisplayHistogram** plots a histogram of the desired measurement.
 
 A histogram is a plot of tabulated data frequencies (each of which is
 shown as a bar) created by binning measurement data for a set of
@@ -39,61 +42,60 @@ class DisplayHistogram(cpm.Module):
         """
         self.object = cps.ObjectNameSubscriber(
                 'Select the object whose measurements will be displayed',
-                cps.NONE, doc='''
-            Choose the name of objects identified by some previous
-            module (such as <b>IdentifyPrimaryObjects</b> or
-            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
+                cps.NONE, doc='''\
+Choose the name of objects identified by some previous module (such as
+**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
+measurements are to be displayed.
+''')
 
         self.x_axis = cps.Measurement(
                 'Select the object measurement to plot',
-                self.get_object, cps.NONE, doc='''
-            Choose the object measurement made by a previous
-            module to plot.''')
+                self.get_object, cps.NONE, doc='''Choose the object measurement made by a previous module to plot.''')
 
         self.bins = cps.Integer(
-                'Number of bins', 100, 1, 1000, doc='''
-            Enter the number of equally-spaced bins that you want
-            used on the X-axis.''')
+                'Number of bins', 100, 1, 1000, doc='''Enter the number of equally-spaced bins that you want used on the X-axis.''')
 
         self.xscale = cps.Choice(
                 'Transform the data prior to plotting along the X-axis?',
-                ['no', 'log'], None, doc='''
-            The measurement data can be scaled with either a
-            linear scale (<i>No</i>) or a <i>log</i> (base 10)
-            scaling.
-            <p>Log scaling is useful when one of the
-            measurements being plotted covers a large range of
-            values; a log scale can bring out features in the
-            measurements that would not easily be seen if the
-            measurement is plotted linearly.<p>''')
+                ['no', 'log'], None, doc='''\
+The measurement data can be scaled with either a *linear* scale ("*No*") or
+a *log* (base 10) scaling.
+
+Log scaling is useful when one of the measurements being plotted covers
+a large range of values; a log scale can bring out features in the
+measurements that would not easily be seen if the measurement is plotted
+linearly.
+''')
 
         self.yscale = cps.Choice(
                 'How should the Y-axis be scaled?',
-                ['linear', 'log'], None, doc='''
-            The Y-axis can be scaled either with either a <i>linear</i>
-            scale or a <i>log</i> (base 10) scaling.
-            <p>Log scaling is useful when one of the
-            measurements being plotted covers a large range of
-            values; a log scale can bring out features in the
-            measurements that would not easily be seen if the
-            measurement is plotted linearly.</p>''')
+                ['linear', 'log'], None, doc='''\
+The Y-axis can be scaled either with either a *linear* scale or a *log*
+(base 10) scaling.
+
+Log scaling is useful when one of the measurements being plotted covers
+a large range of values; a log scale can bring out features in the
+measurements that would not easily be seen if the measurement is plotted
+linearly.
+''')
 
         self.title = cps.Text(
-                'Enter a title for the plot, if desired', '', doc='''
-            Enter a title for the plot. If you leave this blank,
-            the title will default
-            to <i>(cycle N)</i> where <i>N</i> is the current image
-            cycle being executed.''')
+                'Enter a title for the plot, if desired', '', doc='''\
+Enter a title for the plot. If you leave this blank, the title will
+default to *(cycle N)* where *N* is the current image cycle being
+executed.
+''')
 
         self.wants_xbounds = cps.Binary(
                 'Specify min/max bounds for the X-axis?',
-                False, doc='''
-            Select <i>%(YES)s</i> to specify minimum and maximum values for the
-            plot on the X-axis. This is helpful if an outlier bin skews the
-            plot such that the bins of interest are no longer visible.''' % globals())
+                False, doc='''\
+Select "*%(YES)s*" to specify minimum and maximum values for the plot on
+the X-axis. This is helpful if an outlier bin skews the plot such that
+the bins of interest are no longer visible.
+''' % globals())
 
         self.xbounds = cps.FloatRange(
-                'Minimum/maximum values for the X-axis')
+                'Minimum/maximum values for the X-axis', doc="""Set lower/upper limits for X-axis of the histogram""")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

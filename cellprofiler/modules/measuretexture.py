@@ -18,6 +18,8 @@ texture combinations that are unneccesary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
+This module can be used both on 2D and volumetric images.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -68,12 +70,10 @@ Measurements made by this module
    -  *DifferenceEntropy:* Another indication of the amount of
       randomness in an image.
    -  *InfoMeas1:* A measure of the total amount of information contained within a region of pixels derived from
-   the recurring spatial relationship ship between specific intensity values.
+      the recurring spatial relationship ship between specific intensity values.
    -  *InfoMeas2:* An additional measure of the total amount of information contained within a region of pixels derived
-   from the recurring spatial relationship ship between specific intensity values. It is a complementary value to
-   InfoMeas1 and is on a different scale.
-
-.. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
+      from the recurring spatial relationship ship between specific intensity values. It is a complementary value to
+      InfoMeas1 and is on a different scale.
 
 Technical notes
 ^^^^^^^^^^^^^^^
@@ -93,6 +93,7 @@ References
    SMC-3(6):610-621. `(link)`_
 
 .. _(link): http://dx.doi.org/10.1109/TSMC.1973.4309314
+.. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 """
 
 import mahotas.features
@@ -173,16 +174,16 @@ class MeasureTexture(cellprofiler.module.Module):
                 IO_BOTH
             ],
             value=IO_BOTH,
-            doc="""
-            This setting determines whether the module computes image-wide
-            measurements, per-object measurements or both.
-            
-            -  *{IO_IMAGES}:* Select if you only want to measure the texture of
-               objects.
-            -  *{IO_OBJECTS}:* Select if your pipeline does not contain objects or
-               if you only want to make per-image measurements.
-            -  *{IO_BOTH}:* Select to make both image and object measurements.
-            """.format(**{
+            doc="""\
+This setting determines whether the module computes image-wide
+measurements, per-object measurements or both.
+
+-  *{IO_IMAGES}:* Select if you only want to measure the texture of
+   objects.
+-  *{IO_OBJECTS}:* Select if your pipeline does not contain objects or
+   if you only want to make per-image measurements.
+-  *{IO_BOTH}:* Select to make both image and object measurements.
+""".format(**{
                 "IO_IMAGES": IO_IMAGES,
                 "IO_OBJECTS": IO_OBJECTS,
                 "IO_BOTH": IO_BOTH
@@ -320,17 +321,17 @@ class MeasureTexture(cellprofiler.module.Module):
             group.append("divider", divider)
 
         object_subscriber = cellprofiler.setting.ObjectNameSubscriber(
-            doc="""
-            Select the objects whose texture you want to measure. If you only want
-            to measure the texture for the image overall, you can remove all objects
-            using the “Remove this object” button.
-            
-            Objects specified here will have their texture measured against *all*
-            images specified above, which may lead to image-object combinations that
-            are unnecessary. If you do not want this behavior, use multiple
-            **MeasureTexture** modules to specify the particular image-object
-            measures that you want.
-            """,
+            doc="""\
+Select the objects whose texture you want to measure. If you only want
+to measure the texture for the image overall, you can remove all objects
+using the “Remove this object” button.
+
+Objects specified here will have their texture measured against *all*
+images specified above, which may lead to image-object combinations that
+are unnecessary. If you do not want this behavior, use multiple
+**MeasureTexture** modules to specify the particular image-object
+measures that you want.
+""",
             text="Select objects to measure",
             value=cellprofiler.setting.NONE
         )
@@ -363,17 +364,17 @@ class MeasureTexture(cellprofiler.module.Module):
             group.append("divider", cellprofiler.setting.Divider(line=False))
 
         scale = cellprofiler.setting.Integer(
-            doc="""
-            You can specify the scale of texture to be measured, in pixel units; the
-            texture scale is the distance between correlated intensities in the
-            image. A higher number for the scale of texture measures larger patterns
-            of texture whereas smaller numbers measure more localized patterns of
-            texture. It is best to measure texture on a scale smaller than your
-            objects’ sizes, so be sure that the value entered for scale of texture
-            is smaller than most of your objects. For very small objects (smaller
-            than the scale of texture you are measuring), the texture cannot be
-            measured and will result in a undefined value in the output file.
-            """,
+            doc="""\
+You can specify the scale of texture to be measured, in pixel units; the
+texture scale is the distance between correlated intensities in the
+image. A higher number for the scale of texture measures larger patterns
+of texture whereas smaller numbers measure more localized patterns of
+texture. It is best to measure texture on a scale smaller than your
+objects’ sizes, so be sure that the value entered for scale of texture
+is smaller than most of your objects. For very small objects (smaller
+than the scale of texture you are measuring), the texture cannot be
+measured and will result in a undefined value in the output file.
+""",
             text="Texture scale to measure",
             value=len(self.scale_groups) + 3
         )

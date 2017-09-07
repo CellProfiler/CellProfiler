@@ -996,7 +996,7 @@ def _colors(labels):
         cmap=matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
     )
 
-    colors = mappable.to_rgba(numpy.unique(labels)[1:])[:, :3]
+    colors = mappable.to_rgba(unique_labels)[:, :3]
 
     numpy.random.shuffle(colors)
 

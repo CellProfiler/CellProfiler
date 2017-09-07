@@ -9,7 +9,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import cornerbuttonmixin
-import htmldialog
+import cellprofiler.gui.htmldialog
 import logging
 import matplotlib.cm
 import metadatactrl
@@ -2046,7 +2046,7 @@ class ModuleView(object):
                             name=name)
 
         def callback(event):
-            dialog = htmldialog.HTMLDialog(
+            dialog = cellprofiler.gui.htmldialog.HTMLDialog(
                 self.__module_panel,
                 title,
                 cellprofiler.gui.html.utils.rst_to_html_fragment(content)

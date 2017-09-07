@@ -1,8 +1,8 @@
 # coding=utf-8
 
 """
-The **Images** module specifies the location of image files to be
-analyzed by your pipeline.
+Images
+======
 
 The **Images** module allows you to specify the location of files to be
 analyzed by the pipeline; setting this module correctly is the first
@@ -40,9 +40,8 @@ The most straightforward way to provide image files to the **Images**
 module is to simply drag-and-drop them on the file list panel (the blank
 space indicated by the text “Drop files and folders here”).
 
-+------------+
-| |image0|   |
-+------------+
+.. image:: memory:Images_FilelistPanel_Blank.png
+   :width: 100%
 
 Using the file explorer tool of your choice (e.g., Explorer in Windows,
 Finder in Mac), you can drag-and-drop individual files and/or entire
@@ -51,9 +50,8 @@ to bring up a file selection window to browse for individual files; on
 the Mac, folders can be drag-and-dropped from this window and you can
 select multiple files using Ctrl-A (Windows) or Cmd-A (Mac).
 
-+------------+
-| |image1|   |
-+------------+
+.. image:: memory:Images_FilelistPanel_Filled.png
+   :width: 100%
 
 Right-clicking on the file list panel will provide a context menu with
 options to modify the file list:
@@ -118,15 +116,9 @@ particular wavelength.
 .. _here: http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
 .. _“lossy”: http://www.techterms.com/definition/lossy
 .. _“lossless”: http://www.techterms.com/definition/lossless
-
-.. |image0| image:: memory:Images_FilelistPanel_Blank.png
-.. |image1| image:: memory:Images_FilelistPanel_Filled.png
 """
 
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
-    IMAGES_FILELIST_FILLED
-
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -142,7 +134,8 @@ import uuid
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
 from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
+    TECH_NOTE_ICON
 
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
@@ -176,41 +169,65 @@ class Images(cpm.Module):
                       ExtensionPredicate()]
 
         self.filter_choice = cps.Choice(
-                "Filter images?", FILTER_CHOICE_ALL, value=FILTER_CHOICE_IMAGES,
-                doc="""
-            The <b>Images</b> module will pass all the files specified in the file list
-            panel downstream to have a meaningful name assigned to it (so other modules can
-            access it) or optionally, to define the relationships between images and associated
-            metadata. Enabling file filtering will allow you to specify a subset of the files
-            from the file list panel by defining rules to filter the files. This approach is
-            useful if, for example, you drag-and-dropped a folder onto the file list panel
-            which contains a mixture of images that you want to analyze and other files that
-            you want to ignore.
-            <p>Several options are available for this setting:
-            <ul>
-            <li><i>%(FILTER_CHOICE_NONE)s:</i> Do not enable filtering; all files in the File list
-            panel will be passed to downstream modules for processing. This option can be
-            selected if you are sure that only images are specified in the list.</li>
-            <li><i>%(FILTER_CHOICE_IMAGES)s:</i> Only image files will be passed to downstream
-            modules. The permissible image formats are provided by a library called Bio-Formats; see
-            <a href="http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html">here</a> for the formats available.</li>
-            <li><i>%(FILTER_CHOICE_CUSTOM)s:</i> Specify custom rules for selecting a subset of
-            the files from the File list panel. This approach is useful if, for example, you
-            drag-and-dropped a folder onto the File list panel which contains a mixture of images
-            that you want to analyze and other files that you want to ignore.</li>
-            </ul></p>""" % globals())
+            "Filter images?",
+            FILTER_CHOICE_ALL,
+            value=FILTER_CHOICE_IMAGES,
+            doc="""\
+The **Images** module will pass all the files specified in the file list
+panel downstream to have a meaningful name assigned to it (so other
+modules can access it) or optionally, to define the relationships
+between images and associated metadata. Enabling file filtering will
+allow you to specify a subset of the files from the file list panel by
+defining rules to filter the files. This approach is useful if, for
+example, you drag-and-dropped a folder onto the file list panel which
+contains a mixture of images that you want to analyze and other files
+that you want to ignore.
 
-        self.filter = cps.Filter("Select the rule criteria", predicates,
-                                 FILTER_DEFAULT, doc="""
-            Specify a set of rules to narrow down the files to be analyzed.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals())
+Several options are available for this setting:
+
+-  *{FILTER_CHOICE_NONE}:* Do not enable filtering; all files in the
+   File list panel will be passed to downstream modules for processing.
+   This option can be selected if you are sure that only images are
+   specified in the list.
+-  *{FILTER_CHOICE_IMAGES}:* Only image files will be passed to
+   downstream modules. The permissible image formats are provided by a
+   library called Bio-Formats; see `here`_ for the formats available.
+-  *{FILTER_CHOICE_CUSTOM}:* Specify custom rules for selecting a
+   subset of the files from the File list panel. This approach is useful
+   if, for example, you drag-and-dropped a folder onto the File list
+   panel which contains a mixture of images that you want to analyze and
+   other files that you want to ignore.
+
+.. _here: http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
+""".format(**{
+                "FILTER_CHOICE_CUSTOM": FILTER_CHOICE_CUSTOM,
+                "FILTER_CHOICE_IMAGES": FILTER_CHOICE_IMAGES,
+                "FILTER_CHOICE_NONE": FILTER_CHOICE_NONE
+            })
+        )
+
+        self.filter = cps.Filter(
+            "Select the rule criteria",
+            predicates,
+            FILTER_DEFAULT,
+            doc="""\
+Specify a set of rules to narrow down the files to be analyzed.
+
+{FILTER_RULES_BUTTONS_HELP}
+""".format(**{
+                "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP
+            })
+        )
 
         self.update_button = cps.PathListRefreshButton(
-                "", "Apply filters to the file list", doc="""
-            <i>(Only displayed if filtering based on rules)</i><br>
-            Re-display the file list, removing or graying out the files
-            that do not pass the current filter.
-            """)
+            "Apply filters to the file list",
+            "Apply filters to the file list",
+            doc="""\
+*(Only displayed if filtering based on rules)*
+
+Re-display the file list, removing or graying out the files that do not
+pass the current filter.
+""")
 
     def help_settings(self):
         return [

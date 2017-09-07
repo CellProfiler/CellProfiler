@@ -78,7 +78,7 @@ class CorrectIlluminationApply(cpm.Module):
             doc="""\
 Select the illumination correction function image that will be used to
 carry out the correction. This image is usually produced by another
-module or loaded as a .mat format image using the **Images** module or
+module or loaded as a .npy format image using the **Images** module or
 **LoadSingleImage**.
 """
         )

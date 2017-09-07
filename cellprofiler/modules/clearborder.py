@@ -15,6 +15,8 @@ import cellprofiler.setting
 
 
 class ClearBorder(cellprofiler.module.ObjectProcessing):
+    category = "Advanced"
+
     module_name = "ClearBorder"
 
     variable_revision_number = 1

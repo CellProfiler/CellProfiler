@@ -4,7 +4,7 @@
 UnmixColors
 ===========
 
-**Unmix Colors** creates separate images per dye stain for
+**UnmixColors** creates separate images per dye stain for
 histologically stained images.
 
 This module creates separate grayscale images from a color image stained
@@ -31,7 +31,7 @@ Technical notes
 ^^^^^^^^^^^^^^^
 
 This code is adapted from the ImageJ plugin,
-*Colour\_Deconvolution.java* (described `here`_) written by A.C.
+*Colour_Deconvolution.java* (described `here`_) written by A.C.
 Ruifrok, whose paper forms the basis for this code.
 
 References
@@ -43,7 +43,7 @@ References
 
 See also **ColorToGray**.
 
-.. _here: http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html
+.. _here: http://imagej.net/Colour_Deconvolution
 """
 
 import numpy as np
@@ -176,18 +176,20 @@ class UnmixColors(cpm.Module):
         self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
 
         self.input_image_name = cps.ImageNameSubscriber(
-                "Select the input color image", cps.NONE, doc="""
-            Choose the name of the histologically stained color image
-            loaded or created by some prior module.""")
+                "Select the input color image", cps.NONE, doc="""\
+Choose the name of the histologically stained color image
+loaded or created by some prior module.""")
 
         self.add_image(False)
 
         self.add_image_button = cps.DoSomething(
-                "", "Add another stain", self.add_image, doc="""
-            Press this button to add another stain to the list.
-            You will be able to name the image produced and to either pick
-            the stain from a list of precalibrated stains or to enter
-            custom values for the stain's red, green and blue absorbance.""")
+                "", "Add another stain", self.add_image, doc="""\
+Press this button to add another stain to the list.
+
+You will be able to name the image produced and to either pick
+the stain from a list of precalibrated stains or to enter
+custom values for the stain's red, green and blue absorbance.
+            """)
 
     def add_image(self, can_remove=True):
         group = cps.SettingsGroup()
@@ -199,73 +201,98 @@ class UnmixColors(cpm.Module):
         default_name = default_name.replace(" ", "")
 
         group.append("image_name", cps.ImageNameProvider(
-                "Name the output name", default_name, doc="""
-            Use this setting to name one of the images produced by the
-            module for a particular stain. The image can be used in
-            subsequent modules in the pipeline."""))
+                "Name the output name", default_name, doc="""\
+Use this setting to name one of the images produced by the
+module for a particular stain. The image can be used in
+subsequent modules in the pipeline.
+"""))
 
         choices = list(sorted(STAIN_DICTIONARY.keys())) + [CHOICE_CUSTOM]
 
         group.append("stain_choice", cps.Choice(
-                "Stain", choices=choices, doc="""
-            Use this setting to choose the absorbance values for a
-            particular stain. The stains are:
-            <br>
-            <table><tr><th>Stain</th><th>Color</th><th>Specific to</th></tr>
-            <tr><td>%(CHOICE_AEC)s (3-Amino-9-ethylcarbazole)</td><td bgcolor="%(COLOR_AEC)s">&nbsp;</td><td>Peroxidase</td></tr>
-            <tr><td>%(CHOICE_ALICAN_BLUE)s</td><td bgcolor="%(COLOR_ALICAN_BLUE)s">&nbsp;</td><td>Mucopolysaccharides</td></tr>
-            <tr><td>%(CHOICE_ANILINE_BLUE)s</td><td bgcolor="%(COLOR_ANILINE_BLUE)s">&nbsp;</td><td>Pollen tubes</td></tr>
-            <tr><td>%(CHOICE_AZOCARMINE)s</td><td bgcolor="%(COLOR_AZOCARMINE)s">&nbsp;</td><td>Plasma</td></tr>
-            <tr><td>%(CHOICE_DAB)s</td><td bgcolor="%(COLOR_DAB)s">&nbsp;</td><td>Peroxisomes, mitochondria</td></tr>
-            <tr><td>%(CHOICE_EOSIN)s</td><td bgcolor="%(COLOR_EOSIN)s">&nbsp;</td><td>Elastic, collagen and reticular fibers</td></tr>
-            <tr><td>%(CHOICE_FAST_RED)s</td><td bgcolor="%(COLOR_FAST_RED)s">&nbsp;</td><td>Nuclei</td></tr>
-            <tr><td>%(CHOICE_FAST_BLUE)s</td><td bgcolor="%(COLOR_FAST_BLUE)s">&nbsp;</td><td>Myelin fibers</td></tr>
-            <tr><td>%(CHOICE_FEULGEN)s</td><td bgcolor="%(COLOR_FEULGEN)s">&nbsp;</td><td>DNA</td></tr>
-            <tr><td>%(CHOICE_HEMATOXYLIN)s</td><td bgcolor="%(COLOR_HEMATOXYLIN)s">&nbsp;</td><td>Nucleic acids, endoplasmic reticulum</td></tr>
-            <tr><td>%(CHOICE_HEMATOXYLIN_AND_PAS)s</td><td bgcolor="%(COLOR_HEMATOXYLIN_AND_PAS)s">&nbsp;</td><td>Nucleus (stained with both Hematoxylin and PAS)</td></tr>
-            <tr><td>%(CHOICE_METHYL_BLUE)s</td><td bgcolor="%(COLOR_METHYL_BLUE)s">&nbsp;</td><td>Collagen</td></tr>
-            <tr><td>%(CHOICE_METHYL_GREEN)s</td><td bgcolor="%(COLOR_METHYL_GREEN)s">&nbsp;</td><td>Chromatin</td></tr>
-            <tr><td>%(CHOICE_METHYLENE_BLUE)s</td><td bgcolor="%(COLOR_METHYLENE_BLUE)s">&nbsp;</td><td>Nuclei</td></tr>
-            <tr><td>%(CHOICE_ORANGE_G)s</td><td bgcolor="%(COLOR_ORANGE_G)s">&nbsp;</td><td>Erythrocytes, pancreas, pituitary</td></tr>
-            <tr><td>%(CHOICE_PAS)s</td><td bgcolor="%(COLOR_PAS)s">&nbsp;</td><td>Glycogen, carbohydrates</td></tr>
-            <tr><td>%(CHOICE_PONCEAU_FUCHSIN)s</td><td bgcolor="%(COLOR_PONCEAU_FUCHSIN)s">&nbsp;</td><td>Red counterstain for Masson's trichrome</td></tr>
-            </table>
-            <br>
-            (Information taken from <a href="http://en.wikipedia.org/wiki/Histology#Staining">here</a>,
-            <a href="http://en.wikipedia.org/wiki/Staining">here</a>, and
-            <a href="http://stainsfile.info">here</a>.)
-            <br>
-            You can choose <i>%(CHOICE_CUSTOM)s</i> and enter your custom
-            values for the absorbance (or use the estimator to determine values
-            from a single-stain image).
-            """ % globals()))
+                "Stain", choices=choices, doc="""\
+Use this setting to choose the absorbance values for a particular stain.
+
+The stains are:
+
++-----------------------------------+--------------------------------------------------+
+| Stain                             |Specific to                                       |
++===================================+==================================================+
+| AEC (3-Amino-9-ethylcarbazole)    |Peroxidase                                        |
++-----------------------------------+--------------------------------------------------+
+| Alican blue                       |Mucopolysaccharides                               |
++-----------------------------------+--------------------------------------------------+
+| Aniline blue                      |Pollen tubes                                      |
++-----------------------------------+--------------------------------------------------+
+| Azocarmine                        |Plasma                                            |
++-----------------------------------+--------------------------------------------------+
+| DAB                               |Peroxisomes, mitochondria                         |
++-----------------------------------+--------------------------------------------------+
+| Eosin                             |Elastic, collagen and reticular fibers            |
++-----------------------------------+--------------------------------------------------+
+| Fast red                          |Nuclei                                            |
++-----------------------------------+--------------------------------------------------+
+| Fast blue                         |Myelin fibers                                     |
++-----------------------------------+--------------------------------------------------+
+| Feulgen                           |DNA                                               |
++-----------------------------------+--------------------------------------------------+
+| Hematoxylin                       |Nucleic acids, endoplasmic reticulum              |
++-----------------------------------+--------------------------------------------------+
+| Hematoxylin and PAS               |Nucleus (stained with both Hematoxylin and PAS)   |
++-----------------------------------+--------------------------------------------------+
+| Methyl blue                       |Collagen                                          |
++-----------------------------------+--------------------------------------------------+
+| Methyl green                      |Chromatin                                         |
++-----------------------------------+--------------------------------------------------+
+| Methylene blue                    |Nuclei                                            |
++-----------------------------------+--------------------------------------------------+
+| Orange G                          |Erythrocytes, pancreas, pituitary                 |
++-----------------------------------+--------------------------------------------------+
+| PAS                               |Glycogen, carbohydrates                           |
++-----------------------------------+--------------------------------------------------+
+| Ponceau Fuchsin                   |Red counterstain for Masson’s trichrome           |
++-----------------------------------+--------------------------------------------------+
+
+(Information taken from `here`_,
+`here <http://en.wikipedia.org/wiki/Staining>`__, and
+`here <http://stainsfile.info>`__.)
+You can choose *%(CHOICE_CUSTOM)s* and enter your custom values for the
+absorbance (or use the estimator to determine values from a single-stain
+image).
+
+.. _here: http://en.wikipedia.org/wiki/Histology#Staining
+
+""" % globals()))
 
         group.append("red_absorbance", cps.Float(
-                "Red absorbance", 0.5, 0, 1, doc="""
-            <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
-            The red absorbance setting estimates the dye's
-            absorbance of light in the red channel.You should enter a value
-            between 0 and 1 where 0 is no absorbance and 1 is complete
-            absorbance. You can use the estimator to calculate this
-            value automatically.""" % globals()))
+                "Red absorbance", 0.5, 0, 1, doc="""\
+*(Used only if "%(CHOICE_CUSTOM)s" is selected for the stain)*
+
+The red absorbance setting estimates the dye’s absorbance of light in
+the red channel.You should enter a value between 0 and 1 where 0 is no
+absorbance and 1 is complete absorbance. You can use the estimator to
+calculate this value automatically.
+""" % globals()))
 
         group.append("green_absorbance", cps.Float(
-                "Green absorbance", 0.5, 0, 1, doc="""
-            <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
-            The green absorbance setting estimates the dye's
-            absorbance of light in the green channel. You should enter a value
-            between 0 and 1 where 0 is no absorbance and 1 is complete
-            absorbance. You can use the estimator to calculate this
-            value automatically.""" % globals()))
+                "Green absorbance", 0.5, 0, 1, doc="""\
+*(Used only if "%(CHOICE_CUSTOM)s" is selected for the stain)*
+
+The green absorbance setting estimates the dye’s absorbance of light in
+the green channel. You should enter a value between 0 and 1 where 0 is
+no absorbance and 1 is complete absorbance. You can use the estimator to
+calculate this value automatically.
+""" % globals()))
 
         group.append("blue_absorbance", cps.Float(
-                "Blue absorbance", 0.5, 0, 1, doc="""
-            <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
-            The blue absorbance setting estimates the dye's
-            absorbance of light in the blue channel. You should enter a value
-            between 0 and 1 where 0 is no absorbance and 1 is complete
-            absorbance. You can use the estimator to calculate this
-            value automatically.""" % globals()))
+                "Blue absorbance", 0.5, 0, 1, doc="""\
+*(Used only if "%(CHOICE_CUSTOM)s" is selected for the stain)*
+
+The blue absorbance setting estimates the dye’s absorbance of light in
+the blue channel. You should enter a value between 0 and 1 where 0 is no
+absorbance and 1 is complete absorbance. You can use the estimator to
+calculate this value automatically.
+""" % globals()))
 
         def on_estimate():
             result = self.estimate_absorbance()
@@ -276,11 +303,11 @@ class UnmixColors(cpm.Module):
 
         group.append("estimator_button", cps.DoSomething(
                 "Estimate absorbance from image",
-                "Estimate", on_estimate, doc="""
-            Press this button to load an image of a sample stained
-            only with the dye of interest. <b>UnmixColors</b> will estimate
-            appropriate red, green and blue absorbance values from the
-            image."""))
+                "Estimate", on_estimate, doc="""\
+Press this button to load an image of a sample stained only with the dye
+of interest. **UnmixColors** will estimate appropriate red, green and
+blue absorbance values from the image.
+            """))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(

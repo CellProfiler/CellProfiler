@@ -12,7 +12,8 @@ This module calculates an illumination function that can either be saved to the
 hard drive for later use or immediately applied to images later in the pipeline.
 This function will correct for the uneven illumination in images. Use the
 **CorrectIlluminationApply** module to apply the function to the image to be
-corrected. Illumination correction is a challenge to do properly;
+corrected. Use **SaveImages** to export an illumination function to disk using
+the "npy" file format. Illumination correction is a challenge to do properly;
 please see the `examples`_ and `tutorials`_ pages on the CellProfiler
 website for further advice. See also **CorrectIlluminationApply**,
 **EnhanceOrSuppressFeatures**.
@@ -233,7 +234,7 @@ If requested, the resulting image is smoothed. See the
 **EnhanceOrSuppressFeatures** module help for more details. If you are
 using *Each* mode, this is almost certainly necessary. If you have few
 objects in each image or a small image set, you may want to smooth.
-    
+
 You should smooth to the point where the illumination function resembles
 a believable pattern. For example, if you are trying to correct a lamp
 illumination problem, apply smoothing until you obtain a fairly smooth
@@ -291,7 +292,7 @@ stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Anal
 *(Used only if a smoothing method other than Fit Polynomial is selected)*
 
 Calculate the smoothing filter size. There are three options:
-   
+
 -  *%(FI_AUTOMATIC)s:* The size is computed as 1/40 the size of the
    image or 30 pixels, whichever is smaller.
 -  *%(FI_OBJECT_SIZE)s:* The size is obtained relative to the width of
@@ -320,7 +321,7 @@ smoothing. It is an image produced during the calculations, not
 typically needed for downstream modules. It can be helpful to retain it
 in case you wish to try several different smoothing methods without
 taking the time to recalculate the averaged image each time.
-            
+
 Select *%(YES)s* to retain this averaged image. Use the **SaveImages**
 module to save it to your hard drive.
 """ % globals())
@@ -336,7 +337,7 @@ Enter a name that will allow the averaged image to be selected later in the pipe
 The dilated image is the illumination function after dilation but prior
 to smoothing. It is an image produced during the calculations, and is
 not typically needed for downstream modules.
-            
+
 Select *%(YES)s* to retain this dilated image. Use the **SaveImages**
 module to save it to your hard drive.
 """ % globals())

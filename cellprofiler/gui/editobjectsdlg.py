@@ -269,7 +269,7 @@ class EditObjectsDialog(wx.Dialog):
                     self.Parent.inside_print = False
 
         self.panel = CanvasPatch(self, -1, self.figure)
-        self.toolbar = cellprofiler.gui.figure.CPNavigationToolbar(self.panel)
+        self.toolbar = cellprofiler.gui.figure.NavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #
         # Need to reparent the canvas after instantiating the toolbar so

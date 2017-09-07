@@ -1,4 +1,4 @@
-ObjectSkeleton'''test_measureobjectskeleton.py - test the MeasureObjectSkeleton module
+'''test_measureobjectskeleton.py - test the MeasureObjectSkeleton module
 '''
 
 import base64

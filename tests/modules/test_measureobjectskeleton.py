@@ -1,4 +1,4 @@
-'''test_measureneurons.py - test the MeasureNeurons module
+ObjectSkeleton'''test_measureobjectskeleton.py - test the MeasureObjectSkeleton module
 '''
 
 import base64
@@ -32,7 +32,7 @@ EDGE_FILE = "my_edges.csv"
 VERTEX_FILE = "my_vertices.csv"
 
 
-class TestMeasureNeurons(unittest.TestCase):
+class TestMeasureObjectSkeleton(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 
@@ -98,7 +98,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             image_set.add(INTENSITY_IMAGE_NAME, img)
             module.intensity_image_name.value = INTENSITY_IMAGE_NAME
         if wants_graph:
-            module.wants_neuron_graph.value = True
+            module.wants_objskeleton_graph.value = True
             module.directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = self.temp_dir
             module.edge_file_name.value = EDGE_FILE
@@ -130,30 +130,30 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         expected.sort()
         coltypes = {}
         for feature, expected in zip(features, expected):
-            expected_feature = "_".join((M.C_NEURON, expected, IMAGE_NAME))
+            expected_feature = "_".join((M.C_OBJSKELETON, expected, IMAGE_NAME))
             self.assertEqual(feature, expected_feature)
             coltypes[expected_feature] = \
-                cpmeas.COLTYPE_FLOAT if expected == M.F_TOTAL_NEURITE_LENGTH \
+                cpmeas.COLTYPE_FLOAT if expected == M.F_TOTAL_OBJSKELETON_LENGTH \
                     else cpmeas.COLTYPE_INTEGER
         self.assertTrue(all([c[0] == OBJECT_NAME for c in columns]))
         self.assertTrue(all([c[2] == coltypes[c[1]] for c in columns]))
 
         categories = module.get_categories(None, OBJECT_NAME)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], M.C_NEURON)
+        self.assertEqual(categories[0], M.C_OBJSKELETON)
         self.assertEqual(len(module.get_categories(None, "Foo")), 0)
 
-        measurements = module.get_measurements(None, OBJECT_NAME, M.C_NEURON)
+        measurements = module.get_measurements(None, OBJECT_NAME, M.C_OBJSKELETON)
         self.assertEqual(len(measurements), len(M.F_ALL))
         self.assertNotEqual(measurements[0], measurements[1])
         self.assertTrue(all([m in M.F_ALL for m in measurements]))
 
-        self.assertEqual(len(module.get_measurements(None, "Foo", M.C_NEURON)), 0)
+        self.assertEqual(len(module.get_measurements(None, "Foo", M.C_OBJSKELETON)), 0)
         self.assertEqual(len(module.get_measurements(None, OBJECT_NAME, "Foo")), 0)
 
         for feature in M.F_ALL:
             images = module.get_measurement_images(None, OBJECT_NAME,
-                                                   M.C_NEURON, feature)
+                                                   M.C_OBJSKELETON, feature)
             self.assertEqual(len(images), 1)
             self.assertEqual(images[0], IMAGE_NAME)
 
@@ -161,7 +161,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature in M.F_ALL:
-            mname = "_".join((M.C_NEURON, expected, IMAGE_NAME))
+            mname = "_".join((M.C_OBJSKELETON, expected, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 0)
 
@@ -177,7 +177,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
                                   (M.F_NUMBER_TRUNKS, 1)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected)
@@ -195,7 +195,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
                                   (M.F_NUMBER_TRUNKS, [2, 1])):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 2)
             for i in range(2):
@@ -215,7 +215,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
                                   (M.F_NUMBER_TRUNKS, 1)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected)
@@ -237,7 +237,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
                                   (M.F_NUMBER_TRUNKS, 2)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected,
@@ -269,7 +269,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
                                   (M.F_NUMBER_TRUNKS, 3)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected,
@@ -292,7 +292,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
                                   (M.F_NUMBER_TRUNKS, [2, 1])):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 2)
             for i in range(2):
@@ -309,7 +309,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        ftr = "_".join((M.C_NEURON, M.F_TOTAL_NEURITE_LENGTH, IMAGE_NAME))
+        ftr = "_".join((M.C_OBJSKELETON, M.F_TOTAL_OBJSKELETON_LENGTH, IMAGE_NAME))
         result = m[OBJECT_NAME, ftr]
         self.assertEqual(len(result), 1)
         self.assertAlmostEqual(result[0], 5,

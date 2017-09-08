@@ -220,9 +220,6 @@ References
 See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, 
 **IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
-.. |image1| image:: {PROTIP_AVOID_ICON}
-.. |image2| image:: {TECH_NOTE_ICON}
 """.format(**{
                 "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
                 "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,

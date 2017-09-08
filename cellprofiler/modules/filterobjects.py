@@ -676,13 +676,12 @@ value will be retained.""".format(**{
         figure.set_subplots((2, 2), dimensions=dimensions)
 
         figure.subplot_imshow_labels(0, 0, src_objects_segmented,
-                                     title="Original: %s" % src_name,
-                                     dimensions=dimensions)
+                                     title="Original: %s" % src_name)
 
         figure.subplot_imshow_labels(1, 0, target_objects_segmented,
                                      title="Filtered: %s" %
                                      target_name,
-                                     dimensions=dimensions)
+                                     sharexy=figure.subplot(0, 0))
 
         statistics = [[numpy.max(src_objects_segmented)], [numpy.max(target_objects_segmented)]]
 
@@ -690,8 +689,7 @@ value will be retained.""".format(**{
             0,
             1,
             statistics,
-            row_labels=("Number of objects pre-filtering", "Number of objects post-filtering"),
-            dimensions=dimensions
+            row_labels=("Number of objects pre-filtering", "Number of objects post-filtering")
         )
 
     def keep_one(self, workspace, src_objects):

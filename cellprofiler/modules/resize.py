@@ -378,6 +378,8 @@ resized with the same settings as the first image."""))
 
         figure.set_subplots((2, len(input_images)), dimensions=dimensions)
 
+        share_axes = figure.subplot(0, 0)
+
         for i, (
                 input_image_pixels,
                 output_image_pixels,
@@ -391,7 +393,7 @@ resized with the same settings as the first image."""))
                     i,
                     input_image_pixels,
                     title=input_image_name,
-                    dimensions=dimensions
+                    sharexy=None if i == 0 else share_axes
                 )
 
                 figure.subplot_imshow(
@@ -399,7 +401,7 @@ resized with the same settings as the first image."""))
                     i,
                     output_image_pixels,
                     title=output_image_name,
-                    dimensions=dimensions
+                    sharexy=share_axes
                 )
             else:
                 figure.subplot_imshow_bw(
@@ -407,7 +409,7 @@ resized with the same settings as the first image."""))
                     i,
                     input_image_pixels,
                     title=input_image_name,
-                    dimensions=dimensions
+                    sharexy=None if i == 0 else share_axes
                 )
 
                 figure.subplot_imshow_bw(
@@ -415,7 +417,7 @@ resized with the same settings as the first image."""))
                     i,
                     output_image_pixels,
                     title=output_image_name,
-                    dimensions=dimensions
+                    sharexy=share_axes
                 )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):

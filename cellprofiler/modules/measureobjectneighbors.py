@@ -601,8 +601,7 @@ available colormaps can be seen `here`_.
         dimensions = workspace.display_data.dimensions
         figure.set_subplots((2, 2), dimensions=dimensions)
         figure.subplot_imshow_labels(0, 0, workspace.display_data.orig_labels,
-                                     "Original: %s" % self.object_name.value,
-                                     dimensions=dimensions)
+                                     "Original: %s" % self.object_name.value)
 
         object_mask = workspace.display_data.object_mask
         expanded_labels = workspace.display_data.expanded_labels
@@ -627,8 +626,7 @@ available colormaps can be seen `here`_.
                                   colorbar=True, vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
                                   normalize=False,
-                                  # sharexy=figure.subplot(0, 0),
-                                  dimensions=dimensions)
+                                  sharexy=figure.subplot(0, 0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
@@ -637,8 +635,7 @@ available colormaps can be seen `here`_.
                                       colorbar=True, vmin=0,
                                       vmax=max(percent_touching_image.max(), 1),
                                       normalize=False,
-                                      # sharexy=figure.subplot(0, 0),
-                                      dimensions=dimensions)
+                                      sharexy=figure.subplot(0, 0))
         else:
             # No objects - colorbar blows up.
             figure.subplot_imshow(0, 1, neighbor_count_image,
@@ -647,8 +644,7 @@ available colormaps can be seen `here`_.
                                   colormap=neighbor_cm,
                                   vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
-                                  # sharexy=figure.subplot(0, 0),
-                                  dimensions=dimensions)
+                                  sharexy=figure.subplot(0, 0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
@@ -656,15 +652,13 @@ available colormaps can be seen `here`_.
                                       colormap=percent_touching_cm,
                                       vmin=0,
                                       vmax=max(neighbor_count_image.max(), 1),
-                                      # sharexy=figure.subplot(0, 0),
-                                      dimensions=dimensions)
+                                      sharexy=figure.subplot(0, 0))
 
         if self.distance_method == D_EXPAND:
             figure.subplot_imshow_labels(1, 0, expanded_labels,
                                          "Expanded %s" %
                                          self.object_name.value,
-                                         # sharexy=figure.subplot(0, 0),
-                                         dimensions=dimensions)
+                                         sharexy=figure.subplot(0, 0))
 
     @property
     def all_features(self):

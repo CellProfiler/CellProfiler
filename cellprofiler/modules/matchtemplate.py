@@ -100,5 +100,6 @@ class MatchTemplate(cellprofiler.module.Module):
             1,
             0,
             workspace.display_data.output_pixels,
-            "Correlation coefficient"
+            "Correlation coefficient",
+            sharexy=figure.subplot(0, 0)
         )

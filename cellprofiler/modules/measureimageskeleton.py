@@ -143,7 +143,6 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
         )
 
         figure.subplot_imshow(
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.skeleton,
             title="Skeleton",
             x=0,
@@ -151,16 +150,15 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
         )
 
         figure.subplot_imshow(
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.nodes,
             title="Nodes",
             x=1,
-            y=0
+            y=0,
+            sharexy=figure.subplot(0, 0)
         )
 
         figure.subplot_table(
             col_labels=workspace.display_data.names,
-            dimensions=workspace.display_data.dimensions,
             statistics=workspace.display_data.statistics,
             title="Measurement",
             x=0,

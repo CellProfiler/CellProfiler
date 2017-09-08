@@ -922,7 +922,6 @@ class ImageProcessing(Module):
 
         figure.subplot_imshow(
             colormap=cmap[0],
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
@@ -931,8 +930,8 @@ class ImageProcessing(Module):
 
         figure.subplot_imshow(
             colormap=cmap[1],
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
             y=0
@@ -1060,7 +1059,6 @@ class ImageSegmentation(Module):
 
         figure.subplot_imshow(
             colormap="gray",
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
@@ -1069,8 +1067,8 @@ class ImageSegmentation(Module):
 
         figure.subplot_imshow_labels(
             background_image=workspace.display_data.x_data,
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
             y=0
@@ -1236,7 +1234,6 @@ class ObjectProcessing(ImageSegmentation):
         )
 
         figure.subplot_imshow_labels(
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
@@ -1244,8 +1241,8 @@ class ObjectProcessing(ImageSegmentation):
         )
 
         figure.subplot_imshow_labels(
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
             y=0

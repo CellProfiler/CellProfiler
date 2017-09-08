@@ -406,7 +406,8 @@ objects:
                                               workspace.display_data.image_set_number)
         figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data, title)
         figure.subplot_imshow_bw(1, 0, cropped_pixel_data,
-                                 self.cropped_image_name.value)
+                                 self.cropped_image_name.value,
+                                 sharexy=figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
         '''Return information on the measurements made during cropping'''

@@ -1,6 +1,31 @@
 # coding=utf-8
 
-"""
+import logging
+
+logger = logging.getLogger(__name__)
+import numpy as np
+import numpy.ma
+from scipy.ndimage import distance_transform_edt
+import scipy.ndimage
+import scipy.sparse
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.pipeline as cpp
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preferences as cpprefs
+from centrosome.lapjv import lapjv
+import centrosome.filter as cpfilter
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import centers_of_labels
+from centrosome.cpmorphology import associate_by_distance
+from centrosome.cpmorphology import all_connected_components
+from centrosome.index import Indexes
+from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+
+__doc__ = """\
 TrackObjects
 ============
 
@@ -146,10 +171,12 @@ tracking method:
 See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
 **Groups**.
 
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-up.png
-.. |image2| image:: memory:thumb-up.png
-"""
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
+                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                })
 
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'

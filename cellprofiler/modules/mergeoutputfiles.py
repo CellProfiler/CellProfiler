@@ -1,6 +1,9 @@
 # coding=utf-8
 
 """
+MergeOutputFiles
+================
+
 **MergeOutputFiles** merges several output .mat files into one.
 
 This data tool lets you collect the output .mat files from several runs,

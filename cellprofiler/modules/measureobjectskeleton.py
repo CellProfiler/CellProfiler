@@ -1,11 +1,14 @@
+
 # coding=utf-8
 
 """
-**Measure Neurons** measures branching information for neurons or any
-skeleton objects with seed points.
+MeasureObjectSkeleton
+=====================
 
-This module measures the number of trunks and branches for each neuron
-in an image. The module takes a skeletonized image of the neuron plus
+**MeasureObjectSkeleton** measures information for any branching structures, such as neurons, root or branch systems, vasculature, or any skeletonized system that originates from a single point (such as neurites branching from a single nucleus).
+
+This module measures the number of trunks and branches for each branching system
+in an image. The module takes a skeletonized image of the object plus
 previously identified seed objects (for instance, the neuron soma) and
 finds the number of axon or dendrite trunks that emerge from the soma
 and the number of branches along the axons and dendrites. Note that the
@@ -28,6 +31,8 @@ and dendrites and assigns branchpoints based on distance to the closest
 seed object when two seed objects appear to be attached to the same
 dendrite or axon.
 
+Note that this module was referred to as MeasureNeurons in previous versions of CellProfiler.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -36,7 +41,7 @@ Measurements made by this module
 -  *NumberNonTrunkBranches:* The number of non-trunk branches. Branches
    are the branchpoints that lie outside the seed objects.
 -  *NumberBranchEnds*: The number of branch end-points, i.e, termini.
--  *TotalNeuriteLength*: The length of all skeleton segments per neuron.
+-  *TotalObjectSkeletonLength*: The length of all skeleton segments per object.
 """
 
 import os
@@ -57,7 +62,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 
 '''The measurement category'''
-C_NEURON = "Neuron"
+C_OBJSKELETON = "ObjectSkeleton"
 
 '''The trunk count feature'''
 F_NUMBER_TRUNKS = "NumberTrunks"
@@ -69,10 +74,10 @@ F_NUMBER_NON_TRUNK_BRANCHES = "NumberNonTrunkBranches"
 F_NUMBER_BRANCH_ENDS = "NumberBranchEnds"
 
 '''The neurite length feature'''
-F_TOTAL_NEURITE_LENGTH = "TotalNeuriteLength"
+F_TOTAL_OBJSKELETON_LENGTH = "TotalObjectSkeletonLength"
 
 F_ALL = [F_NUMBER_TRUNKS, F_NUMBER_NON_TRUNK_BRANCHES, F_NUMBER_BRANCH_ENDS,
-         F_TOTAL_NEURITE_LENGTH]
+         F_TOTAL_OBJSKELETON_LENGTH]
 
 
 class MeasureObjectSkeleton(cpm.Module):
@@ -83,57 +88,56 @@ class MeasureObjectSkeleton(cpm.Module):
     def create_settings(self):
         '''Create the UI settings for the module'''
         self.seed_objects_name = cps.ObjectNameSubscriber(
-                "Select the seed objects", cps.NONE, doc="""
-            Select the previously identified objects that you want to use as the
-            seeds for measuring branches and distances. Branches and trunks are assigned
-            per seed object. Seed objects are typically not single points/pixels but
-            instead are usually objects of varying sizes.""")
+                "Select the seed objects", cps.NONE, doc="""\
+Select the previously identified objects that you want to use as the
+seeds for measuring branches and distances. Branches and trunks are assigned
+per seed object. Seed objects are typically not single points/pixels but
+instead are usually objects of varying sizes.""")
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the skeletonized image", cps.NONE, doc="""
-            Select the skeletonized image of the dendrites
-            and/or axons as produced by the <b>Morph</b> module's
-            <i>Skel</i> operation.""")
+                "Select the skeletonized image", cps.NONE, doc="""\
+Select the skeletonized image of the dendrites and/or axons as produced
+by the **Morph** module’s *Skel* operation.""")
 
         self.wants_branchpoint_image = cps.Binary(
-                "Retain the branchpoint image?", False, doc="""
-            Select <i>%(YES)s</i> if you want to save the color image of
-            branchpoints and trunks. This is the image that is displayed
-            in the output window for this module.""" % globals())
+                "Retain the branchpoint image?", False, doc="""\
+Select "*%(YES)s*" if you want to save the color image of branchpoints and
+trunks. This is the image that is displayed in the output window for
+this module.""" % globals())
 
         self.branchpoint_image_name = cps.ImageNameProvider(
-                "Name the branchpoint image", "BranchpointImage", doc="""
-            <i>(Used only if a branchpoint image is to be retained)</i><br>
-            Enter a name for the branchpoint image here. You can then
-            use this image in a later module, such as <b>SaveImages</b>.""")
+                "Name the branchpoint image", "BranchpointImage", doc="""\
+*(Used only if a branchpoint image is to be retained)*
+
+Enter a name for the branchpoint image here. You can then use this image
+in a later module, such as **SaveImages**.""")
 
         self.wants_to_fill_holes = cps.Binary(
-                "Fill small holes?", True, doc="""
-            The algorithm reskeletonizes the image and this can leave
-            artifacts caused by small holes in the image prior to skeletonizing.
-            These holes result in false trunks and branchpoints.
-            Select <i>%(YES)s</i> to fill in these small holes prior to skeletonizing.""" % globals())
+                "Fill small holes?", True, doc="""\
+The algorithm reskeletonizes the image and this can leave artifacts
+caused by small holes in the image prior to skeletonizing. These holes
+result in false trunks and branchpoints. Select "*%(YES)s*" to fill in
+these small holes prior to skeletonizing.""" % globals())
 
         self.maximum_hole_size = cps.Integer(
-                "Maximum hole size", 10, minval=1, doc="""
-            <i>(Used only when filling small holes)</i><br>
-            This is the area of the largest hole to fill, measured
-            in pixels. The algorithm will fill in any hole whose area is
-            this size or smaller.""")
+                "Maximum hole size", 10, minval=1, doc="""\
+*(Used only when filling small holes)*
 
-        self.wants_neuron_graph = cps.Binary(
-                "Export the neuron graph relationships?", False, doc="""
-            Select <i>%(YES)s</i> to produce an edge file and a vertex
-            file that give the relationships between trunks, branchpoints
-            and vertices.""" % globals())
+This is the area of the largest hole to fill, measured in pixels. The
+algorithm will fill in any hole whose area is this size or smaller.""")
+
+        self.wants_objskeleton_graph = cps.Binary(
+                "Export the skeleton graph relationships?", False, doc="""\
+Select "*%(YES)s*" to produce an edge file and a vertex file that give the
+relationships between trunks, branchpoints and vertices.""" % globals())
 
         self.intensity_image_name = cps.ImageNameSubscriber(
-                "Intensity image", cps.NONE, doc="""
-            Select the image to be used to calculate
-            the total intensity along the edges between the vertices.""")
+                "Intensity image", cps.NONE, doc="""\
+Select the image to be used to calculate
+the total intensity along the edges between the vertices.""")
 
         self.directory = cps.DirectoryPath(
-                "File output directory",
+                "File output directory", doc='Select the directory you want to save the graph relationships to.',
                 dir_choices=[
                     cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                     cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
@@ -141,57 +145,59 @@ class MeasureObjectSkeleton(cpm.Module):
         self.directory.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
 
         self.vertex_file_name = cps.Text(
-                "Vertex file name", "vertices.csv", doc="""
-            Enter the name of the file that will hold the edge information.
-            You can use metadata tags in the file name.
-            <p>Each line of the file
-            is a row of comma-separated values. The first row is the header;
-            this names the file's columns. Each subsequent row represents
-            a vertex in the neuron skeleton graph: either a trunk,
-            a branchpoint or an endpoint.
-            The file has the following columns:
-            <br><ul>
-            <li><i>image_number:</i> The image number of the associated image</li>
-            <li><i>vertex_number:</i> The number of the vertex within the image</li>
-            <li><i>i:</i> The I coordinate of the vertex.</li>
-            <li><i>j:</i> The J coordinate of the vertex.</li>
-            <li><i>label:</i> The label of the seed object associated with
-            the vertex.</li>
-            <li><i>kind:</i> The vertex type, with the following choices:
-            <ul><li><b>T:</b> Trunk</li>
-            <li><b>B:</b> Branchpoint</li>
-            <li><b>E:</b> Endpoint</li></ul></li></ul>
-            </p>""")
+                "Vertex file name", "vertices.csv", doc="""\
+*(Used only when exporting graph relationships)*
+
+Enter the name of the file that will hold the edge information. You can
+use metadata tags in the file name.
+
+Each line of the file is a row of comma-separated values. The first
+row is the header; this names the file’s columns. Each subsequent row
+represents a vertex in the skeleton graph: either a trunk, a
+branchpoint or an endpoint. The file has the following columns:
+
+-  *image\_number:* The image number of the associated image
+-  *vertex\_number:* The number of the vertex within the image
+-  *i:* The I coordinate of the vertex.
+-  *j:* The J coordinate of the vertex.
+-  *label:* The label of the seed object associated with the vertex.
+-  *kind:* The vertex type, with the following choices:
+
+   -  **T:** Trunk
+   -  **B:** Branchpoint
+   -  **E:** Endpoint
+""")
 
         self.edge_file_name = cps.Text(
-                "Edge file name", "edges.csv", doc="""
-            Enter the name of the file that will hold the edge information.
-            You can use metadata tags in the file name. Each line of the file
-            is a row of comma-separated values. The first row is the header;
-            this names the file's columns. Each subsequent row represents
-            an edge or connection between two vertices (including between
-            a vertex and itself for certain loops).
+                "Edge file name", "edges.csv", doc="""\
+*(Used only when exporting graph relationships)*
 
-            <p>The file has the following columns:
-            <br><ul>
-            <li><i>image_number:</i> The image number of the associated image</li>
-            <li><i>v1:</i> The zero-based index into the vertex
-            table of the first vertex in the edge.</li>
-            <li><i>v2:</i> The zero-based index into the vertex table of the
-            second vertex in the edge.</li>
-            <li><i>length:</i> The number of pixels in the path connecting the
-            two vertices, including both vertex pixels.</li>
-            <li><i>total_intensity:</i> The sum of the intensities of the
-            pixels in the edge, including both vertex pixel intensities.</li>
-            </ul>
-            </p>""")
+Enter the name of the file that will hold the edge information. You can
+use metadata tags in the file name. Each line of the file is a row of
+comma-separated values. The first row is the header; this names the
+file’s columns. Each subsequent row represents an edge or connection
+between two vertices (including between a vertex and itself for certain
+loops).
+
+The file has the following columns:
+
+-  *image\_number:* The image number of the associated image
+-  *v1:* The zero-based index into the vertex table of the first vertex
+   in the edge.
+-  *v2:* The zero-based index into the vertex table of the second vertex
+   in the edge.
+-  *length:* The number of pixels in the path connecting the two
+   vertices, including both vertex pixels.
+-  *total\_intensity:* The sum of the intensities of the pixels in the
+   edge, including both vertex pixel intensities.
+""")
 
     def settings(self):
         '''The settings, in the order that they are saved in the pipeline'''
         return [self.seed_objects_name, self.image_name,
                 self.wants_branchpoint_image, self.branchpoint_image_name,
                 self.wants_to_fill_holes, self.maximum_hole_size,
-                self.wants_neuron_graph, self.intensity_image_name,
+                self.wants_objskeleton_graph, self.intensity_image_name,
                 self.directory, self.vertex_file_name, self.edge_file_name]
 
     def visible_settings(self):
@@ -203,8 +209,8 @@ class MeasureObjectSkeleton(cpm.Module):
         result += [self.wants_to_fill_holes]
         if self.wants_to_fill_holes:
             result += [self.maximum_hole_size]
-        result += [self.wants_neuron_graph]
-        if self.wants_neuron_graph:
+        result += [self.wants_objskeleton_graph]
+        if self.wants_objskeleton_graph:
             result += [self.intensity_image_name, self.directory,
                        self.vertex_file_name, self.edge_file_name]
         return result
@@ -247,7 +253,7 @@ class MeasureObjectSkeleton(cpm.Module):
 
     def prepare_run(self, workspace):
         '''Initialize graph files'''
-        if not self.wants_neuron_graph:
+        if not self.wants_objskeleton_graph:
             return True
         edge_files = set()
         vertex_files = set()
@@ -421,23 +427,23 @@ class MeasureObjectSkeleton(cpm.Module):
         #
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        feature = "_".join((C_NEURON, F_NUMBER_TRUNKS, skeleton_name))
+        feature = "_".join((C_OBJSKELETON, F_NUMBER_TRUNKS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, trunk_counts)
-        feature = "_".join((C_NEURON, F_NUMBER_NON_TRUNK_BRANCHES,
+        feature = "_".join((C_OBJSKELETON, F_NUMBER_NON_TRUNK_BRANCHES,
                             skeleton_name))
         m.add_measurement(seed_objects_name, feature, branch_counts)
-        feature = "_".join((C_NEURON, F_NUMBER_BRANCH_ENDS, skeleton_name))
+        feature = "_".join((C_OBJSKELETON, F_NUMBER_BRANCH_ENDS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, end_counts)
-        feature = "_".join((C_NEURON, F_TOTAL_NEURITE_LENGTH, skeleton_name))
+        feature = "_".join((C_OBJSKELETON, F_TOTAL_OBJSKELETON_LENGTH, skeleton_name))
         m[seed_objects_name, feature] = total_distance
         #
         # Collect the graph information
         #
-        if self.wants_neuron_graph:
+        if self.wants_objskeleton_graph:
             trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
             intensity_image = workspace.image_set.get_image(
                     self.intensity_image_name.value)
-            edge_graph, vertex_graph = self.make_neuron_graph(
+            edge_graph, vertex_graph = self.make_objskeleton_graph(
                     combined_skel, dlabels,
                     trunk_mask,
                     branch_points & ~trunk_mask,
@@ -501,7 +507,7 @@ class MeasureObjectSkeleton(cpm.Module):
         from matplotlib.lines import Line2D
         import matplotlib.cm
 
-        if self.wants_neuron_graph:
+        if self.wants_objskeleton_graph:
             figure.set_subplots((2, 1))
         else:
             figure.set_subplots((1, 1))
@@ -509,10 +515,10 @@ class MeasureObjectSkeleton(cpm.Module):
                  (self.seed_objects_name.value, self.image_name.value))
         figure.subplot_imshow(0, 0, workspace.display_data.branchpoint_image,
                               title)
-        if self.wants_neuron_graph:
+        if self.wants_objskeleton_graph:
             image = workspace.display_data.intensity_image
             figure.subplot_imshow_grayscale(1, 0, image,
-                                            title="Neuron graph",
+                                            title="ObjectSkeleton graph",
                                             sharexy=figure.subplot(0, 0))
             axes = figure.subplot(1, 0)
             assert isinstance(axes, Axes)
@@ -537,8 +543,8 @@ class MeasureObjectSkeleton(cpm.Module):
         '''Return database column definitions for measurements made here'''
         return [
             (self.seed_objects_name.value,
-             "_".join((C_NEURON, feature, self.image_name.value)),
-             cpmeas.COLTYPE_FLOAT if feature == F_TOTAL_NEURITE_LENGTH
+             "_".join((C_OBJSKELETON, feature, self.image_name.value)),
+             cpmeas.COLTYPE_FLOAT if feature == F_TOTAL_OBJSKELETON_LENGTH
              else cpmeas.COLTYPE_INTEGER)
             for feature in F_ALL]
 
@@ -549,7 +555,7 @@ class MeasureObjectSkeleton(cpm.Module):
         object_name - name of seed object
         '''
         if object_name == self.seed_objects_name:
-            return [C_NEURON]
+            return [C_OBJSKELETON]
         else:
             return []
 
@@ -558,9 +564,9 @@ class MeasureObjectSkeleton(cpm.Module):
 
         pipeline - pipeline being run
         object_name - object being measured (must be the seed object)
-        category - category of measurement (must be C_NEURON)
+        category - category of measurement (must be C_OBJSKELETON)
         '''
-        if category == C_NEURON and object_name == self.seed_objects_name:
+        if category == C_OBJSKELETON and object_name == self.seed_objects_name:
             return F_ALL
         else:
             return []
@@ -571,8 +577,8 @@ class MeasureObjectSkeleton(cpm.Module):
 
         pipeline - pipeline being run
         object_name - object being measured (must be the seed object)
-        category - category of measurement (must be C_NEURON)
-        measurement - one of the neuron measurements
+        category - category of measurement (must be C_OBJSKELETON)
+        measurement - one of the object skeleton measurements
         '''
         if measurement in self.get_measurements(pipeline, object_name,
                                                 category):
@@ -613,7 +619,7 @@ class MeasureObjectSkeleton(cpm.Module):
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
-    def make_neuron_graph(self, skeleton, skeleton_labels,
+    def make_objskeleton_graph(self, skeleton, skeleton_labels,
                           trunks, branchpoints, endpoints, image):
         '''Make a table that captures the graph relationship of the skeleton
 

@@ -19,9 +19,6 @@ import cellprofiler.setting
 import _help
 import threshold
 
-import os
-
-
 __doc__ = """\
 IdentifyPrimaryObjects
 ======================

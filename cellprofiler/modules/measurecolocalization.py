@@ -238,12 +238,7 @@ Select the objects to be measured."""
         help_settings = [self.images_or_objects,
                          self.thr,
                          self.image_groups[0].image_name,
-                         self.object_groups[0].object_name
-                         ]
-        
-        #result += [image_group.image_name for image_group in self.image_groups[0]]
-
-        #result += [object_group.object_name for object_group in self.object_groups]
+                         self.object_groups[0].object_name]
         return help_settings
 
     def get_image_pairs(self):

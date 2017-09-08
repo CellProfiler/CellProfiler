@@ -20,7 +20,7 @@ import skimage.io
 
 class MatchTemplate(cellprofiler.module.Module):
     module_name = "MatchTemplate"
-    category = "Image Processing"
+    category = "Advanced"
     variable_revision_number = 1
 
     def create_settings(self):

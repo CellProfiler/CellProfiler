@@ -158,7 +158,7 @@ modules. Select *%(YES)s* to set negative values to 0.
 """ % globals())
 
         self.truncate_high = cellprofiler.setting.Binary(
-                "Set values greater than 1 equal to 1?", True, doc="""\  
+                "Set values greater than 1 equal to 1?", True, doc="""\
 Values outside the range 0 to 1 might not be handled well by other
 modules. Select *%(YES)s* to set values greater than 1 to a maximum
 value of 1.
@@ -478,9 +478,8 @@ is applied before other operations."""))
                 int(i / columns),
                 pixel_data[i],
                 title=display_names[i],
-                # sharexy=figure.subplot(0, 0),
-                colormap=cmap,
-                dimensions=workspace.display_data.dimensions
+                sharexy=figure.subplot(0, 0),
+                colormap=cmap
             )
 
     def validate_module(self, pipeline):

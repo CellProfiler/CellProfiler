@@ -885,8 +885,7 @@ Often a good choice is some multiple of the largest expected object size.
             0,
             0,
             workspace.display_data.input_pixel_data,
-            title=u"Original image: {}".format(self.x_name.value),
-            dimensions=dimensions
+            title=u"Original image: {}".format(self.x_name.value)
         )
 
         figure.subplot_imshow_grayscale(
@@ -894,15 +893,14 @@ Often a good choice is some multiple of the largest expected object size.
             0,
             workspace.display_data.output_pixel_data,
             title=u"Thresholded image: {}".format(self.y_name.value),
-            dimensions=dimensions
+            sharexy=figure.subplot(0, 0)
         )
 
         figure.subplot_table(
             2,
             0,
             workspace.display_data.statistics,
-            workspace.display_data.col_labels,
-            dimensions=dimensions
+            workspace.display_data.col_labels
         )
 
     def get_measurement_objects_name(self):

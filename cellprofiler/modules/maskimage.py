@@ -180,16 +180,16 @@ This option reverses the foreground/background relationship of the mask.
         figure.set_subplots((2, 1),dimensions=workspace.display_data.dimensions)
         if workspace.display_data.multichannel:
             figure.subplot_imshow_color(0, 0, orig_image_pixel_data,
-                                        "Original image: %s" % self.image_name.value,dimensions=workspace.display_data.dimensions)
+                                        "Original image: %s" % self.image_name.value)
             figure.subplot_imshow_color(1, 0, masked_pixels,
                                         "Masked image: %s" % self.masked_image_name.value,
-                                        dimensions=workspace.display_data.dimensions)
+                                        sharexy=figure.subplot(0, 0))
         else:
             figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data,
-                                            "Original image: %s" % self.image_name.value,dimensions=workspace.display_data.dimensions)
+                                            "Original image: %s" % self.image_name.value)
             figure.subplot_imshow_grayscale(1, 0, masked_pixels,
                                             "Masked image: %s" % self.masked_image_name.value,
-                                            dimensions=workspace.display_data.dimensions)
+                                            sharexy=figure.subplot(0, 0))
 
 
     def upgrade_settings(self, setting_values,

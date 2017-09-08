@@ -398,8 +398,7 @@ parents or children of the parent object."""
             0,
             0,
             parent_labels,
-            title=self.x_name.value,
-            dimensions=dimensions
+            title=self.x_name.value
 
         )
 
@@ -408,7 +407,7 @@ parents or children of the parent object."""
             0,
             child_labels,
             title=self.y_name.value,
-            dimensions=dimensions
+            sharexy=figure.subplot(0, 0)
         )
 
         figure.subplot_imshow_labels(
@@ -416,7 +415,7 @@ parents or children of the parent object."""
             1,
             parent_labeled_children,
             "{} labeled by {}".format(self.y_name.value, self.x_name.value),
-            dimensions=dimensions
+            sharexy=figure.subplot(0, 0)
         )
 
     def get_parent_names(self):

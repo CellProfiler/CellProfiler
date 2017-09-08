@@ -255,16 +255,14 @@ maximal brightness already occurring in the image.
                     0,
                     0,
                     workspace.display_data.pixel_data,
-                    self.output_image_name.value,
-                    dimensions=dimensions
+                    self.output_image_name.value
                 )
             else:
                 figure.subplot_imshow_bw(
                     0,
                     0,
                     workspace.display_data.pixel_data,
-                    self.output_image_name.value,
-                    dimensions=dimensions
+                    self.output_image_name.value
                 )
         else:
             figure.set_subplots((2, 1), dimensions=dimensions)
@@ -273,8 +271,7 @@ maximal brightness already occurring in the image.
                 0,
                 0,
                 workspace.display_data.image_pixel_data,
-                self.image_name.value,
-                dimensions=dimensions
+                self.image_name.value
             )
 
             if self.wants_color.value == WANTS_COLOR:
@@ -283,7 +280,7 @@ maximal brightness already occurring in the image.
                     0,
                     workspace.display_data.pixel_data,
                     self.output_image_name.value,
-                    dimensions=dimensions
+                    sharexy=figure.subplot(0, 0)
                 )
             else:
                 figure.subplot_imshow_bw(
@@ -291,7 +288,7 @@ maximal brightness already occurring in the image.
                     0,
                     workspace.display_data.pixel_data,
                     self.output_image_name.value,
-                    dimensions=dimensions
+                    sharexy=figure.subplot(0, 0)
                 )
 
     def base_image(self, workspace):

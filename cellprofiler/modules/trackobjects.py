@@ -1,6 +1,31 @@
 # coding=utf-8
 
-"""
+import logging
+
+logger = logging.getLogger(__name__)
+import numpy as np
+import numpy.ma
+from scipy.ndimage import distance_transform_edt
+import scipy.ndimage
+import scipy.sparse
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.pipeline as cpp
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preferences as cpprefs
+from centrosome.lapjv import lapjv
+import centrosome.filter as cpfilter
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import centers_of_labels
+from centrosome.cpmorphology import associate_by_distance
+from centrosome.cpmorphology import all_connected_components
+from centrosome.index import Indexes
+from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+
+__doc__ = """\
 TrackObjects
 ============
 
@@ -68,7 +93,7 @@ Available measurements
    first). At this point, the final age of the object is output; no
    values are stored for earlier frames.
 
-   |image0|  This value is useful if you want to plot a histogram of the
+   |TO_image0|  This value is useful if you want to plot a histogram of the
    object lifetimes; all but the final age can be ignored or filtered out.
 
 The following object measurements are specific to the LAP
@@ -106,7 +131,7 @@ tracking method:
 -  *LinkingDistance:* The difference between the propagated position of
    an object and the object to which it is matched.
 
-   |image1| A slowly decaying histogram of these distances indicates
+   |TO_image1| A slowly decaying histogram of these distances indicates
    that the search radius is large enough. A cut-off histogram is a sign
    that the search radius is too small.
 
@@ -115,7 +140,7 @@ tracking method:
    This measurement records the linking distance divided by the standard
    deviation of the error when linking the object with its parent.
 
-   |image2| This value is multiplied by the
+   |TO_image2| This value is multiplied by the
    "*Number of standard deviations for search radius*" setting to constrain the search
    distance. A histogram of this value can help determine if the
    "*Search radius limit, in pixel units (Min,Max)*" setting is appropriate.
@@ -146,10 +171,12 @@ tracking method:
 See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
 **Groups**.
 
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-up.png
-.. |image2| image:: memory:thumb-up.png
-"""
+.. |TO_image0| image:: {PROTIP_RECOMEND_ICON}
+.. |TO_image1| image:: {PROTIP_RECOMEND_ICON}
+.. |TO_image2| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
+                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                })
 
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'

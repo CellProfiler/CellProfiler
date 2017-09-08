@@ -1,8 +1,8 @@
 # coding=utf-8
 
 """
-Save Images
-===========
+SaveImages
+==========
 
 **SaveImages** saves image or movie files.
 

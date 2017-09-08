@@ -1,6 +1,31 @@
 # coding=utf-8
 
-"""
+import cellprofiler.icons
+
+import numpy as np
+import scipy.ndimage as scind
+
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import centrosome.zernike as cpmz
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import ellipse_from_second_moments_ijv
+from centrosome.cpmorphology import calculate_extents
+from centrosome.cpmorphology import calculate_perimeters
+from centrosome.cpmorphology import calculate_solidity
+from centrosome.cpmorphology import euler_number
+from centrosome.cpmorphology import distance_to_edge
+from centrosome.cpmorphology import maximum_position_of_labels
+from centrosome.cpmorphology import median_of_labels
+from centrosome.cpmorphology import feret_diameter
+from centrosome.cpmorphology import convex_hull_ijv
+from cellprofiler.measurement import COLTYPE_FLOAT
+import skimage.measure
+import _help
+
+__doc__ = """\
 MeasureObjectSizeShape
 ======================
 
@@ -53,7 +78,7 @@ ellipse with the same second-moments as an object region.
    ellipse whose eccentricity is 0 is actually a circle, while an
    ellipse whose eccentricity is 1 is a line segment.)
 
-    |image0|
+    |MOSS_image0|
 
 
 -  *MajorAxisLength:* *(2D only)* The length (in pixels) of the major axis of the
@@ -127,32 +152,10 @@ See also **MeasureImageAreaOccupied**.
 
 .. _(pdf): http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
 .. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49
-.. |image0| image:: memory:MeasureObjectSizeShape_Eccentricity.png
-"""
-
-import cellprofiler.icons
-
-import numpy as np
-import scipy.ndimage as scind
-
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import centrosome.zernike as cpmz
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import ellipse_from_second_moments_ijv
-from centrosome.cpmorphology import calculate_extents
-from centrosome.cpmorphology import calculate_perimeters
-from centrosome.cpmorphology import calculate_solidity
-from centrosome.cpmorphology import euler_number
-from centrosome.cpmorphology import distance_to_edge
-from centrosome.cpmorphology import maximum_position_of_labels
-from centrosome.cpmorphology import median_of_labels
-from centrosome.cpmorphology import feret_diameter
-from centrosome.cpmorphology import convex_hull_ijv
-from cellprofiler.measurement import COLTYPE_FLOAT
-import skimage.measure
+.. |MOSS_image0| image:: {ECCENTRICITY_ICON} 
+""".format(**{
+                "ECCENTRICITY_ICON": _help.__image_resource("MeasureObjectSizeShape_Eccentricity.png")
+            })
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = 'AreaShape'

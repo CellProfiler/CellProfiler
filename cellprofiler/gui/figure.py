@@ -1230,6 +1230,8 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
+        self.figure.tight_layout(w_pad=3.0)
+
         if dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax
@@ -1445,6 +1447,8 @@ class Figure(wx.Frame):
                 hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(), bins=200, xlabel='pixel intensity')
 
                 hist_fig.figure.canvas.draw()
+
+            subplot.figure.tight_layout(w_pad=3.0)
 
             return subplot
         else:

@@ -1,6 +1,26 @@
 # coding=utf-8
 
-"""
+import cellprofiler.icons
+import cellprofiler.module as cpm
+import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.workspace as cpw
+import javabridge as J
+import os
+import sys
+import urllib
+import uuid
+import _help
+
+from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
+from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
+from cellprofiler.utilities.hdf5_dict import HDF5FileList
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
+    TECH_NOTE_ICON
+    
+__doc__ = """\
 Images
 ======
 
@@ -40,7 +60,7 @@ The most straightforward way to provide image files to the **Images**
 module is to simply drag-and-drop them on the file list panel (the blank
 space indicated by the text “Drop files and folders here”).
 
-.. image:: memory:Images_FilelistPanel_Blank.png
+.. image:: {IMG_PANEL_BLANK}
    :width: 100%
 
 Using the file explorer tool of your choice (e.g., Explorer in Windows,
@@ -50,7 +70,7 @@ to bring up a file selection window to browse for individual files; on
 the Mac, folders can be drag-and-dropped from this window and you can
 select multiple files using Ctrl-A (Windows) or Cmd-A (Mac).
 
-.. image:: memory:Images_FilelistPanel_Filled.png
+.. image:: {IMG_PANEL_FILLED}
    :width: 100%
 
 Right-clicking on the file list panel will provide a context menu with
@@ -116,27 +136,12 @@ particular wavelength.
 .. _here: http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
 .. _“lossy”: http://www.techterms.com/definition/lossy
 .. _“lossless”: http://www.techterms.com/definition/lossless
-"""
+""".format(**{
+                "IMG_PANEL_BLANK": _help.__image_resource('Images_FilelistPanel_Blank.png'),
+                "IMG_PANEL_FILLED": _help.__image_resource('Images_FilelistPanel_Filled.png')
+            })
 
-import cellprofiler.icons
-import cellprofiler.module as cpm
-import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.workspace as cpw
-import javabridge as J
-import os
-import sys
-import urllib
-import uuid
-
-from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
-from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
-from cellprofiler.utilities.hdf5_dict import HDF5FileList
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
-    TECH_NOTE_ICON
-
+    
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
 FILTER_CHOICE_CUSTOM = "Custom"

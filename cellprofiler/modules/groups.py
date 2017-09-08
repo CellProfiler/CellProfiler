@@ -1,6 +1,21 @@
 # coding=utf-8
 
-"""
+import cellprofiler.icons
+from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+import logging
+
+logger = logging.getLogger(__name__)
+import numpy as np
+import os
+import _help
+
+import cellprofiler.module as cpm
+import cellprofiler.pipeline as cpp
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
+
+__doc__ = """\
 Groups
 ======
 
@@ -100,9 +115,9 @@ metadata category is selected:
 -  The *image set list* (bottom table) shows the file name and location
    of each of the image sets that comprise the groups.
 
-+------------+
-| |image0|   |
-+------------+
+
+.. image:: {GROUPS_DISPLAY_TABLE}
+
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -122,24 +137,9 @@ CellProfiler) will be allocated to handle each group. This means that
 you may have multiple workers created (as set under the Preferences),
 but only a subset of them may actually be active, depending on the
 number of groups you have.
-
-.. |image0| image:: memory:Groups_ExampleDisplayTable.png
-"""
-
-import cellprofiler.icons
-from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-import logging
-
-logger = logging.getLogger(__name__)
-import numpy as np
-import os
-
-import cellprofiler.module as cpm
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.measurement as cpmeas
-
+""".format(**{
+                "GROUPS_DISPLAY_TABLE": _help.__image_resource('Groups_ExampleDisplayTable.png')
+            })
 
 class Groups(cpm.Module):
     variable_revision_number = 2

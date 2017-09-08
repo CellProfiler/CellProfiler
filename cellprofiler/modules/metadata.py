@@ -1,6 +1,35 @@
 # coding=utf-8
 
-"""
+import cellprofiler.icons
+import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
+import csv
+import re
+import os
+import time
+import urllib
+import urlparse
+import _help
+
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.pipeline as cpp
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import javabridge as J
+from cellprofiler.modules.images import FilePredicate
+from cellprofiler.modules.images import ExtensionPredicate
+from cellprofiler.modules.images import ImagePredicate
+from cellprofiler.modules.images import DirectoryPredicate
+from cellprofiler.modules.images import Images
+from cellprofiler.modules.loadimages import \
+    well_metadata_tokens, urlfilename, urlpathname
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP,PROTIP_RECOMEND_ICON
+from cellprofiler.gui.help import content
+
+__doc__ = """\
 Metadata
 ========
 
@@ -87,7 +116,7 @@ the **Images** module, and the columns display the metadata obtained for
 each tag specified. You can press this button as many times as needed to
 display the most current metadata obtained.
 
-.. image:: memory:Metadata_ExampleDisplayTable.png
+.. image:: {METADATA_DISPLAY_TABLE}
    :width: 100%
 
 Some downstream use cases for metadata include the following:
@@ -115,35 +144,9 @@ Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Metadata:* The prefix of each metadata tag in the per-image table.
-"""
-
-import cellprofiler.icons
-import numpy as np
-import logging
-
-logger = logging.getLogger(__name__)
-import csv
-import re
-import os
-import time
-import urllib
-import urlparse
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import javabridge as J
-from cellprofiler.modules.images import FilePredicate
-from cellprofiler.modules.images import ExtensionPredicate
-from cellprofiler.modules.images import ImagePredicate
-from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images
-from cellprofiler.modules.loadimages import \
-    well_metadata_tokens, urlfilename, urlpathname
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP,PROTIP_RECOMEND_ICON
-from cellprofiler.gui.help import content
+""".format(**{
+                "METADATA_DISPLAY_TABLE": _help.__image_resource('Metadata_ExampleDisplayTable.png')
+            })
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"

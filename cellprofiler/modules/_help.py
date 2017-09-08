@@ -167,10 +167,20 @@ drop-down image list.
 #
 ####################
 def __image_resource(filename):
-    return pkg_resources.resource_filename(
+    if os.path.relpath(pkg_resources.resource_filename(
         "cellprofiler",
         os.path.join("data", "images", filename)
-    )
+    )) == os.path.join("cellprofiler","data", "images", filename):
+        return os.path.relpath(pkg_resources.resource_filename(
+            "cellprofiler",
+            os.path.join("data", "images", filename)
+        ))
+    else:
+        return os.path.join('..',os.path.relpath(pkg_resources.resource_filename(
+            "cellprofiler",
+            os.path.join("data", "images", filename)
+        )))
+
 
 PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")
 

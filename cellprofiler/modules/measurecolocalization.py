@@ -7,7 +7,7 @@ MeasureColocalization
 **MeasureColocalization** measures the colocalization and correlation
 between intensities in different images (e.g., different color channels)
 on a pixel-by-pixel basis, within identified objects or across an entire
-image.
+image.  This module supports both 2D and volumetric images.
 
 Given two or more images, this module calculates the correlation &
 colocalization (Overlap, Manders, Costes’ Automated Threshold & Rank
@@ -163,7 +163,7 @@ All methods measure correlation on a pixel by pixel basis.
             cps.ImageNameSubscriber(
                 'Select an image to measure',
                 cps.NONE,
-                doc='Select an image to measure the correlation from.'
+                doc='Select an image to measure the correlation/colocalization in.'
             )
         )
 
@@ -186,7 +186,10 @@ All methods measure correlation on a pixel by pixel basis.
             cps.ObjectNameSubscriber(
                 'Select an object to measure',
                 cps.NONE,
-                doc='Select the objects to be measured.'
+                doc="""\
+*(Used only when "Within objects" or "Both" are selected)*
+
+Select the objects to be measured."""
             )
         )
 
@@ -229,6 +232,14 @@ All methods measure correlation on a pixel by pixel basis.
                 result += object_group.visible_settings()
             result += [self.add_object_button]
         return result
+
+    def help_settings(self):
+        '''Return the settings to be displayed in the help menu'''
+        help_settings = [self.images_or_objects,
+                         self.thr,
+                         self.image_groups[0].image_name,
+                         self.object_groups[0].object_name]
+        return help_settings
 
     def get_image_pairs(self):
         '''Yield all permutations of pairs of images to correlate

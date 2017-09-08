@@ -147,6 +147,7 @@ SUPPORTED_IMAGE_EXTENSIONS = set([
     '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
     '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
     '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
+SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 SUPPORTED_IMAGE_EXTENSIONS.add(".npy")
 # The following is a list of the extensions as gathered from Bio-formats
 # Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
@@ -3211,6 +3212,9 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
     def is_numpy_file(self):
         return os.path.splitext(self.__filename)[-1].lower() == ".npy"
 
+    def is_matlab_file(self):
+        return os.path.splitext(self.__filename)[-1].lower() == ".mat"
+
     def get_md5_hash(self, measurements):
         '''Compute the MD5 hash of the underlying file or use cached value
 
@@ -3220,7 +3224,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         #
         # Cache the MD5 hash on the image reader
         #
-        if self.is_numpy_file():
+        if self.is_matlab_file() or self.is_numpy_file():
             rdr = None
         else:
             from bioformats.formatreader import get_image_reader
@@ -3249,7 +3253,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
         Possibly delete the temporary file'''
         if self.__is_cached:
-            if self.is_numpy_file():
+            if self.is_matlab_file() or self.is_numpy_file():
                 try:
                     os.remove(self.__cached_file)
                 except:
@@ -3290,10 +3294,14 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
-        if self.is_numpy_file():
+        if self.is_matlab_file():
+            with open(self.get_full_name(), "rb") as fd:
+                imgdata = scipy.io.matlab.mio.loadmat(fd, struct_as_record=True)
+                img = imgdata["Image"]
+                self.scale = 1.0
+        elif self.is_numpy_file():
             img = np.load(self.get_full_name())
             self.scale = 1.0
-            pixel_type_scale = 1.0
         else:
             url = self.get_url()
             if url.lower().startswith("omero:"):

@@ -167,6 +167,7 @@ drop-down image list.
 #
 ####################
 def __image_resource(filename):
+    #If you're rendering in the GUI, relative paths are fine
     if os.path.relpath(pkg_resources.resource_filename(
         "cellprofiler",
         os.path.join("data", "images", filename)
@@ -176,6 +177,7 @@ def __image_resource(filename):
             os.path.join("data", "images", filename)
         ))
     else:
+    #If you're rendering in sphinx, the relative path of the rst file is one below the make file so compensate accordingly
         return os.path.join('..',os.path.relpath(pkg_resources.resource_filename(
             "cellprofiler",
             os.path.join("data", "images", filename)

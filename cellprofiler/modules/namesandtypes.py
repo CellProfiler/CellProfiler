@@ -991,6 +991,7 @@ requests an object selection.
             self.z
         ]
 
+        for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
                        assignment.object_name, assignment.load_as_choice,
                        assignment.rescale, assignment.should_save_outlines,

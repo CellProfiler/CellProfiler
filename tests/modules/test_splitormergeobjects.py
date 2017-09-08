@@ -28,8 +28,47 @@ OUTLINE_NAME = 'outlines'
 
 
 class TestSplitOrMergeObjects(unittest.TestCase):
-    def test_01_00_implement_load_v5_please(self):
-        assert (cellprofiler.modules.splitormergeobjects.SplitOrMergeObjects.variable_revision_number == 4)
+    def test_01_05_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150319195827
+GitHash:d8289bf
+ModuleCount:1
+HasImagePlaneDetails:False
+
+SplitOrMergeObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input objects:IdentifyPrimaryObjects
+    Name the new objects:SplitOrMergeObjects
+    Operation:Unify
+    Maximum distance within which to unify objects:0
+    Unify using a grayscale image?:No
+    Select the grayscale image to guide unification:None
+    Minimum intensity fraction:0.9
+    Method to find object intensity:Closest point
+    Unification method:Distance
+    Select the parent object:None
+    Output object type:Disconnected
+"""
+        pipeline = cpp.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.loadtxt(StringIO(data))
+        module = pipeline.modules()[0]
+
+        assert module.objects_name.value == "IdentifyPrimaryObjects"
+        assert module.output_objects_name.value == "SplitOrMergeObjects"
+        assert module.relabel_option.value == "Unify"
+        assert module.distance_threshold.value == 0
+        assert not module.wants_image.value
+        assert module.image_name.value == "None"
+        assert module.minimum_intensity_fraction.value == 0.9
+        assert module.where_algorithm.value == "Closest point"
+        assert module.unify_option.value == "Distance"
+        assert module.parent_object.value == "None"
+        assert module.unification_method.value == "Disconnected"
 
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -87,8 +126,6 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.image_name, "Guide")
         self.assertEqual(module.minimum_intensity_fraction, .8)
         self.assertEqual(module.where_algorithm, cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT)
-        self.assertFalse(module.wants_outlines)
-        self.assertEqual(module.outlines_name, "RelabeledNucleiOutlines")
         self.assertEqual(module.unify_option, cellprofiler.modules.splitormergeobjects.UNIFY_PARENT)
         self.assertEqual(module.parent_object, "Nuclei")
         self.assertEqual(module.unification_method, cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL)
@@ -97,7 +134,6 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.relabel_option, cellprofiler.modules.splitormergeobjects.OPTION_SPLIT)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.where_algorithm, cellprofiler.modules.splitormergeobjects.CA_CENTROIDS)
-        self.assertTrue(module.wants_outlines)
         self.assertEqual(module.unify_option, cellprofiler.modules.splitormergeobjects.UNIFY_DISTANCE)
         self.assertEqual(module.unification_method, cellprofiler.modules.splitormergeobjects.UM_DISCONNECTED)
 
@@ -108,8 +144,6 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
                minimum_intensity_fraction=.9,
                where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT,
                image=None,
-               wants_outlines=False,
-               outline_name="None",
                parent_object="Parent_object",
                parents_of=None):
         '''Run the SplitOrMergeObjects module
@@ -128,8 +162,6 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         module.minimum_intensity_fraction.value = minimum_intensity_fraction
         module.wants_image.value = (image is not None)
         module.where_algorithm.value = where_algorithm
-        module.wants_outlines.value = wants_outlines
-        module.outlines_name.value = outline_name
 
         pipeline = cpp.Pipeline()
 
@@ -363,16 +395,6 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
                                             minimum_intensity_fraction=.8,
                                             where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT)
         self.assertTrue(np.all(labels_out == labels))
-
-    def test_04_00_save_outlines(self):
-        labels = np.zeros((10, 20), int)
-        labels[2:5, 3:8] = 1
-        labels[2:5, 13:18] = 2
-        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.splitormergeobjects.OPTION_UNIFY,
-                                            distance_threshold=6,
-                                            wants_outlines=True, outline_name=OUTLINE_NAME)
-        self.assertTrue(np.all(labels_out[labels != 0] == 1))
-        self.assertTrue(np.all(labels_out[labels == 0] == 0))
 
     def test_05_00_unify_per_parent(self):
         labels = np.zeros((10, 20), int)

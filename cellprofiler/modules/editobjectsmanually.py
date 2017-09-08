@@ -52,7 +52,6 @@ import cellprofiler.image as cpi
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw
-from centrosome.outline import outline
 from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
@@ -69,7 +68,7 @@ R_RETAIN = "Retain"
 
 class EditObjectsManually(I.Identify):
     category = "Object Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = 'EditObjectsManually'
 
     def create_settings(self):
@@ -106,21 +105,6 @@ other and might need to be edited with overlapping allowed, whereas a
 monolayer of cells might be best edited with overlapping off.
 Select "*%(YES)s*" to allow overlaps or select "*%(NO)s*" to prevent them.
 """ % globals())
-
-        self.wants_outlines = cps.Binary(
-                "Retain outlines of the edited objects?", False, doc="""\
-Select "*%(YES)s*" if you want to keep images of the outlines of the
-objects that remain after editing. This image can be saved by downstream
-modules or overlayed on other images using the **OverlayOutlines**
-module.
-""" % globals())
-
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "EditedObjectOutlines", doc="""\
-*(Used only if you have selected to retain outlines of edited objects)*
-
-Enter a name for the outline image.
-""")
 
         self.renumber_choice = cps.Choice(
                 "Numbering of the edited objects",
@@ -165,21 +149,24 @@ supplied by a previous module.
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
         """
-        return [self.object_name, self.filtered_objects, self.wants_outlines,
-                self.outlines_name, self.renumber_choice,
-                self.wants_image_display, self.image_name, self.allow_overlap]
+        return [
+            self.object_name,
+            self.filtered_objects,
+            self.renumber_choice,
+            self.wants_image_display,
+            self.image_name,
+            self.allow_overlap
+        ]
 
     def visible_settings(self):
-        """The settings that are visible in the UI
-        """
-        #
-        # Only display the outlines_name if wants_outlines is true
-        #
-        result = [self.object_name, self.filtered_objects,
-                  self.allow_overlap, self.wants_outlines]
-        if self.wants_outlines:
-            result.append(self.outlines_name)
-        result += [self.renumber_choice, self.wants_image_display]
+        result = [
+            self.object_name,
+            self.filtered_objects,
+            self.allow_overlap,
+            self.renumber_choice,
+            self.wants_image_display
+        ]
+
         if self.wants_image_display:
             result += [self.image_name]
         return result
@@ -264,14 +251,6 @@ supplied by a previous module.
         # The object locations
         #
         I.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
-        #
-        # Outlines if we want them
-        #
-        if self.wants_outlines:
-            outlines_name = self.outlines_name.value
-            outlines = outline(filtered_labels[0]).astype(bool)
-            outlines_image = cpi.Image(outlines)
-            workspace.image_set.add(outlines_name, outlines_image)
 
         workspace.display_data.orig_ijv = orig_objects.ijv
         workspace.display_data.filtered_ijv = filtered_objects.ijv
@@ -498,17 +477,7 @@ supplied by a previous module.
                 pipeline, object_name, category, self.get_object_dictionary())
         return measurements
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Upgrade the settings written by a prior version of this module
-
-        setting_values - array of string values for the module's settings
-        variable_revision_number - revision number of module at time of saving
-        module_name - name of module that saved settings
-        from_matlab - was a pipeline saved by CP 1.0
-
-        returns upgraded settings, new variable revision number and matlab flag
-        '''
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 2:
             object_name, filtered_object_name, outlines_name, \
             renumber_or_retain = setting_values
@@ -529,14 +498,19 @@ supplied by a previous module.
             from_matlab = False
             module_name = self.module_name
 
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added wants image + image
             setting_values = setting_values + [cps.NO, cps.NONE]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added allow overlap, default = False
             setting_values = setting_values + [cps.NO]
             variable_revision_number = 3
+
+        if variable_revision_number == 3:
+            # Remove wants_outlines, outlines_name
+            setting_values = setting_values[:2] + setting_values[4:]
+            variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab

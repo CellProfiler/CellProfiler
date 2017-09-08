@@ -122,7 +122,7 @@ input/output modules:
 
 *Elsewhere* and the two sub-folder options all require you to enter an
 additional path name. You can use an *absolute path* (such as
-“C:\\imagedir\\image.tif” on a PC) or a *relative path* to specify the
+“C:\\\\imagedir\\\\image.tif” on a PC) or a *relative path* to specify the
 file location relative to a directory):
 
 -  Use one period to represent the current directory. For example, if
@@ -161,20 +161,34 @@ image can be selected in downstream modules by selecting them from any
 drop-down image list.
 """
 
-PROTIP_RECOMEND_ICON = pkg_resources.resource_filename(
-    "cellprofiler",
-    os.path.join("data", "images", "thumb-up.png")
-)
+####################
+#
+# ICONS
+#
+####################
+def __image_resource(filename):
+    #If you're rendering in the GUI, relative paths are fine
+    if os.path.relpath(pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "images", filename)
+    )) == os.path.join("cellprofiler","data", "images", filename):
+        return os.path.relpath(pkg_resources.resource_filename(
+            "cellprofiler",
+            os.path.join("data", "images", filename)
+        ))
+    else:
+    #If you're rendering in sphinx, the relative path of the rst file is one below the make file so compensate accordingly
+        return os.path.join('..',os.path.relpath(pkg_resources.resource_filename(
+            "cellprofiler",
+            os.path.join("data", "images", filename)
+        )))
 
-PROTIP_AVOID_ICON = pkg_resources.resource_filename(
-    "cellprofiler",
-    os.path.join("data", "images", "thumb-down.png")
-)
 
-TECH_NOTE_ICON = pkg_resources.resource_filename(
-    "cellprofiler",
-    os.path.join("data", "images", "gear.png")
-)
+PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")
+
+PROTIP_AVOID_ICON = __image_resource("thumb-down.png")
+
+TECH_NOTE_ICON = __image_resource("gear.png")
 
 RETAINING_OUTLINES_HELP = """\
 Select *{YES}* to retain the outlines of the new objects for later use

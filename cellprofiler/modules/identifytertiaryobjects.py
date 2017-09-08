@@ -5,22 +5,22 @@ IdentifyTertiaryObjects
 =======================
 
 **IdentifyTertiaryObjects** identifies tertiary objects (e.g.,
-cytoplasm) by removing smaller primary objects (e.g. nuclei) from larger
+cytoplasm) by removing smaller primary objects (e.g., nuclei) from larger
 secondary objects (e.g., cells), leaving a ring shape.
 
 What is a tertiary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually a cellular subcompartment of
-some kind (for example, nuclei, cells, colonies, worms). We define an
-object as *tertiary* when it is identified by using a prior primary and
-secondary objects for reference. A common use case is when nuclei have
+an identifed feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms). We define an
+object as *tertiary* when it is identified using prior primary and
+secondary objects. A common use case is when nuclei have
 been found using **IdentifyPrimaryObjects** and the cell body has been
 found using **IdentifySecondaryObjects** but measurements from the
 cytoplasm, the region outside the nucleus but within the cell body, are
-desired. This module may be used to define the cytoplasm as an new
-object.
+desired. The **IdentifyTertiaryObjects** module may be used to define
+the cytoplasm as an new object.
 
 What do I need as input?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -38,20 +38,22 @@ constraint. Ideally, both inputs should be objects produced by prior
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of tertiary objects are produced by this module, which can be used
+A set of objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations.
 Because each tertiary object is produced from primary and secondary
-objects, there will always be at most one secondary object for each
-primary object. See the section "Measurements made by this module" below for
+objects, there will always be at most one tertiary object for each
+larger object. See the section "Measurements made by this module" below for
 the measurements that are produced by this module.
 
-Note that creating subregions using this module can result in objects
-with a single label that nonetheless are not contiguous. This may lead
-to unexpected results when running measurment modules such as
+Note that if the smaller objects are not completely contained within the
+larger objects, creating subregions using this module can result in objects
+with a single label (that is, identity) that nonetheless are not contiguous.
+This may lead
+to unexpected results when running measurement modules such as
 **MeasureObjectSizeShape** because calculations of the perimeter, aspect
 ratio, solidity, etc. typically make sense only for contiguous objects.
-Other modules, such as **MeasureImageIntensity** and **MeasureTexture**
-modules, are not affected and will yield expected results.
+Other modules, such as **MeasureImageIntensity**, are not affected and 
+will yield expected results.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -68,7 +70,7 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified tertiary objects.
 
-See also **IdentifyPrimaryObject** and **IdentifySecondaryObject**
+See also **IdentifyPrimaryObjects** and **IdentifySecondaryObjects**
 modules.
 """
 
@@ -96,7 +98,7 @@ R_REMOVED = "Removed"
 
 class IdentifyTertiaryObjects(cpm.Module):
     module_name = "IdentifyTertiaryObjects"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Object Processing"
 
     def create_settings(self):
@@ -107,12 +109,12 @@ class IdentifyTertiaryObjects(cpm.Module):
         self.secondary_objects_name = cps.ObjectNameSubscriber(
                 "Select the larger identified objects", cps.NONE, doc="""\
 Select the larger identified objects. This will usually be an object
-previously identified by a **IdentifySecondaryObjects** module.""")
+previously identified by an **IdentifySecondaryObjects** module.""")
 
         self.primary_objects_name = cps.ObjectNameSubscriber(
                 "Select the smaller identified objects", cps.NONE, doc="""\
 Select the smaller identified objects. This will usually be an object
-previously identified by a **IdentifyPrimaryObjects** module.""")
+previously identified by an **IdentifyPrimaryObjects** module.""")
 
         self.subregion_objects_name = cps.ObjectNameProvider(
                 "Name the tertiary objects to be identified", "Cytoplasm", doc="""\
@@ -121,9 +123,11 @@ will consist of the smaller object subtracted from the larger object.""")
 
         self.shrink_primary = cps.Binary(
                 "Shrink smaller object prior to subtraction?", True, doc="""\
-Select *%(YES)s* to shrink the smaller object by 1 pixel before
-subtracting the objects. this approach will ensure that there is always
-a tertiary object produced, even if it is only 1 pixel wide.
+Select *%(YES)s* to shrink the smaller objects by 1 pixel before
+subtracting them from the larger objects. this approach will ensure that
+there is always a tertiary object produced, even if it is only 1 pixel wide.
+If you need alternate amounts of shrinking, use the **ExpandOrShrink**
+module prior to **IdentifyTertiaryObjects**.
 
 Select *%(NO)s* to subtract the objects directly, which will ensure that
 no pixels are shared between the primary/secondary/tertiary objects and
@@ -133,41 +137,21 @@ objects with no area. Measurements can still be made on such objects,
 but the results will be zero or not-a-number (NaN).
 """ % globals())
 
-        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc=RETAINING_OUTLINES_HELP
-% globals())
-
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "CytoplasmOutlines", doc=NAMING_OUTLINES_HELP
-% globals())
-
     def settings(self):
-        """All of the settings to be loaded and saved in the pipeline file
-
-        Returns a list of the settings in the order that they should be
-        saved or loaded in the pipeline file.
-        """
-        return [self.secondary_objects_name, self.primary_objects_name,
-                self.subregion_objects_name, self.outlines_name,
-                self.use_outlines, self.shrink_primary]
+        return [
+            self.secondary_objects_name,
+            self.primary_objects_name,
+            self.subregion_objects_name,
+            self.shrink_primary
+        ]
 
     def visible_settings(self):
-        """The settings that should be visible on-screen
-
-        Returns the list of settings in the order that they should be
-        displayed in the module setting editor. These can be tailored
-        to only display relevant settings (see use_outlines/outlines_name
-        below)
-        """
-        result = [self.secondary_objects_name, self.primary_objects_name,
-                  self.subregion_objects_name, self.shrink_primary,
-                  self.use_outlines]
-        #
-        # display the name of the outlines image only if the user
-        # has asked to use outlines
-        #
-        if self.use_outlines.value:
-            result.append(self.outlines_name)
-        return result
+        return [
+            self.secondary_objects_name,
+            self.primary_objects_name,
+            self.subregion_objects_name,
+            self.shrink_primary
+        ]
 
     def run(self, workspace):
         """Run the module on the current data set
@@ -322,13 +306,6 @@ but the results will be zero or not-a-number (NaN).
         cpmi.add_object_location_measurements(workspace.measurements,
                                               self.subregion_objects_name.value,
                                               tertiary_labels)
-        #
-        # The outlines
-        #
-        if self.use_outlines.value:
-            out_img = cpi.Image(tertiary_outlines.astype(bool),
-                                parent_image=tertiary_image)
-            workspace.image_set.add(self.outlines_name.value, out_img)
 
         if self.show_window:
             workspace.display_data.primary_labels = primary_labels
@@ -422,6 +399,11 @@ but the results will be zero or not-a-number (NaN).
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = setting_values + [cps.YES]
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            setting_values = setting_values[:3] + setting_values[5:]
+
+            variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
 

@@ -15,6 +15,7 @@ operation further in the pipeline.
 
 import cellprofiler.image
 import cellprofiler.module
+import cellprofiler.object
 import cellprofiler.setting
 import numpy
 import skimage.measure
@@ -26,49 +27,6 @@ class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
     category = "Advanced"
 
     variable_revision_number = 1
-
-    def create_settings(self):
-
-        super(ShrinkToObjectCenters, self).create_settings()
-
-
-    def settings(self):
-        __settings__ = super(ShrinkToObjectCenters, self).settings()
-
-        return __settings__
-
-
-    def visible_settings(self):
-        __settings__ = super(ShrinkToObjectCenters, self).visible_settings()
-
-        return __settings__
-
-
-    def display(self, workspace, figure):
-        if not self.show_window:
-            return
-
-        dimensions = workspace.display_data.dimensions
-
-        figure.set_subplots((2, 1), dimensions=dimensions)
-
-        figure.subplot_imshow_labels(
-            0,
-            0,
-            workspace.display_data.x_data,
-            title=self.x_name.value,
-            dimensions=dimensions
-
-        )
-
-        figure.subplot_imshow_labels(
-            1,
-            0,
-            workspace.display_data.y_data,
-            title=self.y_name.value,
-            dimensions=dimensions
-        )
-
 
     def run(self, workspace):
         input_objects = workspace.object_set.get_objects(self.x_name.value)
@@ -87,11 +45,7 @@ class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
 
         workspace.object_set.add_objects(output_objects, self.y_name.value)
 
-        cellprofiler.modules.identify.add_object_count_measurements(
-            workspace.measurements,
-            self.y_name.value,
-            numpy.max(output_objects.segmented)
-        )
+        self.add_measurements(workspace)
 
         if self.show_window:
             workspace.display_data.x_data = input_objects.segmented
@@ -100,8 +54,8 @@ class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
 
             workspace.display_data.dimensions = input_objects.dimensions
 
-
-    def find_centroids(self, label_image):
+    @staticmethod
+    def find_centroids(label_image):
         input_props = skimage.measure.regionprops(label_image, intensity_image=None, cache=True)
 
         input_centroids = [numpy.int_(obj["centroid"]) for obj in input_props]
@@ -112,4 +66,3 @@ class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
             output_segmented[tuple(arr)] = ind + 1
 
         return output_segmented
-    

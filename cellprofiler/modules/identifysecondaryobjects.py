@@ -1,6 +1,21 @@
 # coding=utf-8
 
-"""
+import centrosome.cpmorphology
+import centrosome.propagate
+import numpy
+import scipy.ndimage
+import skimage.morphology
+
+import threshold
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.setting
+import _help
+
+__doc__ = """\
 IdentifySecondaryObjects
 ========================
 
@@ -59,12 +74,16 @@ What do the settings mean?
 See below for help on the individual settings. The following icons are
 used to call attention to key items:
 
--  |image0| Our recommendation or example use case for which a
-   particular setting is best used.
--  |image1| Indicates a condition under which a particular setting may
-   not work well.
--  |image2| Technical note. Provides more detailed information on the
-   setting, if interested.
+.. list-table:: 
+  :widths: 10 100
+  :header-rows: 0
+  
+  * - .. image:: {PROTIP_RECOMEND_ICON}
+    - Our recommendation or example use case for which a particular setting is best used.
+  * - .. image:: {PROTIP_AVOID_ICON}
+    - Indicates a condition under which a particular setting may not work well.
+  * - .. image:: {TECH_NOTE_ICON}
+    - Technical note. Provides more detailed information on the setting.
 
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -141,28 +160,11 @@ neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
 λ\ :sup:`2`).
 
 See also the other **Identify** modules.
-
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-down.png
-.. |image2| image:: memory:gear.png
-"""
-
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import numpy
-import scipy.ndimage
-import skimage.morphology
-
-import threshold
-import cellprofiler.gui.help
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
-import _help
-
+""".format(**{
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+                "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
+            })
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"
@@ -171,7 +173,7 @@ M_DISTANCE_N = "Distance - N"
 M_DISTANCE_B = "Distance - B"
 
 '''# of setting values other than thresholding ones'''
-N_SETTING_VALUES = 14
+N_SETTING_VALUES = 10
 
 '''Parent (seed) relationship of input objects to output objects'''
 R_PARENT = "Parent"
@@ -180,7 +182,7 @@ R_PARENT = "Parent"
 class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
     module_name = "IdentifySecondaryObjects"
 
-    variable_revision_number = 9
+    variable_revision_number = 10
 
     category = "Object Processing"
 
@@ -336,18 +338,6 @@ balance between these two considerations:
             })
         )
 
-        self.use_outlines = cellprofiler.setting.Binary(
-            "Retain outlines of the identified secondary objects?",
-            False,
-            doc=_help.RETAINING_OUTLINES_HELP
-        )
-
-        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-            "Name the outline image",
-            "SecondaryOutlines",
-            doc=_help.NAMING_OUTLINES_HELP
-        )
-
         self.wants_discard_edge = cellprofiler.setting.Binary(
             "Discard secondary objects touching the border of the image?",
             False,
@@ -407,28 +397,6 @@ touches the edge will be retained in memory as an “unedited object”;
 this allows them to be considered in downstream modules that modify the
 segmentation.""")
 
-        self.wants_primary_outlines = cellprofiler.setting.Binary(
-            "Retain outlines of the new primary objects?",
-            False,
-            doc=u"""\
-*(Used only if associated primary objects are discarded)*
-
-{RETAINING_OUTLINES_HELP:s}""".format(**{
-                "RETAINING_OUTLINES_HELP": _help.RETAINING_OUTLINES_HELP
-            })
-        )
-
-        self.new_primary_outlines_name = cellprofiler.setting.OutlineNameProvider(
-            "Name the new primary object outlines",
-            "FilteredNucleiOutlines",
-            doc="""\
-*(Used only if associated primary objects are discarded and saving
-outlines of new primary objects)*
-
-Enter a name for the outlines of the identified objects. The outlined
-image can be selected in downstream modules by selecting them from any
-drop-down image list.""")
-
         self.threshold_setting_version = cellprofiler.setting.Integer(
             "Threshold setting version",
             value=self.apply_threshold.variable_revision_number
@@ -446,13 +414,9 @@ drop-down image list.""")
             self.image_name,
             self.distance_to_dilate,
             self.regularization_factor,
-            self.outlines_name,
-            self.use_outlines,
             self.wants_discard_edge,
             self.wants_discard_primary,
             self.new_primary_objects_name,
-            self.wants_primary_outlines,
-            self.new_primary_outlines_name,
             self.fill_holes
         ] + [self.threshold_setting_version] + self.apply_threshold.settings()[2:]
 
@@ -480,18 +444,7 @@ drop-down image list.""")
             visible_settings += [self.wants_discard_primary]
 
             if self.wants_discard_primary:
-                visible_settings += [
-                    self.new_primary_objects_name,
-                    self.wants_primary_outlines
-                ]
-
-                if self.wants_primary_outlines:
-                    visible_settings += [self.new_primary_outlines_name]
-
-        visible_settings+= [self.use_outlines]
-
-        if self.use_outlines.value:
-            visible_settings += [self.outlines_name]
+                visible_settings += [self.new_primary_objects_name]
 
         return visible_settings
 
@@ -511,11 +464,7 @@ drop-down image list.""")
             self.fill_holes,
             self.wants_discard_edge,
             self.wants_discard_primary,
-            self.new_primary_objects_name,
-            self.wants_primary_outlines,
-            self.new_primary_outlines_name,
-            self.use_outlines,
-            self.outlines_name
+            self.new_primary_objects_name
         ]
 
         return help_settings
@@ -526,6 +475,11 @@ drop-down image list.""")
 
         if variable_revision_number < 9:
             raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
+
+        if variable_revision_number == 9:
+            setting_values = setting_values[:6] + setting_values[8:11] + setting_values[13:]
+
+            variable_revision_number = 10
 
         threshold_setting_values = setting_values[N_SETTING_VALUES:]
 
@@ -703,15 +657,6 @@ drop-down image list.""")
             if objects.has_small_removed_segmented:
                 new_objects.small_removed_segmented = objects.small_removed_segmented
             new_objects.parent_image = objects.parent_image
-            primary_outline = centrosome.outline.outline(segmented_labels)
-            if self.wants_primary_outlines:
-                out_img = cellprofiler.image.Image(primary_outline.astype(bool),
-                                                   parent_image=image)
-                workspace.image_set.add(self.new_primary_outlines_name.value,
-                                        out_img)
-        else:
-            primary_outline = centrosome.outline.outline(objects.segmented)
-        secondary_outline = centrosome.outline.outline(segmented_out)
 
         #
         # Add the objects to the object set
@@ -723,10 +668,6 @@ drop-down image list.""")
         objects_out.parent_image = image
         objname = self.y_name.value
         workspace.object_set.add_objects(objects_out, objname)
-        if self.use_outlines.value:
-            out_img = cellprofiler.image.Image(secondary_outline.astype(bool),
-                                               parent_image=image)
-            workspace.image_set.add(self.outlines_name.value, out_img)
         object_count = numpy.max(segmented_out)
         #
         # Add measurements

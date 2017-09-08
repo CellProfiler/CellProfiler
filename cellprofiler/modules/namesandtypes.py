@@ -1,6 +1,39 @@
 # coding=utf-8
 
-"""
+import logging
+import cellprofiler.icons
+
+logger = logging.getLogger(__name__)
+
+import hashlib
+import numpy as np
+import os
+import re
+import traceback
+import _help
+
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.pipeline as cpp
+import cellprofiler.setting as cps
+import centrosome.outline
+import cellprofiler.preferences as cpprefs
+from cellprofiler.modules.images import FilePredicate
+from cellprofiler.modules.images import ExtensionPredicate
+from cellprofiler.modules.images import ImagePredicate
+from cellprofiler.modules.images import DirectoryPredicate
+from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
+from cellprofiler.modules.loadimages import convert_image_to_objects
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, \
+    USING_METADATA_HELP_REF,PROTIP_RECOMEND_ICON
+from bioformats import get_omexml_metadata, load_image
+import bioformats.omexml as OME
+import javabridge as J
+import skimage.color
+
+__doc__ = """\
 NamesAndTypes
 =============
 
@@ -25,9 +58,9 @@ below), and for each site imaged, one DAPI (left) and one GFP image
 combined into a single color images and other times they are stored as
 two separate grayscale images, as in the figure.
 
-+------------+------------+
-| |image0|   | |image1|   |
-+------------+------------+
++--------------+--------------+
+| |NAT_image0| | |NAT_image1| |
++--------------+--------------+
 
 For the purposes of analysis, you want the DAPI and GFP image for a
 given site to be loaded and processed together. Therefore, the DAPI and
@@ -91,9 +124,7 @@ image sets obtained. When you complete your pipeline and perform an
 analysis run, CellProfiler will process the image sets in the order
 shown.
 
-+------------+
-| |image2|   |
-+------------+
+|NAT_image2|
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -104,42 +135,14 @@ Measurements made by this module
    objects) The prefixes of the filename and location, respectively, of
    each object set written to the per-image table.
 
-.. |image0| image:: memory:dapi.png
-.. |image1| image:: memory:gfp.png
-.. |image2| image:: memory:NamesAndTypes_ExampleDisplayTable.png
-"""
-
-import logging
-import cellprofiler.icons
-
-logger = logging.getLogger(__name__)
-
-import hashlib
-import numpy as np
-import os
-import re
-import traceback
-
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import centrosome.outline
-import cellprofiler.preferences as cpprefs
-from cellprofiler.modules.images import FilePredicate
-from cellprofiler.modules.images import ExtensionPredicate
-from cellprofiler.modules.images import ImagePredicate
-from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
-from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, \
-    USING_METADATA_HELP_REF
-from bioformats import get_omexml_metadata, load_image
-import bioformats.omexml as OME
-import javabridge as J
-import skimage.color
+.. |NAT_image0| image:: {DAPI}
+.. |NAT_image1| image:: {GFP}
+.. |NAT_image2| image:: {NAT_EXAMPLE_DISPLAY}
+""".format(**{
+                "DAPI": _help.__image_resource('dapi.png'),
+                "GFP": _help.__image_resource('gfp.png'),
+                "NAT_EXAMPLE_DISPLAY": _help.__image_resource('NamesAndTypes_ExampleDisplayTable.png')
+            })
 
 ASSIGN_ALL = "All images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -742,8 +745,10 @@ settings (e.g., an image stack with many frames). Using this button will
 help avoid the tedium of having to select the same settings multiple
 times.
 
-.. |image0| image:: memory:thumb-up.png
-"""
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+""".format(**{
+                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                })
             )
         )
 

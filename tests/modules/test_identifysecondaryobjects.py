@@ -117,13 +117,9 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.method, cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION)
         self.assertEqual(module.distance_to_dilate, 11)
         self.assertEqual(module.regularization_factor, .125)
-        self.assertEqual(module.outlines_name, "CookieEdges")
-        self.assertFalse(module.use_outlines)
         self.assertTrue(module.wants_discard_edge)
         self.assertFalse(module.wants_discard_primary)
         self.assertEqual(module.new_primary_objects_name, "FilteredChocolateChips")
-        self.assertFalse(module.wants_primary_outlines)
-        self.assertEqual(module.new_primary_outlines_name, "FilteredChocolateChipOutlines")
         self.assertTrue(module.fill_holes)
         self.assertEqual(module.apply_threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
         self.assertEqual(module.apply_threshold.global_operation.value, cellprofiler.modules.threshold.TM_LI)
@@ -136,6 +132,63 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.apply_threshold.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
         self.assertEqual(module.apply_threshold.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
         self.assertEqual(module.apply_threshold.adaptive_window_size, 9)
+
+    def test_01_10_load_v10(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150319195827
+GitHash:d8289bf
+ModuleCount:1
+HasImagePlaneDetails:False
+
+IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input objects:IdentifyPrimaryObjects
+    Name the objects to be identified:IdentifySecondaryObjects
+    Select the method to identify the secondary objects:Propagation
+    Select the input image:DNA
+    Number of pixels by which to expand the primary objects:10
+    Regularization factor:0.05
+    Discard secondary objects touching the border of the image?:No
+    Discard the associated primary objects?:No
+    Name the new primary objects:FilteredNuclei
+    Fill holes in identified objects?:Yes
+    Threshold setting version:10
+    Threshold strategy:Global
+    Thresholding method:Minimum cross entropy
+    Threshold smoothing scale:0.0
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold:0.0,1.0
+    Manual threshold:0.0
+    Select the measurement to threshold with:None
+    Two-class or three-class thresholding?:Two classes
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Size of adaptive window:50
+    Lower outlier fraction:0.05
+    Upper outlier fraction:0.05
+    Averaging method:Mean
+    Variance method:Standard deviation
+    # of deviations:2.0
+    Thresholding method:Otsu
+"""
+        pipeline = cellprofiler.pipeline.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        module = pipeline.modules()[0]
+
+        assert module.x_name.value == "IdentifyPrimaryObjects"
+        assert module.y_name.value == "IdentifySecondaryObjects"
+        assert module.method.value == "Propagation"
+        assert module.image_name.value == "DNA"
+        assert module.distance_to_dilate.value == 10
+        assert module.regularization_factor.value == 0.05
+        assert not module.wants_discard_edge.value
+        assert not module.wants_discard_primary.value
+        assert module.new_primary_objects_name.value == "FilteredNuclei"
+        assert module.fill_holes.value
 
     def make_workspace(self, image, segmented, unedited_segmented=None,
                        small_removed_segmented=None):
@@ -162,8 +215,6 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.x_name.value = INPUT_OBJECTS_NAME
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.use_outlines.value = False
-        module.outlines_name.value = "my_outlines"
         module.module_num = 1
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -744,104 +795,6 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             for y in (2, 6):
                 expected[x, y] = 0
         self.assertTrue(numpy.all(objects_out.segmented == expected))
-
-    def test_06_01_save_outlines(self):
-        '''Test the "save_outlines" feature'''
-        p = cellprofiler.pipeline.Pipeline()
-        o_s = cellprofiler.object.ObjectSet()
-        i_l = cellprofiler.image.ImageSetList()
-        img = numpy.zeros((10, 10))
-        img[2:7, 2:7] = .5
-        image = cellprofiler.image.Image(img)
-        objects = cellprofiler.object.Objects()
-        labels = numpy.zeros((10, 10), int)
-        labels[3:6, 3:6] = 1
-        objects.unedited_segmented = labels
-        objects.small_removed_segmented = labels
-        objects.segmented = labels
-        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
-        i_s = i_l.get_image_set(0)
-        i_s.add(IMAGE_NAME, image)
-        m = cellprofiler.measurement.Measurements()
-        module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
-        module.x_name.value = INPUT_OBJECTS_NAME
-        module.y_name.value = OUTPUT_OBJECTS_NAME
-        module.image_name.value = IMAGE_NAME
-        module.use_outlines.value = True
-        module.outlines_name.value = "my_outlines"
-        module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.apply_threshold.global_operation.value = centrosome.threshold.TM_OTSU
-        module.module_num = 1
-        p.add_module(module)
-        workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
-        module.run(workspace)
-        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
-        self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-        self.assertEqual(numpy.product(counts.shape), 1)
-        self.assertEqual(counts, 1)
-        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
-        outlines_out = workspace.image_set.get_image("my_outlines",
-                                                     must_be_binary=True).pixel_data
-        expected = numpy.zeros((10, 10), int)
-        expected[2:7, 2:7] = 1
-        outlines = expected == 1
-        outlines[3:6, 3:6] = False
-        self.assertTrue(numpy.all(objects_out.segmented == expected))
-        self.assertTrue(numpy.all(outlines == outlines_out))
-
-    def test_06_02_save_primary_outlines(self):
-        '''Test saving new primary outlines'''
-        p = cellprofiler.pipeline.Pipeline()
-        o_s = cellprofiler.object.ObjectSet()
-        i_l = cellprofiler.image.ImageSetList()
-        img = numpy.zeros((10, 10))
-        img[2:7, 2:7] = .5
-        image = cellprofiler.image.Image(img)
-        objects = cellprofiler.object.Objects()
-        labels = numpy.zeros((10, 10), int)
-        labels[3:6, 3:6] = 1
-        objects.unedited_segmented = labels
-        objects.small_removed_segmented = labels
-        objects.segmented = labels
-        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
-        i_s = i_l.get_image_set(0)
-        i_s.add(IMAGE_NAME, image)
-        m = cellprofiler.measurement.Measurements()
-        module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
-        module.x_name.value = INPUT_OBJECTS_NAME
-        module.y_name.value = OUTPUT_OBJECTS_NAME
-        module.image_name.value = IMAGE_NAME
-        module.use_outlines.value = True
-        module.outlines_name.value = "my_outlines"
-        module.wants_discard_edge.value = True
-        module.wants_discard_primary.value = True
-        module.wants_primary_outlines.value = True
-        module.new_primary_objects_name.value = NEW_OBJECTS_NAME
-        module.new_primary_outlines_name.value = "newprimaryoutlines"
-        module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-        module.apply_threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-        module.apply_threshold.global_operation.value = centrosome.threshold.TM_OTSU
-        module.module_num = 1
-        p.add_module(module)
-        workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
-        module.run(workspace)
-        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
-        self.assertTrue("Image" in m.get_object_names())
-        count_feature = "Count_%s" % OUTPUT_OBJECTS_NAME
-        self.assertTrue(count_feature in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", count_feature)
-        self.assertEqual(numpy.product(counts.shape), 1)
-        self.assertEqual(counts, 1)
-        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
-        outlines_out = workspace.image_set.get_image("newprimaryoutlines",
-                                                     must_be_binary=True)
-        expected = numpy.zeros((10, 10), bool)
-        expected[3:6, 3:6] = True
-        expected[4, 4] = False
-        self.assertTrue(numpy.all(outlines_out.pixel_data == expected))
 
     def test_07_01_measurements_no_new_primary(self):
         module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()

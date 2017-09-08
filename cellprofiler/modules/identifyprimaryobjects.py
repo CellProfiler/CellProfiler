@@ -1,34 +1,56 @@
 # coding=utf-8
 
-"""
+import cellprofiler.gui.help
+
+import math
+
+import centrosome.cpmorphology
+import centrosome.outline
+import centrosome.propagate
+import centrosome.threshold
+import numpy
+import scipy.ndimage
+import scipy.sparse
+import skimage.morphology
+
+import cellprofiler.gui.help
+import cellprofiler.object
+import cellprofiler.setting
+import _help
+import threshold
+
+__doc__ = """\
 IdentifyPrimaryObjects
 ======================
 
 **IdentifyPrimaryObjects** identifies biological components of
 interest in grayscale images containing bright objects on a dark
-background.  This module is designed to identify objects in 2D images;
+background.  This module currently identifies objects in 2D images only
+(including 2D slices of 3D images);
 please use the **Watershed** module for identification of objects in 3D.
 
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually a cellular subcompartment of
-some kind (for example, nuclei, cells, colonies, worms). We define an
+an identifed feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms). We define an
 object as *primary* when it can be found in an image without needing the
 assistance of another cellular feature as a reference. For example:
 
--  The nuclei of cells are usually more easily identifiable due to their
+-  The nuclei of cells are usually more easily identifiable than whole-
+   cell stains due to their
    more uniform morphology, high contrast relative to the background
    when stained, and good separation between adjacent nuclei. These
    qualities typically make them appropriate candidates for primary
    object identification.
--  In contrast, cells often have irregular intensity patterns and are
-   lower-contrast with more diffuse staining, making them more
-   challenging to identify than nuclei. In addition, cells often touch
+-  In contrast, whole-cell stains often yield irregular intensity patterns
+   and are lower-contrast with more diffuse staining, making them more
+   challenging to identify than nuclei without some supplemental image 
+   information being provided. In addition, cells often touch or even overlap
    their neighbors making it harder to delineate the cell borders. For
    these reasons, cell bodies are better suited for *secondary object*
-   identification, since they are best identified by using a
+   identification, because they are best identified by using a
    previously-identified primary object (i.e, the nuclei) as a
    reference. See the **IdentifySecondaryObjects** module for details on
    how to do this.
@@ -42,7 +64,10 @@ the following qualities:
 -  The image should be grayscale.
 -  The foreground (i.e, regions of interest) are lighter than the
    background.
--  The image should be 2D, not volumetric.
+-  The image should be 2D. 2D slices of 3D images are acceptable if the
+   image has not been loaded as volumetric in the **NamesAndTypes**
+   module. For volumetric analysis
+   of 3D images, please see the **Watershed** module.
 
 If this is not the case, other modules can be used to pre-process the
 images to ensure they are in the proper form:
@@ -77,12 +102,16 @@ What do the settings mean?
 See below for help on the individual settings. The following icons are
 used to call attention to key items:
 
--  |image0| Our recommendation or example use case for which a
-   particular setting is best used.
--  |image1| Indicates a condition under which a particular setting may
-   not work well.
--  |image2| Technical note. Provides more detailed information on the
-   setting.
+.. list-table:: 
+  :widths: 10 100
+  :header-rows: 0
+  
+  * - .. image:: {PROTIP_RECOMEND_ICON}
+    - Our recommendation or example use case for which a particular setting is best used.
+  * - .. image:: {PROTIP_AVOID_ICON}
+    - Indicates a condition under which a particular setting may not work well.
+  * - .. image:: {TECH_NOTE_ICON}
+    - Technical note. Provides more detailed information on the setting.
 
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -191,30 +220,12 @@ References
 See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, 
 **IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-down.png
-.. |image2| image:: memory:gear.png
+""".format(**{
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+                "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
+            })
 
-"""
-
-import cellprofiler.gui.help
-
-import math
-
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import centrosome.threshold
-import numpy
-import scipy.ndimage
-import scipy.sparse
-import skimage.morphology
-
-import cellprofiler.gui.help
-import cellprofiler.object
-import cellprofiler.setting
-import _help
-import threshold
 
 
 #################################################
@@ -298,8 +309,8 @@ SMOOTHING_FILTER_SIZE_SETTING_TEXT = "Size of smoothing filter"
 AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT = "Automatically calculate minimum allowed distance between local maxima?"
 
 # Icons for use in the help
-INTENSITY_DECLUMPING_ICON = "IdentifyPrimaryObjects_IntensityDeclumping.png"
-SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
+INTENSITY_DECLUMPING_ICON = _help.__image_resource("IdentifyPrimaryObjects_IntensityDeclumping.png")
+SHAPE_DECLUMPING_ICON = _help.__image_resource("IdentifyPrimaryObjects_ShapeDeclumping.png")
 
 
 class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
@@ -349,7 +360,7 @@ A few important notes:
    diameter”, i.e., the diameter of a circle with the same area as the
    object.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
                 "EXCLUDE_SIZE_SETTING_TEXT": EXCLUDE_SIZE_SETTING_TEXT,
                 "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
@@ -375,7 +386,7 @@ objects based on some other measurement.
 dust, noise, and debris) or large objects (e.g., large clumps) if
 desired.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
@@ -401,7 +412,7 @@ you do not want to make downstream measurements of objects that are not
 fully within the field of view. For example, morphological measurements
 obtained from a portion of an object would not be accurate.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO,
@@ -480,12 +491,12 @@ see the results of each.
    | settings below.                                                             |
    +--------------------------------------+--------------------------------------+
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image1| image:: memory:{INTENSITY_DECLUMPING_ICON}
-.. |image2| image:: memory:gear.png
-.. |image3| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image4| image:: memory:{SHAPE_DECLUMPING_ICON}
-.. |image5| image:: memory:gear.png
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {INTENSITY_DECLUMPING_ICON}
+.. |image2| image:: {TECH_NOTE_ICON}
+.. |image3| image:: {PROTIP_RECOMEND_ICON}
+.. |image4| image:: {SHAPE_DECLUMPING_ICON}
+.. |image5| image:: {TECH_NOTE_ICON}
             """.format(**{
                 "UN_INTENSITY": UN_INTENSITY,
                 "UN_SHAPE": UN_SHAPE,

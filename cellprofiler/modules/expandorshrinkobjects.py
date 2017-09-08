@@ -40,7 +40,6 @@ See also **Identify** modules.
 """
 
 import centrosome.cpmorphology
-import centrosome.outline
 import numpy
 import scipy.ndimage
 
@@ -50,7 +49,6 @@ import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.object
 import cellprofiler.setting
-import _help
 
 
 O_SHRINK_INF = "Shrink objects to a point"
@@ -66,7 +64,7 @@ O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND, O_SKELETONIZE
 class ExpandOrShrinkObjects(cellprofiler.module.Module):
     module_name = "ExpandOrShrinkObjects"
     category = "Object Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
@@ -144,27 +142,13 @@ order to keep from breaking up the object or breaking the hole.
             })
         )
 
-        self.wants_outlines = cellprofiler.setting.Binary(
-            "Retain the outlines of the identified objects?",
-            False,
-            doc=_help.RETAINING_OUTLINES_HELP
-        )
-
-        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-            "Name the outline image",
-            "ShrunkenNucleiOutlines",
-            doc=_help.NAMING_OUTLINES_HELP
-        )
-
     def settings(self):
         return [
             self.object_name,
             self.output_object_name,
             self.operation,
             self.iterations,
-            self.wants_fill_holes,
-            self.wants_outlines,
-            self.outlines_name
+            self.wants_fill_holes
         ]
 
     def visible_settings(self):
@@ -179,11 +163,6 @@ order to keep from breaking up the object or breaking the hole.
 
         if self.operation in [O_SHRINK, O_SHRINK_INF]:
             result += [self.wants_fill_holes]
-
-        result += [self.wants_outlines]
-
-        if self.wants_outlines.value:
-            result += [self.outlines_name]
 
         return result
 
@@ -214,14 +193,6 @@ order to keep from breaking up the object or breaking the hole.
             self.output_object_name.value,
             output_objects.segmented
         )
-
-        if self.wants_outlines.value:
-            outline_image = cellprofiler.image.Image(
-                centrosome.outline.outline(output_objects.segmented) > 0,
-                parent_image=input_objects.parent_image
-            )
-
-            workspace.image_set.add(self.outlines_name.value, outline_image)
 
         if self.show_window:
             workspace.display_data.input_objects_segmented = input_objects.segmented
@@ -328,6 +299,11 @@ order to keep from breaking up the object or breaking the hole.
             from_matlab = False
 
             variable_revision_number = 1
+
+        if variable_revision_number == 1:
+            setting_values = setting_values[:-2]
+
+            variable_revision_number = 2
 
         return setting_values, variable_revision_number, from_matlab
 

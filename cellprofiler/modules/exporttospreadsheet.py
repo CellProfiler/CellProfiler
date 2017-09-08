@@ -23,7 +23,7 @@ separate files for each combination of treatments, storing all
 measurements with a given “Treatment1” in separate directories. You can
 do this by specifying metadata tags for the folder name and file name:
 
--  Choose *Elsewhere…* or *Default Input/Output Folder sub-folder* for
+-  Choose "*Elsewhere…*" or "*Default Input/Output Folder sub-folder*" for
    the output file location.
 -  Insert the metadata tag of choice into the output path. You can
    insert a previously defined metadata tag by either using:
@@ -41,8 +41,8 @@ do this by specifying metadata tags for the folder name and file name:
    -  Right-click on the tag to display and select the available values.
 
    In this instance, you would select the metadata tag “Treatment1”
--  Uncheck “Export all measurements?”
--  Uncheck *Use the object name for the file name?*.
+-  Uncheck "*Export all measurements?*"
+-  Uncheck "*Use the object name for the file name?*".
 -  Using the same approach as above, select the metadata tag
    “Treatment2”, and complete the filename by appending the text “.csv”.
 
@@ -404,7 +404,7 @@ object.""" % globals()))
 
 Select *"%(YES)s"* to use the object name as selected above to generate
 a file name for the spreadsheet. For example, if you selected *Image*,
-above and have not checked the *Prepend output file name* option, your
+above and have not checked the "*Prepend output file name*" option, your
 output file will be named “Image.csv”.
 Select *"%(NO)s"* to name the file yourself.""" % globals()))
 

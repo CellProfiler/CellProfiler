@@ -83,10 +83,10 @@ The choices for the threshold strategy are:
    non-uniform backgrounds. However, for significant illumination
    variation, using the **CorrectIllumination** modules is preferable.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image1| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
                 "TS_ADAPTIVE": TS_ADAPTIVE,
                 "TS_GLOBAL": TS_GLOBAL
             })
@@ -201,17 +201,17 @@ There are a number of methods for finding thresholds automatically:
    Imaging*, 13(1), 146-165. (`link`_)
 
 .. _link: http://dx.doi.org/10.1117/1.1631315
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image1| image:: memory:{PROTIP_AVOID_ICON}
-.. |image2| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image3| image:: memory:{TECH_NOTE_ICON}
-.. |image4| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image5| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_AVOID_ICON}
+.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |image3| image:: {TECH_NOTE_ICON}
+.. |image4| image:: {PROTIP_RECOMEND_ICON}
+.. |image5| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
-                "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
-                "TECH_NOTE_ICON": TECH_NOTE_ICON,
+                "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
+                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
+                "TECH_NOTE_ICON":_help.TECH_NOTE_ICON,
                 "TM_LI": TM_LI,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
@@ -243,8 +243,8 @@ disadvantages of the various thresholding options there.
 
 {HELP_ON_PIXEL_INTENSITIES}
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image1| image:: memory:{PROTIP_AVOID_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_AVOID_ICON}
 
 The threshold that is used for each image is recorded as a per-image
 measurement, so if you are surprised by unusual measurements from one of
@@ -269,8 +269,8 @@ threshold value.
    background) or three classes (foreground, mid-level, and background).
    See the help below for more details.
 
-.. |image2| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image3| image:: memory:{TECH_NOTE_ICON}
+.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |image3| image:: {TECH_NOTE_ICON}
 
 **References**
 
@@ -281,9 +281,9 @@ threshold value.
 .. _link: http://dx.doi.org/10.1117/1.1631315
 """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
-                "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
-                "TECH_NOTE_ICON": TECH_NOTE_ICON,
+                "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
+                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
+                "TECH_NOTE_ICON":_help.TECH_NOTE_ICON,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TS_ADAPTIVE": TS_ADAPTIVE
             })
@@ -330,9 +330,9 @@ larger percentage of the image is covered, the Otsu method will give a
 slightly biased threshold that may have to be corrected using this
 setting.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
                 "TM_OTSU": centrosome.threshold.TM_OTSU
             })
         )
@@ -344,8 +344,9 @@ setting.
             maxval=1,
             doc="""\
 Enter the minimum and maximum allowable threshold, a value from 0 to 1.
-This is helpful as a safety precaution when the threshold is calculated
-automatically, by overriding the automatic threshold.
+This is helpful as a safety precaution: when the threshold as calculated
+automatically is clearly outside a reasonable range, the min/max allowable
+threshold will override the automatic threshold.
 
 |image0| For example, if there are no objects in the field of view, the automatic
 threshold might be calculated as unreasonably low; the algorithm will
@@ -357,10 +358,10 @@ empirically-determined value.
 
 {HELP_ON_PIXEL_INTENSITIES}
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON
             })
         )
 
@@ -422,13 +423,13 @@ assigned as foreground.
 there are almost no objects or the entire field of view is covered with
 objects, three-class thresholding may perform worse than two-class.
 
-.. |image0| image:: memory:{PROTIP_RECOMEND_ICON}
-.. |image1| image:: memory:{PROTIP_AVOID_ICON}
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_AVOID_ICON}
 """.format(**{
                 "O_THREE_CLASS": O_THREE_CLASS,
                 "O_TWO_CLASS": O_TWO_CLASS,
-                "PROTIP_AVOID_ICON": PROTIP_AVOID_ICON,
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
+                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON
             })
         )
 
@@ -526,13 +527,11 @@ difference of the pixel intensities from their median).
 
 Robust background calculates the variance, multiplies it by the value
 given by this setting and adds it to the average. Adding several
-deviations raises the background value above the average, which should
-be close to the average background, excluding most background pixels.
-Use a larger number to exclude more background pixels. Use a smaller
-number to include more low-intensity foreground pixels. It’s possible to
-use a negative number to lower the threshold if the averaging method
-picks a threshold that is within the range of foreground pixel
-intensities.
+deviations raises the threshold well above the average.
+Use a larger number to be more stringent about identifying foreground pixels.
+Use a smaller number to be less stringent. It’s even possible to
+use a negative number if you want the threshold to be lower than the average
+(e.g., for images that are densely covered by foreground).
 """.format(**{
                 "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
             })
@@ -544,8 +543,8 @@ intensities.
             doc="""\
 *(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
 
-Enter the window for the adaptive method. For example, you may want to use a multiple of the
-largest expected object size.
+Enter the size of the window (in pixels) to be used for the adaptive method.
+Often a good choice is some multiple of the largest expected object size.
 """.format(**{
                 "TS_ADAPTIVE": TS_ADAPTIVE
             })

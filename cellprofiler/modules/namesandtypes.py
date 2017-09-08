@@ -39,7 +39,9 @@ NamesAndTypes
 
 The **NamesAndTypes** module gives images and/or channels a meaningful
 name to a particular image or channel, as well as defining the
-relationships between images to create an image set.
+relationships between images to create an image set.  This module will also
+let you define whether an image stack should be processed as sequential 2D slices
+or as a whole 3D volume.
 
 Once the relevant images have been identified using the **Images**
 module (and/or has had metadata associated with the images using the
@@ -93,7 +95,7 @@ This is done using user-defined rules in a similar manner to that of the
 have multiple channels, you then assign the relationship between
 channels. For example, in the case mentioned above, the DAPI and GFP
 images are named in such a way that it is apparent to the researcher
-which is which, e.g., “\_w1” is contained in the file for the DAPI
+which is which, e.g., “\_w2” is contained in the file for the DAPI
 images, and “\_w1” in the file name for the GFP images.
 
 You can also use **NamesAndTypes** to define the relationships between
@@ -138,6 +140,7 @@ Measurements made by this module
 .. |NAT_image0| image:: {DAPI}
 .. |NAT_image1| image:: {GFP}
 .. |NAT_image2| image:: {NAT_EXAMPLE_DISPLAY}
+                :width: 100%
 """.format(**{
                 "DAPI": _help.__image_resource('dapi.png'),
                 "GFP": _help.__image_resource('gfp.png'),
@@ -221,13 +224,14 @@ You can specify how these images should be treated:
    pixel intensities will be averaged to produce a single intensity
    value.
 -  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel repesents a
-   red, green and blue (RGB) triplet of intensity values. Please note
+   red, green and blue (RGB) triplet of intensity values OR which contains 
+   multiple individual grayscale channels. Please note
    that the object detection modules such as **IdentifyPrimaryObjects**
    expect a grayscale image, so if you want to identify objects, you
    should use the **ColorToGray** module in the analysis pipeline to
    split the color image into its component channels.
-   You can use the *{LOAD_AS_GRAYSCALE_IMAGE}* option to collapse the
-   color channels to a single grayscale value if you don’t need
+   You can use the **ColorToGray**'s *Combine* option after image loading
+   to collapse the color channels to a single grayscale value if you don’t need
    CellProfiler to treat the image as color.
 -  *{LOAD_AS_MASK}:* A *mask* is an image where some of the pixel
    intensity values are zero, and others are non-zero. The most common
@@ -239,7 +243,7 @@ You can specify how these images should be treated:
    image should be a binary image, i.e, foreground is white, background
    is black. The module will convert any nonzero values to 1, if needed.
    You can use this option to load a foreground/background segmentation
-   produced by one of the **Identify** modules.
+   produced by the **Threshold** module or one of the **Identify** modules.
 -  *{LOAD_AS_ILLUMINATION_FUNCTION}:* An *illumination correction
    function* is an image which has been generated for the purpose of
    correcting uneven illumination/lighting/shading or to reduce uneven
@@ -256,12 +260,12 @@ You can specify how these images should be treated:
    second object, and so on. This option allows you to use the objects
    immediately without needing to insert an **Identify** module to
    extract them first. See **IdentifyPrimaryObjects** for more details.
-   This option can load objects created by the **SaveImages** module.
-   These objects can take two forms, with different considerations for
-   each:
+   This option can load objects created by using the **ConvertObjectsToImage**
+   module followed by the **SaveImages** module. These objects can take two 
+   forms, with different considerations for each:
 
-   -  *Non-overalapping* objects are stored as a label matrix. This
-      matrix should be saved as grayscale, rather than color.
+   -  *Non-overlapping* objects are stored as a label matrix. This
+      matrix should be saved as grayscale rather than color.
    -  *Overlapping objects* are stored in a multi-frame TIF, each frame
       of which consists of a grayscale label matrix. The frames are
       constructed so that objects that overlap are placed in different
@@ -357,10 +361,10 @@ The choices are:
    the pipeline will load only one of the images per iteration.
 -  *{ASSIGN_RULES}*: Give images one of several names depending on the
    file name, directory and metadata. This is the appropriate choice if
-   more than one image was acquired from each imaging site. You will be
-   asked for distinctive criteria for each image and will be able to
-   assign each category of image a name that can be referred to in
-   downstream modules.
+   more than one image was acquired from each imaging site (ie if multiple
+   channels were acquired at each site). You will be asked for distinctive 
+   criteria for each image and will be able to assign each category of image
+   a name that can be referred to in downstream modules.
 """.format(**{
                 "ASSIGN_ALL": ASSIGN_ALL,
                 "ASSIGN_RULES": ASSIGN_RULES
@@ -564,6 +568,19 @@ You can match corresponding channels to each other in one of two ways:
    | Site           | (None)          |
    +----------------+-----------------+
 
+   This sort of matching can also be useful in timelapse movies where you wish to 
+   measure the properties of a particular ROI over time:
+
+   +----------------+----------------+-----------------+
+   | **RFP**        | **GFP**        | **ROIMask**     |
+   +================+================+=================+
+   | MovieName      | MovieName      | MovieName       |
+   +----------------+----------------+-----------------+
+   | Timepoint      | Timepoint      | (None)          |
+   +----------------+----------------+-----------------+
+
+
+
    The order of metadata matching is determined by the metadata data
    type (which is set in the **Metadata** module). The default is
    *text*, which means that the metadata is matched in alphabetical
@@ -739,13 +756,13 @@ requests an object selection.
 Duplicate the channel specification, creating a new image assignment
 with the same settings as this one.
 
-|image0| This button is useful if
+|NAT_CopyAssignment_image0| This button is useful if
 you are specifying a long series of channels which differ by one or two
 settings (e.g., an image stack with many frames). Using this button will
 help avoid the tedium of having to select the same settings multiple
 times.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |NAT_CopyAssignment_image0| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
                     "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
                 })
@@ -957,6 +974,27 @@ requests an object selection.
                 single_image.rescale, single_image.should_save_outlines,
                 single_image.save_outlines, single_image.manual_rescale]
 
+        return result
+    
+    def help_settings(self):
+        result = [
+            self.assignment_method,
+            self.single_load_as_choice,
+            self.matching_choice,
+            self.single_rescale,
+            self.assignments_count,
+            self.single_images_count,
+            self.manual_rescale,
+            self.process_as_3d,
+            self.x,
+            self.y,
+            self.z
+        ]
+
+            result += [assignment.rule_filter, assignment.image_name,
+                       assignment.object_name, assignment.load_as_choice,
+                       assignment.rescale, assignment.should_save_outlines,
+                       assignment.save_outlines, assignment.manual_rescale]
         return result
 
     def visible_settings(self):

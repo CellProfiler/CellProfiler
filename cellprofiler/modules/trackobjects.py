@@ -93,7 +93,7 @@ Available measurements
    first). At this point, the final age of the object is output; no
    values are stored for earlier frames.
 
-   |image0|  This value is useful if you want to plot a histogram of the
+   |TO_image0|  This value is useful if you want to plot a histogram of the
    object lifetimes; all but the final age can be ignored or filtered out.
 
 The following object measurements are specific to the LAP
@@ -131,7 +131,7 @@ tracking method:
 -  *LinkingDistance:* The difference between the propagated position of
    an object and the object to which it is matched.
 
-   |image1| A slowly decaying histogram of these distances indicates
+   |TO_image1| A slowly decaying histogram of these distances indicates
    that the search radius is large enough. A cut-off histogram is a sign
    that the search radius is too small.
 
@@ -140,7 +140,7 @@ tracking method:
    This measurement records the linking distance divided by the standard
    deviation of the error when linking the object with its parent.
 
-   |image2| This value is multiplied by the
+   |TO_image2| This value is multiplied by the
    "*Number of standard deviations for search radius*" setting to constrain the search
    distance. A histogram of this value can help determine if the
    "*Search radius limit, in pixel units (Min,Max)*" setting is appropriate.
@@ -171,9 +171,9 @@ tracking method:
 See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
 **Groups**.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
-.. |image1| image:: {PROTIP_RECOMEND_ICON}
-.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |TO_image0| image:: {PROTIP_RECOMEND_ICON}
+.. |TO_image1| image:: {PROTIP_RECOMEND_ICON}
+.. |TO_image2| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
                 "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
                 })

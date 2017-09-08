@@ -1,6 +1,28 @@
 # coding=utf-8
 
-"""
+import cellprofiler.gui.help
+
+import math
+
+import centrosome.cpmorphology
+import centrosome.outline
+import centrosome.propagate
+import centrosome.threshold
+import numpy
+import scipy.ndimage
+import scipy.sparse
+import skimage.morphology
+
+import cellprofiler.gui.help
+import cellprofiler.object
+import cellprofiler.setting
+import _help
+import threshold
+
+import os
+
+
+__doc__ = """\
 IdentifyPrimaryObjects
 ======================
 
@@ -83,12 +105,16 @@ What do the settings mean?
 See below for help on the individual settings. The following icons are
 used to call attention to key items:
 
--  |image0| Our recommendation or example use case for which a
-   particular setting is best used.
--  |image1| Indicates a condition under which a particular setting may
-   not work well.
--  |image2| Technical note. Provides more detailed information on the
-   setting.
+.. list-table:: 
+  :widths: 10 100
+  :header-rows: 0
+  
+  * - .. image:: {PROTIP_RECOMEND_ICON}
+    - Our recommendation or example use case for which a particular setting is best used.
+  * - .. image:: {PROTIP_AVOID_ICON}
+    - Indicates a condition under which a particular setting may not work well.
+  * - .. image:: {TECH_NOTE_ICON}
+    - Technical note. Provides more detailed information on the setting.
 
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -197,30 +223,15 @@ References
 See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, 
 **IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-down.png
-.. |image2| image:: memory:gear.png
+.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image1| image:: {PROTIP_AVOID_ICON}
+.. |image2| image:: {TECH_NOTE_ICON}
+""".format(**{
+                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+                "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
+            })
 
-"""
-
-import cellprofiler.gui.help
-
-import math
-
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import centrosome.threshold
-import numpy
-import scipy.ndimage
-import scipy.sparse
-import skimage.morphology
-
-import cellprofiler.gui.help
-import cellprofiler.object
-import cellprofiler.setting
-import _help
-import threshold
 
 
 #################################################

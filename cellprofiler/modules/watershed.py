@@ -60,7 +60,7 @@ Select a method of inputs for the watershed algorithm:
    intensity surrounding regions of interest and low intensity inside
    regions of interest. Refer to the documentation for the other
    available options for more information.
-            """
+"""
         )
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
@@ -89,7 +89,7 @@ offset by downsampling the input image. See `mahotas regmax`_ for more
 information.
 
 .. _mahotas regmax: http://mahotas.readthedocs.io/en/latest/api.html?highlight=regmax#mahotas.regmax
-                    """,
+""",
             minval=1,
             text="Connectivity",
             value=8,
@@ -99,7 +99,7 @@ information.
             doc="""\
 Downsample an n-dimensional image by local averaging. If the downsampling factor is 1, 
 the image is not downsampled.
-            """,
+""",
             minval=1,
             text="Downsample",
             value=1

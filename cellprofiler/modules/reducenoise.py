@@ -22,6 +22,8 @@ import skimage.util
 
 
 class ReduceNoise(cellprofiler.module.ImageProcessing):
+    category = "Advanced"
+
     module_name = "ReduceNoise"
 
     variable_revision_number = 1
@@ -84,11 +86,11 @@ image.
 
         y_data = skimage.restoration.denoise_nl_means(
             fast_mode=True,
-            h = self.cutoff_distance.value,
-            image = x_data,
-            multichannel = x.multichannel,
-            patch_distance = self.distance.value,
-            patch_size = self.size.value
+            h=self.cutoff_distance.value,
+            image=x_data,
+            multichannel=x.multichannel,
+            patch_distance=self.distance.value,
+            patch_size=self.size.value
         )
 
         y = cellprofiler.image.Image(

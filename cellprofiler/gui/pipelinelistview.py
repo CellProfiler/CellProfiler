@@ -559,7 +559,7 @@ class PipelineListView(object):
     def __on_list_context_menu(self, event):
         from cellprofiler.gui.cpframe import \
             ID_EDIT_DELETE, ID_EDIT_DUPLICATE, ID_HELP_MODULE, \
-            ID_EDIT_ENABLE_MODULE
+            ID_EDIT_ENABLE_MODULE, ID_DEBUG_RUN_FROM_THIS_MODULE
 
         if event.EventObject is not self.list_ctrl:
             return
@@ -575,6 +575,8 @@ class PipelineListView(object):
                 menu.Append(ID_EDIT_DUPLICATE, "Duplicate module {}".format(module.module_num))
                 menu.Append(ID_EDIT_ENABLE_MODULE, "Enable module {}".format(module.module_num))
                 menu.Append(ID_HELP_MODULE, "&Help for module {}".format(module.module_num))
+                if self.__debug_mode == True and module.module_num < 10:
+                    menu.Append(ID_DEBUG_RUN_FROM_THIS_MODULE, "Run from this module")
             else:
                 self.__controller.populate_edit_menu(menu)
             self.__frame.PopupMenu(menu)
@@ -1429,7 +1431,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             
             if self.show_go_pause and self.test_mode:
                 rectangle = self.get_go_pause_rect(index)
-
                 bitmap = self.bmp_pause if item.is_paused() else self.bmp_go
 
                 dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)

@@ -990,12 +990,11 @@ requests an object selection.
             self.y,
             self.z
         ]
-
-        for assignment in self.assignments:
-            result += [assignment.rule_filter, assignment.image_name,
-                       assignment.object_name, assignment.load_as_choice,
-                       assignment.rescale, assignment.should_save_outlines,
-                       assignment.save_outlines, assignment.manual_rescale]
+        assignment = self.assignments[0]
+        result += [assignment.rule_filter, assignment.image_name,
+                   assignment.object_name, assignment.load_as_choice,
+                   assignment.rescale, assignment.should_save_outlines,
+                   assignment.save_outlines, assignment.manual_rescale]
         return result
 
     def visible_settings(self):

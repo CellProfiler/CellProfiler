@@ -112,8 +112,18 @@ from centrosome.outline import outline
 from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME
-from cellprofiler.modules._help import NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, USING_METADATA_GROUPING_HELP_REF, \
+from cellprofiler.modules._help import USING_METADATA_GROUPING_HELP_REF, \
     IO_FOLDER_CHOICE_HELP_TEXT
+
+RETAINING_OUTLINES_HELP = """\
+Select *{YES}* to retain the outlines of the new objects for later use
+in the pipeline. For example, a common use is for quality control
+purposes by overlaying them on your image of choice using the
+**OverlayOutlines** module and then saving the overlay image with the
+**SaveImages** module.
+""".format(**{
+    "YES": cps.YES
+})
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"

@@ -18,7 +18,6 @@ import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-import centrosome.outline
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
@@ -26,8 +25,7 @@ from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, \
-    USING_METADATA_HELP_REF,PROTIP_RECOMEND_ICON
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF,PROTIP_RECOMEND_ICON
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J
@@ -283,27 +281,33 @@ IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT_V3 = 6
 IDX_ASSIGNMENTS_COUNT_V5 = 6
 IDX_ASSIGNMENTS_COUNT_V6 = 6
+IDX_ASSIGNMENTS_COUNT_V7 = 6
 IDX_ASSIGNMENTS_COUNT = 6
 
 IDX_SINGLE_IMAGES_COUNT_V5 = 7
 IDX_SINGLE_IMAGES_COUNT_V6 = 7
+IDX_SINGLE_IMAGES_COUNT_V7 = 7
 IDX_SINGLE_IMAGES_COUNT = 7
 
 IDX_FIRST_ASSIGNMENT_V3 = 7
 IDX_FIRST_ASSIGNMENT_V4 = 7
 IDX_FIRST_ASSIGNMENT_V5 = 8
 IDX_FIRST_ASSIGNMENT_V6 = 9
-IDX_FIRST_ASSIGNMENT = 9
+IDX_FIRST_ASSIGNMENT_V7 = 13
+IDX_FIRST_ASSIGNMENT = 13
 
 NUM_ASSIGNMENT_SETTINGS_V2 = 4
 NUM_ASSIGNMENT_SETTINGS_V3 = 5
 NUM_ASSIGNMENT_SETTINGS_V5 = 7
 NUM_ASSIGNMENT_SETTINGS_V6 = 8
-NUM_ASSIGNMENT_SETTINGS = 8
+NUM_ASSIGNMENT_SETTINGS_V7 = 8
+NUM_ASSIGNMENT_SETTINGS = 6
 
 NUM_SINGLE_IMAGE_SETTINGS_V5 = 7
 NUM_SINGLE_IMAGE_SETTINGS_V6 = 8
-NUM_SINGLE_IMAGE_SETTINGS = 8
+NUM_SINGLE_IMAGE_SETTINGS_V7 = 8
+NUM_SINGLE_IMAGE_SETTINGS = 6
+
 
 OFF_LOAD_AS_CHOICE_V5 = 3
 OFF_LOAD_AS_CHOICE = 3
@@ -326,7 +330,7 @@ M_IMAGE_SET = "ImageSet_ImageSet"
 
 
 class NamesAndTypes(cpm.Module):
-    variable_revision_number = 7
+    variable_revision_number = 8
     module_name = "NamesAndTypes"
     category = "File Processing"
 
@@ -725,24 +729,6 @@ requests an object selection.
             )
         )
 
-        group.append(
-            "should_save_outlines",
-            cps.Binary(
-                "Retain outlines of loaded objects?",
-                False,
-                doc=RETAINING_OUTLINES_HELP
-            )
-        )
-
-        group.append(
-            "save_outlines",
-            cps.OutlineNameProvider(
-                "Name the outline image",
-                "LoadedOutlines",
-                doc=NAMING_OUTLINES_HELP
-            )
-        )
-
         def copy_assignment(group=group):
             self.copy_assignment(group, self.assignments, self.add_assignment)
 
@@ -907,24 +893,6 @@ requests an object selection.
             )
         )
 
-        group.append(
-            "should_save_outlines",
-            cps.Binary(
-                "Retain object outlines?",
-                False,
-                doc=RETAINING_OUTLINES_HELP
-            )
-        )
-
-        group.append(
-            "save_outlines",
-            cps.OutlineNameProvider(
-                "Name the outline image",
-                "LoadedOutlines",
-                doc=NAMING_OUTLINES_HELP
-            )
-        )
-
         def copy_assignment(group=group):
             self.copy_assignment(
                     group, self.single_images, self.add_single_image)
@@ -963,16 +931,24 @@ requests an object selection.
         ]
 
         for assignment in self.assignments:
-            result += [assignment.rule_filter, assignment.image_name,
-                       assignment.object_name, assignment.load_as_choice,
-                       assignment.rescale, assignment.should_save_outlines,
-                       assignment.save_outlines, assignment.manual_rescale]
+            result += [
+                assignment.rule_filter,
+                assignment.image_name,
+                assignment.object_name,
+                assignment.load_as_choice,
+                assignment.rescale,
+                assignment.manual_rescale
+            ]
+
         for single_image in self.single_images:
             result += [
-                single_image.image_plane, single_image.image_name,
-                single_image.object_name, single_image.load_as_choice,
-                single_image.rescale, single_image.should_save_outlines,
-                single_image.save_outlines, single_image.manual_rescale]
+                single_image.image_plane,
+                single_image.image_name,
+                single_image.object_name,
+                single_image.load_as_choice,
+                single_image.rescale,
+                single_image.manual_rescale
+            ]
 
         return result
     
@@ -1032,10 +1008,6 @@ requests an object selection.
                     result += [assignment.rescale]
                     if assignment.rescale == INTENSITY_MANUAL:
                         result += [self.manual_rescale]
-                elif assignment.load_as_choice == LOAD_AS_OBJECTS:
-                    result += [assignment.should_save_outlines]
-                    if assignment.should_save_outlines.value:
-                        result += [assignment.save_outlines]
                 result += [assignment.copy_button]
                 if assignment.can_remove:
                     result += [assignment.remover]
@@ -1051,10 +1023,6 @@ requests an object selection.
                     result += [single_image.rescale]
                     if single_image.rescale == INTENSITY_MANUAL:
                         result += [single_image.manual_rescale]
-                elif single_image.load_as_choice == LOAD_AS_OBJECTS:
-                    result += [single_image.should_save_outlines]
-                    if single_image.should_save_outlines.value:
-                        result += [single_image.save_outlines]
                 result += [single_image.copy_button, single_image.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:
@@ -1758,8 +1726,6 @@ requests an object selection.
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     self.add_objects(workspace,
                                      group.object_name.value,
-                                     group.should_save_outlines.value,
-                                     group.save_outlines.value,
                                      stack)
                 else:
                     rescale = group.rescale.value
@@ -1893,14 +1859,11 @@ requests an object selection.
         '''Get an md5 checksum from the (cached) file courtesy of the provider'''
         return provider.get_md5_hash(measurements)
 
-    def add_objects(self, workspace, name, should_save_outlines,
-                    outlines_name, stack):
+    def add_objects(self, workspace, name, stack):
         '''Add objects loaded from a file to the object set
 
         workspace - the workspace for the analysis
         name - the objects' name in the pipeline
-        should_save_outlines - True if the user wants to save outlines as an image
-        outlines_name - the name of the outlines image in the pipeline
         stack - the ImagePlaneDetailsStack representing the planes to be loaded
         '''
         from cellprofiler.modules.identify import add_object_count_measurements
@@ -1969,13 +1932,6 @@ requests an object selection.
                                                  name, o.ijv, o.count)
         add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
-        if should_save_outlines:
-            outline_image = np.zeros(image.pixel_data.shape[:2], bool)
-            for labeled_image, indices in o.get_labels():
-                plane = centrosome.outline.outline(labeled_image)
-                outline_image |= plane.astype(outline_image.dtype)
-            out_img = cpi.Image(outline_image)
-            workspace.image_set.add(outlines_name, out_img)
 
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
@@ -2242,6 +2198,51 @@ requests an object selection.
             new_setting_values = setting_values[:9] + [False, 1.0, 1.0, 1.0] + setting_values[9:]
             setting_values = new_setting_values
             variable_revision_number = 7
+
+        if variable_revision_number == 7:
+            offset = IDX_FIRST_ASSIGNMENT_V7
+            n_settings = NUM_ASSIGNMENT_SETTINGS_V7
+            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V7])
+
+            assignment_rule_filter = setting_values[offset::n_settings][:n_assignments]
+            assignment_image_name = setting_values[offset + 1::n_settings][:n_assignments]
+            assignment_object_name = setting_values[offset + 2::n_settings][:n_assignments]
+            assignment_load_as_choice = setting_values[offset + 3::n_settings][:n_assignments]
+            assignment_rescale = setting_values[offset + 4::n_settings][:n_assignments]
+            assignment_manual_rescale = setting_values[offset + 7::n_settings][:n_assignments]
+
+            assignment_settings = sum([list(settings) for settings in zip(
+                assignment_rule_filter,
+                assignment_image_name,
+                assignment_object_name,
+                assignment_load_as_choice,
+                assignment_rescale,
+                assignment_manual_rescale
+            )], [])
+
+            offset = IDX_FIRST_ASSIGNMENT_V7 + (n_assignments * NUM_ASSIGNMENT_SETTINGS_V7)
+            n_settings = NUM_SINGLE_IMAGE_SETTINGS_V7
+            n_single_images = int(setting_values[IDX_SINGLE_IMAGES_COUNT_V7])
+
+            single_image_image_plane = setting_values[offset::n_settings][:n_single_images]
+            single_image_image_name = setting_values[offset + 1::n_settings][:n_single_images]
+            single_image_object_name = setting_values[offset + 2::n_settings][:n_single_images]
+            single_image_load_as_choice = setting_values[offset + 3::n_settings][:n_single_images]
+            single_image_rescale = setting_values[offset + 4::n_settings][:n_single_images]
+            single_image_manual_rescale = setting_values[offset + 7::n_settings][:n_single_images]
+
+            single_image_settings = sum([list(settings) for settings in zip(
+                single_image_image_plane,
+                single_image_image_name,
+                single_image_object_name,
+                single_image_load_as_choice,
+                single_image_rescale,
+                single_image_manual_rescale
+            )], [])
+
+            setting_values = setting_values[:IDX_FIRST_ASSIGNMENT_V7] + assignment_settings + single_image_settings
+
+            variable_revision_number = 8
 
         return setting_values, variable_revision_number, from_matlab
 

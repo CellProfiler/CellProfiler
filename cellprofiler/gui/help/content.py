@@ -39,10 +39,10 @@ MODULE_ADD_BUTTON = __image_resource('module_add.png')
 MODULE_REMOVE_BUTTON = __image_resource('module_remove.png')
 TESTMODE_PAUSE_ICON = __image_resource('IMG_PAUSE.png')
 TESTMODE_GO_ICON = __image_resource('IMG_GO.png')
-DISPLAYMODE_SHOW_ICON = __image_resource('IMG_EYE.png')
-DISPLAYMODE_HIDE_ICON = __image_resource('IMG_CLOSED_EYE.png')
-SETTINGS_OK_ICON = __image_resource('IMG_OK.png')
-SETTINGS_ERROR_ICON = __image_resource('IMG_ERROR.png')
+DISPLAYMODE_SHOW_ICON = __image_resource('eye-open.png')
+DISPLAYMODE_HIDE_ICON = __image_resource('eye-close.png')
+SETTINGS_OK_ICON = __image_resource('check.png')
+SETTINGS_ERROR_ICON = __image_resource('remove-sign.png')
 SETTINGS_WARNING_ICON = __image_resource('IMG_WARN.png')
 RUNSTATUS_PAUSE_BUTTON = __image_resource('status_pause.png')
 RUNSTATUS_STOP_BUTTON = __image_resource('status_stop.png')
@@ -53,8 +53,8 @@ WINDOW_FORWARD_BUTTON = __image_resource('window_forward.png')
 WINDOW_PAN_BUTTON = __image_resource('window_pan.png')
 WINDOW_ZOOMTORECT_BUTTON = __image_resource('window_zoom_to_rect.png')
 WINDOW_SAVE_BUTTON = __image_resource('window_filesave.png')
-ANALYZE_IMAGE_BUTTON = __image_resource('IMG_ANALYZE_16.png')
-STOP_ANALYSIS_BUTTON = __image_resource('IMG_STOP.png')
+ANALYZE_IMAGE_BUTTON = __image_resource('check.png')
+STOP_ANALYSIS_BUTTON = __image_resource('stop.png')
 PAUSE_ANALYSIS_BUTTON = __image_resource('IMG_PAUSE.png')
 OMERO_IMAGEID_PIC = __image_resource('OMERO_imageID_screenshot.png')
 OMERO_LOGIN_PIC = __image_resource('OMERO_login_screenshot.png')
@@ -147,7 +147,7 @@ Subexpression   Explanation
 .\\*             Capture as many characters that follow
 [\\\\\\\\/]         Discard the slash/backslash character
 (?P<Run>        Name the captured field *Run*
-$               The *Run* field must be at the end of the path string, i.e. the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.=============   ============
+$               The *Run* field must be at the end of the path string, i.e. the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.
 =============   ============
 
 In **LoadData**, metadata is extracted from a CSV (comma-separated) file
@@ -448,8 +448,8 @@ panel* (located on the left-hand side of the CellProfiler window).
       time remaining to process the full image set.
 
    At the end of each cycle:
-   -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the
-      output file.
+       
+   -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the output file.
    -  If you are using the **ExportToDatabase** module, CellProfiler saves the measurements in the
       output database.
    -  If you are using the **ExportToSpreadsheet** module, CellProfiler saves the measurements *into a 
@@ -503,7 +503,7 @@ automatically export data in a format you prefer. See
 })
 
 SPREADSHEETS_DATABASE_HELP = u"""\
-CellProfiler can save measurements as a spreadsheet or as a *database*.
+CellProfiler can save measurements as a *spreadsheet* or as a *database*.
 Which format you use will depend on some of the considerations below:
 
 -  *Learning curve:* Applications that handle spreadsheets (e.g., Excel,
@@ -516,6 +516,11 @@ Which format you use will depend on some of the considerations below:
    thousand rows of data, whereas databases can hold many millions of
    rows of data. Accessing a particular portion of data in a database
    is optimized for speed.
+-  *Downstream application:* If you wish to use Excel or another simple
+   tool to analyze your data, a spreadsheet is likely the best choice.  If you
+   intend to use CellProfiler Analyst, you must create a database.  If you 
+   plan to use a scripting language, most languages have ways to import 
+   data from either format.
 
 .. _Calc: http://www.libreoffice.org/features/calc/
 .. _Google Docs: https://docs.google.com
@@ -527,7 +532,7 @@ If you find that you are running into out-of-memory errors and/or speed
 issues associated with your analysis run, check out a number of
 solutions on our forum `FAQ`_ .
 
-.. _FAQ: http://forum.cellprofiler.org/t/cellprofiler-2-0-faq/664/6
+.. _FAQ: http://forum.cellprofiler.org
 """
 
 TEST_MODE_HELP = u"""\
@@ -589,6 +594,8 @@ From the *Test* menu, you can choose additional options:
 -  *Reload Modules Source (enabled only if running from source code):*
    This option will reload the module source code, so any changes to the
    code will be reflected immediately.
+-  *Break into debugger (enabled only if running from source code):* 
+   This option will allow you to open a debugger in the terimal window.
 
 Note that if movies are being loaded, the individual movie is defined as
 a group automatically. Selecting *Choose Image Group* will allow you to

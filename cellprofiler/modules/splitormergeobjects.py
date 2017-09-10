@@ -59,7 +59,6 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.modules._help import NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP
 from cellprofiler.measurement import C_PARENT, C_CHILDREN, FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements

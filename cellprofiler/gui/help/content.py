@@ -53,7 +53,7 @@ WINDOW_FORWARD_BUTTON = __image_resource('window_forward.png')
 WINDOW_PAN_BUTTON = __image_resource('window_pan.png')
 WINDOW_ZOOMTORECT_BUTTON = __image_resource('window_zoom_to_rect.png')
 WINDOW_SAVE_BUTTON = __image_resource('window_filesave.png')
-ANALYZE_IMAGE_BUTTON = __image_resource('check.png')
+ANALYZE_IMAGE_BUTTON = __image_resource('IMG_ANALYZE_16.png')
 STOP_ANALYSIS_BUTTON = __image_resource('stop.png')
 PAUSE_ANALYSIS_BUTTON = __image_resource('IMG_PAUSE.png')
 OMERO_IMAGEID_PIC = __image_resource('OMERO_imageID_screenshot.png')
@@ -86,7 +86,7 @@ preserving them; these pipelines will operate exactly as before.
 
 Alternately, you can choose to convert these modules into the
 project equivalent as closely as possible. Both modules remain accesible
-via the “Add module” and |image0|  button at the bottom of the pipeline
+via the “Add module” and |HelpContent_LegacyLoad_image0|  button at the bottom of the pipeline
 panel. The section details information relevant for those who would like
 to continue using these modules. Please note, however, that these
 modules are deprecated and may be removed in the future.
@@ -189,7 +189,7 @@ To use image grouping in **LoadImages**, please note the following:
    “Plate” metadata tag in the regular expression for the other channels
    that you want grouped together.
 
-.. |image0| image:: {MODULE_ADD_BUTTON}
+.. |HelpContent_LegacyLoad_image0| image:: {MODULE_ADD_BUTTON}
 """.format(**{
     "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON
 })
@@ -343,7 +343,7 @@ to learn how to use CellProfiler is to load an example pipeline from the
 CellProfiler website’s Examples page and try it with its included images,
 then adapt it for
 your own images. You can also build a pipeline from scratch. Click the
-*Help* |image0|  button in the main window to get help for a specific
+*Help* |HelpContent_BuildPipeline_image0|  button in the main window to get help for a specific
 module.
 
 Loading an existing pipeline
@@ -378,7 +378,7 @@ panel* (located on the left-hand side of the CellProfiler window).
 #. *Place analysis modules in a new pipeline.*
 
    Choose image analysis modules to add to your pipeline by clicking the
-   *Add* |image1| button (located underneath the pipeline panel) or
+   *Add* |HelpContent_BuildPipeline_image1| button (located underneath the pipeline panel) or
    right-clicking in the pipeline panel itself and selecting a module
    from the pop-up box that appears.
 
@@ -388,8 +388,8 @@ panel* (located on the left-hand side of the CellProfiler window).
    the pipeline or after the currently selected module, but you can
    adjust their order in the main window by dragging and dropping them,
    or by selecting a module (or modules, using the *Shift* key) and
-   using the *Move Module Up* |image2| and *Move Module Down*
-   |image3| buttons. The *Remove Module* |image4| button will delete the
+   using the *Move Module Up* |HelpContent_BuildPipeline_image2| and *Move Module Down*
+   |HelpContent_BuildPipeline_image3| buttons. The *Remove Module* |HelpContent_BuildPipeline_image4| button will delete the
    selected module(s) from the pipeline.
 
    Most pipelines depend on one major step: identifying the objects,
@@ -420,11 +420,11 @@ panel* (located on the left-hand side of the CellProfiler window).
    that module.
 
    If there is an error with the settings (e.g., a setting refers to an
-   image that doesn’t exist yet), a |image5| icon will appear next to the
+   image that doesn’t exist yet), a |HelpContent_BuildPipeline_image5| icon will appear next to the
    module name. If there is a warning (e.g., a special notification
-   attached to a choice of setting), a |image6| icon will appear. Errors
+   attached to a choice of setting), a |HelpContent_BuildPipeline_image6| icon will appear. Errors
    will cause the pipeline to fail upon running, whereas a warning will
-   not. Once the errors/warnings have been resolved, a |image7|  icon will
+   not. Once the errors/warnings have been resolved, a |HelpContent_BuildPipeline_image7|  icon will
    appear indicating that the module is ready to run.
 
 #. *Set your Default Output Folder and, if necessary, your Default Input Folder*
@@ -440,9 +440,9 @@ panel* (located on the left-hand side of the CellProfiler window).
    the modules and settings you have specified. The bottom of the
    CellProfiler window will show:
 
-   -  A *pause button* |image8|  which pauses execution and allows you
+   -  A *pause button* |HelpContent_BuildPipeline_image8|  which pauses execution and allows you
       to subsequently resume the analysis.
-   -  A *stop button* |image9|  which cancels execution after prompting
+   -  A *stop button* |HelpContent_BuildPipeline_image9|  which cancels execution after prompting
       you for a place to save the measurements collected to that point.
    -  A *progress bar* which gives the elapsed time and estimates the
       time remaining to process the full image set.
@@ -474,17 +474,16 @@ request it, using a **SaveImages** module.
 automatically export data in a format you prefer. See
 *{USING_YOUR_OUTPUT_REF}* for more details.
 
-.. |image0| image:: {MODULE_HELP_BUTTON}
-.. |image1| image:: {MODULE_ADD_BUTTON}
-.. |image2| image:: {MODULE_MOVEUP_BUTTON}
-.. |image3| image:: {MODULE_MOVEDOWN_BUTTON}
-.. |image4| image:: {MODULE_REMOVE_BUTTON}
-.. |image5| image:: {SETTINGS_ERROR_ICON}
-.. |image6| image:: {SETTINGS_WARNING_ICON}
-.. |image7| image:: {SETTINGS_OK_ICON}
-.. |image8| image:: {RUNSTATUS_PAUSE_BUTTON}
-.. |image9| image:: {RUNSTATUS_STOP_BUTTON}
-.. |image10| image:: {RUNSTATUS_SAVE_BUTTON}
+.. |HelpContent_BuildPipeline_image0| image:: {MODULE_HELP_BUTTON}
+.. |HelpContent_BuildPipeline_image1| image:: {MODULE_ADD_BUTTON}
+.. |HelpContent_BuildPipeline_image2| image:: {MODULE_MOVEUP_BUTTON}
+.. |HelpContent_BuildPipeline_image3| image:: {MODULE_MOVEDOWN_BUTTON}
+.. |HelpContent_BuildPipeline_image4| image:: {MODULE_REMOVE_BUTTON}
+.. |HelpContent_BuildPipeline_image5| image:: {SETTINGS_ERROR_ICON}
+.. |HelpContent_BuildPipeline_image6| image:: {SETTINGS_WARNING_ICON}
+.. |HelpContent_BuildPipeline_image7| image:: {SETTINGS_OK_ICON}
+.. |HelpContent_BuildPipeline_image8| image:: {RUNSTATUS_PAUSE_BUTTON}
+.. |HelpContent_BuildPipeline_image9| image:: {RUNSTATUS_STOP_BUTTON}
 """.format(**{
     "BATCH_PROCESSING_HELP_REF": BATCH_PROCESSING_HELP_REF,
     "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON,
@@ -522,9 +521,9 @@ Which format you use will depend on some of the considerations below:
    plan to use a scripting language, most languages have ways to import 
    data from either format.
 
-.. _Calc: http://www.libreoffice.org/features/calc/
-.. _Google Docs: https://docs.google.com
-.. _SQLyog: https://www.webyog.com/
+.. _Calc: http://www.libreoffice.org/discover/calc/
+.. _Google Docs: http://docs.google.com
+.. _SQLyog: http://www.webyog.com/
 """
 
 MEMORY_AND_SPEED_HELP = u"""\
@@ -545,7 +544,7 @@ To enter Test mode once you have built a pipeline, choose *Test > Start
 Test Mode* from the menu bar in the main window. At this point, you will
 see the following features appear:
 
--  A Pause icon |image0|  will appear to the left of each module.
+-  A Pause icon |HelpContent_TestMode_image0|  will appear to the left of each module.
 -  The buttons available at the bottom of the pipeline panel change.
 
 You can run your pipeline in Test mode by selecting *Test > Step to Next
@@ -563,7 +562,7 @@ of your choice. The additional controls allow you to do the following:
    interest, and move the slider to modules already executed.
 -  *Pause:* Clicking the pause icon will cause the pipeline test run to
    halt execution when that module is reached (the paused module itself
-   is not executed). The icon changes from |image1| to |image2| to
+   is not executed). The icon changes from |HelpContent_TestMode_image1| to |HelpContent_TestMode_image2| to
    indicate that a pause has been inserted at that point.
 -  *Run:* Execution of the pipeline will be started/resumed until the
    next module pause is reached. When all modules have been executed for
@@ -605,9 +604,9 @@ individual movie frame from that file.
 Please see the **Groups** module for more details on the proper use of
 metadata for grouping.
 
-.. |image0| image:: {TESTMODE_GO_ICON}
-.. |image1| image:: {TESTMODE_GO_ICON}
-.. |image2| image:: {TESTMODE_PAUSE_ICON}
+.. |HelpContent_TestMode_image0| image:: {TESTMODE_GO_ICON}
+.. |HelpContent_TestMode_image1| image:: {TESTMODE_GO_ICON}
+.. |HelpContent_TestMode_image2| image:: {TESTMODE_PAUSE_ICON}
 """.format(**{
     "TESTMODE_GO_ICON": TESTMODE_GO_ICON,
     "TESTMODE_PAUSE_ICON": TESTMODE_PAUSE_ICON
@@ -620,7 +619,7 @@ entire set of images. To do this:
 
 -  Exit Test mode by clicking the “Exit Test Mode” button or selecting
    *Test > Exit Test Mode*.
--  Click the "|image0| Analyze Images" button and begin processing your
+-  Click the "|HelpContent_RunningPipeline_image0| Analyze Images" button and begin processing your
    data sets.
 
 During the analysis run, the progress will appear in the status bar at
@@ -628,18 +627,18 @@ the bottom of CellProfiler. It will show you the total number of image
 sets, the number of image sets completed, the time elapsed and the
 approximate time remaining in the run.
 
-If you need to pause analysis, click the "|image1| Pause" button, then
+If you need to pause analysis, click the "|HelpContent_RunningPipeline_image1| Pause" button, then
 click the “Resume” button to continue. If you want to terminate
-analysis, click the "|image2| Stop Analysis" button.
+analysis, click the "|HelpContent_RunningPipeline_image2| Stop Analysis" button.
 
 If your computer has multiple processors, CellProfiler will take
 advantage of them by starting multiple copies of itself to process the
 image sets in parallel. You can set the number of *workers* (i.e., copies
 of CellProfiler activated) under *File > Preferences…*
 
-.. |image0| image:: {ANALYZE_IMAGE_BUTTON}
-.. |image1| image:: {PAUSE_ANALYSIS_BUTTON}
-.. |image2| image:: {STOP_ANALYSIS_BUTTON}
+.. |HelpContent_RunningPipeline_image0| image:: {ANALYZE_IMAGE_BUTTON}
+.. |HelpContent_RunningPipeline_image1| image:: {PAUSE_ANALYSIS_BUTTON}
+.. |HelpContent_RunningPipeline_image2| image:: {STOP_ANALYSIS_BUTTON}
 """.format(**{
     "ANALYZE_IMAGE_BUTTON": ANALYZE_IMAGE_BUTTON,
     "PAUSE_ANALYSIS_BUTTON": PAUSE_ANALYSIS_BUTTON,
@@ -912,7 +911,7 @@ being used to write particular messages by printing all messages with a
 formatter that prints the logger name (“%(name)s”).
 The format of the file is described in greater detail `here`_.
 
-.. _here: http://docs.python.org/howto/logging.html#configuring-logging
+.. _here: http://docs.python.org/2.7/howto/logging.html#configuring-logging
 """
 
 ACCESSING_OMERO_IMAGES = u"""\
@@ -932,7 +931,7 @@ using either the OMERO web client or the `Insight software`_. As an
 example, the screen capture below indicates that the image,
 “Channel1-01-A-01.tif”, has an IID of 58038:
 
-|image0|
+|HelpContent_OMERO_image0|
 
 At present, manually curating the URL list can be somewhat
 time-consuming, but we are planning to develop plug-ins for Insight that
@@ -955,7 +954,7 @@ press the “Connect” button. The “Connect” button should turn green and
 the OK button of the dialog should become enabled (see below). Press
 OK to complete the login.
 
-|image1|
+|HelpContent_OMERO_image1|
 
 Currently, CellProfiler cannot establish a connection to OMERO when
 running headless - to do that, we would need to store the user password
@@ -1006,8 +1005,8 @@ here is a .CSV that loads a DNA and GFP channel:
 .. _OMERO: http://www.openmicroscopy.org/site/products/omero
 .. _Insight software: http://www.openmicroscopy.org/site/support/omero4/downloads
 
-.. |image0| image:: {OMERO_IMAGEID_PIC}
-.. |image1| image:: {OMERO_LOGIN_PIC}
+.. |HelpContent_OMERO_image0| image:: {OMERO_IMAGEID_PIC}
+.. |HelpContent_OMERO_image1| image:: {OMERO_LOGIN_PIC}
 """.format(**{
     "OMERO_LOGIN_PIC": OMERO_LOGIN_PIC,
     "OMERO_IMAGEID_PIC": OMERO_IMAGEID_PIC

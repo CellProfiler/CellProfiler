@@ -1420,13 +1420,13 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
         dc.Clear()
 
-        dc.Font = self.Font
-
         text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
 
         text_color_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
 
         for index, item in enumerate(self.items):
+            dc.SetFont(self.Font)
+            
             if self.show_go_pause and self.test_mode:
                 rectangle = self.get_go_pause_rect(index)
 
@@ -1454,6 +1454,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
                 if item.selected:
                     flags += wx.CONTROL_SELECTED
+                    dc.SetFont(self.Font.MakeBold())
 
                 if self.FindFocus() is self:
                     flags += wx.CONTROL_FOCUSED
@@ -1472,6 +1473,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     text_color = text_color
             if self.test_mode and index == self.running_item:
                 flags = wx.CONTROL_CURRENT | wx.CONTROL_FOCUSED
+                dc.SetFont(self.Font.MakeUnderlined())
 
                 cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
             else:

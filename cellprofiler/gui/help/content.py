@@ -346,9 +346,10 @@ These images could be loaded and applied to other pipelines using
 
 This version of CellProfiler no longer supports exporting MATLAB format
 images. Instead, the recommended image format for illumination correction
-functions is NumPy (.npy). To ensure compatibility with future versions
-of CellProfiler you can convert your .mat files to .npy files via
-**SaveImages** using this version of CellProfiler.
+functions is NumPy (.npy). Loading MATLAB format images is deprecated and
+will be removed in a future version of CellProfiler. To ensure compatibility
+with future versions of CellProfiler you can convert your .mat files to .npy 
+files via **SaveImages** using this version of CellProfiler.
 
 See **SaveImages** for more details on saving NumPy format images.
 """

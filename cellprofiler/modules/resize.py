@@ -248,9 +248,9 @@ resized with the same settings as the first image."""))
             else:
                 height, width = shape[:2]
 
-            height *= factor
+            height = numpy.round(height * factor)
 
-            width *= factor
+            width = numpy.round(width * factor)
         else:
             if self.use_manual_or_image.value == C_MANUAL:
                 height = self.specific_height.value

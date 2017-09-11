@@ -136,6 +136,11 @@ class Menu(cellprofiler.gui.menu.Menu):
             contents=cellprofiler.gui.help.content.USING_THE_OUTPUT_FILE_HELP
         )
 
+        legacy_menu.append(
+            "MATLAB format images",
+            contents=cellprofiler.gui.help.content.MATLAB_FORMAT_IMAGES_HELP
+        )
+
         return legacy_menu
 
     def __navigation_menu(self):

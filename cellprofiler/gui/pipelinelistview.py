@@ -1432,7 +1432,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
         for index, item in enumerate(self.items):
             dc.SetFont(self.Font)
-            
+
             if self.show_go_pause and self.test_mode:
                 rectangle = self.get_go_pause_rect(index)
                 bitmap = self.bmp_pause if item.is_paused() else self.bmp_go
@@ -1454,41 +1454,38 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
             rectangle = self.get_text_rect(index)
 
-            if item.selected or index == self.active_item:
-                flags = wx.CONTROL_DISABLED if not self.Enabled else 0
+            flags = 0 if self.Enabled else wx.CONTROL_DISABLED
+            font = self.Font
 
-                if item.selected:
-                    flags += wx.CONTROL_SELECTED
-                    dc.SetFont(self.Font.MakeBold())
+            if item.selected:
+                flags |= wx.CONTROL_SELECTED
+                text_color = text_color_selected
+                font = font.MakeBold()
 
-                if self.FindFocus() is self:
-                    flags += wx.CONTROL_FOCUSED
+            if self.active_item == index:
+                flags |= wx.CONTROL_CURRENT
+                font = font.MakeBold()
 
-                if self.active_item == index:
-                    flags += wx.CONTROL_CURRENT
-
-                    if self.always_draw_current_as_if_selected and not item.selected:
-                        flags |= wx.CONTROL_SELECTED
-
-                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
-
-                if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED:
+                if self.always_draw_current_as_if_selected:
+                    flags |= wx.CONTROL_SELECTED
                     text_color = text_color_selected
-                else:
-                    text_color = text_color
-            if self.test_mode and index == self.running_item:
-                flags = wx.CONTROL_CURRENT | wx.CONTROL_FOCUSED
-                dc.SetFont(self.Font.MakeUnderlined())
 
-                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
-            else:
-                text_color = text_color
+            if (item.selected or self.active_item == index) and self.FindFocus() is self:
+                flags |= wx.CONTROL_FOCUSED
+
+            dc.SetFont(font)
+            cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
+
+            if self.test_mode and self.running_item == index:
+                dc.SetFont(font.MakeUnderlined())
+                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags | wx.CONTROL_SELECTED)
 
             dc.SetBackgroundMode(wx.TRANSPARENT)
 
             dc.SetTextForeground(text_color)
 
             dc.DrawText(item.module_name, rectangle.left + self.text_gap, rectangle.top)
+
         if self.drop_insert_point is not None:
             y = self.line_height * self.drop_insert_point
 

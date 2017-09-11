@@ -79,22 +79,25 @@ images to ensure they are in the proper form:
    grayscale using the **ColorToGray** module.
 -  If your images are brightfield/phase/DIC, they may be processed with the
    **EnhanceOrSuppressFeatures** module with its "*Texture*" or "*DIC*" settings.
-   You may also want to check our `tutorial`_ on preprocessing these images with
+-  If you struggle to find effective settings for this module, you may
+   want to check our `tutorial`_ on preprocessing these images with
    ilastik prior to using them in CellProfiler.
 
 What are the advanced settings?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **IdentifyPrimaryObjects** allows you to tweak your settings in many ways;
-so many so that it can often become confusing where you should start.  
+so many that it can often become confusing where you should start. This is
+typically the most important but complex step in creating a good pipeline,
+so do not be discouraged: other modules are easier to configure!
 Using **IdentifyPrimaryObjects** with *'Use advanced settings?'* set to *'No'* 
-allows you to quickly try to segment your objects based only the size and input
-image; CellProfiler will then use its built-in defaults to decide how to set the 
-threshold and how to break clumped objects apart.  If you are happy with the 
-segmentation produced by the default settings, you can then move on to 
+allows you to quickly try to identify your objects based only their typical size;
+CellProfiler will then use its built-in defaults to decide how to set the 
+threshold and how to break clumped objects apart. If you are happy with the 
+results produced by the default settings, you can then move on to 
 construct the rest of your pipeline; if not, you can set 
 *'Use advanced settings?'* to *'Yes'* which will allow you to fully tweak and 
-customize all the segmentation settings.
+customize all the settings.
 
 What do the settings mean?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -119,14 +122,14 @@ What do I get as output?
 A set of primary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations. See
 the section `"Available measurements" <#Available_measurements>`__ below
-for the measurements that are produced by this module. Once the module
+for the measurements that are produced directly by this module. Once the module
 has finished processing, the module display window will show the
 following panels:
 
 -  *Upper left:* The raw, original image.
 -  *Upper right:* The identified objects shown as a color image where
    connected pixels that belong to the same object are assigned the same
-   color (*label image*). It is important to note that assigned colors
+   color (*label image*). Note that assigned colors
    are arbitrary; they are used simply to help you distingush the
    various objects.
 -  *Lower left:* The raw image overlaid with the colored outlines of the
@@ -139,9 +142,9 @@ following panels:
 
    If you need to change the color defaults, you can make adjustments in
    *File > Preferences*.
--  *Lower right:* A table showing some of the settings selected by the
-   user, as well as those calculated by the module in order to produce
-   the objects shown.
+-  *Lower right:* A table showing some of the settings used by the module
+   in order to produce the objects shown. Some of these are as you
+   specified in settings; others are calculated by the module itself.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,7 +172,8 @@ Technical notes
 ^^^^^^^^^^^^^^^
 
 CellProfiler contains a modular three-step strategy to identify objects
-even if they touch each other. It is based on previously published
+even if they touch each other ("declumping"). It is based on previously
+published
 algorithms (*Malpica et al., 1997; Meyer and Beucher, 1990; Ortiz de
 Solorzano et al., 1999; Wahlby, 2003; Wahlby et al., 2004*). Choosing
 different options for each of these three steps allows CellProfiler to
@@ -339,26 +343,27 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
             (10, 40),
             minval=1,
             doc="""\
-This setting allows the user to make a distinction on the basis of size,
-which can be used in conjunction with the
-*{EXCLUDE_SIZE_SETTING_TEXT}* setting below to remove objects that
-fail this criteria.
+This setting is crucial for two reasons: first, the module uses it to
+calculate certain automatic settings in order to identify your objects
+of interest properly (see below). Second, when used in conjunction with the
+*{EXCLUDE_SIZE_SETTING_TEXT}* setting below, you can choose to remove
+objects outside the size range you provide here.
 
 |image0| The units used here are pixels so that it is easy to zoom in
 on objects and determine typical diameters. {HELP_ON_MEASURING_DISTANCES}
     
 A few important notes:
 
--  Several other settings make use of the minimum object size entered
-   here, whether the "*{EXCLUDE_SIZE_SETTING_TEXT}*" setting is used or
-   not:
+-  The other settings that make use of the minimum object size entered
+   here (whether the "*{EXCLUDE_SIZE_SETTING_TEXT}*" setting is used or
+   not) are:
 
    -  "*{AUTOMATIC_SMOOTHING_SETTING_TEXT}*"
    -  "*{AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT}*"
 
--  For non-round objects, the diameter here is actually the “equivalent
-   diameter”, i.e., the diameter of a circle with the same area as the
-   object.
+-  For non-round objects, the diameter you should enter here is actually
+   the “equivalent diameter”, i.e., the diameter of a circle with the
+   same area as the object.
 
 .. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{

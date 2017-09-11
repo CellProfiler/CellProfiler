@@ -575,8 +575,12 @@ class PipelineListView(object):
                 menu.Append(ID_EDIT_DUPLICATE, "Duplicate module {}".format(module.module_num))
                 menu.Append(ID_EDIT_ENABLE_MODULE, "Enable module {}".format(module.module_num))
                 menu.Append(ID_HELP_MODULE, "&Help for module {}".format(module.module_num))
-                if self.__debug_mode == True and module.module_num < 10:
-                    menu.Append(ID_DEBUG_RUN_FROM_THIS_MODULE, "Run from this module")
+                if self.__debug_mode:
+                    _, active_index = self.get_ctrl_and_index(module)
+                    _, debug_index = self.get_ctrl_and_index(self.get_current_debug_module())
+
+                    if active_index <= debug_index:
+                        menu.Append(ID_DEBUG_RUN_FROM_THIS_MODULE, "Run from this module")
             else:
                 self.__controller.populate_edit_menu(menu)
             self.__frame.PopupMenu(menu)

@@ -222,7 +222,7 @@ You can specify how these images should be treated:
    pixel intensities will be averaged to produce a single intensity
    value.
 -  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel repesents a
-   red, green and blue (RGB) triplet of intensity values OR which contains 
+   red, green and blue (RGB) triplet of intensity values OR which contains
    multiple individual grayscale channels. Please note
    that the object detection modules such as **IdentifyPrimaryObjects**
    expect a grayscale image, so if you want to identify objects, you
@@ -259,7 +259,7 @@ You can specify how these images should be treated:
    immediately without needing to insert an **Identify** module to
    extract them first. See **IdentifyPrimaryObjects** for more details.
    This option can load objects created by using the **ConvertObjectsToImage**
-   module followed by the **SaveImages** module. These objects can take two 
+   module followed by the **SaveImages** module. These objects can take two
    forms, with different considerations for each:
 
    -  *Non-overlapping* objects are stored as a label matrix. This
@@ -366,7 +366,7 @@ The choices are:
 -  *{ASSIGN_RULES}*: Give images one of several names depending on the
    file name, directory and metadata. This is the appropriate choice if
    more than one image was acquired from each imaging site (ie if multiple
-   channels were acquired at each site). You will be asked for distinctive 
+   channels were acquired at each site). You will be asked for distinctive
    criteria for each image and will be able to assign each category of image
    a name that can be referred to in downstream modules.
 """.format(**{
@@ -572,7 +572,7 @@ You can match corresponding channels to each other in one of two ways:
    | Site           | (None)          |
    +----------------+-----------------+
 
-   This sort of matching can also be useful in timelapse movies where you wish to 
+   This sort of matching can also be useful in timelapse movies where you wish to
    measure the properties of a particular ROI over time:
 
    +----------------+----------------+-----------------+
@@ -951,7 +951,7 @@ requests an object selection.
             ]
 
         return result
-    
+
     def help_settings(self):
         result = [
             self.assignment_method,
@@ -969,8 +969,7 @@ requests an object selection.
         assignment = self.assignments[0]
         result += [assignment.rule_filter, assignment.image_name,
                    assignment.object_name, assignment.load_as_choice,
-                   assignment.rescale, assignment.should_save_outlines,
-                   assignment.save_outlines, assignment.manual_rescale]
+                   assignment.rescale, assignment.manual_rescale]
         return result
 
     def visible_settings(self):

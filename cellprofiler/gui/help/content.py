@@ -1301,7 +1301,7 @@ options:
    -  *Measure length:* Select this option to measure distances within
       an image window. If you click on an image and drag, a line will
       appear between the two endpoints, and the distance between them
-      shown at the right-most portion of the bottom panel. This is
+      will be shown at the right-most portion of the bottom panel. This is
       useful for measuring distances in order to obtain estimates of
       typical object diameters for use in **IdentifyPrimaryObjects**.
 

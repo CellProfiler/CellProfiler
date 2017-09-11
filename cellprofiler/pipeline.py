@@ -1761,7 +1761,9 @@ class Pipeline(object):
 
                     start_time = datetime.datetime.now()
 
-                    t0 = sum(os.times()[:-1])
+                    os_times = os.times()
+                    cpu_t0 = sum(os_times[:-1])
+                    wall_t0 = os_times[-1]
 
                     try:
                         self.run_module(module, workspace)
@@ -1774,11 +1776,14 @@ class Pipeline(object):
 
                     yield measurements
 
-                    t1 = sum(os.times()[:-1])
+                    os_times = os.times()
+                    cpu_t1 = sum(os_times[:-1])
+                    wall_t1 = os_times[-1]
 
-                    delta_sec = max(0, t1 - t0)
+                    cpu_delta_sec = max(0, cpu_t1 - cpu_t0)
+                    wall_delta_sec = max(0, wall_t1 - wall_t0)
 
-                    pipeline_stats_logger.info("%s: Image # %d, module %s # %d: %.2f sec" % (start_time.ctime(), image_number, module.module_name, module.module_num, delta_sec))
+                    pipeline_stats_logger.info("%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs" % (start_time.ctime(), image_number, module.module_name, module.module_num, cpu_delta_sec, wall_delta_sec))
 
                     if module.show_window and can_display and (exception is None):
                         try:
@@ -1819,7 +1824,7 @@ class Pipeline(object):
                     if module.module_name != 'Restart' and should_write_measurements:
                         measurements.add_measurement('Image', module_error_measurement, np.array([failure]))
 
-                        measurements.add_measurement('Image', execution_time_measurement, np.array([delta_sec]))
+                        measurements.add_measurement('Image', execution_time_measurement, np.array([cpu_delta_sec]))
 
                     while workspace.disposition == cpw.DISPOSITION_PAUSE and frame is not None:
                         # try to leave measurements temporary file in a readable state
@@ -1899,7 +1904,9 @@ class Pipeline(object):
             grids = workspace.set_grids(grids)
 
             start_time = datetime.datetime.now()
-            t0 = sum(os.times()[:-1])
+            os_times = os.times()
+            cpu_t0 = sum(os_times[:-1])
+            wall_t0 = os_times[-1]
             try:
                 self.run_module(module, workspace)
                 if module.show_window:
@@ -1920,12 +1927,15 @@ class Pipeline(object):
                     # actual cancellation or skipping handled upstream.
                     return
 
-            t1 = sum(os.times()[:-1])
-            delta_secs = max(0, t1 - t0)
-            pipeline_stats_logger.info("%s: Image # %d, module %s # %d: %.2f secs" %
+            os_times = os.times()
+            cpu_t1 = sum(os_times[:-1])
+            wall_t1 = os_times[-1]
+            cpu_delta_secs = max(0, cpu_t1 - cpu_t0)
+            wall_delta_secs = max(0, wall_t1 - wall_t0)
+            pipeline_stats_logger.info("%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs" %
                                        (start_time.ctime(), image_set_number,
                                         module.module_name, module.module_num,
-                                        delta_secs))
+                                        cpu_delta_secs, wall_delta_secs))
             # Paradox: ExportToDatabase must write these columns in order
             #  to complete, but in order to do so, the module needs to
             #  have already completed. So we don't report them for it.
@@ -1933,7 +1943,7 @@ class Pipeline(object):
                 measurements[cpmeas.IMAGE,
                              'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 0
                 measurements[cpmeas.IMAGE,
-                             'ExecutionTime_%02d%s' % (module.module_num, module.module_name)] = delta_secs
+                             'ExecutionTime_%02d%s' % (module.module_num, module.module_name)] = cpu_delta_secs
 
             measurements.flush()
             if workspace.disposition == cpw.DISPOSITION_SKIP:

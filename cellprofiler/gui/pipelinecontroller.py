@@ -3275,52 +3275,9 @@ class PipelineController(object):
                           wx.ICON_ERROR | wx.OK)
 
     def on_run_from_this_module(self, event):
-        """Start debugging from selected module
-
-        """
-        first_module = self.current_debug_module()
-        if first_module is None:
-            return
-        count = 1
-        for module in self.__pipeline.modules()[first_module.module_num:]:
-            if module.wants_pause:
-                break
-            count += 1
-        message_format = "Running module %d of %d: %s"
-        index = 0
-        with wx.ProgressDialog(
-                "Running modules in test mode",
-                        message_format % (index + 1, count, first_module.module_name),
-                maximum=count,
-                parent=self.__frame,
-                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT) as dlg:
-            dlg.Show()
-            max_message_width = None
-            while True:
-                assert isinstance(dlg, wx.ProgressDialog)
-                module = self.current_debug_module()
-                message = message_format % (
-                    index + 1, count, module.module_name)
-                message_width = dlg.GetTextExtent(message)[0]
-                if max_message_width is None:
-                    max_message_width = message_width
-                elif max_message_width < message_width:
-                    diff = message_width - max_message_width
-                    max_message_width = message_width
-                    width, height = dlg.GetSize()
-                    width += diff
-                    dlg.SetSize(wx.Size(width, height))
-                wants_continue, wants_skip = dlg.Update(index, message)
-                if not wants_continue:
-                    return
-                index += 1
-                success = self.do_step(module)
-                if not success:
-                    return
-                if not self.next_debug_module():
-                    return
-                if self.current_debug_module().wants_pause:
-                    return
+        active_module = self.__pipeline_list_view.get_active_module()
+        self.__pipeline_list_view.set_current_debug_module(active_module)
+        self.on_debug_continue(event)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

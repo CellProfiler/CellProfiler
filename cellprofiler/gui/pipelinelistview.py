@@ -580,7 +580,7 @@ class PipelineListView(object):
                     _, debug_index = self.get_ctrl_and_index(self.get_current_debug_module())
 
                     if active_index <= debug_index:
-                        menu.Append(ID_DEBUG_RUN_FROM_THIS_MODULE, "Run from this module")
+                        menu.Append(ID_DEBUG_RUN_FROM_THIS_MODULE, "&Run from module {}".format(module.module_num))
             else:
                 self.__controller.populate_edit_menu(menu)
             self.__frame.PopupMenu(menu)

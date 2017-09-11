@@ -1428,9 +1428,11 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
         text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
 
-        text_color_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+        text_color_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXHIGHLIGHTTEXT)
 
         for index, item in enumerate(self.items):
+            item_text_color = text_color
+
             dc.SetFont(self.Font)
 
             if self.show_go_pause and self.test_mode:
@@ -1459,7 +1461,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
             if item.selected:
                 flags |= wx.CONTROL_SELECTED
-                text_color = text_color_selected
+                item_text_color = text_color_selected
                 font = font.MakeBold()
 
             if self.active_item == index:
@@ -1468,10 +1470,16 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
                 if self.always_draw_current_as_if_selected:
                     flags |= wx.CONTROL_SELECTED
-                    text_color = text_color_selected
+                    item_text_color = text_color_selected
 
-            if (item.selected or self.active_item == index) and self.FindFocus() is self:
-                flags |= wx.CONTROL_FOCUSED
+            if self.FindFocus() is self:
+                if item.selected or self.active_item == index:
+                    flags |= wx.CONTROL_FOCUSED
+            else:
+                # On Windows, the highlight color is white. If focus is lost, the background color is light grey.
+                # These colors together makes the font very difficult to read. The default text color is dark. Let's
+                # use it instead.
+                item_text_color = text_color
 
             dc.SetFont(font)
             cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
@@ -1482,7 +1490,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
             dc.SetBackgroundMode(wx.TRANSPARENT)
 
-            dc.SetTextForeground(text_color)
+            dc.SetTextForeground(item_text_color)
 
             dc.DrawText(item.module_name, rectangle.left + self.text_gap, rectangle.top)
 

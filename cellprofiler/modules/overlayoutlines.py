@@ -7,11 +7,8 @@ OverlayOutlines
 **OverlayOutlines** places outlines of objects over a desired image.
 Outlines can be placed around 2D and 3D objects.
 
-This module places outlines of objects (often produced by an
-**Identify** module) on any desired image (grayscale, color, or blank).
-The resulting image can be saved using the **SaveImages** module. See
-also **IdentifyPrimaryObjects, IdentifySecondaryObjects,
-IdentifyTertiaryObjects**.
+This module places outlines of objects on any desired image (grayscale, color, or blank).
+The resulting image can be saved using the **SaveImages** module.
 """
 
 import numpy

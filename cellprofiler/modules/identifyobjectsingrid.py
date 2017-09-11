@@ -21,10 +21,8 @@ grid is impossible for some reason (the grid compartments are too close
 together to fit the proper sized circles, for example) the grid will
 fail and processing will be canceled unless you choose to re-use a grid
 from a previous successful image cycle. *Special note on saving images:*
-You can use the settings in this module to pass object outlines along to
-the **OverlayOutlines** module and then save them with the
-**SaveImages** module. You can also pass along objects themselves to the
-object processing module **ConvertToImage** and then save them with the
+You can use the settings in this module to pass objects along to
+the object processing module **ConvertToImage** and then save them with the
 **SaveImages** module.
 
 Measurements made by this module
@@ -46,7 +44,6 @@ See also **DefineGrid**.
 
 import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel
-from centrosome.outline import outline
 
 import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
@@ -54,7 +51,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
@@ -74,7 +71,7 @@ FAIL_FIRST = "The First"
 
 class IdentifyObjectsInGrid(cpm.Module):
     module_name = "IdentifyObjectsInGrid"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Object Processing"
 
     def create_settings(self):
@@ -164,12 +161,6 @@ guide the shape and/or location of the objects created by this module,
 depending on the method chosen.
 """)
 
-        self.wants_outlines = cps.Binary(
-                "Retain outlines of the identified objects?", False, doc="""%(RETAINING_OUTLINES_HELP)s""" % globals())
-
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "GridOutlines", doc="""%(NAMING_OUTLINES_HELP)s""" % globals())
-
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
@@ -180,8 +171,7 @@ depending on the method chosen.
         """
         return [self.grid_name, self.output_objects_name, self.shape_choice,
                 self.diameter_choice, self.diameter,
-                self.guiding_object_name,
-                self.wants_outlines, self.outlines_name]
+                self.guiding_object_name]
 
     def visible_settings(self):
         """Return the settings that the user sees"""
@@ -192,9 +182,6 @@ depending on the method chosen.
                 result += [self.diameter]
         if self.wants_guiding_objects():
             result += [self.guiding_object_name]
-        result += [self.wants_outlines]
-        if self.wants_outlines:
-            result += [self.outlines_name]
         return result
 
     def wants_guiding_objects(self):
@@ -233,10 +220,6 @@ depending on the method chosen.
         add_object_count_measurements(workspace.measurements,
                                       self.output_objects_name.value,
                                       object_count)
-        if self.wants_outlines:
-            outlines = outline(labels != 0)
-            outline_image = cpi.Image(outlines)
-            workspace.image_set.add(self.outlines_name.value, outline_image)
         if self.show_window:
             workspace.display_data.gridding = gridding
             workspace.display_data.labels = labels
@@ -486,6 +469,10 @@ depending on the method chosen.
             elif setting_values[2] == "Natural Shape":
                 setting_values[2] = SHAPE_NATURAL
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            setting_values = setting_values[:-2]
+            variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
 

@@ -21,12 +21,10 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.identifyobjectsingrid as I
 import cellprofiler.modules.definegrid as D
-from centrosome.outline import outline
 
 OUTPUT_OBJECTS_NAME = 'outputobjects'
 GRID_NAME = 'mygrid'
 GUIDING_OBJECTS_NAME = 'inputobjects'
-OUTLINES_NAME = 'myoutlines'
 
 
 class TestIdentifyObjectsInGrid(unittest.TestCase):
@@ -36,7 +34,6 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         module.grid_name.value = GRID_NAME
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
         module.guiding_object_name.value = GUIDING_OBJECTS_NAME
-        module.outlines_name.value = OUTLINES_NAME
         image_set_list = cpi.ImageSetList()
         object_set = cpo.ObjectSet()
         if labels is not None:
@@ -99,7 +96,6 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         module.diameter_choice.value = I.AM_MANUAL
         module.diameter.value = diameter
         module.shape_choice.value = I.SHAPE_CIRCLE_FORCED
-        module.wants_outlines.value = True
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
@@ -124,13 +120,6 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertTrue(
                 all([column[1] in ('Location_Center_X', 'Location_Center_Y', count_feature, 'Number_Object_Number')
                      for column in columns]))
-        #
-        # Check the outlines
-        #
-        outlines = workspace.image_set.get_image(OUTLINES_NAME)
-        outlines = outlines.pixel_data
-        expected_outlines = outline(expected)
-        self.assertTrue(np.all(outlines == (expected_outlines[0:outlines.shape[0], 0:outlines.shape[1]] > 0)))
         #
         # Check the measurements
         #

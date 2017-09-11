@@ -152,15 +152,6 @@ metadata tags for which all images in each individual image set have the same va
     "DEFAULT_OUTPUT_SUBFOLDER_NAME": DEFAULT_OUTPUT_SUBFOLDER_NAME
 })
 
-NAMING_OUTLINES_HELP = """\
-*(Used only if the outline image is to be retained for later use in the
-pipeline)*
-
-Enter a name for the outlines of the identified objects. The outlined
-image can be selected in downstream modules by selecting them from any
-drop-down image list.
-"""
-
 ####################
 #
 # ICONS
@@ -189,16 +180,6 @@ PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")
 PROTIP_AVOID_ICON = __image_resource("thumb-down.png")
 
 TECH_NOTE_ICON = __image_resource("gear.png")
-
-RETAINING_OUTLINES_HELP = """\
-Select *{YES}* to retain the outlines of the new objects for later use
-in the pipeline. For example, a common use is for quality control
-purposes by overlaying them on your image of choice using the
-**OverlayOutlines** module and then saving the overlay image with the
-**SaveImages** module.
-""".format(**{
-    "YES": cellprofiler.setting.YES
-})
 
 USING_METADATA_GROUPING_HELP_REF = """\
 Please see the **Groups** module for more details on the proper use of

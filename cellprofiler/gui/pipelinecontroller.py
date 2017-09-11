@@ -166,6 +166,7 @@ class PipelineController(object):
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_RUN_FROM_THIS_MODULE, self.on_run_from_this_module)
 
         # ~*~
         wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)
@@ -3272,6 +3273,11 @@ class PipelineController(object):
                            "See the log for details."),
                           "Error reloading modules.",
                           wx.ICON_ERROR | wx.OK)
+
+    def on_run_from_this_module(self, event):
+        active_module = self.__pipeline_list_view.get_active_module()
+        self.__pipeline_list_view.set_current_debug_module(active_module)
+        self.on_debug_continue(event)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

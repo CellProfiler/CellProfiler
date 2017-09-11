@@ -559,7 +559,7 @@ class PipelineListView(object):
     def __on_list_context_menu(self, event):
         from cellprofiler.gui.cpframe import \
             ID_EDIT_DELETE, ID_EDIT_DUPLICATE, ID_HELP_MODULE, \
-            ID_EDIT_ENABLE_MODULE
+            ID_EDIT_ENABLE_MODULE, ID_DEBUG_RUN_FROM_THIS_MODULE
 
         if event.EventObject is not self.list_ctrl:
             return
@@ -575,6 +575,12 @@ class PipelineListView(object):
                 menu.Append(ID_EDIT_DUPLICATE, "Duplicate module {}".format(module.module_num))
                 menu.Append(ID_EDIT_ENABLE_MODULE, "Enable module {}".format(module.module_num))
                 menu.Append(ID_HELP_MODULE, "&Help for module {}".format(module.module_num))
+                if self.__debug_mode:
+                    _, active_index = self.get_ctrl_and_index(module)
+                    _, debug_index = self.get_ctrl_and_index(self.get_current_debug_module())
+
+                    if active_index <= debug_index:
+                        menu.Append(ID_DEBUG_RUN_FROM_THIS_MODULE, "&Run from module {}".format(module.module_num))
             else:
                 self.__controller.populate_edit_menu(menu)
             self.__frame.PopupMenu(menu)
@@ -1422,14 +1428,15 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
         text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
 
-        text_color_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+        text_color_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXHIGHLIGHTTEXT)
 
         for index, item in enumerate(self.items):
+            item_text_color = text_color
+
             dc.SetFont(self.Font)
-            
+
             if self.show_go_pause and self.test_mode:
                 rectangle = self.get_go_pause_rect(index)
-
                 bitmap = self.bmp_pause if item.is_paused() else self.bmp_go
 
                 dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)
@@ -1449,41 +1456,44 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
             rectangle = self.get_text_rect(index)
 
-            if item.selected or index == self.active_item:
-                flags = wx.CONTROL_DISABLED if not self.Enabled else 0
+            flags = 0 if self.Enabled else wx.CONTROL_DISABLED
+            font = self.Font
 
-                if item.selected:
-                    flags += wx.CONTROL_SELECTED
-                    dc.SetFont(self.Font.MakeBold())
+            if item.selected:
+                flags |= wx.CONTROL_SELECTED
+                item_text_color = text_color_selected
+                font = font.MakeBold()
 
-                if self.FindFocus() is self:
-                    flags += wx.CONTROL_FOCUSED
+            if self.active_item == index:
+                flags |= wx.CONTROL_CURRENT
+                font = font.MakeBold()
 
-                if self.active_item == index:
-                    flags += wx.CONTROL_CURRENT
+                if self.always_draw_current_as_if_selected:
+                    flags |= wx.CONTROL_SELECTED
+                    item_text_color = text_color_selected
 
-                    if self.always_draw_current_as_if_selected and not item.selected:
-                        flags |= wx.CONTROL_SELECTED
-
-                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
-
-                if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED:
-                    text_color = text_color_selected
-                else:
-                    text_color = text_color
-            if self.test_mode and index == self.running_item:
-                flags = wx.CONTROL_CURRENT | wx.CONTROL_FOCUSED
-                dc.SetFont(self.Font.MakeUnderlined())
-
-                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
+            if self.FindFocus() is self:
+                if item.selected or self.active_item == index:
+                    flags |= wx.CONTROL_FOCUSED
             else:
-                text_color = text_color
+                # On Windows, the highlight color is white. If focus is lost, the background color is light grey.
+                # These colors together makes the font very difficult to read. The default text color is dark. Let's
+                # use it instead.
+                item_text_color = text_color
+
+            dc.SetFont(font)
+            cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
+
+            if self.test_mode and self.running_item == index:
+                dc.SetFont(font.MakeUnderlined())
+                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags | wx.CONTROL_SELECTED)
 
             dc.SetBackgroundMode(wx.TRANSPARENT)
 
-            dc.SetTextForeground(text_color)
+            dc.SetTextForeground(item_text_color)
 
             dc.DrawText(item.module_name, rectangle.left + self.text_gap, rectangle.top)
+
         if self.drop_insert_point is not None:
             y = self.line_height * self.drop_insert_point
 

@@ -107,7 +107,7 @@ image sets that will be processed independently of the other subsets.
 The two tables at the bottom provide the following information when a
 metadata category is selected:
 
--  The *grouping list*\ (top table) shows the unique values of the
+-  The *grouping list* (top table) shows the unique values of the
    selected metadata under the “Group” column; each of the unique values
    comprises a group. The “Count” column shows the number of image sets
    included in a given group; this is useful as a “sanity check” to make
@@ -117,6 +117,7 @@ metadata category is selected:
 
 
 .. image:: {GROUPS_DISPLAY_TABLE}
+   :width: 100%
 
 
 Measurements made by this module
@@ -162,7 +163,7 @@ class Groups(cpm.Module):
             "Do you want to group your images?",
             False,
             doc="""\
-Select *{YES}* if you need to split your images into image subsets (or
+Select "*{YES}*" if you need to split your images into image subsets (or
 *groups*) such that each group is processed independently of each other.
 See the main module help for more details.
 """.format(**{
@@ -299,25 +300,25 @@ categories will create four groups based on the unique plate and well
 combinations:
 
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
-| **Grouping tags**   | **Image set tags**   | **Channels**                                                                                                                                   |
+| **Grouping tags**                          | **Image set tags**                                                               | **Channels**                                                |                                                                                   
 +=====================+======================+========================+=============+============+==============================+==============================+==============================+
 | **Group number**    | **Group index**      | **Image set number**   | **Plate**   | **Well**   | **FrameNumber**              | **OrigBlue**                 | **OrigGreen**                |
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
 | 1                   | 1                    | 1                      | P-12345     | A01        | t001                         | P-12345\_A01\_t001\_w1.tif   | P-12345\_A01\_t001\_w2.tif   |
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
-| 2                   | 2                    | P-12345                | A01         | t002       | P-12345\_A01\_t002\_w1.tif   | P-12345\_A01\_t002\_w2.tif   |                              |
+| 1                   | 2                    | 2                      | P-12345     | A01        | t002                         | P-12345\_A01\_t002\_w1.tif   | P-12345\_A01\_t002\_w2.tif   |                              
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
 | 2                   | 1                    | 3                      | P-12345     | B01        | t001                         | P-12345\_B01\_t001\_w1.tif   | P-12345\_B01\_t001\_w2.tif   |
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
-| 2                   | 4                    | P-12345                | B01         | t002       | P-12345\_B01\_t002\_w1.tif   | P-12345\_B01\_t002\_w2.tif   |                              |
+| 2                   | 2                    | 4                      | P-12345     | B01        | t002                         | P-12345\_B01\_t002\_w1.tif   | P-12345\_B01\_t002\_w2.tif   |                              
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
 | 3                   | 1                    | 5                      | 2-ABCDF     | A01        | t001                         | 2-ABCDF\_A01\_t001\_w1.tif   | 2-ABCDF\_A01\_t001\_w2.tif   |
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
-| 2                   | 6                    | 2-ABCDF                | A01         | t002       | 2-ABCDF\_A01\_t002\_w1.tif   | 2-ABCDF\_A01\_t002\_w2.tif   |                              |
+| 3                   | 2                    | 6                      | 2-ABCDF     | A01        | t002                         | 2-ABCDF\_A01\_t002\_w1.tif   | 2-ABCDF\_A01\_t002\_w2.tif   |                              
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
 | 4                   | 1                    | 7                      | 2-ABCDF     | B01        | t001                         | 2-ABCDF\_B01\_t001\_w1.tif   | 2-ABCDF\_B01\_t001\_w2.tif   |
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
-| 2                   | 8                    | 2-ABCDF                | B01         | t002       | 2-ABCDF\_B01\_t002\_w1.tif   | 2-ABCDF\_B01\_t002\_w2.tif   |                              |
+| 4                   | 2                    | 8                      | 2-ABCDF     | B01        | t002                         | 2-ABCDF\_B01\_t002\_w1.tif   | 2-ABCDF\_B01\_t002\_w2.tif   |                              
 +---------------------+----------------------+------------------------+-------------+------------+------------------------------+------------------------------+------------------------------+
 
 Each group will be processed independently from the others, which is the

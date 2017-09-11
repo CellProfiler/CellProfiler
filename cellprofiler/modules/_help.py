@@ -96,7 +96,7 @@ HELP_ON_MEASURING_DISTANCES = """\
 To measure distances in an open image, use the “Measure length” tool
 under *Tools* in the display window menu bar. If you click on an image
 and drag, a line will appear between the two endpoints, and the distance
-between them shown at the right-most portion of the bottom panel.\
+between them will be shown at the right-most portion of the bottom panel.\
 """
 
 HELP_ON_PIXEL_INTENSITIES = """\

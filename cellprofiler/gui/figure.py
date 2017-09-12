@@ -605,7 +605,7 @@ class Figure(wx.Frame):
 
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)
-        elif not self.mouse_mode == MODE_NONE:
+        else:
             self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
 
     def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
@@ -682,11 +682,23 @@ class Figure(wx.Frame):
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
 
-            self.find_image_for_axes(event.inaxes)
+            if self.dimensions == 2:
+                im = self.find_image_for_axes(event.inaxes)
+            else:  # self.dimensions == 3
+                axes = event.inaxes
 
-            for artist in event.inaxes.artists:
-                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
-                    fields += ["%s: %.4f" % (k, v) for k, v in artist.get_channel_values(xi, yi).items()]
+                axes_image = axes.get_images()[0]
+
+                fields += ["Z: {}".format(axes.get_label())]
+
+                im = axes_image.get_array().data
+
+            if im is not None:
+                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+            elif isinstance(event.inaxes, matplotlib.axes.Axes):
+                for artist in event.inaxes.artists:
+                    if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                        fields += ["%s: %.4f" % (k, v) for k, v in artist.get_channel_values(xi, yi).items()]
         else:
             fields = []
 
@@ -705,14 +717,12 @@ class Figure(wx.Frame):
             self.status_bar.SetFields(fields)
 
     def find_image_for_axes(self, axes):
-        value = None
-
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
                 if axes == slax:
-                    value = self.images.get((i, j), None)
+                    return self.images.get((i, j), None)
 
-        return value
+        return None
 
     def on_button_release(self, event):
         if not hasattr(self, "subplots"):
@@ -1193,6 +1203,8 @@ class Figure(wx.Frame):
                 cmap=cmap,
                 norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
             )
+
+            ax.set_label("{:d}".format(position * (z - 1) / 8))
 
             self.figure.add_subplot(ax)
 

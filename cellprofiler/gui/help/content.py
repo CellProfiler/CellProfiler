@@ -348,7 +348,7 @@ This version of CellProfiler no longer supports exporting MATLAB format
 images. Instead, the recommended image format for illumination correction
 functions is NumPy (.npy). Loading MATLAB format images is deprecated and
 will be removed in a future version of CellProfiler. To ensure compatibility
-with future versions of CellProfiler you can convert your .mat files to .npy 
+with future versions of CellProfiler you can convert your .mat files to .npy
 files via **SaveImages** using this version of CellProfiler.
 
 See **SaveImages** for more details on saving NumPy format images.
@@ -465,7 +465,7 @@ panel* (located on the left-hand side of the CellProfiler window).
       time remaining to process the full image set.
 
    At the end of each cycle:
-       
+
    -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the output file.
    -  If you are using the **ExportToDatabase** module, CellProfiler saves the measurements in the
       output database.
@@ -534,8 +534,8 @@ Which format you use will depend on some of the considerations below:
    is optimized for speed.
 -  *Downstream application:* If you wish to use Excel or another simple
    tool to analyze your data, a spreadsheet is likely the best choice.  If you
-   intend to use CellProfiler Analyst, you must create a database.  If you 
-   plan to use a scripting language, most languages have ways to import 
+   intend to use CellProfiler Analyst, you must create a database.  If you
+   plan to use a scripting language, most languages have ways to import
    data from either format.
 
 .. _Calc: http://www.libreoffice.org/discover/calc/
@@ -610,7 +610,7 @@ From the *Test* menu, you can choose additional options:
 -  *Reload Modules Source (enabled only if running from source code):*
    This option will reload the module source code, so any changes to the
    code will be reflected immediately.
--  *Break into debugger (enabled only if running from source code):* 
+-  *Break into debugger (enabled only if running from source code):*
    This option will allow you to open a debugger in the terimal window.
 
 Note that if movies are being loaded, the individual movie is defined as
@@ -886,7 +886,7 @@ each category. Here is an example file:
 ::
 
     [loggers]
-    keys=root,pipelinestatistics
+    keys=root,pipelineStatistics
 
     [handlers]
     keys=console,logfile
@@ -898,34 +898,35 @@ each category. Here is an example file:
     level=WARNING
     handlers=console
 
-    [logger_pipelinestatistics]
+    [logger_pipelineStatistics]
     level=INFO
     handlers=logfile
-    qualname=pipelineStatistics
+    qualname=PipelineStatistics
     propagate=0
 
     [handler_console]
     class=StreamHandler
-    formatter=detailed
     level=WARNING
-    args=(sys.stderr)
+    formatter=detailed
+    args=(sys.stderr,)
 
     [handler_logfile]
     class=FileHandler
     level=INFO
-    args=('~/CellProfiler/logfile.log','w')
+    formatter=detailed
+    args=('cellprofiler.log', 'w')
 
     [formatter_detailed]
-    format=[%(asctime)s] %(name)s %(levelname)s %(message)s
+    format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
     datefmt=
 
 The above file would print warnings and errors to the console for all
 messages but “pipeline statistics” which are configured using the
-*pipelineStatistics* logger are written to a file instead.. The
-pipelineStatistics logger is the logger that is used to print progress
-messages when the pipeline is run. You can find out which loggers are
-being used to write particular messages by printing all messages with a
-formatter that prints the logger name (“%(name)s”).
+*PipelineStatistics* logger are written to the file `cellprofiler.log`
+instead. The *PipelineStatistics* logger is the logger that is used to
+print progress messages when the pipeline is run. You can find out which
+loggers are being used to write particular messages by printing all
+messages with a formatter that prints the logger name (“%(name)s”).
 The format of the file is described in greater detail `here`_.
 
 .. _here: http://docs.python.org/2.7/howto/logging.html#configuring-logging

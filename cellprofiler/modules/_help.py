@@ -8,6 +8,12 @@ import cellprofiler.setting
 from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 REGEXP_HELP_REF = """\
+**Details on regular expressions:**
+
+A *regular expression* is a general term refering to a method of
+searching for pattern matches in text. There is a high learning curve to
+using them, but are quite powerful once you understand the basics.
+
 Patterns are specified using combinations of metacharacters and literal
 characters. There are a few classes of metacharacters, partially listed
 below. Some helpful links follow:
@@ -53,7 +59,7 @@ and *conditions* you can specify to narrow down the image list.
    -  If you select “Does” and “Start with” as the operators and
       “BBBC013-1” in the Condition box, the rule will includes such files
       as “BBBC013-1.tif” “BBBC013-1-A01.png”, and so on.
-      
+
 .. image:: {IMAGES_USING_RULES_ICON}
    :width: 100%
 
@@ -75,15 +81,7 @@ clicking the ellipsis button (to the right of the plus button). Repeat
 the above steps to add more rules to the filter until you have all the
 conditions you want to include.
 
-**Details on regular expressions:**
-
-A *regular expression* is a general term refering to a method of
-searching for pattern matches in text. There is a high learning curve to
-using them, but are quite powerful once you understand the basics.
-
 {REGEXP_HELP_REF}
-
-
 """.format(**{
     "IMAGES_USING_RULES_ICON": pkg_resources.resource_filename(
         "cellprofiler",
@@ -143,7 +141,7 @@ metadata tags for which all images in each individual image set have the same va
 
 -  Example: if you had extracted "*Plate*", "*Well*", and "*Channel*" metadata
    from your images, for most pipelines folders based on "*Plate*" or "*Well*" would work since
-   each individual image set would come only from a single well on a single plate, but 
+   each individual image set would come only from a single well on a single plate, but
    folders based on "*Channel*" would not work as each individual image set might
    contain many channels.
 """.format(**{

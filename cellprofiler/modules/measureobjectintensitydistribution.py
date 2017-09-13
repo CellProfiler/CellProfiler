@@ -9,7 +9,7 @@ intensities within each object.
 
 Given an image with objects identified, this module measures the
 intensity distribution from each object’s center to its boundary within
-a user-controlled number of bins, i.e. rings.
+a user-controlled number of bins, i.e., rings.
 
 The distribution is measured from the center of the object, where the
 center is defined as the point farthest from any edge. The numbering is

@@ -774,7 +774,7 @@ def calc_init_params(x, y):
 
     # Parameter 3
     # OLD:  parms(3)=(min(x)+max(x))/2;
-    # This is an estimate of the EC50, i.e. the half maximal effective
+    # This is an estimate of the EC50, i.e., the half maximal effective
     # concentration (here denoted as x-value)
     #
     # Note that this was originally simply mean([max(x); min(x)]).  This does not

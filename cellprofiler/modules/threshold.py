@@ -75,9 +75,11 @@ The choices for the threshold strategy are:
    |image0| This strategy is fast and robust, especially if the background is
    relatively uniform (for example, after illumination correction).
 
--  *{TS_ADAPTIVE}:* Partitions the input image into tiles and calculate
-   thresholds for each tile. For each tile, the calculated threshold is
-   applied only to the pixels within that tile.
+-  *{TS_ADAPTIVE}:* Calculates a different threshold for each pixel,
+   thus adapting to changes in foreground/background intensities
+   across the image. For each pixel, the threshold is calculated based
+   on the pixels within a given neighborhood (or window) surrounding
+   that pixel.
 
    |image1| This method is slower but can produce better results for
    non-uniform backgrounds. However, for significant illumination

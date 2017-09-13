@@ -55,7 +55,7 @@ EXPORTING_RESULTS_HELP = u"""\
     <p>For larger assays, involving tens of thousands of images or more, a
     spreadsheet is usually insufficient to handle the massive amounts of data
     generated. A <i>database</i> is a better solution in this case, although
-    this requires more sophistication by the user; the <b>ExportToDatabase</b>
+    this requires more computational expertise; the <b>ExportToDatabase</b>
     module is to be used for this task. If this avenue is needed, it is best to
     consult with your information technology department.</p>
     <p>CellProfiler will not save images produce by analysis modules unless
@@ -63,7 +63,7 @@ EXPORTING_RESULTS_HELP = u"""\
     identified; this can is useful as a sanity check of the object
     identification results or for quality control purposes. The
     <b>SaveImages</b> module is used for saving images to a variety of output
-    formats, with the nomenclature specified by the user.</p>
+    formats; you can specify the nomenclature.</p>
     <p>For more information on these modules and how to configure them for best
     performance, please see the detailed help by selecting the module and
     clicking the <img src="{MODULE_HELP_BUTTON}"> button at the bottom

@@ -439,7 +439,7 @@ see the results of each.
    +--------------------------------------+--------------------------------------+
    | *{UN_INTENSITY}:* For objects that        | |image1|                             |
    | tend to have only a single peak of   |                                      |
-   | brightness (e.g., objects that are    |                                      |
+   | brightness (e.g., objects that are   |                                      |
    | brighter towards their interiors and |                                      |
    | dimmer towards their edges), this    |                                      |
    | option counts each intensity peak as |                                      |
@@ -616,7 +616,8 @@ smoothing filter increases the processing time exponentially.
 
 Enter 0 to prevent any image smoothing in certain cases; for example,
 for low resolution images with small objects ( < ~5 pixels in
-diameter). """
+diameter).
+""".format(**{"AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT})
         )
 
         self.automatic_suppression = cellprofiler.setting.Binary(
@@ -671,7 +672,8 @@ object, and they will be merged.
 Note that splitting and merging is also
 affected by your choice of settings for the setting, 
 *{SMOOTHING_FILTER_SIZE_SETTING_TEXT}* It is an art to balance
-these two settings; read the help carefully for both."""
+these two settings; read the help carefully for both.
+""".format(**{"SMOOTHING_FILTER_SIZE_SETTING_TEXT": SMOOTHING_FILTER_SIZE_SETTING_TEXT})
         )
 
         self.low_res_maxima = cellprofiler.setting.Binary(

@@ -118,8 +118,8 @@ processing, the module display window will show the following panels:
 
    If you need to change the color defaults, you can make adjustments in
    *File > Preferences*.
--  *Lower right:* A table showing some of the settings selected by the
-   user, as well as those calculated by the module in order to produce
+-  *Lower right:* A table showing some of the settings you chose,
+   as well as those calculated by the module in order to produce
    the objects shown.
 
 Measurements made by this module

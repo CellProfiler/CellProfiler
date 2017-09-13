@@ -387,7 +387,7 @@ Objects discarded based on size are outlined in magenta in the module’s
 display. See also the **FilterObjects** module to further discard
 objects based on some other measurement.
 
-|image0| Select "*{YES}*" allows you to exclude small objects (e.g.,
+|image0| Select "*{YES}*" to exclude small objects (e.g.,
 dust, noise, and debris) or large objects (e.g., large clumps) if
 desired.
 
@@ -407,15 +407,15 @@ desired.
 Choose "*{YES}*" to discard objects that touch the border of the image.
 Choose "*{NO}*" to ignore this criterion.
 
-Objects discarded due to border touching are outlined in yellow in the
+Objects discarded because they touch the border are outlined in yellow in the
 module’s display. Note that if a per-object thresholding method is used
 or if the image has been previously cropped or masked, objects that
 touch the border of the cropped or masked region may also discarded.
 
 |image0| Removing objects that touch the image border is useful when
 you do not want to make downstream measurements of objects that are not
-fully within the field of view. For example, morphological measurements
-obtained from a portion of an object would not be accurate.
+fully within the field of view. For example, measuring the area of a
+partial object would not be accurate.
 
 .. |image0| image:: {PROTIP_RECOMEND_ICON}
             """.format(**{
@@ -429,15 +429,17 @@ obtained from a portion of an object would not be accurate.
             'Method to distinguish clumped objects',
             [UN_INTENSITY, UN_SHAPE, UN_NONE],
             doc="""\
-This setting allows you to choose the method that is used to segment
-objects, i.e., “declump” a large, merged object into individual objects
+This setting allows you to choose the method that is used to distinguish
+between individual objects that are touching each other (and not properly
+delineated as two objects by thresholding alone). In other words, this
+setting allows you to “declump” a large, merged object into individual objects
 of interest. To decide between these methods, you can run Test mode to
 see the results of each.
 
    +--------------------------------------+--------------------------------------+
    | *{UN_INTENSITY}:* For objects that        | |image1|                             |
    | tend to have only a single peak of   |                                      |
-   | brightness (e.g. objects that are    |                                      |
+   | brightness (e.g., objects that are   |                                      |
    | brighter towards their interiors and |                                      |
    | dimmer towards their edges), this    |                                      |
    | option counts each intensity peak as |                                      |
@@ -473,7 +475,8 @@ see the results of each.
    |                                      |                                      |
    | |image3|  This choice works best for |                                      |
    | objects that are round. In this      |                                      |
-   | case, the intensity patterns in the  |                                      |
+   | case, the intensity patterns         |                                      |
+   | (i.e., lumpy texture) in the         |                                      |
    | original image are largely           |                                      |
    | irrelevant. Therefore, the cells     |                                      |
    | need not be brighter towards the     |                                      |
@@ -518,7 +521,7 @@ see the results of each.
             [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE],
             doc="""\
 This setting allows you to choose the method that is used to draw the
-line bewteen segmented objects, provided that you have chosen to declump
+line between segmented objects, provided that you have chosen to declump
 the objects. To decide between these methods, you can run Test mode to
 see the results of each.
 
@@ -598,15 +601,23 @@ calculated value.""".format(**{
 If you see too many objects merged that ought to be separated
 (under-segmentation), this value should be lower. If you see too many
 objects split up that ought to be merged (over-segmentation), the
-value should be higher. Enter 0 to prevent any image smoothing in
-certain cases; for example, for low resolution images with small
-objects ( < ~5 pixels in diameter).
+value should be higher.
+
+Note that splitting and merging is also
+affected by your choice of settings for the setting, 
+*{AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT}* It is an art to balance
+these two settings; read the help carefully for both.
 
 Reducing the texture of objects by increasing the smoothing increases
 the chance that each real, distinct object has only one peak of
 intensity but also increases the chance that two distinct objects will
 be recognized as only one object. Note that increasing the size of the
-smoothing filter increases the processing time exponentially. """
+smoothing filter increases the processing time exponentially.
+
+Enter 0 to prevent any image smoothing in certain cases; for example,
+for low resolution images with small objects ( < ~5 pixels in
+diameter).
+""".format(**{"AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT})
         )
 
         self.automatic_suppression = cellprofiler.setting.Binary(
@@ -625,7 +636,9 @@ single object or multiple objects. It does not affect the dividing lines
 between an object and the background. Local maxima that are closer
 together than the minimum allowed distance will be suppressed (the local
 intensity histogram is smoothed to remove the peaks within that
-distance). The distance can be automatically calculated based on the
+distance).
+
+The distance can be automatically calculated based on the
 minimum entered for the *{SIZE_RANGE_SETTING_TEXT}* setting above,
 but if you see too many objects merged that ought to be separate, or too
 many objects split up that ought to be merged, you may want to override
@@ -650,10 +663,17 @@ should be lower. If you see too many objects split up that ought to be
 merged (over-segmentation), the value should be higher.
 
 The maxima suppression distance should be set to be roughly equivalent
-to the minimum radius of a real object of interest. Any distinct
-“objects” which are found but are within two times this distance from
+to the radius of the smallest object of interest that you would expect
+to see in the experiment. Any distinct
+“objects” that are found but are within two times this distance from
 each other will be assumed to be actually two lumpy parts of the same
-object, and they will be merged."""
+object, and they will be merged.
+
+Note that splitting and merging is also
+affected by your choice of settings for the setting, 
+*{SMOOTHING_FILTER_SIZE_SETTING_TEXT}* It is an art to balance
+these two settings; read the help carefully for both.
+""".format(**{"SMOOTHING_FILTER_SIZE_SETTING_TEXT": SMOOTHING_FILTER_SIZE_SETTING_TEXT})
         )
 
         self.low_res_maxima = cellprofiler.setting.Binary(
@@ -676,15 +696,16 @@ checking this box will have no effect.""".format(**{
             FH_ALL,
             value=FH_THRESHOLDING,
             doc="""\
-This option controls how holes are filled in:
+This option controls how holes (regions of background surrounded by one
+or more objects) are filled in:
 
--  *{FH_THRESHOLDING}:* Fill in background holes that are smaller than
+-  *{FH_THRESHOLDING}:* Fill in holes that are smaller than
    the maximum object size prior to declumping and to fill in any holes
    after declumping.
--  *{FH_DECLUMP}:* Fill in background holes located within identified
+-  *{FH_DECLUMP}:* Fill in holes located within identified
    objects after declumping.
 -  *{FH_NEVER}:* Leave holes within objects.
-   Please note that if a foreground object is located within a hole and
+   Please note that if an object is located within a hole and
    this option is enabled, the object will be lost when the hole is
    filled in.""".format(**{
                 "FH_THRESHOLDING": FH_THRESHOLDING,
@@ -703,11 +724,13 @@ threshold or if the image has unusual artifacts.
 **IdentifyPrimaryObjects** can handle this condition in one of three
 ways:
 
--  *{LIMIT_NONE}*: Don’t check for large numbers of objects.
+-  *{LIMIT_NONE}*: Continue processing regardless if large numbers of
+   objects are found.
 -  *{LIMIT_ERASE}*: Erase all objects if the number of objects exceeds
    the maximum. This results in an image with no primary objects. This
    option is a good choice if a large number of objects indicates that
-   the image should not be processed.""".format(**{
+   the image should not be processed; it can save a lot of time in
+   subsequent **Measure** modules.""".format(**{
                 "LIMIT_NONE": LIMIT_NONE,
                 "LIMIT_ERASE": LIMIT_ERASE
             })

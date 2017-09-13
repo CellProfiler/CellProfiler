@@ -4,14 +4,14 @@
 ColorToGray
 ===========
 
-**ColortoGray** converts an image with multiple color channels to a set
-of individual grayscale images.
+**ColortoGray** converts an image with multiple color channels to one or more
+grayscale images.
 
-This module converts RGB (Red, Green, Blue) color  and channel-stacked 
+This module converts color and channel-stacked 
 images to grayscale. All channels can be merged into one grayscale image 
 (*Combine*), or each channel can be extracted into a separate grayscale image
-(*Split*). If you use *Combine*, the relative weights will adjust the
-contribution of the colors relative to each other.
+(*Split*). If you use *Combine*, the relative weights you provide allow
+adjusting the contribution of the colors relative to each other.
 Note that all **Identify** modules require grayscale images.
 
 See also **GrayToColor**.
@@ -55,28 +55,29 @@ class ColorToGray(cpm.Module):
                 [COMBINE, SPLIT], doc='''\
 How do you want to convert the color image?
 
--  *%(SPLIT)s:* Splits the three channels (red, green, blue) of a color
-   image into three separate grayscale images.
--  *%(COMBINE)s* Converts a color image to a grayscale image by
-   combining the three channels (red, green, blue) together.''' % globals())
+-  *%(SPLIT)s:* Splits the channels of a color
+   image (e.g., red, green, blue) into separate grayscale images.
+-  *%(COMBINE)s:* Converts a color image to a grayscale image by
+   combining channels together (e.g., red, green, blue).''' % globals())
 
         self.rgb_or_channels = cps.Choice(
                 "Image type", [CH_RGB, CH_HSV, CH_CHANNELS], doc="""\
-Many images contain color channels other than red, green and blue. For
-instance, GIF and PNG formats can have an alpha channel that encodes
-transparency. TIF formats can have an arbitrary number of channels which
-represent pixel measurements made by different detectors, filters or
-lighting conditions. This setting provides three options to choose from:
+This setting provides three options to choose from:
 
--  *%(CH_RGB)s:* The RGB (red,green,blue) color space is the typical
+-  *%(CH_RGB)s:* The RGB (red, green, blue) color space is the typical
    model in which color images are stored. Choosing this option will
-   split the image into any of the red, green and blue component images.
--  *%(CH_HSV)s:*\ The HSV (hue, saturation, value) color space is based
-   on more intuitive color characteristics as tint, shade and tone.
-   Choosing this option will split the image into any of the hue,
+   split the image into red, green, and blue component images.
+-  *%(CH_HSV)s:* The HSV (hue, saturation, value) color space is based
+   on color characteristics such as tint, shade, and tone.
+   Choosing this option will split the image into the hue,
    saturation, and value component images.
--  *%(CH_CHANNELS)s:*\ This is a more complex model for images which
-   involve more than three channels.""" % globals())
+-  *%(CH_CHANNELS)s:* Many images contain color channels other than RGB
+   or HSV. For instance, GIF and PNG formats can have an alpha
+   channel that encodes transparency. TIF formats can have an arbitrary
+   number of channels which represent pixel measurements made by
+   different detectors, filters or lighting conditions. This setting
+   allows you to handle a more complex model for images that
+   have more than three channels.""" % globals())
 
         # The following settings are used for the combine option
         self.grayscale_name = cps.ImageNameProvider(
@@ -188,14 +189,15 @@ Enter a name for the resulting grayscale image coming from the value.""")
                 self.channel_names[len(self.channels) % len(self.channel_names)], doc="""\
 *(Used only when splitting images)*
 
-This setting chooses a channel to be processed. *Red: 1* is the first
+This setting chooses a channel to be processed. For example, *Red: 1*
+is the first
 channel in a .TIF or the red channel in a traditional image file.
 *Green: 2* and *Blue: 3* are the second and third channels of a TIF or
 the green and blue channels in other formats. *Alpha: 4* is the
 transparency channel for image formats that support transparency and is
 channel # 4 for a .TIF file. **ColorToGray** will fail to process an
 image if you select a channel that is not supported by that image, for
-example, “5” for a .PNG file"""))
+example, “5” for a three-channel .PNG file."""))
 
         group.append("contribution", cps.Float(
                 "Relative weight of the channel", 1, 0, doc='''\
@@ -207,7 +209,7 @@ other, increase or decrease the relative weights.'''))
 
         group.append("image_name", cps.ImageNameProvider(
                 "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""\
-*(Used only when splitting images)*                
+*(Used only when combining images)*                
                 
 Select the name of the output grayscale image."""))
 

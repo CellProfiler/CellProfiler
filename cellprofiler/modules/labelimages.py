@@ -66,10 +66,10 @@ This setting specifies how the input data is ordered (assuming that
 sites within a well are ordered consecutively):
 
 -  *%(O_ROW)s:* The data appears by row and then by column. That is,
-   all columns for a given row (e.g. A01, A02, A03…) appear
+   all columns for a given row (e.g., A01, A02, A03…) appear
    consecutively, for each row in consecutive order.
 -  *%(O_COLUMN)s:* The data appears by column and then by row. That is,
-   all rows for a given column (e.g. A01, B01, C01…) appear
+   all rows for a given column (e.g., A01, B01, C01…) appear
    consecutively, for each column in consecutive order.
 
 For instance, the SBS Bioimage example (available `here`_) has files that are named:

@@ -1357,7 +1357,7 @@ requests an object selection.
         load_as_choice - one of the LOAD_AS_ constants
 
         returns the CellProfiler java PlaneStack prebuilt axes list that
-        is the appropriate shape for the channel's image stack, e.g. XYCAxes
+        is the appropriate shape for the channel's image stack, e.g., XYCAxes
         for color.
         '''
         script = "Packages.org.cellprofiler.imageset.PlaneStack.%s;"

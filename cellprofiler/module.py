@@ -537,7 +537,7 @@ class Module(object):
         '''If true, the module will pickle the pipeline into a batch file and exit
 
         This is needed by modules which can't properly operate in a batch
-        mode (e.g. do all their work post_run or don't work so well if
+        mode (e.g., do all their work post_run or don't work so well if
         run in parallel)
         '''
         return False

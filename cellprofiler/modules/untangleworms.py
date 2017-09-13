@@ -1099,7 +1099,7 @@ should be processed.
 
         Given a binary image containing a cluster of worms, returns a structure
         describing the graph structure of the skeleton of the cluster. This graph
-        structure can later be used as input to e.g. get_all_paths().
+        structure can later be used as input to e.g., get_all_paths().
 
         Input parameters:
 
@@ -1117,7 +1117,7 @@ should be processed.
         of the pixels making up one segment, traced in the right order.
 
         branch_areas: A list describing the
-        branch areas, i.e. the areas where different segments join. Each
+        branch areas, i.e., the areas where different segments join. Each
         element is an array of i,j coordinates
         of the pixels making up one branch area, in no particular order.
         The branch areas will include all branchpoints,
@@ -1151,7 +1151,7 @@ should be processed.
            that of the segments.
 
         3. Even if one segment is only one pixel long (but still connects to
-           two branch areas), its orientation is well-defined, i.e. one branch
+           two branch areas), its orientation is well-defined, i.e., one branch
            area will be chosen as starting end. (Even though in this case, the
            "positive direction" of the segment cannot be determined from the
            information in graph_struct.segments.)'''
@@ -1503,7 +1503,7 @@ should be processed.
 
     def path_to_pixel_coords(self, graph_struct, path):
         '''Given a structure describing paths in a graph, converts those to a
-        polyline (i.e. successive coordinates) representation of the same graph.
+        polyline (i.e., successive coordinates) representation of the same graph.
 
         (This is possible because the graph_struct descriptor contains
         information on where the vertices and edges of the graph were initially
@@ -1613,7 +1613,7 @@ should be processed.
 
         control_coords: A N x 2 double array, where the jth column contains the
         jth control point, sampled along the path. The first and last control
-        points are equal to the first and last points of the path (i.e. the
+        points are equal to the first and last points of the path (i.e., the
         points whose coordinates are the first and last columns of
         path_coords), respectively.'''
         assert num_control_points > 2
@@ -1670,12 +1670,12 @@ should be processed.
         format as returned by sample_control_points().
 
         total_length: Scalar double. The total length of the path from which the control
-        points are sampled. (I.e. the distance along the path from the
-        first control poin to the last. E.g. as returned by
+        points are sampled. (I.e., the distance along the path from the
+        first control point to the last, e.g., as returned by
         calculate_path_length().
 
         mean_angles: A (N-1) x 1 double array. The mu in the above formula,
-        i.e. the mean of the feature vectors as calculated from the
+        i.e., the mean of the feature vectors as calculated from the
         training set. Thus, the first N-2 entries are the means of the
         angles, and the last entry is the mean length of the training
         worms.
@@ -1758,7 +1758,7 @@ should be processed.
         such that e_1 is incident to v_1, v_1 incident to e_2, and so on.
 
         Note that, since the ends are not considered parts of the paths, cyclic
-        paths are allowed (i.e. ones starting and ending at the same vertex, but
+        paths are allowed (i.e., ones starting and ending at the same vertex, but
         not self-crossing ones.)
 
         Furthermore, this function also considers two paths identical if one can
@@ -1976,12 +1976,12 @@ should be processed.
         fact not used at all.
 
         overlap_weight: Scalar double. The weight factor assigned to
-        overlaps, i.e. the a in the formula of the cost to be minimised.
+        overlaps, i.e., the a in the formula of the cost to be minimised.
         the unit is (shape cost unit)/(pixels as a unit of
         skeleton length).
 
         leftover_weight:  The
-        weight factor assigned to leftover pieces, i.e. the b in the
+        weight factor assigned to leftover pieces, i.e., the b in the
         formula of the cost to be minimised. In units of (shape cost
         unit)/(pixels of skeleton length).
 

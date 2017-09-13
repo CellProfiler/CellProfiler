@@ -381,7 +381,7 @@ class PreferencesView(object):
         wx.SafeYield(None, True)  # ouch, can't repaint without it.
 
     def check_preferences(self):
-        """Return True if preferences are OK (e.g. directories exist)"""
+        """Return True if preferences are OK (e.g., directories exist)"""
         path = self.__image_edit_box.Value
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Input Folder is "%s", but '

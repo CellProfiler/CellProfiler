@@ -7,7 +7,7 @@ MeasureImageQuality
 **MeasureImageQuality** measures features that indicate image quality.
 
 This module can collect measurements indicating possible image
-abberations, e.g. blur (poor focus), intensity, saturation (i.e., the
+abberations, e.g., blur (poor focus), intensity, saturation (i.e., the
 percentage of pixels in the image that are minimal and maximal). Details
 and guidance for each of these measures is provided in the settings
 help.
@@ -1447,7 +1447,7 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
 
         image_name - name of thresholded image
 
-        agg - if present, the aggregating method, e.g. "Mean"
+        agg - if present, the aggregating method, e.g., "Mean"
         '''
         if self.threshold_algorithm == cpthresh.TM_OTSU:
             if self.use_weighted_variance == O_WEIGHTED_VARIANCE:

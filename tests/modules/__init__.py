@@ -298,7 +298,7 @@ def maybe_download_tesst_image(file_name):
 def read_example_image(folder, file_name, **kwargs):
     '''Read an example image from one of the example image directories
 
-    folder - folder containing images, e.g. "ExampleFlyImages"
+    folder - folder containing images, e.g., "ExampleFlyImages"
 
     file_name - the name of the file within the folder
 

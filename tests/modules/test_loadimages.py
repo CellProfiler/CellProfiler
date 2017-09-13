@@ -360,7 +360,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             #     What do you want to call these images within CellProfiler?:/
             #     Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)\x3A:/
             #     What do you want to call these images within CellProfiler?:/
-            #     If using ORDER, how many images are there in each group (i.e. each field of view)?:5
+            #     If using ORDER, how many images are there in each group (i.e., each field of view)?:5
             #     Are you loading image or movie files?:Image
             #     If you are loading a movie, what is the extension?:stk
             #     Analyze all subfolders within the selected folder?:Yes

@@ -143,7 +143,7 @@ Subexpression   Explanation
 .\\*             Capture as many characters that follow
 [\\\\\\\\/]         Discard the slash/backslash character
 (?P<Run>        Name the captured field *Run*
-$               The *Run* field must be at the end of the path string, i.e. the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.
+$               The *Run* field must be at the end of the path string, i.e., the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.
 =============   ============
 
 In **LoadImages**, metadata is extracted from the image *File name*,

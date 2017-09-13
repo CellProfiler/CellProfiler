@@ -686,7 +686,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         channels - a dictionary of channel name to list of "ipds" for that
                    channel where "ipd" is a tuple of URL and metadata dictionary
-                   Entries may appear multiple times (e.g. illumination function)
+                   Entries may appear multiple times (e.g., illumination function)
         expected_tags - the metadata tags that should have been generated
                    by prepare_run.
         expected_metadata - a sequence of two-tuples of metadata key and

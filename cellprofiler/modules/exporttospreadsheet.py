@@ -190,8 +190,8 @@ This setting lets you choose whether or not to add a prefix to each of
 the .CSV filenames produced by **ExportToSpreadsheet**. A prefix may be
 useful if you use the same directory for the results of more than one
 pipeline; you can specify a different prefix in each pipeline. Select
-*"%(YES)s"* to add a prefix to each file name (e.g. “MyExpt\_Images.csv”).
-Select *"%(NO)s"* to use filenames without prefixes (e.g. “Images.csv”).
+*"%(YES)s"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
+Select *"%(NO)s"* to use filenames without prefixes (e.g., “Images.csv”).
             """ % globals())
 
         self.prefix = cps.Text(

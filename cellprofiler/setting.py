@@ -1224,7 +1224,7 @@ class BinaryMatrix(Setting):
 
         format is <row-count>,<column-count>,<0 or 1>*row-count*column-count
 
-        e.g. [[True, False, True], [True, True, True]] -> "2,3,101111"
+        e.g., [[True, False, True], [True, True, True]] -> "2,3,101111"
         '''
         h = len(matrix)
         w = 0 if h == 0 else len(matrix[0])
@@ -1267,7 +1267,7 @@ class NameProvider(AlphanumericText):
     def get_group(self):
         """This setting provides a name to this group
 
-        Returns a group name, e.g. imagegroup or objectgroup
+        Returns a group name, e.g., imagegroup or objectgroup
         """
         return self.__provided_attributes["group"]
 
@@ -1387,7 +1387,7 @@ class NameSubscriber(Setting):
     def get_group(self):
         """This setting provides a name to this group
 
-        Returns a group name, e.g. imagegroup or objectgroup
+        Returns a group name, e.g., imagegroup or objectgroup
         """
         return self.__required_attributes["group"]
 
@@ -2039,7 +2039,7 @@ class TreeChoice(Setting):
 
         text - informative label
 
-        value - the text value, e.g. as encoded by encode_path_parts
+        value - the text value, e.g., as encoded by encode_path_parts
 
         tree - the tree to chose from
 

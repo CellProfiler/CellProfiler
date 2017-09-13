@@ -502,7 +502,7 @@ object’s center.
 You can manually change this choice in the properties file by editing
 the *cell\_x\_loc* and *cell\_y\_loc* properties.
 
-Note that if there are no objects defined in the pipeline (e.g. if only
+Note that if there are no objects defined in the pipeline (e.g., if only
 using MeasureImageQuality and/or Illumination Correction modules), a
 warning will diplay until you choose *‘None’* for the subsequent
 setting: ‘Export measurements for all objects to the database?’.

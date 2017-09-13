@@ -33,7 +33,7 @@ MeasureObjectSizeShape
 of identified objects.  Some measurements are available for 3D and 2D
 objects, while some are 2D only.
 
-Given an image with identified objects (e.g. nuclei or cells), this
+Given an image with identified objects (e.g., nuclei or cells), this
 module extracts area and shape features of each one. Note that these
 features are only reliable for objects that are completely inside the
 image borders, so you may wish to exclude objects touching the edge of
@@ -152,7 +152,7 @@ See also **MeasureImageAreaOccupied**.
 
 .. _(pdf): http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
 .. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49
-.. |MOSS_image0| image:: {ECCENTRICITY_ICON} 
+.. |MOSS_image0| image:: {ECCENTRICITY_ICON}
 """.format(**{
                 "ECCENTRICITY_ICON": _help.__image_resource("MeasureObjectSizeShape_Eccentricity.png")
             })

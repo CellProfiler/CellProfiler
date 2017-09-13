@@ -270,13 +270,13 @@ objects across timepoints.
    files are not supported on 64-bit systems.
 -  *%(FF_STK_MOVIES)s:* STKs are a proprietary image format used by
    MetaMorph (Molecular Devices). It is typically used to encode 3D
-   image data, e.g. from confocal microscopy, and is a special version
+   image data, e.g., from confocal microscopy, and is a special version
    of the TIF format.
 -  *%(FF_OTHER_MOVIES)s:* A TIF/TIFF movie is a file that contains a
    series of images as individual frames. The same is true for the FLEX
    file format (used by Evotec Opera automated microscopes). ZVIs are a
    proprietary image format used by Zeiss. It is typically used to
-   encode 3D image data, e.g. from fluorescence microscopy.
+   encode 3D image data, e.g., from fluorescence microscopy.
 
 .. _here: http://www.openmicroscopy.org/site/support/bio-formats5/formats/quicktime-movie.html
 """ % globals())
@@ -2595,7 +2595,7 @@ to store the image."""% globals()))
 
         Returns a list of two-tuples where the first element of the tuple is the path
         from the root directory, including the file name, the second element is the
-        index within the image settings (e.g. ImageNameVars).
+        index within the image settings (e.g., ImageNameVars).
         """
         global cached_file_lists
         can_cache = workspace.pipeline.test_mode

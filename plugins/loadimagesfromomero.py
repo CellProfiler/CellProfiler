@@ -2,7 +2,7 @@
 <hr>
 
 This module retrieves all images in a dataset or plate from an OMERO server.
-It is also possible to load a single image (e.g. for testing your pipeline).
+It is also possible to load a single image (e.g., for testing your pipeline).
 
 <b>Important note</b>
 
@@ -268,7 +268,7 @@ class OmeroLoadImages(cpm.Module):
             for channel_number in range(0, number_of_channels):
                 omero_channel = omero_channels[channel_number].getLogicalChannel()
                 # load default cpimage name in case the logical channel name
-                # cannot be retrieved. e.g. when the logical channel name is null
+                # cannot be retrieved. e.g., when the logical channel name is null
                 try:
                     omero_channel_name = omero_channel.getName().getValue().strip()
                 except:
@@ -310,7 +310,7 @@ class OmeroLoadImages(cpm.Module):
                 "Channel number:", channel_numbers, channel_numbers[len(self.channels) - 1],
                 doc="""(Used only for multichannel images)
 			The channels of a multichannel image are numbered starting from 0 (zero).
-			
+
 			Each channel is a greyscale image, acquired using different
 			illumination sources and/or optics. Use this setting to pick
 			the channel to associate with the image or images you load from
@@ -355,7 +355,7 @@ class OmeroLoadImages(cpm.Module):
         image_set_list = workspace.image_set_list
         if pipeline.in_batch_mode():
             # TODO: Rewrite the OmeroImageProvider such that it can be used in batch mode
-            # e.g. omero session keys could be used to attach to existing sessions to
+            # e.g., omero session keys could be used to attach to existing sessions to
             # keep OmeroImageProviders from creating a new session every time an image should be loaded
             return False
 

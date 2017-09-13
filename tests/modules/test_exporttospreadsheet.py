@@ -2205,7 +2205,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_07_02_missing_column_measurements(self):
         # Regression test of issue 1293:
         # pipeline.get_column_measurements reports a measurement
-        # The measurement isn't made (e.g. FlagImages)
+        # The measurement isn't made (e.g., FlagImages)
         # ExportToSpreadsheet should put a column of all NaNs, even if
         # no image set makes the measurement
         #

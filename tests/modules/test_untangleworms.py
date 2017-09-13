@@ -627,7 +627,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
     def make_params(self, d):
         '''Make a fake params structure from a dictionary
 
-        e.g. x = dict(foo=dict(bar=5)) -> x.foo.bar = 5
+        e.g., x = dict(foo=dict(bar=5)) -> x.foo.bar = 5
         '''
 
         class X(object):

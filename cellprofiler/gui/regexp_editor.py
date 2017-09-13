@@ -455,7 +455,7 @@ def looking_at_escape(s, state):
                 if s[i] != OCTAL_DIGITS:
                     return i
         if s[1] in DECIMAL_DIGITS:
-            raise ValueError("Numeric escapes within brackets must be octal values: e.g. [\\21] for ^Q")
+            raise ValueError("Numeric escapes within brackets must be octal values: e.g., [\\21] for ^Q")
     elif s[1] == 0:
         for i in range(2, min(4, len(s))):
             if s[i] != OCTAL_DIGITS:

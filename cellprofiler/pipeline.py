@@ -3418,7 +3418,7 @@ class Pipeline(object):
         module - the module requesting the measurement. Only measurements
                  made prior to this module will be considered.
         object - the object name or "Image"
-        category - The module's measurement category (e.g. Intensity or AreaShape)
+        category - The module's measurement category (e.g., Intensity or AreaShape)
         feature - a descriptive name for the measurement
         image - the measurement should be made on this image (optional)
         scale - the measurement should be made at this scale
@@ -3890,7 +3890,7 @@ def new_string_cell_array(shape):
 
     Return a numpy.ndarray that looks like {NxM cell} to Matlab.
     Each of the cells looks empty.
-    shape - the shape of the array that's generated, e.g. (5,19) for a 5x19 cell array.
+    shape - the shape of the array that's generated, e.g., (5,19) for a 5x19 cell array.
             Currently, this must be a 2-d shape.
     The object returned is a numpy.ndarray with dtype=dtype('object') and the given shape
     with each cell in the array filled with a numpy.ndarray with shape = (1,0)

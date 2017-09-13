@@ -400,7 +400,7 @@ available colormaps can be seen `here`_.
                 if object_number == 0:
                     #
                     # No corresponding object in small-removed. This means
-                    # that the object has no pixels, e.g. not renumbered.
+                    # that the object has no pixels, e.g., not renumbered.
                     #
                     continue
                 index = object_number - 1

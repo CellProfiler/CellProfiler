@@ -1099,7 +1099,7 @@ should be processed.
 
         Given a binary image containing a cluster of worms, returns a structure
         describing the graph structure of the skeleton of the cluster. This graph
-        structure can later be used as input to e.g. get_all_paths().
+        structure can later be used as input to e.g., get_all_paths().
 
         Input parameters:
 
@@ -1671,7 +1671,7 @@ should be processed.
 
         total_length: Scalar double. The total length of the path from which the control
         points are sampled. (I.e. the distance along the path from the
-        first control poin to the last. E.g. as returned by
+        first control point to the last, e.g., as returned by
         calculate_path_length().
 
         mean_angles: A (N-1) x 1 double array. The mu in the above formula,

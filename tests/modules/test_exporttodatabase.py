@@ -4809,7 +4809,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
     def test_12_09_get_relationship_id_mysql(self):
         #
-        # Get a missing relationship ID (e.g. worker # 2 gets worker # 1's row)
+        # Get a missing relationship ID (e.g., worker # 2 gets worker # 1's row)
         #
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")

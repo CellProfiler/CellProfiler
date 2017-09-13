@@ -464,7 +464,7 @@ Select the objects whose intensities you want to measure."""))
                             dest[lindexes[qmask] - 1] = (limg[order[qi]] * (1 - qf) + limg[order[qi + 1]] * qf)
 
                             #
-                            # In some situations (e.g. only 3 points), there may
+                            # In some situations (e.g., only 3 points), there may
                             # not be an upper bound.
                             #
                             qmask = (~qmask) & (areas > 0)

@@ -799,7 +799,7 @@ def find_python():
 def find_worker_env(idx):
     '''Construct a command-line environment for the worker
 
-    idx - index of the worker, e.g. 0 for the first, 1 for the second...
+    idx - index of the worker, e.g., 0 for the first, 1 for the second...
     '''
     newenv = os.environ.copy()
     root_dir = os.path.abspath(

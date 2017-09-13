@@ -111,7 +111,7 @@ You can choose among the following options which are common to all file
 input/output modules:
 
 -  *Default Input Folder*: Use the default input folder.
--  *Default Output Folder:* Use from the default output folder.
+-  *Default Output Folder:* Use the default output folder.
 -  *Elsewhere…*: Use a particular folder you specify.
 -  *Default input directory sub-folder*: Enter the name of a subfolder
    of the default input folder or a path that starts from the default
@@ -122,8 +122,9 @@ input/output modules:
 
 *Elsewhere* and the two sub-folder options all require you to enter an
 additional path name. You can use an *absolute path* (such as
-“C:\\\\imagedir\\\\image.tif” on a PC) or a *relative path* to specify the
-file location relative to a directory):
+“C:\\\\imagedir\\\\image.tif” on a PC) or a *relative path* to specify
+the file location relative to a directory, which makes the pipeline
+more flexible for future runs):
 
 -  Use one period to represent the current directory. For example, if
    you choose *Default Input Folder sub-folder*, you can enter

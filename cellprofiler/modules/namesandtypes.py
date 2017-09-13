@@ -352,10 +352,12 @@ class NamesAndTypes(cpm.Module):
                 ASSIGN_RULES
             ],
             doc="""\
-This setting allows the user to specify a name to images or subsets of
+This setting allows you to specify a name for types of images or subsets of
 images so they can be treated separately by downstream modules. For
 example, giving a different name to a GFP stain image and a brightfield
-image of the same site allows each to be processed independently.
+image of the same site allows each to be processed independently. In
+other words, you are telling CellProfiler that your image set contains
+pairs of images, one of which is GFP and the other brightfield.
 
 The choices are:
 

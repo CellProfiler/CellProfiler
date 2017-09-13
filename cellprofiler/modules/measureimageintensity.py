@@ -8,7 +8,7 @@ MeasureImageIntensity
 summing all of the pixel intensities (excluding masked pixels).
 
 This module will sum all pixel values to measure the total image
-intensity. You can measure all pixels in the image or can restrict
+intensity. You can measure all pixels in the image or restrict
 the measurement to pixels within objects that were identified in a prior
 module. If the image has a mask, only unmasked pixels will be measured.
 

@@ -37,7 +37,7 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified objects.
 -  *Number:* The numeric label assigned to each identified object
-   according to the arrangement order specified by the user.
+   according to the arrangement order you specified.
 
 See also **DefineGrid**.
 """

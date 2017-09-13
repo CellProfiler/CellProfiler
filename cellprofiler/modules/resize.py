@@ -7,7 +7,7 @@ Resize
 **Resize** resizes images (changes their resolution). This module is
 compatible with 2D and 3D/volumetric images.
 
-Images are resized (made smaller or larger) based on user input. You can
+Images are resized (made smaller or larger) based on your input. You can
 resize an image by applying a resizing factor or by specifying the
 desired dimensions, in pixels. You can also select which interpolation
 method to use.

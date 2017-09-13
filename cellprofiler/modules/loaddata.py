@@ -447,8 +447,11 @@ pair of tags.""")
                 "Process just a range of rows?",
                 False, doc="""\
 Select *%(YES)s* if you want to process a subset of the rows in the CSV
-file. Rows are numbered starting at 1 (but do not count the header
-line). **LoadData** will process up to and including the end row.""" % globals())
+file. In the boxes below, enter the number of row you want to begin processing
+with in the box on the left. Then, enter the number of the row you want to
+end processing with in the box on the right. Rows are numbered starting at 1 
+(but do not count the header line). **LoadData** will process up to and including the end row.
+""" % globals())
 
         self.row_range = cps.IntegerRange(
                 "Rows to process",

@@ -4,10 +4,14 @@
 SaveCroppedObjects
 ==================
 
-**SaveCroppedObjects** crops objects into masks. Each object is saved as a mask
-where the object is labeled as “255” and the background is labeled as “0.”
-The dimensions of the mask are the same as the parent image. The filename
-for a mask is formatted like “{object name}_{label index}_{timestamp}.tiff”
+**SaveCroppedObjects** exports each object as a binary image. Pixels corresponding to an exported object are assigned
+the value 255. All other pixels (i.e., background pixels and pixels corresponding to other objects) are assigned the
+value 0. The dimensions of each image are the same as the original image.
+
+The filename for an exported image is formatted as "{object name}_{label index}_{timestamp}.tiff", where *object name*
+is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting
+from 1), and *timestamp* is the time at which the image was saved (this prevents accidentally overwriting a previously
+exported image).
 """
 
 import numpy

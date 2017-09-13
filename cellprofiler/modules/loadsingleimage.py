@@ -159,8 +159,8 @@ class LoadSingleImage(cpm.Module):
                     This setting determines whether you load an image as image data
                     or as segmentation results (i.e., objects):
                     <ul>
-                    <li><i>%(IO_IMAGES)s:</i> The input image will be given a user-specified name by
-                    which it will be refered downstream. This is the most common usage for this
+                    <li><i>%(IO_IMAGES)s:</i> The input image will be given name you specify, by
+                    which it will be referred downstream. This is the most common usage for this
                     module.</li>
                     <li><i>%(IO_OBJECTS)s:</i> Use this option if the input image is a label matrix
                     and you want to obtain the objects that it defines. A <i>label matrix</i>

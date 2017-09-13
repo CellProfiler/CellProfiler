@@ -122,7 +122,7 @@ input/output modules:
 
 *Elsewhere* and the two sub-folder options all require you to enter an
 additional path name. You can use an *absolute path* (such as
-“C:\\\\imagedir\\\\image.tif” on a PC) or a *relative path* (to specify
+“C:\\\\imagedir\\\\image.tif” on a PC) or a *relative path* to specify
 the file location relative to a directory, which makes the pipeline
 more flexible for future runs):
 

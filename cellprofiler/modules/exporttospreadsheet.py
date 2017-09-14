@@ -383,7 +383,10 @@ for more details on the various measurement types.""" % globals()))
 *(Used only when “Export all measurements?” is set to “%(NO)s”)*
 
 Select *"%(YES)s"* to create a file composed of measurements made on
-this object and the one directly above it.
+this object and the one directly above it. This can be convenient, for
+example, if you measured Nuclei, Cells, and Cytoplasm objects, and you
+want to look at the measurements for all of them in a single spreadsheet.
+
 Select *"%(NO)s"* to create separate files for this and the previous
 object.""" % globals()))
 

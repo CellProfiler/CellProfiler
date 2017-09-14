@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 Measurement
 -----------
 Measurement modules produce measurements from either images or objects

@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 Advanced
 --------
 Advanced modules include computer vision algorithms.

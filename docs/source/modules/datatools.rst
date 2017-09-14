@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 Data Tools
 ----------
 Data Tools allow you to plot, view, export or perform specialized analyses

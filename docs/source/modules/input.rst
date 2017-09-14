@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 Input
 -----
 Input modules help you load images and metadata into CellProfiler.

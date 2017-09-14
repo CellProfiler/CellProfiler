@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 Worm Toolbox
 ------------
 The Worm Toolbox contains modules for identifying and untangling worms

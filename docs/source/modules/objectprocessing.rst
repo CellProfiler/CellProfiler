@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 Object Processing
 -----------------
 Object Processing modules produce or otherwise manipulate objects that

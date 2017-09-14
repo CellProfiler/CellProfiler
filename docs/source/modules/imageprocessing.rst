@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 Image Processing
 ----------------
 Image Processing modules apply an operation to an image and output a new image.

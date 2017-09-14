@@ -9,9 +9,9 @@ Welcome to CellProfiler's documentation!
 .. include:: help/why_use_cellprofiler.rst
 
 
-Navigating The Menu Bar
-=======================
-Instructions for navigating CellProfiler's GUI.
+Menu Options
+============
+Instructions for navigating CellProfiler's menus.
 
 .. toctree::
    :titlesonly:

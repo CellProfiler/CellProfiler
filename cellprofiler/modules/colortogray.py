@@ -117,7 +117,10 @@ other, increase or decrease the relative weights.''')
         self.use_red = cps.Binary('Convert red to gray?', True, doc="""\
 *(Used only when splitting RGB images)*
 
-Select *"%(YES)s"* to extract the red channel to grayscale.""" % globals())
+Select *"%(YES)s"* to extract the red channel to grayscale. Otherwise, the
+red channel will be ignored.
+""" % globals())
+
         self.red_name = cps.ImageNameProvider('Name the output image', "OrigRed", doc="""\
 *(Used only when splitting RGB images)*
 
@@ -126,7 +129,10 @@ Enter a name for the resulting grayscale image coming from the red channel.""")
         self.use_green = cps.Binary('Convert green to gray?', True, doc="""\
 *(Used only when splitting RGB images)*
 
-Select *"%(YES)s"* to extract the green channel to grayscale.""" % globals())
+Select *"%(YES)s"* to extract the green channel to grayscale. Otherwise, the
+green channel will be ignored.
+""" % globals())
+
         self.green_name = cps.ImageNameProvider('Name the output image', "OrigGreen", doc="""\
 *(Used only when splitting RGB images)*
 
@@ -135,7 +141,10 @@ Enter a name for the resulting grayscale image coming from the green channel."""
         self.use_blue = cps.Binary('Convert blue to gray?', True, doc="""\
 *(Used only when splitting RGB images)*
 
-Select *"%(YES)s"* to extract the blue channel to grayscale.""" % globals())
+Select *"%(YES)s"* to extract the blue channel to grayscale. Otherwise, the
+blue channel will be ignored.
+""" % globals())
+
         self.blue_name = cps.ImageNameProvider('Name the output image', "OrigBlue", doc="""\
 *(Used only when splitting RGB images)*
 
@@ -145,7 +154,10 @@ Enter a name for the resulting grayscale image coming from the blue channel.""")
         self.use_hue = cps.Binary('Convert hue to gray?', True, doc="""\
 *(Used only when splitting HSV images)*
 
-Select *"%(YES)s"* to extract the hue to grayscale.""" % globals())
+Select *"%(YES)s"* to extract the hue to grayscale. Otherwise, the hue
+will be ignored.
+""" % globals())
+
         self.hue_name = cps.ImageNameProvider('Name the output image', "OrigHue", doc="""\
 *(Used only when splitting HSV images)*
 
@@ -154,7 +166,10 @@ Enter a name for the resulting grayscale image coming from the hue.""")
         self.use_saturation = cps.Binary('Convert saturation to gray?', True, doc="""\
 *(Used only when splitting HSV images)*
 
-Select *"%(YES)s"* to extract the saturation to grayscale.""" % globals())
+Select *"%(YES)s"* to extract the saturation to grayscale. Otherwise, the
+saturation will be ignored.
+""" % globals())
+
         self.saturation_name = cps.ImageNameProvider('Name the output image', "OrigSaturation", doc="""\
 *(Used only when splitting HSV images)*
 
@@ -163,7 +178,10 @@ Enter a name for the resulting grayscale image coming from the saturation.""")
         self.use_value = cps.Binary('Convert value to gray?', True, doc="""\
 *(Used only when splitting HSV images)*
 
-Select *"%(YES)s"* to extract the value to grayscale.""" % globals())
+Select *"%(YES)s"* to extract the value to grayscale. Otherwise, the
+value will be ignored.
+""" % globals())
+
         self.value_name = cps.ImageNameProvider('Name the output image', "OrigValue", doc="""\
 *(Used only when splitting HSV images)*
 

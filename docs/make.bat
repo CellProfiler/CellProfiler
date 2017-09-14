@@ -12,6 +12,7 @@ set BUILDDIR=build
 set SPHINXPROJ=CellProfiler
 
 if "%1" == "" goto help
+if "%1" == "clean" goto clean
 
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
@@ -33,6 +34,11 @@ goto end
 
 :help
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
+
+:clean
+rd /s /q "source\help"
+rd /s /q "source\images"
+%SPHINXBUILD% -M clean %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 
 :end
 popd

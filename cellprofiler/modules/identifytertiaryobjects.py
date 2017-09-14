@@ -12,15 +12,17 @@ What is a tertiary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually an organism, cell, or cellular
-compartment (for example, nuclei, cells, colonies, worms). We define an
+an identified feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms). 
+We define an
 object as *tertiary* when it is identified using prior primary and
-secondary objects. A common use case is when nuclei have
-been found using **IdentifyPrimaryObjects** and the cell body has been
-found using **IdentifySecondaryObjects** but measurements from the
-cytoplasm, the region outside the nucleus but within the cell body, are
-desired. The **IdentifyTertiaryObjects** module may be used to define
-the cytoplasm as an new object.
+secondary objects. 
+
+As an example, you can find nuclei using **IdentifyPrimaryObjects** and
+cell bodies using **IdentifySecondaryObjects**. Use the 
+**IdentifyTertiaryObjects** module to define the
+cytoplasm, the region outside the nucleus but within the cell body, as a
+new object which can be measured in downstream **Measure** modules.
 
 What do I need as input?
 ^^^^^^^^^^^^^^^^^^^^^^^^

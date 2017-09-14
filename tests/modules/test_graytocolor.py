@@ -23,38 +23,73 @@ OUTPUT_IMAGE_NAME = 'outputimage'
 
 
 class TestGrayToColor(unittest.TestCase):
-    def make_workspace(self, scheme, images, adjustments=None,
-                       colors=None, weights=None):
+    def make_workspace(
+            self,
+            scheme,
+            images,
+            adjustments=None,
+            colors=None,
+            dimensions=2,
+            weights=None
+    ):
         module = G.GrayToColor()
+
         module.scheme_choice.value = scheme
+
         if scheme not in (G.SCHEME_COMPOSITE, G.SCHEME_STACK):
-            image_names = ["image%d" % i if images[i] is not None
-                           else G.LEAVE_THIS_BLACK
-                           for i in range(7)]
-            for image_name_setting, image_name, adjustment_setting, adjustment \
-                    in zip((module.red_image_name, module.green_image_name,
-                            module.blue_image_name,
-                            module.cyan_image_name, module.magenta_image_name,
-                            module.yellow_image_name, module.gray_image_name),
-                           image_names,
-                           (module.red_adjustment_factor, module.green_adjustment_factor,
-                            module.blue_adjustment_factor, module.cyan_adjustment_factor,
-                            module.magenta_adjustment_factor, module.yellow_adjustment_factor,
-                            module.gray_adjustment_factor),
-                           adjustments):
-                image_name_setting.value = image_name
+            image_name_settings = (
+                module.red_image_name,
+                module.green_image_name,
+                module.blue_image_name,
+                module.cyan_image_name,
+                module.magenta_image_name,
+                module.yellow_image_name,
+                module.gray_image_name
+            )
+
+            image_names = [
+                "image%d" % i if images[i] is not None
+                else G.LEAVE_THIS_BLACK
+                for i in range(7)
+            ]
+
+            adjustment_settings = (
+                module.red_adjustment_factor,
+                module.green_adjustment_factor,
+                module.blue_adjustment_factor,
+                module.cyan_adjustment_factor,
+                module.magenta_adjustment_factor,
+                module.yellow_adjustment_factor,
+                module.gray_adjustment_factor
+            )
+
+            settings = zip(
+                image_name_settings,
+                image_names,
+                adjustment_settings,
+                adjustments
+            )
+
+            for image_name, name, adjustment_setting, adjustment in settings:
+                image_name.value = name
+
                 adjustment_setting.value = adjustment
         else:
             while len(module.stack_channels) < len(images):
                 module.add_stack_channel_cb()
+
             image_names = []
+
             if weights is None:
                 weights = [1.0] * len(images)
+
             if colors is None:
-                colors = [G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)]
-                          for i in range(len(images))]
-            for i, (image, color, weight) in enumerate(
-                    zip(images, colors, weights)):
+                colors = [
+                    G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)]
+                    for i in range(len(images))
+                ]
+
+            for i, (image, color, weight) in enumerate(zip(images, colors, weights)):
                 image_name = 'image%d' % (i + 1)
                 image_names.append(image_name)
                 module.stack_channels[i].image_name.value = image_name
@@ -62,21 +97,41 @@ class TestGrayToColor(unittest.TestCase):
                 module.stack_channels[i].weight.value = weight
 
         module.rgb_image_name.value = OUTPUT_IMAGE_NAME
+
         module.module_num = 1
+
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
 
         pipeline.add_listener(callback)
+
         pipeline.add_module(module)
+
         image_set_list = cpi.ImageSetList()
+
         image_set = image_set_list.get_image_set(0)
+
         for image, image_name in zip(images, image_names):
             if image is not None:
-                image_set.add(image_name, cpi.Image(image))
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                  cpmeas.Measurements(), image_set_list)
+                image_set.add(
+                    image_name,
+                    cpi.Image(
+                        image,
+                        dimensions=dimensions
+                    )
+                )
+
+        workspace = cpw.Workspace(
+            pipeline,
+            module,
+            image_set,
+            cpo.ObjectSet(),
+            cpmeas.Measurements(),
+            image_set_list
+        )
+
         return workspace, module
 
     def test_01_01_load_matlab(self):
@@ -220,11 +275,11 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         self.assertEqual(module.stack_channels[0].image_name, "DNA")
         self.assertEqual(module.stack_channels[1].image_name, "GFP")
         self.assertSequenceEqual(
-                module.stack_channels[0].color.to_rgb(),
-                (127, 0, 255))
+            module.stack_channels[0].color.to_rgb(),
+            (127, 0, 255))
         self.assertSequenceEqual(
-                module.stack_channels[1].color.to_rgb(),
-                (127, 255, 0))
+            module.stack_channels[1].color.to_rgb(),
+            (127, 255, 0))
 
     def test_02_01_rgb(self):
         np.random.seed(0)
@@ -247,6 +302,55 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                                   for image in images[:3]])
             for i in range(3):
                 expected[:, :, i] *= adjustments[i]
+            self.assertTrue(np.all(np.abs(expected - pixel_data) <= .00001))
+
+    def test_02_01_rgb_volume(self):
+        np.random.seed(0)
+
+        combinations = (
+            (True, True, True),
+            (True, True, False),
+            (True, False, True),
+            (True, False, False),
+            (False, True, True),
+            (False, True, False),
+            (False, False, True)
+        )
+
+        for combination in combinations:
+            adjustments = np.random.uniform(size=7)
+
+            images = [
+                np.random.uniform(size=(5, 10, 15))
+                if combination[i] else None
+                for i in range(3)
+            ]
+
+            images += [None] * 4
+
+            workspace, module = self.make_workspace(
+                G.SCHEME_RGB,
+                images,
+                adjustments,
+                dimensions=3
+            )
+
+            module.run(workspace)
+            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            pixel_data = image.pixel_data
+
+            expected = np.stack(
+                [
+                    image
+                    if image is not None else np.zeros((5, 10, 15))
+                    for image in images[:3]
+                ],
+                -1
+            )
+
+            for i in range(3):
+                expected[:, :, :, i] *= adjustments[i]
+
             self.assertTrue(np.all(np.abs(expected - pixel_data) <= .00001))
 
     def test_03_01_cmyk(self):
@@ -275,6 +379,60 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
             expected = np.sum(expected, 0)
             self.assertTrue(np.all(np.abs(expected - pixel_data) <= .00001))
 
+    def test_03_01_cmyk_volume(self):
+        np.random.seed(0)
+
+        combinations = [
+            [
+                (i & 2 ^ j) != 0 for j in range(4)
+            ]
+            for i in range(1, 16)
+        ]
+
+        for combination in combinations:
+            adjustments = np.random.uniform(size=7)
+
+            images = [
+                np.random.uniform(size=(5, 10, 15))
+                if combination[i] else None for i in range(4)
+            ]
+
+            images = [None] * 3 + images
+
+            workspace, module = self.make_workspace(
+                G.SCHEME_CMYK,
+                images,
+                adjustments,
+                dimensions=3
+            )
+
+            module.run(workspace)
+
+            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+            pixel_data = image.pixel_data
+
+            expected = np.array(
+                [
+                    np.stack(
+                        [
+                            image * adjustment
+                            if image is not None else np.zeros((5, 10, 15))
+                        ] * 3,
+                        -1
+                    ) * np.array(multiplier) / np.sum(multiplier)
+                    for image, multiplier, adjustment in (
+                        (images[3], (0, 1, 1), adjustments[3]),
+                        (images[4], (1, 1, 0), adjustments[4]),
+                        (images[5], (1, 0, 1), adjustments[5]),
+                        (images[6], (1, 1, 1), adjustments[6]))
+                ]
+            )
+
+            expected = np.sum(expected, 0)
+
+            self.assertTrue(np.all(np.abs(expected - pixel_data) <= .00001))
+
     def test_04_01_stack(self):
         r = np.random.RandomState()
         r.seed(41)
@@ -287,6 +445,30 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         for i, image in enumerate(images):
             np.testing.assert_array_almost_equal(output[:, :, i], image)
 
+    def test_04_01_stack_volume(self):
+        r = np.random.RandomState()
+
+        r.seed(41)
+
+        images = [r.uniform(size=(8, 16, 16)) for _ in range(5)]
+
+        workspace, module = self.make_workspace(
+            G.SCHEME_STACK,
+            images,
+            dimensions=3
+        )
+
+        module.run(workspace)
+
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+
+        self.assertSequenceEqual(output.shape[:3], images[0].shape)
+
+        self.assertEqual(output.shape[-1], len(images))
+
+        for i, image in enumerate(images):
+            np.testing.assert_array_almost_equal(output[:, :, :, i], image)
+
     def test_05_01_composite(self):
         r = np.random.RandomState()
         r.seed(41)
@@ -296,13 +478,55 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         color_names = \
             ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
         workspace, module = self.make_workspace(
-                G.SCHEME_COMPOSITE, images, colors=color_names, weights=weights)
+            G.SCHEME_COMPOSITE, images, colors=color_names, weights=weights)
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertSequenceEqual(output.shape[:2], images[0].shape)
         self.assertEqual(output.shape[2], 3)
         for i in range(3):
             channel = sum(
-                    [image * weight * float(color[i]) / 255
-                     for image, color, weight in zip(images, colors, weights)])
+                [image * weight * float(color[i]) / 255
+                 for image, color, weight in zip(images, colors, weights)])
             np.testing.assert_array_almost_equal(output[:, :, i], channel)
+
+    def test_05_01_composite_volume(self):
+        r = np.random.RandomState()
+
+        r.seed(41)
+
+        images = [r.uniform(size=(8, 16, 16)) for _ in range(5)]
+
+        colors = [r.randint(0, 255, size=3) for _ in range(5)]
+
+        weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
+
+        color_names = [
+            "#%02x%02x%02x" % tuple(color.tolist())
+            for color in colors
+        ]
+
+        workspace, module = self.make_workspace(
+            G.SCHEME_COMPOSITE,
+            images,
+            colors=color_names,
+            dimensions=3,
+            weights=weights
+        )
+
+        module.run(workspace)
+
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+
+        self.assertSequenceEqual(output.shape[:3], images[0].shape)
+
+        self.assertEqual(output.shape[-1], 3)
+
+        for i in range(3):
+            channel = sum(
+                [
+                    image * weight * float(color[i]) / 255
+                    for image, color, weight in zip(images, colors, weights)
+                ]
+            )
+
+            np.testing.assert_array_almost_equal(output[:, :, :, i], channel)

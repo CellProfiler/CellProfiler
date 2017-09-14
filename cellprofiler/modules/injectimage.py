@@ -22,7 +22,7 @@ class InjectImage(cellprofiler.module.Module):
     module_name = "InjectImage"
     variable_revision_number = 1
 
-    def __init__(self, image_name, image, mask=None, release_image=False):
+    def __init__(self, image_name, image, mask=None, release_image=False, dimensions=2):
         '''Initializer
 
         image_name - the name of the image to put into the image set
@@ -41,6 +41,7 @@ class InjectImage(cellprofiler.module.Module):
         self.__mask = mask
         self.image_name = cellprofiler.setting.NameProvider("Hardwired image name", "imagegroup", image_name)
         self.__release_image = release_image
+        self.dimensions = dimensions
 
     def settings(self):
         return [self.image_name]
@@ -53,8 +54,6 @@ class InjectImage(cellprofiler.module.Module):
 
         """
         raise NotImplementedError("Please implement GetHelp in your derived module class")
-
-    variable_revision_number = 1
 
     def write_to_handles(self, handles):
         """Write out the module's state to the handles
@@ -90,7 +89,7 @@ class InjectImage(cellprofiler.module.Module):
             mask = self.__mask[workspace.image_set.image_number - 1]
         else:
             mask = self.__mask
-        image = cellprofiler.image.Image(image, mask)
+        image = cellprofiler.image.Image(image, mask, dimensions=self.dimensions)
         workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):

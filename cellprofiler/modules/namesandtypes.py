@@ -74,8 +74,8 @@ The **NamesAndTypes** module receives the file list produced by the
 metadata to the images, this information is also received by
 **NamesAndTypes** and available for its use.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do I configure the module?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the above example, the **NamesAndTypes** module allows you to assign
 each of these channels a unique name, provided by you. All files of a

@@ -78,10 +78,7 @@ Input modules:
 -  Used the **NamesAndTypes** module to assign names to individual
    channels and create image sets.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See below for help on the individual settings. Selecting this module
+Selecting this module
 will display a panel, allowing you to select whether you want to create
 groups or not. A grouping may be defined as according to any or as many
 of the metadata categories as defined by the **Metadata** module. By

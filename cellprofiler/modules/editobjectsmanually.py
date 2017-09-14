@@ -88,7 +88,7 @@ class EditObjectsManually(I.Identify):
                 "Select the objects to be edited", cps.NONE, doc="""\
 Choose a set of previously identified objects
 for editing, such as those produced by one of the
-**Identify** modules (e.g. "*IdentifyPrimaryObjects*", "*IdentifySecondaryObjects*" etc.).""")
+**Identify** modules (e.g., "*IdentifyPrimaryObjects*", "*IdentifySecondaryObjects*" etc.).""")
 
         self.filtered_objects = cps.ObjectNameProvider(
                 "Name the edited objects", "EditedObjects", doc="""\

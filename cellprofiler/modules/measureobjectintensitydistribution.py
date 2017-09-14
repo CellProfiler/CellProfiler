@@ -9,13 +9,13 @@ intensities within each object.
 
 Given an image with objects identified, this module measures the
 intensity distribution from each object’s center to its boundary within
-a user-controlled number of bins, i.e. rings.
+a set of bins, i.e., rings that you specify.
 
 The distribution is measured from the center of the object, where the
 center is defined as the point farthest from any edge. The numbering is
 from 1 (innermost) to *N* (outermost), where *N* is the number of bins
-specified by the user. Alternatively, if primary objects exist within
-the object of interest (e.g. nuclei within cells), you can choose the
+you specify. Alternatively, if primary objects exist within
+the object of interest (e.g., nuclei within cells), you can choose the
 center of the primary objects as the center from which to measure the
 radial distribution. This might be useful in cytoplasm-to-nucleus
 translocation experiments, for example. Note that the ring widths are
@@ -326,7 +326,7 @@ Select *{YES}* to divide the object radially into the number of bins
 that you specify.
 
 Select *{NO}* to create the number of bins you specify based on
-distance. For this option, the user will be asked to specify a maximum
+distance. For this option, you will be asked to specify a maximum
 distance so that each object will have the same measurements (which
 might be zero for small objects) and so that the measurements can be
 taken without knowing the maximum object radius before the run starts.

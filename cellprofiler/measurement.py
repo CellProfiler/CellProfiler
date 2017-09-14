@@ -139,7 +139,7 @@ C_SERIES = "Series"
 '''The frame of a movie file'''
 C_FRAME = "Frame"
 
-'''For 3-D images (e.g. 3 color planes), the indexes of the planes'''
+'''For 3-D images (e.g., 3 color planes), the indexes of the planes'''
 C_FRAMES = "Frames"
 
 '''The channel # of a color image plane'''
@@ -665,7 +665,7 @@ class Measurements(object):
 
         module_number - # of module recording the relationship
 
-        relationship - the name of the relationship, e.g. "Parent" for
+        relationship - the name of the relationship, e.g., "Parent" for
                        object # 1 is parent of object # 2
 
         object_name1, object_name2 - the names of the two objects
@@ -889,7 +889,7 @@ class Measurements(object):
         '''Assign all image measurements to new image numbers
 
         new_image_numbers - a zero-based array that maps old image number
-                            to new image number, e.g. if
+                            to new image number, e.g., if
                             new_image_numbers = [ 0, 3, 1, 2], then
                             the measurements for old image number 1 will
                             be the measurements for new image number 3, etc.
@@ -1491,7 +1491,7 @@ class Measurements(object):
 
         This method can be run on the measurements output by CreateBatchFiles
         to map the paths of any URL that wasn't mapped by the alter-paths
-        mechanism (e.g. URLs encoded in blobs)
+        mechanism (e.g., URLs encoded in blobs)
 
         url - the url to map
 

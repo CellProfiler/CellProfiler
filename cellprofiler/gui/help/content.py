@@ -78,18 +78,20 @@ MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Nam
 #
 ####################
 LEGACY_LOAD_MODULES_HELP = u"""\
-Historically, two modules served the same functionality as the current
-project structure: **LoadImages** and **LoadData**. While the approach
-described above supersedes these modules in part, old pipelines loaded
-into CellProfiler that contain these modules will provide the option of
-preserving them; these pipelines will operate exactly as before.
+The image loading modules **LoadImages** and **LoadSingleImage** are deprecated
+and will be removed in a future version of CellProfiler. It is recommended you
+choose to convert these modules as soon as possible. CellProfiler can do this
+automatically for you when you import a pipeline using either of these legacy
+modules.
 
-Alternately, you can choose to convert these modules into the
-project equivalent as closely as possible. Both modules remain accesible
-via the “Add module” and |HelpContent_LegacyLoad_image0|  button at the bottom of the pipeline
-panel. The section details information relevant for those who would like
+Historically, these modules served the same functionality as the current
+project structure (via **Images**, **Metadata**, **NamesAndTypes**, and **Groups**).
+Pipelines loaded into CellProfiler that contain these modules will provide the option
+of preserving them; these pipelines will operate exactly as before.
+
+The section details information relevant for those who would like
 to continue using these modules. Please note, however, that these
-modules are deprecated and may be removed in the future.
+modules are deprecated and will be removed in a future version of CellProfiler.
 
 Associating metadata with images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,24 +105,18 @@ for input images. This information can be:
    for annotation or sample-tracking purposes;
 #. Used to name additional input/output files.
 
-Two sources of metadata are:
-
--  *Metadata provided in the image filename or location (pathname).* For
-   example, images produced by an automated microscope can be given
-   names such as “Experiment1\_A01\_w1\_s1.tif” in which the metadata
-   about the plate (“Experiment1”), the well (“A01”), the wavelength
-   number (“w1”) and the imaging site (“s1”) are captured. The name
-   of the folder in which the images are saved may be meaningful and may
-   also be considered metadata as well. If this is the case for your
-   data, use **LoadImages** to extract this information for use in the
-   pipeline and storage in the output file.
--  *Metadata provided as a table of information*. Often, information
-   associated with each image (such as treatment, plate, well, etc) is
-   available as a separate spreadsheet. If this is the case for your
-   data, use **LoadData** to load this information.
+Metadata is provided in the image filename or location (pathname). For
+example, images produced by an automated microscope can be given
+names such as “Experiment1\_A01\_w1\_s1.tif” in which the metadata
+about the plate (“Experiment1”), the well (“A01”), the wavelength
+number (“w1”) and the imaging site (“s1”) are captured. The name
+of the folder in which the images are saved may be meaningful and may
+also be considered metadata as well. If this is the case for your
+data, use **LoadImages** to extract this information for use in the
+pipeline and storage in the output file.
 
 Details for the metadata-specific help is given next to the appropriate
-settings in **LoadImages** and **LoadData**, as well the specific
+settings in **LoadImages**, as well the specific
 settings in other modules which can make use of metadata. However, here
 is an overview of how metadata is obtained and used.
 
@@ -147,36 +143,32 @@ Subexpression   Explanation
 .\\*             Capture as many characters that follow
 [\\\\\\\\/]         Discard the slash/backslash character
 (?P<Run>        Name the captured field *Run*
-$               The *Run* field must be at the end of the path string, i.e. the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.
+$               The *Run* field must be at the end of the path string, i.e., the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.
 =============   ============
 
-In **LoadData**, metadata is extracted from a CSV (comma-separated) file
-(a spreadsheet). Columns whose name begins with “Metadata” can be used
-to group files loaded by **LoadData** that are associated with a common
+In **LoadImages**, metadata is extracted from the image *File name*,
+*Path* or *Both*. File names or paths containing “Metadata” can be used
+to group files loaded by **LoadImages** that are associated with a common
 metadata value. The files thus grouped together are then processed as a
 distinct image set.
 
 For instance, an experiment might require that images created on the
 same day use an illumination correction function calculated from all
 images from that day, and furthermore, that the date be captured in the
-file names for the individual image sets and in a CSV file specifying
-the illumination correction functions.
+file names for the individual image sets specifying the illumination
+correction functions.
 
 In this case, if the illumination correction images are loaded with the
-**LoadData** module, the file should have a “Metadata\_Date” column
-which contains the date metadata tags. Similarly, if the individual
-images are loaded using the **LoadImages** module, **LoadImages** should
-be set to extract the metadata tag from the file names. The pipeline
-will then match the individual images with their corresponding
-illumination correction functions based on matching “Metadata\_Date”
-fields.
+**LoadImages** module, **LoadImages** should be set to extract the metadata
+tag from the file names. The pipeline will then match the individual images
+with their corresponding illumination correction functions based on matching
+“Metadata\_Date” fields.
 
 Using image grouping
 ~~~~~~~~~~~~~~~~~~~~
 
 To use grouping, you must define the relevant metadata for each image.
-This can be done using regular expressions in **LoadImages** or having
-them pre-defined in a CSV file for use in **LoadData**.
+This can be done using regular expressions in **LoadImages**.
 
 To use image grouping in **LoadImages**, please note the following:
 
@@ -188,11 +180,7 @@ To use image grouping in **LoadImages**, please note the following:
    metadata tag “Plate” in one image channel, you must also specify the
    “Plate” metadata tag in the regular expression for the other channels
    that you want grouped together.
-
-.. |HelpContent_LegacyLoad_image0| image:: {MODULE_ADD_BUTTON}
-""".format(**{
-    "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON
-})
+"""
 
 USING_THE_OUTPUT_FILE_HELP = u"""\
 Please note that the output file will be deprecated in the future. This
@@ -348,7 +336,7 @@ This version of CellProfiler no longer supports exporting MATLAB format
 images. Instead, the recommended image format for illumination correction
 functions is NumPy (.npy). Loading MATLAB format images is deprecated and
 will be removed in a future version of CellProfiler. To ensure compatibility
-with future versions of CellProfiler you can convert your .mat files to .npy 
+with future versions of CellProfiler you can convert your .mat files to .npy
 files via **SaveImages** using this version of CellProfiler.
 
 See **SaveImages** for more details on saving NumPy format images.
@@ -465,7 +453,7 @@ panel* (located on the left-hand side of the CellProfiler window).
       time remaining to process the full image set.
 
    At the end of each cycle:
-       
+
    -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the output file.
    -  If you are using the **ExportToDatabase** module, CellProfiler saves the measurements in the
       output database.
@@ -534,8 +522,8 @@ Which format you use will depend on some of the considerations below:
    is optimized for speed.
 -  *Downstream application:* If you wish to use Excel or another simple
    tool to analyze your data, a spreadsheet is likely the best choice.  If you
-   intend to use CellProfiler Analyst, you must create a database.  If you 
-   plan to use a scripting language, most languages have ways to import 
+   intend to use CellProfiler Analyst, you must create a database.  If you
+   plan to use a scripting language, most languages have ways to import
    data from either format.
 
 .. _Calc: http://www.libreoffice.org/discover/calc/
@@ -610,7 +598,7 @@ From the *Test* menu, you can choose additional options:
 -  *Reload Modules Source (enabled only if running from source code):*
    This option will reload the module source code, so any changes to the
    code will be reflected immediately.
--  *Break into debugger (enabled only if running from source code):* 
+-  *Break into debugger (enabled only if running from source code):*
    This option will allow you to open a debugger in the terimal window.
 
 Note that if movies are being loaded, the individual movie is defined as
@@ -1504,26 +1492,8 @@ For those interested, some technical details:
    refreshed view of the information (e.g., when a setting has been
    changed).
 
-Legacy modules: LoadImages and LoadData
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Historically, two modules were used for project creation: **LoadImages**
-and **LoadData**. While the approach described above partly supersedes
-these modules, you have the option of preserving these modules if you
-load old pipelines into CellProfiler that contain them; these pipelines
-will operate exactly as before.
-
-Alternately, the user can choose to convert these modules into the
-project equivalent as closely as possible. Both **LoadImages** and
-**LoadData** remain accessible via the “Add module” and |image0|
-buttons at the bottom of the pipeline panel.
-
 .. _here: http://github.com/CellProfiler/CellProfiler/wiki/Module-structure-and-data-storage-retrieval#HDF5
-
-.. |image0| image:: {MODULE_ADD_BUTTON}
-""".format(**{
-    "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON
-})
+"""
 
 SELECTING_IMAGES_HELP = u"""\
 Any image analysis project using CellProfiler begins with providing the

@@ -4,8 +4,8 @@
 RelateObjects
 =============
 
-**RelateObjects** assigns relationships; all objects (e.g. speckles)
-within a parent object (e.g. nucleus) become its children.
+**RelateObjects** assigns relationships; all objects (e.g., speckles)
+within a parent object (e.g., nucleus) become its children.
 
 This module allows you to associate *child* objects with *parent*
 objects. This is useful for counting the number of children associated

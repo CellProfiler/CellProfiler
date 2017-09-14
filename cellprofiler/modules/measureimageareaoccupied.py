@@ -26,10 +26,11 @@ Measurements made by this module
    binary image.
 -  *Perimeter:* The total length of the perimeter of the input
    objects/binary image.
--  *TotalImageArea:* The total pixel area of the image.
+-  *TotalImageArea:* The total pixel area of the image that was
+   subjected to measurement, excluding masked regions.
 
 See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
-**IdentifyTertiaryObjects**
+**IdentifyTertiaryObjects**.
 """
 
 import numpy

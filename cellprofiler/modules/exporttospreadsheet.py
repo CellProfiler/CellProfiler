@@ -42,7 +42,7 @@ do this by specifying metadata tags for the folder name and file name:
 
    In this instance, you would select the metadata tag “Treatment1”
 -  Uncheck "*Export all measurements?*"
--  Uncheck "*Use the object name for the file name?*".
+-  Uncheck "*Use the object name for the file name?*"
 -  Using the same approach as above, select the metadata tag
    “Treatment2”, and complete the filename by appending the text “.csv”.
 
@@ -160,7 +160,7 @@ class ExportToSpreadsheet(cpm.Module):
                 "Select the column delimiter", DELIMITERS, doc="""\
 Select the delimiter to use, i.e., the character that separates columns in a file. The
 two default choices are tab and comma, but you can type in any single character delimiter
-you would prefer. Be sure that the delimiter you choose is not a character that is present
+you prefer. Be sure that the delimiter you choose is not a character that is present
 within your data (for example, in file names).""")
 
         self.directory = cps.DirectoryPath(
@@ -190,8 +190,8 @@ This setting lets you choose whether or not to add a prefix to each of
 the .CSV filenames produced by **ExportToSpreadsheet**. A prefix may be
 useful if you use the same directory for the results of more than one
 pipeline; you can specify a different prefix in each pipeline. Select
-*"%(YES)s"* to add a prefix to each file name (e.g. “MyExpt\_Images.csv”).
-Select *"%(NO)s"* to use filenames without prefixes (e.g. “Images.csv”).
+*"%(YES)s"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
+Select *"%(NO)s"* to use filenames without prefixes (e.g., “Images.csv”).
             """ % globals())
 
         self.prefix = cps.Text(
@@ -224,7 +224,7 @@ If your output has more than 256 columns, select *"%(YES)s"* will open a
 window allowing you to select the columns you’d like to export. If your
 output exceeds 65,000 rows, you can still open the CSV in Excel, but not
 all rows will be visible. Note that these limits only apply to Excel versions utilizing ".xls",
-modern versions of Excel supporting ".xlsx" do not have any such limits""" % globals())
+modern versions of Excel supporting ".xlsx" do not have such limits""" % globals())
 
         self.nan_representation = cps.Choice(
                 "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc="""\
@@ -242,7 +242,8 @@ of an image.
                 "Select the measurements to export", False, doc="""\
 Select *"%(YES)s"* to provide a button that allows you to select which
 measurements you want to export. This is useful if you know exactly what
-measurements you want included in the final spreadheet(s).""" % globals())
+measurements you want included in the final spreadsheet(s) and additional
+measurements would be a nuisance.""" % globals())
 
         self.columns = cps.MeasurementMultiChoice(
                 "Press button to select measurements", doc="""\
@@ -258,14 +259,10 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “Mean\_Nuclei\_AreaShape\_Area”.
+called “Mean\_Nuclei\_AreaShape\_Area”. Note that this setting can
+generate a very large number of columns of data.
 
-You may not want to use **ExportToSpreadsheet** to calculate these
-measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on
-the number of columns (256).
-
-Keep in mind that if you chose to select the specific measurements to
+However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
 per-object measurements.""" % globals())
 
@@ -276,14 +273,10 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “Median\_Nuclei\_AreaShape\_Area”.
+called “Median\_Nuclei\_AreaShape\_Area”. Note that this setting can
+generate a very large number of columns of data.
 
-You may not want to use **ExportToSpreadsheet** to calculate these
-measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on
-the number of columns (256).
-
-Keep in mind that if you chose to select the specific measurements to
+However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
 per-object measurements.""" % globals())
 
@@ -294,22 +287,18 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “StDev\_Nuclei\_AreaShape\_Area”.
+called “StDev\_Nuclei\_AreaShape\_Area”. Note that this setting can
+generate a very large number of columns of data.
 
-You may not want to use **ExportToSpreadsheet** to calculate these
-measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on
-the number of columns (256).
-
-Keep in mind that if you chose to select the specific measurements to
+However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
 per-object measurements.""" % globals())
 
         self.wants_genepattern_file = cps.Binary(
                 "Create a GenePattern GCT file?", False, doc="""\
 Select *"%(YES)s"* to create a GCT file compatible with `GenePattern`_.
-The GCT file format is a tab-delimited text file format that describes a
-gene expression dataset; the specifics of the format are described
+The GCT file format is a tab-delimited text file format designed for
+gene expression datasets; the specifics of the format are described
 `here`_. By converting your measurements into a GCT file, you can make
 use of GenePattern’s data visualization and clustering methods.
 
@@ -348,7 +337,7 @@ specified in one of two ways:
 name each row)*
 
 Choose the measurement that corresponds to the identifier, such as
-metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s.""" % globals())
+metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s""" % globals())
 
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
                 "Select the image to use as the identifier", cps.NONE, doc="""\
@@ -403,7 +392,7 @@ object.""" % globals()))
 *(Used only when “Export all measurements?” is set to “%(NO)s”)*
 
 Select *"%(YES)s"* to use the object name as selected above to generate
-a file name for the spreadsheet. For example, if you selected *Image*,
+a file name for the spreadsheet. For example, if you selected *Image*
 above and have not checked the "*Prepend output file name*" option, your
 output file will be named “Image.csv”.
 Select *"%(NO)s"* to name the file yourself.""" % globals()))

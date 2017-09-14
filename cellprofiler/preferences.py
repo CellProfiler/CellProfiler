@@ -1410,7 +1410,7 @@ def set_workspace_file(path, permanently=True):
     path - path to the file
 
     permanently - True to write it to the configuration, False if the file
-                  should only be set for the running instance (e.g. as a
+                  should only be set for the running instance (e.g., as a
                   command-line parameter for a scripted run)
     '''
     global __workspace_file
@@ -1853,7 +1853,7 @@ def add_progress_callback(callback):
     callback - callback function with signature of
                fn(operation_id, progress, message)
                where operation_id names the instance of the operation being
-               performed (e.g. a UUID), progress is a number between 0 and 1
+               performed (e.g., a UUID), progress is a number between 0 and 1
                where 1 indicates that the operation has completed and
                message is the message to show.
 

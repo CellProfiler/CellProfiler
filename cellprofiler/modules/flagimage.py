@@ -634,7 +634,7 @@ image is not flagged.
                     [int(x) - 1 for x in ms.rules_class.get_selections()])
             #
             # There should only be one in the vector, but if not, take
-            # a majority vote (e.g. are there more class 1 objects than
+            # a majority vote (e.g., are there more class 1 objects than
             # class 2?)
             #
             is_not_nan = np.any(~ np.isnan(scores), 1)

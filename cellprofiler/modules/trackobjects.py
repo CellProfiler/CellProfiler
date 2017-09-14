@@ -1194,7 +1194,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         # We want to keep the colors stable, but we also want the
         # largest possible separation between adjacent colors. So, here
         # we reverse the significance of the bits in the indices so
-        # that adjacent number (e.g. 0 and 1) differ by 128, roughly
+        # that adjacent number (e.g., 0 and 1) differ by 128, roughly
         #
         pow_of_2 = 2 ** np.mgrid[0:8, 0:len(indexer)][0]
         bits = (indexer & pow_of_2).astype(bool)

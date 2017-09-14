@@ -1803,8 +1803,8 @@ class Figure(wx.Frame):
         xvals, yvals - values to scatter
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
         title  - string title for the plot
         """
         xvals = numpy.array(xvals).flatten()
@@ -1842,7 +1842,7 @@ class Figure(wx.Frame):
         bins - number of bins to aggregate data in
         xlabel - string label for x axis
         xscale - 'log' to log-transform the data
-        yscale - scaling of the y axis (e.g. 'log')
+        yscale - scaling of the y axis (e.g., 'log')
         title  - string title for the plot
         """
         if clear:
@@ -1893,9 +1893,9 @@ class Figure(wx.Frame):
         gridsize - x & y bin size for data aggregation
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
-        bins - scaling of the color map (e.g. None or 'log', see mpl.hexbin)
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
+        bins - scaling of the color map (e.g., None or 'log', see mpl.hexbin)
         title  - string title for the plot
         """
         if clear:

@@ -37,7 +37,7 @@ class Image(object):
 
     file_name - the file name of the file holding the image or None for a derived image
 
-    scale - the scaling suggested by the initial image format (e.g. 4095 for a 12-bit a/d converter).
+    scale - the scaling suggested by the initial image format (e.g., 4095 for a 12-bit a/d converter).
 
     Resolution of mask and cropping_mask properties:
 

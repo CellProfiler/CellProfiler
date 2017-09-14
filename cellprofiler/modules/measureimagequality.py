@@ -6,14 +6,15 @@ MeasureImageQuality
 
 **MeasureImageQuality** measures features that indicate image quality.
 
-This module can collect measurements indicating possible image
-abberations, e.g. blur (poor focus), intensity, saturation (i.e., the
-percentage of pixels in the image that are minimal and maximal). Details
+This module collects measurements indicating possible image
+aberrations, e.g., blur (poor focus), intensity, saturation (i.e., the
+percentage of pixels in the image that are at/near the maximum possible
+value, and at/near the minimum possible value). Details
 and guidance for each of these measures is provided in the settings
 help.
 
 Please note that for best results, this module should be applied to the
-original raw images, as opposed to images that have already been
+original raw images, rather than images that have already been
 corrected for illumination.
 
 Measurements made by this module
@@ -52,9 +53,11 @@ Measurements made by this module
    -  *Threshold:* The automatically calculated threshold for each image
       for the thresholding method of choice.
 
-      Please note that these thresholds are recorded individually for
-      each image and as an aggregate statistic for all images. The mean,
-      median and standard deviation of the threshold values are computed
+      The thresholds are recorded individually for
+      each image and also as aggregate statistics for all images in the
+      experiment. The mean,
+      median and standard deviation of the threshold values across all
+      images in the experiment are computed
       for each of the threshold methods selected and recorded as a
       measurement in the per-experiment table.
 
@@ -151,11 +154,10 @@ This option lets you choose which images will have quality metrics
 calculated.
 
 -  *%(O_ALL_LOADED)s:* Use all images loaded with the **Input**
-   modules. The quality metrics selected below will be applied to all
+   modules. The selected quality metrics will be applied to all
    loaded images.
 -  *%(O_SELECT)s:* Select the desired images from a list. The quality
-   metric settings selected will be applied to all these images.
-   Additional lists can be added with separate settings.""" % globals())
+   metric settings selected will be applied to the images chosen.""" % globals())
 
         self.divider = cps.Divider(line=True)
 
@@ -183,9 +185,9 @@ images, the list includes the images that were created by prior modules.""" % gl
                 "Include the image rescaling value?",
                 True, doc="""\
 Select *%(YES)s* to add the image’s rescaling value as a quality control
-metric. This value is set only for images that loaded using the
+metric. This value is recorded only for images loaded using the
 **Input** modules. This is useful in confirming that all images are
-rescaled by the same value, since some acquisition device vendors may
+rescaled by the same value, given that some acquisition device vendors may
 output this value differently. See **NamesAndTypes** for more
 information.""" % globals()))
 
@@ -193,7 +195,8 @@ information.""" % globals()))
                 "Calculate blur metrics?",
                 True, doc="""\
 Select *%(YES)s* to compute a series of blur metrics. The blur metrics
-are the following, along with recomendations on their use:
+are described in the overall help for this module (select the module in
+the pipeline and press the "?" button).
 
 -  *%(F_POWER_SPECTRUM_SLOPE)s:* The power spectrum contains the
    frequency information of the image, and the slope gives a measure of
@@ -306,7 +309,7 @@ artifacts."""))
         group.append("use_all_threshold_methods", cps.Binary(
                 "Use all thresholding methods?",
                 False, doc="""\
-*(Used only if image thresholds are calculcated)*
+*(Used only if image thresholds are calculated)*
 
 Select *%(YES)s* to calculate thresholds using all the available
 methods. Only the global methods are used.
@@ -314,7 +317,7 @@ While most methods are straightfoward, some methods have additional
 parameters that require special handling:
 
 -  *%(TM_OTSU)s:* Thresholds for all combinations of class number,
-   minimzation parameter and middle class assignment are computed.
+   minimization parameter and middle class assignment are computed.
 -  *Mixture of Gaussians (%(TM_MOG)s):* Thresholds for image coverage
    fractions of 0.05, 0.25, 0.75 and 0.95 are computed.
 
@@ -354,11 +357,12 @@ thresholding methods.""" % globals()))
                 len(image_group.scale_groups) * 10 + 10, doc="""\
 *(Used only if blur measurements are to be calculated)*
 
+Enter an integer for the window size *N*, in units of pixels.
 The *%(F_LOCAL_FOCUS_SCORE)s* is measured within an *N × N* pixel
-window applied to the image, whereas the *%(F_CORRELATION)s* of a
-pixel is measured with repsect to its neighbors *N* pixels away.
+window applied to the image, and the *%(F_CORRELATION)s* of a
+pixel is measured with respect to its neighbors *N* pixels away.
 
-A higher number for the window size measures larger patterns of image
+A higher number for the window size *N* measures larger patterns of image
 blur whereas smaller numbers measure more localized patterns of blur. We
 suggest selecting a window size that is on the order of the feature of
 interest (e.g., the object diameter). You can measure these metrics for
@@ -389,7 +393,7 @@ help on thresholding, see the **Identify** modules."""))
 
         group.append("object_fraction", cps.Float(
                 "Typical fraction of the image covered by objects", 0.1, 0, 1, doc="""\
-*(Used only if threshold are calculated and %(TM_MOG)s thresholding is
+*(Used only if thresholds are calculated and %(TM_MOG)s thresholding is
 chosen)*
 
 Enter the approximate fraction of the typical image in the set that is
@@ -398,7 +402,7 @@ covered by objects.""" % globals()))
         group.append("two_class_otsu", cps.Choice(
                 'Two-class or three-class thresholding?',
                 [O_TWO_CLASS, O_THREE_CLASS], doc="""\
-*(Used only if thresholds are calculcated and the %(TM_OTSU)s
+*(Used only if thresholds are calculated and the %(TM_OTSU)s
 thresholding method is used)*
 
 Select *%(O_TWO_CLASS)s* if the grayscale levels are readily
@@ -409,7 +413,7 @@ that belongs to neither the foreground nor background.
 For example, three-class thresholding may be useful for images in which
 you have nuclear staining along with a low-intensity non-specific cell
 staining. Where two-class thresholding might incorrectly assign this
-intemediate staining to the nuclei objects, three-class thresholding
+intermediate staining to the nuclei objects, three-class thresholding
 allows you to assign it to the foreground or background as desired.
 However, in extreme cases where either there are almost no objects or
 the entire field of view is covered with objects, three-class
@@ -419,12 +423,12 @@ thresholding may perform worse than two-class.""" % globals()))
                 'Minimize the weighted variance or the entropy?',
                 [O_WEIGHTED_VARIANCE, O_ENTROPY], doc="""\
 Choose whether to minimize the weighted variance or the entropy when selecting
-the threshold"""))
+the threshold."""))
 
         group.append("assign_middle_to_foreground", cps.Choice(
                 'Assign pixels in the middle intensity class to the foreground or the background?',
                 [O_FOREGROUND, O_BACKGROUND], doc="""\
-*(Used only if thresholds are calculcated and the %(TM_OTSU)s
+*(Used only if thresholds are calculated and the %(TM_OTSU)s
 thresholding method with %(O_THREE_CLASS)s is used)*
 
 Choose whether you want the middle grayscale intensities to be assigned
@@ -1447,7 +1451,7 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
 
         image_name - name of thresholded image
 
-        agg - if present, the aggregating method, e.g. "Mean"
+        agg - if present, the aggregating method, e.g., "Mean"
         '''
         if self.threshold_algorithm == cpthresh.TM_OTSU:
             if self.use_weighted_variance == O_WEIGHTED_VARIANCE:

@@ -209,7 +209,7 @@ other, increase or decrease the relative weights.'''))
 
         group.append("image_name", cps.ImageNameProvider(
                 "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""\
-*(Used only when combining images)*                
+*(Used only when splitting images)*                
                 
 Select the name of the output grayscale image."""))
 

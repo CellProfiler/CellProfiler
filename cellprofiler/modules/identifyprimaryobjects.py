@@ -23,18 +23,18 @@ __doc__ = """\
 IdentifyPrimaryObjects
 ======================
 
-**IdentifyPrimaryObjects** identifies biological components of
-interest in grayscale images containing bright objects on a dark
-background.  This module currently identifies objects in 2D images only
-(including 2D slices of 3D images);
+**IdentifyPrimaryObjects** identifies biological objects of interest.
+It requires grayscale images containing bright objects on a dark background.
+Incoming images must be 2D (including 2D slices of 3D images);
 please use the **Watershed** module for identification of objects in 3D.
 
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually an organism, cell, or cellular
-compartment (for example, nuclei, cells, colonies, worms). We define an
+an identified feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms). 
+We define an
 object as *primary* when it can be found in an image without needing the
 assistance of another cellular feature as a reference. For example:
 

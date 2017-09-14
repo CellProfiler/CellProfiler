@@ -4,19 +4,19 @@
 MeasureImageIntensity
 =====================
 
-**MeasureImageIntensity** measures the total intensity in an image by
-summing all of the pixel intensities (excluding masked pixels).
+**MeasureImageIntensity** measures several intensity features across an
+entire image (excluding masked pixels).
 
-This module will sum all pixel values to measure the total image
-intensity. You can measure all pixels in the image or restrict
+For example, this module will sum all pixel values to measure the total image
+intensity. You can choose to measure all pixels in the image or restrict
 the measurement to pixels within objects that were identified in a prior
 module. If the image has a mask, only unmasked pixels will be measured.
 
 Note that for publication purposes, the units of intensity from
 microscopy images are usually described as “Intensity units” or
-“Arbitrary intensity units” since microscopes are not calibrated to an
+“Arbitrary intensity units” because microscopes are not calibrated to an
 absolute scale. Also, it is important to note whether you are reporting
-either the mean or the integrated intensity, so specify “Mean intensity
+either the mean vs. the integrated intensity, so specify “Mean intensity
 units” or “Integrated intensity units” accordingly.
 
 Keep in mind that the default behavior in CellProfiler is to rescale the

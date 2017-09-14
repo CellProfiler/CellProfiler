@@ -76,7 +76,7 @@ WORM_ALPHA = .25
 class IdentifyDeadWorms(cpm.Module):
     module_name = "IdentifyDeadWorms"
     variable_revision_number = 2
-    category = ["Other", "Worm Toolbox"]
+    category = ["Worm Toolbox"]
 
     def create_settings(self):
         """Create the settings for the module

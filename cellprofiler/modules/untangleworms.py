@@ -213,7 +213,7 @@ complexity_limits = {
 
 class UntangleWorms(cpm.Module):
     variable_revision_number = 2
-    category = ["Object Processing", "Worm Toolbox"]
+    category = ["Worm Toolbox"]
     module_name = "UntangleWorms"
 
     def create_settings(self):

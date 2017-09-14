@@ -19,7 +19,7 @@ __doc__ = """\
 IdentifySecondaryObjects
 ========================
 
-**IdentifySecondaryObjects** identifies objects (e.g., cell edges)
+**IdentifySecondaryObjects** identifies objects (e.g., cells)
 using objects identified by another module (e.g., nuclei) as a starting
 point.
 
@@ -27,8 +27,9 @@ What is a secondary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually a cellular subcompartment of
-some kind (for example, nuclei, cells, colonies, worms). We define an
+an identified feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms). 
+We define an
 object as *secondary* when it can be found in an image by using another
 cellular feature as a reference for guiding detection.
 

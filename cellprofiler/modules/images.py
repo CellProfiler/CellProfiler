@@ -95,8 +95,8 @@ options to modify the file list:
 -  *Clear File List:* Remove all files/folders in the file list panel.
    You will be prompted for confirmation beforehand.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do I configure the module?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you have a subset of files that you want to analyze from the full
 listing shown in the panel, you can filter the files according to a set

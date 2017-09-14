@@ -12,10 +12,14 @@ This module calculates an illumination function that can either be saved to the
 hard drive for later use or immediately applied to images later in the pipeline.
 This function will correct for the uneven illumination in images. Use the
 **CorrectIlluminationApply** module to apply the function to the image to be
-corrected. Use **SaveImages** to export an illumination function to disk using
-the "npy" file format. Illumination correction is a challenge to do properly;
+corrected. Use **SaveImages** to export an illumination function to the hard
+drive using the "npy" file format.
+
+Warning: illumination correction is a challenge to do properly;
 please see the `examples`_ and `tutorials`_ pages on the CellProfiler
-website for further advice. See also **CorrectIlluminationApply**,
+website for further advice.
+
+See also **CorrectIlluminationApply** and
 **EnhanceOrSuppressFeatures**.
 
 .. _examples: http://www.cellprofiler.org/examples.html
@@ -105,7 +109,7 @@ function. You may chose from the following options:
 
 -  *{IC_REGULAR}:* If you have objects that are evenly dispersed across
    your image(s) and cover most of the image, the *Regular* method might
-   be appropriate. Regular intensities makes the illumination function
+   be appropriate. *Regular* makes the illumination function
    based on the intensity at each pixel of the image (or group of images
    if you are in *{EA_ALL}* mode) and is most often rescaled (see
    below) and applied by division using **CorrectIlluminationApply.**
@@ -117,7 +121,7 @@ function. You may chose from the following options:
    function would be identical to the original image and applying it
    will yield a blank image. You either need to smooth each image, or
    you need to use *{EA_ALL}* images.
--  *{IC_BACKGROUND}:* If you think that the background (dim points)
+-  *{IC_BACKGROUND}:* If you think that the background (dim regions)
    between objects show the same pattern of illumination as your objects
    of interest, you can choose the *{IC_BACKGROUND}* method. Background
    intensities finds the minimum pixel intensities in blocks across the
@@ -145,7 +149,7 @@ the image beforehand solves this problem.
 
         self.dilate_objects = cps.Binary(
             "Dilate objects in the final averaged image?", False, doc="""\
-*(Used only if the Regular method is selected)*
+*(Used only if the “%(IC_REGULAR)s” method is selected)*
 
 For some applications, the incoming images are binary and each object
 should be dilated with a Gaussian filter in the final averaged
@@ -158,7 +162,7 @@ objects for this approach.
             "Dilation radius", 1, 0, doc="""\
 *(Used only if the “%(IC_REGULAR)s” method and dilation is selected)*
 
-This value should be roughly equal to the original radius of the objects
+This value should be roughly equal to the original radius of the objects.
 """ % globals())
 
         self.block_size = cps.Integer(

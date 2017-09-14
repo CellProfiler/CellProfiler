@@ -776,9 +776,16 @@ class CPFrame(wx.Frame):
             self.__data_tools_menu = wx.Menu()
 
             def on_data_tool_overview(event):
+                import cellprofiler.gui.html.utils
                 import cellprofiler.gui.htmldialog
-                from cellprofiler.gui.help.content import MENU_BAR_DATATOOLS_HELP
-                dlg = cellprofiler.gui.htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
+                import cellprofiler.gui.help.content
+                dlg = cellprofiler.gui.htmldialog.HTMLDialog(
+                    self,
+                    'Data Tool Overview',
+                    cellprofiler.gui.html.utils.rst_to_html_fragment(
+                        cellprofiler.gui.help.content.read_content("navigation_data_tools_menu.rst")
+                    )
+                )
                 dlg.Show()
 
             new_id = wx.NewId()

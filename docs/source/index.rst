@@ -6,15 +6,42 @@
 Welcome to CellProfiler's documentation!
 ========================================
 
+.. include:: help/why_use_cellprofiler.rst
+
+
+Navigation
+==========
+Instructions for navigating CellProfiler's GUI.
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :titlesonly:
 
-   modules
+   help/navigation_file_menu
+   help/navigation_edit_menu
+   help/navigation_test_menu
+   help/navigation_window_menu
+   help/navigation_parameter_sampling_menu
+   help/navigation_data_tools_menu
 
-Indices and tables
-==================
+`(Jump to top)`_
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Modules
+=======
+.. toctree::
+   :titlesonly:
+
+   modules/input
+   modules/fileprocessing
+   modules/imageprocessing
+   modules/objectprocessing
+   modules/measurement
+   modules/datatools
+   modules/advanced
+   modules/wormtoolbox
+   modules/other
+
+`(Jump to top)`_
+
+:ref:`search`
+
+.. _(Jump to top): index.html#

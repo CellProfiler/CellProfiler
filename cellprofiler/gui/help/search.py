@@ -2,6 +2,7 @@ import os
 import re
 
 import wx
+import wx.html
 
 import cellprofiler.gui
 import cellprofiler.gui.help.content
@@ -20,22 +21,25 @@ MENU_HELP = {
     "MATLAB format images": cellprofiler.gui.help.content.MATLAB_FORMAT_IMAGES_HELP,
     "How Measurements are Named": cellprofiler.gui.help.content.MEASUREMENT_NOMENCLATURE_HELP,
     "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.MEMORY_AND_SPEED_HELP,
-    "Using the Edit Menu": cellprofiler.gui.help.content.MENU_BAR_EDIT_HELP,
-    "Using the File Menu": cellprofiler.gui.help.content.MENU_BAR_FILE_HELP,
-    "Using the Window Menu": cellprofiler.gui.help.content.MENU_BAR_WINDOW_HELP,
+    "Using the Data Tools Menu": cellprofiler.gui.help.content.read_content("navigation_data_tools_menu.rst"),
+    "Using the Edit Menu": cellprofiler.gui.help.content.read_content("navigation_file_menu.rst"),
+    "Using the File Menu": cellprofiler.gui.help.content.read_content("navigation_edit_menu.rst"),
+    "Using the Window Menu": cellprofiler.gui.help.content.read_content("navigation_window_menu.rst"),
     "How To Use The Image Tools": cellprofiler.gui.help.content.MODULE_DISPLAY_IMAGE_TOOLS_HELP,
     "Using The Interactive Navigation Toolbar":
         cellprofiler.gui.help.content.MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP,
     "Using The Display Window Menu Bar": cellprofiler.gui.help.content.MODULE_DISPLAY_MENU_BAR_HELP,
-    "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.PARAMETER_SAMPLING_MENU_HELP,
+    "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.read_content(
+        "navigation_parameter_sampling_menu.rst"
+    ),
     "Plate Viewer": cellprofiler.gui.help.content.PLATEVIEWER_HELP,
     "Running Multiple Pipelines": cellprofiler.gui.help.content.RUN_MULTIPLE_PIPELINES_HELP,
     "Running Your Pipeline": cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP,
     "Selecting Images for Input": cellprofiler.gui.help.content.SELECTING_IMAGES_HELP,
     "Using Spreadsheets and Databases": cellprofiler.gui.help.content.SPREADSHEETS_DATABASE_HELP,
-    "Testing Your Pipeline": cellprofiler.gui.help.content.TEST_MODE_HELP,
+    "Using the Test Menu": cellprofiler.gui.help.content.read_content("navigation_test_menu.rst"),
     "Setting the Output Filename": cellprofiler.gui.help.content.USING_THE_OUTPUT_FILE_HELP,
-    "Why Use CellProfiler?": cellprofiler.gui.help.content.WHEN_CAN_I_USE_CELLPROFILER_HELP
+    "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content("why_use_cellprofiler.rst")
 }
 
 

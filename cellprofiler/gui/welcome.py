@@ -261,7 +261,7 @@ TEST_MODE_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "TEST_MODE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.TEST_MODE_HELP
+        cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
     )
 })
 

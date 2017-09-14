@@ -1,8 +1,34 @@
 # coding: utf-8
 
 import os
+import re
 
 import pkg_resources
+
+
+def __image_resource(filename):
+    return pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "images", filename)
+    )
+
+
+def read_content(filename):
+    resource_filename = pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "help", filename)
+    )
+
+    with open(resource_filename, "r") as f:
+        content = f.read()
+
+    return re.sub(
+        r"image:: (.*\.png)",
+        lambda md: "image:: {}".format(
+            __image_resource(os.path.basename(md.group(0)))
+        ),
+        content
+    )
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
@@ -15,23 +41,6 @@ VIEW_OUTPUT_SETTINGS_BUTTON_NAME = "View output settings"
 # ICONS
 #
 ####################
-def __image_resource(filename):
-    #If you're rendering in the GUI, relative paths are fine
-    if os.path.relpath(pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", filename)
-    )) == os.path.join("cellprofiler","data", "images", filename):
-        return os.path.relpath(pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "images", filename)
-        ))
-    else:
-    #If you're rendering in sphinx, the relative path of the rst file is one below the make file so compensate accordingly
-        return os.path.join('..',os.path.relpath(pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "images", filename)
-        )))
-
 MODULE_HELP_BUTTON = __image_resource('module_help.png')
 MODULE_MOVEUP_BUTTON = __image_resource('module_moveup.png')
 MODULE_MOVEDOWN_BUTTON = __image_resource('module_movedown.png')
@@ -232,95 +241,6 @@ the “Measurements file format” drop-down box.
 
 .. _MATLAB: http://www.mathworks.com/products/matlab/
 .. _here: http://github.com/CellProfiler/CellProfiler/wiki/Module-structure-and-data-storage-retrieval#HDF5
-"""
-
-WHEN_CAN_I_USE_CELLPROFILER_HELP = u"""\
-Most laboratories studying biological processes and human disease use
-light/fluorescence microscopes to image cells and other biological
-samples. There is strong and growing demand for software to analyze
-these images, as automated microscopes collect images faster than can be
-examined by eye and the information sought from images is increasingly
-quantitative and complex.
-
-CellProfiler is a versatile, open-source software tool for quantifying
-data from biological images, particularly in high-throughput
-experiments. CellProfiler is designed for modular, flexible,
-high-throughput analysis of images, measuring size, shape, intensity,
-and texture of every cell (or other object) in every image. Using the
-point-and-click graphical user interface (GUI), users construct an image
-analysis “pipeline”, a sequential series of modules that each perform an
-image processing function such as illumination correction, object
-identification (segmentation), and object measurement. Users mix and
-match modules and adjust their settings to measure the phenotype of
-interest. While originally designed for high-throughput images, it is
-equally appropriate for low-throughput assays as well (i.e., assays of <
-100 images).
-
-CellProfiler can extract valuable biological information from images
-quickly while increasing the objectivity and statistical power of
-assays. It helps researchers approach a variety of biological questions
-quantitatively, including standard assays (e.g., cell count, size,
-per-cell protein levels) as well as complex morphological assays (e.g.,
-cell/organelle shape or subcellular patterns of DNA or protein
-staining).
-
-The wide variety of measurements produced by CellProfiler serves as
-useful “raw material” for machine learning algorithms. CellProfiler’s
-companion software, CellProfiler Analyst, has an interactive machine
-learning tool called Classifier which can learn to recognize a phenotype
-of interest based on your guidance. Once you complete the training
-phase, CellProfiler Analyst will score every object in your images based
-on CellProfiler’s measurements. CellProfiler Analyst also contains tools
-for the interactive visualization of the data produced by CellProfiler.
-
-In summary, CellProfiler contains:
-
--  Advanced algorithms for image analysis that are able to accurately
-   identify crowded cells and non-mammalian cell types.
--  A modular, flexible design allowing analysis of new assays and
-   phenotypes.
--  Open-source code so the underlying methodology is known and can be
-   modified or improved by others.
--  A user-friendly interface.
--  The ability to use high-throughput computing (clusters, cloud).
--  A design that eliminates the tedium of the many steps typically
-   involved in image analysis, many of which are not easily transferable
-   from one project to another (for example, image formatting, combining
-   several image analysis steps, or repeating the analysis with slightly
-   different parameters).
-
-References
-^^^^^^^^^^
-
-For a full list of references, visit our `citation`_ page.
-
--  Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
-   Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM
-   (2006) “CellProfiler: image analysis software for identifying and
-   quantifying cell phenotypes” *Genome Biology* 7:R100 (`link`_)
--  Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V,
-   Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) “Improved
-   structure, function, and compatibility for CellProfiler: modular
-   high-throughput image analysis software” *Bioinformatics*
-   27(8):1179-1180
-   (`link <http://dx.doi.org/10.1093/bioinformatics/btr095>`__)
--  Lamprecht MR, Sabatini DM, Carpenter AE (2007) “CellProfiler: free,
-   versatile software for automated biological image analysis”
-   *Biotechniques* 42(1):71-75.
-   (`link <http://dx.doi.org/10.2144/000112257>`__)
--  Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J,
-   Root D, Golland P, Sabatini DM (2009) “Scoring diverse cellular
-   morphologies in image-based screens with iterative feedback and
-   machine learning” *PNAS* 106(6):1826-1831
-   (`link <http://dx.doi.org/10.1073/pnas.0808843106>`__)
--  Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM,
-   Golland P, Carpenter AE (2008) “CellProfiler Analyst: data
-   exploration and analysis software for complex image-based screens”
-   *BMC Bioinformatics* 9(1):482
-   (`link <http://dx.doi.org/10.1186/1471-2105-9-482>`__)
-
-.. _citation: http://cellprofiler.org/citations/
-.. _link: http://dx.doi.org/10.1186/gb-2006-7-10-r100
 """
 
 MATLAB_FORMAT_IMAGES_HELP = u"""\
@@ -536,84 +456,6 @@ solutions on our forum `FAQ`_ .
 
 .. _FAQ: http://forum.cellprofiler.org
 """
-
-TEST_MODE_HELP = u"""\
-Before starting an analysis run, you can test the pipeline settings on a
-selected image cycle using the *Test* mode option on the main menu. Test
-mode allows you to run the pipeline on a selected image, preview the
-results and adjust the module settings on the fly.
-
-To enter Test mode once you have built a pipeline, choose *Test > Start
-Test Mode* from the menu bar in the main window. At this point, you will
-see the following features appear:
-
--  A Pause icon |HelpContent_TestMode_image0|  will appear to the left of each module.
--  The buttons available at the bottom of the pipeline panel change.
-
-You can run your pipeline in Test mode by selecting *Test > Step to Next
-Module* or clicking the *Run* or *Step* buttons at the bottom of the
-pipeline panel. The pipeline will execute normally, but you will be able
-to back up to a previous module or jump to a downstream module, change
-module settings to see the results, or execute the pipeline on the image
-of your choice. The additional controls allow you to do the following:
-
--  *Run from module N:* Start or resume execution of the pipeline at any
-   time from a selected module. Right-click the module
-   and select "Run from module N", where "N" is the module number.
-   This menu option is only available from modules which have already been
-   run in test mode, or from the current module. Test mode will run until
-   it reaches the end of the pipeline or it encounters a pause.
--  *Pause:* Clicking the pause icon will cause the pipeline test run to
-   halt execution when that module is reached (the paused module itself
-   is not executed). The icon changes from |HelpContent_TestMode_image1| to |HelpContent_TestMode_image2| to
-   indicate that a pause has been inserted at that point.
--  *Run:* Execution of the pipeline will be started/resumed until the
-   next module pause is reached. When all modules have been executed for
-   a given image cycle, execution will stop.
--  *Step:* Execute the next module (as indicated by the slider
-   location).
--  *Next Image:* Skip ahead to the next image cycle as determined by the
-   image order in the Input modules. The slider will automatically
-   return to the first module in the pipeline.
-
-From the *Test* menu, you can choose additional options:
-
--  *Exit Test Mode:* Exit *Test* mode. Loading a new pipeline or
-   adding/subtracting modules will also automatically exit test mode.
--  *Step to Next Module:* Execute the next module (as indicated by the
-   slider location)
--  *Next Image Set:* Step to the next image set in the current image
-   group.
--  *Next Image Group:* Step to the next group in the image set. The
-   slider will then automatically return to the first module in the
-   pipeline.
--  *Random Image Set:* Randomly select and jump to an image set in the
-   current image group.
--  *Choose Image Set:* Choose the image set to jump to. The slider will
-   then automatically return to the first module in the pipeline.
--  *Choose Image Group:* Choose an image group to jump to. The slider
-   will then automatically return to the first module in the pipeline.
--  *Reload Modules Source (enabled only if running from source code):*
-   This option will reload the module source code, so any changes to the
-   code will be reflected immediately.
--  *Break into debugger (enabled only if running from source code):*
-   This option will allow you to open a debugger in the terimal window.
-
-Note that if movies are being loaded, the individual movie is defined as
-a group automatically. Selecting *Choose Image Group* will allow you to
-choose the movie file, and *Choose Image Set* will let you choose the
-individual movie frame from that file.
-
-Please see the **Groups** module for more details on the proper use of
-metadata for grouping.
-
-.. |HelpContent_TestMode_image0| image:: {TESTMODE_GO_ICON}
-.. |HelpContent_TestMode_image1| image:: {TESTMODE_GO_ICON}
-.. |HelpContent_TestMode_image2| image:: {TESTMODE_PAUSE_ICON}
-""".format(**{
-    "TESTMODE_GO_ICON": TESTMODE_GO_ICON,
-    "TESTMODE_PAUSE_ICON": TESTMODE_PAUSE_ICON
-})
 
 RUNNING_YOUR_PIPELINE_HELP = u"""\
 Once you have tested your pipeline using Test mode and you are satisfied
@@ -1002,186 +844,6 @@ See also the *Available measurements* heading under the main help for
 many of the modules, as well as **ExportToSpreadsheet** and
 **ExportToDatabase** modules.
 """
-
-MENU_BAR_FILE_HELP = u"""\
-The *File* menu provides options for loading and saving your pipelines
-and performing an analysis run.
-
--  **New project:** Clears the current project by removing all the
-   analysis modules and resetting the input modules.
--  **Open Project…:** Open a previously saved CellProfiler project
-   (*.cpproj* file) from your hard drive.
--  **Open Recent:** Displays a list of the most recent projects used.
-   Select any one of these projects to load it.
--  **Save Project:** Save the current project to your hard drive as a
-   *.cpproj* file. If it has not been saved previously, you will be
-   asked for a file name to give the project. Thereafter, any changes to
-   the project will be automatically saved to that filename unless you
-   choose **Save as…**.
--  **Save Project As…:** Save the project to a new file name.
--  **Revert to Saved:** Restore the currently open project to the
-   settings it had when it was first opened.
--  **Import…:** Gives you the choice of importing a CellProfiler
-   pipeline file from your hard drive (*From file…*) or from a web
-   address (*From URL…*). In either case, you can import a pipeline
-   from a pipeline (*.cppipe*) file or a project (*.cpproj*) file.
-   Alternately, you can import an image file list.
--  **Export…:** You have the choice of exporting the pipeline you are
-   currently working on as a CellProfiler *.cppipe* pipeline file
-   (*Pipeline*), or the image set list as a CSV (*Image set listing*),
-   or the pipeline notes as a text file (*Pipeline notes*).
--  **Clear Pipeline:** Removes all modules from the current pipeline,
-   while keeping the image file list intact.
--  **View Image:** Opens a dialog box prompting you to select an image
-   file for display. Images listed in the File list panel in the
-   **Images** module can be also be displayed by double-clicking on the
-   filename.
--  **Analyze Images:** Executes the current pipeline using the current
-   pipeline and Default Input and Output folder settings.
--  **Stop Analysis:** Stop the current analysis run.
--  **Run Multiple Pipelines:** Execute multiple pipelines in sequential
-   order. This option opens a dialog box allowing you to select the
-   pipelines you would like to run, as well as the associated input and
-   output folders. See the help in the *Run Multiple Pipelines* dialog
-   for more details.
--  **Open a New CP Window:** You can run multiple instances of
-   CellProfiler simultaneously; this is how you launch a new instance.
--  **Resume Pipeline:** Resume a partially completed analysis run from
-   where it left off. You will be prompted to choose the output
-   *.h5/.mat* file containing the partially complete measurements and
-   the analysis run will pick up starting with the last cycle that was
-   processed.
--  **Preferences…:** Displays the Preferences window, where you can
-   change many options in CellProfiler.
--  **Quit:** End the current CellProfiler session. You will be given the
-   option of saving your current pipeline if you have not done so.
-"""
-
-MENU_BAR_EDIT_HELP = u"""\
-The *Edit* menu provides options for modifying modules in your current
-pipeline.
-
--  **Undo:** Undo the last module modification. You can undo multiple
-   actions by using *Undo* repeatedly.
--  **Cut:** If a module text setting is currently active, remove the
-   selected text.
--  **Copy:** Copy the currently selected text to the clipboard.
--  **Paste:** Paste clipboard text to the cursor location, if a text
-   setting is active.
--  **Select All:** If a text setting is active, select all the text in
-   the setting. If the module list is active, select all the modules in
-   the module list.
--  **Move Module Up:** Move the currently selected module(s) up. You can
-   also use the |image0| button located below the Pipeline panel.
--  **Move Module Down:** Move the currently selected module(s) down. You
-   can also use the |image1| button located below the Pipeline panel.
--  **Delete Module:** Remove the currently selected module(s). Pressing
-   the Delete key also removes the module(s). You can also use the
-   |image2| button located under the Pipeline panel.
--  **Duplicate Module:** Duplicate the currently selected module(s) in
-   the pipeline. The current settings of the selected module(s) are
-   retained in the duplicate.
--  **Add Module:** Select a module from the pop-up list to insert into
-   the current pipeline. You can also use the |image3| button located
-   under the Pipeline panel.
--  **Go to Module:** Select a module from the pop-up list to view the
-   settings for that module in the current pipeline. You can also click
-   the module in the Pipeline panel.
-
-You can select multiple modules at once for moving, deletion and
-duplication by selecting the first module and using Shift-click on the
-last module to select all the modules in between.
-
-.. |image0| image:: {MODULE_MOVEUP_BUTTON}
-.. |image1| image:: {MODULE_MOVEDOWN_BUTTON}
-.. |image2| image:: {MODULE_REMOVE_BUTTON}
-.. |image3| image:: {MODULE_ADD_BUTTON}
-""".format(**{
-    "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON,
-    "MODULE_MOVEDOWN_BUTTON": MODULE_MOVEDOWN_BUTTON,
-    "MODULE_MOVEUP_BUTTON": MODULE_MOVEUP_BUTTON,
-    "MODULE_REMOVE_BUTTON": MODULE_REMOVE_BUTTON
-})
-
-MENU_BAR_WINDOW_HELP = u"""\
-The *Windows* menu provides options for showing and hiding the module
-display windows.
-
--  **Close All Open Windows:** Closes all display windows that are
-   currently open.
--  **Show All Windows On Run:** Select to show all display windows
-   during the current test run or next analysis run. The display mode
-   icons next to each module in the pipeline panel will switch to
-   |image0|.
--  **Hide All Windows On Run:** Select to show no display windows during
-   the current test run or next analysis run. The display mode icons
-   next to each module in the pipeline panel will switch to |image1|.
-
-If there are any open windows, the window titles are listed underneath
-these options. Select any of these window titles to bring that window to
-the front.
-
-.. |image0| image:: {DISPLAYMODE_SHOW_ICON}
-.. |image1| image:: {DISPLAYMODE_HIDE_ICON}
-""".format(**{
-    "DISPLAYMODE_HIDE_ICON": DISPLAYMODE_HIDE_ICON,
-    "DISPLAYMODE_SHOW_ICON": DISPLAYMODE_SHOW_ICON
-})
-
-PARAMETER_SAMPLING_MENU_HELP = u"""\
-The *Sampling* menu is an interface for Paramorama, a plugin for an
-interactive visualization program for exploring the parameter space of
-image analysis algorithms.
-
-This menu option is only shown if specified in the Preferences. Note
-that if this preference setting is changed, CellProfiler must be
-restarted.
-
-Using this plugin will allow you sample a range of setting values in
-**IdentifyPrimaryObjects** and save the object identification results
-for later inspection. Upon completion, the plug-in will generate a text
-file, which specifies: (1) all unique combinations of the sampled
-parameter values; (2) the mapping from each combination of parameter
-values to one or more output images; and (3) the actual output images.
-
-**References**
-
--  Pretorius AJ, Bray MA, Carpenter AE and Ruddle RA. (2011)
-   “Visualization of parameter space for image analysis” *IEEE
-   Transactions on Visualization and Computer Graphics* 17(12),
-   2402-2411.
-
-"""
-
-MENU_BAR_DATATOOLS_HELP = u"""
-The *Data Tools* menu provides tools to allow you to plot, view, export
-or perform specialized analyses on your measurements.
-
-Each data tool has a corresponding module with the same name and
-functionality. The difference between the data tool and the module is
-that the data tool takes a CellProfiler output file (i.e., a *.mat or
-.h5* file) as input, which contains measurements from a previously
-completed analysis run. In contrast, a module uses measurements received
-from the upstream modules during an in-progress analysis run.
-
-Opening a data tool will present a prompt in which the user is asked to
-provide the location of the output file. Once specified, the user is
-then prompted to enter the desired settings. The settings behave
-identically as those from the corresponding module.
-
-Please note that with the exception of *PlateViewer* and *Export* functions the 
-*Data Tools*, like most CellProfiler modules, are designed to operate on only one image 
-set at a time. If you want to use data tool modules to examine and/or 
-graph data on the whole experiment level, you should instead consider using 
-CellProfiler Analyst; see the *ExportToDatabase* help to learn more about exporting 
-your data into a database that CellProfiler Analyst can access and about creating a 
-CellProfiler Analyst properties file.  
-
-Help for each *Data Tool* is available under *{DATA_TOOL_HELP_REF}*
-or the corresponding module help.
-""".format(**{
-    "DATA_TOOL_HELP_REF": DATA_TOOL_HELP_REF
-})
 
 MODULE_DISPLAY_MENU_BAR_HELP = u"""\
 From the menu bar of each module display window, you have the following

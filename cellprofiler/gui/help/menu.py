@@ -1,3 +1,5 @@
+# coding:utf-8
+
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
@@ -26,7 +28,7 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "Why Use CellProfiler?",
-            contents=cellprofiler.gui.help.content.WHEN_CAN_I_USE_CELLPROFILER_HELP
+            contents=cellprofiler.gui.help.content.read_content("why_use_cellprofiler.rst")
         )
 
         self.AppendSubMenu(
@@ -51,7 +53,7 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "Testing Your Pipeline",
-            contents=cellprofiler.gui.help.content.TEST_MODE_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
         )
 
         self.append(
@@ -148,32 +150,32 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         navigation_menu.append(
             "Using the File Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_FILE_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_file_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Edit Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_EDIT_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_edit_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Test Menu",
-            contents=cellprofiler.gui.help.content.TEST_MODE_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Window Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_WINDOW_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_window_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Parameter Sampling Menu",
-            contents=cellprofiler.gui.help.content.PARAMETER_SAMPLING_MENU_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_parameter_sampling_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Data Tools Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_DATATOOLS_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_data_tools_menu.rst")
         )
 
         return navigation_menu

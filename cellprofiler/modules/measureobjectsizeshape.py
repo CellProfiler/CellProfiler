@@ -99,7 +99,7 @@ ellipse with the same second-moments as each object.
    a value greater than 1.
 -  *MaximumRadius:* *(2D only)* The maximum distance of any pixel in the object to
    the closest pixel outside of the object. For skinny objects, this is
-   1/2 of the minimum width of the object.
+   1/2 of the maximum width of the object.
 -  *MedianRadius:* *(2D only)* The median distance of any pixel in the object to the
    closest pixel outside of the object.
 -  *MeanRadius:* *(2D only)* The mean distance of any pixel in the object to the

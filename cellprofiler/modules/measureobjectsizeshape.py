@@ -30,8 +30,7 @@ MeasureObjectSizeShape
 ======================
 
 **MeasureObjectSizeShape** measures several area and shape features
-of identified objects.  Some measurements are available for 3D and 2D
-objects, while some are 2D only.
+of identified objects.
 
 Given an image with identified objects (e.g., nuclei or cells), this
 module extracts area and shape features of each one. Note that these
@@ -39,18 +38,21 @@ features are only reliable for objects that are completely inside the
 image borders, so you may wish to exclude objects touching the edge of
 the image using **Identify** settings for 2D objects or **ClearBorder** for 3D objects.
 
-Please note that the display window for this module shows per-image
+The display window for this module shows per-image
 aggregates for the per-object measurements. If you want to view the
-per-object measurements themselves, you will need to use
-**ExportToSpreadsheet** to export them, or use **DisplayDataOnImage** to
+per-object measurements themselves, you will need to use an
+**Export** module to export them, or use **DisplayDataOnImage** to
 display the object measurements of choice overlaid on an image of
 choice.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Some measurements are available for 3D and 2D objects, while some are 2D
+only. 
 
-See the *Technical Notes* below for an explanation of creating an
-ellipse with the same second-moments as an object region.
+See the *Technical Notes* below for an explanation of a key step
+underlying many of the following metrics: creating an
+ellipse with the same second-moments as each object.
 
 -  *Area:* The number of pixels (2D) or voxels (3D) in the region.
 -  *Perimeter:* The total number of pixels (2D) or voxels (3D) around the boundary of each
@@ -63,13 +65,14 @@ ellipse with the same second-moments as an object region.
    <1 for an object with holes or possessing a convex/irregular
    boundary.
 -  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box
-   that are also in the region. Computed as the area/volume divided by the area/volume
-   of the bounding box.
+   that are also in the region. Computed as the area/volume of the object divided
+   by the area/volume of the bounding box.
 -  *EulerNumber:* *(2D only)* The number of objects in the region minus the number
    of holes in those objects, assuming 8-connectivity.
 -  *Center\_X, Center\_Y, Center\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
-   coordinates of the point farthest away from any object edge. Note that this
-   is not the same as the *Location-X* and *-Y* measurements produced by the **Identify** or **Watershed**
+   coordinates of the point farthest away from any object edge (the *centroid*).
+   Note that this is not the same as the *Location-X* and *-Y* measurements
+   produced by the **Identify** or **Watershed**
    modules or the *Location-Z* measurement produced by the **Watershed** module.
 -  *Eccentricity:* *(2D only)* The eccentricity of the ellipse that has the same
    second-moments as the region. The eccentricity is the ratio of the
@@ -96,7 +99,7 @@ ellipse with the same second-moments as an object region.
    a value greater than 1.
 -  *MaximumRadius:* *(2D only)* The maximum distance of any pixel in the object to
    the closest pixel outside of the object. For skinny objects, this is
-   1/2 of the maximum width of the object.
+   1/2 of the minimum width of the object.
 -  *MedianRadius:* *(2D only)* The median distance of any pixel in the object to the
    closest pixel outside of the object.
 -  *MeanRadius:* *(2D only)* The mean distance of any pixel in the object to the
@@ -107,13 +110,13 @@ ellipse with the same second-moments as an object region.
    angles). The minimum and maximum Feret diameters are the smallest and
    largest possible diameters, rotating the calipers along all possible
    angles.
--  *Zernike shape features:* *(2D only)* Measure shape by describing a binary object
+-  *Zernike shape features:* *(2D only)* These metrics of shape describe a binary object
    (or more precisely, a patch with background and an object in the
    center) in a basis of Zernike polynomials, using the coefficients as
    features (*Boland et al., 1998*). Currently, Zernike polynomials from
    order 0 to order 9 are calculated, giving in total 30 measurements.
    While there is no limit to the order which can be calculated (and
-   indeed users could add more by adjusting the code), the higher order
+   indeed you could add more by adjusting the code), the higher order
    polynomials carry less information.
 
 Technical notes
@@ -210,10 +213,11 @@ class MeasureObjectSizeShape(cpm.Module):
 
         self.calculate_zernikes = cps.Binary(
                 'Calculate the Zernike features?', True, doc="""\
-Select *%(YES)s* to calculate the Zernike shape features. Since the
+Select *%(YES)s* to calculate the Zernike shape features. Because the
 first 10 Zernike polynomials (from order 0 to order 9) are calculated,
 this operation can be time consuming if the image contains a lot of
-objects.""" % globals())
+objects. Select *%(No)s* if you are measuring 3D objects with this
+module.""" % globals())
 
     def add_object(self, can_remove=True):
         """Add a slot for another object"""

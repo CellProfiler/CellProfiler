@@ -167,8 +167,12 @@ class MergeOutputFiles(cpm.Module):
     def on_help(event, list_control):
         import cellprofiler.modules
         from cellprofiler.gui.htmldialog import HTMLDialog
+        import cellprofiler.gui.html.utils
         dlg = HTMLDialog(
-                list_control, 'Help on module,"%s"' % MergeOutputFiles.module_name, __doc__)
+            list_control,
+            'Help on module,"%s"' % MergeOutputFiles.module_name,
+            cellprofiler.gui.html.utils.rst_to_html_fragment(__doc__)
+        )
         dlg.Show()
 
     @staticmethod

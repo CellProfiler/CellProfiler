@@ -1,6 +1,7 @@
 import unittest
 
 import numpy
+import StringIO
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -183,3 +184,50 @@ class TestMeasureImageArea(unittest.TestCase):
             workspace.measurements.get_current_measurement("Image", mn("TotalArea")),
             expected_total_area
         )
+
+    def test_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:300
+GitHash:
+ModuleCount:1
+HasImagePlaneDetails:False
+
+MeasureImageAreaOccupied:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:3
+    Measure the area occupied in a binary image, or in objects?:Binary Image
+    Select objects to measure:None
+    Retain a binary image of the object regions?:No
+    Name the output binary image:Stain
+    Select a binary image to measure:DNA
+    Measure the area occupied in a binary image, or in objects?:Objects
+    Select objects to measure:Cells
+    Retain a binary image of the object regions?:Yes
+    Name the output binary image:Stain
+    Select a binary image to measure:None
+    Measure the area occupied in a binary image, or in objects?:Objects
+    Select objects to measure:Nuclei
+    Retain a binary image of the object regions?:No
+    Name the output binary image:Stain
+    Select a binary image to measure:None
+"""
+
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+
+        module = pipeline.modules()[0]
+
+        assert module.count.value == 3
+
+        assert module.operands[0].operand_choice == "Binary Image"
+
+        assert module.operands[1].operand_choice == "Objects"
+        assert module.operands[1].operand_objects == "Cells"
+
+        assert module.operands[2].operand_choice == "Objects"
+        assert module.operands[2].operand_objects == "Nuclei"

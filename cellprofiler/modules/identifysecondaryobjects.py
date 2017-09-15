@@ -107,7 +107,7 @@ Once the module has finished processing, the module display window will
 show the following panels;
 note that these are just for display: you must use the **SaveImages**
 module if you would like to save any of these images to the hard drive
-(as well, the **OverlayOutlines** module or **ConvertObjectsToImage
+(as well, the **OverlayOutlines** module or **ConvertObjectsToImage**
 modules might be needed):
 
 -  *Upper left:* The raw, original image.
@@ -227,7 +227,8 @@ secondary objects that touch each other:
    Boundaries are preferentially placed where the image’s local
    appearance changes perpendicularly to the boundary (*Jones et al,
    2005*).
-   The {M_PROPAGATION:s} algorithm is the default approach for secondary object
+   
+   |image0| The {M_PROPAGATION:s} algorithm is the default approach for secondary object
    creation. Each primary object is a "seed" for its corresponding
    secondary object, guided by the input
    image and limited to the foreground region as determined by the chosen
@@ -278,12 +279,15 @@ Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
 
 .. _link1: http://people.csail.mit.edu/polina/papers/JonesCarpenterGolland_CVBIA2005.pdf
 .. _link2: http://www.cse.msu.edu/~cse902/S03/watershed.pdf
+
+.. |image0| image:: {TECH_NOTE_ICON}
 """.format(**{
                 "M_PROPAGATION": M_PROPAGATION,
                 "M_WATERSHED_G": M_WATERSHED_G,
                 "M_WATERSHED_I": M_WATERSHED_I,
                 "M_DISTANCE_N": M_DISTANCE_N,
-                "M_DISTANCE_B": M_DISTANCE_B
+                "M_DISTANCE_B": M_DISTANCE_B,
+                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
             })
         )
 

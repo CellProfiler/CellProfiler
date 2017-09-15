@@ -110,7 +110,7 @@ SETTING_OG_OFFSET_V9 = 15
 SETTING_OG_OFFSET_V10 = 17
 SETTING_OG_OFFSET_V11 = 18
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 18
+SETTING_OG_OFFSET = 17
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -153,7 +153,7 @@ NANS_AS_NANS = "NaN"
 class ExportToSpreadsheet(cpm.Module):
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing", "Data Tools"]
-    variable_revision_number = 11
+    variable_revision_number = 12
 
     def create_settings(self):
         self.delimiter = cps.CustomChoice(
@@ -218,14 +218,6 @@ GUI and to fail when running headless.""" % globals())
 file, but if you select *"%(YES)s"*, they will also be exported with the
 Object data file(s).""" % globals())
 
-        self.excel_limits = cps.Binary(
-                "Limit output to a size that is allowed in older Excel versions?", False, doc="""\
-If your output has more than 256 columns, select *"%(YES)s"* will open a
-window allowing you to select the columns you’d like to export. If your
-output exceeds 65,000 rows, you can still open the CSV in Excel, but not
-all rows will be visible. Note that these limits only apply to Excel versions utilizing ".xls",
-modern versions of Excel supporting ".xlsx" do not have such limits""" % globals())
-
         self.nan_representation = cps.Choice(
                 "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc="""\
 This setting controls the output for numeric fields if the calculated
@@ -239,11 +231,20 @@ of an image.
    “-Inf”.""" % globals())
 
         self.pick_columns = cps.Binary(
-                "Select the measurements to export", False, doc="""\
-Select *"%(YES)s"* to provide a button that allows you to select which
+            "Select the measurements to export",
+            False,
+            doc="""\
+Select *{YES}* to provide a button that allows you to select which
 measurements you want to export. This is useful if you know exactly what
 measurements you want included in the final spreadsheet(s) and additional
-measurements would be a nuisance.""" % globals())
+measurements would be a nuisance.
+
+Alternatively, this option can be helpful for viewing spreadsheets in
+programs which limit the number of rows and columns.
+""".format(**{
+                "YES": YES
+            })
+        )
 
         self.columns = cps.MeasurementMultiChoice(
                 "Press button to select measurements", doc="""\
@@ -436,7 +437,7 @@ desired.
     def settings(self):
         """Return the settings in the order used when storing """
         result = [self.delimiter, self.add_metadata,
-                  self.excel_limits, self.pick_columns,
+                  self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
                   self.wants_aggregate_std, self.directory,
                   self.wants_genepattern_file, self.how_to_specify_gene_name,
@@ -456,7 +457,7 @@ desired.
             result += [self.prefix]
         result += [
             self.wants_overwrite_without_warning, self.add_metadata,
-            self.excel_limits, self.nan_representation, self.pick_columns]
+            self.nan_representation, self.pick_columns]
         if self.pick_columns:
             result += [self.columns]
         result += [self.wants_aggregate_means, self.wants_aggregate_medians,
@@ -874,10 +875,7 @@ desired.
                 IMAGE, workspace, image_set_numbers[0], settings_group)
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
-        if not self.check_excel_limits(workspace, file_name,
-                                       len(image_set_numbers),
-                                       len(image_features)):
-            return
+
         fd = open(file_name, "wb")
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
@@ -969,10 +967,6 @@ desired.
         m = workspace.measurements
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
-        if not self.check_excel_limits(workspace, file_name,
-                                       len(image_set_numbers),
-                                       len(image_features)):
-            return
 
         fd = open(file_name, "wb")
         try:
@@ -1034,27 +1028,6 @@ desired.
         finally:
             fd.close()
 
-    def check_excel_limits(self, workspace, file_name, row_count, col_count):
-        '''Return False if we shouldn't write because of Excel'''
-        if self.excel_limits and self.show_window:
-            message = None
-            if col_count > MAX_EXCEL_COLUMNS:
-                message = ("""The image file, "%s", will have %d columns, but Excel only supports %d.
-Do you want to save it anyway?""" %
-                           (file_name, col_count, MAX_EXCEL_COLUMNS))
-            elif row_count > MAX_EXCEL_ROWS:
-                message = ("""The image file, "%s", will have %d rows, but Excel only supports %d.
-Do you want to save it anyway?""" %
-                           (file_name, row_count, MAX_EXCEL_COLUMNS))
-            if message is not None:
-                # This is okay, as the only path to this function is via
-                # post_run(), which is called in the main thread.
-                import wx
-                assert wx.Thread_IsMain(), "exporttospreadsheet.post_run() called in non-main thread."
-                if wx.MessageBox(message, "Excel limits exceeded", wx.YES_NO) == wx.ID_NO:
-                    return False
-        return True
-
     def filter_columns(self, features, object_name):
         if self.pick_columns:
             columns = [
@@ -1114,17 +1087,6 @@ Do you want to save it anyway?""" %
             ofeatures.sort()
             features += ofeatures
         fd = open(file_name, "wb")
-        if self.excel_limits:
-            row_count = 1
-            for img_number in image_set_numbers:
-                object_count = \
-                    np.max([m.get_measurement(IMAGE, "Count_%s" % name, img_number)
-                            for name in object_names])
-                row_count += int(object_count)
-            if not self.check_excel_limits(workspace, file_name,
-                                           row_count, len(features)):
-                return
-
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             #
@@ -1361,8 +1323,13 @@ Do you want to save it anyway?""" %
                              setting_values[SETTING_OG_OFFSET_V10:]
             variable_revision_number = 11
 
+        if variable_revision_number == 11:
+            setting_values = setting_values[:2] + setting_values[3:]
+
+            variable_revision_number = 12
+
         # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 7
+        SLOT_DIRCHOICE = 6
         directory = setting_values[SLOT_DIRCHOICE]
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values = (setting_values[:SLOT_DIRCHOICE] +

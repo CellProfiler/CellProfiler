@@ -68,9 +68,8 @@ See also **ExportToSpreadsheet**.
 """
 
 import cellprofiler.icons
-from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, \
-    USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
-    IO_WITH_METADATA_HELP_TEXT
+from cellprofiler.modules._help import TECH_NOTE_ICON, USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, \
+    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 import csv
 import datetime
 import hashlib
@@ -465,16 +464,7 @@ location.
 %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
 %(IO_WITH_METADATA_HELP_TEXT)s
-
-%(USING_METADATA_TAGS_REF)s
-
-For instance, if you have a metadata tag named “Plate”, you can create
-a per-plate folder by selecting one of the subfolder options and then
-specifying the subfolder name with the “Plate” metadata tag. The
-module will substitute the metadata values for the last image set
-processed for any metadata tags in the folder name.
-
-%(USING_METADATA_HELP_REF)s.""" % globals())
+""" % globals())
 
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 

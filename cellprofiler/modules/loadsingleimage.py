@@ -116,21 +116,9 @@ typos are avoided.
 {IO_FOLDER_CHOICE_HELP_TEXT}
 
 {IO_WITH_METADATA_HELP_TEXT}
-
-{USING_METADATA_TAGS_REF}
-
-For instance, if you have a “Plate” metadata tag, and your single files are
-organized in subfolders named with the “Plate” tag, you can select one
-of the subfolder options and then specify a subfolder name of
-“\g<Plate>” to get the files from the subfolder associated with that
-image’s plate. The module will substitute the metadata values for the
-current image set for any metadata tags in the folder name.
-{USING_METADATA_HELP_REF}.
 """.format(**{
                 "IO_FOLDER_CHOICE_HELP_TEXT": IO_FOLDER_CHOICE_HELP_TEXT,
-                "IO_WITH_METADATA_HELP_TEXT": IO_WITH_METADATA_HELP_TEXT,
-                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF,
-                "USING_METADATA_TAGS_REF": USING_METADATA_TAGS_REF
+                "IO_WITH_METADATA_HELP_TEXT": IO_WITH_METADATA_HELP_TEXT
             })
         )
 

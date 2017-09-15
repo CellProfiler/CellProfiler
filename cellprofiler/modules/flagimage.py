@@ -36,7 +36,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
-from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)

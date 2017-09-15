@@ -18,11 +18,12 @@ touching objects without otherwise shrinking the objects.
 operations that remove pixels without completely removing an object. See
 the Settings help (below) for more detail.
 
-*Note on saving images:* You can use the settings in this module
-to pass object outlines along to the module **OverlayOutlines** and then
-save them with the **SaveImages** module. You can also pass the
-identified objects themselves along to the object processing module
-**ConvertToImage** and then save them with the **SaveImages** module.
+*Note on saving images:* You can pass the modified objects along to the
+*Object Processing* module **ConvertObjectsToImage** to create an image.
+This image can be saved with the **SaveImages** module. Additionally,
+you can use the **OverlayOutlines** or **OverlayObjects** module to
+overlay outlines or objects, respectively, on a base image.
+The resulting image can also be saved with the **SaveImages** module.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -120,7 +121,20 @@ Choose the operation that you want to perform:
             })
         )
 
-        self.iterations = cellprofiler.setting.Integer("Number of pixels by which to expand or shrink", 1, minval=1)
+        self.iterations = cellprofiler.setting.Integer(
+            "Number of pixels by which to expand or shrink",
+            1,
+            minval=1,
+            doc="""\
+*(Used only if "{O_SHRINK}", "{O_EXPAND}", or "{O_SPUR}" is selected)*
+
+Specify the number of pixels to add or remove from object borders.
+""".format(**{
+                "O_EXPAND": O_EXPAND,
+                "O_SHRINK": O_SHRINK,
+                "O_SPUR": O_SPUR
+            })
+        )
 
         self.wants_fill_holes = cellprofiler.setting.Binary(
             "Fill holes in objects so that all objects shrink to a single point?",

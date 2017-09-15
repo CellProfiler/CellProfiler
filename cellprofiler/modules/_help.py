@@ -99,6 +99,21 @@ and drag, a line will appear between the two endpoints, and the distance
 between them will be shown at the right-most portion of the bottom panel.\
 """
 
+HELP_ON_MEASURING_INTENSITIES = """\
+Note that for publication purposes, the units of intensity from
+microscopy images are usually described as “Intensity units” or
+“Arbitrary intensity units” because microscopes are not calibrated to an
+absolute scale. Also, it is important to note whether you are reporting
+the mean vs. the integrated intensity, so specify “Mean intensity
+units” or “Integrated intensity units” accordingly.
+
+Keep in mind that the default behavior in CellProfiler is to rescale the
+image intensity from 0 to 1 by dividing all pixels in the image by the
+maximum possible intensity value. This “maximum possible” value is
+defined by the “Set intensity range from” setting in **NamesAndTypes**;
+see the help for that setting for more details.
+"""
+
 HELP_ON_PIXEL_INTENSITIES = """\
 To view pixel intensities in an open image, use the pixel intensity tool
 which is available in any open display window. When you move your mouse

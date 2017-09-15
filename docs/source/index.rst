@@ -28,7 +28,7 @@ Instructions for navigating CellProfiler's menus.
 Modules
 =======
 .. toctree::
-   :titlesonly:
+   :maxdepth: 2
 
    modules/input
    modules/fileprocessing

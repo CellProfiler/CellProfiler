@@ -97,23 +97,6 @@ construct the rest of your pipeline; if not, you can set
 *'Use advanced settings?'* to *'Yes'* which will allow you to fully tweak and
 customize all the settings.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See below for help on the individual settings. The following icons are
-used to call attention to key items:
-
-.. list-table::
-  :widths: 10 100
-  :header-rows: 0
-
-  * - .. image:: {PROTIP_RECOMEND_ICON}
-    - Our recommendation or example use case for which a particular setting is best used.
-  * - .. image:: {PROTIP_AVOID_ICON}
-    - Indicates a condition under which a particular setting may not work well.
-  * - .. image:: {TECH_NOTE_ICON}
-    - Technical note. Provides more detailed information on the setting.
-
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -224,9 +207,6 @@ See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
-    "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
-    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
-    "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
 })
 
 

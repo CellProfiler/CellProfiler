@@ -60,10 +60,7 @@ ellipse with the same second-moments as each object.
 -  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
    for a perfectly circular object.
 -  *Solidity:* *(2D only)* The proportion of the pixels in the convex hull that are
-   also in the object, i.e., *ObjectArea/ConvexHullArea*. Equals 1 for a
-   solid object (i.e., one with no holes or has a concave boundary), or
-   <1 for an object with holes or possessing a convex/irregular
-   boundary.
+   also in the object, i.e., *ObjectArea/ConvexHullArea*.
 -  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box
    that are also in the region. Computed as the area/volume of the object divided
    by the area/volume of the bounding box.
@@ -216,7 +213,7 @@ class MeasureObjectSizeShape(cpm.Module):
 Select *%(YES)s* to calculate the Zernike shape features. Because the
 first 10 Zernike polynomials (from order 0 to order 9) are calculated,
 this operation can be time consuming if the image contains a lot of
-objects. Select *%(No)s* if you are measuring 3D objects with this
+objects. Select *%(NO)s* if you are measuring 3D objects with this
 module.""" % globals())
 
     def add_object(self, can_remove=True):

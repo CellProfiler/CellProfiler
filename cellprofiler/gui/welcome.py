@@ -35,7 +35,7 @@ CONFIGURE_IMAGES_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "CONFIGURE_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.CONFIGURE_IMAGES_HELP
+        cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
     )
 })
 
@@ -278,7 +278,7 @@ SELECTING_IMAGES_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "SELECTING_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.SELECTING_IMAGES_HELP
+        cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
     )
 })
 

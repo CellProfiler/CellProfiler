@@ -40,6 +40,20 @@ module output displays.
 
 `(Jump to top)`_
 
+Creating a Project
+==================
+Learn how to configure a project and load images.
+
+.. toctree::
+   :titlesonly:
+
+   help/projects_introduction
+   help/projects_selecting_images
+   help/projects_configure_images
+   help/projects_image_sequences
+
+`(Jump to top)`_
+
 Modules
 =======
 .. toctree::

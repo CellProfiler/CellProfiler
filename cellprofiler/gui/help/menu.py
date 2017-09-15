@@ -246,22 +246,22 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         project_menu.append(
             "Introduction to Projects",
-            contents=cellprofiler.gui.help.content.INTRODUCTION_TO_PROJECTS_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_introduction.rst")
         )
 
         project_menu.append(
             "Selecting Images for Input",
-            contents=cellprofiler.gui.help.content.SELECTING_IMAGES_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
         )
 
         project_menu.append(
             "Configuring Images for Analysis",
-            contents=cellprofiler.gui.help.content.CONFIGURE_IMAGES_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
         )
 
         project_menu.append(
             "Loading Image Stacks and Movies",
-            contents=cellprofiler.gui.help.content.LOADING_IMAGE_SEQUENCES_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_image_sequences.rst")
         )
 
         return project_menu

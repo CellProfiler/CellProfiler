@@ -238,10 +238,13 @@ class RunMultplePipelinesDialog(wx.Dialog):
                     self.pipeline_list_view.SetStringItem(item, subitem, dlg.Filename)
 
     def on_help(self, event):
-        from cellprofiler.gui.help import RUN_MULTIPLE_PIPELINES_HELP
+        import cellprofiler.gui.help.content
         import cellprofiler.gui.htmldialog as H
-        H.HTMLDialog(self, "Run multiple pipelines help",
-                     RUN_MULTIPLE_PIPELINES_HELP).Show()
+        H.HTMLDialog(
+            self,
+            "Run multiple pipelines help",
+            cellprofiler.gui.help.content.read_content("other_multiple_pipelines.rst")
+        ).Show()
 
     def get_pipelines(self):
         """Return the user's chosen pipelines & other details

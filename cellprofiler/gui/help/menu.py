@@ -68,12 +68,12 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "Troubleshooting Memory and Speed Issues",
-            contents=cellprofiler.gui.help.content.MEMORY_AND_SPEED_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_troubleshooting.rst")
         )
 
         self.append(
             "Batch Processing",
-            contents=cellprofiler.gui.help.content.BATCHPROCESSING_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_batch.rst")
         )
 
         self.AppendSubMenu(
@@ -206,17 +206,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         other_menu.append(
             "Running Multiple Pipelines",
-            contents=cellprofiler.gui.help.content.RUN_MULTIPLE_PIPELINES_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_multiple_pipelines.rst")
         )
 
         other_menu.append(
             "Configuring Logging",
-            contents=cellprofiler.gui.help.content.CONFIGURING_LOGGING_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_logging.rst")
         )
 
         other_menu.append(
             "Accessing Images From OMERO",
-            contents=cellprofiler.gui.help.content.ACCESSING_OMERO_IMAGES
+            contents=cellprofiler.gui.help.content.read_content("other_omero.rst")
         )
 
         return other_menu

@@ -81,6 +81,21 @@ CellProfiler.
 
 `(Jump to top)`_
 
+Other Features
+==============
+Learn about the other features of CellProfiler.
+
+.. toctree::
+   :titlesonly:
+
+   help/other_troubleshooting
+   help/other_batch
+   help/other_multiple_pipelines
+   help/other_logging
+   help/other_omero
+
+`(Jump to top)`_
+
 Modules
 =======
 .. toctree::

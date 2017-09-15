@@ -98,7 +98,7 @@ Two options for the alignment method are available:
    modality, if the images are not highly correlated. It is iterative,
    and thus tends to be slower than other methods, but is more likely to
    be correct. Essentially, alignment is performed by measuring how well
-   one image “explains” the other. For example, a flourescent image can
+   one image “explains” the other. For example, a fluorescent image can
    be aligned to a brightfield image by this method since the relevant
    features are bright in one modality where they are dim in the other.
 -  *%(M_CROSS_CORRELATION)s:* This is a good means of alignment in the

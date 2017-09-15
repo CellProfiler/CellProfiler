@@ -31,11 +31,9 @@ please use the **Watershed** module for identification of objects in 3D.
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In CellProfiler, we use the term *object* as a generic term to refer to
-an identified feature in an image, usually an organism, cell, or cellular
-compartment (for example, nuclei, cells, colonies, worms). 
-We define an
-object as *primary* when it can be found in an image without needing the
+{DEFINITION_OBJECT}
+
+We define an object as *primary* when it can be found in an image without needing the
 assistance of another cellular feature as a reference. For example:
 
 -  The nuclei of cells are usually more easily identifiable than whole-
@@ -225,10 +223,11 @@ See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
 **IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
 """.format(**{
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
-                "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
-                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
-            })
+    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+    "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
+})
 
 
 

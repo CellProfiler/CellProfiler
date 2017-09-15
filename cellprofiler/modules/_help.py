@@ -7,6 +7,12 @@ import pkg_resources
 import cellprofiler.setting
 from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
+DEFINITION_OBJECT = """\
+In CellProfiler, we use the term *object* as a generic term to refer to
+an identified feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms).
+"""
+
 REGEXP_HELP_REF = """\
 Patterns are specified using combinations of metacharacters and literal
 characters. There are a few classes of metacharacters, partially listed

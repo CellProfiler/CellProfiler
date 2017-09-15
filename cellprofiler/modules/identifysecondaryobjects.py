@@ -26,9 +26,8 @@ point.
 What is a secondary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In CellProfiler, we use the term *object* as a generic term to refer to
-an identified feature in an image, usually an organism, cell, or cellular
-compartment (for example, nuclei, cells, colonies, worms). 
+{DEFINITION_OBJECT}
+
 We define an
 object as *secondary* when it can be found in an image by using another
 cellular feature as a reference for guiding detection.
@@ -78,10 +77,10 @@ What do the settings mean?
 See below for help on the individual settings. The following icons are
 used to call attention to key items:
 
-.. list-table:: 
+.. list-table::
   :widths: 10 100
   :header-rows: 0
-  
+
   * - .. image:: {PROTIP_RECOMEND_ICON}
     - Our recommendation or example use case for which a particular setting is best used.
   * - .. image:: {PROTIP_AVOID_ICON}
@@ -157,10 +156,11 @@ Measurements made by this module
 
 See also the other **Identify** modules.
 """.format(**{
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
-                "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
-                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
-            })
+    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+    "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
+})
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"

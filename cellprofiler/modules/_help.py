@@ -7,6 +7,12 @@ import pkg_resources
 import cellprofiler.setting
 from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
+DEFINITION_OBJECT = """\
+In CellProfiler, we use the term *object* as a generic term to refer to
+an identified feature in an image, usually an organism, cell, or cellular
+compartment (for example, nuclei, cells, colonies, worms).
+"""
+
 REGEXP_HELP_REF = """\
 Patterns are specified using combinations of metacharacters and literal
 characters. There are a few classes of metacharacters, partially listed
@@ -53,7 +59,7 @@ and *conditions* you can specify to narrow down the image list.
    -  If you select “Does” and “Start with” as the operators and
       “BBBC013-1” in the Condition box, the rule will includes such files
       as “BBBC013-1.tif” “BBBC013-1-A01.png”, and so on.
-      
+
 .. image:: {IMAGES_USING_RULES_ICON}
    :width: 100%
 
@@ -99,6 +105,21 @@ and drag, a line will appear between the two endpoints, and the distance
 between them will be shown at the right-most portion of the bottom panel.\
 """
 
+HELP_ON_MEASURING_INTENSITIES = """\
+Note that for publication purposes, the units of intensity from
+microscopy images are usually described as “Intensity units” or
+“Arbitrary intensity units” because microscopes are not calibrated to an
+absolute scale. Also, it is important to note whether you are reporting
+the mean vs. the integrated intensity, so specify “Mean intensity
+units” or “Integrated intensity units” accordingly.
+
+Keep in mind that the default behavior in CellProfiler is to rescale the
+image intensity from 0 to 1 by dividing all pixels in the image by the
+maximum possible intensity value. This “maximum possible” value is
+defined by the “Set intensity range from” setting in **NamesAndTypes**;
+see the help for that setting for more details.
+"""
+
 HELP_ON_PIXEL_INTENSITIES = """\
 To view pixel intensities in an open image, use the pixel intensity tool
 which is available in any open display window. When you move your mouse
@@ -136,6 +157,33 @@ more flexible for future runs):
    Default Input Folder.\
 """
 
+USING_METADATA_GROUPING_HELP_REF = """\
+Please see the **Groups** module for more details on the proper use of
+metadata for grouping.
+"""
+
+USING_METADATA_HELP_REF = """\
+Please see the **Metadata** module for more details on metadata
+collection and usage.
+"""
+
+
+USING_METADATA_TAGS_REF = """\
+You can insert a previously defined metadata tag by either using:
+
+-  The insert key
+-  A right mouse button click inside the control
+-  In Windows, the Context menu key, which is between the Windows key
+   and Ctrl key
+
+The inserted metadata tag will appear in green. To change a previously
+inserted metadata tag, navigate the cursor to just before the tag and
+either:
+
+-  Use the up and down arrows to cycle through possible values.
+-  Right-click on the tag to display and select the available values.
+"""
+
 IO_WITH_METADATA_HELP_TEXT = """\
 For *{ABSOLUTE_FOLDER_NAME}*, *{DEFAULT_INPUT_SUBFOLDER_NAME}* and
 *{DEFAULT_OUTPUT_SUBFOLDER_NAME}*, if you have metadata associated
@@ -144,13 +192,25 @@ metadata tags for which all images in each individual image set have the same va
 
 -  Example: if you had extracted "*Plate*", "*Well*", and "*Channel*" metadata
    from your images, for most pipelines folders based on "*Plate*" or "*Well*" would work since
-   each individual image set would come only from a single well on a single plate, but 
+   each individual image set would come only from a single well on a single plate, but
    folders based on "*Channel*" would not work as each individual image set might
    contain many channels.
+
+{USING_METADATA_TAGS_REF}
+
+For instance, if you have a metadata tag named “Plate”, you can create a
+per-plate folder by selecting one of the subfolder options and then
+specifying the subfolder name as “\\g<Plate>”. The module will
+substitute the metadata values for the current image set for any
+metadata tags in the folder name.
+
+{USING_METADATA_HELP_REF}
 """.format(**{
     "ABSOLUTE_FOLDER_NAME": ABSOLUTE_FOLDER_NAME,
     "DEFAULT_INPUT_SUBFOLDER_NAME": DEFAULT_INPUT_SUBFOLDER_NAME,
-    "DEFAULT_OUTPUT_SUBFOLDER_NAME": DEFAULT_OUTPUT_SUBFOLDER_NAME
+    "DEFAULT_OUTPUT_SUBFOLDER_NAME": DEFAULT_OUTPUT_SUBFOLDER_NAME,
+    "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF,
+    "USING_METADATA_TAGS_REF": USING_METADATA_TAGS_REF,
 })
 
 ####################
@@ -181,29 +241,3 @@ PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")
 PROTIP_AVOID_ICON = __image_resource("thumb-down.png")
 
 TECH_NOTE_ICON = __image_resource("gear.png")
-
-USING_METADATA_GROUPING_HELP_REF = """\
-Please see the **Groups** module for more details on the proper use of
-metadata for grouping.
-"""
-
-USING_METADATA_HELP_REF = """\
-Please see the **Metadata** module for more details on metadata
-collection and usage.
-"""
-
-USING_METADATA_TAGS_REF = """\
-You can insert a previously defined metadata tag by either using:
-
--  The insert key
--  A right mouse button click inside the control
--  In Windows, the Context menu key, which is between the Windows key
-   and Ctrl key
-
-The inserted metadata tag will appear in green. To change a previously
-inserted metadata tag, navigate the cursor to just before the tag and
-either:
-
--  Use the up and down arrows to cycle through possible values.
--  Right-click on the tag to display and select the available values.
-"""

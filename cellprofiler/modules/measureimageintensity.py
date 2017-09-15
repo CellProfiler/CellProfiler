@@ -1,6 +1,14 @@
 # coding=utf-8
 
-"""
+import numpy as np
+
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import _help
+
+__doc__ = """
 MeasureImageIntensity
 =====================
 
@@ -12,18 +20,7 @@ intensity. You can choose to measure all pixels in the image or restrict
 the measurement to pixels within objects that were identified in a prior
 module. If the image has a mask, only unmasked pixels will be measured.
 
-Note that for publication purposes, the units of intensity from
-microscopy images are usually described as “Intensity units” or
-“Arbitrary intensity units” because microscopes are not calibrated to an
-absolute scale. Also, it is important to note whether you are reporting
-either the mean vs. the integrated intensity, so specify “Mean intensity
-units” or “Integrated intensity units” accordingly.
-
-Keep in mind that the default behavior in CellProfiler is to rescale the
-image intensity from 0 to 1 by dividing all pixels in the image by the
-maximum possible intensity value. This “maximum possible” value is
-defined by the “Set intensity range from” setting in **NamesAndTypes**;
-see the help for that setting for more details.
+{HELP_ON_MEASURING_INTENSITIES}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -44,14 +41,9 @@ Measurements made by this module
    excluding masked regions.
 
 See also **MeasureObjectIntensity**, **MaskImage**.
-"""
-
-import numpy as np
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+""".format(**{
+    "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
+})
 
 '''Number of settings saved/loaded per image measured'''
 SETTINGS_PER_IMAGE = 3

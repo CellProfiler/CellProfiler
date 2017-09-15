@@ -146,7 +146,7 @@ Several choices are available for constructing the image file name:
    in the *{FN_FROM_IMAGE}* option.
 
 {USING_METADATA_TAGS_REF}
-   
+
 {USING_METADATA_HELP_REF}
 """.format(**{
                 "FN_FROM_IMAGE": FN_FROM_IMAGE,
@@ -279,14 +279,6 @@ An additional option is the following:
 
 {IO_WITH_METADATA_HELP_TEXT}
 
-{USING_METADATA_TAGS_REF}
- 
-For instance, if you have a metadata tag named “Plate”, you can create a
-per-plate folder by selecting one the subfolder options and then
-specifying the subfolder name as “\\g<Plate>”. The module will
-substitute the metadata values for the current image set for any
-metadata tags in the folder name.{USING_METADATA_HELP_REF}.
-
 If the subfolder does not exist when the pipeline is run, CellProfiler
 will create it.
 
@@ -298,9 +290,7 @@ of a forward slash (“/”) as a folder separator will avoid ambiguity
 between the various operating systems.
 """.format(**{
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
-                "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT,
-                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
-                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
+                "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT
             })
         )
 

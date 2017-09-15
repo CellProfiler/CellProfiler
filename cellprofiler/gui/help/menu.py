@@ -226,17 +226,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         output_menu.append(
             "How Measurements are Named",
-            contents=cellprofiler.gui.help.content.MEASUREMENT_NOMENCLATURE_HELP
+            contents=cellprofiler.gui.help.content.read_content("output_measurements.rst")
         )
 
         output_menu.append(
             "Using Spreadsheets and Databases",
-            contents=cellprofiler.gui.help.content.SPREADSHEETS_DATABASE_HELP
+            contents=cellprofiler.gui.help.content.read_content("output_spreadsheets.rst")
         )
 
         output_menu.append(
             "Plate Viewer",
-            contents=cellprofiler.gui.help.content.PLATEVIEWER_HELP
+            contents=cellprofiler.gui.help.content.read_content("output_plateviewer.rst")
         )
 
         return output_menu

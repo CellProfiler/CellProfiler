@@ -19,7 +19,7 @@ MENU_HELP = {
     "Load Modules": cellprofiler.gui.help.content.LEGACY_LOAD_MODULES_HELP,
     "Loading Image Stacks and Movies": cellprofiler.gui.help.content.read_content("projects_image_sequences.rst"),
     "MATLAB format images": cellprofiler.gui.help.content.MATLAB_FORMAT_IMAGES_HELP,
-    "How Measurements are Named": cellprofiler.gui.help.content.MEASUREMENT_NOMENCLATURE_HELP,
+    "How Measurements are Named": cellprofiler.gui.help.content.read_content("output_measurements.rst"),
     "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.MEMORY_AND_SPEED_HELP,
     "Using the Data Tools Menu": cellprofiler.gui.help.content.read_content("navigation_data_tools_menu.rst"),
     "Using the Edit Menu": cellprofiler.gui.help.content.read_content("navigation_file_menu.rst"),
@@ -32,11 +32,11 @@ MENU_HELP = {
     "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.read_content(
         "navigation_parameter_sampling_menu.rst"
     ),
-    "Plate Viewer": cellprofiler.gui.help.content.PLATEVIEWER_HELP,
+    "Plate Viewer": cellprofiler.gui.help.content.read_content("output_plateviewer.rst"),
     "Running Multiple Pipelines": cellprofiler.gui.help.content.RUN_MULTIPLE_PIPELINES_HELP,
     "Running Your Pipeline": cellprofiler.gui.help.content.read_content("pipelines_running.rst"),
     "Selecting Images for Input": cellprofiler.gui.help.content.read_content("projects_selecting_images.rst"),
-    "Using Spreadsheets and Databases": cellprofiler.gui.help.content.SPREADSHEETS_DATABASE_HELP,
+    "Using Spreadsheets and Databases": cellprofiler.gui.help.content.read_content("output_spreadsheets.rst"),
     "Using the Test Menu": cellprofiler.gui.help.content.read_content("navigation_test_menu.rst"),
     "Setting the Output Filename": cellprofiler.gui.help.content.USING_THE_OUTPUT_FILE_HELP,
     "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content("why_use_cellprofiler.rst")

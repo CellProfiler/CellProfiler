@@ -752,7 +752,10 @@ class CPFrame(wx.Frame):
             def on_plate_viewer_help(event):
                 import cellprofiler.gui.htmldialog
                 dlg = cellprofiler.gui.htmldialog.HTMLDialog(
-                        self, "Help on plate viewer", cellprofiler.gui.help.content.PLATEVIEWER_HELP)
+                    self,
+                    "Help on plate viewer",
+                    cellprofiler.gui.help.content.read_content("output_plateviewer.rst")
+                )
                 dlg.Show()
 
             new_id = wx.NewId()

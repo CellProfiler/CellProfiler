@@ -8,7 +8,9 @@ MeasureImageSkeleton
 morphological skeleton. A branch is a pixel with more than two neighbors
 and and an endpoint is a pixel with only one neighbor. You can create a
 morphological skeleton with the **MorphologicalSkeleton** module from the
-*Advanced* category. You can use the ouput of this module for graph theoretic analysis.
+*Advanced* category. You can use the ouput of this module for graph theoretic 
+analysis; you may also use it to analyze the number of total branches and 
+endpoints for branching objects (such as neurons) in an image.
 """
 
 import numpy

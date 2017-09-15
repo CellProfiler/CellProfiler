@@ -110,17 +110,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         figure_menu.append(
             "Using The Display Window Menu Bar",
-            contents=cellprofiler.gui.help.content.MODULE_DISPLAY_MENU_BAR_HELP
+            contents=cellprofiler.gui.help.content.read_content("display_menu_bar.rst")
         )
 
         figure_menu.append(
             "Using The Interactive Navigation Toolbar",
-            contents=cellprofiler.gui.help.content.MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP
+            contents=cellprofiler.gui.help.content.read_content("display_interactive_navigation.rst")
         )
 
         figure_menu.append(
             "How To Use The Image Tools",
-            contents=cellprofiler.gui.help.content.MODULE_DISPLAY_IMAGE_TOOLS_HELP
+            contents=cellprofiler.gui.help.content.read_content("display_image_tools.rst")
         )
 
         return figure_menu

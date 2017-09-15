@@ -25,10 +25,10 @@ MENU_HELP = {
     "Using the Edit Menu": cellprofiler.gui.help.content.read_content("navigation_file_menu.rst"),
     "Using the File Menu": cellprofiler.gui.help.content.read_content("navigation_edit_menu.rst"),
     "Using the Window Menu": cellprofiler.gui.help.content.read_content("navigation_window_menu.rst"),
-    "How To Use The Image Tools": cellprofiler.gui.help.content.MODULE_DISPLAY_IMAGE_TOOLS_HELP,
+    "How To Use The Image Tools": cellprofiler.gui.help.content.read_content("display_image_tools.rst"),
     "Using The Interactive Navigation Toolbar":
-        cellprofiler.gui.help.content.MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP,
-    "Using The Display Window Menu Bar": cellprofiler.gui.help.content.MODULE_DISPLAY_MENU_BAR_HELP,
+        cellprofiler.gui.help.content.read_content("display_interactive_navigation.rst"),
+    "Using The Display Window Menu Bar": cellprofiler.gui.help.content.read_content("display_menu_bar.rst"),
     "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.read_content(
         "navigation_parameter_sampling_menu.rst"
     ),

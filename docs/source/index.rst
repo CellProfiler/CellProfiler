@@ -25,6 +25,21 @@ Instructions for navigating CellProfiler's menus.
 
 `(Jump to top)`_
 
+Display Options
+===============
+
+Tips and instructions for using CellProfiler's interactive
+module output displays.
+
+.. toctree::
+   :titlesonly:
+
+   help/display_menu_bar
+   help/display_interactive_navigation
+   help/display_image_tools
+
+`(Jump to top)`_
+
 Modules
 =======
 .. toctree::

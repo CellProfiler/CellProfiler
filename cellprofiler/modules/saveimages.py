@@ -89,8 +89,9 @@ The following types of images can be saved as a file on the hard drive:
    use the **OverlayOutlines** module to create them prior to saving images.
    Likewise, if you wish to save the objects themselves, you must use the
    **ConvertObjectsToImage** module to create a savable image.
--  *{IF_MASK}:* Relevant only if the **Crop** module is used. The
-   **Crop** module creates a mask of the pixels of interest in the
+-  *{IF_MASK}:* Relevant only if a module that produces masks has been used
+   such as **Crop**, **MaskImage**, or **MaskObjects**. These
+   modules create a mask of the pixels of interest in the
    image. Saving the mask will produce a binary image in which the
    pixels of interest are set to 1; all other pixels are set to 0.
 -  *{IF_CROPPING}:* Relevant only if the **Crop** module is used. The
@@ -220,7 +221,16 @@ to use the image name as-is.
             doc="""\
 *(Used only when constructing the filename from the image filename)*
 
-Enter the text that should be appended to the filename specified above."""
+Enter the text that should be appended to the filename specified above.
+If you have metadata associated with your images, you may use metadata tags.
+
+{USING_METADATA_TAGS_REF}
+
+Do not enter the file extension in this setting; it will be appended
+automatically.
+""".format(**{
+                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
+            })
         )
 
         self.file_format = cellprofiler.setting.Choice(

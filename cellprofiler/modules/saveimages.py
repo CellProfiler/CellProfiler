@@ -223,9 +223,12 @@ to use the image name as-is.
 
 Enter the text that should be appended to the filename specified above.
 If you have metadata associated with your images, you may use metadata tags.
+
 {USING_METADATA_TAGS_REF}
+
 Do not enter the file extension in this setting; it will be appended
-automatically.""".format(**{
+automatically.
+""".format(**{
                 "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
             })
         )

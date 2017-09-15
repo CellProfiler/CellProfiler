@@ -113,6 +113,20 @@ Modules
 
 `(Jump to top)`_
 
+Legacy Features
+===============
+These features are considered deprecated and will be removed
+in a future version of CellProfiler.
+
+.. toctree::
+   :titlesonly:
+
+   help/legacy_load_modules
+   help/legacy_output_file
+   help/legacy_matlab_image
+
+`(Jump to top)`_
+
 :ref:`search`
 
 .. _(Jump to top): index.html#

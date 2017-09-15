@@ -47,7 +47,7 @@ primary object.
 In order to identify the edges of secondary objects, this module
 performs two tasks:
 
-#. Finds the dividing lines between secondary objects which touch each
+#. Finds the dividing lines between secondary objects that touch each
    other.
 #. Finds the dividing lines between the secondary objects and the
    background of the image. In most cases, this is done by thresholding
@@ -61,13 +61,16 @@ This module identifies secondary objects based on two types of input:
 #. An *object* (e.g., nuclei) identified from a prior module. These are
    typically produced by an **IdentifyPrimaryObjects** module, but any
    object produced by another module may be selected for this purpose.
-#. An *image* highlighting the image features defining the cell edges.
+#. (*optional*) An *image* highlighting the image features defining the edges of the
+   secondary objects (e.g., cell edges).
    This is typically a fluorescent stain for the cell body, membrane or
    cytoskeleton (e.g., phalloidin staining for actin). However, any
-   image which produces these features can be used for this purpose. For
+   image that produces these features can be used for this purpose. For
    example, an image processing module might be used to transform a
-   brightfield image into one which captures the characteristics of a
-   cell body flourescent stain.
+   brightfield image into one that captures the characteristics of a
+   cell body fluorescent stain. This input is optional because you can
+   instead define secondary objects as a fixed distance aruond each
+   primary object.
 
 What do the settings mean?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -96,18 +99,21 @@ a corresponding secondary object, keep in mind the following points:
 
 -  The primary object will always be completely contained within a
    secondary object. For example, nuclei are completely enclosed within
-   identified cells stained for actin.
+   cells identified by actin staining.
 -  There will always be at most one secondary object for each primary
    object.
 
-See the section "Measurements made by this module" below for the measurements
-that are produced by this module. Once the module has finished
-processing, the module display window will show the following panels:
+Once the module has finished processing, the module display window will
+show the following panels;
+note that these are just for display: you must use the **SaveImages**
+module if you would like to save any of these images to the hard drive
+(as well, the **OverlayOutlines** module or **ConvertObjectsToImage
+modules might be needed):
 
 -  *Upper left:* The raw, original image.
 -  *Upper right:* The identified objects shown as a color image where
    connected pixels that belong to the same object are assigned the same
-   color (*label image*). It is important to note that assigned colors
+   color (*label image*). Note that assigned colors
    are arbitrary; they are used simply to help you distingush the
    various objects.
 -  *Lower left:* The raw image overlaid with the colored outlines of the
@@ -122,6 +128,9 @@ processing, the module display window will show the following panels:
 -  *Lower right:* A table showing some of the settings you chose,
    as well as those calculated by the module in order to produce
    the objects shown.
+   
+See the section "Measurements made by this module" below for the measurements
+that are produced by this module.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -145,20 +154,6 @@ Measurements made by this module
    secondary object.
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified secondary objects.
-
-Technical notes
-^^^^^^^^^^^^^^^
-
-The *Propagation* algorithm is the default approach for secondary object
-creation, creating each primary object as a "seed" guided by the input
-image and limited to the foreground region as determined by the chosen
-thresholding method. λ is a regularization parameter; see the help for
-the setting for more details. Propagation of secondary object labels is
-by the shortest path to an adjacent primary object from the starting
-(“seeding”) primary object. The seed-to-pixel distances are calculated
-as the sum of absolute differences in a 3x3 (8-connected) image
-neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
-λ\ :sup:`2`).
 
 See also the other **Identify** modules.
 """.format(**{
@@ -198,7 +193,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.x_name.text = "Select the input objects"
 
         self.x_name.doc = """\
-What did you call the objects you want to use as "seeds" to identify a secondary
+What did you call the objects you want to use as primary objects ("seeds") to identify a secondary
 object around each one? By definition, each primary object must be associated with exactly one
 secondary object and completely contained within it."""
 
@@ -218,7 +213,7 @@ secondary object and completely contained within it."""
             M_PROPAGATION,
             doc=u"""\
 There are several methods available to find the dividing lines between
-secondary objects which touch each other:
+secondary objects that touch each other:
 
 -  *{M_PROPAGATION:s}:* This method will find dividing lines between
    clumped objects where the image stained for secondary objects shows a
@@ -232,6 +227,17 @@ secondary objects which touch each other:
    Boundaries are preferentially placed where the image’s local
    appearance changes perpendicularly to the boundary (*Jones et al,
    2005*).
+   The {M_PROPAGATION:s} algorithm is the default approach for secondary object
+   creation. Each primary object is a "seed" for its corresponding
+   secondary object, guided by the input
+   image and limited to the foreground region as determined by the chosen
+   thresholding method. λ is a regularization parameter; see the help for
+   the setting for more details. Propagation of secondary object labels is
+   by the shortest path to an adjacent primary object from the starting
+   (“seeding”) primary object. The seed-to-pixel distances are calculated
+   as the sum of absolute differences in a 3x3 (8-connected) image
+   neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
+   λ\ :sup:`2`).
 -  *{M_WATERSHED_G:s}:* This method uses the watershed algorithm
    (*Vincent and Soille, 1991*) to assign pixels to the primary objects
    which act as seeds for the watershed. In this variant, the watershed
@@ -240,7 +246,7 @@ secondary objects which touch each other:
    drops off or increases rapidly near the boundary between cells.
 -  *{M_WATERSHED_I:s}:* This method is similar to the above, but it
    uses the inverted intensity of the image for the watershed. The areas
-   of lowest intensity will form the boundaries between cells. This
+   of lowest intensity will be detected as the boundaries between cells. This
    method works best when there is a saddle of relatively low intensity
    at the cell-cell boundary.
 -  *Distance:* In this method, the edges of the primary objects are
@@ -287,7 +293,7 @@ Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
             doc=u"""\
 The selected image will be used to find the edges of the secondary
 objects. For *{M_DISTANCE_N:s}* this will not affect object
-identification, only the final display.
+identification, only the module's display.
 """.format(**{
                 "M_DISTANCE_N": M_DISTANCE_N
             })
@@ -300,9 +306,10 @@ identification, only the final display.
             doc = u"""\
 *(Used only if "{M_DISTANCE_B:s}" or "{M_DISTANCE_N:s}" method is selected)*
 
-This option allows to define the number of pixels by which the primary objects
+This option allows you to define the number of pixels by which the primary objects
 will be expanded. This option becomes useful in situations when no staining was
-used to define cell cytoplasm but is needed to be defined for further measurements.
+used to define cell cytoplasm but the cell edges must be defined for further
+measurements.
 """.format(**{
             "M_DISTANCE_N": M_DISTANCE_N,
             "M_DISTANCE_B": M_DISTANCE_B
@@ -328,7 +335,7 @@ balance between these two considerations:
    gradient between the two competing primary objects.
 -  Larger values of λ put more and more weight on the distance between
    the two objects. This relationship is such that small changes in λ
-   will have fairly different results (e.,g 0.01 vs 0.001). However, the
+   will have fairly different results (e.g., 0.01 vs 0.001). However, the
    intensity image is almost completely ignored at λ much greater than
    1.
 -  At infinity, the result will look like {M_DISTANCE_B:s}, masked to
@@ -343,11 +350,11 @@ balance between these two considerations:
             "Discard secondary objects touching the border of the image?",
             False,
             doc=u"""\
-Select *{YES:s}* to discard secondary objects which touch the image
+Select *{YES:s}* to discard secondary objects that touch the image
 border. Select *{NO:s}* to retain objects regardless of whether they
 touch the image edge or not.
 
-The objects are discarded with respect to downstream measurement
+Note: the objects are discarded with respect to downstream measurement
 modules, but they are retained in memory as “unedited objects”; this
 allows them to be considered in downstream modules that modify the
 segmentation.
@@ -378,7 +385,7 @@ It might be appropriate to discard the primary object for any
 secondary object that touches the edge of the image.
 
 Select *{YES:s}* to create a new set of objects that are identical to
-the original primary objects set, minus the objects for which the
+the original set of primary objects, minus the objects for which the
 associated secondary object touches the image edge.
 """.format(**{
                 "YES": cellprofiler.setting.YES

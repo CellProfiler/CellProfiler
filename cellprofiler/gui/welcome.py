@@ -244,7 +244,7 @@ RUNNING_YOUR_PIPELINE_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "RUNNING_YOUR_PIPELINE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP
+        cellprofiler.gui.help.content.read_content("pipelines_running.rst")
     )
 })
 

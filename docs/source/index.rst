@@ -54,6 +54,19 @@ Learn how to configure a project and load images.
 
 `(Jump to top)`_
 
+Pipelines
+=========
+Learn how to create, run, and debug CellProfiler pipelines.
+
+.. toctree::
+   :titlesonly:
+
+   help/pipelines_building
+   help/navigation_test_menu
+   help/pipelines_running
+
+`(Jump to top)`_
+
 Modules
 =======
 .. toctree::

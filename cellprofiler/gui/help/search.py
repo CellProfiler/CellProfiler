@@ -12,7 +12,7 @@ import cellprofiler.modules
 MENU_HELP = {
     "Accessing Images From OMERO": cellprofiler.gui.help.content.ACCESSING_OMERO_IMAGES,
     "Batch Processing": cellprofiler.gui.help.content.BATCHPROCESSING_HELP,
-    "How To Build A Pipeline": cellprofiler.gui.help.content.BUILDING_A_PIPELINE_HELP,
+    "How To Build A Pipeline": cellprofiler.gui.help.content.read_content("pipelines_building.rst"),
     "Configuring Images for Analysis": cellprofiler.gui.help.content.read_content("projects_configure_images.rst"),
     "Configuring Logging": cellprofiler.gui.help.content.CONFIGURING_LOGGING_HELP,
     "Introduction to Projects": cellprofiler.gui.help.content.read_content("projects_introduction.rst"),
@@ -34,7 +34,7 @@ MENU_HELP = {
     ),
     "Plate Viewer": cellprofiler.gui.help.content.PLATEVIEWER_HELP,
     "Running Multiple Pipelines": cellprofiler.gui.help.content.RUN_MULTIPLE_PIPELINES_HELP,
-    "Running Your Pipeline": cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP,
+    "Running Your Pipeline": cellprofiler.gui.help.content.read_content("pipelines_running.rst"),
     "Selecting Images for Input": cellprofiler.gui.help.content.read_content("projects_selecting_images.rst"),
     "Using Spreadsheets and Databases": cellprofiler.gui.help.content.SPREADSHEETS_DATABASE_HELP,
     "Using the Test Menu": cellprofiler.gui.help.content.read_content("navigation_test_menu.rst"),

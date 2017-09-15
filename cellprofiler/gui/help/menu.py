@@ -48,7 +48,7 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "How To Build A Pipeline",
-            contents=cellprofiler.gui.help.content.BUILDING_A_PIPELINE_HELP
+            contents=cellprofiler.gui.help.content.read_content("pipelines_building.rst")
         )
 
         self.append(
@@ -58,7 +58,7 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "Running Your Pipeline",
-            contents=cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP
+            contents=cellprofiler.gui.help.content.read_content("pipelines_running.rst")
         )
 
         self.AppendSubMenu(

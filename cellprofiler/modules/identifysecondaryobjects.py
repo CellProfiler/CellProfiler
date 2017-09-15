@@ -71,23 +71,6 @@ This module identifies secondary objects based on two types of input:
    instead define secondary objects as a fixed distance aruond each
    primary object.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See below for help on the individual settings. The following icons are
-used to call attention to key items:
-
-.. list-table::
-  :widths: 10 100
-  :header-rows: 0
-
-  * - .. image:: {PROTIP_RECOMEND_ICON}
-    - Our recommendation or example use case for which a particular setting is best used.
-  * - .. image:: {PROTIP_AVOID_ICON}
-    - Indicates a condition under which a particular setting may not work well.
-  * - .. image:: {TECH_NOTE_ICON}
-    - Technical note. Provides more detailed information on the setting.
-
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -157,9 +140,6 @@ Measurements made by this module
 See also the other **Identify** modules.
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
-    "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
-    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
-    "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
 })
 
 M_PROPAGATION = "Propagation"

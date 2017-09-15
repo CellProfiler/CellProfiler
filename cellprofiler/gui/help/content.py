@@ -815,12 +815,11 @@ RUN_MULTIPLE_PIPELINES_HELP = u"""\
 The **Run multiple pipelines** dialog lets you select several
 pipelines which will be run consecutively. Please note the following:
 
--  CellProfiler 2.1 project files are not currently supported.
--  Pipelines from CellProfiler 2.0 and lower are supported.
--  If you want to use a pipeline made using CellProfiler 2.1, then you
-   need to include the project file list with the pipeline, by selecting
-   *Export > Pipeline…*, and under the “Save as type” dropdown, select
-   “CellProfiler pipeline and file list”.
+-  Pipeline files (.cppipe) are supported.
+-  Project files (.cpproj) from CellProfiler 2.1 or newer are not supported.
+   To convert your project to a pipeline (.cppipe), select *File > Export > Pipeline…*
+   and, under the “Save as type” dropdown, select “CellProfiler pipeline and file list”
+   to export the project file list with the pipeline.
 
 You can invoke **Run multiple pipelines** by selecting it from the file menu. The dialog has three parts to it:
 

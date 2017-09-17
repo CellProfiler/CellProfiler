@@ -201,8 +201,8 @@ are all equal to or greater than 1. You have the following options:
 Calculate a separate function for each image, or one for all the
 images? You can calculate the illumination function using just the
 current image or you can calculate the illumination function using all
-of the images in each group. The illumination function can be calculated
-in one of the three ways:
+of the images in each group (or in the entire experiment). The
+illumination function can be calculated in one of the three ways:
 
 -  *%(EA_EACH)s:* Calculate an illumination function for each image
    individually.
@@ -215,7 +215,9 @@ in one of the three ways:
    pipeline, but also means that you will not have the ability to filter
    out images (e.g., by using **FlagImage**). The input images need to
    be assembled using the **Input** modules; using images produced by
-   other modules will yield an error.
+   other modules will yield an error. Thus, typically,
+   **CorrectIlluminationCalculate** will be the first module after the
+   input modules.
 -  *%(EA_ALL_ACROSS)s:* Calculate an illumination function across all
    cycles in each group. This option takes any image as input; however,
    the illumination function will not be completed until the end of the
@@ -234,10 +236,9 @@ in one of the three ways:
                  SM_GAUSSIAN_FILTER,
                  SM_TO_AVERAGE,
                  SM_SPLINES], doc="""\
-If requested, the resulting image is smoothed. See the
-**EnhanceOrSuppressFeatures** module help for more details. If you are
-using *Each* mode, this is almost certainly necessary. If you have few
-objects in each image or a small image set, you may want to smooth.
+If requested, the resulting image is smoothed. If you are using *Each* mode,
+smoothing is definitely needed. For *All* modes, you usually also want to
+smooth, especially if you have few objects in each image or a small image set.
 
 You should smooth to the point where the illumination function resembles
 a believable pattern. For example, if you are trying to correct a lamp
@@ -245,16 +246,31 @@ illumination problem, apply smoothing until you obtain a fairly smooth
 pattern without sharp bright or dim regions. Note that smoothing is a
 time-consuming process, but some methods are faster than others.
 
--  *%(SM_FIT_POLYNOMIAL)s:* This methdod is fastest but does not allow
-   a very tight fit compared to the slower median and Gaussian filtering
-   methods.
--  %(SM_MEDIAN_FILTER)s, *%(SM_GAUSSIAN_FILTER)s:* Use a median or
-   Gaussian filter, respectively. We typically recommend
+-  *%(SM_FIT_POLYNOMIAL)s:* This method is fastest but does not allow
+   a very tight “fit” compared to the other methods. Thus, it will usually be less
+   accurate. The method treats the intensity of the image
+   pixels as a polynomial function of the x and y position of each
+   pixel. It fits the intensity to the polynomial, *A x* :sup:`2` *+ B
+   y* :sup:`2` *+ C xy + D x + E y + F*. This will produce a smoothed
+   image with a single peak or trough of intensity that tapers off
+   elsewhere in the image. For many microscopy images (where the
+   illumination of the lamp is brightest in the center of field of
+   view), this method will produce an image with a bright central region
+   and dimmer edges. But, in some cases the peak/trough of the
+   polynomial may actually occur outside of the image itself.
+-  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:* 
+   We typically recommend
    *%(SM_MEDIAN_FILTER)s* vs. *%(SM_GAUSSIAN_FILTER)s* because the
    median is less sensitive to outliers, although the results are also
    slightly less smooth and the fact that images are in the range of 0
    to 1 means that outliers typically will not dominate too strongly
-   anyway.
+   anyway. The *%(GAUSSIAN_FILTER)s* convolves the image with a
+   Gaussian whose full width at half maximum is the artifact diameter
+   entered. Its effect is to blur and obscure features smaller than the
+   specified diameter and spread bright or dim features larger than the
+   specified diameter. The *%(MEDIAN_FILTER)s* finds the median pixel value within
+   the diameter you specify. It removes bright or dim features
+   that are significantly smaller than the specified diameter.
 -  *%(SM_TO_AVERAGE)s:* A less commonly used option is to completely
    smooth the entire image, which will create a flat, smooth image where
    every pixel of the image is the average of what the illumination
@@ -265,23 +281,19 @@ time-consuming process, but some methods are faster than others.
    pixels as background, computing a best fit spline to this background
    and then reclassifying pixels as background until the spline
    converges on its final value.
--  *%(SM_CONVEX_HULL)s:* This method algorithm proceeds as follows:
-
+-  *%(SM_CONVEX_HULL)s:* This method can be used on an image whose objects are
+   darker than their background and whose illumination intensity
+   decreases monotonically from the brightest point. It proceeds as follows:
    -  Choose 256 evenly-spaced intensity levels between the minimum and
       maximum intensity for the image
    -  Set the intensity of the output image to the minimum intensity of
       the input image
    -  Iterate over the intensity levels, from lowest to highest
-
       -  For a given intensity, find all pixels with equal or higher
          intensities
       -  Find the convex hull that encloses those pixels
       -  Set the intensity of the output image within the convex hull to
          the current intensity
-
-   The Convex Hull method can be used on an image whose objects are
-   darker than their background and whose illumination intensity
-   decreases monotonically from the brightest point.
 
 **References**
 -  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
@@ -299,16 +311,17 @@ Calculate the smoothing filter size. There are three options:
 
 -  *%(FI_AUTOMATIC)s:* The size is computed as 1/40 the size of the
    image or 30 pixels, whichever is smaller.
--  *%(FI_OBJECT_SIZE)s:* The size is obtained relative to the width of
-   artifacts to be smoothed.
--  *%(FI_MANUALLY)s:* Use a manually entered value.
+-  *%(FI_OBJECT_SIZE)s:* The module will calculate the smoothing size
+   based on the width of artifacts to be smoothed.
+-  *%(FI_MANUALLY)s:* You can enter a value yourself.
 """ % globals())
 
         self.object_width = cps.Integer(
             "Approximate object size", 10, doc="""\
-*(Used only if %(FI_AUTOMATIC)s is selected for smoothing filter size calculation)*
+*(Used only if %(FI_OBJECT_SIZE)s is selected for smoothing filter size calculation)*
 
-Enter the approximate width of the artifacts to be smoothed, in pixels.
+Enter the approximate width of the largest typical object, in pixels.
+The smoothing size will be set to preserve objects of that size.
 """ % globals())
 
         self.size_of_smoothing_filter = cps.Integer(
@@ -404,7 +417,7 @@ pass if it is to be considered as background during the next pass.
 You should enter a higher number to converge stabily and slowly on a
 final background and a lower number to converge more rapidly, but with
 lower stability. The default for this parameter is two standard
-deviations; this will provide a fairly stable background estimate.
+deviations; this will provide a fairly stable, smooth background estimate.
 """ % globals())
 
         self.spline_points = cps.Integer(

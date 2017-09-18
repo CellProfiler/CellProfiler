@@ -168,7 +168,7 @@ Select "*{YES}*" to calculate the per-parent mean values of every upstream
 measurement made with the children objects and store them as a
 measurement for the parent; the nomenclature of this new measurement is
 “Mean_<child>_<category>_<feature>”. This module
-should be placed *after* all **Measure** modules that make measurements
+must be placed *after* all **Measure** modules that make measurements
 of the children objects.""".format(**{
                 "YES": cellprofiler.setting.YES
             })

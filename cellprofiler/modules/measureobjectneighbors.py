@@ -26,9 +26,11 @@ Measurements made by this module
    distance. Note that this measurement is only available if you use the
    same set of objects for both objects and neighbors.
 -  *FirstClosestObjectNumber:* The index of the closest object.
--  *FirstClosestDistance:* The distance to the closest object.
+-  *FirstClosestDistance:* The distance to the closest object (in units
+   of pixels).
 -  *SecondClosestObjectNumber:* The index of the second closest object.
--  *SecondClosestDistance:* The distance to the second closest object.
+-  *SecondClosestDistance:* The distance to the second closest object (in units
+   of pixels).
 -  *AngleBetweenNeighbors:* The angle formed with the object center as
    the vertex and the first and second closest object centers along the
    vectors.
@@ -189,7 +191,7 @@ Specify a name that will allow the image of objects colored by percent
 of touching pixels to be selected later in the pipeline.""")
 
         self.touching_colormap = cps.Colormap(
-                'Select a colormap', doc="""\
+                'Select colormap', doc="""\
 *(Used only if the image of objects colored by percent touching is to be
 retained for later use in the pipeline)*
 

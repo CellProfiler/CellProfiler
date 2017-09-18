@@ -48,7 +48,7 @@ class InvertForPrinting(cpm.Module):
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}")*
 
-Select *{YES}* to specify an image to use for the red channel.
+Select "*{YES}*" to specify an image to use for the red channel.
 """.format(**{
                 "CC_GRAYSCALE": CC_GRAYSCALE,
                 "YES": YES
@@ -73,7 +73,7 @@ Provide an image for the red channel.
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}")*
 
-Select *{YES}* to specify an image to use for the green channel.
+Select "*{YES}*" to specify an image to use for the green channel.
 """.format(**{
                 "CC_GRAYSCALE": CC_GRAYSCALE,
                 "YES": YES
@@ -98,7 +98,7 @@ Provide an image for the green channel.
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}")*
 
-Select *{YES}* to specify an image to use for the blue channel.
+Select "*{YES}*" to specify an image to use for the blue channel.
 """.format(**{
                 "CC_GRAYSCALE": CC_GRAYSCALE,
                 "YES": YES
@@ -136,12 +136,12 @@ Select the color image to use.
             doc="Specify whether you want to produce several grayscale images or one color image.")
 
         self.wants_red_output = cps.Binary(
-            "Select *{YES}* to produce a red image.".format(**{"YES": YES}),
+            "Select "*{YES}*" to produce a red image.".format(**{"YES": YES}),
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
 
-Select *{YES}* to produce a grayscale image corresponding to the inverted red channel.
+Select "*{YES}*" to produce a grayscale image corresponding to the inverted red channel.
 """.format(**{
                 "CC_GRAYSCALE": CC_GRAYSCALE,
                 "YES": YES
@@ -161,12 +161,12 @@ Provide a name for the inverted red channel image.
         )
 
         self.wants_green_output = cps.Binary(
-            "Select *{YES}* to produce a green image.".format(**{"YES": YES}),
+            "Select "*{YES}*" to produce a green image.".format(**{"YES": YES}),
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
 
-Select *{YES}* to produce a grayscale image corresponding to the inverted green channel.
+Select "*{YES}*" to produce a grayscale image corresponding to the inverted green channel.
 """.format(**{
                 "CC_GRAYSCALE": CC_GRAYSCALE,
                 "YES": YES
@@ -186,12 +186,12 @@ Provide a name for the inverted green channel image.
         )
 
         self.wants_blue_output = cps.Binary(
-            "Select *{YES}* to produce a blue image.".format(**{"YES": YES}),
+            "Select "*{YES}*" to produce a blue image.".format(**{"YES": YES}),
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
 
-Select *{YES}* to produce a grayscale image corresponding to the inverted blue channel.
+Select "*{YES}*" to produce a grayscale image corresponding to the inverted blue channel.
 """.format(**{
                 "CC_GRAYSCALE": CC_GRAYSCALE,
                 "YES": YES

@@ -48,8 +48,9 @@ Measurements made by this module
 -  *Scaling:* The maximum possible intensity value for the image format.
 -  *Height, Width:* The height and width of the current image.
 
-See also the **Input** modules, **LoadData**, **LoadSingleImage**,
-**SaveImages**.
+See also the **Input** modules (**Images**, **NamesAndTypes**,
+**MetaData**, **Groups**), **LoadData**, **LoadSingleImage**,
+and **SaveImages**.
 """
 
 import cgi
@@ -745,8 +746,8 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3."""))
 This setting determines whether you load an image as image data or as
 segmentation results (i.e., objects):
 
--  *%(IO_IMAGES)s:* The input image will be given a user-specified name
-   by which it will be refered downstream. This is the most common usage
+-  *%(IO_IMAGES)s:* The input image will be given the name you specify,
+   by which it will be referred downstream. This is the most common usage
    for this module.
 -  *%(IO_OBJECTS)s:* Use this option if the input image is a label
    matrix and you want to obtain the objects that it defines. A *label

@@ -9,14 +9,10 @@ distance.
 
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be added or
-removed, expand objects until they are almost touching or shrink objects
-down to a point. Objects are never lost using this module (shrinking
-stops when an object becomes a single pixel). The module can separate
-touching objects without otherwise shrinking the objects.
-
-**ExpandOrShrinkObjects** can perform some specialized morphological
-operations that remove pixels without completely removing an object. See
-the Settings help (below) for more detail.
+removed, expand objects until they are almost touching, or shrink objects
+down to a point. The module can also separate touching objects without
+otherwise shrinking them, and can perform some specialized morphological
+operations that remove pixels without completely removing an object.
 
 *Note on saving images:* You can pass the modified objects along to the
 *Object Processing* module **ConvertObjectsToImage** to create an image.
@@ -24,6 +20,12 @@ This image can be saved with the **SaveImages** module. Additionally,
 you can use the **OverlayOutlines** or **OverlayObjects** module to
 overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
+
+See also **IdentifySecondaryObjects** which allows creating new objects
+based on expansion of existing objects, with a a few different options
+than in this module. There are also several related modules in the
+*Advanced* category (e.g., **Dilation**, **Erosion**,
+**MorphologicalSkeleton**).
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -37,7 +39,6 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* Pixel (*X,Y*) coordinates of the center
    of mass of the expanded/shrunken objects.
 
-See also **Identify** modules.
 """
 
 import centrosome.cpmorphology
@@ -88,6 +89,8 @@ Choose the operation that you want to perform:
 
 -  *{O_SHRINK_INF}:* Remove all pixels but one from filled objects.
    Thin objects with holes to loops unless the “fill” option is checked.
+   Objects are never lost using this module (shrinking stops when an
+   object becomes a single pixel).
 -  *{O_EXPAND_INF}:* Expand objects, assigning every pixel in the
    image to an object. Background pixels are assigned to the nearest
    object.
@@ -100,7 +103,8 @@ Choose the operation that you want to perform:
    two, remove the object completely or open a hole in the object). You
    can specify the number of times perimeter pixels should be removed.
    Processing stops automatically when there are no more pixels to
-   remove.
+   remove. Objects are never lost using this module (shrinking
+   stops when an object becomes a single pixel).
 -  *{O_EXPAND}:* Expand each object by adding background pixels
    adjacent to the image. You can choose the number of times to expand.
    Processing stops automatically if there are no more background
@@ -145,7 +149,7 @@ Specify the number of pixels to add or remove from object borders.
 Select *{YES}* to ensure that each object will shrink to a single
 point, by filling the holes in each object.
 
-Select *{NO}* to preserve the Euler number. in this case, the shrink
+Select *{NO}* to preserve the Euler number. In this case, the shrink
 algorithm preserves each object’s Euler number, which means that it will
 erode an object with a hole to a ring in order to keep the hole. An
 object with two holes will be shrunk to two rings connected by a line in

@@ -136,7 +136,7 @@ VARIABLE_SETTINGS_COUNT_V3 = 2
 
 class StraightenWorms(cpm.Module):
     variable_revision_number = 3
-    category = ["Object Processing", "Worm Toolbox"]
+    category = ["Worm Toolbox"]
     module_name = "StraightenWorms"
 
     def create_settings(self):

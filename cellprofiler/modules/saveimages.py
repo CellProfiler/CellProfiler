@@ -245,7 +245,7 @@ automatically.
             doc="""\
 *(Used only when saving non-movie files)*
 
-Select the image or movie format to save the image(s).
+Select the format to save the image(s).
 
 Only *{FF_TIFF}* supports saving as 16-bit or 32-bit. *{FF_TIFF}* is a
 "lossless" file format.
@@ -435,8 +435,10 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             result.append(self.single_file_name)
         else:
             raise NotImplementedError("Unhandled file name method: %s" % self.file_name_method)
-        result.append(self.file_format)
-        supports_16_bit = (self.file_format == FF_TIFF and self.save_image_or_figure == IF_IMAGE)
+        if self.save_image_or_figure != IF_MOVIE:
+            result.append(self.file_format)
+        supports_16_bit = (self.file_format == FF_TIFF and self.save_image_or_figure == IF_IMAGE) or \
+                          self.save_image_or_figure == IF_MOVIE
         if supports_16_bit:
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)

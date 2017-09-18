@@ -18,7 +18,7 @@ objects, the object will be assigned to the parent with maximal overlap.
 For an alternate approach to assigning parent/child relationships,
 consider using the **MaskObjects** module.
 
-If you want to include child objects that lie outside but still nearby
+If you want to include child objects that lie outside but still near
 parent objects, you might want to expand the parent objects using
 **ExpandOrShrink** or **IdentifySecondaryObjects**.
 

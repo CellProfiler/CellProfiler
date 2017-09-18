@@ -91,7 +91,7 @@ objects.
 
 Choose the colormap to be used, which affects how the objects are
 colored. You can look up your default colormap under *File >
-Preferences*
+Preferences*.
 """
         )
 

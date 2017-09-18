@@ -259,8 +259,8 @@ define the grid)*
 
 This setting defines the location of the second of two cells in your
 grid. You should enter the coordinates of the center of the cell. You
-can display an image of your grid and use use the pixel coordinate
-display to determine the coordinates of the center of your cell.
+can display an image of your grid and use the pixel coordinate
+display to determine the coordinates (X,Y) of the center of your cell.
 """ % globals())
 
         self.second_spot_row = cps.Integer(

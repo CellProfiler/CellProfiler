@@ -15,7 +15,7 @@ identity = "Developer ID Application: Allen Goodman (MERWFR65Q3)"
 CellProfiler:
 	git clone git@github.com:CellProfiler/CellProfiler.git $@
 
-	cd $@ && git checkout tags/v3.0.0rc4
+	cd $@ && git checkout tags/v3.0.0rc5
 
 .PHONY: dependencies
 dependencies: CellProfiler
@@ -41,6 +41,8 @@ CellProfiler.dmg: dist/CellProfiler.app
 		-srcfolder $<               \
 		-volname CellProfiler       \
 		$@
+
+	codesign --deep -s $(identity) $@
 
 .PHONY: clean
 clean:

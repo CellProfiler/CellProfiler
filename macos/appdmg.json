@@ -1,0 +1,26 @@
+{
+  "title": "CellProfiler",
+  "icon": "./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
+  "background": "./background.png",
+  "contents": [
+    {
+      "x": 384,
+      "y": 144,
+      "type": "link",
+      "path": "/Applications"
+    },
+    {
+      "x": 157,
+      "y": 104,
+      "type": "file",
+      "path": "dist/CellProfiler.app"
+    }
+  ],
+  "window": {
+    "size": {
+      "width": 512,
+      "height": 320
+    }
+  },
+  "format": "ULFO"
+}

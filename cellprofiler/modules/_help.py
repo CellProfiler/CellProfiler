@@ -14,6 +14,12 @@ compartment (for example, nuclei, cells, colonies, worms).
 """
 
 REGEXP_HELP_REF = """\
+**Details on regular expressions:**
+
+A *regular expression* is a general term refering to a method of
+searching for pattern matches in text. There is a high learning curve to
+using them, but are quite powerful once you understand the basics.
+
 Patterns are specified using combinations of metacharacters and literal
 characters. There are a few classes of metacharacters, partially listed
 below. Some helpful links follow:
@@ -81,15 +87,7 @@ clicking the ellipsis button (to the right of the plus button). Repeat
 the above steps to add more rules to the filter until you have all the
 conditions you want to include.
 
-**Details on regular expressions:**
-
-A *regular expression* is a general term refering to a method of
-searching for pattern matches in text. There is a high learning curve to
-using them, but are quite powerful once you understand the basics.
-
 {REGEXP_HELP_REF}
-
-
 """.format(**{
     "IMAGES_USING_RULES_ICON": pkg_resources.resource_filename(
         "cellprofiler",

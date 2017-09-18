@@ -291,13 +291,15 @@ Three options are available:
    contain that text exactly will be loaded and given the name you
    specify. The search for the text is case-sensitive.
 -  *%(MS_REGEXP)s:* Used to load image (or movie) files that match a
-   pattern of regular expressions. %(REGEXP_HELP_REF)s
+   pattern of regular expressions.
 -  *%(MS_ORDER)s:* Used when image (or movie) files are present in a
    repeating order, like “DAPI, FITC, Red; DAPI, FITC, Red;” and so on.
    Images are loaded based on the order of their location on the hard
    disk, and they are assigned an identity based on how many images are
    in each group and what position within each group the file is located
    (e.g., three images per group; DAPI is always first).
+
+%(REGEXP_HELP_REF)s
 """ % globals())
 
         self.exclude = cps.Binary(

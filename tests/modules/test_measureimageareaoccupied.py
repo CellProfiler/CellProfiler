@@ -1,7 +1,7 @@
 import unittest
 
 import numpy
-import StringIO
+import six
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -218,7 +218,7 @@ MeasureImageAreaOccupied:[module_num:1|svn_version:\'Unknown\'|variable_revision
 
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(six.StringIO(data))
 
         module = pipeline.modules()[0]
 

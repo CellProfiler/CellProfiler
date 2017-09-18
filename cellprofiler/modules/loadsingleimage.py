@@ -28,7 +28,7 @@ Measurements made by this module
 -  *Metadata:* The metadata information extracted from the path and/or
    filename, if requested.
 -  *Scaling:* The maximum possible intensity value for the image format.
--  *Height, Width:* The height and width of the current image.
+-  *Height, Width:* The height and width of images loaded by this module.
 
 Technical notes
 ^^^^^^^^^^^^^^^
@@ -45,7 +45,8 @@ If you have a single file to load in the pipeline (and only that file),
 you will want to use **LoadImages** or **LoadData** with a single,
 hardcoded file name.
 
-See also the **Input** modules, **LoadImages**, **LoadData**.
+See also the **Input** modules (**Images**, **NamesAndTypes**,
+**MetaData**, **Groups**), **LoadImages**, and **LoadData**.
 """
 
 import hashlib
@@ -182,7 +183,7 @@ be included.
 This setting determines whether you load an image as image data or as
 segmentation results (i.e., objects):
 
--  *{IO_IMAGES}:* The input image will be given name you specify, by
+-  *{IO_IMAGES}:* The input image will be given the name you specify, by
    which it will be referred downstream. This is the most common usage
    for this module.
 -  *{IO_OBJECTS}:* Use this option if the input image is a label matrix

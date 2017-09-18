@@ -1,12 +1,16 @@
 # coding=utf-8
 
 """
-MeasureImageSkeleton measures the number of branches and endpoints in a
+MeasureImageSkeleton
+====================
+
+**MeasureImageSkeleton** measures the number of branches and endpoints in a
 morphological skeleton. A branch is a pixel with more than two neighbors
 and and an endpoint is a pixel with only one neighbor. You can create a
-morphological skeleton with the MorphologicalSkeleton module from the
-Mathmatical Morphology category. You can use the ouput of this module
-for graph theoretic analysis.
+morphological skeleton with the **MorphologicalSkeleton** module from the
+*Advanced* category. You can use the ouput of this module for graph theoretic 
+analysis; you may also use it to analyze the number of total branches and 
+endpoints for branching objects (such as neurons) in an image.
 """
 
 import numpy
@@ -83,10 +87,10 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
     def create_settings(self):
         self.skeleton_name = cellprofiler.setting.ImageNameSubscriber(
             "Skeleton",
-            doc="""
-            The name of a morphological skeleton image. You can create a morphological skeleton with the
-            MorphologicalSkeleton module from the Mathmatical Morphology category.
-            """
+            doc="""\
+The name of a morphological skeleton image. You can create a morphological skeleton with the
+**MorphologicalSkeleton** module from the *Advanced* category.
+"""
         )
 
     def settings(self):

@@ -146,12 +146,12 @@ Select the shape into which you would like to crop:
         self.crop_method = cps.Choice(
                 "Select the cropping method",
                 [CM_COORDINATES, CM_MOUSE], CM_COORDINATES, doc="""\
-Choose whether you would like to crop by typing in pixel coordinates or
+Choose whether you would like to crop by typing in pixel (X,Y) coordinates or
 clicking with the mouse.
 
 -  *%(CM_COORDINATES)s:* For *%(SH_ELLIPSE)s*, you will be asked to
    enter the geometric parameters of the ellipse. For
-   *%(SH_RECTANGLE)s*, you will be asked to specify the coordinates of
+   *%(SH_RECTANGLE)s*, you will be asked to specify the (X,Y) coordinates of
    the corners.
 -  *%(CM_MOUSE)s:* For *%(SH_ELLIPSE)s*, you will be asked to click
    five or more points to define an ellipse around the part of the image

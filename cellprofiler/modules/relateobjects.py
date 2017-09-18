@@ -112,6 +112,9 @@ speckles to the nuclei that contains them, the speckles are the children.
             D_ALL,
             doc="""\
 Choose the method to calculate distances of each child to its parent.
+For example, these measurements can tell you whether nuclear speckles
+are located more closely to the center of the nucleus or to the nuclear
+periphery.
 
 -  *{D_NONE}:* Do not calculate any distances. This saves computation time.
 -  *{D_MINIMUM}:* The distance from the centroid of the child object to

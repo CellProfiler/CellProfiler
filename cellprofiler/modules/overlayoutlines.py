@@ -5,10 +5,11 @@ OverlayOutlines
 ===============
 
 **OverlayOutlines** places outlines of objects over a desired image.
-Outlines can be placed around 2D and 3D objects.
 
 This module places outlines of objects on any desired image (grayscale, color, or blank).
 The resulting image can be saved using the **SaveImages** module.
+
+This module supports 2D and 3D objects.
 """
 
 import numpy
@@ -63,7 +64,7 @@ class OverlayOutlines(cellprofiler.module.Module):
             doc="""\
 Select "*{YES}*" to produce an image of the outlines on a black background.
 
-Select "*{NO}*", the module will overlay the outlines on an image of your choosing.
+Select "*{NO}*" to overlay the outlines on an image you choose.
 """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO

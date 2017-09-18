@@ -14,7 +14,7 @@ pixel intensities.
 
 Note that any input objects specified will have their texture measured
 against *all* input images specified, which may lead to image-object
-texture combinations that are unneccesary. If you do not want this
+texture combinations that are unnecessary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
@@ -44,14 +44,14 @@ Measurements made by this module
    -  *AngularSecondMoment:* Measure of image homogeneity. A higher
       value of this feature indicates that the intensity varies less in
       an image. Has a value of 1 for a uniform image.
-   -  *Contrast:* Measure of local variation in an image. A high
-      contrast value indicates a high degree of local variation, and is
-      0 for a uniform image.
+   -  *Contrast:* Measure of local variation in an image, with 0 for a
+      uniform image and a high value indicating a high degree of local
+      variation.
    -  *Correlation:* Measure of linear dependency of intensity values in
       an image. For an image with large areas of similar intensities,
       correlation is much higher than for an image with noisier,
       uncorrelated intensities. Has a value of 1 or -1 for a perfectly
-      positively or negatively correlated image.
+      positively or negatively correlated image, respectively.
    -  *Variance:* Measure of the variation of image intensity values.
       For an image with uniform intensity, the texture variance would be
       zero.
@@ -66,20 +66,22 @@ Measurements made by this module
    -  *Entropy:* An indication of the complexity within an image. A
       complex image produces a high entropy value.
    -  *DifferenceVariance:* The image variation in a normalized
-      co-occurance matrix.
+      co-occurrence matrix.
    -  *DifferenceEntropy:* Another indication of the amount of
       randomness in an image.
-   -  *InfoMeas1:* A measure of the total amount of information contained within a region of pixels derived from
-      the recurring spatial relationship ship between specific intensity values.
-   -  *InfoMeas2:* An additional measure of the total amount of information contained within a region of pixels derived
-      from the recurring spatial relationship ship between specific intensity values. It is a complementary value to
-      InfoMeas1 and is on a different scale.
+   -  *InfoMeas1:* A measure of the total amount of information contained
+      within a region of pixels derived from the recurring spatial
+      relationship between specific intensity values.
+   -  *InfoMeas2:* An additional measure of the total amount of information
+      contained within a region of pixels derived from the recurring spatial
+      relationship between specific intensity values. It is a complementary
+      value to InfoMeas1 and is on a different scale.
 
 Technical notes
 ^^^^^^^^^^^^^^^
 
 To calculate the Haralick features, **MeasureTexture** normalizes the
-co-occurence matrix at the per-object level by basing the intensity
+co-occurrence matrix at the per-object level by basing the intensity
 levels of the matrix on the maximum and minimum intensity observed
 within each object. This is beneficial for images in which the maximum
 intensities of the objects vary substantially because each object will
@@ -178,10 +180,10 @@ class MeasureTexture(cellprofiler.module.Module):
 This setting determines whether the module computes image-wide
 measurements, per-object measurements or both.
 
--  *{IO_IMAGES}:* Select if you only want to measure the texture of
-   objects.
--  *{IO_OBJECTS}:* Select if your pipeline does not contain objects or
-   if you only want to make per-image measurements.
+-  *{IO_IMAGES}:* Select if you only want to measure the texture
+   across entire images.
+-  *{IO_OBJECTS}:* Select if you want to measure the texture
+   on a per-object basis only.
 -  *{IO_BOTH}:* Select to make both image and object measurements.
 """.format(**{
                 "IO_IMAGES": IO_IMAGES,

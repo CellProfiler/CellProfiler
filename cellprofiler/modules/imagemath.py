@@ -106,7 +106,8 @@ last, e.g., for “Divide”, (Image1 / Image2) / Image3
 -  *%(O_MAXIMUM)s:* Returns the element-wise maximum value at each
    pixel location.
 -  *%(O_INVERT)s:* Subtracts the image intensities from 1. This makes
-   the darkest color the brightest and vice-versa.
+   the darkest color the brightest and vice-versa. Note that if a
+   mask has been applied to the image, the mask will also be inverted.
 -  *%(O_LOG_TRANSFORM)s:* Log transforms each pixel’s intensity. The
    actual function is log\ :sub:`2`\ (image + 1), transforming values
    from 0 to 1 into values from 0 to 1.

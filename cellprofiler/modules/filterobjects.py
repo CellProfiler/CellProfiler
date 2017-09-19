@@ -257,6 +257,7 @@ choices.""".format(**{
 
 Select the location of the rules file that will be used for filtering.
 {IO_FOLDER_CHOICE_HELP_TEXT}""".format(**{
+                "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
                 "MODE_RULES": MODE_RULES,
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
             })
@@ -280,6 +281,7 @@ Please note the following:
 -  You can make multiple class selections. If you do so, the module will
    retain the object if the object falls into any of the selected
    classes.""".format(**{
+                "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
                 "MODE_RULES": MODE_RULES
             })
         )
@@ -314,6 +316,7 @@ for the negative category for nuclei whose area is less than 351.3
 pixels and will score the opposite for nuclei whose area is larger.
 The filter adds positive and negative and keeps only objects whose
 positive score is higher than the negative score.""".format(**{
+                "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
                 "MODE_RULES": MODE_RULES
             })
         )

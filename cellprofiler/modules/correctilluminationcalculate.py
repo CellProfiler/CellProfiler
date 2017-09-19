@@ -19,7 +19,7 @@ Warning: illumination correction is a challenge to do properly;
 please see the `examples`_ and `tutorials`_ pages on the CellProfiler
 website for further advice.
 
-See also **CorrectIlluminationApply** and
+See also **CorrectIlluminationApply**, **Smooth**, and
 **EnhanceOrSuppressFeatures**.
 
 .. _examples: http://www.cellprofiler.org/examples.html
@@ -312,16 +312,15 @@ Calculate the smoothing filter size. There are three options:
 -  *%(FI_AUTOMATIC)s:* The size is computed as 1/40 the size of the
    image or 30 pixels, whichever is smaller.
 -  *%(FI_OBJECT_SIZE)s:* The module will calculate the smoothing size
-   based on the width of artifacts to be smoothed.
+   based on the width of typical objects in your images.
 -  *%(FI_MANUALLY)s:* You can enter a value yourself.
 """ % globals())
 
         self.object_width = cps.Integer(
-            "Approximate object size", 10, doc="""\
+            "Approximate object diameter", 10, doc="""\
 *(Used only if %(FI_OBJECT_SIZE)s is selected for smoothing filter size calculation)*
 
-Enter the approximate width of the largest typical object, in pixels.
-The smoothing size will be set to preserve objects of that size.
+Enter the approximate diameter of typical objects, in pixels.
 """ % globals())
 
         self.size_of_smoothing_filter = cps.Integer(

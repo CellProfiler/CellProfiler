@@ -136,7 +136,7 @@ Select the color image to use.
             doc="Specify whether you want to produce several grayscale images or one color image.")
 
         self.wants_red_output = cps.Binary(
-            "Select "*{YES}*" to produce a red image.".format(**{"YES": YES}),
+            "Select \"*{YES}*\" to produce a red image.".format(**{"YES": YES}),
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
@@ -161,7 +161,7 @@ Provide a name for the inverted red channel image.
         )
 
         self.wants_green_output = cps.Binary(
-            "Select "*{YES}*" to produce a green image.".format(**{"YES": YES}),
+            "Select \"*{YES}*\" to produce a green image.".format(**{"YES": YES}),
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
@@ -186,7 +186,7 @@ Provide a name for the inverted green channel image.
         )
 
         self.wants_blue_output = cps.Binary(
-            "Select "*{YES}*" to produce a blue image.".format(**{"YES": YES}),
+            "Select \"*{YES}*\" to produce a blue image.".format(**{"YES": YES}),
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*

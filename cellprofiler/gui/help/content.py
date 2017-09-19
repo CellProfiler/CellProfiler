@@ -835,7 +835,7 @@ You can invoke **Run multiple pipelines** by selecting it from the file menu. Th
    output folder and a measurements file. You can change any of these by
    clicking on the file name - an appropriate dialog will then be
    displayed. You can click the remove button to remove a pipeline from
-   the list
+   the list.
 
 CellProfiler will run all of the pipelines on the list when you hit
 the “OK” button.
@@ -906,7 +906,7 @@ each category. Here is an example file:
 
 The above file would print warnings and errors to the console for all
 messages but “pipeline statistics” which are configured using the
-*pipelineStatistics* logger are written to a file instead.. The
+*pipelineStatistics* logger are written to a file instead. The
 pipelineStatistics logger is the logger that is used to print progress
 messages when the pipeline is run. You can find out which loggers are
 being used to write particular messages by printing all messages with a
@@ -1144,8 +1144,6 @@ file, which specifies: (1) all unique combinations of the sampled
 parameter values; (2) the mapping from each combination of parameter
 values to one or more output images; and (3) the actual output images.
 
-More information on how to use the plugin can be found `here`_.
-
 **References**
 
 -  Pretorius AJ, Bray MA, Carpenter AE and Ruddle RA. (2011)
@@ -1153,7 +1151,6 @@ More information on how to use the plugin can be found `here`_.
    Transactions on Visualization and Computer Graphics* 17(12),
    2402-2411.
 
-.. _here: http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/
 """
 
 MENU_BAR_DATATOOLS_HELP = u"""

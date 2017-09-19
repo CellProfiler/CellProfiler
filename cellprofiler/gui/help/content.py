@@ -56,8 +56,6 @@ WINDOW_SAVE_BUTTON = __image_resource('window_filesave.png')
 ANALYZE_IMAGE_BUTTON = __image_resource('IMG_ANALYZE_16.png')
 STOP_ANALYSIS_BUTTON = __image_resource('stop.png')
 PAUSE_ANALYSIS_BUTTON = __image_resource('IMG_PAUSE.png')
-OMERO_IMAGEID_PIC = __image_resource('OMERO_imageID_screenshot.png')
-OMERO_LOGIN_PIC = __image_resource('OMERO_login_screenshot.png')
 
 
 ####################
@@ -919,102 +917,13 @@ The format of the file is described in greater detail `here`_.
 """
 
 ACCESSING_OMERO_IMAGES = u"""\
-CellProfiler has first-class support for loading images from `OMERO`_.
-The input modules and the LoadData module can refer to images by URL,
-for instance, the example pipeline on the welcome page loads its images
-from ``http://cellprofiler.org/ExampleFlyImages``. The first part of a
-URL (the part before the colon) is the schema. CellProfiler decides
-which communication protocol to use, depending on the schema; in the
-case of the example on the welcome page, the schema is HTTP and
-CellProfiler uses the HTTP protocol to get the image data. For OMERO,
-the schema that should be used is “omero” and we use the OMERO client
-library to fetch and load the data.
-
-OMERO URLs have the form, “omero:iid=”. You can find the image IDs
-using either the OMERO web client or the `Insight software`_. As an
-example, the screen capture below indicates that the image,
-“Channel1-01-A-01.tif”, has an IID of 58038:
-
-|HelpContent_OMERO_image0|
-
-At present, manually curating the URL list can be somewhat
-time-consuming, but we are planning to develop plug-ins for Insight that
-will automatically generate these lists for CellProfiler from within the
-Insight user interface. The plugin will allow you to select a screen or
-plate and export an image set list that can be used with CellProfiler’s
-LoadData module.
-
-OMERO login credentials
-~~~~~~~~~~~~~~~~~~~~~~~
-
-CellProfiler will ask you for your OMERO login credentials when you
-first access an OMERO URL, either by viewing it from the file list or
-by loading it in a pipeline. CellProfiler will create and maintain a
-session for you based on these credentials until you close the
-application. You should only need to enter your credentials once. To
-use the “Log into Omero” dialog, enter your server’s name or IP
-address, the port (usually 4064), your user name and password and
-press the “Connect” button. The “Connect” button should turn green and
-the OK button of the dialog should become enabled (see below). Press
-OK to complete the login.
-
-|HelpContent_OMERO_image1|
-
-Currently, CellProfiler cannot establish a connection to OMERO when
-running headless - to do that, we would need to store the user password
-where it might be otherwise visible. We would like to provide a secure
-mechanism for establishing a session when headless and would like to
-work with you to make this work in your environment; please contact us
-for further information on how to modify CellProfiler yourself to do
-this or with suggestions for us to implement.
-
-Using OMERO URLs with the Input modules
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The **Images** module has a file list panel of all of the image files in
-a project. This file list supports URLs including OMERO URLs. You can
-drag URLs from a text document and drop them into the file list. The
-URLs do not end with image file extensions (like .TIF), so you need to
-change the “Filter images?” setting to “No filtering” to allow the OMERO
-URLs to be processed further. You should be able to view the image by
-double-clicking on it and you should be able to extract plate, well,
-site and channel name metadata from each image using the “Extract from
-image file headers” method in the **Metadata** module (press the “Update
-Metadata” button after selecting the “Extract from image file headers”
-method). If your experiment has more than one image channel, you can use
-the “ChannelName” metadata extracted from the OMERO image to create
-image sets containing all of your image channels. In the
-**NamesAndTypes** module, change the “Assign a name to” setting to
-“Images matching rules”. For the rule criteria, select “Metadata does
-have ChannelName matching” and enter the name that appears under
-“Channels” in the OMERO Insight browser. Add additional channels to
-**NamesAndTypes** using the “Add another image” button.
-
-OMERO URLs and LoadData
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The LoadData module reads image sets from a .CSV file. The CSV file has
-a one-line header that tells LoadData how to use each of the columns of
-the file. You can load channels from a URL by adding a “URL” tag to this
-header. The OMERO URLs themselves appear in rows below. For instance,
-here is a .CSV that loads a DNA and GFP channel:
-
-::
-
-    URL_DNA,URL_GFP
-    omero:iid=58134,omero:iid=58038
-    omero:iid=58135,omero:iid=58039
-    omero:iid=58136,omero:iid=58040
+CellProfiler can load images from `OMERO`_. Please see CellProfiler's
+`developer wiki`_ for instructions.
 
 .. _OMERO: http://www.openmicroscopy.org/site/products/omero
-.. _Insight software: http://www.openmicroscopy.org/site/support/omero4/downloads
+.. _developer wiki: http://github.com/CellProfiler/CellProfiler/wiki/OMERO:-Accessing-images-from-CellProfiler
 
-.. |HelpContent_OMERO_image0| image:: {OMERO_IMAGEID_PIC}
-.. |HelpContent_OMERO_image1| image:: {OMERO_LOGIN_PIC}
-""".format(**{
-    "OMERO_LOGIN_PIC": OMERO_LOGIN_PIC,
-    "OMERO_IMAGEID_PIC": OMERO_IMAGEID_PIC
-})
+"""
 
 MEASUREMENT_NOMENCLATURE_HELP = u"""\
 In CellProfiler, measurements are exported as well as stored internally

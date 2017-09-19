@@ -40,9 +40,9 @@ class Smooth(cpm.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber('Select the input image', cps.NONE, doc="""Select the image to be smoothed""")
+        self.image_name = cps.ImageNameSubscriber('Select the input image', cps.NONE, doc="""Select the image to be smoothed.""")
 
-        self.filtered_image_name = cps.ImageNameProvider('Name the output image', 'FilteredImage', doc="""Enter a name for the resulting image""")
+        self.filtered_image_name = cps.ImageNameProvider('Name the output image', 'FilteredImage', doc="""Enter a name for the resulting image.""")
 
         self.smoothing_method = cps.Choice(
                 'Select smoothing method',

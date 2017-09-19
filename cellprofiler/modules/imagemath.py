@@ -166,10 +166,9 @@ value of 1.
 
         self.ignore_mask = cellprofiler.setting.Binary(
                 "Ignore the image masks?", False, doc="""\
-Usually, the smallest mask of all image operands is applied after image
-math has been completed. Select *%(YES)s* to set equal to zero all
-previously masked pixels and operate on the masked images as if no mask
-had been applied.
+Select *%(YES)s* to set equal to zero all previously masked pixels and 
+operate on the masked images as if no mask had been applied. Otherwise, 
+the smallest image mask is applied after image math has been completed.
 """ % globals())
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(

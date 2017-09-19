@@ -264,11 +264,11 @@ time-consuming process, but some methods are faster than others.
    median is less sensitive to outliers, although the results are also
    slightly less smooth and the fact that images are in the range of 0
    to 1 means that outliers typically will not dominate too strongly
-   anyway. The *%(GAUSSIAN_FILTER)s* convolves the image with a
+   anyway. The *%(SM_GAUSSIAN_FILTER)s* convolves the image with a
    Gaussian whose full width at half maximum is the artifact diameter
    entered. Its effect is to blur and obscure features smaller than the
    specified diameter and spread bright or dim features larger than the
-   specified diameter. The *%(MEDIAN_FILTER)s* finds the median pixel value within
+   specified diameter. The *%(SM_MEDIAN_FILTER)s* finds the median pixel value within
    the diameter you specify. It removes bright or dim features
    that are significantly smaller than the specified diameter.
 -  *%(SM_TO_AVERAGE)s:* A less commonly used option is to completely

@@ -56,8 +56,6 @@ WINDOW_SAVE_BUTTON = __image_resource('window_filesave.png')
 ANALYZE_IMAGE_BUTTON = __image_resource('IMG_ANALYZE_16.png')
 STOP_ANALYSIS_BUTTON = __image_resource('stop.png')
 PAUSE_ANALYSIS_BUTTON = __image_resource('IMG_PAUSE.png')
-OMERO_IMAGEID_PIC = __image_resource('OMERO_imageID_screenshot.png')
-OMERO_LOGIN_PIC = __image_resource('OMERO_login_screenshot.png')
 
 
 ####################

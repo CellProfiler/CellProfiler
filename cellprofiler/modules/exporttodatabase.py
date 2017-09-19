@@ -57,7 +57,7 @@ table.
 
 At the secure shell where you normally log in to MySQL, type the
 following, replacing the italics with references to your database and
-files:
+files, to import these CellProfiler measurements to your database:
 
 ``mysql -h hostname -u username -p databasename < pathtoimages/perwellsetupfile.SQL``
 

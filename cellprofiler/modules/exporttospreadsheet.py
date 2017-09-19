@@ -24,7 +24,13 @@ measurements with a given “Treatment1” in separate directories. You can
 do this by specifying metadata tags for the folder name and file name:
 
 -  Choose "*Elsewhere…*" or "*Default Input/Output Folder sub-folder*" for
-   the output file location.
+   the output file location. Do note that regardless of your choice,
+   the Experiment.csv is saved to the Default Input/Output Folder and
+   *not* to individual subfolders. All other per-image and per-object
+   .csv files are saved to the appropriate subfolders.
+   See `Github issue #1110`_ for details.
+   .. _Github issue #1110: https://github.com/CellProfiler/CellProfiler/issues/1110
+
 -  Insert the metadata tag of choice into the output path. You can
    insert a previously defined metadata tag by either using:
 

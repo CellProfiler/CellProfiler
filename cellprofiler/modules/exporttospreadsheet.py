@@ -28,8 +28,8 @@ do this by specifying metadata tags for the folder name and file name:
    the Experiment.csv is saved to the Default Input/Output Folder and
    *not* to individual subfolders. All other per-image and per-object
    .csv files are saved to the appropriate subfolders.
-   See `Github issue #1110`_ for details.
-   .. _Github issue #1110: https://github.com/CellProfiler/CellProfiler/issues/1110
+   See `Github issue #1110 <http://github.com/CellProfiler/CellProfiler/issues/1110>`__
+   for details.
 
 -  Insert the metadata tag of choice into the output path. You can
    insert a previously defined metadata tag by either using:

@@ -17,6 +17,8 @@ LabelImages assumes the following are true of the image order:
 -  Each plate has the same number of rows and columns, so that the total
    number of images per plate is the same.
 
+See also the **Metadata** module.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -27,9 +29,8 @@ Measurements made by this module
 -  *Metadata_Column:* The column number, starting with 1 for the first
    column.
 -  *Metadata_Site:* The site number within the well, starting at 1 for
-   the first site
+   the first site.
 
-See also the **Metadata** module.
 """
 
 import numpy as np
@@ -50,15 +51,15 @@ class LabelImages(cpm.Module):
     def create_settings(self):
         self.site_count = cps.Integer(
                 "Number of image sites per well", 1, minval=1, doc="""\
-This setting controls the number of image sets for each well""")
+Enter the number of image sets (fields of view) corresponding to each well.""")
 
         self.column_count = cps.Integer(
                 "Number of columns per plate", 12, minval=1, doc="""\
-Enter the number of columns per plate""")
+Enter the number of columns per plate.""")
 
         self.row_count = cps.Integer(
                 "Number of rows per plate", 8, minval=1, doc="""\
-The number of rows per plate""")
+Enter the number of rows per plate.""")
 
         self.order = cps.Choice(
                 "Order of image data", [O_ROW, O_COLUMN], doc="""\

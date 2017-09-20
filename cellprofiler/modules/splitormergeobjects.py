@@ -5,9 +5,7 @@ SplitOrMergeObjects
 ===================
 
 **SplitOrMergeObjects** separates or combines a set of objects that
-were identified earlier in a pipeline. Objects that share a label, but
-are not touching will be relabeled into separate objects. Objects that
-share a boundary will be combined into a single object.
+were identified earlier in a pipeline.
 
 Objects and their measurements are associated with each other based on
 their object numbers (also known as *labels*). Typically, each object is
@@ -16,6 +14,18 @@ ordered by this numbering. This module allows the reassignment of object
 numbers by either merging separate objects to share the same label, or
 splitting portions of separate objects that previously had the same
 label.
+
+There are many options in this module. For example, objects that share a
+label, but are not touching can be relabeled into separate objects.
+Objects that share a boundary can be combined into a single object.
+Children of the same parent can be given the same label.
+
+Note that this module does not *physically* connect/bridge/merge objects
+that are separated by background pixels,
+it simply assigns the same object number to the portions of the object.
+The new, "merged" object may therefore consist of two or more unconnected
+components. If you want to add pixels around objects, see
+**ExpandOrShrink** or **Morph**.
 
 See also **RelateObjects**.
 

@@ -21,7 +21,7 @@ region.
 The module shows the values generated for the current cycle. However,
 this module can also be run as a Data Tool, in which case you will first
 be asked for the output file produced by the analysis run. The
-resultings plot is created from all the measurements collected during
+resulting plot is created from all the measurements collected during
 the run.
 
 See also **DisplayScatterPlot**, **DisplayHistogram**.

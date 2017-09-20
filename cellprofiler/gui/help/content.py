@@ -1494,7 +1494,7 @@ Sequences of individual files
 For some microscopes, the simplest method of capturing image sequences
 is to simply acquire them as a series of individual image files, where
 each image file represents a single timepoint and/or Z-slice. Typically,
-the image filename reflects the timepoint or Z-slice, such that the
+the image filename includes the timepoint or Z-slice, such that the
 alphabetical image listing corresponds to the proper sequence, e.g.,
 *img000.png*, *img001.png*, *img002.png*, etc.
 
@@ -1522,9 +1522,11 @@ follows:
 In this case, the procedure to set up the input modules to handle these
 files is as follows:
 
--  In the **Images** module, drag-and-drop your folders of images into
-   the File list panel. If necessary, set your rules accordingly in
-   order to filter out any files that are not part of a movie sequence.
+-  In the **Images** module, drag-and-drop your folders of images into the
+   File list panel. If necessary, set your rules accordingly in order to
+   filter out any files that are not part of a movie sequence. By default,
+   only image files with Bio-Formats extensions are included, which
+   includes a wide range of image formats and covers most situations.
 
    In the above example, you would drag-and-drop the *DNA*, *actin* and
    *phase* folders into the File list panel.
@@ -1571,10 +1573,18 @@ files is as follows:
    -  Click the “Update” button below the divider and check the output
       in the table to confirm that the proper metadata values are being
       collected from each image.
+      
+   Note that there are many online tools available to assist with the
+   creation of regular expressions that match the patterns within image
+   filenames. CellProfiler uses the Python regular expression format.
 
 -  In the **NamesAndTypes** module, assign the channel(s) to a name of
    your choice. If there are multiple channels, you will need to do this
-   for each channel.
+   for each channel. The names will be used throughout the pipeline to
+   reference the images imported into CellProfiler, so choose names that
+   are descriptive. For example, the name “DAPI” is more descriptive
+   than “channel\_1” or “blue”, because it conveys that the contents of
+   the image is stained DNA.
 
    For this example, you could do the following:
 
@@ -1600,8 +1610,10 @@ files is as follows:
       across the channels. The corresponding well and frame for each
       channel should now be matched to each other.
 
--  In the **Groups** module, enable image grouping for these images in
-   order to select the metadata that defines a distinct movie of data.
+-  In the **Groups** module, enable image grouping. Select the metadata
+   that defines a distinct movie of data, which could be a well or site or
+   x-y location or folder name. Select multiple metadata to refine the set
+   of images.
 
    For the example above, do the following:
 
@@ -1617,11 +1629,16 @@ files is as follows:
    end of one movie to the start of the next movie.
 
 If your images represent a 3D image, you can follow the above example to
-process your data. It is important to note, however, that CellProfiler
-will analyze each Z-slice individually and sequentially. Whole volume
-(3D image) processing is supported for single-channel .TIF stacks.
-Splitting image channels and converting image sets into .TIF stacks can
-be done using another software application, like FIJI.
+process your data slice by slice; in other words CellProfiler
+will analyze each Z-slice individually and sequentially. However, It is important to note that CellProfiler
+will analyze an image stack as a whole volume
+(3D image) if "Process as 3D" is selected in **NamesAndTypes**.
+
+Note that CellProfiler only supports single-channel .TIF stacks. More
+complex multipage .TIF stacks will need to be “unpacked” before
+importing them into CellProfiler. Splitting image channels and
+converting image sets into .TIF stacks can be done using another
+software application, like FIJI.
 
 Basic image sequences consisting of a single file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1630,7 +1647,7 @@ Another common means of storing time-lapse or Z-stack data is as a
 single file containing frames. Examples of this approach include image
 formats such as:
 
--  Multi-frame TIF
+-  Multi-frame or multipage TIF
 -  Metamorph stack: STK
 -  Evotec/PerkinElmer Opera Flex
 -  Zeiss ZVI, LSM
@@ -1651,6 +1668,12 @@ the following format:
    designates channel 2 from image 1, and IMG02\_CH01.TIF designates
    channel 1 from image 2.
 
+Note that the images, such as IMG01\_CH01.TIF, must be a multipage TIF
+for a single channel. For example, if 30 Z-slices are acquired during
+imaging, then the TIF image will be a 30 slice stack for each channel.
+Individual images cannot be grouped together by the **Groups** module
+and then processed as a 3D volume.
+
 You would like to process each stack as a single image, not as a series
 of 2D images. In this case, the procedure to set up the input modules to
 handle these files is as follows:
@@ -1660,7 +1683,7 @@ handle these files is as follows:
    order to filter out any files that are not images to be processed.
    In the above example, you would drag-and-drop the .TIF files into the
    File list panel.
--  In the **NamesAndTypes** module, select “Yes” for “Data is 3D”. You
+-  In the **NamesAndTypes** module, select “Yes” for “Process as 3D”. You
    should also provide the relative X, Y, and Z pixel sizes of your
    images. X and Y will be determined by the camera and objective you
    used to capture your images. Your Z size represents the spacing of
@@ -1792,7 +1815,8 @@ files is as follows:
 -  Each slice is in grayscale format.
 
 In this case, the procedure to set up the input modules to handle these
-this file is as follows:
+this file is as follows *(note that these Z-stacks will not be processed
+as a 3D volume)*:
 
 -  In the **Images** module, drag-and-drop your folders of images into
    the File list panel. If necessary, set your rules accordingly in

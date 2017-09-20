@@ -1494,7 +1494,9 @@ class Figure(wx.Frame):
             sharex=None,
             sharey=None,
             use_imshow=False,
-            background_image=None
+            background_image=None,
+            max_label=None,
+            seed=None
     ):
         """
         Show a labels matrix using the default color map
@@ -1509,6 +1511,10 @@ class Figure(wx.Frame):
         :param use_imshow: use matplotlib's imshow to display, instead of creating our own artist
         :param dimensions: dimensions of the data to display (2 or 3)
         :param background_image: a base image to overlay label data on, or None for blank
+        :param max_label: set the maximum label in the segmentation, or None to use the segmentation's maximum label
+                          (useful for generating consistent label colors in displays with varying # of objects)
+        :param seed: shuffle label colors with this seed, or None for completely random (useful for generating
+                     consistent label colors in multiple displays)
         :return:
         """
         if background_image is None:
@@ -1520,7 +1526,9 @@ class Figure(wx.Frame):
         label_image = cellprofiler.object.overlay_labels(
             labels=image,
             opacity=opacity,
-            pixel_data=background_image
+            pixel_data=background_image,
+            max_label=max_label,
+            seed=seed
         )
 
         return self.subplot_imshow(

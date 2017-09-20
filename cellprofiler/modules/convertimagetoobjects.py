@@ -23,7 +23,7 @@ import cellprofiler.module
 
 
 class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):
-    category = "Object Processing"
+    category = "Advanced"
 
     module_name = "ConvertImageToObjects"
 

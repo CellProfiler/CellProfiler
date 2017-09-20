@@ -58,7 +58,7 @@ class FlipAndRotate(cpm.Module):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
             cps.NONE,
-            doc="Choose the image to apply a flip or rotation transformation to."
+            doc="Choose the image you want to flip or rotate."
         )
 
         self.output_name = cps.ImageNameProvider(
@@ -108,7 +108,7 @@ the original, which may affect downstream modules.
 Select the cycle(s) at which the calculation is requested and
 calculated.
 -  *%(IO_INDIVIDUALLY)s:* Determine the amount of rotation for each image individually, e.g., for each cycle.
--  *%(IO_ONCE)s:* Define the rotation only once (on the first image), then then apply it to all images.
+-  *%(IO_ONCE)s:* Define the rotation only once (on the first image), then apply it to all images.
 """ % globals())
 
         self.first_pixel = cps.Coordinates(

@@ -460,9 +460,9 @@ Enter the prefix to be used to name the SQL file.""" % globals())
 *(Used only when using a CSV or a SQLite database, and/or creating a
 properties or workspace file)*
 
-This setting determines where the CSV files or SQLite database is
+This setting determines where the CSV files or SQLite database are
 saved if you decide to write measurements to files instead of writing
-them directly to the database. If you request a CellProfiler Analyst
+them directly to a database. If you request a CellProfiler Analyst
 properties file or workspace file, it will also be saved to this
 location.
 
@@ -481,7 +481,9 @@ you to use your new database with CellProfiler Analyst (a data
 exploration tool which can also be downloaded from
 http://www.cellprofiler.org/). The module will attempt to fill in as
 many entries as possible based on the pipeline’s settings, including the
-server name, username, and password if MySQL is used.""" % globals())
+server name, username, and password if MySQL is used. Keep in mind you
+should not share the resulting file because it contains your password.
+""" % globals())
 
         self.location_object = cps.ObjectNameSubscriber(
                 "Which objects should be used for locations?", cps.NONE, doc="""\
@@ -679,8 +681,8 @@ Classifier or do not need the table written to the database.""")
 
 Choose the type of classification this properties file will be used
 for. This setting will create and set a field called
-*classification\_type*. Note that if you are not using the classifier
-tool, this setting will be ignored.
+*classification\_type*. Note that if you will not be using the Classifier
+tool in CellProfiler Analyst, this setting will be ignored.
 
 -  *%(CT_OBJECT)s:* Object-based classification, i.e., set
    *classification\_type* to “object” (or leave it blank).
@@ -1172,7 +1174,7 @@ You can plot two types of measurements:
    for each image analyzed. Per-image measurements are produced by many
    modules. Many have **MeasureImage** in the name but others do not
    (e.g., the number of objects in each image is a per-image measurement
-   made by **IdentifyObject** modules).
+   made by **Identify** modules).
 -  *Object:* For a per-object measurement, each identified object is
    measured, so there may be none or many numerical values recorded for
    each image analyzed. These are usually produced by modules with

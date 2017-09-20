@@ -65,7 +65,7 @@ This module can use one of two color schemes to combine images:
    blue intensities. The magenta image adds equally to the red and blue
    intensities. The yellow image adds equally to the red and green
    intensities.
--  *%(SCHEME\_STACK)s*: The channels are stacked in the order listed,
+-  *%(SCHEME_STACK)s*: The channels are stacked in the order listed,
    from top to bottom. An arbitrary number of channels is allowed.
 -  *%(SCHEME_COMPOSITE)s*: A color is assigned to each grayscale image.
    Each grayscale image is converted to color by multiplying the

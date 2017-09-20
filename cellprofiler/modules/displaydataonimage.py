@@ -124,6 +124,7 @@ default color map.
 This is the color map used as the color gradient for coloring the
 objects by their measurement values. See `this page`_ for pictures
 of the available colormaps.
+
 .. _this page: http://matplotlib.org/users/colormaps.html
             """)
         self.text_color = cps.Color(

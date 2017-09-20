@@ -13,9 +13,10 @@ color-coded according to the measurement chosen.
 
 As the pipeline runs, the measurement information displayed is updated,
 so the value shown for each well is current up to the image cycle
-currently being processed; wells which have no corresponding
-measurements as yet as shown as blank. See also **DisplayDensityPlot**,
-**DisplayHistogram**, **DisplayScatterPlot**.
+currently being processed; wells that have no corresponding
+measurements as yet are shown as blank. 
+
+See also other **Display** modules and data tools.
 """
 
 import numpy as np
@@ -77,7 +78,7 @@ Choose the metadata tag that corresponds to the plate identifier. That
 is, each plate should have a metadata tag containing a specifier
 corresponding uniquely to that plate.
 
-%(USING_METADATA_HELP_REF)s.
+%(USING_METADATA_HELP_REF)s
 ''' % globals())
 
         self.plate_type = cps.Choice(
@@ -110,7 +111,7 @@ row-column format of these entries should be an alphabetical character
 plate would span from “A1” to “H12”, whereas a 384-well plate (16 rows
 and 24 columns) would span from well “A01” to well “P24”."
 
-%(USING_METADATA_HELP_REF)s.
+%(USING_METADATA_HELP_REF)s
 ''' % globals())
 
         self.well_row = cps.Measurement('Select your well row metadata',
@@ -120,7 +121,7 @@ typically specified as an alphabetical character. For example, a
 standard format 96-well plate would span from row “A” to “H”, whereas a
 384-well plate (16 rows and 24 columns) would span from row “A” to “P”.
 
-%(USING_METADATA_HELP_REF)s.
+%(USING_METADATA_HELP_REF)s
 ''' % globals())
 
         self.well_col = cps.Measurement('Select your well column metadata',
@@ -131,7 +132,7 @@ format 96-well plate would span from column “01” to “12”, whereas a
 384-well plate (16 rows and 24 columns) would span from column “01” to
 “24”.
 
-%(USING_METADATA_HELP_REF)s.
+%(USING_METADATA_HELP_REF)s
 ''' % globals())
 
         self.agg_method = cps.Choice(

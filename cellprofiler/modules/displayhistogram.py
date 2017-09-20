@@ -6,8 +6,8 @@ DisplayHistogram
 
 **DisplayHistogram** plots a histogram of the desired measurement.
 
-A histogram is a plot of tabulated data frequencies (each of which is
-shown as a bar) created by binning measurement data for a set of
+A histogram is a bar plot depicting frequencies of items in each data range.
+Here, each bar's value is created by binning measurement data for a set of
 objects. A two-dimensional histogram can be created using the
 **DisplayDensityPlot** module.
 
@@ -95,7 +95,7 @@ the bins of interest are no longer visible.
 ''' % globals())
 
         self.xbounds = cps.FloatRange(
-                'Minimum/maximum values for the X-axis', doc="""Set lower/upper limits for X-axis of the histogram""")
+                'Minimum/maximum values for the X-axis', doc="""Set lower/upper limits for X-axis of the histogram.""")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

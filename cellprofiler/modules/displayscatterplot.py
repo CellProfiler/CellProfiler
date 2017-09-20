@@ -17,6 +17,12 @@ will first be asked for the output file produced by the analysis run.
 The resultant plot is created from all the measurements collected during
 the run.
 
+At this time, the display produced when **DisplayScatterPlot** is run as a
+module cannot be saved in the pipeline (e.g., by using **SaveImages**). The
+display can be saved manually by selecting the window produced by the
+module and clicking the Save icon in its menu bar or by choosing File
+> Save from CellProfiler's main menu bar.
+
 See also **DisplayDensityPlot**, **DisplayHistogram**.
 """
 

@@ -24,6 +24,13 @@ to be made post-filtering by the desired measurement modules.
 See also any of the **MeasureObject** modules, **MeasureTexture**,
 **MeasureColocalization**, and **CalculateMath**.
 
+*Note on saving images:* You can pass the modified objects along to the
+*Object Processing* module **ConvertObjectsToImage** to create an image.
+This image can be saved with the **SaveImages** module. Additionally,
+you can use the **OverlayOutlines** or **OverlayObjects** module to
+overlay outlines or objects, respectively, on a base image.
+The resulting image can also be saved with the **SaveImages** module.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

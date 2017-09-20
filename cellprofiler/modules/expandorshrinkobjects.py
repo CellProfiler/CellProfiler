@@ -14,18 +14,18 @@ down to a point. The module can also separate touching objects without
 otherwise shrinking them, and can perform some specialized morphological
 operations that remove pixels without completely removing an object.
 
+See also **IdentifySecondaryObjects** which allows creating new objects
+based on expansion of existing objects, with a a few different options
+than in this module. There are also several related modules in the
+*Advanced* category (e.g., **Dilation**, **Erosion**,
+**MorphologicalSkeleton**).
+
 *Note on saving images:* You can pass the modified objects along to the
 *Object Processing* module **ConvertObjectsToImage** to create an image.
 This image can be saved with the **SaveImages** module. Additionally,
 you can use the **OverlayOutlines** or **OverlayObjects** module to
 overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
-
-See also **IdentifySecondaryObjects** which allows creating new objects
-based on expansion of existing objects, with a a few different options
-than in this module. There are also several related modules in the
-*Advanced* category (e.g., **Dilation**, **Erosion**,
-**MorphologicalSkeleton**).
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -144,7 +144,7 @@ Specify the number of pixels to add or remove from object borders.
             "Fill holes in objects so that all objects shrink to a single point?",
             False,
             doc="""\
-*(Used only if one of the “shrink” options selected)*
+*(Used only if one of the “Shrink” options selected)*
 
 Select *{YES}* to ensure that each object will shrink to a single
 point, by filling the holes in each object.

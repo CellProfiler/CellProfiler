@@ -8,10 +8,12 @@ ConvertObjectsToImage
 an image.
 
 This module allows you to take previously identified objects and convert
-them into an image according to a colormap you select, which can then be
-saved with the **SaveImages** modules.
+them into an image according to a colormap you select.
 
-This module can be used both on 2D and volumetric images.
+*Note on saving images:* This image can be saved with the **SaveImages**
+module. Additionally, you can use the **OverlayOutlines** or **OverlayObjects**
+module to overlay outlines or objects, respectively, on a base image.
+The resulting image can also be saved with the **SaveImages** module.
 """
 
 import centrosome.cpmorphology

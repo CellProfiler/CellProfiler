@@ -114,6 +114,13 @@ modules might be needed):
 See the section "Measurements made by this module" below for the measurements
 that are produced by this module.
 
+*Note on saving images:* You can pass the modified objects along to the
+*Object Processing* module **ConvertObjectsToImage** to create an image.
+This image can be saved with the **SaveImages** module. Additionally,
+you can use the **OverlayOutlines** or **OverlayObjects** module to
+overlay outlines or objects, respectively, on a base image.
+The resulting image can also be saved with the **SaveImages** module.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -339,7 +346,7 @@ border. Select *{NO:s}* to retain objects regardless of whether they
 touch the image edge or not.
 
 Note: the objects are discarded with respect to downstream measurement
-modules, but they are retained in memory as “unedited objects”; this
+modules, but they are retained in memory as “Unedited objects”; this
 allows them to be considered in downstream modules that modify the
 segmentation.
 """.format(**{

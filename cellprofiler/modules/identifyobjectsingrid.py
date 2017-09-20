@@ -20,10 +20,14 @@ from the earlier **Identify** module. If placing the objects within the
 grid is impossible for some reason (the grid compartments are too close
 together to fit the proper sized circles, for example) the grid will
 fail and processing will be canceled unless you choose to re-use a grid
-from a previous successful image cycle. *Special note on saving images:*
-You can use the settings in this module to pass objects along to
-the object processing module **ConvertToImage** and then save them with the
-**SaveImages** module.
+from a previous successful image cycle.
+
+*Note on saving images:* You can pass the modified objects along to the
+*Object Processing* module **ConvertObjectsToImage** to create an image.
+This image can be saved with the **SaveImages** module. Additionally,
+you can use the **OverlayOutlines** or **OverlayObjects** module to
+overlay outlines or objects, respectively, on a base image.
+The resulting image can also be saved with the **SaveImages** module.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -153,7 +157,7 @@ Enter the diameter to be used for each grid circle, in pixels.
         self.guiding_object_name = cps.ObjectNameSubscriber(
                 "Select the guiding objects", cps.NONE, doc="""\
 *(Used only if "Circle" is selected as object shape and diameter is
-specified automatically, or if Natural Location is selected as the
+specified automatically, or if "Natural Location" is selected as the
 object shape)*
 
 Select the names of previously identified objects that will be used to

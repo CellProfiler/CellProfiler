@@ -62,22 +62,22 @@ following options:
    colors for your objects.
 -  *Binary (black & white):* All object pixels will be assigned 1 and
    all background pixels will be assigned 0, creating a binary image.
--  *Grayscale:* Assigns all background pixels to 0 and each object a 
-   different number from 1 to 255 (the maximum value that you can put in an 8-bit 
-   integer) and numbers all pixels in each object with the object’s number.  This creates an image where 
-   objects in the top left corner of the image are very dark and where the colors progress to white 
-   toward the bottom right corner of the image. Use **SaveImages** to write the resulting image as a 
-   .npy file or 8-bit or 16-bit .tiff file to disk if you want to process the label matrix image using 
+-  *Grayscale:* Assigns all background pixels to 0 and each object a
+   different number from 1 to 255 (the maximum value that you can put in an 8-bit
+   integer) and numbers all pixels in each object with the object’s number.  This creates an image where
+   objects in the top left corner of the image are very dark and where the colors progress to white
+   toward the bottom right corner of the image. Use **SaveImages** to write the resulting image as a
+   .npy file or 8-bit or 16-bit .tiff file to disk if you want to process the label matrix image using
    another program or in a separate CellProfiler pipeline.
--  *uint16:* Assigns all background pixels to 0 and each object a different number from 
+-  *uint16:* Assigns all background pixels to 0 and each object a different number from
    1 to 65535 (the maximum value that you can put in a 16-bit integer) and numbers all
-   pixels in each object with the object’s number.  This creates an image where 
-   objects in the top left corner of the image are very dark and where the colors progress to white 
-   toward the bottom right corner of the image (though this can usually only be seen in a 
-   scientific image viewer since standard image viewers only handle 8-bit images). Use 
-   **SaveImages** to write the resulting image as a .npy file or 16-bit (not 8-bit!) .tiff file to disk if 
-   you want to process the label matrix image using another program or in a separate CellProfiler pipeline 
-   and think you are likely to have more than 255 objects in some or all of your images.  
+   pixels in each object with the object’s number.  This creates an image where
+   objects in the top left corner of the image are very dark and where the colors progress to white
+   toward the bottom right corner of the image (though this can usually only be seen in a
+   scientific image viewer since standard image viewers only handle 8-bit images). Use
+   **SaveImages** to write the resulting image as a .npy file or 16-bit (not 8-bit!) .tiff file to disk if
+   you want to process the label matrix image using another program or in a separate CellProfiler pipeline
+   and think you are likely to have more than 255 objects in some or all of your images.
 
 You can choose *Color* with a *Gray* colormap to produce jumbled gray
 objects.
@@ -91,7 +91,7 @@ objects.
 
 Choose the colormap to be used, which affects how the objects are
 colored. You can look up your default colormap under *File >
-Preferences*
+Preferences*.
 """
         )
 
@@ -237,8 +237,7 @@ Preferences*
                 0,
                 0,
                 workspace.display_data.segmented,
-                title="Original: %s" % self.object_name.value,
-                dimensions=dimensions
+                title="Original: %s" % self.object_name.value
             )
 
         figure.subplot_imshow(
@@ -247,7 +246,7 @@ Preferences*
             pixel_data,
             self.image_name.value,
             colormap=cmap,
-            dimensions=dimensions
+            sharexy=figure.subplot(0, 0)
         )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):

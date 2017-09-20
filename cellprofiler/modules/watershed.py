@@ -5,7 +5,14 @@ Watershed
 =========
 
 **Watershed** is a segmentation algorithm. It is used to separate
-different objects in an image.
+different objects in an image. For more information please visit
+the `scikit-image documentation`_ on **Watershed** that CellProfiler implements.
+
+Note, when using marker-based **Watershed** that it is typical to use the input binary image
+as the mask. Otherwise, if the mask is *None*, the background will be interpreted as an object
+and **Watershed** may yield unexpected results.
+
+.. _scikit-image documentation: http://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
 """
 
 import mahotas
@@ -41,46 +48,58 @@ class Watershed(cellprofiler.module.ImageSegmentation):
                 "Markers"
             ],
             "Distance",
-            doc="""Select a method of inputs for the watershed algorithm:
-            <ul>
-                <li>
-                    <i>Distance</i> (default): This is classical nuclei segmentation using watershed. Your "Input" image
-                    should be a binary image. Markers and other inputs for the watershed algorithm will be
-                    automatically generated.
-                </li>
-                <br>
-                <li>
-                    <i>Markers</i>: Use manually generated markers and supply an optional mask for watershed. Watershed
-                    works best when the "Input" image has high intensity surrounding regions of interest and low intensity
-                    inside regions of interest. Refer to the documentation for the other available options for more
-                    information.
-                </li>
-            </ul>
-            """
+            doc="""\
+Select a method of inputs for the watershed algorithm:
+            
+-  *Distance* (default): This is classical nuclei segmentation using
+   watershed. Your “Input” image should be a binary image. Markers and
+   other inputs for the watershed algorithm will be automatically
+   generated.
+-  *Markers*: Use manually generated markers and supply an optional mask
+   for watershed. Watershed works best when the “Input” image has high
+   intensity surrounding regions of interest and low intensity inside
+   regions of interest. Refer to the documentation for the other
+   available options for more information.
+"""
         )
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
             "Markers",
-            doc="An image marking the approximate centers of the objects for "
-                "segmentation. "
+            doc="An image marking the approximate centers of the objects for segmentation."
         )
 
         self.mask_name = cellprofiler.setting.ImageNameSubscriber(
             "Mask",
             can_be_blank=True,
-            doc="Optional. Only regions not blocked by the mask will be "
-                "segmented. "
+            doc="Optional. Only regions not blocked by the mask will be segmented."
         )
 
         self.connectivity = cellprofiler.setting.Integer(
+            doc="""\
+The connectivity defines the dimensions of the footprint used to scan
+the input image for local maximum. The footprint can be interpreted as a
+region, window, structuring element or volume that subsamples the input
+image. The distance transform will create local maximum from a binary
+image that will be at the centers of objects. A large connectivity will
+suppress local maximum that are close together into a single maximum, but this will require
+more memory and time to run. A small connectivity will preserve local
+maximum that are close together, but this can lead to oversegmentation.
+If speed and memory are issues, choosing a lower connectivity can be
+offset by downsampling the input image. See `mahotas regmax`_ for more
+information.
+
+.. _mahotas regmax: http://mahotas.readthedocs.io/en/latest/api.html?highlight=regmax#mahotas.regmax
+""",
             minval=1,
             text="Connectivity",
             value=8,
         )
 
         self.downsample = cellprofiler.setting.Integer(
-            doc="Downsample an n-dimensional image by local averaging. If "
-                "the downsampling factor is 1, the image is not downsampled.",
+            doc="""\
+Downsample an n-dimensional image by local averaging. If the downsampling factor is 1, 
+the image is not downsampled.
+""",
             minval=1,
             text="Downsample",
             value=1

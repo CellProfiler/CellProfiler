@@ -6,12 +6,13 @@ CorrectIlluminationApply
 
 **CorrectIlluminationApply** applies an illumination function,
 usually created by **CorrectIlluminationCalculate**, to an image in
-order to correct for uneven illumination (uneven shading).
+order to correct for uneven illumination/lighting/shading or to
+reduce uneven background in images.
 
 This module applies a previously created illumination correction
-function, either loaded by **LoadSingleImage** or created by
-**CorrectIlluminationCalculate**. This module corrects each image in the
-pipeline using the function specified. See also
+function, either loaded by the **Images** module, a **Load** module, or
+created by **CorrectIlluminationCalculate**. This module corrects each
+image in the pipeline using the function specified. See also
 **CorrectIlluminationCalculate**.
 """
 
@@ -78,8 +79,12 @@ class CorrectIlluminationApply(cpm.Module):
             doc="""\
 Select the illumination correction function image that will be used to
 carry out the correction. This image is usually produced by another
-module or loaded as a .npy format image using the **Images** module or
-**LoadSingleImage**.
+module or loaded as a .mat or .npy format image using the **Images** module
+or a **Load** module, most commonly **LoadSingleImage**.
+
+Note that loading .mat format images is deprecated and will be removed in
+a future version of CellProfiler. You can export .mat format images as
+.npy format images using **SaveImages** to ensure future compatibility.
 """
         )
 

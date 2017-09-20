@@ -2574,7 +2574,7 @@ class FilterPanelController(object):
         sequence = self.find_address(structure, address)
 
         while len(sequence) <= index:
-            # The sequence is bad (e.g. bad pipeline or metadata collection)
+            # The sequence is bad (e.g., bad pipeline or metadata collection)
             # Fill in enough to deal
             #
             sequence.append(self.v.predicates[0]
@@ -2651,7 +2651,7 @@ class FilterPanelController(object):
             structure = self.v.parse()
             sequence = self.find_address(structure, address)
             while len(sequence) <= index:
-                # The sequence is bad (e.g. bad pipeline or metadata collection)
+                # The sequence is bad (e.g., bad pipeline or metadata collection)
                 # Fill in enough to deal
                 #
                 sequence.append(self.v.predicates[0]
@@ -3129,7 +3129,7 @@ class FileCollectionDisplayController(object):
     def get_path_from_event(self, event):
         """Given a tree control event, find the path from the root
 
-        event - event from tree control (e.g. EVT_TREE_ITEM_ACTIVATED)
+        event - event from tree control (e.g., EVT_TREE_ITEM_ACTIVATED)
 
         returns a sequence of path items from the root
         """

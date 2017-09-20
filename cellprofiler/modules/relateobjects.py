@@ -4,21 +4,25 @@
 RelateObjects
 =============
 
-**RelateObjects** assigns relationships; all objects (e.g. speckles)
-within a parent object (e.g. nucleus) become its children.
+**RelateObjects** assigns relationships; all objects (e.g., speckles)
+within a parent object (e.g., nucleus) become its children.
 
 This module allows you to associate *child* objects with *parent*
 objects. This is useful for counting the number of children associated
 with each parent, and for calculating mean measurement values for all
 children that are associated with each parent.
 
-An object will be considered a child even if the edge is the only part
-touching a parent object. If an child object is touching multiple parent
+An object will be considered a child even if the edge is the only partly
+touching a parent object. If a child object is touching multiple parent
 objects, the object will be assigned to the parent with maximal overlap.
 For an alternate approach to assigning parent/child relationships,
 consider using the **MaskObjects** module.
 
-This module supports 2D and 3D objects
+If you want to include child objects that lie outside but still near
+parent objects, you might want to expand the parent objects using
+**ExpandOrShrink** or **IdentifySecondaryObjects**.
+
+This module supports 2D and 3D objects.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -28,13 +32,13 @@ Measurements made by this module
 -  *Count:* The number of child sub-objects for each parent object.
 -  *Mean measurements:* The mean of the child object measurements,
    calculated for each parent object.
--  *Distances:* The distance of each child object to its respective
-   parent.
 
 **Child object measurements:**
 
 -  *Parent:* The label number of the parent object, as assigned by an
    **Identify** or **Watershed** module.
+-  *Distances:* The distance of each child object to its respective
+   parent.
 
 See also: **SplitOrMergeObjects**, **MaskObjects**.
 """
@@ -91,7 +95,8 @@ class RelateObjects(cellprofiler.module.ObjectProcessing):
 
         self.x_name.doc = """\
 Parent objects are defined as those objects which encompass the child object.
-For example, when relating speckles to the nuclei that contains them, the nuclei are the parents.
+For example, when relating speckles to the nuclei that contain them,
+the nuclei are the parents.
         """
 
         self.y_name = cellprofiler.setting.ObjectNameSubscriber(
@@ -107,8 +112,11 @@ speckles to the nuclei that contains them, the speckles are the children.
             D_ALL,
             doc="""\
 Choose the method to calculate distances of each child to its parent.
+For example, these measurements can tell you whether nuclear speckles
+are located more closely to the center of the nucleus or to the nuclear
+periphery.
 
--  *{D_NONE}:* Do not calculate any distances.
+-  *{D_NONE}:* Do not calculate any distances. This saves computation time.
 -  *{D_MINIMUM}:* The distance from the centroid of the child object to
    the closest perimeter point on the parent object.
 -  *{D_CENTROID}:* The distance from the centroid of the child object
@@ -136,8 +144,8 @@ instance, you might find “Nuclei” using **IdentifyPrimaryObjects**, find
 **IdentifyTertiaryObjects**. You can use **Relate** to relate speckles
 to cells and then measure distances to nuclei and cytoplasm. You could
 not use **RelateObjects** to relate speckles to cytoplasm and then
-measure distances to nuclei, because nuclei is neither a direct parent
-or child of cytoplasm.""".format(**{
+measure distances to nuclei, because nuclei are neither a direct parent
+nor child of cytoplasm.""".format(**{
                 "YES": cellprofiler.setting.YES
             })
         )
@@ -157,10 +165,10 @@ or child of cytoplasm.""".format(**{
             False,
             doc="""\
 Select "*{YES}*" to calculate the per-parent mean values of every upstream
-measurement made with the children objects and stores them as a
-measurement for the parent; the nomenclature of this new measurements is
-“Mean_<child>_<category>_<feature>”. For this reason, this module
-should be placed *after* all **Measure** modules that make measurements
+measurement made with the children objects and store them as a
+measurement for the parent; the nomenclature of this new measurement is
+“Mean_<child>_<category>_<feature>”. This module
+must be placed *after* all **Measure** modules that make measurements
 of the children objects.""".format(**{
                 "YES": cellprofiler.setting.YES
             })
@@ -398,8 +406,7 @@ parents or children of the parent object."""
             0,
             0,
             parent_labels,
-            title=self.x_name.value,
-            dimensions=dimensions
+            title=self.x_name.value
 
         )
 
@@ -408,7 +415,7 @@ parents or children of the parent object."""
             0,
             child_labels,
             title=self.y_name.value,
-            dimensions=dimensions
+            sharexy=figure.subplot(0, 0)
         )
 
         figure.subplot_imshow_labels(
@@ -416,7 +423,7 @@ parents or children of the parent object."""
             1,
             parent_labeled_children,
             "{} labeled by {}".format(self.y_name.value, self.x_name.value),
-            dimensions=dimensions
+            sharexy=figure.subplot(0, 0)
         )
 
     def get_parent_names(self):

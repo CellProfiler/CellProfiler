@@ -73,7 +73,7 @@ setuptools.setup(
     license="BSD",
     name="CellProfiler",
     package_data={
-        "images": glob.glob(os.path.join("data", "images", "*"))
+        "images": glob.glob(os.path.join("data", "**", "*"))
     },
     packages=setuptools.find_packages(exclude=[
         "tests*"

@@ -1,29 +1,26 @@
 # coding=utf-8
 
-"""
+import numpy as np
+
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import _help
+
+__doc__ = """
 MeasureImageIntensity
 =====================
 
-**MeasureImageIntensity** measures the total intensity in an image by
-summing all of the pixel intensities (excluding masked pixels).
+**MeasureImageIntensity** measures several intensity features across an
+entire image (excluding masked pixels).
 
-This module will sum all pixel values to measure the total image
-intensity. The user can measure all pixels in the image or can restrict
-the measurement to pixels within objects. If the image has a mask, only
-unmasked pixels will be measured.
+For example, this module will sum all pixel values to measure the total image
+intensity. You can choose to measure all pixels in the image or restrict
+the measurement to pixels within objects that were identified in a prior
+module. If the image has a mask, only unmasked pixels will be measured.
 
-Note that for publication purposes, the units of intensity from
-microscopy images are usually described as “Intensity units” or
-“Arbitrary intensity units” since microscopes are not calibrated to an
-absolute scale. Also, it is important to note whether you are reporting
-either the mean or the integrated intensity, so specify “Mean intensity
-units” or “Integrated intensity units” accordingly.
-
-Keep in mind that the default behavior in CellProfiler is to rescale the
-image intensity from 0 to 1 by dividing all pixels in the image by the
-maximum possible intensity value. This “maximum possible” value is
-defined by the “Set intensity range from” setting in **NamesAndTypes**;
-see the help for that setting for more details.
+{HELP_ON_MEASURING_INTENSITIES}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -40,17 +37,13 @@ Measurements made by this module
    25% of the pixels in the object have lower values.
 -  *UpperQuartileIntensity:* The intensity value of the pixel for which
    75% of the pixels in the object have lower values.
--  *TotalArea:* Number of pixels measured, e.g., the area of the image.
+-  *TotalArea:* Number of pixels measured, e.g., the area of the image
+   excluding masked regions.
 
 See also **MeasureObjectIntensity**, **MaskImage**.
-"""
-
-import numpy as np
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+""".format(**{
+    "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
+})
 
 '''Number of settings saved/loaded per image measured'''
 SETTINGS_PER_IMAGE = 3
@@ -115,19 +108,22 @@ class MeasureImageIntensity(cpm.Module):
                 cps.NONE, doc="""\
 Choose an image name from the drop-down menu to calculate intensity for
 that image. Use the *Add another image* button below to add additional
-images which will be measured. You can add the same image multiple times
+images to be measured. You can add the same image multiple times
 if you want to measure the intensity within several different
 objects."""))
 
         group.append("wants_objects", cps.Binary(
                 "Measure the intensity only from areas enclosed by objects?",
                 False, doc="""\
-Select *%(YES)s* to measure only those pixels within an object of choice.
+Select *%(YES)s* to measure only those pixels within an object type you
+choose, identified by a prior module. Note that this module will
+aggregate intensities across all objects in the image: to measure each
+object individually, see **MeasureObjectIntensity** instead.
 """ % globals()))
 
         group.append("object_name", cps.ObjectNameSubscriber(
                 "Select the input objects", cps.NONE, doc="""\
-*(Used only when measuring intensity from area enclosed by objects)*
+*(Used only when measuring intensity from area occupied by objects)*
 
 Select the objects that the intensity will be aggregated within. The
 intensity measurement will be restricted to the pixels within these

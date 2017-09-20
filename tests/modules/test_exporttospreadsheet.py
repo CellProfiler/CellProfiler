@@ -83,7 +83,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter_char, "\t")
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
         self.assertFalse(module.wants_aggregate_means)
         self.assertTrue(module.wants_aggregate_medians)
@@ -154,7 +153,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.pick_columns)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
@@ -227,7 +225,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
         self.assertTrue(all([module.columns.get_measurement_object(x) == "Image"
                              for x in module.columns.selections]))
@@ -378,7 +375,6 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
         self.assertTrue(all([module.columns.get_measurement_object(x) == "Image"
                              for x in module.columns.selections]))
@@ -415,7 +411,6 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertTrue(module.add_metadata)
-        self.assertTrue(module.excel_limits)
         self.assertFalse(module.pick_columns)
         self.assertTrue(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
@@ -475,7 +470,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -534,7 +528,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -597,7 +590,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -662,7 +654,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -2205,7 +2196,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_07_02_missing_column_measurements(self):
         # Regression test of issue 1293:
         # pipeline.get_column_measurements reports a measurement
-        # The measurement isn't made (e.g. FlagImages)
+        # The measurement isn't made (e.g., FlagImages)
         # ExportToSpreadsheet should put a column of all NaNs, even if
         # no image set makes the measurement
         #

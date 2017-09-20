@@ -217,14 +217,14 @@ class Module(object):
         if isinstance(setting, cellprofiler.setting.HiddenCount):
             return u""
 
-        return u"""
-        <div>
-            <h4>{SETTING_NAME}</h4>
-            <p>{SETTING_DOC}</p>
-        </div>
+        return u"""\
+<div>
+    <h4>{SETTING_NAME}</h4>
+    <p>{SETTING_DOC}</p>
+</div>
         """.format(**{
             "SETTING_DOC": self._rst_to_html_fragment(setting.doc),
-            "SETTING_NAME": setting.text
+            "SETTING_NAME": self._rst_to_html_fragment(setting.text)
         })
 
     def get_help(self):
@@ -233,21 +233,27 @@ class Module(object):
         The default help is taken from your modules docstring and from
         the settings.
         """
-        return u"""
-        <html style="font-family:arial">
-            <body>
-                <div>
-                    {MODULE_DOC}
-                </div>
-                <div>
-                    <h2>Settings:</h2>
-                    {SETTINGS_DOC}
-                </div>
-            </body>
-        </html>
-        """.format(**{
+        settings_help = u"""\
+<div>
+    <h2>Settings:</h2>
+    {SETTINGS_DOC}
+</div>
+""".format(**{
+            "SETTINGS_DOC": u"\n".join([self._get_setting_help(setting) for setting in self.help_settings()])
+        }) if len(self.help_settings()) else u""
+
+        return u"""\
+<html style="font-family:arial">
+    <body>
+        <div>
+            {MODULE_DOC}
+        </div>
+        {SETTINGS_HELP}
+    </body>
+</html>
+""".format(**{
             "MODULE_DOC": self._rst_to_html_fragment(self.__doc__),
-            "SETTINGS_DOC": u"\n".join([self._get_setting_help(setting) for setting in self.help_settings()]),
+            "SETTINGS_HELP": settings_help,
             "TITLE": self.module_name
         })
 
@@ -537,7 +543,7 @@ class Module(object):
         '''If true, the module will pickle the pipeline into a batch file and exit
 
         This is needed by modules which can't properly operate in a batch
-        mode (e.g. do all their work post_run or don't work so well if
+        mode (e.g., do all their work post_run or don't work so well if
         run in parallel)
         '''
         return False
@@ -922,7 +928,6 @@ class ImageProcessing(Module):
 
         figure.subplot_imshow(
             colormap=cmap[0],
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
@@ -931,8 +936,8 @@ class ImageProcessing(Module):
 
         figure.subplot_imshow(
             colormap=cmap[1],
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
             y=0
@@ -1060,7 +1065,6 @@ class ImageSegmentation(Module):
 
         figure.subplot_imshow(
             colormap="gray",
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
@@ -1069,8 +1073,8 @@ class ImageSegmentation(Module):
 
         figure.subplot_imshow_labels(
             background_image=workspace.display_data.x_data,
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
             y=0
@@ -1236,7 +1240,6 @@ class ObjectProcessing(ImageSegmentation):
         )
 
         figure.subplot_imshow_labels(
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
@@ -1244,8 +1247,8 @@ class ObjectProcessing(ImageSegmentation):
         )
 
         figure.subplot_imshow_labels(
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
             y=0

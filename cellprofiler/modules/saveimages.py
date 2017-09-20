@@ -17,8 +17,6 @@ This allows you to use the module as a file format converter, by loading
 files in their original format and then saving them in an alternate
 format.
 
-Note that saving images in 16-bit and 32-bit format is supported for TIFF only.
-
 See also **NamesAndTypes**.
 """
 
@@ -85,18 +83,20 @@ class SaveImages(cellprofiler.module.Module):
 The following types of images can be saved as a file on the hard drive:
 
 -  *{IF_IMAGE}:* Any of the images produced upstream of **SaveImages**
-   can be selected for saving. Outlines of objects created by **Identify**
-   or **Watershed** modules can also be saved with this option, but you must
+   can be selected for saving. Outlines of objects created by other
+   modules such as **Identify** modules, **Watershed**, and various object
+   processing modules can also be saved with this option, but you must
    use the **OverlayOutlines** module to create them prior to saving images.
    Likewise, if you wish to save the objects themselves, you must use the
    **ConvertObjectsToImage** module to create a savable image.
--  *{IF_MASK}:* Relevant only if the **Crop** module is used. The
-   **Crop** module creates a mask of the pixels of interest in the
+-  *{IF_MASK}:* Relevant only if a module that produces masks has been used
+   such as **Crop**, **MaskImage**, or **MaskObjects**. These
+   modules create a mask of the pixels of interest in the
    image. Saving the mask will produce a binary image in which the
    pixels of interest are set to 1; all other pixels are set to 0.
 -  *{IF_CROPPING}:* Relevant only if the **Crop** module is used. The
    **Crop** module also creates a cropping image which is typically the
-   same size as the original image. However, since the **Crop** permits
+   same size as the original image. However, since **Crop** permits
    removal of the rows and columns that are left blank, the cropping can
    be of a different size than the mask.
 -  *{IF_MOVIE}:* A sequence of images can be saved as a TIFF stack.
@@ -129,7 +129,7 @@ Several choices are available for constructing the image file name:
    original filename of an input image specified in **NamesAndTypes**.
    You will have the opportunity to prefix or append additional text.
 
-   If you have metadata associated with your images, you can append an
+   If you have metadata associated with your images, you can append
    text to the image filename using a metadata tag. This is especially
    useful if you want your output given a unique label according to the
    metadata corresponding to an image group. The name of the metadata to
@@ -146,7 +146,7 @@ Several choices are available for constructing the image file name:
    in the *{FN_FROM_IMAGE}* option.
 
 {USING_METADATA_TAGS_REF}
-   
+
 {USING_METADATA_HELP_REF}
 """.format(**{
                 "FN_FROM_IMAGE": FN_FROM_IMAGE,
@@ -161,7 +161,7 @@ Several choices are available for constructing the image file name:
             "Select image name for file prefix",
             cellprofiler.setting.NONE,
             doc="""\
-*(Used only when “{FN_FROM_IMAGE}” is selected for contructing the filename)*
+*(Used only when “{FN_FROM_IMAGE}” is selected for constructing the filename)*
 
 Select an image loaded using **NamesAndTypes**. The original filename
 will be used as the prefix for the output filename.""".format(**{
@@ -175,7 +175,7 @@ will be used as the prefix for the output filename.""".format(**{
             metadata=True,
             doc="""\
 *(Used only when “{FN_SEQUENTIAL}” or “{FN_SINGLE_NAME}” are selected
-for contructing the filename)*
+for constructing the filename)*
 
 Specify the filename text here. If you have metadata associated with
 your images, enter the filename text with the metadata tags.
@@ -192,7 +192,7 @@ automatically.""".format(**{
             "Number of digits",
             4,
             doc="""\
-*(Used only when “{FN_SEQUENTIAL}” is selected for contructing the filename)*
+*(Used only when “{FN_SEQUENTIAL}” is selected for constructing the filename)*
 
 Specify the number of digits to be used for the sequential numbering.
 Zeros will be used to left-pad the digits. If the number specified here
@@ -221,7 +221,16 @@ to use the image name as-is.
             doc="""\
 *(Used only when constructing the filename from the image filename)*
 
-Enter the text that should be appended to the filename specified above."""
+Enter the text that should be appended to the filename specified above.
+If you have metadata associated with your images, you may use metadata tags.
+
+{USING_METADATA_TAGS_REF}
+
+Do not enter the file extension in this setting; it will be appended
+automatically.
+""".format(**{
+                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
+            })
         )
 
         self.file_format = cellprofiler.setting.Choice(
@@ -236,13 +245,16 @@ Enter the text that should be appended to the filename specified above."""
             doc="""\
 *(Used only when saving non-movie files)*
 
-Select the image or movie format to save the image(s). Three common image
-formats (*{FF_TIFF}*, *{FF_PNG}*, and *{FF_JPEG}*) are available.
+Select the format to save the image(s).
 
-Note that only *{FF_TIFF}* supports saving as 16-bit or 32-bit.
+Only *{FF_TIFF}* supports saving as 16-bit or 32-bit. *{FF_TIFF}* is a
+"lossless" file format.
 
-Note that *{FF_JPEG}* is a "lossy" file format and should not be used for any
-images that will undergo further quantitative analysis.
+*{FF_PNG}* is also a "lossless" file format and it tends to produce
+smaller files without losing any image data.
+
+*{FF_JPEG}* is also small but is a "lossy" file format and should not be
+used for any images that will undergo further quantitative analysis.
 
 Select *{FF_NPY}* to save an illumination correction image generated by
 **CorrectIlluminationCalculate**.""".format(**{
@@ -267,14 +279,6 @@ An additional option is the following:
 
 {IO_WITH_METADATA_HELP_TEXT}
 
-{USING_METADATA_TAGS_REF}
- 
-For instance, if you have a metadata tag named “Plate”, you can create a
-per-plate folder by selecting one the subfolder options and then
-specifying the subfolder name as “\\g<Plate>”. The module will
-substitute the metadata values for the current image set for any
-metadata tags in the folder name.{USING_METADATA_HELP_REF}.
-
 If the subfolder does not exist when the pipeline is run, CellProfiler
 will create it.
 
@@ -286,9 +290,7 @@ of a forward slash (“/”) as a folder separator will avoid ambiguity
 between the various operating systems.
 """.format(**{
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
-                "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT,
-                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
-                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
+                "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT
             })
         )
 
@@ -307,8 +309,8 @@ Select the bit-depth at which you want to save the images.
 values are scaled within the range (0, 1). Floating point data is not
 rescaled.
 
-**{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only for
-TIFF formats.**""".format(**{
+{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only for
+TIFF formats.""".format(**{
                 "BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT,
                 "BIT_DEPTH_16": BIT_DEPTH_16
             })
@@ -349,7 +351,7 @@ Specify at what point during pipeline execution to save file(s).
    image created on the first cycle, e.g.,
    **CorrectIlluminationCalculate** with the *All* setting used on
    images obtained directly from **NamesAndTypes**.
--  *{WS_LAST_CYCLE}* Useful for when you are saving an aggregate image
+-  *{WS_LAST_CYCLE}:* Useful for when you are saving an aggregate image
    completed on the last cycle, e.g., **CorrectIlluminationCalculate**
    with the *All* setting used on intermediate images generated during
    each cycle.""".format(**{
@@ -393,7 +395,7 @@ In subfolder mode, **SaveImages** determines the folder for an image file by
 examining the path of the matching input file. The path that SaveImages
 uses is relative to the image folder chosen using this setting. As an
 example, input images might be stored in a folder structure of
-"images\/*experiment-name*\/*date*\/*plate-name*" . If
+"images\/*experiment-name*\/*date*\/*plate-name*". If
 the image folder is "images", **SaveImages** will store images in the
 subfolder, "*experiment-name*\/*date*\/*plate-name*". If the
 image folder is "images\/*experiment-name*", **SaveImages** will
@@ -433,8 +435,10 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             result.append(self.single_file_name)
         else:
             raise NotImplementedError("Unhandled file name method: %s" % self.file_name_method)
-        result.append(self.file_format)
-        supports_16_bit = (self.file_format == FF_TIFF and self.save_image_or_figure == IF_IMAGE)
+        if self.save_image_or_figure != IF_MOVIE:
+            result.append(self.file_format)
+        supports_16_bit = (self.file_format == FF_TIFF and self.save_image_or_figure == IF_IMAGE) or \
+                          self.save_image_or_figure == IF_MOVIE
         if supports_16_bit:
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)

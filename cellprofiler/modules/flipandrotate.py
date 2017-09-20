@@ -56,11 +56,16 @@ class FlipAndRotate(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE)
+            "Select the input image",
+            cps.NONE,
+            doc="Choose the image you want to flip or rotate."
+        )
 
         self.output_name = cps.ImageNameProvider(
-                "Name the output image",
-                "FlippedOrigBlue")
+            "Name the output image",
+            "FlippedOrigBlue",
+            doc="Provide a name for the transformed image."
+        )
 
         self.flip_choice = cps.Choice(
                 "Select method to flip image",
@@ -103,14 +108,36 @@ the original, which may affect downstream modules.
 Select the cycle(s) at which the calculation is requested and
 calculated.
 -  *%(IO_INDIVIDUALLY)s:* Determine the amount of rotation for each image individually, e.g., for each cycle.
--  *%(IO_ONCE)s:* Define the rotation only once (on the first image), then then apply it to all images.
+-  *%(IO_ONCE)s:* Define the rotation only once (on the first image), then apply it to all images.
 """ % globals())
 
         self.first_pixel = cps.Coordinates(
-                "Enter coordinates of the top or left pixel", (0, 0))
+            "Enter coordinates of the top or left pixel",
+            (0, 0),
+            doc="""\
+*(Used only when using {ROTATE_COORDINATES} to rotate images)*
+
+After rotation, if the specified points are aligned horizontally, this point on the image will be positioned to the
+left of the other point. If the specified points are aligned vertically, this point of the image will be positioned
+above the other point.
+""".format(**{
+                "ROTATE_COORDINATES": ROTATE_COORDINATES
+            })
+        )
 
         self.second_pixel = cps.Coordinates(
-                "Enter the coordinates of the bottom or right pixel", (0, 100))
+            "Enter the coordinates of the bottom or right pixel",
+            (0, 100),
+            doc="""\
+*(Used only when using {ROTATE_COORDINATES} to rotate images)*
+
+After rotation, if the specified points are aligned horizontally, this point on the image will be positioned to the
+right of the other point. If the specified points are aligned vertically, this point of the image will be positioned
+below the other point.
+""".format(**{
+                "ROTATE_COORDINATES": ROTATE_COORDINATES
+            })
+        )
 
         self.horiz_or_vert = cps.Choice(
                 "Select how the specified points should be aligned",

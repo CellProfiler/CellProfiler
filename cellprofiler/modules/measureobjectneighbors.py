@@ -26,9 +26,11 @@ Measurements made by this module
    distance. Note that this measurement is only available if you use the
    same set of objects for both objects and neighbors.
 -  *FirstClosestObjectNumber:* The index of the closest object.
--  *FirstClosestDistance:* The distance to the closest object.
+-  *FirstClosestDistance:* The distance to the closest object (in units
+   of pixels).
 -  *SecondClosestObjectNumber:* The index of the second closest object.
--  *SecondClosestDistance:* The distance to the second closest object.
+-  *SecondClosestDistance:* The distance to the second closest object (in units
+   of pixels).
 -  *AngleBetweenNeighbors:* The angle formed with the object center as
    the vertex and the first and second closest object centers along the
    vectors.
@@ -189,7 +191,7 @@ Specify a name that will allow the image of objects colored by percent
 of touching pixels to be selected later in the pipeline.""")
 
         self.touching_colormap = cps.Colormap(
-                'Select a colormap', doc="""\
+                'Select colormap', doc="""\
 *(Used only if the image of objects colored by percent touching is to be
 retained for later use in the pipeline)*
 
@@ -400,7 +402,7 @@ available colormaps can be seen `here`_.
                 if object_number == 0:
                     #
                     # No corresponding object in small-removed. This means
-                    # that the object has no pixels, e.g. not renumbered.
+                    # that the object has no pixels, e.g., not renumbered.
                     #
                     continue
                 index = object_number - 1
@@ -601,8 +603,7 @@ available colormaps can be seen `here`_.
         dimensions = workspace.display_data.dimensions
         figure.set_subplots((2, 2), dimensions=dimensions)
         figure.subplot_imshow_labels(0, 0, workspace.display_data.orig_labels,
-                                     "Original: %s" % self.object_name.value,
-                                     dimensions=dimensions)
+                                     "Original: %s" % self.object_name.value)
 
         object_mask = workspace.display_data.object_mask
         expanded_labels = workspace.display_data.expanded_labels
@@ -627,8 +628,7 @@ available colormaps can be seen `here`_.
                                   colorbar=True, vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
                                   normalize=False,
-                                  # sharexy=figure.subplot(0, 0),
-                                  dimensions=dimensions)
+                                  sharexy=figure.subplot(0, 0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
@@ -637,8 +637,7 @@ available colormaps can be seen `here`_.
                                       colorbar=True, vmin=0,
                                       vmax=max(percent_touching_image.max(), 1),
                                       normalize=False,
-                                      # sharexy=figure.subplot(0, 0),
-                                      dimensions=dimensions)
+                                      sharexy=figure.subplot(0, 0))
         else:
             # No objects - colorbar blows up.
             figure.subplot_imshow(0, 1, neighbor_count_image,
@@ -647,8 +646,7 @@ available colormaps can be seen `here`_.
                                   colormap=neighbor_cm,
                                   vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
-                                  # sharexy=figure.subplot(0, 0),
-                                  dimensions=dimensions)
+                                  sharexy=figure.subplot(0, 0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1, 1, percent_touching_image,
                                       "%s colored by pct touching" %
@@ -656,15 +654,13 @@ available colormaps can be seen `here`_.
                                       colormap=percent_touching_cm,
                                       vmin=0,
                                       vmax=max(neighbor_count_image.max(), 1),
-                                      # sharexy=figure.subplot(0, 0),
-                                      dimensions=dimensions)
+                                      sharexy=figure.subplot(0, 0))
 
         if self.distance_method == D_EXPAND:
             figure.subplot_imshow_labels(1, 0, expanded_labels,
                                          "Expanded %s" %
                                          self.object_name.value,
-                                         # sharexy=figure.subplot(0, 0),
-                                         dimensions=dimensions)
+                                         sharexy=figure.subplot(0, 0))
 
     @property
     def all_features(self):

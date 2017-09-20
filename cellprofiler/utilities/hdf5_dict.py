@@ -221,7 +221,7 @@ class HDF5Dict(object):
                         self.top_group.copy(object_group, self.top_group)
                         for feature_name in object_group.keys():
                             # some measurement objects are written at a higher level, and don't
-                            # have an index (e.g. Relationship).
+                            # have an index (e.g., Relationship).
                             if 'index' in object_group[feature_name].keys():
                                 hdf5_index = object_group[feature_name]['index'][:]
                                 self.__cache_index(object_name, feature_name,
@@ -1059,7 +1059,7 @@ class HDF5FileList(object):
                     return schema, [rest[:i], rest[i:]]
                 return schema, [rest[:i] + parts[0]] + parts[1:]
         #
-        # If no slashes in url (e.g. http:someplace.org ), return schema + rest
+        # If no slashes in url (e.g., http:someplace.org ), return schema + rest
         #
         return schema, [rest]
 
@@ -2630,7 +2630,7 @@ class StringReferencer(object):
     def sr_search(self, s):
         '''Search for s in btree
 
-        s: a uint8 numpy array string representation, e.g. as returned by
+        s: a uint8 numpy array string representation, e.g., as returned by
            string_to_uint8
 
         returns the block #, index of entry or insertion point

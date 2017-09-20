@@ -575,7 +575,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline - the pipeline they came from
 
         returns a two tuple of
-            Java types, e.g. "java.lang.Integer"
+            Java types, e.g., "java.lang.Integer"
             A dictionary whose key is the object name and whose
             value is a list of two-tuples of feature name and index into
             the java types array.

@@ -252,7 +252,7 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     if dimensions == 2 and image.ndim == 3:  # multichannel images
         frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename)
     else:  # grayscale image or volume
-        frame.subplot_imshow_grayscale(0, 0, image, title=filename, dimensions=dimensions)
+        frame.subplot_imshow_grayscale(0, 0, image, title=filename)
 
     frame.panel.draw()
 
@@ -338,6 +338,7 @@ class Figure(wx.Frame):
         self.figure = matplotlib.pyplot.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         self.__gridspec = None
+        self.dimensions = 2
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -809,6 +810,8 @@ class Figure(wx.Frame):
     def set_subplots(self, subplots, dimensions=2):
         self.clf()  # get rid of any existing subplots, menus, etc.
 
+        self.dimensions = dimensions
+
         if subplots is None:
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
@@ -829,6 +832,9 @@ class Figure(wx.Frame):
         sharey - If creating a new subplot, you can specify a subplot instance
                  here to share the Y axis with. eg: for zooming, panning
         """
+        if self.dimensions == 3:
+            return None
+
         if not self.subplots[x, y]:
             rows, cols = self.subplots.shape
 
@@ -1205,7 +1211,7 @@ class Figure(wx.Frame):
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1,
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow=False, interpolation=None, cplabels=None, dimensions=2):
+                       use_imshow=False, interpolation=None, cplabels=None):
         """Show an image in a subplot
 
         x, y  - show image in this subplot
@@ -1230,7 +1236,7 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
-        if dimensions == 2:
+        if self.dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax
 
@@ -1488,7 +1494,6 @@ class Figure(wx.Frame):
             sharex=None,
             sharey=None,
             use_imshow=False,
-            dimensions=2,
             background_image=None
     ):
         """
@@ -1529,8 +1534,7 @@ class Figure(wx.Frame):
             vmax=None,
             sharex=sharex,
             sharey=sharey,
-            use_imshow=use_imshow,
-            dimensions=dimensions
+            use_imshow=use_imshow
         )
 
     @allow_sharexy
@@ -1718,7 +1722,6 @@ class Figure(wx.Frame):
                       row_labels=None,
                       n_cols=1,
                       n_rows=1,
-                      dimensions=2,
                       **kwargs):
         """Put a table into a subplot
 
@@ -1732,7 +1735,7 @@ class Figure(wx.Frame):
         **kwargs - for backwards compatibility, old argument values
         """
 
-        if dimensions == 2:
+        if self.dimensions == 2:
             nx, ny = self.subplots.shape
         else:
             ny, nx = self.__gridspec.get_geometry()
@@ -1800,8 +1803,8 @@ class Figure(wx.Frame):
         xvals, yvals - values to scatter
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
         title  - string title for the plot
         """
         xvals = numpy.array(xvals).flatten()
@@ -1839,7 +1842,7 @@ class Figure(wx.Frame):
         bins - number of bins to aggregate data in
         xlabel - string label for x axis
         xscale - 'log' to log-transform the data
-        yscale - scaling of the y axis (e.g. 'log')
+        yscale - scaling of the y axis (e.g., 'log')
         title  - string title for the plot
         """
         if clear:
@@ -1890,9 +1893,9 @@ class Figure(wx.Frame):
         gridsize - x & y bin size for data aggregation
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
-        bins - scaling of the color map (e.g. None or 'log', see mpl.hexbin)
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
+        bins - scaling of the color map (e.g., None or 'log', see mpl.hexbin)
         title  - string title for the plot
         """
         if clear:

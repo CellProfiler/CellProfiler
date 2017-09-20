@@ -7,8 +7,10 @@ Smooth
 **Smooth** smooths (i.e., blurs) images.
 
 This module allows you to smooth (blur) images, which can be helpful to
-remove artifacts of a particular size. Note that smoothing can be a
-time-consuming process.
+remove small artifacts. Note that smoothing can be a time-consuming process.
+
+See also several related modules in the *Advanced* category (e.g.,
+**MedianFilter** and **GaussianFilter**).
 """
 
 import numpy as np
@@ -38,9 +40,9 @@ class Smooth(cpm.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber('Select the input image', cps.NONE, doc="""Select the image to be smoothed""")
+        self.image_name = cps.ImageNameSubscriber('Select the input image', cps.NONE, doc="""Select the image to be smoothed.""")
 
-        self.filtered_image_name = cps.ImageNameProvider('Name the output image', 'FilteredImage', doc="""Enter a name for the resulting image""")
+        self.filtered_image_name = cps.ImageNameProvider('Name the output image', 'FilteredImage', doc="""Enter a name for the resulting image.""")
 
         self.smoothing_method = cps.Choice(
                 'Select smoothing method',

@@ -48,8 +48,9 @@ Measurements made by this module
 -  *Scaling:* The maximum possible intensity value for the image format.
 -  *Height, Width:* The height and width of the current image.
 
-See also the **Input** modules, **LoadData**, **LoadSingleImage**,
-**SaveImages**.
+See also the **Input** modules (**Images**, **NamesAndTypes**,
+**MetaData**, **Groups**), **LoadData**, **LoadSingleImage**,
+and **SaveImages**.
 """
 
 import cgi
@@ -147,6 +148,7 @@ SUPPORTED_IMAGE_EXTENSIONS = set([
     '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
     '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
     '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
+SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 SUPPORTED_IMAGE_EXTENSIONS.add(".npy")
 # The following is a list of the extensions as gathered from Bio-formats
 # Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
@@ -269,13 +271,13 @@ objects across timepoints.
    files are not supported on 64-bit systems.
 -  *%(FF_STK_MOVIES)s:* STKs are a proprietary image format used by
    MetaMorph (Molecular Devices). It is typically used to encode 3D
-   image data, e.g. from confocal microscopy, and is a special version
+   image data, e.g., from confocal microscopy, and is a special version
    of the TIF format.
 -  *%(FF_OTHER_MOVIES)s:* A TIF/TIFF movie is a file that contains a
    series of images as individual frames. The same is true for the FLEX
    file format (used by Evotec Opera automated microscopes). ZVIs are a
    proprietary image format used by Zeiss. It is typically used to
-   encode 3D image data, e.g. from fluorescence microscopy.
+   encode 3D image data, e.g., from fluorescence microscopy.
 
 .. _here: http://www.openmicroscopy.org/site/support/bio-formats5/formats/quicktime-movie.html
 """ % globals())
@@ -290,13 +292,15 @@ Three options are available:
    contain that text exactly will be loaded and given the name you
    specify. The search for the text is case-sensitive.
 -  *%(MS_REGEXP)s:* Used to load image (or movie) files that match a
-   pattern of regular expressions. %(REGEXP_HELP_REF)s
+   pattern of regular expressions.
 -  *%(MS_ORDER)s:* Used when image (or movie) files are present in a
    repeating order, like “DAPI, FITC, Red; DAPI, FITC, Red;” and so on.
    Images are loaded based on the order of their location on the hard
    disk, and they are assigned an identity based on how many images are
    in each group and what position within each group the file is located
    (e.g., three images per group; DAPI is always first).
+
+%(REGEXP_HELP_REF)s
 """ % globals())
 
         self.exclude = cps.Binary(
@@ -742,8 +746,8 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3."""))
 This setting determines whether you load an image as image data or as
 segmentation results (i.e., objects):
 
--  *%(IO_IMAGES)s:* The input image will be given a user-specified name
-   by which it will be refered downstream. This is the most common usage
+-  *%(IO_IMAGES)s:* The input image will be given the name you specify,
+   by which it will be referred downstream. This is the most common usage
    for this module.
 -  *%(IO_OBJECTS)s:* Use this option if the input image is a label
    matrix and you want to obtain the objects that it defines. A *label
@@ -2594,7 +2598,7 @@ to store the image."""% globals()))
 
         Returns a list of two-tuples where the first element of the tuple is the path
         from the root directory, including the file name, the second element is the
-        index within the image settings (e.g. ImageNameVars).
+        index within the image settings (e.g., ImageNameVars).
         """
         global cached_file_lists
         can_cache = workspace.pipeline.test_mode
@@ -3211,6 +3215,9 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
     def is_numpy_file(self):
         return os.path.splitext(self.__filename)[-1].lower() == ".npy"
 
+    def is_matlab_file(self):
+        return os.path.splitext(self.__filename)[-1].lower() == ".mat"
+
     def get_md5_hash(self, measurements):
         '''Compute the MD5 hash of the underlying file or use cached value
 
@@ -3220,7 +3227,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         #
         # Cache the MD5 hash on the image reader
         #
-        if self.is_numpy_file():
+        if self.is_matlab_file() or self.is_numpy_file():
             rdr = None
         else:
             from bioformats.formatreader import get_image_reader
@@ -3249,7 +3256,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
         Possibly delete the temporary file'''
         if self.__is_cached:
-            if self.is_numpy_file():
+            if self.is_matlab_file() or self.is_numpy_file():
                 try:
                     os.remove(self.__cached_file)
                 except:
@@ -3290,10 +3297,14 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
-        if self.is_numpy_file():
+        if self.is_matlab_file():
+            with open(self.get_full_name(), "rb") as fd:
+                imgdata = scipy.io.matlab.mio.loadmat(fd, struct_as_record=True)
+                img = imgdata["Image"]
+                self.scale = 1.0
+        elif self.is_numpy_file():
             img = np.load(self.get_full_name())
             self.scale = 1.0
-            pixel_type_scale = 1.0
         else:
             url = self.get_url()
             if url.lower().startswith("omero:"):

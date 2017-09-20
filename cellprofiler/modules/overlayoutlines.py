@@ -5,13 +5,11 @@ OverlayOutlines
 ===============
 
 **OverlayOutlines** places outlines of objects over a desired image.
-Outlines can be placed around 2D and 3D objects.
 
-This module places outlines of objects (often produced by an
-**Identify** module) on any desired image (grayscale, color, or blank).
-The resulting image can be saved using the **SaveImages** module. See
-also **IdentifyPrimaryObjects, IdentifySecondaryObjects,
-IdentifyTertiaryObjects**.
+This module places outlines of objects on any desired image (grayscale, color, or blank).
+The resulting image can be saved using the **SaveImages** module.
+
+This module supports 2D and 3D objects.
 """
 
 import numpy
@@ -66,7 +64,7 @@ class OverlayOutlines(cellprofiler.module.Module):
             doc="""\
 Select "*{YES}*" to produce an image of the outlines on a black background.
 
-Select "*{NO}*", the module will overlay the outlines on an image of your choosing.
+Select "*{NO}*" to overlay the outlines on an image you choose.
 """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO
@@ -255,16 +253,14 @@ maximal brightness already occurring in the image.
                     0,
                     0,
                     workspace.display_data.pixel_data,
-                    self.output_image_name.value,
-                    dimensions=dimensions
+                    self.output_image_name.value
                 )
             else:
                 figure.subplot_imshow_bw(
                     0,
                     0,
                     workspace.display_data.pixel_data,
-                    self.output_image_name.value,
-                    dimensions=dimensions
+                    self.output_image_name.value
                 )
         else:
             figure.set_subplots((2, 1), dimensions=dimensions)
@@ -273,8 +269,7 @@ maximal brightness already occurring in the image.
                 0,
                 0,
                 workspace.display_data.image_pixel_data,
-                self.image_name.value,
-                dimensions=dimensions
+                self.image_name.value
             )
 
             if self.wants_color.value == WANTS_COLOR:
@@ -283,7 +278,7 @@ maximal brightness already occurring in the image.
                     0,
                     workspace.display_data.pixel_data,
                     self.output_image_name.value,
-                    dimensions=dimensions
+                    sharexy=figure.subplot(0, 0)
                 )
             else:
                 figure.subplot_imshow_bw(
@@ -291,7 +286,7 @@ maximal brightness already occurring in the image.
                     0,
                     workspace.display_data.pixel_data,
                     self.output_image_name.value,
-                    dimensions=dimensions
+                    sharexy=figure.subplot(0, 0)
                 )
 
     def base_image(self, workspace):

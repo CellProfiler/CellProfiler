@@ -4,6 +4,7 @@ import re
 import wx
 
 import cellprofiler.gui
+import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.modules
 
@@ -16,6 +17,7 @@ MENU_HELP = {
     "Introduction to Projects": cellprofiler.gui.help.content.INTRODUCTION_TO_PROJECTS_HELP,
     "Load Modules": cellprofiler.gui.help.content.LEGACY_LOAD_MODULES_HELP,
     "Loading Image Stacks and Movies": cellprofiler.gui.help.content.LOADING_IMAGE_SEQUENCES_HELP,
+    "MATLAB format images": cellprofiler.gui.help.content.MATLAB_FORMAT_IMAGES_HELP,
     "How Measurements are Named": cellprofiler.gui.help.content.MEASUREMENT_NOMENCLATURE_HELP,
     "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.MEMORY_AND_SPEED_HELP,
     "Using the Edit Menu": cellprofiler.gui.help.content.MENU_BAR_EDIT_HELP,

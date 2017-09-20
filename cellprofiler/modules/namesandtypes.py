@@ -18,7 +18,6 @@ import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-import centrosome.outline
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
@@ -26,8 +25,7 @@ from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, NAMING_OUTLINES_HELP, RETAINING_OUTLINES_HELP, \
-    USING_METADATA_HELP_REF,PROTIP_RECOMEND_ICON
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF,PROTIP_RECOMEND_ICON
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J
@@ -39,7 +37,9 @@ NamesAndTypes
 
 The **NamesAndTypes** module gives images and/or channels a meaningful
 name to a particular image or channel, as well as defining the
-relationships between images to create an image set.
+relationships between images to create an image set.  This module will also
+let you define whether an image stack should be processed as sequential 2D slices
+or as a whole 3D volume.
 
 Once the relevant images have been identified using the **Images**
 module (and/or has had metadata associated with the images using the
@@ -74,8 +74,8 @@ The **NamesAndTypes** module receives the file list produced by the
 metadata to the images, this information is also received by
 **NamesAndTypes** and available for its use.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do I configure the module?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the above example, the **NamesAndTypes** module allows you to assign
 each of these channels a unique name, provided by you. All files of a
@@ -93,7 +93,7 @@ This is done using user-defined rules in a similar manner to that of the
 have multiple channels, you then assign the relationship between
 channels. For example, in the case mentioned above, the DAPI and GFP
 images are named in such a way that it is apparent to the researcher
-which is which, e.g., “\_w1” is contained in the file for the DAPI
+which is which, e.g., “\_w2” is contained in the file for the DAPI
 images, and “\_w1” in the file name for the GFP images.
 
 You can also use **NamesAndTypes** to define the relationships between
@@ -138,6 +138,7 @@ Measurements made by this module
 .. |NAT_image0| image:: {DAPI}
 .. |NAT_image1| image:: {GFP}
 .. |NAT_image2| image:: {NAT_EXAMPLE_DISPLAY}
+                :width: 100%
 """.format(**{
                 "DAPI": _help.__image_resource('dapi.png'),
                 "GFP": _help.__image_resource('gfp.png'),
@@ -221,13 +222,14 @@ You can specify how these images should be treated:
    pixel intensities will be averaged to produce a single intensity
    value.
 -  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel repesents a
-   red, green and blue (RGB) triplet of intensity values. Please note
+   red, green and blue (RGB) triplet of intensity values OR which contains
+   multiple individual grayscale channels. Please note
    that the object detection modules such as **IdentifyPrimaryObjects**
    expect a grayscale image, so if you want to identify objects, you
    should use the **ColorToGray** module in the analysis pipeline to
    split the color image into its component channels.
-   You can use the *{LOAD_AS_GRAYSCALE_IMAGE}* option to collapse the
-   color channels to a single grayscale value if you don’t need
+   You can use the **ColorToGray**'s *Combine* option after image loading
+   to collapse the color channels to a single grayscale value if you don’t need
    CellProfiler to treat the image as color.
 -  *{LOAD_AS_MASK}:* A *mask* is an image where some of the pixel
    intensity values are zero, and others are non-zero. The most common
@@ -239,7 +241,7 @@ You can specify how these images should be treated:
    image should be a binary image, i.e, foreground is white, background
    is black. The module will convert any nonzero values to 1, if needed.
    You can use this option to load a foreground/background segmentation
-   produced by one of the **Identify** modules.
+   produced by the **Threshold** module or one of the **Identify** modules.
 -  *{LOAD_AS_ILLUMINATION_FUNCTION}:* An *illumination correction
    function* is an image which has been generated for the purpose of
    correcting uneven illumination/lighting/shading or to reduce uneven
@@ -256,12 +258,12 @@ You can specify how these images should be treated:
    second object, and so on. This option allows you to use the objects
    immediately without needing to insert an **Identify** module to
    extract them first. See **IdentifyPrimaryObjects** for more details.
-   This option can load objects created by the **SaveImages** module.
-   These objects can take two forms, with different considerations for
-   each:
+   This option can load objects created by using the **ConvertObjectsToImage**
+   module followed by the **SaveImages** module. These objects can take two
+   forms, with different considerations for each:
 
-   -  *Non-overalapping* objects are stored as a label matrix. This
-      matrix should be saved as grayscale, rather than color.
+   -  *Non-overlapping* objects are stored as a label matrix. This
+      matrix should be saved as grayscale rather than color.
    -  *Overlapping objects* are stored in a multi-frame TIF, each frame
       of which consists of a grayscale label matrix. The frames are
       constructed so that objects that overlap are placed in different
@@ -279,27 +281,33 @@ IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT_V3 = 6
 IDX_ASSIGNMENTS_COUNT_V5 = 6
 IDX_ASSIGNMENTS_COUNT_V6 = 6
+IDX_ASSIGNMENTS_COUNT_V7 = 6
 IDX_ASSIGNMENTS_COUNT = 6
 
 IDX_SINGLE_IMAGES_COUNT_V5 = 7
 IDX_SINGLE_IMAGES_COUNT_V6 = 7
+IDX_SINGLE_IMAGES_COUNT_V7 = 7
 IDX_SINGLE_IMAGES_COUNT = 7
 
 IDX_FIRST_ASSIGNMENT_V3 = 7
 IDX_FIRST_ASSIGNMENT_V4 = 7
 IDX_FIRST_ASSIGNMENT_V5 = 8
 IDX_FIRST_ASSIGNMENT_V6 = 9
-IDX_FIRST_ASSIGNMENT = 9
+IDX_FIRST_ASSIGNMENT_V7 = 13
+IDX_FIRST_ASSIGNMENT = 13
 
 NUM_ASSIGNMENT_SETTINGS_V2 = 4
 NUM_ASSIGNMENT_SETTINGS_V3 = 5
 NUM_ASSIGNMENT_SETTINGS_V5 = 7
 NUM_ASSIGNMENT_SETTINGS_V6 = 8
-NUM_ASSIGNMENT_SETTINGS = 8
+NUM_ASSIGNMENT_SETTINGS_V7 = 8
+NUM_ASSIGNMENT_SETTINGS = 6
 
 NUM_SINGLE_IMAGE_SETTINGS_V5 = 7
 NUM_SINGLE_IMAGE_SETTINGS_V6 = 8
-NUM_SINGLE_IMAGE_SETTINGS = 8
+NUM_SINGLE_IMAGE_SETTINGS_V7 = 8
+NUM_SINGLE_IMAGE_SETTINGS = 6
+
 
 OFF_LOAD_AS_CHOICE_V5 = 3
 OFF_LOAD_AS_CHOICE = 3
@@ -322,7 +330,7 @@ M_IMAGE_SET = "ImageSet_ImageSet"
 
 
 class NamesAndTypes(cpm.Module):
-    variable_revision_number = 7
+    variable_revision_number = 8
     module_name = "NamesAndTypes"
     category = "File Processing"
 
@@ -344,10 +352,12 @@ class NamesAndTypes(cpm.Module):
                 ASSIGN_RULES
             ],
             doc="""\
-This setting allows the user to specify a name to images or subsets of
+This setting allows you to specify a name for types of images or subsets of
 images so they can be treated separately by downstream modules. For
 example, giving a different name to a GFP stain image and a brightfield
-image of the same site allows each to be processed independently.
+image of the same site allows each to be processed independently. In
+other words, you are telling CellProfiler that your image set contains
+pairs of images, one of which is GFP and the other brightfield.
 
 The choices are:
 
@@ -357,10 +367,10 @@ The choices are:
    the pipeline will load only one of the images per iteration.
 -  *{ASSIGN_RULES}*: Give images one of several names depending on the
    file name, directory and metadata. This is the appropriate choice if
-   more than one image was acquired from each imaging site. You will be
-   asked for distinctive criteria for each image and will be able to
-   assign each category of image a name that can be referred to in
-   downstream modules.
+   more than one image was acquired from each imaging site (ie if multiple
+   channels were acquired at each site). You will be asked for distinctive
+   criteria for each image and will be able to assign each category of image
+   a name that can be referred to in downstream modules.
 """.format(**{
                 "ASSIGN_ALL": ASSIGN_ALL,
                 "ASSIGN_RULES": ASSIGN_RULES
@@ -564,6 +574,19 @@ You can match corresponding channels to each other in one of two ways:
    | Site           | (None)          |
    +----------------+-----------------+
 
+   This sort of matching can also be useful in timelapse movies where you wish to
+   measure the properties of a particular ROI over time:
+
+   +----------------+----------------+-----------------+
+   | **RFP**        | **GFP**        | **ROIMask**     |
+   +================+================+=================+
+   | MovieName      | MovieName      | MovieName       |
+   +----------------+----------------+-----------------+
+   | Timepoint      | Timepoint      | (None)          |
+   +----------------+----------------+-----------------+
+
+
+
    The order of metadata matching is determined by the metadata data
    type (which is set in the **Metadata** module). The default is
    *text*, which means that the metadata is matched in alphabetical
@@ -708,24 +731,6 @@ requests an object selection.
             )
         )
 
-        group.append(
-            "should_save_outlines",
-            cps.Binary(
-                "Retain outlines of loaded objects?",
-                False,
-                doc=RETAINING_OUTLINES_HELP
-            )
-        )
-
-        group.append(
-            "save_outlines",
-            cps.OutlineNameProvider(
-                "Name the outline image",
-                "LoadedOutlines",
-                doc=NAMING_OUTLINES_HELP
-            )
-        )
-
         def copy_assignment(group=group):
             self.copy_assignment(group, self.assignments, self.add_assignment)
 
@@ -739,13 +744,13 @@ requests an object selection.
 Duplicate the channel specification, creating a new image assignment
 with the same settings as this one.
 
-|image0| This button is useful if
+|NAT_CopyAssignment_image0| This button is useful if
 you are specifying a long series of channels which differ by one or two
 settings (e.g., an image stack with many frames). Using this button will
 help avoid the tedium of having to select the same settings multiple
 times.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |NAT_CopyAssignment_image0| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
                     "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
                 })
@@ -890,24 +895,6 @@ requests an object selection.
             )
         )
 
-        group.append(
-            "should_save_outlines",
-            cps.Binary(
-                "Retain object outlines?",
-                False,
-                doc=RETAINING_OUTLINES_HELP
-            )
-        )
-
-        group.append(
-            "save_outlines",
-            cps.OutlineNameProvider(
-                "Name the outline image",
-                "LoadedOutlines",
-                doc=NAMING_OUTLINES_HELP
-            )
-        )
-
         def copy_assignment(group=group):
             self.copy_assignment(
                     group, self.single_images, self.add_single_image)
@@ -946,17 +933,45 @@ requests an object selection.
         ]
 
         for assignment in self.assignments:
-            result += [assignment.rule_filter, assignment.image_name,
-                       assignment.object_name, assignment.load_as_choice,
-                       assignment.rescale, assignment.should_save_outlines,
-                       assignment.save_outlines, assignment.manual_rescale]
+            result += [
+                assignment.rule_filter,
+                assignment.image_name,
+                assignment.object_name,
+                assignment.load_as_choice,
+                assignment.rescale,
+                assignment.manual_rescale
+            ]
+
         for single_image in self.single_images:
             result += [
-                single_image.image_plane, single_image.image_name,
-                single_image.object_name, single_image.load_as_choice,
-                single_image.rescale, single_image.should_save_outlines,
-                single_image.save_outlines, single_image.manual_rescale]
+                single_image.image_plane,
+                single_image.image_name,
+                single_image.object_name,
+                single_image.load_as_choice,
+                single_image.rescale,
+                single_image.manual_rescale
+            ]
 
+        return result
+
+    def help_settings(self):
+        result = [
+            self.assignment_method,
+            self.single_load_as_choice,
+            self.matching_choice,
+            self.single_rescale,
+            self.assignments_count,
+            self.single_images_count,
+            self.manual_rescale,
+            self.process_as_3d,
+            self.x,
+            self.y,
+            self.z
+        ]
+        assignment = self.assignments[0]
+        result += [assignment.rule_filter, assignment.image_name,
+                   assignment.object_name, assignment.load_as_choice,
+                   assignment.rescale, assignment.manual_rescale]
         return result
 
     def visible_settings(self):
@@ -994,10 +1009,6 @@ requests an object selection.
                     result += [assignment.rescale]
                     if assignment.rescale == INTENSITY_MANUAL:
                         result += [self.manual_rescale]
-                elif assignment.load_as_choice == LOAD_AS_OBJECTS:
-                    result += [assignment.should_save_outlines]
-                    if assignment.should_save_outlines.value:
-                        result += [assignment.save_outlines]
                 result += [assignment.copy_button]
                 if assignment.can_remove:
                     result += [assignment.remover]
@@ -1013,10 +1024,6 @@ requests an object selection.
                     result += [single_image.rescale]
                     if single_image.rescale == INTENSITY_MANUAL:
                         result += [single_image.manual_rescale]
-                elif single_image.load_as_choice == LOAD_AS_OBJECTS:
-                    result += [single_image.should_save_outlines]
-                    if single_image.should_save_outlines.value:
-                        result += [single_image.save_outlines]
                 result += [single_image.copy_button, single_image.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:
@@ -1352,7 +1359,7 @@ requests an object selection.
         load_as_choice - one of the LOAD_AS_ constants
 
         returns the CellProfiler java PlaneStack prebuilt axes list that
-        is the appropriate shape for the channel's image stack, e.g. XYCAxes
+        is the appropriate shape for the channel's image stack, e.g., XYCAxes
         for color.
         '''
         script = "Packages.org.cellprofiler.imageset.PlaneStack.%s;"
@@ -1720,8 +1727,6 @@ requests an object selection.
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     self.add_objects(workspace,
                                      group.object_name.value,
-                                     group.should_save_outlines.value,
-                                     group.save_outlines.value,
                                      stack)
                 else:
                     rescale = group.rescale.value
@@ -1855,14 +1860,11 @@ requests an object selection.
         '''Get an md5 checksum from the (cached) file courtesy of the provider'''
         return provider.get_md5_hash(measurements)
 
-    def add_objects(self, workspace, name, should_save_outlines,
-                    outlines_name, stack):
+    def add_objects(self, workspace, name, stack):
         '''Add objects loaded from a file to the object set
 
         workspace - the workspace for the analysis
         name - the objects' name in the pipeline
-        should_save_outlines - True if the user wants to save outlines as an image
-        outlines_name - the name of the outlines image in the pipeline
         stack - the ImagePlaneDetailsStack representing the planes to be loaded
         '''
         from cellprofiler.modules.identify import add_object_count_measurements
@@ -1931,13 +1933,6 @@ requests an object selection.
                                                  name, o.ijv, o.count)
         add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
-        if should_save_outlines:
-            outline_image = np.zeros(image.pixel_data.shape[:2], bool)
-            for labeled_image, indices in o.get_labels():
-                plane = centrosome.outline.outline(labeled_image)
-                outline_image |= plane.astype(outline_image.dtype)
-            out_img = cpi.Image(outline_image)
-            workspace.image_set.add(outlines_name, out_img)
 
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
@@ -2204,6 +2199,51 @@ requests an object selection.
             new_setting_values = setting_values[:9] + [False, 1.0, 1.0, 1.0] + setting_values[9:]
             setting_values = new_setting_values
             variable_revision_number = 7
+
+        if variable_revision_number == 7:
+            offset = IDX_FIRST_ASSIGNMENT_V7
+            n_settings = NUM_ASSIGNMENT_SETTINGS_V7
+            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V7])
+
+            assignment_rule_filter = setting_values[offset::n_settings][:n_assignments]
+            assignment_image_name = setting_values[offset + 1::n_settings][:n_assignments]
+            assignment_object_name = setting_values[offset + 2::n_settings][:n_assignments]
+            assignment_load_as_choice = setting_values[offset + 3::n_settings][:n_assignments]
+            assignment_rescale = setting_values[offset + 4::n_settings][:n_assignments]
+            assignment_manual_rescale = setting_values[offset + 7::n_settings][:n_assignments]
+
+            assignment_settings = sum([list(settings) for settings in zip(
+                assignment_rule_filter,
+                assignment_image_name,
+                assignment_object_name,
+                assignment_load_as_choice,
+                assignment_rescale,
+                assignment_manual_rescale
+            )], [])
+
+            offset = IDX_FIRST_ASSIGNMENT_V7 + (n_assignments * NUM_ASSIGNMENT_SETTINGS_V7)
+            n_settings = NUM_SINGLE_IMAGE_SETTINGS_V7
+            n_single_images = int(setting_values[IDX_SINGLE_IMAGES_COUNT_V7])
+
+            single_image_image_plane = setting_values[offset::n_settings][:n_single_images]
+            single_image_image_name = setting_values[offset + 1::n_settings][:n_single_images]
+            single_image_object_name = setting_values[offset + 2::n_settings][:n_single_images]
+            single_image_load_as_choice = setting_values[offset + 3::n_settings][:n_single_images]
+            single_image_rescale = setting_values[offset + 4::n_settings][:n_single_images]
+            single_image_manual_rescale = setting_values[offset + 7::n_settings][:n_single_images]
+
+            single_image_settings = sum([list(settings) for settings in zip(
+                single_image_image_plane,
+                single_image_image_name,
+                single_image_object_name,
+                single_image_load_as_choice,
+                single_image_rescale,
+                single_image_manual_rescale
+            )], [])
+
+            setting_values = setting_values[:IDX_FIRST_ASSIGNMENT_V7] + assignment_settings + single_image_settings
+
+            variable_revision_number = 8
 
         return setting_values, variable_revision_number, from_matlab
 

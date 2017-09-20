@@ -9,19 +9,15 @@ and can also load images specified by file names.
 
 This module loads a file that supplies text or numerical data associated
 with the images to be processed, e.g., sample names, plate names, well
-identifiers, or even a list of image filenames to be processed in the
-analysis run.
+identifiers, or even a list of image file names to be processed in the
+analysis run. Please note that most researchers will prefer to use the
+Input modues (i.e., **Images**,
+**Metadata**, **NamesAndTypes** and **Groups**) to load images.
 
-*Disclaimer:* Please note that the Input modues (i.e., **Images**,
-**Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
-module. However, old pipelines loaded into CellProfiler that contain
-this module will provide the option of preserving them; these pipelines
-will operate exactly as before.
+Note that 3D images to be analyzed volumetrically CANNOT be loaded
+with LoadData; they must be loaded with the Input modules.
 
-Note that volumetric images CANNOT be loaded with LoadData; they must be
-loaded with the Input modules.
-
-The module currently reads files in CSV (comma-separated values) format.
+The module reads files in CSV (comma-separated values) format.
 These files can be produced by saving a spreadsheet from Excel as
 “Windows Comma Separated Values” file format. The lines of the file
 represent the rows, and each field in a row is separated by a comma.
@@ -37,8 +33,9 @@ allows for special functionality for some downstream modules:
 -  *Columns whose name begins with Image\_FileName or Image\_PathName:*
    A column whose name begins with “Image\_FileName” or
    “Image\_PathName” can be used to supply the file name and path name
-   (relative to the base folder) of an image that you want to load. The
-   image’s name within CellProfiler appears afterward. For instance,
+   (relative to the base folder) of an image that you want to load, which
+   will override the settings in the Input modules (**Images**,
+   **Metadata**, **NamesAndTypes** and **Groups**). For instance,
    “Image\_FileName\_CY3” would supply the file name for the CY3-stained
    image, and choosing the *Load images based on this data?* option
    allows the CY3 images to be selected later in the pipeline.
@@ -50,11 +47,6 @@ allows for special functionality for some downstream modules:
    Image\_ObjectsPathName:* The behavior of these columns is identical
    to that of “Image\_FileName” or “Image\_PathName” except that it is
    used to specify an image that you want to load as objects.
-
--  *Columns with any name:* Any data loaded via **LoadData** will be
-   exported as a per-image measurement along with
-   CellProfiler-calculated data. This is a convenient way for you to add
-   data from your own sources to the files exported by CellProfiler.
 
 -  *Columns whose name begins with Metadata:* A column whose name begins
    with “Metadata” can be used to group or associate files loaded by
@@ -78,10 +70,10 @@ allows for special functionality for some downstream modules:
    with several images (for example, multiple images obtained from a
    single well).
 
--  *Columns whose name begins with Series or Frame:* A columns whose
-   name begins with “Series” or “Frame” refers to CSVs containing
+-  *Columns whose name begins with Series or Frame:* A column whose
+   name begins with “Series” or “Frame” refers to
    information about image stacks or movies. The name of the image
-   within CellProfiler appears afterward an underscore character. For
+   within CellProfiler appears after an underscore character. For
    example, “Frame\_DNA” would supply the frame number for the
    movie/image stack file specified by the “Image\_FileName\_DNA” and
    “Image\_PathName\_DNA” columns.
@@ -106,6 +98,13 @@ allows for special functionality for some downstream modules:
    help for **CalculateStatistics**. Again, using **LoadData** is useful
    if the same data is associated with several images (for example,
    multiple images obtained from a single well).
+
+-  *Columns with any other name:* Columns of data beginning with any
+   other text will be loaded into CellProfiler and then
+   exported as a per-image measurement along with
+   CellProfiler-calculated data. This is a convenient way for you to add
+   data from your own sources to the files exported by CellProfiler.
+
 
 Example CSV file
 ^^^^^^^^^^^^^^^^
@@ -140,6 +139,7 @@ the settings help for *Group images by metadata* and, if that setting is
 selected, *Select metadata tags for grouping* for details.
 
 Using MetaXpress-acquired images in CellProfiler
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To produce a CSV file containing image location and metadata from a
 `MetaXpress`_ imaging run, do the following:
@@ -165,8 +165,11 @@ To produce a CSV file containing image location and metadata from a
    are written to separate files and then merged, thereby removing the
    discontinuity.
 
-For a GUI-based approach to performing this task, we suggest using
-`Pipeline Pilot`_.
+More tips on using LoadData
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a GUI-based approach to creating a proper CSV file for use with
+**LoadData**, we suggest using `KNIME`_ or `Pipeline Pilot`_.
 
 For more details on configuring CellProfiler (and LoadData in
 particular) for a LIMS environment, please see our `wiki`_ on the
@@ -176,16 +179,17 @@ Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image,
-   if image loading was requested by the user.
--  Per-image information obtained from the input file provided by the
-   user.
+   if you requested image loading.
 -  *Scaling:* The maximum possible intensity value for the image format.
--  *Height, Width:* The height and width of the current image.
+-  *Height, Width:* The height and width of images loaded by this module.
+-  Any additional per-image data loaded from the input file you provided.
 
-See also the **Input** modules, **LoadImages** and
+See also the **Input** modules (i.e., **Images**, **Metadata**,
+**NamesAndTypes** and **Groups**), **LoadImages** and
 **CalculateStatistics**.
 
 .. _MetaXpress: http://www.moleculardevices.com/systems/high-content-imaging/metaxpress-high-content-image-acquisition-and-analysis-software
+.. _KNIME: https://www.knime.com/about
 .. _Pipeline Pilot: http://accelrys.com/products/pipeline-pilot/
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment
 """
@@ -374,7 +378,7 @@ Select the folder containing the CSV file to be loaded. %(IO_FOLDER_CHOICE_HELP_
 
         self.csv_file_name = cps.FilenameText(
                 "Name of the file",
-                cps.NONE, doc="""Provide the file name of the CSV file containing the data.""",
+                cps.NONE, doc="""Provide the file name of the CSV file containing the data you want to load.""",
                 get_directory_fn=get_directory_fn,
                 set_directory_fn=set_directory_fn,
                 browse_msg="Choose CSV file",
@@ -385,9 +389,8 @@ Select the folder containing the CSV file to be loaded. %(IO_FOLDER_CHOICE_HELP_
                 "Press to view CSV file contents", "View...", self.browse_csv)
 
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""\
-Select *%(YES)s* to have **LoadData** load images using the
-*Image\_FileName* field and the *Image\_PathName* fields (the latter is
-optional).""" % globals())
+Select *%(YES)s* to have **LoadData** load images based on the
+*Image\_FileName* column and the *Image\_PathName* column (if specified).""" % globals())
 
         self.rescale = cps.Binary(
                 "Rescale intensities?", True, doc="""\
@@ -398,13 +401,14 @@ might acquire images using a 12-bit A/D converter which outputs
 intensity values between zero and 4095, but stores the values in a field
 that can take values up to 65535.
 
-Select *%(YES)s* to rescale the image intensity so that saturated values
-are rescaled to 1.0 by dividing all pixels in the image by the maximum
-possible intensity value.
+Select *%(YES)s* to rescale the image intensity so that the camera's maximum
+possible intensity value is rescaled to 1.0 (by dividing all pixels in
+the image by the camera's maximum possible intensity value, as indicated by
+image metadata).
 
-Select *%(NO)s* to ignore the image metadata and rescale the image to 0
-– 1.0 by dividing by 255 or 65535, depending on the number of bits used
-to store the image.""" % globals())
+Select *%(NO)s* to ignore the image metadata and rescale the image to a
+maximum of 1.0 by dividing by 255 or 65535, depending on the maximum possible
+intensity value of the image file format.""" % globals())
 
         self.image_directory = cps.DirectoryPath(
                 "Base image location",
@@ -423,17 +427,17 @@ the following options:
 
         self.wants_image_groupings = cps.Binary(
                 "Group images by metadata?", False, doc="""\
-Select *%(YES)s* to break the image sets in an experiment into groups
-that can be processed by different nodes on a computing cluster. Each
-set of files that share your selected metadata tags will be processed
-together. See **CreateBatchFiles** for details on submitting a
-CellProfiler pipeline to a computing cluster for processing.""" % globals())
+Select *%(YES)s* to break the image sets in an experiment into groups.
+Each set of files that share your selected metadata tags will be processed
+together. For example, see **CreateBatchFiles** for details on submitting a
+CellProfiler pipeline to a computing cluster for processing groups
+separately, and see the **Groups** module for other examples.""" % globals())
 
         self.metadata_fields = cps.MultiChoice(
                 "Select metadata tags for grouping", None, doc="""\
 *(Used only if images are to be grouped by metadata)*
 
-Select the tags by which you want to group the image files here. You can
+Select the tags by which you want to group the image files. You can
 select multiple tags. For example, if a set of images had metadata for
 “Run”, “Plate”, “Well”, and “Site”, selecting *Run* and *Plate* will
 create groups containing images that share the same [*Run*,\ *Plate*]
@@ -443,8 +447,11 @@ pair of tags.""")
                 "Process just a range of rows?",
                 False, doc="""\
 Select *%(YES)s* if you want to process a subset of the rows in the CSV
-file. Rows are numbered starting at 1 (but do not count the header
-line). **LoadData** will process up to and including the end row.""" % globals())
+file. In the boxes below, enter the number of the row you want to begin processing
+with in the box on the left. Then, enter the number of the row you want to
+end processing with in the box on the right. Rows are numbered starting at 1 
+(but do not count the header line). **LoadData** will process up to and including the end row.
+""" % globals())
 
         self.row_range = cps.IntegerRange(
                 "Rows to process",

@@ -1,6 +1,20 @@
 # coding=utf-8
 
-"""
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.outline
+import numpy
+import scipy.ndimage
+import skimage.segmentation
+
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.setting
+import identify
+import _help
+
+__doc__ = """
 MeasureObjectIntensity
 ======================
 
@@ -17,18 +31,7 @@ objects entered. If you want only specific image/object measurements,
 you can use multiple MeasureObjectIntensity modules for each group of
 measurements desired.
 
-Note that for publication purposes, the units of intensity from
-microscopy images are usually described as “Intensity units” or
-“Arbitrary intensity units” because microscopes are not calibrated to an
-absolute scale. Also, it is important to note whether you are reporting
-the mean vs. the integrated intensity, so specify “Mean intensity
-units” or “Integrated intensity units” accordingly.
-
-Keep in mind that the default behavior in CellProfiler is to rescale the
-image intensity from 0 to 1 by dividing all pixels in the image by the
-maximum possible intensity value. This “maximum possible” value is
-defined by the “Set intensity range from” setting in **NamesAndTypes**;
-see the help for that setting for more details.
+{HELP_ON_MEASURING_INTENSITIES}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -66,20 +69,9 @@ Measurements made by this module
    object.
 
 See also **NamesAndTypes**, **MeasureImageIntensity**.
-"""
-
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.outline
-import numpy
-import scipy.ndimage
-import skimage.segmentation
-
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
-import identify
+""".format(**{
+    "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
+})
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -464,7 +456,7 @@ Select the objects whose intensities you want to measure."""))
                             dest[lindexes[qmask] - 1] = (limg[order[qi]] * (1 - qf) + limg[order[qi + 1]] * qf)
 
                             #
-                            # In some situations (e.g. only 3 points), there may
+                            # In some situations (e.g., only 3 points), there may
                             # not be an upper bound.
                             #
                             qmask = (~qmask) & (areas > 0)

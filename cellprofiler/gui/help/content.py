@@ -39,10 +39,10 @@ MODULE_ADD_BUTTON = __image_resource('module_add.png')
 MODULE_REMOVE_BUTTON = __image_resource('module_remove.png')
 TESTMODE_PAUSE_ICON = __image_resource('IMG_PAUSE.png')
 TESTMODE_GO_ICON = __image_resource('IMG_GO.png')
-DISPLAYMODE_SHOW_ICON = __image_resource('IMG_EYE.png')
-DISPLAYMODE_HIDE_ICON = __image_resource('IMG_CLOSED_EYE.png')
-SETTINGS_OK_ICON = __image_resource('IMG_OK.png')
-SETTINGS_ERROR_ICON = __image_resource('IMG_ERROR.png')
+DISPLAYMODE_SHOW_ICON = __image_resource('eye-open.png')
+DISPLAYMODE_HIDE_ICON = __image_resource('eye-close.png')
+SETTINGS_OK_ICON = __image_resource('check.png')
+SETTINGS_ERROR_ICON = __image_resource('remove-sign.png')
 SETTINGS_WARNING_ICON = __image_resource('IMG_WARN.png')
 RUNSTATUS_PAUSE_BUTTON = __image_resource('status_pause.png')
 RUNSTATUS_STOP_BUTTON = __image_resource('status_stop.png')
@@ -54,10 +54,8 @@ WINDOW_PAN_BUTTON = __image_resource('window_pan.png')
 WINDOW_ZOOMTORECT_BUTTON = __image_resource('window_zoom_to_rect.png')
 WINDOW_SAVE_BUTTON = __image_resource('window_filesave.png')
 ANALYZE_IMAGE_BUTTON = __image_resource('IMG_ANALYZE_16.png')
-STOP_ANALYSIS_BUTTON = __image_resource('IMG_STOP.png')
+STOP_ANALYSIS_BUTTON = __image_resource('stop.png')
 PAUSE_ANALYSIS_BUTTON = __image_resource('IMG_PAUSE.png')
-OMERO_IMAGEID_PIC = __image_resource('OMERO_imageID_screenshot.png')
-OMERO_LOGIN_PIC = __image_resource('OMERO_login_screenshot.png')
 
 
 ####################
@@ -78,18 +76,20 @@ MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Nam
 #
 ####################
 LEGACY_LOAD_MODULES_HELP = u"""\
-Historically, two modules served the same functionality as the current
-project structure: **LoadImages** and **LoadData**. While the approach
-described above supersedes these modules in part, old pipelines loaded
-into CellProfiler that contain these modules will provide the option of
-preserving them; these pipelines will operate exactly as before.
+The image loading modules **LoadImages** and **LoadSingleImage** are deprecated
+and will be removed in a future version of CellProfiler. It is recommended you
+choose to convert these modules as soon as possible. CellProfiler can do this
+automatically for you when you import a pipeline using either of these legacy
+modules.
 
-Alternately, you can choose to convert these modules into the
-project equivalent as closely as possible. Both modules remain accesible
-via the “Add module” and |image0|  button at the bottom of the pipeline
-panel. The section details information relevant for those who would like
+Historically, these modules served the same functionality as the current
+project structure (via **Images**, **Metadata**, **NamesAndTypes**, and **Groups**).
+Pipelines loaded into CellProfiler that contain these modules will provide the option
+of preserving them; these pipelines will operate exactly as before.
+
+The section details information relevant for those who would like
 to continue using these modules. Please note, however, that these
-modules are deprecated and may be removed in the future.
+modules are deprecated and will be removed in a future version of CellProfiler.
 
 Associating metadata with images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,24 +103,18 @@ for input images. This information can be:
    for annotation or sample-tracking purposes;
 #. Used to name additional input/output files.
 
-Two sources of metadata are:
-
--  *Metadata provided in the image filename or location (pathname).* For
-   example, images produced by an automated microscope can be given
-   names such as “Experiment1\_A01\_w1\_s1.tif” in which the metadata
-   about the plate (“Experiment1”), the well (“A01”), the wavelength
-   number (“w1”) and the imaging site (“s1”) are captured. The name
-   of the folder in which the images are saved may be meaningful and may
-   also be considered metadata as well. If this is the case for your
-   data, use **LoadImages** to extract this information for use in the
-   pipeline and storage in the output file.
--  *Metadata provided as a table of information*. Often, information
-   associated with each image (such as treatment, plate, well, etc) is
-   available as a separate spreadsheet. If this is the case for your
-   data, use **LoadData** to load this information.
+Metadata is provided in the image filename or location (pathname). For
+example, images produced by an automated microscope can be given
+names such as “Experiment1\_A01\_w1\_s1.tif” in which the metadata
+about the plate (“Experiment1”), the well (“A01”), the wavelength
+number (“w1”) and the imaging site (“s1”) are captured. The name
+of the folder in which the images are saved may be meaningful and may
+also be considered metadata as well. If this is the case for your
+data, use **LoadImages** to extract this information for use in the
+pipeline and storage in the output file.
 
 Details for the metadata-specific help is given next to the appropriate
-settings in **LoadImages** and **LoadData**, as well the specific
+settings in **LoadImages**, as well the specific
 settings in other modules which can make use of metadata. However, here
 is an overview of how metadata is obtained and used.
 
@@ -147,36 +141,32 @@ Subexpression   Explanation
 .\\*             Capture as many characters that follow
 [\\\\\\\\/]         Discard the slash/backslash character
 (?P<Run>        Name the captured field *Run*
-$               The *Run* field must be at the end of the path string, i.e. the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.=============   ============
+$               The *Run* field must be at the end of the path string, i.e., the last folder on the path. This also means that the *Date* field contains the parent folder of the *Date* folder.
 =============   ============
 
-In **LoadData**, metadata is extracted from a CSV (comma-separated) file
-(a spreadsheet). Columns whose name begins with “Metadata” can be used
-to group files loaded by **LoadData** that are associated with a common
+In **LoadImages**, metadata is extracted from the image *File name*,
+*Path* or *Both*. File names or paths containing “Metadata” can be used
+to group files loaded by **LoadImages** that are associated with a common
 metadata value. The files thus grouped together are then processed as a
 distinct image set.
 
 For instance, an experiment might require that images created on the
 same day use an illumination correction function calculated from all
 images from that day, and furthermore, that the date be captured in the
-file names for the individual image sets and in a CSV file specifying
-the illumination correction functions.
+file names for the individual image sets specifying the illumination
+correction functions.
 
 In this case, if the illumination correction images are loaded with the
-**LoadData** module, the file should have a “Metadata\_Date” column
-which contains the date metadata tags. Similarly, if the individual
-images are loaded using the **LoadImages** module, **LoadImages** should
-be set to extract the metadata tag from the file names. The pipeline
-will then match the individual images with their corresponding
-illumination correction functions based on matching “Metadata\_Date”
-fields.
+**LoadImages** module, **LoadImages** should be set to extract the metadata
+tag from the file names. The pipeline will then match the individual images
+with their corresponding illumination correction functions based on matching
+“Metadata\_Date” fields.
 
 Using image grouping
 ~~~~~~~~~~~~~~~~~~~~
 
 To use grouping, you must define the relevant metadata for each image.
-This can be done using regular expressions in **LoadImages** or having
-them pre-defined in a CSV file for use in **LoadData**.
+This can be done using regular expressions in **LoadImages**.
 
 To use image grouping in **LoadImages**, please note the following:
 
@@ -188,11 +178,7 @@ To use image grouping in **LoadImages**, please note the following:
    metadata tag “Plate” in one image channel, you must also specify the
    “Plate” metadata tag in the regular expression for the other channels
    that you want grouped together.
-
-.. |image0| image:: {MODULE_ADD_BUTTON}
-""".format(**{
-    "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON
-})
+"""
 
 USING_THE_OUTPUT_FILE_HELP = u"""\
 Please note that the output file will be deprecated in the future. This
@@ -337,13 +323,30 @@ For a full list of references, visit our `citation`_ page.
 .. _link: http://dx.doi.org/10.1186/gb-2006-7-10-r100
 """
 
+MATLAB_FORMAT_IMAGES_HELP = u"""\
+Previous versions of CellProfiler supported reading and writing of MATLAB
+format (.mat) images. MATLAB format images were useful for exporting
+illumination correction functions generated by **CorrectIlluminationCalculate**.
+These images could be loaded and applied to other pipelines using
+**CorrectIlluminationApply**.
+
+This version of CellProfiler no longer supports exporting MATLAB format
+images. Instead, the recommended image format for illumination correction
+functions is NumPy (.npy). Loading MATLAB format images is deprecated and
+will be removed in a future version of CellProfiler. To ensure compatibility
+with future versions of CellProfiler you can convert your .mat files to .npy
+files via **SaveImages** using this version of CellProfiler.
+
+See **SaveImages** for more details on saving NumPy format images.
+"""
+
 BUILDING_A_PIPELINE_HELP = u"""\
 A *pipeline* is a sequential set of image analysis modules. The best way
 to learn how to use CellProfiler is to load an example pipeline from the
 CellProfiler website’s Examples page and try it with its included images,
 then adapt it for
 your own images. You can also build a pipeline from scratch. Click the
-*Help* |image0|  button in the main window to get help for a specific
+*Help* |HelpContent_BuildPipeline_image0|  button in the main window to get help for a specific
 module.
 
 Loading an existing pipeline
@@ -378,7 +381,7 @@ panel* (located on the left-hand side of the CellProfiler window).
 #. *Place analysis modules in a new pipeline.*
 
    Choose image analysis modules to add to your pipeline by clicking the
-   *Add* |image1| button (located underneath the pipeline panel) or
+   *Add* |HelpContent_BuildPipeline_image1| button (located underneath the pipeline panel) or
    right-clicking in the pipeline panel itself and selecting a module
    from the pop-up box that appears.
 
@@ -388,8 +391,8 @@ panel* (located on the left-hand side of the CellProfiler window).
    the pipeline or after the currently selected module, but you can
    adjust their order in the main window by dragging and dropping them,
    or by selecting a module (or modules, using the *Shift* key) and
-   using the *Move Module Up* |image2| and *Move Module Down*
-   |image3| buttons. The *Remove Module* |image4| button will delete the
+   using the *Move Module Up* |HelpContent_BuildPipeline_image2| and *Move Module Down*
+   |HelpContent_BuildPipeline_image3| buttons. The *Remove Module* |HelpContent_BuildPipeline_image4| button will delete the
    selected module(s) from the pipeline.
 
    Most pipelines depend on one major step: identifying the objects,
@@ -420,18 +423,18 @@ panel* (located on the left-hand side of the CellProfiler window).
    that module.
 
    If there is an error with the settings (e.g., a setting refers to an
-   image that doesn’t exist yet), a |image5| icon will appear next to the
+   image that doesn’t exist yet), a |HelpContent_BuildPipeline_image5| icon will appear next to the
    module name. If there is a warning (e.g., a special notification
-   attached to a choice of setting), a |image6| icon will appear. Errors
+   attached to a choice of setting), a |HelpContent_BuildPipeline_image6| icon will appear. Errors
    will cause the pipeline to fail upon running, whereas a warning will
-   not. Once the errors/warnings have been resolved, a |image7|  icon will
+   not. Once the errors/warnings have been resolved, a |HelpContent_BuildPipeline_image7|  icon will
    appear indicating that the module is ready to run.
 
 #. *Set your Default Output Folder and, if necessary, your Default Input Folder*
 
    Both of these can be set via *File > Preferences…*.  Default Output Folder can
    be additionally changed by clicking the *View output settings* button directly
-   below the list of modules in the pipeline; if any modules in your pipeline have 
+   below the list of modules in the pipeline; if any modules in your pipeline have
    referenced the Default Input Folder it will also appear in *View output settings*.
 
 #. *Click *Analyze images* to start processing.*
@@ -440,19 +443,19 @@ panel* (located on the left-hand side of the CellProfiler window).
    the modules and settings you have specified. The bottom of the
    CellProfiler window will show:
 
-   -  A *pause button* |image8|  which pauses execution and allows you
+   -  A *pause button* |HelpContent_BuildPipeline_image8|  which pauses execution and allows you
       to subsequently resume the analysis.
-   -  A *stop button* |image9|  which cancels execution after prompting
+   -  A *stop button* |HelpContent_BuildPipeline_image9|  which cancels execution after prompting
       you for a place to save the measurements collected to that point.
    -  A *progress bar* which gives the elapsed time and estimates the
       time remaining to process the full image set.
 
    At the end of each cycle:
-   -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the
-      output file.
+
+   -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the output file.
    -  If you are using the **ExportToDatabase** module, CellProfiler saves the measurements in the
       output database.
-   -  If you are using the **ExportToSpreadsheet** module, CellProfiler saves the measurements *into a 
+   -  If you are using the **ExportToSpreadsheet** module, CellProfiler saves the measurements *into a
       temporary file*; spreadsheets are not written until all modules have been processed.
 
 #. *Click *Start Test Mode* to preview results.*
@@ -474,17 +477,16 @@ request it, using a **SaveImages** module.
 automatically export data in a format you prefer. See
 *{USING_YOUR_OUTPUT_REF}* for more details.
 
-.. |image0| image:: {MODULE_HELP_BUTTON}
-.. |image1| image:: {MODULE_ADD_BUTTON}
-.. |image2| image:: {MODULE_MOVEUP_BUTTON}
-.. |image3| image:: {MODULE_MOVEDOWN_BUTTON}
-.. |image4| image:: {MODULE_REMOVE_BUTTON}
-.. |image5| image:: {SETTINGS_ERROR_ICON}
-.. |image6| image:: {SETTINGS_WARNING_ICON}
-.. |image7| image:: {SETTINGS_OK_ICON}
-.. |image8| image:: {RUNSTATUS_PAUSE_BUTTON}
-.. |image9| image:: {RUNSTATUS_STOP_BUTTON}
-.. |image10| image:: {RUNSTATUS_SAVE_BUTTON}
+.. |HelpContent_BuildPipeline_image0| image:: {MODULE_HELP_BUTTON}
+.. |HelpContent_BuildPipeline_image1| image:: {MODULE_ADD_BUTTON}
+.. |HelpContent_BuildPipeline_image2| image:: {MODULE_MOVEUP_BUTTON}
+.. |HelpContent_BuildPipeline_image3| image:: {MODULE_MOVEDOWN_BUTTON}
+.. |HelpContent_BuildPipeline_image4| image:: {MODULE_REMOVE_BUTTON}
+.. |HelpContent_BuildPipeline_image5| image:: {SETTINGS_ERROR_ICON}
+.. |HelpContent_BuildPipeline_image6| image:: {SETTINGS_WARNING_ICON}
+.. |HelpContent_BuildPipeline_image7| image:: {SETTINGS_OK_ICON}
+.. |HelpContent_BuildPipeline_image8| image:: {RUNSTATUS_PAUSE_BUTTON}
+.. |HelpContent_BuildPipeline_image9| image:: {RUNSTATUS_STOP_BUTTON}
 """.format(**{
     "BATCH_PROCESSING_HELP_REF": BATCH_PROCESSING_HELP_REF,
     "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON,
@@ -503,7 +505,7 @@ automatically export data in a format you prefer. See
 })
 
 SPREADSHEETS_DATABASE_HELP = u"""\
-CellProfiler can save measurements as a spreadsheet or as a *database*.
+CellProfiler can save measurements as a *spreadsheet* or as a *database*.
 Which format you use will depend on some of the considerations below:
 
 -  *Learning curve:* Applications that handle spreadsheets (e.g., Excel,
@@ -516,10 +518,15 @@ Which format you use will depend on some of the considerations below:
    thousand rows of data, whereas databases can hold many millions of
    rows of data. Accessing a particular portion of data in a database
    is optimized for speed.
+-  *Downstream application:* If you wish to use Excel or another simple
+   tool to analyze your data, a spreadsheet is likely the best choice.  If you
+   intend to use CellProfiler Analyst, you must create a database.  If you
+   plan to use a scripting language, most languages have ways to import
+   data from either format.
 
-.. _Calc: http://www.libreoffice.org/features/calc/
-.. _Google Docs: https://docs.google.com
-.. _SQLyog: https://www.webyog.com/
+.. _Calc: http://www.libreoffice.org/discover/calc/
+.. _Google Docs: http://docs.google.com
+.. _SQLyog: http://www.webyog.com/
 """
 
 MEMORY_AND_SPEED_HELP = u"""\
@@ -527,7 +534,7 @@ If you find that you are running into out-of-memory errors and/or speed
 issues associated with your analysis run, check out a number of
 solutions on our forum `FAQ`_ .
 
-.. _FAQ: http://forum.cellprofiler.org/t/cellprofiler-2-0-faq/664/6
+.. _FAQ: http://forum.cellprofiler.org
 """
 
 TEST_MODE_HELP = u"""\
@@ -540,7 +547,7 @@ To enter Test mode once you have built a pipeline, choose *Test > Start
 Test Mode* from the menu bar in the main window. At this point, you will
 see the following features appear:
 
--  A Pause icon |image0|  will appear to the left of each module.
+-  A Pause icon |HelpContent_TestMode_image0|  will appear to the left of each module.
 -  The buttons available at the bottom of the pipeline panel change.
 
 You can run your pipeline in Test mode by selecting *Test > Step to Next
@@ -550,15 +557,15 @@ to back up to a previous module or jump to a downstream module, change
 module settings to see the results, or execute the pipeline on the image
 of your choice. The additional controls allow you to do the following:
 
--  *Slider:* Start/resume execution of the pipeline at any time by
-   moving the slider. However, if the selected module depends on objects
-   and/or images generated by prior modules, you will see an error
-   message indicating that the data has not been produced yet. To avoid
-   this, it is best to actually run the pipeline up to the module of
-   interest, and move the slider to modules already executed.
+-  *Run from module N:* Start or resume execution of the pipeline at any
+   time from a selected module. Right-click the module
+   and select "Run from module N", where "N" is the module number.
+   This menu option is only available from modules which have already been
+   run in test mode, or from the current module. Test mode will run until
+   it reaches the end of the pipeline or it encounters a pause.
 -  *Pause:* Clicking the pause icon will cause the pipeline test run to
    halt execution when that module is reached (the paused module itself
-   is not executed). The icon changes from |image1| to |image2| to
+   is not executed). The icon changes from |HelpContent_TestMode_image1| to |HelpContent_TestMode_image2| to
    indicate that a pause has been inserted at that point.
 -  *Run:* Execution of the pipeline will be started/resumed until the
    next module pause is reached. When all modules have been executed for
@@ -589,6 +596,8 @@ From the *Test* menu, you can choose additional options:
 -  *Reload Modules Source (enabled only if running from source code):*
    This option will reload the module source code, so any changes to the
    code will be reflected immediately.
+-  *Break into debugger (enabled only if running from source code):*
+   This option will allow you to open a debugger in the terimal window.
 
 Note that if movies are being loaded, the individual movie is defined as
 a group automatically. Selecting *Choose Image Group* will allow you to
@@ -598,9 +607,9 @@ individual movie frame from that file.
 Please see the **Groups** module for more details on the proper use of
 metadata for grouping.
 
-.. |image0| image:: {TESTMODE_GO_ICON}
-.. |image1| image:: {TESTMODE_GO_ICON}
-.. |image2| image:: {TESTMODE_PAUSE_ICON}
+.. |HelpContent_TestMode_image0| image:: {TESTMODE_GO_ICON}
+.. |HelpContent_TestMode_image1| image:: {TESTMODE_GO_ICON}
+.. |HelpContent_TestMode_image2| image:: {TESTMODE_PAUSE_ICON}
 """.format(**{
     "TESTMODE_GO_ICON": TESTMODE_GO_ICON,
     "TESTMODE_PAUSE_ICON": TESTMODE_PAUSE_ICON
@@ -613,7 +622,7 @@ entire set of images. To do this:
 
 -  Exit Test mode by clicking the “Exit Test Mode” button or selecting
    *Test > Exit Test Mode*.
--  Click the "|image0| Analyze Images" button and begin processing your
+-  Click the "|HelpContent_RunningPipeline_image0| Analyze Images" button and begin processing your
    data sets.
 
 During the analysis run, the progress will appear in the status bar at
@@ -621,18 +630,18 @@ the bottom of CellProfiler. It will show you the total number of image
 sets, the number of image sets completed, the time elapsed and the
 approximate time remaining in the run.
 
-If you need to pause analysis, click the "|image1| Pause" button, then
+If you need to pause analysis, click the "|HelpContent_RunningPipeline_image1| Pause" button, then
 click the “Resume” button to continue. If you want to terminate
-analysis, click the "|image2| Stop Analysis" button.
+analysis, click the "|HelpContent_RunningPipeline_image2| Stop Analysis" button.
 
 If your computer has multiple processors, CellProfiler will take
 advantage of them by starting multiple copies of itself to process the
 image sets in parallel. You can set the number of *workers* (i.e., copies
 of CellProfiler activated) under *File > Preferences…*
 
-.. |image0| image:: {ANALYZE_IMAGE_BUTTON}
-.. |image1| image:: {PAUSE_ANALYSIS_BUTTON}
-.. |image2| image:: {STOP_ANALYSIS_BUTTON}
+.. |HelpContent_RunningPipeline_image0| image:: {ANALYZE_IMAGE_BUTTON}
+.. |HelpContent_RunningPipeline_image1| image:: {PAUSE_ANALYSIS_BUTTON}
+.. |HelpContent_RunningPipeline_image2| image:: {STOP_ANALYSIS_BUTTON}
 """.format(**{
     "ANALYZE_IMAGE_BUTTON": ANALYZE_IMAGE_BUTTON,
     "PAUSE_ANALYSIS_BUTTON": PAUSE_ANALYSIS_BUTTON,
@@ -651,10 +660,10 @@ of images into separate batches, then submitting each of these batches
 as individual jobs to a cluster. Each individual batch can be separately
 analyzed from the rest.
 
-The following describes the workflow for running your pipeline on a cluster 
-that's physically located at your local institution; for running in a cloud-based 
-cluster using Amazon Web Services, please see our `blog post`_ on Distributed 
-CellProfiler, a tool designed to streamline that process. 
+The following describes the workflow for running your pipeline on a cluster
+that's physically located at your local institution; for running in a cloud-based
+cluster using Amazon Web Services, please see our `blog post`_ on Distributed
+CellProfiler, a tool designed to streamline that process.
 
 Submitting files for batch processing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -804,12 +813,11 @@ RUN_MULTIPLE_PIPELINES_HELP = u"""\
 The **Run multiple pipelines** dialog lets you select several
 pipelines which will be run consecutively. Please note the following:
 
--  CellProfiler 2.1 project files are not currently supported.
--  Pipelines from CellProfiler 2.0 and lower are supported.
--  If you want to use a pipeline made using CellProfiler 2.1, then you
-   need to include the project file list with the pipeline, by selecting
-   *Export > Pipeline…*, and under the “Save as type” dropdown, select
-   “CellProfiler pipeline and file list”.
+-  Pipeline files (.cppipe) are supported.
+-  Project files (.cpproj) from CellProfiler 2.1 or newer are not supported.
+   To convert your project to a pipeline (.cppipe), select *File > Export > Pipeline…*
+   and, under the “Save as type” dropdown, select “CellProfiler pipeline and file list”
+   to export the project file list with the pipeline.
 
 You can invoke **Run multiple pipelines** by selecting it from the file menu. The dialog has three parts to it:
 
@@ -827,7 +835,7 @@ You can invoke **Run multiple pipelines** by selecting it from the file menu. Th
    output folder and a measurements file. You can change any of these by
    clicking on the file name - an appropriate dialog will then be
    displayed. You can click the remove button to remove a pipeline from
-   the list
+   the list.
 
 CellProfiler will run all of the pipelines on the list when you hit
 the “OK” button.
@@ -898,113 +906,24 @@ each category. Here is an example file:
 
 The above file would print warnings and errors to the console for all
 messages but “pipeline statistics” which are configured using the
-*pipelineStatistics* logger are written to a file instead.. The
+*pipelineStatistics* logger are written to a file instead. The
 pipelineStatistics logger is the logger that is used to print progress
 messages when the pipeline is run. You can find out which loggers are
 being used to write particular messages by printing all messages with a
 formatter that prints the logger name (“%(name)s”).
 The format of the file is described in greater detail `here`_.
 
-.. _here: http://docs.python.org/howto/logging.html#configuring-logging
+.. _here: http://docs.python.org/2.7/howto/logging.html#configuring-logging
 """
 
 ACCESSING_OMERO_IMAGES = u"""\
-CellProfiler has first-class support for loading images from `OMERO`_.
-The input modules and the LoadData module can refer to images by URL,
-for instance, the example pipeline on the welcome page loads its images
-from ``http://cellprofiler.org/ExampleFlyImages``. The first part of a
-URL (the part before the colon) is the schema. CellProfiler decides
-which communication protocol to use, depending on the schema; in the
-case of the example on the welcome page, the schema is HTTP and
-CellProfiler uses the HTTP protocol to get the image data. For OMERO,
-the schema that should be used is “omero” and we use the OMERO client
-library to fetch and load the data.
-
-OMERO URLs have the form, “omero:iid=”. You can find the image IDs
-using either the OMERO web client or the `Insight software`_. As an
-example, the screen capture below indicates that the image,
-“Channel1-01-A-01.tif”, has an IID of 58038:
-
-|image0|
-
-At present, manually curating the URL list can be somewhat
-time-consuming, but we are planning to develop plug-ins for Insight that
-will automatically generate these lists for CellProfiler from within the
-Insight user interface. The plugin will allow you to select a screen or
-plate and export an image set list that can be used with CellProfiler’s
-LoadData module.
-
-OMERO login credentials
-~~~~~~~~~~~~~~~~~~~~~~~
-
-CellProfiler will ask you for your OMERO login credentials when you
-first access an OMERO URL, either by viewing it from the file list or
-by loading it in a pipeline. CellProfiler will create and maintain a
-session for you based on these credentials until you close the
-application. You should only need to enter your credentials once. To
-use the “Log into Omero” dialog, enter your server’s name or IP
-address, the port (usually 4064), your user name and password and
-press the “Connect” button. The “Connect” button should turn green and
-the OK button of the dialog should become enabled (see below). Press
-OK to complete the login.
-
-|image1|
-
-Currently, CellProfiler cannot establish a connection to OMERO when
-running headless - to do that, we would need to store the user password
-where it might be otherwise visible. We would like to provide a secure
-mechanism for establishing a session when headless and would like to
-work with you to make this work in your environment; please contact us
-for further information on how to modify CellProfiler yourself to do
-this or with suggestions for us to implement.
-
-Using OMERO URLs with the Input modules
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The **Images** module has a file list panel of all of the image files in
-a project. This file list supports URLs including OMERO URLs. You can
-drag URLs from a text document and drop them into the file list. The
-URLs do not end with image file extensions (like .TIF), so you need to
-change the “Filter images?” setting to “No filtering” to allow the OMERO
-URLs to be processed further. You should be able to view the image by
-double-clicking on it and you should be able to extract plate, well,
-site and channel name metadata from each image using the “Extract from
-image file headers” method in the **Metadata** module (press the “Update
-Metadata” button after selecting the “Extract from image file headers”
-method). If your experiment has more than one image channel, you can use
-the “ChannelName” metadata extracted from the OMERO image to create
-image sets containing all of your image channels. In the
-**NamesAndTypes** module, change the “Assign a name to” setting to
-“Images matching rules”. For the rule criteria, select “Metadata does
-have ChannelName matching” and enter the name that appears under
-“Channels” in the OMERO Insight browser. Add additional channels to
-**NamesAndTypes** using the “Add another image” button.
-
-OMERO URLs and LoadData
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The LoadData module reads image sets from a .CSV file. The CSV file has
-a one-line header that tells LoadData how to use each of the columns of
-the file. You can load channels from a URL by adding a “URL” tag to this
-header. The OMERO URLs themselves appear in rows below. For instance,
-here is a .CSV that loads a DNA and GFP channel:
-
-::
-
-    URL_DNA,URL_GFP
-    omero:iid=58134,omero:iid=58038
-    omero:iid=58135,omero:iid=58039
-    omero:iid=58136,omero:iid=58040
+CellProfiler can load images from `OMERO`_. Please see CellProfiler's
+`developer wiki`_ for instructions.
 
 .. _OMERO: http://www.openmicroscopy.org/site/products/omero
-.. _Insight software: http://www.openmicroscopy.org/site/support/omero4/downloads
+.. _developer wiki: http://github.com/CellProfiler/CellProfiler/wiki/OMERO:-Accessing-images-from-CellProfiler
 
-.. |image0| image:: {OMERO_IMAGEID_PIC}
-.. |image1| image:: {OMERO_LOGIN_PIC}
-""".format(**{
-    "OMERO_LOGIN_PIC": OMERO_LOGIN_PIC,
-    "OMERO_IMAGEID_PIC": OMERO_IMAGEID_PIC
-})
+"""
 
 MEASUREMENT_NOMENCLATURE_HELP = u"""\
 In CellProfiler, measurements are exported as well as stored internally
@@ -1225,8 +1144,6 @@ file, which specifies: (1) all unique combinations of the sampled
 parameter values; (2) the mapping from each combination of parameter
 values to one or more output images; and (3) the actual output images.
 
-More information on how to use the plugin can be found `here`_.
-
 **References**
 
 -  Pretorius AJ, Bray MA, Carpenter AE and Ruddle RA. (2011)
@@ -1234,7 +1151,6 @@ More information on how to use the plugin can be found `here`_.
    Transactions on Visualization and Computer Graphics* 17(12),
    2402-2411.
 
-.. _here: http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/
 """
 
 MENU_BAR_DATATOOLS_HELP = u"""
@@ -1278,7 +1194,7 @@ options:
    -  *Measure length:* Select this option to measure distances within
       an image window. If you click on an image and drag, a line will
       appear between the two endpoints, and the distance between them
-      shown at the right-most portion of the bottom panel. This is
+      will be shown at the right-most portion of the bottom panel. This is
       useful for measuring distances in order to obtain estimates of
       typical object diameters for use in **IdentifyPrimaryObjects**.
 
@@ -1481,26 +1397,8 @@ For those interested, some technical details:
    refreshed view of the information (e.g., when a setting has been
    changed).
 
-Legacy modules: LoadImages and LoadData
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Historically, two modules were used for project creation: **LoadImages**
-and **LoadData**. While the approach described above partly supersedes
-these modules, you have the option of preserving these modules if you
-load old pipelines into CellProfiler that contain them; these pipelines
-will operate exactly as before.
-
-Alternately, the user can choose to convert these modules into the
-project equivalent as closely as possible. Both **LoadImages** and
-**LoadData** remain accessible via the “Add module” and |image0|
-buttons at the bottom of the pipeline panel.
-
 .. _here: http://github.com/CellProfiler/CellProfiler/wiki/Module-structure-and-data-storage-retrieval#HDF5
-
-.. |image0| image:: {MODULE_ADD_BUTTON}
-""".format(**{
-    "MODULE_ADD_BUTTON": MODULE_ADD_BUTTON
-})
+"""
 
 SELECTING_IMAGES_HELP = u"""\
 Any image analysis project using CellProfiler begins with providing the

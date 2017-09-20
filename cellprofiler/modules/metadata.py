@@ -94,13 +94,8 @@ which can be obtained from several sources:
    module to the location of this file.
 -  In the image file itself.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See below for help on the individual settings. In general, the settings
-serve in various forms of metadata extraction. You can extract metadata
-from all images from **Images** modules or a subset of them by using
-rules to filter the list.
+You can extract metadata from all images loaded via the **Images**
+module, or a subset of them by using rules to filter the list.
 
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^

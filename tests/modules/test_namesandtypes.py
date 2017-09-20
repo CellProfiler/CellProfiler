@@ -312,7 +312,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
                 self.assertEqual(assignment.image_name, image_name)
                 self.assertEqual(assignment.object_name, objects_name)
                 self.assertEqual(assignment.load_as_choice, load_as)
-                self.assertFalse(assignment.should_save_outlines)
 
     def test_00_04_load_v4(self):
             data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -397,21 +396,18 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
             self.assertEqual(module.assignments_count.value, 5)
             aa = module.assignments
-            for assignment, rule, image_name, objects_name, load_as, \
-                rescale, should_save_outlines, outlines_name in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
+            for assignment, rule, image_name, objects_name, load_as, rescale in (
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA),
+                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE),
+                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA)):
                 self.assertEqual(assignment.rule_filter.value, rule)
-                self.assertEqual(assignment.image_name, image_name)
-                self.assertEqual(assignment.object_name, objects_name)
-                self.assertEqual(assignment.load_as_choice, load_as)
-                self.assertEqual(assignment.rescale, rescale)
-                self.assertEqual(assignment.should_save_outlines, should_save_outlines)
-                self.assertEqual(assignment.save_outlines, outlines_name)
-                self.assertEqual(assignment.manual_rescale, N.DEFAULT_MANUAL_RESCALE)
+                self.assertEqual(assignment.image_name.value, image_name)
+                self.assertEqual(assignment.object_name.value, objects_name)
+                self.assertEqual(assignment.load_as_choice.value, load_as)
+                self.assertEqual(assignment.rescale.value, rescale)
+                self.assertEqual(assignment.manual_rescale.value, N.DEFAULT_MANUAL_RESCALE)
             self.assertEqual(len(module.single_images), 0)
 
 #     def test_00_05_load_v5(self):
@@ -690,7 +686,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         channels - a dictionary of channel name to list of "ipds" for that
                    channel where "ipd" is a tuple of URL and metadata dictionary
-                   Entries may appear multiple times (e.g. illumination function)
+                   Entries may appear multiple times (e.g., illumination function)
         expected_tags - the metadata tags that should have been generated
                    by prepare_run.
         expected_metadata - a sequence of two-tuples of metadata key and
@@ -1302,8 +1298,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         n.assignments[0].load_as_choice.value = load_as_type
         n.assignments[0].rescale.value = rescaled
         n.assignments[0].manual_rescale.value = manual_rescale
-        n.assignments[0].should_save_outlines.value = True
-        n.assignments[0].save_outlines.value = OUTLINES_NAME
         n.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(n)
@@ -1360,8 +1354,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             name = d["name"]
             names.add(name)
             rescaled = d.get("rescaled", True)
-            should_save_outlines = d.get("should_save_outlines", False)
-            outlines_name = d.get("outlines_name", "_".join((name, "outlines")))
             n.add_single_image()
             si = n.single_images[-1]
             si.image_name.value = name
@@ -1369,8 +1361,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             si.load_as_choice.value = load_as_type
             si.rescale.value = rescaled
             si.manual_rescale.value = manual_rescale
-            si.should_save_outlines.value = should_save_outlines
-            si.save_outlines.value = outlines_name
 
             url = pathname2url(path)
             pathname, filename = os.path.split(path)
@@ -1540,8 +1530,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + OBJECTS_NAME], md5)
         self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + OBJECTS_NAME],
                          target.shape[1])
-        outlines = workspace.image_set.get_image(OUTLINES_NAME)
-        self.assertEqual(o.shape, outlines.pixel_data.shape)
 
     def test_03_10_load_overlapped_objects(self):
         from .test_loadimages import overlapped_objects_data
@@ -1564,8 +1552,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 self.assertTrue(np.all(expected[i, j]))
                 mask[i, j] = True
             self.assertFalse(np.any(mask[~ expected_mask]))
-            outlines = workspace.image_set.get_image(OUTLINES_NAME)
-            self.assertEqual(o.shape, outlines.pixel_data.shape)
         finally:
             try:
                 os.unlink(path)
@@ -1623,8 +1609,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             path, N.LOAD_AS_GRAYSCALE_IMAGE, lsi= [{
                 "path":lsi_path,
                 "load_as_type":N.LOAD_AS_OBJECTS,
-                "name":"lsi",
-                "should_save_outlines":True
+                "name":"lsi"
             }])
         o = workspace.object_set.get_objects("lsi")
         assert isinstance(o, N.cpo.Objects)
@@ -1637,8 +1622,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         self.assertEqual(
             m[cpmeas.IMAGE, C_MD5_DIGEST + "_lsi"], md5)
         self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_lsi"], target.shape[1])
-        outlines = workspace.image_set.get_image("lsi_outlines")
-        self.assertEqual(o.shape, outlines.pixel_data.shape)
 
     def test_04_01_get_measurement_columns(self):
         p = cpp.Pipeline()

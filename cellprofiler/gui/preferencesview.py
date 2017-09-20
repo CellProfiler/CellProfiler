@@ -173,8 +173,7 @@ class PreferencesView(object):
             self.__on_edit_box_change(event, edit_box, text, actions)
             event.Skip()
 
-        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text),
-                   help_button)
+        help_button.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text))
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
         panel.Bind(wx.EVT_TEXT, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_COMBOBOX, on_edit_box_change, edit_box)

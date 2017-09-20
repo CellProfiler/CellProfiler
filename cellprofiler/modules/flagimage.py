@@ -92,7 +92,7 @@ Name a measurement category by which to categorize the flag. The
 information about images (referred to as *metadata*).
 
 The flag is stored as a per-image measurement whose name is a
-combination of the flag’s category and the flag name, separated by
+combination of the flag’s category and the flag name that you choose, separated by
 underscores. For instance, if the measurement category is *Metadata* and
 the flag name is *QCFlag*, then the default measurement name would be
 *Metadata_QCFlag*.
@@ -102,7 +102,7 @@ the flag name is *QCFlag*, then the default measurement name would be
                      cps.Text(
                              "Name the flag", "QCFlag", doc='''\
 The flag is stored as a per-image measurement whose name is a
-combination of the flag’s category and flag name, separated by
+combination of the flag’s category and the flag name that you choose, separated by
 underscores. For instance, if the measurement category is *Metadata* and
 the flag name is *QCFlag*, then the default measurement name would be
 *Metadata_QCFlag*.

@@ -161,6 +161,21 @@ values below this threshold as not being edges.
                 self.direction, self.wants_automatic_sigma, self.sigma,
                 self.wants_automatic_low_threshold, self.low_threshold]
 
+    def help_settings(self):
+        return [
+            self.image_name,
+            self.output_image_name,
+            self.method,
+            self.direction,
+            self.wants_automatic_sigma,
+            self.sigma,
+            self.wants_automatic_threshold,
+            self.manual_threshold,
+            self.threshold_adjustment_factor,
+            self.wants_automatic_low_threshold,
+            self.low_threshold
+        ]
+    
     def visible_settings(self):
         settings = [self.image_name, self.output_image_name]
         settings += [self.method]

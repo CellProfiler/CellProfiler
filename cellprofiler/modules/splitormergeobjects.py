@@ -6,16 +6,18 @@ SplitOrMergeObjects
 
 **SplitOrMergeObjects** separates or combines a set of objects that
 were identified earlier in a pipeline. Objects that share a label, but
-are not touching will be relabeled into separate. Objects that share a
-boundary will be combined into a single object.
+are not touching will be relabeled into separate objects. Objects that
+share a boundary will be combined into a single object.
 
 Objects and their measurements are associated with each other based on
 their object numbers (also known as *labels*). Typically, each object is
 assigned a single unique number, such that the exported measurements are
 ordered by this numbering. This module allows the reassignment of object
-numbers by either unifying separate objects to share the same label, or
+numbers by either merging separate objects to share the same label, or
 splitting portions of separate objects that previously had the same
 label.
+
+See also **RelateObjects**.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -27,7 +29,7 @@ Measurements made by this module
 
 **Reassigned object measurements:**
 
--  *Parent:*\ The label number of the parent object.
+-  *Parent:* The label number of the parent object.
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the reassigned objects.
 
@@ -43,8 +45,6 @@ of the objects having their numbers reordered. This reassignment
 information is stored as a per-object measurement with both the original
 input and reassigned output objects, in case you need to track the
 reassignment.
-
-See also **RelateObjects**.
 """
 
 import centrosome.cpmorphology as morph
@@ -87,14 +87,16 @@ class SplitOrMergeObjects(cpm.Module):
         self.objects_name = cps.ObjectNameSubscriber(
                 "Select the input objects",
                 cps.NONE, doc="""\
-Select the objects whose object numbers you want to reassign. You can
+Select the objects you would like to split or merge (that is,
+whose object numbers you want to reassign). You can
 use any objects that were created in previous modules, such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**."""
         )
 
         self.output_objects_name = cps.ObjectNameProvider(
                 "Name the new objects", "RelabeledNuclei", doc="""\
-Enter a name for the objects whose numbers have been reassigned.
+Enter a name for the objects that have been split or merged (that is,
+whose numbers have been reassigned).
 You can use this name in subsequent modules that take objects as inputs."""
         )
 
@@ -108,7 +110,7 @@ You can choose one of the following options:
    by an **Identify** module.
 -  *%(OPTION_SPLIT)s:* Assign a unique number to separate objects that
    currently share the same label. This can occur if you applied certain
-   operations with the **Morph** module to objects.""" % globals()
+   operations in the **Morph** module to objects.""" % globals()
         )
 
         self.unify_option = cps.Choice(
@@ -118,9 +120,9 @@ You can choose one of the following options:
 You can unify objects in one of two ways:
 
 -  *%(UNIFY_DISTANCE)s:* All objects within a certain pixel radius from
-   each other will be unified
+   each other will be merged.
 -  *%(UNIFY_PARENT)s:* All objects which share the same parent
-   relationship to another object will be unified. This is not be
+   relationship to another object will be merged. This is not to be
    confused with using the **RelateObjects** module, in which the
    related objects remain as individual objects. See **RelateObjects**
    for more details.""" % globals()
@@ -135,8 +137,8 @@ You can unify objects in one of two ways:
 disconnected or it can find the smallest convex polygon (the convex
 hull) that encloses all of a parent’s child objects. The convex hull
 will be truncated to include only those pixels in the parent - in that
-case it may not truly be convex. Choose %(UM_DISCONNECTED)s to leave
-the children as disconnected pieces. Choose %(UM_CONVEX_HULL)s to
+case it may not truly be convex. Choose *%(UM_DISCONNECTED)s* to leave
+the children as disconnected pieces. Choose *%(UM_CONVEX_HULL)s* to
 create an output object that is the convex hull around them all.""" % globals()
         )
 
@@ -160,12 +162,13 @@ Please note the following:
 method)*
 
 Objects that are less than or equal to the distance you enter here, in
-pixels, will be unified. If you choose zero (the default), only objects
-that are touching will be unified. Note that *%(OPTION_UNIFY)s* will
+pixels, will be merged. If you choose zero (the default), only objects
+that are touching will be merged. Note that *%(OPTION_UNIFY)s* will
 not actually connect or bridge the two objects by adding any new pixels;
 it simply assigns the same object number to the portions of the object.
-The new, unified object may therefore consist of two or more unconnected
-components.""" % globals()
+The new, merged object may therefore consist of two or more unconnected
+components. If you want to add pixels around objects, see
+**ExpandOrShrink** or **Morph**.""" % globals()
         )
 
         self.wants_image = cps.Binary(
@@ -173,7 +176,7 @@ components.""" % globals()
 *(Used only with the "%(OPTION_UNIFY)s" option)*
 
 Select *%(YES)s* to use the objects’ intensity features to determine
-whether two objects should be unified. If you choose to use a grayscale
+whether two objects should be merged. If you choose to use a grayscale
 image, *%(OPTION_UNIFY)s* will unify two objects only if they are
 within the distance you have specified *and* certain criteria about the
 objects within the grayscale image are met.""" % globals())
@@ -200,7 +203,7 @@ described for the method you choose in the next setting.""")
 unification)*
 
 You can use one of two methods to determine whether two objects should
-unified, assuming they meet the distance criteria (as specified
+merged, assuming they meet the distance criteria (as specified
 above):
 
 -  *%(CA_CENTROIDS)s:* When the module considers merging two objects,
@@ -216,11 +219,11 @@ above):
    This method works well for round cells whose maximum intensity is in
    the center of the cell: a single cell that was incorrectly segmented
    into two objects will typically not have a dim line between the
-   centroids of the two halves and will be correctly unified.
+   centroids of the two halves and will be correctly merged.
 -  *%(CA_CLOSEST_POINT)s:* This method is useful for unifying
-   irregularly shaped cells which are connected. It starts by assigning
+   irregularly shaped cells that are connected. It starts by assigning
    background pixels in the vicinity of the objects to the nearest
-   object. Objects are then unified if each object has background pixels
+   object. Objects are then merged if each object has background pixels
    that are:
 
    -  Within a distance threshold from each object;
@@ -228,9 +231,9 @@ above):
    -  Adjacent to background pixels assigned to a neighboring object.
 
    An example of a feature that satisfies the above constraints is a
-   line of pixels that connect two neighboring objects and is roughly
+   line of pixels that connects two neighboring objects and is roughly
    the same intensity as the boundary pixels of both (such as an axon
-   connecting two neurons).""" % globals())
+   connecting two neurons' soma).""" % globals())
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()

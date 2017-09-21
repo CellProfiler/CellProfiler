@@ -1,3 +1,5 @@
+:orphan:
+
 Most laboratories studying biological processes and human disease use
 light/fluorescence microscopes to image cells and other biological
 samples. There is strong and growing demand for software to analyze

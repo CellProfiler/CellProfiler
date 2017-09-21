@@ -5,11 +5,13 @@ MeasureImageSkeleton
 ====================
 
 **MeasureImageSkeleton** measures the number of branches and endpoints in a
-morphological skeleton. You can create a morphological skeleton with the
-**MorphologicalSkeleton** module from the *Advanced* category. You can use
-the output of this module for graph theoretic analysis; you may also use it
-to analyze the number of total branches and  endpoints for branching objects
-(such as neurons) in an image.
+morphological skeleton.
+
+You can create a morphological skeleton with the **MorphologicalSkeleton**
+module from the *Advanced* category. You can use the output of this module
+for graph theoretic analysis; you may also use it to analyze the number of
+total branches and  endpoints for branching objects (such as neurons) in an
+image.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

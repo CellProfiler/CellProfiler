@@ -6,8 +6,8 @@ DisplayHistogram
 
 **DisplayHistogram** plots a histogram of the desired measurement.
 
-A histogram is a plot of tabulated data frequencies (each of which is
-shown as a bar) created by binning measurement data for a set of
+A histogram is a bar plot depicting frequencies of items in each data range.
+Here, each bar's value is created by binning measurement data for a set of
 objects. A two-dimensional histogram can be created using the
 **DisplayDensityPlot** module.
 
@@ -16,6 +16,7 @@ this module can also be run as a Data Tool, in which you will first be
 asked for the output file produced by the analysis run. The resultant
 plot is created from all the measurements collected during the run.
 
+<<<<<<< HEAD
 |
 
 ============ ============
@@ -23,6 +24,13 @@ Supports 2D? Supports 3D?
 ============ ============
 YES          NO
 ============ ============
+=======
+At this time, the display produced when **DisplayHistogram** is run as a
+module cannot be saved in the pipeline (e.g., by using **SaveImages**). The
+display can be saved manually by selecting the window produced by the
+module and clicking the Save icon in its menu bar or by choosing *File
+> Save* from CellProfiler's main menu bar.
+>>>>>>> 34225930e4a89f219d0e7f077d956acbfe780279
 
 See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 """
@@ -103,7 +111,7 @@ the bins of interest are no longer visible.
 ''' % globals())
 
         self.xbounds = cps.FloatRange(
-                'Minimum/maximum values for the X-axis', doc="""Set lower/upper limits for X-axis of the histogram""")
+                'Minimum/maximum values for the X-axis', doc="""Set lower/upper limits for X-axis of the histogram.""")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

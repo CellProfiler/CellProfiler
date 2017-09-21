@@ -5,15 +5,18 @@
 MeasureObjectSkeleton
 =====================
 
-**MeasureObjectSkeleton** measures information for any branching structures, such as neurons, root or branch systems, vasculature, or any skeletonized system that originates from a single point (such as neurites branching from a single nucleus).
+**MeasureObjectSkeleton** measures information for any branching structures,
+such as neurons, root or branch systems, vasculature, or any skeletonized
+system that originates from a single point (such as neurites branching from
+a single nucleus/soma).
 
 This module measures the number of trunks and branches for each branching system
 in an image. The module takes a skeletonized image of the object plus
-previously identified seed objects (for instance, the neuron soma) and
+previously identified seed objects (for instance, each neuron's soma) and
 finds the number of axon or dendrite trunks that emerge from the soma
 and the number of branches along the axons and dendrites. Note that the
-seed objects must be both smaller than, and touching the skeleton in
-order to be counted.
+seed objects must be both smaller than the skeleton, and touching the
+skeleton, in order to be counted.
 
 The typical approach for this module is the following:
 
@@ -31,6 +34,8 @@ and dendrites and assigns branchpoints based on distance to the closest
 seed object when two seed objects appear to be attached to the same
 dendrite or axon.
 
+The module records *vertices* which include trunks, branchpoints, and endpoints.
+
 Note that this module was referred to as MeasureNeurons in previous versions of CellProfiler.
 
 |
@@ -40,6 +45,8 @@ Supports 2D? Supports 3D?
 ============ ============
 YES          NO
 ============ ============
+
+See also **MeasureImageSkeleton**.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -136,13 +143,13 @@ algorithm will fill in any hole whose area is this size or smaller.""")
 
         self.wants_objskeleton_graph = cps.Binary(
                 "Export the skeleton graph relationships?", False, doc="""\
-Select "*%(YES)s*" to produce an edge file and a vertex file that give the
-relationships between trunks, branchpoints and vertices.""" % globals())
+Select "*%(YES)s*" to produce an edge file and a vertex file that gives the
+relationships between vertices (trunks, branchpoints and endpoints).""" % globals())
 
         self.intensity_image_name = cps.ImageNameSubscriber(
                 "Intensity image", cps.NONE, doc="""\
 Select the image to be used to calculate
-the total intensity along the edges between the vertices.""")
+the total intensity along the edges between the vertices (trunks, branchpoints, and endpoints).""")
 
         self.directory = cps.DirectoryPath(
                 "File output directory", doc='Select the directory you want to save the graph relationships to.',
@@ -164,8 +171,8 @@ row is the header; this names the file’s columns. Each subsequent row
 represents a vertex in the skeleton graph: either a trunk, a
 branchpoint or an endpoint. The file has the following columns:
 
--  *image\_number:* The image number of the associated image
--  *vertex\_number:* The number of the vertex within the image
+-  *image\_number:* The image number of the associated image.
+-  *vertex\_number:* The number of the vertex within the image.
 -  *i:* The I coordinate of the vertex.
 -  *j:* The J coordinate of the vertex.
 -  *label:* The label of the seed object associated with the vertex.
@@ -185,11 +192,11 @@ use metadata tags in the file name. Each line of the file is a row of
 comma-separated values. The first row is the header; this names the
 file’s columns. Each subsequent row represents an edge or connection
 between two vertices (including between a vertex and itself for certain
-loops).
+loops). Note that vertices include trunks, branchpoints, and endpoints.
 
 The file has the following columns:
 
--  *image\_number:* The image number of the associated image
+-  *image\_number:* The image number of the associated image.
 -  *v1:* The zero-based index into the vertex table of the first vertex
    in the edge.
 -  *v2:* The zero-based index into the vertex table of the second vertex

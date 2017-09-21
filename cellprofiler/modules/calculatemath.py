@@ -27,6 +27,8 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also **ImageMath**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -45,7 +47,7 @@ Measurements made by this module
       result will be an object measurement.
 
 The result of these calculations is a new measurement in the “Math”
-category. See also all **Measure** modules.
+category.
 """
 
 import logging
@@ -197,7 +199,7 @@ the type of measurement that is requested.""")
         self.operation = cps.Choice(
                 "Operation",
                 O_ALL, doc="""\
-Choose the arithmetic operation would you like to perform. *None* is
+Choose the arithmetic operation you would like to perform. *None* is
 useful if you simply want to select some of the later options in the
 module, such as multiplying or exponentiating your image by a constant.
 """)
@@ -228,7 +230,7 @@ Enter the power by which you would like to raise the result.
 """)
 
         self.final_addend = cps.Float(
-                "Add to the result", 0, doc="""Enter the number you like to add to the result.""")
+                "Add to the result", 0, doc="""Enter the number you would like to add to the result.""")
 
         self.constrain_lower_bound = cps.Binary(
                 "Constrain the result to a lower bound?", False, doc="""Select *%(YES)s* if you want the result to be constrained to a lower bound.""" % globals())

@@ -5,7 +5,7 @@ Morph
 =====
 
 **Morph** performs low-level morphological operations on binary or
-grayscale images
+grayscale images.
 
 This module performs a series of morphological operations on a binary
 image or grayscale image, resulting in an image of the same type. Many
@@ -303,7 +303,7 @@ module. Objects can be converted to binary using the **ConvertToImage**
 module.""")
 
         self.output_image_name = cps.ImageNameProvider(
-                "Name the output image", "MorphBlue", doc="""Enter the name for the output image It will be of the same type as the input image.""")
+                "Name the output image", "MorphBlue", doc="""Enter the name for the output image. It will be of the same type as the input image.""")
 
         self.add_button = cps.DoSomething("",
                                           "Add another operation",
@@ -320,7 +320,7 @@ the operation added by this button.""")
     CUSTOM_REPEATS_DOC = """\
 *(Used only if "Custom" selected)*
 
-Enter the number of times to repeat the operation"""
+Enter the number of times to repeat the operation."""
 
     def add_function(self, can_remove=True):
         group = MorphSettingsGroup()

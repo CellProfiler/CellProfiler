@@ -184,6 +184,17 @@ resized with the same settings as the first image."""))
             ]
 
         return settings
+    
+    def help_settings(self):
+        return super(Resize, self).help_settings() + [
+            self.size_method,
+            self.resizing_factor,
+            self.use_manual_or_image,
+            self.specific_image,
+            self.specific_width,
+            self.specific_height,
+            self.interpolation
+        ]
 
     def visible_settings(self):
         visible_settings = super(Resize, self).visible_settings()

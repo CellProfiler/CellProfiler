@@ -353,6 +353,9 @@ segmentation.
             True,
             doc=u"""\
 Select *{YES:s}* to fill any holes inside objects.
+
+Please note that if an object is located within a hole and this option is 
+enabled, the object will be lost when the hole is filled in.
 """.format(**{
                 "YES": cellprofiler.setting.YES
             })

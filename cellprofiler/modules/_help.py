@@ -226,12 +226,10 @@ def __image_resource(filename):
             "cellprofiler",
             os.path.join("data", "images", filename)
         ))
-    else:
-    #If you're rendering in sphinx, the relative path of the rst file is one below the make file so compensate accordingly
-        return os.path.join('..', '..', os.path.relpath(pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "images", filename)
-        )))
+
+    # Otherwise, we are probably building the documentation in sphinx.
+    # The path separator used by sphinx is "/" on all platforms.
+    return "../images/{}".format(filename)
 
 
 PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")

@@ -15,6 +15,14 @@ measurment modules. If using the *overlapping* style of objects, these
 can be saved as images using **SaveImages** to create a multi-page TIF
 file by specifying “Objects” as the type of image to save.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -44,6 +44,14 @@ computer). It may be preferable instead to import data from individual
 output files directly into a database using **ExportDatabase** as a data
 tool.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **CreateBatchFiles**, **ExportToDatabase**.
 """
 

@@ -57,6 +57,14 @@ For an example pipeline using TrackObjects, see the CellProfiler
 `Examples <http://cellprofiler.org/examples/#Tracking>`__
 webpage.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Available measurements
 ^^^^^^^^^^^^^^^^^^^^^^
 

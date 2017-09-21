@@ -13,6 +13,14 @@ imaged for the same sample. Images can be tiled either across cycles
 (multiple fields of view, for example) or within a cycle (multiple
 channels of the same field of view, for example).
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Tiling images to create a montage with this module generates an image
 that is roughly the size of all the images’ sizes added together. For
 large numbers of images, this may cause memory errors, which might be

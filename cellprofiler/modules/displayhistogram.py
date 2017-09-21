@@ -16,6 +16,14 @@ this module can also be run as a Data Tool, in which you will first be
 asked for the output file produced by the analysis run. The resultant
 plot is created from all the measurements collected during the run.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 """
 

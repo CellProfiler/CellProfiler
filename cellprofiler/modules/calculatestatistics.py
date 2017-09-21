@@ -19,6 +19,14 @@ calculated for all measured values (Intensity, AreaShape, Texture,
 etc.). These measurements can be exported as the “Experiment” set of
 data.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

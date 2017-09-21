@@ -22,6 +22,14 @@ module. If the image has a mask, only unmasked pixels will be measured.
 
 {HELP_ON_MEASURING_INTENSITIES}
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

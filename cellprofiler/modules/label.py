@@ -1,7 +1,17 @@
 # coding=utf-8
 
 """
-<strong>Label</strong>
+Label
+=====
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import mahotas

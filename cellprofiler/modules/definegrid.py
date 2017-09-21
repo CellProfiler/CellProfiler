@@ -23,6 +23,14 @@ the next, this allows the plates to be identified automatically and then
 cropped so that the interior of the plates, upon which the grids will be
 defined, are always in precise alignment with each other.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

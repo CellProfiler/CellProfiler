@@ -24,6 +24,14 @@ IdentifyTertiaryObjects
 cytoplasm) by removing smaller primary objects (e.g., nuclei) from larger
 secondary objects (e.g., cells), leaving a ring shape.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 What is a tertiary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

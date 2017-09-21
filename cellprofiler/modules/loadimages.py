@@ -26,6 +26,14 @@ When used in combination with a **SaveImages** module, you can load
 images in one file format and save them in another, using CellProfiler
 as a file format converter.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Using metadata in LoadImages
 ''''''''''''''''''''''''''''
 

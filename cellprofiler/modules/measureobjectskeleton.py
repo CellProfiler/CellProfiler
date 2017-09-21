@@ -33,6 +33,14 @@ dendrite or axon.
 
 Note that this module was referred to as MeasureNeurons in previous versions of CellProfiler.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

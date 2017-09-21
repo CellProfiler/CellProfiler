@@ -11,6 +11,14 @@ Images are resized (made smaller or larger) based on your input. You can
 resize an image by applying a resizing factor or by specifying the
 desired dimensions, in pixels. You can also select which interpolation
 method to use.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 """
 
 import logging

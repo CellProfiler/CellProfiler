@@ -23,6 +23,14 @@ IdentifySecondaryObjects
 using objects identified by another module (e.g., nuclei) as a starting
 point.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 What is a secondary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

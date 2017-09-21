@@ -33,6 +33,14 @@ measurements desired.
 
 {HELP_ON_MEASURING_INTENSITIES}
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

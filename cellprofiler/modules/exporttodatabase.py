@@ -69,6 +69,14 @@ script to upload to the database.
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **ExportToSpreadsheet**.
 """
 

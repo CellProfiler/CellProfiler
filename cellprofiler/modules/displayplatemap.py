@@ -14,7 +14,15 @@ color-coded according to the measurement chosen.
 As the pipeline runs, the measurement information displayed is updated,
 so the value shown for each well is current up to the image cycle
 currently being processed; wells that have no corresponding
-measurements as yet are shown as blank. 
+measurements as yet are shown as blank.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
 
 See also other **Display** modules and data tools.
 """

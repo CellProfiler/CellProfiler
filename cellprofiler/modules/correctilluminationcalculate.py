@@ -19,6 +19,14 @@ Warning: illumination correction is a challenge to do properly;
 please see the `examples`_ and `tutorials`_ pages on the CellProfiler
 website for further advice.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **CorrectIlluminationApply**, **Smooth**, and
 **EnhanceOrSuppressFeatures**.
 
@@ -258,7 +266,7 @@ time-consuming process, but some methods are faster than others.
    view), this method will produce an image with a bright central region
    and dimmer edges. But, in some cases the peak/trough of the
    polynomial may actually occur outside of the image itself.
--  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:* 
+-  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:*
    We typically recommend
    *%(SM_MEDIAN_FILTER)s* vs. *%(SM_GAUSSIAN_FILTER)s* because the
    median is less sensitive to outliers, although the results are also

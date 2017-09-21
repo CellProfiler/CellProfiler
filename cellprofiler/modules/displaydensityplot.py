@@ -24,6 +24,14 @@ be asked for the output file produced by the analysis run. The
 resulting plot is created from all the measurements collected during
 the run.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **DisplayScatterPlot**, **DisplayHistogram**.
 """
 

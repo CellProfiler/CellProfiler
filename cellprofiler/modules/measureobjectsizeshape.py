@@ -45,10 +45,18 @@ per-object measurements themselves, you will need to use an
 display the object measurements of choice overlaid on an image of
 choice.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Some measurements are available for 3D and 2D objects, while some are 2D
-only. 
+only.
 
 See the *Technical Notes* below for an explanation of a key step
 underlying many of the following metrics: creating an

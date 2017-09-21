@@ -105,6 +105,13 @@ allows for special functionality for some downstream modules:
    CellProfiler-calculated data. This is a convenient way for you to add
    data from your own sources to the files exported by CellProfiler.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
 
 Example CSV file
 ^^^^^^^^^^^^^^^^
@@ -449,7 +456,7 @@ pair of tags.""")
 Select *%(YES)s* if you want to process a subset of the rows in the CSV
 file. In the boxes below, enter the number of the row you want to begin processing
 with in the box on the left. Then, enter the number of the row you want to
-end processing with in the box on the right. Rows are numbered starting at 1 
+end processing with in the box on the right. Rows are numbered starting at 1
 (but do not count the header line). **LoadData** will process up to and including the end row.
 """ % globals())
 

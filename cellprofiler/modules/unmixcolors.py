@@ -27,6 +27,14 @@ enter a custom value. Please note that if you are looking to simply
 split a color image into red, green and blue components, use the
 **ColorToGray** module rather than **UnmixColors**.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Technical notes
 ^^^^^^^^^^^^^^^
 

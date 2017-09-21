@@ -23,6 +23,15 @@ you can choose between setting the flag if all measurements are outside
 the bounds or if one of the measurements is outside of the bounds. This
 module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import logging

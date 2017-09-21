@@ -21,6 +21,14 @@ module. However, old pipelines loaded into CellProfiler that contain
 this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

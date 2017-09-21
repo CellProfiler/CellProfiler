@@ -19,6 +19,14 @@ threshold if you precede it with thresholding performed by
 **Threshold**, and then select the binary image output by
 **Threshold** to be measured by this module.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -21,6 +21,14 @@ Note that the second image (and others following) is always aligned with
 respect to the first image. That is, the X/Y offsets indicate how much
 the second image needs to be shifted by to match the first.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -170,7 +178,7 @@ excluded from analysis. There are three choices for cropping:
         group.append("align_choice",
                      cps.Choice(
  "Select how the alignment is to be applied",
-                             [A_SIMILARLY, A_SEPARATELY], doc="""\                         
+                             [A_SIMILARLY, A_SEPARATELY], doc="""\
 An additional image can either be aligned similarly to the second one or
 a separate alignment to the first image can be calculated:
 
@@ -178,7 +186,7 @@ a separate alignment to the first image can be calculated:
    first two input images are applied to this additional image.
 -  *%(A_SEPARATELY)s:* A new set of alignment measurements are
    calculated for this additional image using the alignment method
-   specified with respect to the first input image.         
+   specified with respect to the first input image.
 """ % globals()))
 
         if can_remove:

@@ -22,7 +22,13 @@ If you want to include child objects that lie outside but still near
 parent objects, you might want to expand the parent objects using
 **ExpandOrShrink** or **IdentifySecondaryObjects**.
 
-This module supports 2D and 3D objects.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

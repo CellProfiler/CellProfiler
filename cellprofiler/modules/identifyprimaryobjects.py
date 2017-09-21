@@ -28,6 +28,14 @@ It requires grayscale images containing bright objects on a dark background.
 Incoming images must be 2D (including 2D slices of 3D images);
 please use the **Watershed** module for identification of objects in 3D.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

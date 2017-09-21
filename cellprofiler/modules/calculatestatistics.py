@@ -25,15 +25,15 @@ What do I need as input?
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Example format for a file to be loaded by **LoadData** for this module:
 
-| **LoadData** loads information from a CSV file. The first line of this
-  file is a header that names the items. Each subsequent line represents
-  data for one image cycle, so your file should have the header line
-  plus one line per image to be processed. You can also make a file for
-  **LoadData** to load that contains the positive/negative control and
-  dose designations *plus* the image file names to be processed, which
-  is a good way to guarantee that images are matched with the correct
-  data. The control and dose information can be designated in one of two
-  ways:
+**LoadData** loads information from a CSV file. The first line of this
+file is a header that names the items. Each subsequent line represents
+data for one image cycle, so your file should have the header line
+plus one line per image to be processed. You can also make a file for
+**LoadData** to load that contains the positive/negative control and
+dose designations *plus* the image file names to be processed, which
+is a good way to guarantee that images are matched with the correct
+data. The control and dose information can be designated in one of two
+ways:
 
 .. _(link): http://dx.doi.org/10.1177/108705719900400206
 .. _Ilya Ravkin: http://www.ravkin.net

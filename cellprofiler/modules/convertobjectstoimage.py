@@ -10,10 +10,7 @@ an image.
 This module allows you to take previously identified objects and convert
 them into an image according to a colormap you select.
 
-*Note on saving images:* This image can be saved with the **SaveImages**
-module. Additionally, you can use the **OverlayOutlines** or **OverlayObjects**
-module to overlay outlines or objects, respectively, on a base image.
-The resulting image can also be saved with the **SaveImages** module.
+*Note on saving images:* The image can be saved with the **SaveImages** module.
 """
 
 import centrosome.cpmorphology

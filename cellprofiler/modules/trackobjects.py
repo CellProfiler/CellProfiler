@@ -15,6 +15,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
+import _help
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -182,8 +183,9 @@ See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
 .. |TO_image1| image:: {PROTIP_RECOMEND_ICON}
 .. |TO_image2| image:: {PROTIP_RECOMEND_ICON}
 """.format(**{
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
-                })
+    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'

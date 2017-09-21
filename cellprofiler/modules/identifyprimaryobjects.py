@@ -3,7 +3,6 @@
 import cellprofiler.gui.help
 
 import math
-
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate
@@ -12,12 +11,20 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
-
 import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
-import _help
 import threshold
+
+import numpy as np
+
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import _help
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -127,12 +134,7 @@ following panels:
    in order to produce the objects shown. Some of these are as you
    specified in settings; others are calculated by the module itself.
 
-*Note on saving images:* You can pass the modified objects along to the
-*Object Processing* module **ConvertObjectsToImage** to create an image.
-This image can be saved with the **SaveImages** module. Additionally,
-you can use the **OverlayOutlines** or **OverlayObjects** module to
-overlay outlines or objects, respectively, on a base image.
-The resulting image can also be saved with the **SaveImages** module.
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -214,6 +216,7 @@ See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
 
 

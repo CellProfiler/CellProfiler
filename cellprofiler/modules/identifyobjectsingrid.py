@@ -1,6 +1,16 @@
 # coding=utf-8
 
-"""
+import numpy as np
+
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import _help
+
+__doc__ = """\
 IdentifyObjectsInGrid
 =====================
 
@@ -22,12 +32,7 @@ together to fit the proper sized circles, for example) the grid will
 fail and processing will be canceled unless you choose to re-use a grid
 from a previous successful image cycle.
 
-*Note on saving images:* You can pass the modified objects along to the
-*Object Processing* module **ConvertObjectsToImage** to create an image.
-This image can be saved with the **SaveImages** module. Additionally,
-you can use the **OverlayOutlines** or **OverlayObjects** module to
-overlay outlines or objects, respectively, on a base image.
-The resulting image can also be saved with the **SaveImages** module.
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -44,7 +49,9 @@ Measurements made by this module
    according to the arrangement order you specified.
 
 See also **DefineGrid**.
-"""
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel

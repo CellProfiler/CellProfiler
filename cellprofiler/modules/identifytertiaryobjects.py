@@ -65,19 +65,13 @@ the measurements that are produced by this module.
 Note that if the smaller objects are not completely contained within the
 larger objects, creating subregions using this module can result in objects
 with a single label (that is, identity) that nonetheless are not contiguous.
-This may lead
-to unexpected results when running measurement modules such as
+This may lead to unexpected results when running measurement modules such as
 **MeasureObjectSizeShape** because calculations of the perimeter, aspect
 ratio, solidity, etc. typically make sense only for contiguous objects.
 Other modules, such as **MeasureImageIntensity**, are not affected and
 will yield expected results.
 
-*Note on saving images:* You can pass the modified objects along to the
-*Object Processing* module **ConvertObjectsToImage** to create an image.
-This image can be saved with the **SaveImages** module. Additionally,
-you can use the **OverlayOutlines** or **OverlayObjects** module to
-overlay outlines or objects, respectively, on a base image.
-The resulting image can also be saved with the **SaveImages** module.
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -97,7 +91,8 @@ Measurements made by this module
 See also **IdentifyPrimaryObjects** and **IdentifySecondaryObjects**
 modules.
 """.format(**{
-    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT
+    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
 
 '''The parent object relationship points to the secondary / larger objects'''

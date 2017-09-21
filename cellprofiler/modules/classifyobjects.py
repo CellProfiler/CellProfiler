@@ -10,7 +10,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import _help
 
-__doc__ = """
+__doc__ = """\
 ClassifyObjects
 ===============
 

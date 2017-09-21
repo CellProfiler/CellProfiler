@@ -4,13 +4,16 @@
 Resize
 ======
 
-**Resize** resizes images (changes their resolution). This module is
-compatible with 2D and 3D/volumetric images.
+**Resize** resizes images (changes their resolution).
+
+This module is compatible with 2D and 3D/volumetric images.
 
 Images are resized (made smaller or larger) based on your input. You can
 resize an image by applying a resizing factor or by specifying the
 desired dimensions, in pixels. You can also select which interpolation
 method to use.
+
+See also **Crop**.
 """
 
 import logging
@@ -55,7 +58,7 @@ class Resize(cellprofiler.module.ImageProcessing):
 The following options are available:
 
 -  *Resize by a fraction or multiple of the original size:* Enter a single value which specifies the scaling.
--  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image.""")
+-  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image, in units of pixels.""")
 
         self.resizing_factor = cellprofiler.setting.Float(
             "Resizing factor",
@@ -181,6 +184,17 @@ resized with the same settings as the first image."""))
             ]
 
         return settings
+    
+    def help_settings(self):
+        return super(Resize, self).help_settings() + [
+            self.size_method,
+            self.resizing_factor,
+            self.use_manual_or_image,
+            self.specific_image,
+            self.specific_width,
+            self.specific_height,
+            self.interpolation
+        ]
 
     def visible_settings(self):
         visible_settings = super(Resize, self).visible_settings()

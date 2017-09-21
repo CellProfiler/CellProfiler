@@ -2,6 +2,7 @@ import StringIO
 import unittest
 
 import numpy
+import numpy.random
 import scipy.ndimage
 
 import cellprofiler.image
@@ -166,7 +167,7 @@ MeasureImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.max_points, 101)
         self.assertTrue(module.penalize_missing)
 
-    def make_workspace(self, ground_truth, test):
+    def make_workspace(self, ground_truth, test, dimensions=2):
         '''Make a workspace with a ground-truth image and a test image
 
         ground_truth and test are dictionaries with the following keys:
@@ -196,9 +197,12 @@ MeasureImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
 
         for name, d in ((GROUND_TRUTH_IMAGE_NAME, ground_truth),
                         (TEST_IMAGE_NAME, test)):
-            image = cellprofiler.image.Image(d["image"],
-                                             mask=d.get("mask"),
-                                             crop_mask=d.get("crop_mask"))
+            image = cellprofiler.image.Image(
+                d["image"],
+                mask=d.get("mask"),
+                crop_mask=d.get("crop_mask"),
+                dimensions=dimensions
+            )
             image_set.add(name, image)
 
         workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
@@ -895,3 +899,24 @@ MeasureImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
             module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE)]
         self.assertGreater(emd, numpy.sum(image1) * 3)
         self.assertLess(emd, numpy.sum(image1) * 6)
+
+    def test_3D_perfect_overlap(self):  # All tests start with test_, what follows is usually a short description of the test.
+        # Define an image
+        image_data = numpy.random.rand(10, 100, 100) >= 0.5
+
+        workspace, module = self.make_workspace(
+            ground_truth={
+                "image": image_data
+            },
+            test={
+                "image": image_data
+            },
+            dimensions=3
+        )
+
+        module.run(workspace)
+
+        # Assuming that succeeds (it probably won't right now) we make assertions.
+        measurements = workspace.measurements
+
+        module.measurement_name(cellprofiler.modules.meas.C_IMAGE_OVERLAP)

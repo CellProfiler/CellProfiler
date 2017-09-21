@@ -361,7 +361,6 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         test_image = image_set.get_image(self.test_img.value, must_be_binary=True)
 
-
         ground_truth_pixels = ground_truth_image.pixel_data
 
         ground_truth_pixels = test_image.crop_image_similarly(ground_truth_pixels)
@@ -374,6 +373,16 @@ the two images. Set this setting to “No” to assess no penalty."""
             mask = mask & test_image.mask
 
         test_pixels = test_image.pixel_data
+
+# ==============================================================================================
+# CP pipelines are either all 2D or all 3D, only need to check this image
+        if ground_truth_image.volumetric:
+            ground_truth_pixels = ground_truth_pixels.reshape(-1, ground_truth_pixels.shape[-1])
+
+            mask = mask.reshape(-1, mask.shape[-1])
+
+            test_pixels = test_pixels.reshape(-1, test_pixels.shape[-1])
+# ==============================================================================================
 
         false_positives = test_pixels & ~ground_truth_pixels
 

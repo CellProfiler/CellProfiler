@@ -27,8 +27,8 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
-xcopy "..\cellprofiler\data\help" "source\help" /s/k/f/i
-xcopy "..\cellprofiler\data\images" "source\images" /s/k/f/i
+xcopy "..\cellprofiler\data\help" "source\help" /s /k /f /i /y
+xcopy "..\cellprofiler\data\images" "source\images" /s /k /f /i /y
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 goto end
 

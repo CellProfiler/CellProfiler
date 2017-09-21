@@ -38,7 +38,7 @@ packages useful:
 -  `Autostitch`_
 -  `ImageJ with the MosaicJ plugin`_
 
-Other packages are referenced `here`_
+Other packages are referenced `here`_.
 
 .. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
 .. _PTGui: http://www.ptgui.com/

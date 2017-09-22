@@ -253,7 +253,8 @@ secondary objects that touch each other:
       limited to a certain distance away from the edge of the primary
       objects without including regions of background.
 
-**References**
+References
+^^^^^^^^^^
 
 Jones TR, Carpenter AE, Golland P (2005) “Voronoi-Based Segmentation of
 Cells on Image Manifolds”, *ICCV Workshop on Computer Vision for

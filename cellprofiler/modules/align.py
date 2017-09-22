@@ -39,7 +39,8 @@ Measurements made by this module
 -  *Xshift, Yshift:* The pixel shift in X and Y of the aligned image
    with respect to the original image.
 
-**References**
+References
+^^^^^^^^^^
 
 -  Lewis JP. (1995) “Fast normalized cross-correlation.” *Vision
    Interface*, 1-7.

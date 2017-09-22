@@ -30,7 +30,9 @@ YES          NO
 See also **CorrectIlluminationApply**, **Smooth**, and
 **EnhanceOrSuppressFeatures**.
 
-**References**
+References
+^^^^^^^^^^
+
 -  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
 of intensity nonuniformities in 2D and 3D microscope images of fluorescence
 stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis

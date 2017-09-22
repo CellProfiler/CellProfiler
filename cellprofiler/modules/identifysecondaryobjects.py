@@ -23,6 +23,16 @@ IdentifySecondaryObjects
 using objects identified by another module (e.g., nuclei) as a starting
 point.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also the other **Identify** modules.
+
 What is a secondary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -111,9 +121,6 @@ modules might be needed):
    as well as those calculated by the module in order to produce
    the objects shown.
 
-See the section "Measurements made by this module" below for the measurements
-that are produced by this module.
-
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -137,7 +144,6 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified secondary objects.
 
-See also the other **Identify** modules.
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
 })
@@ -247,7 +253,8 @@ secondary objects that touch each other:
       limited to a certain distance away from the edge of the primary
       objects without including regions of background.
 
-**References**
+References
+^^^^^^^^^^
 
 Jones TR, Carpenter AE, Golland P (2005) “Voronoi-Based Segmentation of
 Cells on Image Manifolds”, *ICCV Workshop on Computer Vision for
@@ -354,7 +361,7 @@ segmentation.
             doc=u"""\
 Select *{YES:s}* to fill any holes inside objects.
 
-Please note that if an object is located within a hole and this option is 
+Please note that if an object is located within a hole and this option is
 enabled, the object will be lost when the hole is filled in.
 """.format(**{
                 "YES": cellprofiler.setting.YES

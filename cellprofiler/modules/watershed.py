@@ -12,6 +12,14 @@ Note, when using marker-based **Watershed** that it is typical to use the input 
 as the mask. Otherwise, if the mask is *None*, the background will be interpreted as an object
 and **Watershed** may yield unexpected results.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 .. _scikit-image documentation: http://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
 """
 
@@ -50,7 +58,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             "Distance",
             doc="""\
 Select a method of inputs for the watershed algorithm:
-            
+
 -  *Distance* (default): This is classical nuclei segmentation using
    watershed. Your “Input” image should be a binary image. Markers and
    other inputs for the watershed algorithm will be automatically
@@ -97,7 +105,7 @@ information.
 
         self.downsample = cellprofiler.setting.Integer(
             doc="""\
-Downsample an n-dimensional image by local averaging. If the downsampling factor is 1, 
+Downsample an n-dimensional image by local averaging. If the downsampling factor is 1,
 the image is not downsampled.
 """,
             minval=1,

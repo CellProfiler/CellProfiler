@@ -33,6 +33,16 @@ measurements desired.
 
 {HELP_ON_MEASURING_INTENSITIES}
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also **NamesAndTypes**, **MeasureImageIntensity**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -68,7 +78,6 @@ Measurements made by this module
    (X,Y) coordinates of the pixel with the maximum intensity within the
    object.
 
-See also **NamesAndTypes**, **MeasureImageIntensity**.
 """.format(**{
     "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
 })

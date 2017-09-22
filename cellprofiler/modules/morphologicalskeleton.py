@@ -1,7 +1,19 @@
 # coding=utf-8
 
 """
-Morphological skeleton thins an image into a single-pixel wide skeleton.
+MorphologicalSkeleton
+=====================
+
+**MorphologicalSkeleton** thins an image into a single-pixel wide skeleton.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import cellprofiler.image

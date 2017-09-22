@@ -44,6 +44,14 @@ measurements. For a color image, the red, green and blue channels are
 averaged to yield a grayscale image. The intensity measurements are then
 made on that grayscale image.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

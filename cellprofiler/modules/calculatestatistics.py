@@ -19,6 +19,14 @@ calculated for all measured values (Intensity, AreaShape, Texture,
 etc.) upstream in the pipeline. The statistics calculated by this module
 can be exported as the “Experiment” set of data.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **CalculateMath**.
 
 What do I need as input?
@@ -237,7 +245,7 @@ You will be asked for information on how to save the plots.''' % globals()))
 CellProfiler will create a file name by appending the measurement name
 to the prefix you enter here. For instance, if you specify a prefix
 of “Dose\_”, when saving a file related to objects you have chosen (for
-example, *Cells*) and a particular measurement (for example, *AreaShape_Area*), 
+example, *Cells*) and a particular measurement (for example, *AreaShape_Area*),
 CellProfiler will save the figure as *Dose_Cells_AreaShape_Area.m*.
 Leave this setting blank if you do not want a prefix.
 '''

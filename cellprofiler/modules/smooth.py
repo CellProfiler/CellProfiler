@@ -9,6 +9,14 @@ Smooth
 This module allows you to smooth (blur) images, which can be helpful to
 remove small artifacts. Note that smoothing can be a time-consuming process.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also several related modules in the *Advanced* category (e.g.,
 **MedianFilter** and **GaussianFilter**).
 """

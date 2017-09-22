@@ -26,6 +26,14 @@ the shortest dead worm to be detected. The width is the distance in
 pixels along the short axis of the diamond and should be less than the
 width of the worm.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 References
 ^^^^^^^^^^
 

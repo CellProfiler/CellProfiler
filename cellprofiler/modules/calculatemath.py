@@ -19,8 +19,16 @@ intensity in the image) or on an object-by-object basis (for example,
 dividing the intensity in the nucleus by the intensity in the cytoplasm
 for each cell).
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **ImageMath**.
- 
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

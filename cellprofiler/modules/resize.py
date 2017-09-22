@@ -13,6 +13,14 @@ resize an image by applying a resizing factor or by specifying the
 desired dimensions, in pixels. You can also select which interpolation
 method to use.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 See also **Crop**.
 """
 
@@ -184,7 +192,7 @@ resized with the same settings as the first image."""))
             ]
 
         return settings
-    
+
     def help_settings(self):
         return super(Resize, self).help_settings() + [
             self.size_method,

@@ -47,6 +47,14 @@ module (and/or has had metadata associated with the images using the
 meaningful name by which modules in the analysis pipeline will refer to
 it.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 What is an “image set”?
 ^^^^^^^^^^^^^^^^^^^^^^^
 

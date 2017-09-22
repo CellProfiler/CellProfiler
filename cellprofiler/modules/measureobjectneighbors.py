@@ -15,6 +15,14 @@ the distance within which objects should be considered neighbors, or
 that objects are only considered neighbors if they are directly
 touching.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

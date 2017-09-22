@@ -45,6 +45,15 @@ Other packages are referenced `here`_.
 .. _Autostitch: http://matthewalunbrown.com/autostitch/autostitch.html
 .. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/
 .. _here: http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import logging

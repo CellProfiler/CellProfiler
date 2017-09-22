@@ -12,6 +12,14 @@ in a red, green, blue (RGB) image or a cyan, magenta, yellow, black
 (CMYK) image. Each color’s brightness can be adjusted independently by
 using relative weights.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **ColorToGray** and **InvertForPrinting**.
 """
 

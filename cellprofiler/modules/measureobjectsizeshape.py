@@ -45,10 +45,20 @@ per-object measurements themselves, you will need to use an
 display the object measurements of choice overlaid on an image of
 choice.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also **MeasureImageAreaOccupied**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Some measurements are available for 3D and 2D objects, while some are 2D
-only. 
+only.
 
 See the *Technical Notes* below for an explanation of a key step
 underlying many of the following metrics: creating an
@@ -147,8 +157,6 @@ References
 -  Chrystal P (1885), “On the problem to construct the minimum circle
    enclosing n given points in a plane”, *Proceedings of the Edinburgh
    Mathematical Society*, vol 3, p. 30
-
-See also **MeasureImageAreaOccupied**.
 
 .. _(pdf): http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
 .. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49

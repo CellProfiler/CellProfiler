@@ -1,7 +1,18 @@
 # coding=utf-8
 
 """
+Dilation
+========
+
 **Dilation** expands shapes in an image.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 """
 
 import numpy

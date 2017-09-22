@@ -25,11 +25,25 @@ This module does not perform warping or rotation, it simply shifts images
 in X and Y. For more complex registration tasks, you might preprocess
 images using a plugin for that purpose in FIJI/ImageJ.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Xshift, Yshift:* The pixel shift in X and Y of the aligned image
    with respect to the original image.
+
+References
+^^^^^^^^^^
+
+-  Lewis JP. (1995) “Fast normalized cross-correlation.” *Vision
+   Interface*, 1-7.
 """
 
 import numpy as np
@@ -114,10 +128,6 @@ Two options for the alignment method are available:
    relevant features in the images to be aligned all have varying
    degrees of brightness.
 
-**References**
-
--  Lewis JP. (1995) “Fast normalized cross-correlation.” *Vision
-   Interface*, 1-7.
 """ % globals())
 
         self.crop_mode = cps.Choice(
@@ -174,7 +184,7 @@ excluded from analysis. There are three choices for cropping:
         group.append("align_choice",
                      cps.Choice(
  "Select how the alignment is to be applied",
-                             [A_SIMILARLY, A_SEPARATELY], doc="""\                         
+                             [A_SIMILARLY, A_SEPARATELY], doc="""\
 An additional image can either be aligned similarly to the second one or
 a separate alignment to the first image can be calculated:
 
@@ -182,7 +192,7 @@ a separate alignment to the first image can be calculated:
    first two input images are applied to this additional image.
 -  *%(A_SEPARATELY)s:* A new set of alignment measurements are
    calculated for this additional image using the alignment method
-   specified with respect to the first input image.         
+   specified with respect to the first input image.
 """ % globals()))
 
         if can_remove:

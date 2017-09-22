@@ -12,6 +12,15 @@ The filename for an exported image is formatted as "{object name}_{label index}_
 is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting
 from 1), and *timestamp* is the time at which the image was saved (this prevents accidentally overwriting a previously
 exported image).
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import numpy

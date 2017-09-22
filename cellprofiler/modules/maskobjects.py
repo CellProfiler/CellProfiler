@@ -20,6 +20,14 @@ object that is outside of the region, remove the whole object if it is
 partially or fully outside of the region, or retain the whole object
 unless it is fully outside of the region.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

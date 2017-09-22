@@ -11,6 +11,14 @@ This module will convert the measurements to a comma-, tab-, or other
 character-delimited text format and save them to the hard drive in one
 or several files, as requested.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Using metadata tags for output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -18,7 +18,13 @@ texture combinations that are unnecessary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
-This module can be used both on 2D and volumetric images.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

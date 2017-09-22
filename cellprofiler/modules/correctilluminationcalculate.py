@@ -19,8 +19,24 @@ Warning: illumination correction is a challenge to do properly;
 please see the `examples`_ and `tutorials`_ pages on the CellProfiler
 website for further advice.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **CorrectIlluminationApply**, **Smooth**, and
 **EnhanceOrSuppressFeatures**.
+
+References
+^^^^^^^^^^
+
+-  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
+of intensity nonuniformities in 2D and 3D microscope images of fluorescence
+stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
+(SCIA), pp. 264-271
 
 .. _examples: http://www.cellprofiler.org/examples.html
 .. _tutorials: http://cellprofiler.org/tutorials.html
@@ -258,7 +274,7 @@ time-consuming process, but some methods are faster than others.
    view), this method will produce an image with a bright central region
    and dimmer edges. But, in some cases the peak/trough of the
    polynomial may actually occur outside of the image itself.
--  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:* 
+-  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:*
    We typically recommend
    *%(SM_MEDIAN_FILTER)s* vs. *%(SM_GAUSSIAN_FILTER)s* because the
    median is less sensitive to outliers, although the results are also
@@ -294,12 +310,6 @@ time-consuming process, but some methods are faster than others.
       -  Find the convex hull that encloses those pixels
       -  Set the intensity of the output image within the convex hull to
          the current intensity
-
-**References**
--  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
-of intensity nonuniformities in 2D and 3D microscope images of fluorescence
-stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
-(SCIA), pp. 264-271
 """ % globals())
 
         self.automatic_object_width = cps.Choice(

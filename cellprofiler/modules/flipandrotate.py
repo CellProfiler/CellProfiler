@@ -6,6 +6,14 @@ FlipAndRotate
 
 **FlipAndRotate** flips (mirror image) and/or rotates an image
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -21,6 +21,14 @@ object set, and hence do not inherit the measurements associated with
 the original objects. Any measurements on the new object set will need
 to be made post-filtering by the desired measurement modules.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 See also any of the **MeasureObject** modules, **MeasureTexture**,
 **MeasureColocalization**, and **CalculateMath**.
 

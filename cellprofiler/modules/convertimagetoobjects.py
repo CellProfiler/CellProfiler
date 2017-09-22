@@ -1,10 +1,10 @@
 # coding=utf-8
 
 """
-ConvertObjectsToImage
+ConvertImageToObjects
 =====================
 
-**ConvertObjectsToImage** converts a binary image to objects. Connected components of the binary image are assigned to
+**ConvertImageToObjects** converts a binary image to objects. Connected components of the binary image are assigned to
 the same object. This module is useful for identifying objects that can be cleanly distinguished using **Threshold**.
 If you wish to distinguish clumped objects, see **Watershed** or the **Identify** modules.
 
@@ -13,7 +13,14 @@ below or equal to 50% of the input's full intensity range are assigned to the ba
 Pixel intensities above 50% of the input's full intensity range are assigned to the foreground (i.e., assigned the
 value 1).
 
-**ConvertObjectsToImage** supports 2D and 3D images.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 """
 
 import skimage

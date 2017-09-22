@@ -33,6 +33,14 @@ a value of False for all bins. However, they are still counted in the
 total number of objects and hence are reflected in the classification
 percentages.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

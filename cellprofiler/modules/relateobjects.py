@@ -22,7 +22,15 @@ If you want to include child objects that lie outside but still near
 parent objects, you might want to expand the parent objects using
 **ExpandOrShrink** or **IdentifySecondaryObjects**.
 
-This module supports 2D and 3D objects.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also: **SplitOrMergeObjects**, **MaskObjects**.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -40,7 +48,6 @@ Measurements made by this module
 -  *Distances:* The distance of each child object to its respective
    parent.
 
-See also: **SplitOrMergeObjects**, **MaskObjects**.
 """
 
 import re

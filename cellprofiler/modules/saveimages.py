@@ -17,6 +17,14 @@ This allows you to use the module as a file format converter, by loading
 files in their original format and then saving them in an alternate
 format.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 See also **NamesAndTypes**.
 """
 

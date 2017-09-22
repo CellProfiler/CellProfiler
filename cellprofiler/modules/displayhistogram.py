@@ -22,6 +22,14 @@ display can be saved manually by selecting the window produced by the
 module and clicking the Save icon in its menu bar or by choosing *File
 > Save* from CellProfiler's main menu bar.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 """
 

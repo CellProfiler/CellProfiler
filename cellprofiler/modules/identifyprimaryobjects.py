@@ -36,6 +36,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
+**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
+
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -209,9 +212,6 @@ References
 
 .. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
 .. _tutorial: http://blog.cellprofiler.org/2017/01/19/cellprofiler-ilastik-superpowered-segmentation/
-
-See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
-**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,

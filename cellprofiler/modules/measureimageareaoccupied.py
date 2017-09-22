@@ -27,6 +27,9 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
+See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
+**IdentifyTertiaryObjects**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -37,8 +40,6 @@ Measurements made by this module
 -  *TotalImageArea:* The total pixel area of the image that was
    subjected to measurement, excluding masked regions.
 
-See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
-**IdentifyTertiaryObjects**.
 """
 
 import numpy

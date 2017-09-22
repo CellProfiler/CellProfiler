@@ -34,6 +34,10 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also the **Input** modules (**Images**, **NamesAndTypes**,
+**MetaData**, **Groups**), **LoadData**, **LoadSingleImage**,
+and **SaveImages**.
+
 Using metadata in LoadImages
 ''''''''''''''''''''''''''''
 
@@ -56,9 +60,6 @@ Measurements made by this module
 -  *Scaling:* The maximum possible intensity value for the image format.
 -  *Height, Width:* The height and width of the current image.
 
-See also the **Input** modules (**Images**, **NamesAndTypes**,
-**MetaData**, **Groups**), **LoadData**, **LoadSingleImage**,
-and **SaveImages**.
 """
 
 import cgi

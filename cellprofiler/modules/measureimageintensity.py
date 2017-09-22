@@ -30,6 +30,8 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
+See also **MeasureObjectIntensity**, **MaskImage**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -48,7 +50,6 @@ Measurements made by this module
 -  *TotalArea:* Number of pixels measured, e.g., the area of the image
    excluding masked regions.
 
-See also **MeasureObjectIntensity**, **MaskImage**.
 """.format(**{
     "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
 })

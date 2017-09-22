@@ -16,15 +16,6 @@ instance, the dilate operation will only consider unmasked pixels in the
 neighborhood of a pixel when determining the maximum within that
 neighborhood.
 
-|
-
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
-
-
 The following operations are available:
 
 .. list-table::
@@ -237,6 +228,15 @@ The following operations are available:
       +---+---+---+----------------+---+---+---+
 
     - Binary
+
+    |
+
+    ============ ============
+    Supports 2D? Supports 3D?
+    ============ ============
+    YES          NO
+    ============ ============
+
 """
 
 import logging

@@ -30,6 +30,12 @@ YES          NO
 See also **CorrectIlluminationApply**, **Smooth**, and
 **EnhanceOrSuppressFeatures**.
 
+**References**
+-  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
+of intensity nonuniformities in 2D and 3D microscope images of fluorescence
+stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
+(SCIA), pp. 264-271
+
 .. _examples: http://www.cellprofiler.org/examples.html
 .. _tutorials: http://cellprofiler.org/tutorials.html
 """
@@ -302,12 +308,6 @@ time-consuming process, but some methods are faster than others.
       -  Find the convex hull that encloses those pixels
       -  Set the intensity of the output image within the convex hull to
          the current intensity
-
-**References**
--  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
-of intensity nonuniformities in 2D and 3D microscope images of fluorescence
-stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
-(SCIA), pp. 264-271
 """ % globals())
 
         self.automatic_object_width = cps.Choice(

@@ -65,8 +65,11 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
+**Groups**.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements**
 
@@ -175,9 +178,6 @@ tracking method:
    resulted from a split from a parent object in the previous frame.
 -  *MergedObjectCount:* Number of objects in the current frame that
    resulted from the merging of child objects in the previous frame.
-
-See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
-**Groups**.
 
 .. |TO_image0| image:: {PROTIP_RECOMEND_ICON}
 .. |TO_image1| image:: {PROTIP_RECOMEND_ICON}

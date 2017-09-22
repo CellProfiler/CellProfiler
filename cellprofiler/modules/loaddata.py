@@ -113,6 +113,10 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also the **Input** modules (i.e., **Images**, **Metadata**,
+**NamesAndTypes** and **Groups**), **LoadImages** and
+**CalculateStatistics**.
+
 Example CSV file
 ^^^^^^^^^^^^^^^^
 
@@ -190,10 +194,6 @@ Measurements made by this module
 -  *Scaling:* The maximum possible intensity value for the image format.
 -  *Height, Width:* The height and width of images loaded by this module.
 -  Any additional per-image data loaded from the input file you provided.
-
-See also the **Input** modules (i.e., **Images**, **Metadata**,
-**NamesAndTypes** and **Groups**), **LoadImages** and
-**CalculateStatistics**.
 
 .. _MetaXpress: http://www.moleculardevices.com/systems/high-content-imaging/metaxpress-high-content-image-acquisition-and-analysis-software
 .. _KNIME: https://www.knime.com/about

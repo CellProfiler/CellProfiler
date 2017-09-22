@@ -27,6 +27,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **CorrectIlluminationApply**, **Smooth**, and
 **EnhanceOrSuppressFeatures**.
 

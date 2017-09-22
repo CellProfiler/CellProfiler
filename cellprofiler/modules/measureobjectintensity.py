@@ -41,6 +41,9 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **NamesAndTypes**, **MeasureImageIntensity**.
 
 Measurements made by this module

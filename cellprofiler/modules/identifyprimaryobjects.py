@@ -36,6 +36,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
 **IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
@@ -113,7 +116,7 @@ What do I get as output?
 
 A set of primary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations. See
-the section `"Available measurements" <#Available_measurements>`__ below
+the section `"Measurements made by this module" <#Measurements_made_by_thismodule>`__ below
 for the measurements that are produced directly by this module. Once the module
 has finished processing, the module display window will show the
 following panels:

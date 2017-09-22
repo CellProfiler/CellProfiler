@@ -46,6 +46,9 @@ References
    for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
    714-716. `(link) <http://dx.doi.org/10.1038/nmeth.1984>`__
 
+See also
+^^^^^^^^
+
 See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
 well as video tutorials.
 

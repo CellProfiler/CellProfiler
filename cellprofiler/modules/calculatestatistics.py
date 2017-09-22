@@ -5,7 +5,7 @@ CalculateStatistics
 ===================
 
 **CalculateStatistics** calculates measures of assay quality (V and Z’
-factors) and dose response data (EC50) for all measured features made
+factors) and dose-response data (EC50) for all measured features made
 from images.
 
 The V and Z’ factors are statistical measures of assay quality and are
@@ -13,11 +13,51 @@ calculated for each per-image measurement and for each average
 per-object measurement that you have made in the pipeline. Placing this
 module at the end of a pipeline in order to calculate these values
 allows you to identify which measured features are most powerful for
-distinguishing positive and negative control samples, or for accurately
-quantifying the assay’s response to dose. These measurements will be
+distinguishing positive and negative control samples (Z' factor), or for accurately
+quantifying the assay’s response to dose (V factor). These measurements will be
 calculated for all measured values (Intensity, AreaShape, Texture,
-etc.). These measurements can be exported as the “Experiment” set of
-data.
+etc.) upstream in the pipeline. The statistics calculated by this module
+can be exported as the “Experiment” set of data.
+
+See also **CalculateMath**.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+Example format for a file to be loaded by **LoadData** for this module:
+
+**LoadData** loads information from a CSV file. The first line of this
+file is a header that names the items. Each subsequent line represents
+data for one image cycle, so your file should have the header line
+plus one line per image to be processed. You can also make a file for
+**LoadData** to load that contains the positive/negative control and
+dose designations *plus* the image file names to be processed, which
+is a good way to guarantee that images are matched with the correct
+data. The control and dose information can be designated in one of two
+ways:
+
+.. _(link): http://dx.doi.org/10.1177/108705719900400206
+.. _Ilya Ravkin: http://www.ravkin.net
+
+-  As metadata (so that the column header is prefixed with the
+   “Metadata\_” tag). “Metadata” is the category and the name after the
+   underscore is the measurement.
+-  As some other type of data, in which case the header needs to be of
+   the form *<prefix>\_<measurement>*. Select *<prefix>* as the category
+   and *<measurement>* as the measurement.
+
+Here is an example file:
+
++-------------------------+-------------------------+------------------+--------------+
+| Image\_FileName\_CY3,   | Image\_PathName\_CY3,   | Data\_Control,   | Data\_Dose   |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A01.tif”,      | “/images”,              | -1,              | 0            |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A02.tif”,      | “/images”,              | 1,               | 1E10         |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A03.tif”,      | “/images”,              | 0,               | 3E4          |
++-------------------------+-------------------------+------------------+--------------+
+| “Plate1\_A04.tif”,      | “/images”,              | 0,               | 5E5          |
++-------------------------+-------------------------+------------------+--------------+
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,8 +81,8 @@ Measurements made by this module
       μ\ :sub:`n`\ \| where σ are the standard deviations of the data,
       and μ\ :sub:`p` and μ\ :sub:`n` are defined as above.
    -  *EC50:* The half maximal effective concentration (EC50) is the
-      concentration of a treatment required to induce a response which
-      is 50%% of the maximal response.
+      concentration of a treatment required to induce a response that
+      is 50% of the maximal response.
    -  *OneTailedZfactor:* This measure is an attempt to overcome a
       limitation of the original Z’-factor formulation (it assumes a
       Gaussian distribution) and is informative for populations with
@@ -74,7 +114,7 @@ cytoplasm compartments per cell, which is always equal to 1.
 
 This module can create MATLAB scripts that display the EC50 curves for
 each measurement. These scripts will require MATLAB and the statistics
-toolbox in order to run. See *Create dose/response plots?* below.
+toolbox in order to run. See *Create dose-response plots?* below.
 
 References
 ^^^^^^^^^^
@@ -88,45 +128,6 @@ References
 -  Code for the calculation of Z’ and V factors was kindly donated by
    `Ilya Ravkin`_. Carlos Evangelista donated his copyrighted
    dose-response-related code.
-
-| *Example format for a file to be loaded by **LoadData** for this
-  module:*
-| **LoadData** loads information from a CSV file. The first line of this
-  file is a header that names the items. Each subsequent line represents
-  data for one image cycle, so your file should have the header line
-  plus one line per image to be processed. You can also make a file for
-  **LoadData** to load that contains the positive/negative control and
-  dose designations *plus* the image file names to be processed, which
-  is a good way to guarantee that images are matched with the correct
-  data. The control and dose information can be designated in one of two
-  ways:
-
-.. _(link): http://dx.doi.org/10.1177/108705719900400206
-.. _Ilya Ravkin: http://www.ravkin.net
-
--  As metadata (so that the column header is prefixed with the
-   “Metadata\_” tag). “Metadata” is the category and the name after the
-   underscore is the measurement.
--  As some other type of data, in which case the header needs to be of
-   the form *<prefix>\_<measurement>*. Select *<prefix>* as the category
-   and *<measurement>* as the measurement.
-
-Here is an example file:
-
-+-------------------------+-------------------------+------------------+--------------+
-| Image\_FileName\_CY3,   | Image\_PathName\_CY3,   | Data\_Control,   | Data\_Dose   |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A01.tif”,      | “/images”,              | -1,              | 0            |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A02.tif”,      | “/images”,              | 1,               | 1E10         |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A03.tif”,      | “/images”,              | 0,               | 3E4          |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A04.tif”,      | “/images”,              | 0,               | 5E5          |
-+-------------------------+-------------------------+------------------+--------------+
-
-|
-| See also the **Metadata** and legacy **LoadData** modules.
 """
 
 import os
@@ -173,8 +174,8 @@ class CalculateStatistics(cpm.Module):
                 lambda: cpmeas.IMAGE, doc='''\
 The Z’ factor, a measure of assay quality, is calculated by this module
 based on measurements from images that are specified as positive
-controls and images that are specified as negative controls. (Images
-that are neither are ignored.) The module assumes that all of the
+controls and images that are specified as negative controls. Images
+that are neither are ignored. The module assumes that all of the
 negative controls are specified by a minimum value, all of the positive
 controls are specified by a maximum value, and all other images have an
 intermediate value; this might allow you to use your dosing information
@@ -183,7 +184,7 @@ actual dose data to designate your controls, a common practice is to
 designate -1 as a negative control, 0 as an experimental sample, and 1
 as a positive control. In other words, positive controls should all be
 specified by a single high value (for instance, 1) and negative controls
-should all be specified by a single low value (for instance, 0). Other
+should all be specified by a single low value (for instance, -1). Other
 samples should have an intermediate value to exclude them from the Z’
 factor analysis.
 
@@ -191,8 +192,9 @@ The typical way to provide this information in the pipeline is to create
 a text comma-delimited (CSV) file outside of CellProfiler and then load
 that file into the pipeline using the **Metadata** module or the legacy
 **LoadData** module. In that case, choose the measurement that matches
-the column header of the measurement in the input file. See the
-**Metadata** module help for an example text file.
+the column header of the measurement in the input file. See the main
+module help for this module or for the **Metadata** module for an
+example text file.
 ''')
         self.dose_values = []
         self.add_dose_value(can_remove=False)
@@ -209,19 +211,11 @@ the column header of the measurement in the input file. See the
                      cps.Measurement("Select the image measurement describing the treatment dose",
                                      lambda: cpmeas.IMAGE,
                                      doc="""\
-The V and Z’ factor, a measure of assay quality, and the EC50,
-indicating dose/response, are calculated by this module based on each
+The V and Z’ factors, metrics of assay quality, and the EC50,
+indicating dose-response, are calculated by this module based on each
 image being specified as a particular treatment dose. Choose a
 measurement that gives the dose of some treatment for each of your
-images.
-
-The typical way to provide this information in the pipeline is to create
-a comma-delimited text file (CSV) outside of CellProfiler and then load
-that file into the pipeline using **Metadata** or the **LoadData**. In
-that case, choose the measurement that matches the column header of the
-measurement in the CSV input file. See **LoadData** help for an example
-text file.
-            """))
+images. See the help for the previous setting for details."""))
 
         group.append("log_transform", cps.Binary(
                 "Log-transform the dose values?", False, doc='''\
@@ -233,16 +227,17 @@ controls.
 ''' % globals()))
 
         group.append('wants_save_figure', cps.Binary(
-                '''Create dose/response plots?''', False, doc='''Select *%(YES)s* if you want to create and save dose response plots.
+                '''Create dose-response plots?''', False, doc='''Select *%(YES)s* if you want to create and save dose-response plots.
 You will be asked for information on how to save the plots.''' % globals()))
 
         group.append('figure_name', cps.Text(
                 "Figure prefix", "", doc='''\
-*(Used only when creating dose/response plots)*
+*(Used only when creating dose-response plots)*
 
 CellProfiler will create a file name by appending the measurement name
-to the prefix you enter here. For instance, if you have objects named,
-“Cells”, the “AreaShape_Area measurement”, and a prefix of “Dose\_”,
+to the prefix you enter here. For instance, if you specify a prefix
+of “Dose\_”, when saving a file related to objects you have chosen (for
+example, *Cells*) and a particular measurement (for example, *AreaShape_Area*), 
 CellProfiler will save the figure as *Dose_Cells_AreaShape_Area.m*.
 Leave this setting blank if you do not want a prefix.
 '''
@@ -253,7 +248,7 @@ Leave this setting blank if you do not want a prefix.
                     cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                     cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
                     cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
-*(Used only when creating dose/response plots)*
+*(Used only when creating dose-response plots)*
 
 This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
@@ -813,7 +808,7 @@ def calc_init_params(x, y):
     if x0 == x1:
         # If all of the doses are the same, why are we doing this?
         # There's not much point in fitting.
-        raise ValueError("All doses or labels for all image sets are %s. Can't calculate dose/response curves." % x0)
+        raise ValueError("All doses or labels for all image sets are %s. Can't calculate dose-response curves." % x0)
     elif y1 > y0:
         hillc = -1
     else:

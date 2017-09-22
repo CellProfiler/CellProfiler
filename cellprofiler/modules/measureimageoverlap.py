@@ -374,15 +374,13 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         test_pixels = test_image.pixel_data
 
-# ==============================================================================================
-# CP pipelines are either all 2D or all 3D, only need to check this image
+# In volumetric case the 3D image stack gets converted to a long 2D image and gets analyzed
         if ground_truth_image.volumetric:
             ground_truth_pixels = ground_truth_pixels.reshape(-1, ground_truth_pixels.shape[-1])
 
             mask = mask.reshape(-1, mask.shape[-1])
 
             test_pixels = test_pixels.reshape(-1, test_pixels.shape[-1])
-# ==============================================================================================
 
         false_positives = test_pixels & ~ground_truth_pixels
 

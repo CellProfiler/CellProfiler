@@ -1525,7 +1525,7 @@ files is as follows:
 -  In the **Images** module, drag-and-drop your folders of images into the
    File list panel. If necessary, set your rules accordingly in order to
    filter out any files that are not part of a movie sequence. By default,
-   only image files with Bio-Formats extensions are included, which
+   only image files with `Bio-Formats`_ extensions are included, which
    includes a wide range of image formats and covers most situations.
 
    In the above example, you would drag-and-drop the *DNA*, *actin* and
@@ -1576,7 +1576,7 @@ files is as follows:
       
    Note that there are many online tools available to assist with the
    creation of regular expressions that match the patterns within image
-   filenames. CellProfiler uses the Python regular expression format.
+   filenames. CellProfiler uses the `Python regular expression format`_.
 
 -  In the **NamesAndTypes** module, assign the channel(s) to a name of
    your choice. If there are multiple channels, you will need to do this
@@ -1630,7 +1630,7 @@ files is as follows:
 
 If your images represent a 3D image, you can follow the above example to
 process your data slice by slice; in other words CellProfiler
-will analyze each Z-slice individually and sequentially. However, It is important to note that CellProfiler
+will analyze each Z-slice individually and sequentially. However, it is important to note that CellProfiler
 will analyze an image stack as a whole volume
 (3D image) if "Process as 3D" is selected in **NamesAndTypes**.
 
@@ -1916,6 +1916,8 @@ as a 3D volume)*:
    and the next one begins, and would process the slices in all stacks
    together as if they were constituents of only one stack.
 
+.. _Bio-Formats: https://docs.openmicroscopy.org/bio-formats/5.7.1/supported-formats.html
+.. _Python regular expression format: https://docs.python.org/2.7/howto/regex.html
 .. _webpage: http://docs.openmicroscopy.org/bio-formats/5.6.0/supported-formats.html
 
 .. |image0| image:: {MODULE_ADD_BUTTON}

@@ -87,9 +87,9 @@ the other methods:
 -  *%(SM_TO_AVERAGE)s:* Creates a flat, smooth image where every pixel
    of the image equals the average value of the original image.
    
-*Note, when deciding between %(MEDIAN_FILTER)s and %(SM_GAUSSIAN_FILTER)s
+*Note, when deciding between %(MEDIAN_FILTER)s and %(GAUSSIAN_FILTER)s
 we typically recommend
-%(SM_MEDIAN_FILTER)s over %(SM_GAUSSIAN_FILTER)s because the
+%(MEDIAN_FILTER)s over %(GAUSSIAN_FILTER)s because the
 median is less sensitive to outliers, although the results are also
 slightly less smooth and the fact that images are in the range of 0
 to 1 means that outliers typically will not dominate too strongly

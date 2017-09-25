@@ -991,9 +991,9 @@ MeasureImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
 #        ftr_false_pos_rate_measurement = measurements.get_current_image_measurement(ftr_false_pos_rate)
 #        assert ftr_false_pos_rate_measurement == 1
 
-        ftr_true_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE)
-        ftr_true_neg_rate_measurement = measurements.get_current_image_measurement(ftr_true_neg_rate)
-        assert ftr_true_neg_rate_measurement == 0
+#        ftr_true_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE)
+#        ftr_true_neg_rate_measurement = measurements.get_current_image_measurement(ftr_true_neg_rate)
+#        assert ftr_true_neg_rate_measurement == 0
 
         ftr_false_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE)
         ftr_false_neg_rate_measurement = measurements.get_current_image_measurement(ftr_false_neg_rate)
@@ -1003,12 +1003,12 @@ MeasureImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         ground_truth_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
         ground_truth_image_data[2:6, 30:40, 30:40] = True
         ground_truth_image_data[8, 10:20, 10:20] = True
-        ground_truth_image_data[1:5, 50:60, 50:60] = True
+        ground_truth_image_data[1:4, 50:60, 50:60] = True
 
         test_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
         test_image_data[2:6, 35:45, 30:40] = True
         test_image_data[8, 10:20, 15:25] = True
-        test_image_data[3:7, 50:60, 50:60] = True
+        test_image_data[3:6, 50:60, 50:60] = True
 
         workspace, module = self.make_workspace(
             ground_truth={

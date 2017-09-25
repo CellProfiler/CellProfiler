@@ -8,8 +8,8 @@ MeasureImageOverlap
 the white portions of two black and white images
 
 This module calculates overlap by determining a set of statistics that
-measure the closeness of an image or object to its true value. One
-image/object is considered the “ground truth” (possibly the result of
+measure the closeness of an image to its true value. One
+image is considered the “ground truth” (possibly the result of
 hand-segmentation) and the other is the “test” image/object; the images
 are determined to overlap most completely when the test image matches
 the ground truth perfectly. If using images, the module requires binary
@@ -75,17 +75,12 @@ Measurements made by this module
       each foreground pixel in the test image to some corresponding
       foreground pixel in the reference image.
 
--  **For objects:**
-
    -  *Rand index:* A measure of the similarity between two data
       clusterings. Perfectly random clustering returns the minimum score
       of 0, perfect clustering returns the maximum score of 1.
 
-   -  *Adjusted Rand index:* A variation of the Rand index which takes
-      into account the fact that random chance will cause some objects
-      to occupy the same clusters, so the Rand Index will never actually
-      be zero. Can return a value between -1 and +1.
-
+   -  *Adjusted Rand index:* A variation of the Rand index which considers a
+       correction for chance.
 References
 ^^^^^^^^^^
 
@@ -116,7 +111,6 @@ import cellprofiler.object
 import cellprofiler.setting
 import _help
 
-
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
 FTR_PRECISION = "Precision"
@@ -144,6 +138,7 @@ FTR_ALL = [
 O_OBJ = "Segmented objects"
 O_IMG = "Foreground/background segmentation"
 O_ALL = [O_OBJ, O_IMG]
+#O_ALL = O_IMG
 
 L_LOAD = "Loaded from a previous run"
 L_CP = "From this CP pipeline"

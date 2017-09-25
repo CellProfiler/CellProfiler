@@ -38,6 +38,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **DisplayScatterPlot**, **DisplayHistogram**.
 """
 

@@ -53,6 +53,9 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **MeasureImageAreaOccupied**.
 
 Measurements made by this module

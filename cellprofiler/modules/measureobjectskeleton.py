@@ -46,6 +46,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **MeasureImageSkeleton**.
 
 Measurements made by this module

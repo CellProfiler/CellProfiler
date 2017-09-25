@@ -23,7 +23,10 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
-See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
+See also
+^^^^^^^^
+
+See also our `Worm Toolbox`_ page for sample images and pipelines, as
 well as video tutorials.
 
 Measurements made by this module

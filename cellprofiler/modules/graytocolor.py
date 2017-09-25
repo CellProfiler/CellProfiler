@@ -20,6 +20,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **ColorToGray** and **InvertForPrinting**.
 """
 

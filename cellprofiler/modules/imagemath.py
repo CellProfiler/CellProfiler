@@ -26,6 +26,9 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **Threshold**, **RescaleIntensity**,
 **CorrectIlluminationCalculate**.
 """

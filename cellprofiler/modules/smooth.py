@@ -17,6 +17,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also several related modules in the *Advanced* category (e.g.,
 **MedianFilter** and **GaussianFilter**).
 """

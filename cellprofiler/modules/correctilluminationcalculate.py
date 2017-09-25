@@ -37,9 +37,9 @@ References
 ^^^^^^^^^^
 
 -  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
-of intensity nonuniformities in 2D and 3D microscope images of fluorescence
-stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
-(SCIA), pp. 264-271
+   of intensity nonuniformities in 2D and 3D microscope images of fluorescence
+   stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
+   (SCIA), pp. 264-271
 
 .. _examples: http://www.cellprofiler.org/examples.html
 .. _tutorials: http://cellprofiler.org/tutorials.html
@@ -316,10 +316,10 @@ time-consuming process, but some methods are faster than others.
       -  Set the intensity of the output image within the convex hull to
          the current intensity
 
-   The *%(SM_CONVEX_HULL)s* method is useful for calculating illumination correction 
-   images in empty brightfield images. It is a good option if the image contains a whole well. 
-   The edges of the well will be preserved, where there is a sharp transition in 
-   intensity, because there is no smoothing involved with this method. 
+   The *%(SM_CONVEX_HULL)s* method is useful for calculating illumination correction
+   images in empty brightfield images. It is a good option if the image contains a whole well.
+   The edges of the well will be preserved, where there is a sharp transition in
+   intensity, because there is no smoothing involved with this method.
 
 **References**
 -  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation

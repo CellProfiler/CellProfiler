@@ -56,8 +56,6 @@ WINDOW_SAVE_BUTTON = __image_resource('window_filesave.png')
 ANALYZE_IMAGE_BUTTON = __image_resource('IMG_ANALYZE_16.png')
 STOP_ANALYSIS_BUTTON = __image_resource('stop.png')
 PAUSE_ANALYSIS_BUTTON = __image_resource('IMG_PAUSE.png')
-OMERO_IMAGEID_PIC = __image_resource('OMERO_imageID_screenshot.png')
-OMERO_LOGIN_PIC = __image_resource('OMERO_login_screenshot.png')
 
 
 ####################
@@ -837,7 +835,7 @@ You can invoke **Run multiple pipelines** by selecting it from the file menu. Th
    output folder and a measurements file. You can change any of these by
    clicking on the file name - an appropriate dialog will then be
    displayed. You can click the remove button to remove a pipeline from
-   the list
+   the list.
 
 CellProfiler will run all of the pipelines on the list when you hit
 the “OK” button.
@@ -908,7 +906,7 @@ each category. Here is an example file:
 
 The above file would print warnings and errors to the console for all
 messages but “pipeline statistics” which are configured using the
-*pipelineStatistics* logger are written to a file instead.. The
+*pipelineStatistics* logger are written to a file instead. The
 pipelineStatistics logger is the logger that is used to print progress
 messages when the pipeline is run. You can find out which loggers are
 being used to write particular messages by printing all messages with a
@@ -919,102 +917,13 @@ The format of the file is described in greater detail `here`_.
 """
 
 ACCESSING_OMERO_IMAGES = u"""\
-CellProfiler has first-class support for loading images from `OMERO`_.
-The input modules and the LoadData module can refer to images by URL,
-for instance, the example pipeline on the welcome page loads its images
-from ``http://cellprofiler.org/ExampleFlyImages``. The first part of a
-URL (the part before the colon) is the schema. CellProfiler decides
-which communication protocol to use, depending on the schema; in the
-case of the example on the welcome page, the schema is HTTP and
-CellProfiler uses the HTTP protocol to get the image data. For OMERO,
-the schema that should be used is “omero” and we use the OMERO client
-library to fetch and load the data.
-
-OMERO URLs have the form, “omero:iid=”. You can find the image IDs
-using either the OMERO web client or the `Insight software`_. As an
-example, the screen capture below indicates that the image,
-“Channel1-01-A-01.tif”, has an IID of 58038:
-
-|HelpContent_OMERO_image0|
-
-At present, manually curating the URL list can be somewhat
-time-consuming, but we are planning to develop plug-ins for Insight that
-will automatically generate these lists for CellProfiler from within the
-Insight user interface. The plugin will allow you to select a screen or
-plate and export an image set list that can be used with CellProfiler’s
-LoadData module.
-
-OMERO login credentials
-~~~~~~~~~~~~~~~~~~~~~~~
-
-CellProfiler will ask you for your OMERO login credentials when you
-first access an OMERO URL, either by viewing it from the file list or
-by loading it in a pipeline. CellProfiler will create and maintain a
-session for you based on these credentials until you close the
-application. You should only need to enter your credentials once. To
-use the “Log into Omero” dialog, enter your server’s name or IP
-address, the port (usually 4064), your user name and password and
-press the “Connect” button. The “Connect” button should turn green and
-the OK button of the dialog should become enabled (see below). Press
-OK to complete the login.
-
-|HelpContent_OMERO_image1|
-
-Currently, CellProfiler cannot establish a connection to OMERO when
-running headless - to do that, we would need to store the user password
-where it might be otherwise visible. We would like to provide a secure
-mechanism for establishing a session when headless and would like to
-work with you to make this work in your environment; please contact us
-for further information on how to modify CellProfiler yourself to do
-this or with suggestions for us to implement.
-
-Using OMERO URLs with the Input modules
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The **Images** module has a file list panel of all of the image files in
-a project. This file list supports URLs including OMERO URLs. You can
-drag URLs from a text document and drop them into the file list. The
-URLs do not end with image file extensions (like .TIF), so you need to
-change the “Filter images?” setting to “No filtering” to allow the OMERO
-URLs to be processed further. You should be able to view the image by
-double-clicking on it and you should be able to extract plate, well,
-site and channel name metadata from each image using the “Extract from
-image file headers” method in the **Metadata** module (press the “Update
-Metadata” button after selecting the “Extract from image file headers”
-method). If your experiment has more than one image channel, you can use
-the “ChannelName” metadata extracted from the OMERO image to create
-image sets containing all of your image channels. In the
-**NamesAndTypes** module, change the “Assign a name to” setting to
-“Images matching rules”. For the rule criteria, select “Metadata does
-have ChannelName matching” and enter the name that appears under
-“Channels” in the OMERO Insight browser. Add additional channels to
-**NamesAndTypes** using the “Add another image” button.
-
-OMERO URLs and LoadData
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The LoadData module reads image sets from a .CSV file. The CSV file has
-a one-line header that tells LoadData how to use each of the columns of
-the file. You can load channels from a URL by adding a “URL” tag to this
-header. The OMERO URLs themselves appear in rows below. For instance,
-here is a .CSV that loads a DNA and GFP channel:
-
-::
-
-    URL_DNA,URL_GFP
-    omero:iid=58134,omero:iid=58038
-    omero:iid=58135,omero:iid=58039
-    omero:iid=58136,omero:iid=58040
+CellProfiler can load images from `OMERO`_. Please see CellProfiler's
+`developer wiki`_ for instructions.
 
 .. _OMERO: http://www.openmicroscopy.org/site/products/omero
-.. _Insight software: http://www.openmicroscopy.org/site/support/omero4/downloads
+.. _developer wiki: http://github.com/CellProfiler/CellProfiler/wiki/OMERO:-Accessing-images-from-CellProfiler
 
-.. |HelpContent_OMERO_image0| image:: {OMERO_IMAGEID_PIC}
-.. |HelpContent_OMERO_image1| image:: {OMERO_LOGIN_PIC}
-""".format(**{
-    "OMERO_LOGIN_PIC": OMERO_LOGIN_PIC,
-    "OMERO_IMAGEID_PIC": OMERO_IMAGEID_PIC
-})
+"""
 
 MEASUREMENT_NOMENCLATURE_HELP = u"""\
 In CellProfiler, measurements are exported as well as stored internally
@@ -1235,8 +1144,6 @@ file, which specifies: (1) all unique combinations of the sampled
 parameter values; (2) the mapping from each combination of parameter
 values to one or more output images; and (3) the actual output images.
 
-More information on how to use the plugin can be found `here`_.
-
 **References**
 
 -  Pretorius AJ, Bray MA, Carpenter AE and Ruddle RA. (2011)
@@ -1244,7 +1151,6 @@ More information on how to use the plugin can be found `here`_.
    Transactions on Visualization and Computer Graphics* 17(12),
    2402-2411.
 
-.. _here: http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/
 """
 
 MENU_BAR_DATATOOLS_HELP = u"""
@@ -1262,6 +1168,14 @@ Opening a data tool will present a prompt in which the user is asked to
 provide the location of the output file. Once specified, the user is
 then prompted to enter the desired settings. The settings behave
 identically as those from the corresponding module.
+
+Please note that with the exception of *PlateViewer* and *Export* functions the 
+*Data Tools*, like most CellProfiler modules, are designed to operate on only one image 
+set at a time. If you want to use data tool modules to examine and/or 
+graph data on the whole experiment level, you should instead consider using 
+CellProfiler Analyst; see the *ExportToDatabase* help to learn more about exporting 
+your data into a database that CellProfiler Analyst can access and about creating a 
+CellProfiler Analyst properties file.  
 
 Help for each *Data Tool* is available under *{DATA_TOOL_HELP_REF}*
 or the corresponding module help.

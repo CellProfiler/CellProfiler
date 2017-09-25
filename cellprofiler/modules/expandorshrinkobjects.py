@@ -21,6 +21,17 @@ you can use the **OverlayOutlines** or **OverlayObjects** module to
 overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
 See also **IdentifySecondaryObjects** which allows creating new objects
 based on expansion of existing objects, with a a few different options
 than in this module. There are also several related modules in the

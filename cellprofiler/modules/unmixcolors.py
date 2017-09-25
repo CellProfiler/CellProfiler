@@ -13,7 +13,7 @@ in the red, green and blue channels that increases proportionally in
 each channel with increasing amounts of stain; the hue does not shift
 with increasing staining. The module separates two or more stains from a
 background, producing grayscale images. There are several pre-set dye
-combinations as well as a custom mode that allows a user to calibrate
+combinations as well as a custom mode that allows you to calibrate
 using two images stained with a single dye each. Some commonly known
 stains must be specified by the individual dye components. For example:
 
@@ -22,10 +22,18 @@ stains must be specified by the individual dye components. For example:
 -  Masson Trichrome: Methyl blue + Ponceau-Fuchsin
 
 If there are non-stained cells/components that you also want to separate
-by color, choose the stain that closest resembles the color you want, or
+by color, choose the stain that most closely resembles the color you want, or
 enter a custom value. Please note that if you are looking to simply
 split a color image into red, green and blue components, use the
 **ColorToGray** module rather than **UnmixColors**.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
 
 Technical notes
 ^^^^^^^^^^^^^^^
@@ -40,8 +48,6 @@ References
 -  Ruifrok AC, Johnston DA. (2001) “Quantification of histochemical
    staining by color deconvolution.” *Analytical & Quantitative Cytology
    & Histology*, 23: 291-299.
-
-See also **ColorToGray**.
 
 .. _here: http://imagej.net/Colour_Deconvolution
 """
@@ -201,7 +207,7 @@ custom values for the stain's red, green and blue absorbance.
         default_name = default_name.replace(" ", "")
 
         group.append("image_name", cps.ImageNameProvider(
-                "Name the output name", default_name, doc="""\
+                "Name the output image", default_name, doc="""\
 Use this setting to name one of the images produced by the
 module for a particular stain. The image can be used in
 subsequent modules in the pipeline.
@@ -257,8 +263,8 @@ The stains are:
 `here <http://en.wikipedia.org/wiki/Staining>`__, and
 `here <http://stainsfile.info>`__.)
 You can choose *%(CHOICE_CUSTOM)s* and enter your custom values for the
-absorbance (or use the estimator to determine values from a single-stain
-image).
+absorbance (or use the estimator to determine values from single-stain
+images).
 
 .. _here: http://en.wikipedia.org/wiki/Histology#Staining
 

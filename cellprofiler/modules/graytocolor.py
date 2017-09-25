@@ -4,7 +4,7 @@
 GrayToColor
 ===========
 
-**GrayToColor** takes grayscale images and and produces a color image
+**GrayToColor** takes grayscale images and produces a color image
 from them.
 
 This module takes grayscale images as input and assigns them to colors
@@ -12,7 +12,18 @@ in a red, green, blue (RGB) image or a cyan, magenta, yellow, black
 (CMYK) image. Each color’s brightness can be adjusted independently by
 using relative weights.
 
-See also **ColorToGray**.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also **ColorToGray** and **InvertForPrinting**.
 """
 
 import numpy as np
@@ -65,8 +76,13 @@ This module can use one of two color schemes to combine images:
    blue intensities. The magenta image adds equally to the red and blue
    intensities. The yellow image adds equally to the red and green
    intensities.
--  *%(SCHEME_STACK)s*: The channels are stacked in order. An arbitrary
-   number of channels is allowed.
+-  *%(SCHEME_STACK)s*: The channels are stacked in the order listed,
+   from top to bottom. An arbitrary number of channels is allowed.
+
+   For example, you could create a 5-channel image by providing
+   5 grayscale images. The first grayscale image you provide will fill 
+   the first channel, the second grayscale image you provide will fill
+   the second channel, and so on.
 -  *%(SCHEME_COMPOSITE)s*: A color is assigned to each grayscale image.
    Each grayscale image is converted to color by multiplying the
    intensity by the color and the resulting color images are added
@@ -85,7 +101,7 @@ This module can use one of two color schemes to combine images:
                 doc="""\
 *(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
 
-Select the input image to be displayed in red
+Select the input image to be displayed in red.
 """ % globals())
 
         self.green_image_name = cps.ImageNameSubscriber(
@@ -94,7 +110,7 @@ Select the input image to be displayed in red
                 doc="""\
 *(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
 
-Select the input image to be displayed in green
+Select the input image to be displayed in green.
 """ % globals())
 
         self.blue_image_name = cps.ImageNameSubscriber(
@@ -103,11 +119,11 @@ Select the input image to be displayed in green
                 doc="""\
 *(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
 
-Select the input image to be displayed in blue
+Select the input image to be displayed in blue.
 """ % globals())
 
         self.rgb_image_name = cps.ImageNameProvider(
-                "Name the output image", "ColorImage", doc="""Enter a name for the resulting image""")
+                "Name the output image", "ColorImage", doc="""Enter a name for the resulting image.""")
 
         self.red_adjustment_factor = cps.Float(
                 "Relative weight for the red image",
@@ -152,7 +168,7 @@ weights.
                 doc="""\
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
-Select the input image to be displayed in cyan
+Select the input image to be displayed in cyan.
 """ % globals())
 
         self.magenta_image_name = cps.ImageNameSubscriber(
@@ -161,7 +177,7 @@ Select the input image to be displayed in cyan
                 doc="""\
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
-Select the input image to be displayed in magenta
+Select the input image to be displayed in magenta.
 """ % globals())
 
         self.yellow_image_name = cps.ImageNameSubscriber(
@@ -170,7 +186,7 @@ Select the input image to be displayed in magenta
                 doc="""\
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
-Select the input image to be displayed in yellow
+Select the input image to be displayed in yellow.
 """ % globals())
 
         self.gray_image_name = cps.ImageNameSubscriber(
@@ -179,7 +195,7 @@ Select the input image to be displayed in yellow
                 doc="""\
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
-Select the input image that will determine each pixel's brightness
+Select the input image that will determine each pixel's brightness.
 """ % globals())
 
         self.cyan_adjustment_factor = cps.Float(
@@ -249,7 +265,7 @@ weights.
                 doc='''\
 *(Used only if "%(SCHEME_STACK)s" or "%(SCHEME_COMPOSITE)s" is chosen)*
 
-Select the input image to add to the stacked image
+Select the input image to add to the stacked image.
 ''' % globals()))
         group.append("color", cps.Color(
                 "Color", default_color,

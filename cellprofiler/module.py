@@ -224,7 +224,7 @@ class Module(object):
 </div>
         """.format(**{
             "SETTING_DOC": self._rst_to_html_fragment(setting.doc),
-            "SETTING_NAME": setting.text
+            "SETTING_NAME": self._rst_to_html_fragment(setting.text)
         })
 
     def get_help(self):

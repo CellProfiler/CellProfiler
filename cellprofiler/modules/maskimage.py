@@ -17,10 +17,19 @@ the image created by this module for further processing downstream is
 grayscale. If a binary mask is desired in subsequent modules, use the
 **Threshold** module instead of **MaskImage**.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also
+^^^^^^^^
+
 See also **Threshold**, **IdentifyPrimaryObjects**, and
 **IdentifyObjectsManually**.
-
-This module can be used both on 2D and volumetric images.
 """
 
 import numpy as np

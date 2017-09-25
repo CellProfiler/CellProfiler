@@ -105,6 +105,20 @@ allows for special functionality for some downstream modules:
    CellProfiler-calculated data. This is a convenient way for you to add
    data from your own sources to the files exported by CellProfiler.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also the **Input** modules (i.e., **Images**, **Metadata**,
+**NamesAndTypes** and **Groups**), **LoadImages** and
+**CalculateStatistics**.
 
 Example CSV file
 ^^^^^^^^^^^^^^^^
@@ -183,10 +197,6 @@ Measurements made by this module
 -  *Scaling:* The maximum possible intensity value for the image format.
 -  *Height, Width:* The height and width of images loaded by this module.
 -  Any additional per-image data loaded from the input file you provided.
-
-See also the **Input** modules (i.e., **Images**, **Metadata**,
-**NamesAndTypes** and **Groups**), **LoadImages** and
-**CalculateStatistics**.
 
 .. _MetaXpress: http://www.moleculardevices.com/systems/high-content-imaging/metaxpress-high-content-image-acquisition-and-analysis-software
 .. _KNIME: https://www.knime.com/about
@@ -449,7 +459,7 @@ pair of tags.""")
 Select *%(YES)s* if you want to process a subset of the rows in the CSV
 file. In the boxes below, enter the number of the row you want to begin processing
 with in the box on the left. Then, enter the number of the row you want to
-end processing with in the box on the right. Rows are numbered starting at 1 
+end processing with in the box on the right. Rows are numbered starting at 1
 (but do not count the header line). **LoadData** will process up to and including the end row.
 """ % globals())
 

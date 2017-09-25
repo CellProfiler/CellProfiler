@@ -15,6 +15,21 @@ You can create a morphological skeleton with the **MorphologicalSkeleton**
 module from the *Advanced* category.
 
 See also **MeasureObjectSkeleton**.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- *Branches*: Total number of pixels with more than two neighbors.
+
+- *Endpoints*: Total number of pixels with only one neighbor.
 """
 
 import numpy

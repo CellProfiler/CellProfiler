@@ -4,7 +4,7 @@
 MeasureObjectIntensityDistribution
 ==================================
 
-**MeasureObjectIntensityDistribution** measures the distribution of
+**MeasureObjectIntensityDistribution** measures the spatial distribution of
 intensities within each object.
 
 Given an image with objects identified, this module measures the
@@ -12,7 +12,7 @@ intensity distribution from each object’s center to its boundary within
 a set of bins, i.e., rings that you specify.
 
 The distribution is measured from the center of the object, where the
-center is defined as the point farthest from any edge. The numbering is
+center is defined as the point farthest from any edge. The numbering of bins is
 from 1 (innermost) to *N* (outermost), where *N* is the number of bins
 you specify. Alternatively, if primary objects exist within
 the object of interest (e.g., nuclei within cells), you can choose the
@@ -22,6 +22,19 @@ translocation experiments, for example. Note that the ring widths are
 normalized per-object, i.e., not necessarily a constant width across
 objects.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also **MeasureObjectIntensity** and **MeasureTexture**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -30,15 +43,14 @@ Measurements made by this module
    as fraction of total intensity normalized by fraction of pixels at a
    given radius.
 -  *RadialCV:* Coefficient of variation of intensity within a ring,
-   calculated over 8 slices.
+   calculated across 8 slices.
 -  *Zernike:* The Zernike features characterize the distribution of
    intensity across the object. For instance, Zernike 1,1 has a high
    value if the intensity is low on one side of the object and high on
-   the other. The ZernikeMagnitude feature holds the rotationally
+   the other. The ZernikeMagnitude feature records the rotationally
    invariant degree magnitude of the moment and the ZernikePhase feature
    gives the moment’s orientation.
 
-See also **MeasureObjectIntensity**.
 """
 
 import centrosome.cpmorphology
@@ -153,7 +165,7 @@ the magnitude information and discard information related to the
 object’s angular orientation. Choose *{Z_MAGNITUDES_AND_PHASE}* to
 save the phase information as well. The last option lets you recover
 each object’s rough appearance from the Zernikes but may not contribute
-useful information if used to classify phenotypes.
+useful information for classifying phenotypes.
 """.format(**{
                 "Z_NONE": Z_NONE,
                 "Z_MAGNITUDES": Z_MAGNITUDES,
@@ -218,7 +230,7 @@ heatmap according to the measurement value for that band.
             cellprofiler.setting.ImageNameSubscriber(
                 "Select an image to measure",
                 cellprofiler.setting.NONE,
-                doc="Select the image that you want to measure the intensity from."
+                doc="Select the image whose intensity distribution you want to measure."
             )
         )
 
@@ -246,7 +258,7 @@ heatmap according to the measurement value for that band.
             cellprofiler.setting.ObjectNameSubscriber(
                 "Select objects to measure",
                 cellprofiler.setting.NONE,
-                doc="Select the objects that you want to measure the intensity from."
+                doc="Select the objects whose intensity distribution you want to measure."
             )
         )
 

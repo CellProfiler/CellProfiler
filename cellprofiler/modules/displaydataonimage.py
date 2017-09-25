@@ -11,6 +11,15 @@ This module displays either a single image measurement on an image of
 your choosing, or one object measurement per object on top of every
 object in an image. The display itself is an image which you can save to
 a file using **SaveImages**.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import numpy as np
@@ -100,7 +109,7 @@ to display the measurements on a black background.""")
 Choose the image to be displayed behind the measurements.
 This can be any image created or loaded by a previous module.
 If you have chosen not to display the background image, the image
-will only be used to determine the dimensions of the displayed image""")
+will only be used to determine the dimensions of the displayed image.""")
 
         self.color_or_text = cps.Choice(
                 "Display mode", [CT_TEXT, CT_COLOR],
@@ -122,7 +131,10 @@ default color map.
 *(Used only when displaying object measurements)*
 
 This is the color map used as the color gradient for coloring the
-objects by their measurement values.
+objects by their measurement values. See `this page`_ for pictures
+of the available colormaps.
+
+.. _this page: http://matplotlib.org/users/colormaps.html
             """)
         self.text_color = cps.Color(
                 "Text color", "red", doc="""This is the color that will be used when displaying the text.""")
@@ -135,10 +147,10 @@ modules (such as **SaveImages**).
 """)
 
         self.font_size = cps.Integer(
-                "Font size (points)", 10, minval=1, doc="""Set the font size of the letters to be displayed""")
+                "Font size (points)", 10, minval=1, doc="""Set the font size of the letters to be displayed.""")
 
         self.decimals = cps.Integer(
-                "Number of decimals", 2, minval=0, doc="""Set how many decimals to be displayed, for example 2 decimals for 0.01; 3 decimals for 0.001 """)
+                "Number of decimals", 2, minval=0, doc="""Set how many decimals to be displayed, for example 2 decimals for 0.01; 3 decimals for 0.001.""")
 
         self.saved_image_contents = cps.Choice(
                 "Image elements to save",

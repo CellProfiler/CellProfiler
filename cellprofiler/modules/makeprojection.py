@@ -3,22 +3,21 @@
 """
 MakeProjection
 ==============
-**MakeProjection** combines several two-dimensional images of the same
-field of view by performing a mathematical operation
-upon the pixel values at each pixel position.
+**MakeProjection** combines two or more two-dimensional images of the same
+field of view into a single two-dimensional image.
 
 This module combines a set of images by performing a mathematical
 operation of your choice at each pixel position; please refer to the
 settings help for more information on the available operations. The
 process of averaging or summing a Z-stack (3D image stack) is known as
-making a projection. **MakeProjection** is meant to be used only on single image Z-slices across image cycles; it will not work on images that have been loaded as 3D volumes in **NamesAndTypes**.
+making a projection.
 
 This module will create a projection of all images specified in the
-Input modules. For more information on loading image stacks and movies,
-see *Help > Creating a Project > Loading Image Stacks and Movies*. To
-achieve per-folder projections (i.e., creating a projection for each set
+Input modules; most commonly you will want to use grouping to select
+subsets of images to be combined into each projection. To
+achieve per-folder projections (i.e., creating a single projection for each set
 of images in a folder, for all input folders), make the following setting
-specifications:
+selections:
 
 #. In the **Images** module, drag-and-drop the parent folder containing
    the sub-folders.
@@ -34,7 +33,25 @@ specifications:
 Keep in mind that the projection image is not immediately available in
 subsequent modules because the output of this module is not complete
 until all image processing cycles have completed. Therefore, the
-projection should be created with a dedicated pipeline.
+projection should be created with a separate pipeline from your
+analysis pipeline.
+
+**MakeProjection** currently only works on single
+image Z-slices across image cycles; it will not work on images that
+have been loaded as 3D volumes in **NamesAndTypes** so be sure *Process
+as 3D* is set to *No* in that module. For more information on loading image stacks and movies,
+see *Help > Creating a Project > Loading Image Stacks and Movies*.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
 
 See also the help for the **Input** modules.
 """
@@ -66,7 +83,7 @@ class MakeProjection(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                'Select the input image', cps.NONE, doc="Select the image to be made into a projection.")
+                'Select the input image', cps.NONE, doc="Select the images to be made into a projection.")
 
         self.projection_type = cps.Choice(
                 'Type of projection',
@@ -80,25 +97,25 @@ The final projection image can be created by the following methods:
 -  *%(P_SUM)s:* Add the pixel values at each pixel position.
 -  *%(P_VARIANCE)s:* Compute the variance at each pixel position.
    The variance method is described in Selinummi et al (2009). The
-   method is designed to operate on a z-stack of brightfield images
+   method is designed to operate on a Z-stack of brightfield images
    taken at different focus planes. Background pixels will have
    relatively uniform illumination whereas cytoplasm pixels will have
-   higher variance across the z-stack.
+   higher variance across the Z-stack.
 -  *%(P_POWER)s:* Compute the power at a given frequency at each pixel
    position.
    The power method is experimental. The method computes the power at a
-   given frequency through the z-stack. It might be used with a phase
+   given frequency through the Z-stack. It might be used with a phase
    contrast image where the signal at a given pixel will vary
-   sinusoidally with depth. The frequency is measured in z-stack steps
+   sinusoidally with depth. The frequency is measured in Z-stack steps
    and pixels that vary with the given frequency will have a higher
    score than other pixels with similar variance, but different
    frequencies.
 -  *%(P_BRIGHTFIELD)s:* Perform the brightfield projection at each
    pixel position.
-   Artifacts such as dust appear as black spots which are most strongly
+   Artifacts such as dust appear as black spots that are most strongly
    resolved at their focal plane with gradually increasing signals
    below. The brightfield method scores these as zero since the dark
-   appears in the early z-stacks. These pixels have a high score for the
+   appears in the early Z-stacks. These pixels have a high score for the
    variance method but have a reduced score when using the brightfield
    method.
 -  *%(P_MASK)s:* Compute a binary image of the pixels that are masked
@@ -113,7 +130,8 @@ The final projection image can be created by the following methods:
    **MaskImage** or **MaskObjects** in another pipeline to mask all
    images or objects in the group similarly.
 
-**References**
+References
+^^^^^^^^^^
 
 -  Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al.
    (2009) “Bright field microscopy as an alternative to whole cell
@@ -135,7 +153,7 @@ The final projection image can be created by the following methods:
 This setting controls the frequency at which the power is measured. A
 frequency of 2 will respond most strongly to pixels that alternate
 between dark and light in successive z-stack slices. A frequency of N
-will respond most strongly to pixels whose brightness cycle every N
+will respond most strongly to pixels whose brightness cycles every N
 slices.""" % globals())
 
     def settings(self):

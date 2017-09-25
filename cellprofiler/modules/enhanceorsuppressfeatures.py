@@ -13,6 +13,14 @@ This module enhances or suppresses the intensity of certain pixels
 relative to the rest of the image, by applying image processing filters
 to the image. It produces a grayscale image in which objects can be
 identified using an **Identify** module.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 """
 
 import centrosome.filter

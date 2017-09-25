@@ -23,6 +23,19 @@ IdentifySecondaryObjects
 using objects identified by another module (e.g., nuclei) as a starting
 point.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also the other **Identify** modules.
+
 What is a secondary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -68,7 +81,7 @@ This module identifies secondary objects based on two types of input:
    example, an image processing module might be used to transform a
    brightfield image into one that captures the characteristics of a
    cell body fluorescent stain. This input is optional because you can
-   instead define secondary objects as a fixed distance aruond each
+   instead define secondary objects as a fixed distance around each
    primary object.
 
 What do I get as output?
@@ -110,9 +123,6 @@ modules might be needed):
 -  *Lower right:* A table showing some of the settings you chose,
    as well as those calculated by the module in order to produce
    the objects shown.
-   
-See the section "Measurements made by this module" below for the measurements
-that are produced by this module.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -137,7 +147,6 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified secondary objects.
 
-See also the other **Identify** modules.
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
 })
@@ -163,7 +172,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
     category = "Object Processing"
 
     def __init__(self):
-        self.apply_threshold = threshold.Threshold()
+        self.threshold = threshold.Threshold()
 
         super(IdentifySecondaryObjects, self).__init__()
 
@@ -207,7 +216,7 @@ secondary objects that touch each other:
    Boundaries are preferentially placed where the image’s local
    appearance changes perpendicularly to the boundary (*Jones et al,
    2005*).
-   
+
    |image0| The {M_PROPAGATION:s} algorithm is the default approach for secondary object
    creation. Each primary object is a "seed" for its corresponding
    secondary object, guided by the input
@@ -247,7 +256,8 @@ secondary objects that touch each other:
       limited to a certain distance away from the edge of the primary
       objects without including regions of background.
 
-**References**
+References
+^^^^^^^^^^
 
 Jones TR, Carpenter AE, Golland P (2005) “Voronoi-Based Segmentation of
 Cells on Image Manifolds”, *ICCV Workshop on Computer Vision for
@@ -353,6 +363,9 @@ segmentation.
             True,
             doc=u"""\
 Select *{YES:s}* to fill any holes inside objects.
+
+Please note that if an object is located within a hole and this option is
+enabled, the object will be lost when the hole is filled in.
 """.format(**{
                 "YES": cellprofiler.setting.YES
             })
@@ -391,12 +404,12 @@ segmentation.""")
 
         self.threshold_setting_version = cellprofiler.setting.Integer(
             "Threshold setting version",
-            value=self.apply_threshold.variable_revision_number
+            value=self.threshold.variable_revision_number
         )
 
-        self.apply_threshold.create_settings()
+        self.threshold.create_settings()
 
-        self.apply_threshold.threshold_smoothing_scale.value = 0
+        self.threshold.threshold_smoothing_scale.value = 0
 
     def settings(self):
         settings = super(IdentifySecondaryObjects, self).settings()
@@ -410,7 +423,7 @@ segmentation.""")
             self.wants_discard_primary,
             self.new_primary_objects_name,
             self.fill_holes
-        ] + [self.threshold_setting_version] + self.apply_threshold.settings()[2:]
+        ] + [self.threshold_setting_version] + self.threshold.settings()[2:]
 
     def visible_settings(self):
         visible_settings = [self.image_name]
@@ -420,7 +433,7 @@ segmentation.""")
         visible_settings += [self.method]
 
         if self.method != M_DISTANCE_N:
-            visible_settings += self.apply_threshold.visible_settings()[2:]
+            visible_settings += self.threshold.visible_settings()[2:]
 
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             visible_settings += [self.distance_to_dilate]
@@ -448,7 +461,7 @@ segmentation.""")
             self.image_name
         ]
 
-        help_settings += self.apply_threshold.help_settings()[2:]
+        help_settings += self.threshold.help_settings()[2:]
 
         help_settings += [
             self.distance_to_dilate,
@@ -478,11 +491,11 @@ segmentation.""")
         threshold_settings_version = int(threshold_setting_values[0])
 
         if threshold_settings_version < 4:
-            threshold_setting_values = self.apply_threshold.upgrade_threshold_settings(threshold_setting_values)
+            threshold_setting_values = self.threshold.upgrade_threshold_settings(threshold_setting_values)
 
             threshold_settings_version = 9
 
-        threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+        threshold_upgrade_settings, threshold_settings_version, _ = self.threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
             "Threshold",
@@ -726,18 +739,18 @@ segmentation.""")
     def _threshold_image(self, image_name, workspace, automatic=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        local_threshold, global_threshold = self.apply_threshold.get_threshold(image, workspace, automatic)
+        local_threshold, global_threshold = self.threshold.get_threshold(image, workspace, automatic)
 
-        self.apply_threshold.add_threshold_measurements(
+        self.threshold.add_threshold_measurements(
             self.y_name.value,
             workspace.measurements,
             local_threshold,
             global_threshold
         )
 
-        binary_image, sigma = self.apply_threshold.apply_threshold(image, local_threshold, automatic)
+        binary_image, sigma = self.threshold.apply_threshold(image, local_threshold, automatic)
 
-        self.apply_threshold.add_fg_bg_measurements(
+        self.threshold.add_fg_bg_measurements(
             self.y_name.value,
             workspace.measurements,
             image,
@@ -871,7 +884,7 @@ segmentation.""")
             columns = super(IdentifySecondaryObjects, self).get_measurement_columns(pipeline)
 
         if self.method != M_DISTANCE_N:
-            columns += self.apply_threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
+            columns += self.threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
 
         return columns
 
@@ -879,7 +892,7 @@ segmentation.""")
         categories = super(IdentifySecondaryObjects, self).get_categories(pipeline, object_name)
 
         if self.method != M_DISTANCE_N:
-            categories += self.apply_threshold.get_categories(pipeline, object_name)
+            categories += self.threshold.get_categories(pipeline, object_name)
 
         if self.wants_discard_edge and self.wants_discard_primary:
             if object_name == self.new_primary_objects_name.value:
@@ -894,7 +907,7 @@ segmentation.""")
         measurements = super(IdentifySecondaryObjects, self).get_measurements(pipeline, object_name, category)
 
         if self.method.value != M_DISTANCE_N:
-            measurements += self.apply_threshold.get_measurements(pipeline, object_name, category)
+            measurements += self.threshold.get_measurements(pipeline, object_name, category)
 
         if self.wants_discard_edge and self.wants_discard_primary:
             if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
@@ -931,7 +944,9 @@ segmentation.""")
         return measurements
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if self.method != M_DISTANCE_N:
+        threshold_measurements = self.threshold.get_measurements(pipeline, object_name, category)
+
+        if self.method != M_DISTANCE_N and measurement in threshold_measurements:
             return [self.y_name.value]
 
         return []

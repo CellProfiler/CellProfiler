@@ -28,6 +28,20 @@ It requires grayscale images containing bright objects on a dark background.
 Incoming images must be 2D (including 2D slices of 3D images);
 please use the **Watershed** module for identification of objects in 3D.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
+**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
+
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -102,7 +116,7 @@ What do I get as output?
 
 A set of primary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations. See
-the section `"Available measurements" <#Available_measurements>`__ below
+the section `"Measurements made by this module" <#Measurements_made_by_thismodule>`__ below
 for the measurements that are produced directly by this module. Once the module
 has finished processing, the module display window will show the
 following panels:
@@ -201,9 +215,6 @@ References
 
 .. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
 .. _tutorial: http://blog.cellprofiler.org/2017/01/19/cellprofiler-ilastik-superpowered-segmentation/
-
-See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
-**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
@@ -304,7 +315,7 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
     module_name = "IdentifyPrimaryObjects"
 
     def __init__(self):
-        self.apply_threshold = threshold.Threshold()
+        self.threshold = threshold.Threshold()
 
         super(IdentifyPrimaryObjects, self).__init__()
 
@@ -755,16 +766,16 @@ If "*{NO}*" is selected, the following settings are used:
                 "LIMIT_CHOICE_VALUE": LIMIT_NONE,
                 "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
                 "NO": cellprofiler.setting.NO,
-                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.apply_threshold.threshold_correction_factor.get_text(),
+                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold.threshold_correction_factor.get_text(),
                 "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
-                "THRESHOLD_METHOD_TEXT": self.apply_threshold.global_operation.get_text(),
+                "THRESHOLD_METHOD_TEXT": self.threshold.global_operation.get_text(),
                 "THRESHOLD_METHOD_VALUE": threshold.TM_LI,
                 "THRESHOLD_RANGE_MAX": 1.0,
                 "THRESHOLD_RANGE_MIN": 0.0,
-                "THRESHOLD_RANGE_TEXT": self.apply_threshold.threshold_range.get_text(),
-                "THRESHOLD_SCOPE_TEXT": self.apply_threshold.threshold_scope.get_text(),
+                "THRESHOLD_RANGE_TEXT": self.threshold.threshold_range.get_text(),
+                "THRESHOLD_SCOPE_TEXT": self.threshold.threshold_scope.get_text(),
                 "THRESHOLD_SCOPE_VALUE": threshold.TS_GLOBAL,
-                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.apply_threshold.threshold_smoothing_scale.get_text(),
+                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.threshold.threshold_smoothing_scale.get_text(),
                 "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
                 "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
                 "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
@@ -776,12 +787,12 @@ If "*{NO}*" is selected, the following settings are used:
 
         self.threshold_setting_version = cellprofiler.setting.Integer(
             "Threshold setting version",
-            value=self.apply_threshold.variable_revision_number
+            value=self.threshold.variable_revision_number
         )
 
-        self.apply_threshold.create_settings()
+        self.threshold.create_settings()
 
-        self.apply_threshold.threshold_smoothing_scale.value = 1.3488  # sigma = 1
+        self.threshold.threshold_smoothing_scale.value = 1.3488  # sigma = 1
 
     def settings(self):
         settings = super(IdentifyPrimaryObjects, self).settings()
@@ -803,7 +814,7 @@ If "*{NO}*" is selected, the following settings are used:
             self.use_advanced
         ]
 
-        threshold_settings = self.apply_threshold.settings()[2:]
+        threshold_settings = self.threshold.settings()[2:]
 
         return settings + [self.threshold_setting_version] + threshold_settings
 
@@ -855,11 +866,11 @@ If "*{NO}*" is selected, the following settings are used:
         threshold_settings_version = int(threshold_setting_values[0])
 
         if threshold_settings_version < 4:
-            threshold_setting_values = self.apply_threshold.upgrade_threshold_settings(threshold_setting_values)
+            threshold_setting_values = self.threshold.upgrade_threshold_settings(threshold_setting_values)
 
             threshold_settings_version = 9
 
-        threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+        threshold_upgrade_settings, threshold_settings_version, _ = self.threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
             "Threshold",
@@ -873,7 +884,7 @@ If "*{NO}*" is selected, the following settings are used:
         return setting_values, variable_revision_number, False
 
     def help_settings(self):
-        threshold_help_settings = self.apply_threshold.help_settings()[2:]
+        threshold_help_settings = self.threshold.help_settings()[2:]
 
         return [
             self.use_advanced,
@@ -907,7 +918,7 @@ If "*{NO}*" is selected, the following settings are used:
         ]
 
         if self.use_advanced.value:
-            visible_settings += self.apply_threshold.visible_settings()[2:]
+            visible_settings += self.threshold.visible_settings()[2:]
 
             visible_settings += [self.unclump_method, self.watershed_method]
 
@@ -1056,18 +1067,18 @@ If "*{NO}*" is selected, the following settings are used:
     def _threshold_image(self, image_name, workspace, automatic=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        local_threshold, global_threshold = self.apply_threshold.get_threshold(image, workspace, automatic)
+        local_threshold, global_threshold = self.threshold.get_threshold(image, workspace, automatic)
 
-        self.apply_threshold.add_threshold_measurements(
+        self.threshold.add_threshold_measurements(
             self.y_name.value,
             workspace.measurements,
             local_threshold,
             global_threshold
         )
 
-        binary_image, sigma = self.apply_threshold.apply_threshold(image, local_threshold, automatic)
+        binary_image, sigma = self.threshold.apply_threshold(image, local_threshold, automatic)
 
-        self.apply_threshold.add_fg_bg_measurements(
+        self.threshold.add_fg_bg_measurements(
             self.y_name.value,
             workspace.measurements,
             image,
@@ -1390,26 +1401,26 @@ If "*{NO}*" is selected, the following settings are used:
     def get_measurement_columns(self, pipeline):
         columns = super(IdentifyPrimaryObjects, self).get_measurement_columns(pipeline)
 
-        columns += self.apply_threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
+        columns += self.threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
 
         return columns
 
     def get_categories(self, pipeline, object_name):
-        categories = self.apply_threshold.get_categories(pipeline, object_name)
+        categories = self.threshold.get_categories(pipeline, object_name)
 
         categories += super(IdentifyPrimaryObjects, self).get_categories(pipeline, object_name)
 
         return categories
 
     def get_measurements(self, pipeline, object_name, category):
-        measurements = self.apply_threshold.get_measurements(pipeline, object_name, category)
+        measurements = self.threshold.get_measurements(pipeline, object_name, category)
 
         measurements += super(IdentifyPrimaryObjects, self).get_measurements(pipeline, object_name, category)
 
         return measurements
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if measurement in self.get_measurements(pipeline, object_name, category):
+        if measurement in self.threshold.get_measurements(pipeline, object_name, category):
             return [self.y_name.value]
 
         return []

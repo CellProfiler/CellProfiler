@@ -20,7 +20,7 @@ might downsize a 3D image with **ResizeImage** to generate a segmentation, then 
 **ResizeObjects** to stretch the segmented objects to their original size
 before computing measurements with the original 3D image. **ResizeObjects** differs
 from **ExpandOrShrinkObjects** and **ShrinkToObjectCenters** in that the overall dimensions
-of the object label matrix, or image, is changed. In contrast, **ExpandOrShrinkObjects**
+of the object label matrix, or image, are changed. In contrast, **ExpandOrShrinkObjects**
 will alter the size of the objects within an image, but it will not change the size of the image
 itself.
 """

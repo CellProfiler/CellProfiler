@@ -50,6 +50,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also the help for the **Input** modules.
 """
 
@@ -127,7 +130,8 @@ The final projection image can be created by the following methods:
    **MaskImage** or **MaskObjects** in another pipeline to mask all
    images or objects in the group similarly.
 
-**References**
+References
+^^^^^^^^^^
 
 -  Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al.
    (2009) “Bright field microscopy as an alternative to whole cell

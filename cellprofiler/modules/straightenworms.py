@@ -52,6 +52,12 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
+See also our `Worm Toolbox`_ page for sample images and pipelines, as
+well as video tutorials.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -69,17 +75,13 @@ References
 
 -  Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening
    *Caenorhabditis elegans* images." *Bioinformatics*,
-   24(2):234-42.\ `(link)`_
+   24(2):234-42. `(link) <http://dx.doi.org/10.1093/bioinformatics/btm569>`__
 -  Wählby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O’Rourke
    EJ, Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P,
    Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
    for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
    714-716. `(link) <http://dx.doi.org/10.1038/nmeth.1984>`__
 
-See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
-well as video tutorials.
-
-.. _(link): http://dx.doi.org/10.1093/bioinformatics/btm569
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 

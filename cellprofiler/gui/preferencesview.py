@@ -285,7 +285,7 @@ class PreferencesView(object):
             wx.EVT_CHECKBOX, on_allow_checkbox)
         output_filename_help_button.Bind(
             wx.EVT_BUTTON,
-            lambda event: self.__on_help(event, cellprofiler.gui.help.content.USING_THE_OUTPUT_FILE_HELP))
+            lambda event: self.__on_help(event, cellprofiler.gui.help.content.read_content("legacy_output_file.rst")))
         output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)

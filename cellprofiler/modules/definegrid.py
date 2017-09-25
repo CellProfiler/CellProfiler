@@ -31,6 +31,11 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
+See also **IdentifyObjectsInGrid**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -40,8 +45,6 @@ Measurements made by this module
    spot on the X-axis.
 -  *YLocationOfLowestYSpot:* The Y coordinate location of the lowest
    spot on the Y-axis.
-
-See also **IdentifyObjectsInGrid**.
 """
 
 import logging

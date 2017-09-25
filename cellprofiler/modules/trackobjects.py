@@ -65,8 +65,14 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+See also
+^^^^^^^^
+
+See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
+**Groups**.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements**
 
@@ -175,9 +181,6 @@ tracking method:
    resulted from a split from a parent object in the previous frame.
 -  *MergedObjectCount:* Number of objects in the current frame that
    resulted from the merging of child objects in the previous frame.
-
-See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
-**Groups**.
 
 .. |TO_image0| image:: {PROTIP_RECOMEND_ICON}
 .. |TO_image1| image:: {PROTIP_RECOMEND_ICON}
@@ -458,16 +461,17 @@ is most consistent from frame to frame of your movie.
    Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at `Scopem,
    ETH <http://www.let-your-data-speak.com/>`__ for inquires.
 
-   **References**
+References
+^^^^^^^^^^
 
-   -  Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL,
-      Danuser G. (2008) "Robust single-particle tracking in live-cell
-      time-lapse sequences." *Nature Methods* 5(8),695-702.
-      `(link) <http://dx.doi.org/10.1038/nmeth.1237>`__
-   -  Jaqaman K, Danuser G. (2009) "Computational image analysis of
-      cellular dynamics: a case study based on particle tracking." Cold
-      Spring Harb Protoc. 2009(12):pdb.top65.
-      `(link) <http://dx.doi.org/10.1101/pdb.top65>`__
+-  Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL,
+  Danuser G. (2008) "Robust single-particle tracking in live-cell
+  time-lapse sequences." *Nature Methods* 5(8),695-702.
+  `(link) <http://dx.doi.org/10.1038/nmeth.1237>`__
+-  Jaqaman K, Danuser G. (2009) "Computational image analysis of
+  cellular dynamics: a case study based on particle tracking." Cold
+  Spring Harb Protoc. 2009(12):pdb.top65.
+  `(link) <http://dx.doi.org/10.1101/pdb.top65>`__
 
 .. |image0| image:: {PROTIP_RECOMEND_ICON}
 .. |image1| image:: {PROTIP_RECOMEND_ICON}

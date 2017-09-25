@@ -39,7 +39,7 @@ Technical notes
 ^^^^^^^^^^^^^^^
 
 This code is adapted from the ImageJ plugin,
-*Colour_Deconvolution.java* (described `here`_) written by A.C.
+`Colour_Deconvolution.java`_ written by A.C.
 Ruifrok, whose paper forms the basis for this code.
 
 References
@@ -49,7 +49,9 @@ References
    staining by color deconvolution.” *Analytical & Quantitative Cytology
    & Histology*, 23: 291-299.
 
-.. _here: http://imagej.net/Colour_Deconvolution
+See also **ColorToGray**.
+
+.. _Colour\_Deconvolution.java: http://imagej.net/Colour_Deconvolution
 """
 
 import numpy as np

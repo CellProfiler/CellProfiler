@@ -38,6 +38,9 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the edited objects.
 
+See also
+^^^^^^^^
+
 See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 **ConvertToImage**.
 """

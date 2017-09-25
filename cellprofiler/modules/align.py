@@ -38,6 +38,12 @@ Measurements made by this module
 
 -  *Xshift, Yshift:* The pixel shift in X and Y of the aligned image
    with respect to the original image.
+
+References
+^^^^^^^^^^
+
+-  Lewis JP. (1995) “Fast normalized cross-correlation.” *Vision
+   Interface*, 1-7.
 """
 
 import numpy as np
@@ -122,10 +128,6 @@ Two options for the alignment method are available:
    relevant features in the images to be aligned all have varying
    degrees of brightness.
 
-**References**
-
--  Lewis JP. (1995) “Fast normalized cross-correlation.” *Vision
-   Interface*, 1-7.
 """ % globals())
 
         self.crop_mode = cps.Choice(

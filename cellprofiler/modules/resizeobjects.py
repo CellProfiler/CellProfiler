@@ -4,16 +4,25 @@
 ResizeObjects
 =============
 
-Upsize or downsize an object’s label matrix by a factor or by specifying
-the final dimensions in pixels. ResizeObjects uses nearest neighbor
+**ResizeObjects** will upsize or downsize an object’s label matrix by a factor or by specifying
+the final dimensions in pixels. **ResizeObjects** is similar to **ResizeImage**, but
+**ResizeObjects** is specific to CellProfiler objects created by modules such as
+**IdentifyPrimaryObjects** or **Watershed**. **ResizeObjects** uses nearest neighbor
 interpolation to preserve object labels after the resizing operation.
-When resizing 3D data, ResizeObjects resizes the height and width and
-keeps the original depth (or z-dimension).
 
-ResizeObjects is useful for processing very large or 3D data. You
-might downsize a 3D image to generate a segmentation, then use
-ResizeObjects to stretch the segmented objects to their original size
-before computing measurements with the original 3D image.
+When resizing 3D data, the height and width will be changed, but
+the original depth (or z-dimension) will be kept. This 3D behavior was chosen, because in most
+cases the number of slices in a z-stack is much fewer than the number of pixels that define the
+x-y dimensions. Otherwise, a significant fraction of z information would be lost during downsizing.
+
+**ResizeObjects** is useful for processing very large or 3D data to reduce computation time. You
+might downsize a 3D image with **ResizeImage** to generate a segmentation, then use
+**ResizeObjects** to stretch the segmented objects to their original size
+before computing measurements with the original 3D image. **ResizeObjects** differs
+from **ExpandOrShrinkObjects** and **ShrinkToObjectCenters** in that the overall dimensions
+of the object label matrix, or image, are changed. In contrast, **ExpandOrShrinkObjects**
+will alter the size of the objects within an image, but it will not change the size of the image
+itself.
 """
 
 import numpy

@@ -25,6 +25,12 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+<<<<<<< HEAD
+=======
+See also
+^^^^^^^^
+
+>>>>>>> 78dd157f472acdedc7faa5cfd18b920191ee0def
 See also the **Metadata** module.
 
 Measurements made by this module

@@ -30,6 +30,11 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
+See also
+^^^^^^^^
+
+See also: **SplitOrMergeObjects**, **MaskObjects**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -46,7 +51,6 @@ Measurements made by this module
 -  *Distances:* The distance of each child object to its respective
    parent.
 
-See also: **SplitOrMergeObjects**, **MaskObjects**.
 """
 
 import re

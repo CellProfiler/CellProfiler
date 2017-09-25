@@ -18,6 +18,17 @@ scaled from 0 – 1 for object identification and display purposes, so
 additional rescaling may be needed. Please see the **RescaleIntensity**
 module for more scaling options.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also
+^^^^^^^^
+
 See also **Threshold**, **RescaleIntensity**,
 **CorrectIlluminationCalculate**.
 """
@@ -167,8 +178,8 @@ value of 1.
 
         self.ignore_mask = cellprofiler.setting.Binary(
                 "Ignore the image masks?", False, doc="""\
-Select *%(YES)s* to set equal to zero all previously masked pixels and 
-operate on the masked images as if no mask had been applied. Otherwise, 
+Select *%(YES)s* to set equal to zero all previously masked pixels and
+operate on the masked images as if no mask had been applied. Otherwise,
 the smallest image mask is applied after image math has been completed.
 """ % globals())
 

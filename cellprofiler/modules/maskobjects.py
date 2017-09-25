@@ -20,6 +20,14 @@ object that is outside of the region, remove the whole object if it is
 partially or fully outside of the region, or retain the whole object
 unless it is fully outside of the region.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -131,6 +139,8 @@ previously loaded or created in your pipeline (*%(MC_IMAGE)s*).
             "Select the masking object",
             cps.NONE,
             doc="""\
+*(Used only if mask is to be made from objects)*
+
 Select the objects that will be used to define the masking region. You
 can choose from any objects created by a previous object processing
 module, such as **IdentifyPrimaryObjects**,
@@ -142,6 +152,8 @@ module, such as **IdentifyPrimaryObjects**,
             "Select the masking image",
             cps.NONE,
             doc="""\
+*(Used only if mask is to be made from an image)*
+
 Select an image that was either loaded or created by a previous module.
 The image should be a binary image where the white portion of the image
 is the region(s) you will use for masking. Binary images can be loaded

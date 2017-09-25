@@ -6,6 +6,7 @@ import cellprofiler.analysis
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
+import cellprofiler.gui.html.utils
 import cellprofiler.preferences
 import numpy
 import os
@@ -172,8 +173,7 @@ class PreferencesView(object):
             self.__on_edit_box_change(event, edit_box, text, actions)
             event.Skip()
 
-        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text),
-                   help_button)
+        help_button.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text))
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
         panel.Bind(wx.EVT_TEXT, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_COMBOBOX, on_edit_box_change, edit_box)
@@ -513,7 +513,11 @@ class PreferencesView(object):
             self.set_error_text(error_text)
 
     def __on_help(self, event, help_text):
-        dlg = cellprofiler.gui.htmldialog.HTMLDialog(self.__panel, "Help", help_text)
+        dlg = cellprofiler.gui.htmldialog.HTMLDialog(
+            self.__panel,
+            "Help",
+            cellprofiler.gui.html.utils.rst_to_html_fragment(help_text)
+        )
         dlg.Show()
 
     def __on_pixel_size_changed(self, event):

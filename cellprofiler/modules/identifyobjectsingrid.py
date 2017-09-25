@@ -25,6 +25,14 @@ You can use the settings in this module to pass objects along to
 the object processing module **ConvertToImage** and then save them with the
 **SaveImages** module.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -38,6 +46,9 @@ Measurements made by this module
    of mass of the identified objects.
 -  *Number:* The numeric label assigned to each identified object
    according to the arrangement order you specified.
+
+See also
+^^^^^^^^
 
 See also **DefineGrid**.
 """

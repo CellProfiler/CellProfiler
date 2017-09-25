@@ -17,6 +17,14 @@ Please note that for best results, this module should be applied to the
 original raw images, rather than images that have already been
 corrected for illumination.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -64,7 +72,7 @@ Measurements made by this module
       indicates more lower frequency components, and hence more blur
       (*Field, 1997*). This metric is recommended for blur detection in
       most cases.
-      
+
 -  **Saturation metrics**
 
    -  *PercentMaximal:* Percent of pixels at the maximum intensity value

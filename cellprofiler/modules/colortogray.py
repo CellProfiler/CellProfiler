@@ -7,12 +7,23 @@ ColorToGray
 **ColortoGray** converts an image with multiple color channels to one or more
 grayscale images.
 
-This module converts color and channel-stacked 
-images to grayscale. All channels can be merged into one grayscale image 
+This module converts color and channel-stacked
+images to grayscale. All channels can be merged into one grayscale image
 (*Combine*), or each channel can be extracted into a separate grayscale image
 (*Split*). If you use *Combine*, the relative weights you provide allow
 adjusting the contribution of the colors relative to each other.
 Note that all **Identify** modules require grayscale images.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
 
 See also **GrayToColor**.
 """
@@ -227,8 +238,8 @@ other, increase or decrease the relative weights.'''))
 
         group.append("image_name", cps.ImageNameProvider(
                 "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""\
-*(Used only when splitting images)*                
-                
+*(Used only when splitting images)*
+
 Select the name of the output grayscale image."""))
 
         if group.can_remove:

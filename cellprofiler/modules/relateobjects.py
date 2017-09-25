@@ -22,7 +22,18 @@ If you want to include child objects that lie outside but still near
 parent objects, you might want to expand the parent objects using
 **ExpandOrShrink** or **IdentifySecondaryObjects**.
 
-This module supports 2D and 3D objects.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also
+^^^^^^^^
+
+See also: **SplitOrMergeObjects**, **MaskObjects**.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -40,7 +51,6 @@ Measurements made by this module
 -  *Distances:* The distance of each child object to its respective
    parent.
 
-See also: **SplitOrMergeObjects**, **MaskObjects**.
 """
 
 import re
@@ -402,12 +412,21 @@ parents or children of the parent object."""
 
         parent_labeled_children[mask] = mapping[parents_of[child_labels[mask] - 1]]
 
+        max_label = max(
+            parent_labels.max(),
+            child_labels.max(),
+            parent_labeled_children.max()
+        )
+
+        seed = numpy.random.randint(256)
+
         figure.subplot_imshow_labels(
             0,
             0,
             parent_labels,
-            title=self.x_name.value
-
+            title=self.x_name.value,
+            max_label=max_label,
+            seed=seed
         )
 
         figure.subplot_imshow_labels(
@@ -415,15 +434,19 @@ parents or children of the parent object."""
             0,
             child_labels,
             title=self.y_name.value,
-            sharexy=figure.subplot(0, 0)
+            sharexy=figure.subplot(0, 0),
+            max_label=max_label,
+            seed=seed
         )
 
         figure.subplot_imshow_labels(
             0,
             1,
             parent_labeled_children,
-            "{} labeled by {}".format(self.y_name.value, self.x_name.value),
-            sharexy=figure.subplot(0, 0)
+            title="{} labeled by {}".format(self.y_name.value, self.x_name.value),
+            sharexy=figure.subplot(0, 0),
+            max_label=max_label,
+            seed=seed
         )
 
     def get_parent_names(self):

@@ -15,6 +15,20 @@ measurment modules. If using the *overlapping* style of objects, these
 can be saved as images using **SaveImages** to create a multi-page TIF
 file by specifying “Objects” as the type of image to save.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also our `Worm Toolbox`_ page for sample images and pipelines, as
+well as video tutorials.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -73,9 +87,6 @@ References
    Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
    for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
    714-716. `(link)`_
-
-See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
-well as video tutorials.
 
 .. _(link): http://dx.doi.org/10.1038/nmeth.1984
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/

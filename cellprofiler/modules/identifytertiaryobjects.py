@@ -24,6 +24,20 @@ IdentifyTertiaryObjects
 cytoplasm) by removing smaller primary objects (e.g., nuclei) from larger
 secondary objects (e.g., cells), leaving a ring shape.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also **IdentifyPrimaryObjects** and **IdentifySecondaryObjects**
+modules.
+
 What is a tertiary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -87,8 +101,6 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified tertiary objects.
 
-See also **IdentifyPrimaryObjects** and **IdentifySecondaryObjects**
-modules.
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT
 })

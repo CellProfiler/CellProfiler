@@ -27,6 +27,17 @@ The new, "merged" object may therefore consist of two or more unconnected
 components. If you want to add pixels around objects, see
 **ExpandOrShrink** or **Morph**.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
 See also **RelateObjects**.
 
 Measurements made by this module
@@ -75,7 +86,7 @@ from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.setting import YES, NO
 
-OPTION_UNIFY = "Unify"
+OPTION_MERGE = "Merge"
 OPTION_SPLIT = "Split"
 
 UNIFY_DISTANCE = "Distance"
@@ -91,7 +102,7 @@ UM_CONVEX_HULL = "Convex hull"
 class SplitOrMergeObjects(cpm.Module):
     module_name = "SplitOrMergeObjects"
     category = "Object Processing"
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
@@ -111,10 +122,10 @@ You can use this name in subsequent modules that take objects as inputs."""
         )
 
         self.relabel_option = cps.Choice(
-                "Operation", [OPTION_UNIFY, OPTION_SPLIT], doc="""\
+                "Operation", [OPTION_MERGE, OPTION_SPLIT], doc="""\
 You can choose one of the following options:
 
--  *%(OPTION_UNIFY)s:* Assign adjacent or nearby objects the same label
+-  *%(OPTION_MERGE)s:* Assign adjacent or nearby objects the same label
    based on certain criteria. It can be useful, for example, to merge
    together touching objects that were incorrectly split into two pieces
    by an **Identify** module.
@@ -123,11 +134,11 @@ You can choose one of the following options:
    operations in the **Morph** module to objects.""" % globals()
         )
 
-        self.unify_option = cps.Choice(
-                "Unification method", [UNIFY_DISTANCE, UNIFY_PARENT], doc="""\
-*(Used only with the "%(OPTION_UNIFY)s" option)*
+        self.merge_option = cps.Choice(
+                "Merging method", [UNIFY_DISTANCE, UNIFY_PARENT], doc="""\
+*(Used only with the "%(OPTION_MERGE)s" option)*
 
-You can unify objects in one of two ways:
+You can merge objects in one of two ways:
 
 -  *%(UNIFY_DISTANCE)s:* All objects within a certain pixel radius from
    each other will be merged.
@@ -138,12 +149,12 @@ You can unify objects in one of two ways:
    for more details.""" % globals()
         )
 
-        self.unification_method = cps.Choice(
+        self.merging_method = cps.Choice(
                 "Output object type", [UM_DISCONNECTED, UM_CONVEX_HULL],
                 doc="""\
-*(Used only with the "%(UNIFY_PARENT)s" unification method)*
+*(Used only with the "%(UNIFY_PARENT)s" merging method)*
 
-**SplitOrMergeObjects** can either unify the child objects and keep them
+**SplitOrMergeObjects** can either merge the child objects and keep them
 disconnected or it can find the smallest convex polygon (the convex
 hull) that encloses all of a parent’s child objects. The convex hull
 will be truncated to include only those pixels in the parent - in that
@@ -155,25 +166,25 @@ create an output object that is the convex hull around them all.""" % globals()
         self.parent_object = cps.Choice(
                 "Select the parent object", [cps.NONE],
                 choices_fn=self.get_parent_choices, doc="""\
-Select the parent object that will be used to unify the child objects.
+Select the parent object that will be used to merge the child objects.
 Please note the following:
 
 -  You must have established a parent-child relationship between the
    objects using a prior **RelateObjects** module.
 -  Primary objects and their associated secondary objects are already in
-   a one-to-one parent-child relationship, so it makes no sense to unify
+   a one-to-one parent-child relationship, so it makes no sense to merge
    them here."""
         )
 
         self.distance_threshold = cps.Integer(
-                "Maximum distance within which to unify objects",
+                "Maximum distance within which to merge objects",
                 0, minval=0, doc="""\
-*(Used only with the "%(OPTION_UNIFY)s" option and the "%(UNIFY_DISTANCE)s"
+*(Used only with the "%(OPTION_MERGE)s" option and the "%(UNIFY_DISTANCE)s"
 method)*
 
 Objects that are less than or equal to the distance you enter here, in
 pixels, will be merged. If you choose zero (the default), only objects
-that are touching will be merged. Note that *%(OPTION_UNIFY)s* will
+that are touching will be merged. Note that *%(OPTION_MERGE)s* will
 not actually connect or bridge the two objects by adding any new pixels;
 it simply assigns the same object number to the portions of the object.
 The new, merged object may therefore consist of two or more unconnected
@@ -182,26 +193,26 @@ components. If you want to add pixels around objects, see
         )
 
         self.wants_image = cps.Binary(
-                "Unify using a grayscale image?", False, doc="""\
-*(Used only with the "%(OPTION_UNIFY)s" option)*
+                "Merge using a grayscale image?", False, doc="""\
+*(Used only with the "%(OPTION_MERGE)s" option)*
 
 Select *%(YES)s* to use the objects’ intensity features to determine
 whether two objects should be merged. If you choose to use a grayscale
-image, *%(OPTION_UNIFY)s* will unify two objects only if they are
+image, *%(OPTION_MERGE)s* will merge two objects only if they are
 within the distance you have specified *and* certain criteria about the
 objects within the grayscale image are met.""" % globals())
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the grayscale image to guide unification", cps.NONE, doc="""\
+                "Select the grayscale image to guide merging", cps.NONE, doc="""\
 *(Used only if a grayscale image is to be used as a guide for
-unification)*
+merging)*
 
 Select the name of an image loaded or created by a previous module.""")
 
         self.minimum_intensity_fraction = cps.Float(
                 "Minimum intensity fraction", .9, minval=0, maxval=1, doc="""\
 *(Used only if a grayscale image is to be used as a guide for
-unification)*
+merging)*
 
 Select the minimum acceptable intensity fraction. This will be used as
 described for the method you choose in the next setting.""")
@@ -210,7 +221,7 @@ described for the method you choose in the next setting.""")
                 "Method to find object intensity",
                 [CA_CLOSEST_POINT, CA_CENTROIDS], doc="""\
 *(Used only if a grayscale image is to be used as a guide for
-unification)*
+merging)*
 
 You can use one of two methods to determine whether two objects should
 merged, assuming they meet the distance criteria (as specified
@@ -220,7 +231,7 @@ above):
    this method identifies the centroid of each object, records the
    intensity value of the dimmer of the two centroids, multiplies this
    value by the *minimum intensity fraction* to generate a threshold,
-   and draws a line between the centroids. The method will unify the two
+   and draws a line between the centroids. The method will merge the two
    objects only if the intensity of every point along the line is above
    the threshold. For instance, if the intensity of one centroid is 0.75
    and the other is 0.50 and the *minimum intensity fraction* has been
@@ -256,7 +267,7 @@ above):
         return choices
 
     def validate_module(self, pipeline):
-        if self.relabel_option == OPTION_UNIFY and self.unify_option == UNIFY_PARENT and self.parent_object.value == cps.NONE:
+        if self.relabel_option == OPTION_MERGE and self.merge_option == UNIFY_PARENT and self.parent_object.value == cps.NONE:
             raise cps.ValidationError(
                     '%s is not a valid object name' % cps.NONE,
                     self.parent_object)
@@ -267,21 +278,21 @@ above):
                 self.wants_image, self.image_name,
                 self.minimum_intensity_fraction,
                 self.where_algorithm,
-                self.unify_option, self.parent_object,
-                self.unification_method]
+                self.merge_option, self.parent_object,
+                self.merging_method]
 
     def visible_settings(self):
         result = [self.objects_name, self.output_objects_name,
                   self.relabel_option]
-        if self.relabel_option == OPTION_UNIFY:
-            result += [self.unify_option]
-            if self.unify_option == UNIFY_DISTANCE:
+        if self.relabel_option == OPTION_MERGE:
+            result += [self.merge_option]
+            if self.merge_option == UNIFY_DISTANCE:
                 result += [self.distance_threshold, self.wants_image]
                 if self.wants_image:
                     result += [self.image_name, self.minimum_intensity_fraction,
                                self.where_algorithm]
-            elif self.unify_option == UNIFY_PARENT:
-                result += [self.unification_method, self.parent_object]
+            elif self.merge_option == UNIFY_PARENT:
+                result += [self.merging_method, self.parent_object]
         return result
 
     def run(self, workspace):
@@ -292,7 +303,7 @@ above):
         if self.relabel_option == OPTION_SPLIT:
             output_labels, count = scind.label(labels > 0, np.ones((3, 3), bool))
         else:
-            if self.unify_option == UNIFY_DISTANCE:
+            if self.merge_option == UNIFY_DISTANCE:
                 mask = labels > 0
                 if self.distance_threshold.value > 0:
                     #
@@ -306,13 +317,13 @@ above):
                 output_labels[labels == 0] = 0
                 if self.wants_image:
                     output_labels = self.filter_using_image(workspace, mask)
-            elif self.unify_option == UNIFY_PARENT:
+            elif self.merge_option == UNIFY_PARENT:
                 parents_name = self.parent_object.value
                 parents_of = workspace.measurements[
                     objects_name, "_".join((C_PARENT, parents_name))]
                 output_labels = labels.copy().astype(np.uint32)
                 output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
-                if self.unification_method == UM_CONVEX_HULL:
+                if self.merging_method == UM_CONVEX_HULL:
                     ch_pts, n_pts = morph.convex_hull(output_labels)
                     ijv = morph.fill_convex_hulls(ch_pts, n_pts)
                     output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
@@ -353,7 +364,7 @@ above):
         if self.show_window:
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
-            if self.unify_option == UNIFY_PARENT:
+            if self.merge_option == UNIFY_PARENT:
                 workspace.display_data.parent_labels = \
                     workspace.object_set.get_objects(self.parent_object.value).segmented
 
@@ -370,9 +381,9 @@ above):
                 0, 0, workspace.display_data.orig_labels,
                 title=self.objects_name.value)
 
-        if self.relabel_option == OPTION_UNIFY and (
-                    (self.unify_option == UNIFY_DISTANCE and self.wants_image) or (self.unify_option == UNIFY_PARENT)):
-            if self.unify_option == UNIFY_DISTANCE and self.wants_image:
+        if self.relabel_option == OPTION_MERGE and (
+                    (self.merge_option == UNIFY_DISTANCE and self.wants_image) or (self.merge_option == UNIFY_PARENT)):
+            if self.merge_option == UNIFY_DISTANCE and self.wants_image:
                 image = workspace.display_data.image
                 cplabels = [
                     dict(name=self.output_objects_name.value,
@@ -380,7 +391,7 @@ above):
                     dict(name=self.objects_name.value,
                          labels=[workspace.display_data.orig_labels])]
 
-            elif self.unify_option == UNIFY_PARENT:
+            elif self.merge_option == UNIFY_PARENT:
                 image = np.zeros(workspace.display_data.output_labels.shape)
                 cplabels = [
                     dict(name=self.output_objects_name.value,
@@ -547,6 +558,13 @@ above):
         if variable_revision_number == 4:
             setting_values = setting_values[:8] + setting_values[10:]
             variable_revision_number = 5
+
+        if variable_revision_number == 5:
+            # Unify --> Merge
+            if setting_values[2] == "Unify":
+                setting_values[2] = "Merge"
+
+            variable_revision_number = 6
 
         return setting_values, variable_revision_number, False
 

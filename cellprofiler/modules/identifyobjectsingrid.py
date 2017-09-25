@@ -47,6 +47,9 @@ Measurements made by this module
 -  *Number:* The numeric label assigned to each identified object
    according to the arrangement order you specified.
 
+See also
+^^^^^^^^
+
 See also **DefineGrid**.
 """
 

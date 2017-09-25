@@ -1,3 +1,5 @@
+# coding:utf-8
+
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
@@ -26,7 +28,7 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "Why Use CellProfiler?",
-            contents=cellprofiler.gui.help.content.WHEN_CAN_I_USE_CELLPROFILER_HELP
+            contents=cellprofiler.gui.help.content.read_content("why_use_cellprofiler.rst")
         )
 
         self.AppendSubMenu(
@@ -46,17 +48,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "How To Build A Pipeline",
-            contents=cellprofiler.gui.help.content.BUILDING_A_PIPELINE_HELP
+            contents=cellprofiler.gui.help.content.read_content("pipelines_building.rst")
         )
 
         self.append(
             "Testing Your Pipeline",
-            contents=cellprofiler.gui.help.content.TEST_MODE_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
         )
 
         self.append(
             "Running Your Pipeline",
-            contents=cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP
+            contents=cellprofiler.gui.help.content.read_content("pipelines_running.rst")
         )
 
         self.AppendSubMenu(
@@ -66,12 +68,12 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "Troubleshooting Memory and Speed Issues",
-            contents=cellprofiler.gui.help.content.MEMORY_AND_SPEED_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_troubleshooting.rst")
         )
 
         self.append(
             "Batch Processing",
-            contents=cellprofiler.gui.help.content.BATCHPROCESSING_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_batch.rst")
         )
 
         self.AppendSubMenu(
@@ -108,17 +110,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         figure_menu.append(
             "Using The Display Window Menu Bar",
-            contents=cellprofiler.gui.help.content.MODULE_DISPLAY_MENU_BAR_HELP
+            contents=cellprofiler.gui.help.content.read_content("display_menu_bar.rst")
         )
 
         figure_menu.append(
             "Using The Interactive Navigation Toolbar",
-            contents=cellprofiler.gui.help.content.MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP
+            contents=cellprofiler.gui.help.content.read_content("display_interactive_navigation.rst")
         )
 
         figure_menu.append(
             "How To Use The Image Tools",
-            contents=cellprofiler.gui.help.content.MODULE_DISPLAY_IMAGE_TOOLS_HELP
+            contents=cellprofiler.gui.help.content.read_content("display_image_tools.rst")
         )
 
         return figure_menu
@@ -128,17 +130,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         legacy_menu.append(
             "Load Modules",
-            contents=cellprofiler.gui.help.content.LEGACY_LOAD_MODULES_HELP
+            contents=cellprofiler.gui.help.content.read_content("legacy_load_modules.rst")
         )
 
         legacy_menu.append(
             "Setting the Output Filename",
-            contents=cellprofiler.gui.help.content.USING_THE_OUTPUT_FILE_HELP
+            contents=cellprofiler.gui.help.content.read_content("legacy_output_file.rst")
         )
 
         legacy_menu.append(
             "MATLAB format images",
-            contents=cellprofiler.gui.help.content.MATLAB_FORMAT_IMAGES_HELP
+            contents=cellprofiler.gui.help.content.read_content("legacy_matlab_image.rst")
         )
 
         return legacy_menu
@@ -148,32 +150,32 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         navigation_menu.append(
             "Using the File Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_FILE_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_file_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Edit Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_EDIT_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_edit_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Test Menu",
-            contents=cellprofiler.gui.help.content.TEST_MODE_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Window Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_WINDOW_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_window_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Parameter Sampling Menu",
-            contents=cellprofiler.gui.help.content.PARAMETER_SAMPLING_MENU_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_parameter_sampling_menu.rst")
         )
 
         navigation_menu.append(
             "Using the Data Tools Menu",
-            contents=cellprofiler.gui.help.content.MENU_BAR_DATATOOLS_HELP
+            contents=cellprofiler.gui.help.content.read_content("navigation_data_tools_menu.rst")
         )
 
         return navigation_menu
@@ -204,17 +206,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         other_menu.append(
             "Running Multiple Pipelines",
-            contents=cellprofiler.gui.help.content.RUN_MULTIPLE_PIPELINES_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_multiple_pipelines.rst")
         )
 
         other_menu.append(
             "Configuring Logging",
-            contents=cellprofiler.gui.help.content.CONFIGURING_LOGGING_HELP
+            contents=cellprofiler.gui.help.content.read_content("other_logging.rst")
         )
 
         other_menu.append(
             "Accessing Images From OMERO",
-            contents=cellprofiler.gui.help.content.ACCESSING_OMERO_IMAGES
+            contents=cellprofiler.gui.help.content.read_content("other_omero.rst")
         )
 
         return other_menu
@@ -224,17 +226,17 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         output_menu.append(
             "How Measurements are Named",
-            contents=cellprofiler.gui.help.content.MEASUREMENT_NOMENCLATURE_HELP
+            contents=cellprofiler.gui.help.content.read_content("output_measurements.rst")
         )
 
         output_menu.append(
             "Using Spreadsheets and Databases",
-            contents=cellprofiler.gui.help.content.SPREADSHEETS_DATABASE_HELP
+            contents=cellprofiler.gui.help.content.read_content("output_spreadsheets.rst")
         )
 
         output_menu.append(
             "Plate Viewer",
-            contents=cellprofiler.gui.help.content.PLATEVIEWER_HELP
+            contents=cellprofiler.gui.help.content.read_content("output_plateviewer.rst")
         )
 
         return output_menu
@@ -244,22 +246,22 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         project_menu.append(
             "Introduction to Projects",
-            contents=cellprofiler.gui.help.content.INTRODUCTION_TO_PROJECTS_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_introduction.rst")
         )
 
         project_menu.append(
             "Selecting Images for Input",
-            contents=cellprofiler.gui.help.content.SELECTING_IMAGES_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
         )
 
         project_menu.append(
             "Configuring Images for Analysis",
-            contents=cellprofiler.gui.help.content.CONFIGURE_IMAGES_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
         )
 
         project_menu.append(
             "Loading Image Stacks and Movies",
-            contents=cellprofiler.gui.help.content.LOADING_IMAGE_SEQUENCES_HELP
+            contents=cellprofiler.gui.help.content.read_content("projects_image_sequences.rst")
         )
 
         return project_menu

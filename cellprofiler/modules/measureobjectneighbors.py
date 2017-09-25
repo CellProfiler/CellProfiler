@@ -23,6 +23,11 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
+See also
+^^^^^^^^
+
+See also the **Identify** modules.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -57,7 +62,8 @@ Objects discarded via modules such as **IdentifyPrimaryObjects** or
 purposes of accurate measurement. For instance, if an object touches a
 single object and that object had been discarded, *NumberOfNeighbors*
 will be positive, but there will not be a corresponding
-*ClosestObjectNumber*. See also the **Identify** modules.
+*ClosestObjectNumber*.
+
 """
 
 import matplotlib.cm

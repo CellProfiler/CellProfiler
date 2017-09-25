@@ -195,8 +195,8 @@ class AddModuleFrame(wx.Frame):
             self.display_helpframe(html, 'Help matching "%s"' % self.search_text.Value)
 
     def __on_getting_started(self, event):
-        from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
-        self.display_helpframe(BUILDING_A_PIPELINE_HELP,
+        import cellprofiler.gui.help.content
+        self.display_helpframe(cellprofiler.gui.help.content.read_content("pipelines_building.rst"),
                                'Add modules: Getting Started')
 
     def display_helpframe(self, help_text, title):

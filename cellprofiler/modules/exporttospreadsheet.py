@@ -79,6 +79,9 @@ Measurements made by this module
 
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.
+See also
+^^^^^^^^
+
 See also **ExportToDatabase**.
 """
 

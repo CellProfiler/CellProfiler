@@ -30,6 +30,9 @@ Supports 2D? Supports 3D?
 YES          NO
 ============ ============
 
+See also
+^^^^^^^^
+
 See also **MeasureObjectIntensity** and **MeasureTexture**.
 
 Measurements made by this module

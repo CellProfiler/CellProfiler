@@ -296,7 +296,9 @@ time-consuming process, but some methods are faster than others.
    pixels from the calculation. It operates iteratively, classifying
    pixels as background, computing a best fit spline to this background
    and then reclassifying pixels as background until the spline
-   converges on its final value.
+   converges on its final value. This method is best for backgrounds that
+   are highly variable and irregular. Note that the computation time can
+   be significant, especially with a large number of control points.
 -  *%(SM_CONVEX_HULL)s:* This method can be used on an image whose objects are
    darker than their background and whose illumination intensity
    decreases monotonically from the brightest point. It proceeds as follows:
@@ -310,6 +312,17 @@ time-consuming process, but some methods are faster than others.
       -  Find the convex hull that encloses those pixels
       -  Set the intensity of the output image within the convex hull to
          the current intensity
+
+   The *%(SM_CONVEX_HULL)s* method is useful for calculating illumination correction 
+   images in empty brightfield images. It is a good option if the image contains a whole well. 
+   The edges of the well will be preserved, where there is a sharp transition in 
+   intensity, because there is no smoothing involved with this method. 
+
+**References**
+-  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
+of intensity nonuniformities in 2D and 3D microscope images of fluorescence
+stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
+(SCIA), pp. 264-271
 """ % globals())
 
         self.automatic_object_width = cps.Choice(

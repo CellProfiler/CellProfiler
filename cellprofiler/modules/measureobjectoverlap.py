@@ -164,6 +164,28 @@ class MeasureObjectOverlap(cellprofiler.module.Module):
             doc="Choose whether to compare objects or images."
         )
 
+        self.ground_truth = cellprofiler.setting.ImageNameSubscriber(
+            "Select the image to be used as the ground truth basis for calculating the amount of overlap",
+            cellprofiler.setting.NONE,
+            doc="""\
+*(Used only when comparing foreground/background)*
+
+This binary (black and white) image is known as the “ground truth”
+image. It can be the product of segmentation performed by hand, or the
+result of another segmentation algorithm whose results you would like to
+compare."""
+        )
+
+        self.test_img = cellprofiler.setting.ImageNameSubscriber(
+            "Select the image to be used to test for overlap",
+            cellprofiler.setting.NONE,
+            doc="""\
+*(Used only when comparing foreground/background)*
+
+This binary (black and white) image is what you will compare with the
+ground truth image. It is known as the “test image”."""
+        )
+
         self.object_name_GT = cellprofiler.setting.ObjectNameSubscriber(
             "Select the objects to be used as the ground truth basis for calculating the amount of overlap",
             cellprofiler.setting.NONE,
@@ -352,13 +374,15 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         test_pixels = test_image.pixel_data
 
-# In volumetric case the 3D image stack gets converted to a long 2D image and gets analyzed
+# ==============================================================================================
+# CP pipelines are either all 2D or all 3D, only need to check this image
         if ground_truth_image.volumetric:
             ground_truth_pixels = ground_truth_pixels.reshape(-1, ground_truth_pixels.shape[-1])
 
             mask = mask.reshape(-1, mask.shape[-1])
 
             test_pixels = test_pixels.reshape(-1, test_pixels.shape[-1])
+# ==============================================================================================
 
         false_positives = test_pixels & ~ground_truth_pixels
 

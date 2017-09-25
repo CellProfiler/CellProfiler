@@ -297,8 +297,8 @@ the two images. Set this setting to “No” to assess no penalty."""
         return [
             self.ground_truth,
             self.test_img,
-            self.object_name_GT,
-            self.object_name_ID,
+#            self.object_name_GT,  # TODO: remove me
+#            self.object_name_ID,  # TODO: remove me
             self.wants_emd,
             self.max_points,
             self.decimation_method,
@@ -991,3 +991,6 @@ Please update your pipeline to use MeasureObjectOverlap to compute object measur
             variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

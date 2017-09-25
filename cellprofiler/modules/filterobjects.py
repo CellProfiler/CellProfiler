@@ -250,7 +250,7 @@ maximal child is assigned. The choices are:
             doc="""\
 *(Used only if a per-object filtering method is selected)*
 
-This setting selects the container (i.e., parent) objects for the
+This setting selects the container (i.e., parent) objects for the 
 *{FI_MAXIMAL_PER_OBJECT}* and *{FI_MINIMAL_PER_OBJECT}* filtering
 choices.""".format(**{
                 "FI_MAXIMAL_PER_OBJECT": FI_MAXIMAL_PER_OBJECT,
@@ -259,12 +259,15 @@ choices.""".format(**{
         )
 
         self.rules_directory = cellprofiler.setting.DirectoryPath(
-            "Rules file location",
+            "Select the location of the rules or classifier file",
             doc="""\
 *(Used only when filtering using {MODE_RULES} or {MODE_CLASSIFIERS})*
 
-Select the location of the rules file that will be used for filtering.
-{IO_FOLDER_CHOICE_HELP_TEXT}""".format(**{
+Select the location of the rules or classifier file that will be used for 
+filtering.
+
+{IO_FOLDER_CHOICE_HELP_TEXT}
+""".format(**{
                 "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
                 "MODE_RULES": MODE_RULES,
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
@@ -304,17 +307,18 @@ Please note the following:
             self.rules_directory.join_parts(dir_choice, custom_path)
 
         self.rules_file_name = cellprofiler.setting.FilenameText(
-            "Rules file name",
+            "Rules or classifier file name",
             "rules.txt",
             get_directory_fn=get_directory_fn,
             set_directory_fn=set_directory_fn,
             doc="""\
 *(Used only when filtering using {MODE_RULES} or {MODE_CLASSIFIERS})*
 
-The name of the rules file. This file should be a plain text file
-containing the complete set of rules.
+The name of the rules or classifier file. 
 
-Each line of this file should be a rule naming a measurement to be made
+A rules file is a plain text file containing the complete set of rules.
+
+Each line of the rules file should be a rule naming a measurement to be made
 on the object you selected, for instance:
 
     IF (Nuclei_AreaShape_Area < 351.3, [0.79, -0.79], [-0.94, 0.94])
@@ -323,7 +327,13 @@ The above rule will score +0.79 for the positive category and -0.94
 for the negative category for nuclei whose area is less than 351.3
 pixels and will score the opposite for nuclei whose area is larger.
 The filter adds positive and negative and keeps only objects whose
-positive score is higher than the negative score.""".format(**{
+positive score is higher than the negative score.
+
+A classifier file is a trained classifier exported from CellProfiler Analyst. 
+You will need to ensure that the measurements specified by the file are 
+produced by upstream modules in the pipeline. This setting is not compatible 
+with data processed as 3D.
+""".format(**{
                 "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
                 "MODE_RULES": MODE_RULES
             })
@@ -911,7 +921,7 @@ value will be retained.""".format(**{
         path_ = os.path.join(directory_, file_)
         if path_ not in d:
             if not os.path.isfile(path_):
-                raise cellprofiler.setting.ValidationError("No such rules file: %s" % path_,
+                raise cellprofiler.setting.ValidationError("No such classifier file: %s" % path_,
                                                            self.rules_file_name)
             else:
                 from sklearn.externals import joblib

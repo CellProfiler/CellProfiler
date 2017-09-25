@@ -229,13 +229,13 @@ The following operations are available:
 
     - Binary
 
-    |
+|
 
-    ============ ============
-    Supports 2D? Supports 3D?
-    ============ ============
-    YES          NO
-    ============ ============
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
 
 """
 

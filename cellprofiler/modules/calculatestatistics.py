@@ -74,13 +74,13 @@ Measurements made by this module
    -  *Zfactor:* The Z’-factor indicates how well separated the positive
       and negative controls are. A Z’-factor > 0 is potentially
       screenable; a Z’-factor > 0.5 is considered an excellent assay.
-      The formula is 1 &minus 3 × (σ:sub:`p` +
+      The formula is 1 - 3 × (σ\ :sub:`p` +
       σ\ :sub:`n`)/\|μ\ :sub:`p` - μ\ :sub:`n`\ \| where σ\ :sub:`p` and
       σ\ :sub:`n` are the standard deviations of the positive and
       negative controls, and μ\ :sub:`p` and μ\ :sub:`n` are the means
       of the positive and negative controls.
    -  *Vfactor:* The V-factor is a generalization of the Z’-factor, and
-      is calculated as 1 &minus 6 × mean(σ)/\|μ\ :sub:`p` -
+      is calculated as 1 - 6 × mean(σ)/\|μ\ :sub:`p` -
       μ\ :sub:`n`\ \| where σ are the standard deviations of the data,
       and μ\ :sub:`p` and μ\ :sub:`n` are defined as above.
    -  *EC50:* The half maximal effective concentration (EC50) is the

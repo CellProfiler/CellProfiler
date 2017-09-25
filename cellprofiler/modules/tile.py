@@ -40,7 +40,7 @@ packages useful:
 
 Other packages are referenced `here`_.
 
-.. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
+.. _Photomerge Feature in Photoshop CS: https://helpx.adobe.com/photoshop/using/create-panoramic-images-photomerge.html
 .. _PTGui: http://www.ptgui.com/
 .. _Autostitch: http://matthewalunbrown.com/autostitch/autostitch.html
 .. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/

@@ -80,7 +80,7 @@ This module can use one of two color schemes to combine images:
    from top to bottom. An arbitrary number of channels is allowed.
 
    For example, you could create a 5-channel image by providing
-   5 grayscale images. The first grayscale image you provide will fill 
+   5 grayscale images. The first grayscale image you provide will fill
    the first channel, the second grayscale image you provide will fill
    the second channel, and so on.
 -  *%(SCHEME_COMPOSITE)s*: A color is assigned to each grayscale image.

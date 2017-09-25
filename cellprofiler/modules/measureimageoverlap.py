@@ -137,8 +137,6 @@ FTR_ALL = [
 
 O_OBJ = "Segmented objects"
 O_IMG = "Foreground/background segmentation"
-O_ALL = [O_OBJ, O_IMG]
-#O_ALL = O_IMG
 
 L_LOAD = "Loaded from a previous run"
 L_CP = "From this CP pipeline"
@@ -149,16 +147,10 @@ DM_SKEL = "Skeleton"
 
 class MeasureImageOverlap(cellprofiler.module.Module):
     category = "Measurement"
-    variable_revision_number = 4
+    variable_revision_number = 5
     module_name = "MeasureImageOverlap"
 
     def create_settings(self):
-        self.obj_or_img = cellprofiler.setting.Choice(
-            "Compare segmented objects, or foreground/background?",
-            O_ALL,
-            doc="Choose whether to compare objects or images."
-        )
-
         self.ground_truth = cellprofiler.setting.ImageNameSubscriber(
             "Select the image to be used as the ground truth basis for calculating the amount of overlap",
             cellprofiler.setting.NONE,
@@ -303,7 +295,6 @@ the two images. Set this setting to “No” to assess no penalty."""
 
     def settings(self):
         return [
-            self.obj_or_img,
             self.ground_truth,
             self.test_img,
             self.object_name_GT,
@@ -316,21 +307,11 @@ the two images. Set this setting to “No” to assess no penalty."""
         ]
 
     def visible_settings(self):
-        visible_settings = [self.obj_or_img]
-
-        if self.obj_or_img == O_IMG:
-            visible_settings += [
-                self.ground_truth,
-                self.test_img
-            ]
-
-        elif self.obj_or_img == O_OBJ:
-            visible_settings += [
-                self.object_name_GT,
-                self.object_name_ID
-            ]
-
-        visible_settings += [self.wants_emd]
+        visible_settings = [
+            self.ground_truth,
+            self.test_img,
+            self.wants_emd
+        ]
 
         if self.wants_emd:
             visible_settings += [
@@ -343,13 +324,6 @@ the two images. Set this setting to “No” to assess no penalty."""
         return visible_settings
 
     def run(self, workspace):
-        if self.obj_or_img == O_IMG:
-            self.measure_image(workspace)
-
-        elif self.obj_or_img == O_OBJ:
-            self.measure_objects(workspace)
-
-    def measure_image(self, workspace):
         image_set = workspace.image_set
 
         ground_truth_image = image_set.get_image(self.ground_truth.value, must_be_binary=True)
@@ -526,207 +500,6 @@ the two images. Set this setting to “No” to assess no penalty."""
 
             if self.wants_emd:
                 workspace.display_data.statistics.append((FTR_EARTH_MOVERS_DISTANCE, emd))
-
-    def measure_objects(self, workspace):
-        image_set = workspace.image_set
-        object_name_GT = self.object_name_GT.value
-        objects_GT = workspace.get_objects(object_name_GT)
-        iGT, jGT, lGT = objects_GT.ijv.transpose()
-        object_name_ID = self.object_name_ID.value
-        objects_ID = workspace.get_objects(object_name_ID)
-        iID, jID, lID = objects_ID.ijv.transpose()
-        ID_obj = 0 if len(lID) == 0 else max(lID)
-        GT_obj = 0 if len(lGT) == 0 else max(lGT)
-
-        xGT, yGT = objects_GT.shape
-        xID, yID = objects_ID.shape
-        GT_pixels = numpy.zeros((xGT, yGT))
-        ID_pixels = numpy.zeros((xID, yID))
-        total_pixels = xGT * yGT
-
-        GT_pixels[iGT, jGT] = 1
-        ID_pixels[iID, jID] = 1
-
-        GT_tot_area = len(iGT)
-        if len(iGT) == 0 and len(iID) == 0:
-            intersect_matrix = numpy.zeros((0, 0), int)
-        else:
-            #
-            # Build a matrix with rows of i, j, label and a GT/ID flag
-            #
-            all_ijv = numpy.column_stack(
-                    (numpy.hstack((iGT, iID)),
-                     numpy.hstack((jGT, jID)),
-                     numpy.hstack((lGT, lID)),
-                     numpy.hstack((numpy.zeros(len(iGT)), numpy.ones(len(iID))))))
-            #
-            # Order it so that runs of the same i, j are consecutive
-            #
-            order = numpy.lexsort((all_ijv[:, -1], all_ijv[:, 0], all_ijv[:, 1]))
-            all_ijv = all_ijv[order, :]
-            # Mark the first at each i, j != previous i, j
-            first = numpy.where(numpy.hstack(
-                    ([True],
-                     ~ numpy.all(all_ijv[:-1, :2] == all_ijv[1:, :2], 1),
-                     [True])))[0]
-            # Count # at each i, j
-            count = first[1:] - first[:-1]
-            # First indexer - mapping from i,j to index in all_ijv
-            all_ijv_map = centrosome.index.Indexes([count])
-            # Bincount to get the # of ID pixels per i,j
-            id_count = numpy.bincount(all_ijv_map.rev_idx,
-                                   all_ijv[:, -1]).astype(int)
-            gt_count = count - id_count
-            # Now we can create an indexer that has NxM elements per i,j
-            # where N is the number of GT pixels at that i,j and M is
-            # the number of ID pixels. We can then use the indexer to pull
-            # out the label values for each to populate a sparse array.
-            #
-            cross_map = centrosome.index.Indexes([id_count, gt_count])
-            off_gt = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[0]
-            off_id = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[1] + \
-                     id_count[cross_map.rev_idx]
-            intersect_matrix = scipy.sparse.coo_matrix(
-                    (numpy.ones(len(off_gt)),
-                     (all_ijv[off_id, 2], all_ijv[off_gt, 2])),
-                    shape=(ID_obj + 1, GT_obj + 1)).toarray()[1:, 1:]
-
-        gt_areas = objects_GT.areas
-        id_areas = objects_ID.areas
-        FN_area = gt_areas[numpy.newaxis, :] - intersect_matrix
-        all_intersecting_area = numpy.sum(intersect_matrix)
-
-        dom_ID = []
-
-        for i in range(0, ID_obj):
-            indices_jj = numpy.nonzero(lID == i)
-            indices_jj = indices_jj[0]
-            id_i = iID[indices_jj]
-            id_j = jID[indices_jj]
-            ID_pixels[id_i, id_j] = 1
-
-        for i in intersect_matrix:  # loop through the GT objects first
-            if len(i) == 0 or max(i) == 0:
-                id = -1  # we missed the object; arbitrarily assign -1 index
-            else:
-                id = numpy.where(i == max(i))[0][0]  # what is the ID of the max pixels?
-            dom_ID += [id]  # for ea GT object, which is the dominating ID?
-
-        dom_ID = numpy.array(dom_ID)
-
-        for i in range(0, len(intersect_matrix.T)):
-            if len(numpy.where(dom_ID == i)[0]) > 1:
-                final_id = numpy.where(intersect_matrix.T[i] == max(intersect_matrix.T[i]))
-                final_id = final_id[0][0]
-                all_id = numpy.where(dom_ID == i)[0]
-                nonfinal = [x for x in all_id if x != final_id]
-                for n in nonfinal:  # these others cannot be candidates for the corr ID now
-                    intersect_matrix.T[i][n] = 0
-            else:
-                continue
-
-        TP = 0
-        FN = 0
-        FP = 0
-        for i in range(0, len(dom_ID)):
-            d = dom_ID[i]
-            if d == -1:
-                tp = 0
-                fn = id_areas[i]
-                fp = 0
-            else:
-                fp = numpy.sum(intersect_matrix[i][0:d]) + numpy.sum(intersect_matrix[i][(d + 1)::])
-                tp = intersect_matrix[i][d]
-                fn = FN_area[i][d]
-            TP += tp
-            FN += fn
-            FP += fp
-
-        TN = max(0, total_pixels - TP - FN - FP)
-
-        def nan_divide(numerator, denominator):
-            if denominator == 0:
-                return numpy.nan
-            return float(numerator) / float(denominator)
-
-        accuracy = nan_divide(TP, all_intersecting_area)
-        recall = nan_divide(TP, GT_tot_area)
-        precision = nan_divide(TP, (TP + FP))
-        F_factor = nan_divide(2 * (precision * recall), (precision + recall))
-        true_positive_rate = nan_divide(TP, (FN + TP))
-        false_positive_rate = nan_divide(FP, (FP + TN))
-        false_negative_rate = nan_divide(FN, (FN + TP))
-        true_negative_rate = nan_divide(TN, (FP + TN))
-        shape = numpy.maximum(numpy.maximum(
-                numpy.array(objects_GT.shape), numpy.array(objects_ID.shape)),
-                numpy.ones(2, int))
-        rand_index, adjusted_rand_index = self.compute_rand_index_ijv(
-                objects_GT.ijv, objects_ID.ijv, shape)
-        m = workspace.measurements
-        m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), F_factor)
-        m.add_image_measurement(self.measurement_name(FTR_PRECISION),
-                                precision)
-        m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
-        m.add_image_measurement(self.measurement_name(FTR_TRUE_POS_RATE),
-                                true_positive_rate)
-        m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE),
-                                false_positive_rate)
-        m.add_image_measurement(self.measurement_name(FTR_TRUE_NEG_RATE),
-                                true_negative_rate)
-        m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
-                                false_negative_rate)
-        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),
-                                rand_index)
-        m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
-                                adjusted_rand_index)
-
-        def subscripts(condition1, condition2):
-            x1, y1 = numpy.where(GT_pixels == condition1)
-            x2, y2 = numpy.where(ID_pixels == condition2)
-            mask = set(zip(x1, y1)) & set(zip(x2, y2))
-            return list(mask)
-
-        TP_mask = subscripts(1, 1)
-        FN_mask = subscripts(1, 0)
-        FP_mask = subscripts(0, 1)
-        TN_mask = subscripts(0, 0)
-
-        TP_pixels = numpy.zeros((xGT, yGT))
-        FN_pixels = numpy.zeros((xGT, yGT))
-        FP_pixels = numpy.zeros((xGT, yGT))
-        TN_pixels = numpy.zeros((xGT, yGT))
-
-        def maskimg(mask, img):
-            for ea in mask:
-                img[ea] = 1
-            return img
-
-        TP_pixels = maskimg(TP_mask, TP_pixels)
-        FN_pixels = maskimg(FN_mask, FN_pixels)
-        FP_pixels = maskimg(FP_mask, FP_pixels)
-        TN_pixels = maskimg(TN_mask, TN_pixels)
-        if self.wants_emd:
-            emd = self.compute_emd(objects_ID, objects_GT)
-            m.add_image_measurement(
-                    self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), emd)
-
-        if self.show_window:
-            workspace.display_data.true_positives = TP_pixels
-            workspace.display_data.true_negatives = TN_pixels
-            workspace.display_data.false_positives = FP_pixels
-            workspace.display_data.false_negatives = FN_pixels
-            workspace.display_data.statistics = [
-                (FTR_F_FACTOR, F_factor),
-                (FTR_PRECISION, precision),
-                (FTR_RECALL, recall),
-                (FTR_FALSE_POS_RATE, false_positive_rate),
-                (FTR_FALSE_NEG_RATE, false_negative_rate),
-                (FTR_RAND_INDEX, rand_index),
-                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index)
-            ]
-            if self.wants_emd:
-                workspace.display_data.statistics.append(
-                        (FTR_EARTH_MOVERS_DISTANCE, emd))
 
     def compute_rand_index(self, test_labels, ground_truth_labels, mask):
         """Calculate the Rand Index
@@ -1139,14 +912,7 @@ the two images. Set this setting to “No” to assess no penalty."""
         )
 
     def measurement_name(self, feature):
-        if self.obj_or_img == O_IMG:
-            name = '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
-
-        if self.obj_or_img == O_OBJ:
-            name = '_'.join((C_IMAGE_OVERLAP, feature,
-                             self.object_name_GT.value,
-                             self.object_name_ID.value))
-        return name
+        return '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
@@ -1161,17 +927,8 @@ the two images. Set this setting to “No” to assess no penalty."""
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        if measurement in self.get_measurements(pipeline, object_name, category) and self.obj_or_img == O_IMG:
+        if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.test_img.value]
-
-        return []
-
-    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
-        if object_name == cellprofiler.measurement.IMAGE and \
-                        category == C_IMAGE_OVERLAP and \
-                        measurement in FTR_ALL and \
-                        self.obj_or_img == O_OBJ:
-            return ["_".join((self.object_name_GT.value, self.object_name_ID.value))]
 
         return []
 
@@ -1218,5 +975,19 @@ the two images. Set this setting to “No” to assess no penalty."""
                 cellprofiler.setting.NO  # penalize missing
             ]
             variable_revision_number = 4
+
+        if variable_revision_number == 4:
+            obj_or_img = setting_values[0]
+
+            if obj_or_img == O_OBJ:
+                raise RuntimeError("""\
+MeasureImageOverlap does not compute object measurements.
+
+Please update your pipeline to use MeasureObjectOverlap to compute object measurements.
+"""
+                                   )
+
+            setting_values = setting_values[1:]
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab

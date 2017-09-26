@@ -1,5 +1,29 @@
 # coding=utf-8
 
+import os
+
+import pkg_resources
+
+def __image_resource(filename):
+    #If you're rendering in the GUI, relative paths are fine
+    if os.path.relpath(pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "images", filename)
+    )) == os.path.join("cellprofiler","data", "images", filename):
+        return os.path.relpath(pkg_resources.resource_filename(
+            "cellprofiler",
+            os.path.join("data", "images", filename)
+        ))
+    else:
+    #If you're rendering in sphinx, the relative path of the rst file is one below the make file so compensate accordingly
+        return os.path.join('..',os.path.relpath(pkg_resources.resource_filename(
+            "cellprofiler",
+            os.path.join("data", "images", filename)
+        )))
+
+MeasureObjectIntensityDistribution_Magnitude_Phase = __image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')
+MeasureObjectIntensityDistribution_Edges_Centers = __image_resource('MeasureObjectIntensityDistribution_Edges_Centers.png')
+
 """
 MeasureObjectIntensityDistribution
 ==================================
@@ -11,6 +35,8 @@ Given an image with objects identified, this module measures the
 intensity distribution from each object’s center to its boundary within
 a set of bins, i.e., rings that you specify.
 
+|MeasureObjectIntensityDistribution_image0|
+
 The distribution is measured from the center of the object, where the
 center is defined as the point farthest from any edge. The numbering of bins is
 from 1 (innermost) to *N* (outermost), where *N* is the number of bins
@@ -21,6 +47,8 @@ radial distribution. This might be useful in cytoplasm-to-nucleus
 translocation experiments, for example. Note that the ring widths are
 normalized per-object, i.e., not necessarily a constant width across
 objects.
+
+|MeasureObjectIntensityDistribution_image1|
 
 |
 
@@ -51,7 +79,13 @@ Measurements made by this module
    invariant degree magnitude of the moment and the ZernikePhase feature
    gives the moment’s orientation.
 
-"""
+.. |MeasureObjectIntensityDistribution_image0| image:: {MeasureObjectIntensityDistribution_Magnitude_Phase}
+.. |MeasureObjectIntensityDistribution_image1| image:: {MeasureObjectIntensityDistribution_Edges_Centers}
+
+""".format(**{
+                "MeasureObjectIntensityDistribution_Magnitude_Phase":MeasureObjectIntensityDistribution_Magnitude_Phase,
+                "MeasureObjectIntensityDistribution_Edges_Centers":MeasureObjectIntensityDistribution_Edges_Centers
+})
 
 import centrosome.cpmorphology
 import centrosome.propagate
@@ -166,10 +200,15 @@ object’s angular orientation. Choose *{Z_MAGNITUDES_AND_PHASE}* to
 save the phase information as well. The last option lets you recover
 each object’s rough appearance from the Zernikes but may not contribute
 useful information for classifying phenotypes.
+
+|MeasureObjectIntensityDistribution_image0|
+
+.. |MeasureObjectIntensityDistribution_image0| image:: {MeasureObjectIntensityDistribution_Magnitude_Phase}
 """.format(**{
                 "Z_NONE": Z_NONE,
                 "Z_MAGNITUDES": Z_MAGNITUDES,
-                "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE
+                "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
+                "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase
             })
         )
 
@@ -283,10 +322,15 @@ For example, if measuring the radial distribution in a Cell object, you
 can use the center of the Cell objects (*{C_SELF}*) or you can use
 previously identified Nuclei objects as the centers
 (*{C_CENTERS_OF_OTHER}*).
+
+|MeasureObjectIntensityDistribution_image1|
+
+.. |MeasureObjectIntensityDistribution_image1| image:: {MeasureObjectIntensityDistribution_Edges_Centers}
 """.format(**{
                     "C_SELF": C_SELF,
                     "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
-                    "C_EDGES_OF_OTHER": C_EDGES_OF_OTHER
+                    "C_EDGES_OF_OTHER": C_EDGES_OF_OTHER,
+                    "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers
                 })
             )
         )

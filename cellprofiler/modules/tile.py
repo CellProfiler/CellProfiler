@@ -38,14 +38,14 @@ Please also note that this module does not perform *image stitching*
 For image stitching, you may find the following list of software
 packages useful:
 
--  `Photomerge Feature in Photoshop CS`_
+-  `Photomerge Feature in Photoshop`_
 -  `PTGui`_
 -  `Autostitch`_
 -  `ImageJ with the MosaicJ plugin`_
 
 Other packages are referenced `here`_.
 
-.. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
+.. _Photomerge Feature in Photoshop: https://helpx.adobe.com/photoshop/using/create-panoramic-images-photomerge.html
 .. _PTGui: http://www.ptgui.com/
 .. _Autostitch: http://matthewalunbrown.com/autostitch/autostitch.html
 .. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/

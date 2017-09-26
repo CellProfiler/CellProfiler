@@ -30,6 +30,14 @@ the same for both, the local root path is the portion prior, i.e.,
 
 For more details on batch processing, please see *Help > Batch
 Processing*.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
 """
 
 from cellprofiler.gui.help.content import BATCH_PROCESSING_HELP_REF

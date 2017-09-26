@@ -605,7 +605,7 @@ class Figure(wx.Frame):
 
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)
-        elif not self.mouse_mode == MODE_NONE:
+        else:
             self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
 
     def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
@@ -682,11 +682,23 @@ class Figure(wx.Frame):
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
 
-            self.find_image_for_axes(event.inaxes)
+            if self.dimensions == 2:
+                im = self.find_image_for_axes(event.inaxes)
+            else:  # self.dimensions == 3
+                axes = event.inaxes
 
-            for artist in event.inaxes.artists:
-                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
-                    fields += ["%s: %.4f" % (k, v) for k, v in artist.get_channel_values(xi, yi).items()]
+                axes_image = axes.get_images()[0]
+
+                fields += ["Z: {}".format(axes.get_label())]
+
+                im = axes_image.get_array().data
+
+            if im is not None:
+                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+            elif isinstance(event.inaxes, matplotlib.axes.Axes):
+                for artist in event.inaxes.artists:
+                    if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                        fields += ["%s: %.4f" % (k, v) for k, v in artist.get_channel_values(xi, yi).items()]
         else:
             fields = []
 
@@ -705,14 +717,12 @@ class Figure(wx.Frame):
             self.status_bar.SetFields(fields)
 
     def find_image_for_axes(self, axes):
-        value = None
-
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
                 if axes == slax:
-                    value = self.images.get((i, j), None)
+                    return self.images.get((i, j), None)
 
-        return value
+        return None
 
     def on_button_release(self, event):
         if not hasattr(self, "subplots"):
@@ -1194,6 +1204,8 @@ class Figure(wx.Frame):
                 norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
             )
 
+            ax.set_label("{:d}".format(position * (z - 1) / 8))
+
             self.figure.add_subplot(ax)
 
             axes += [ax]
@@ -1494,7 +1506,9 @@ class Figure(wx.Frame):
             sharex=None,
             sharey=None,
             use_imshow=False,
-            background_image=None
+            background_image=None,
+            max_label=None,
+            seed=None
     ):
         """
         Show a labels matrix using the default color map
@@ -1509,6 +1523,10 @@ class Figure(wx.Frame):
         :param use_imshow: use matplotlib's imshow to display, instead of creating our own artist
         :param dimensions: dimensions of the data to display (2 or 3)
         :param background_image: a base image to overlay label data on, or None for blank
+        :param max_label: set the maximum label in the segmentation, or None to use the segmentation's maximum label
+                          (useful for generating consistent label colors in displays with varying # of objects)
+        :param seed: shuffle label colors with this seed, or None for completely random (useful for generating
+                     consistent label colors in multiple displays)
         :return:
         """
         if background_image is None:
@@ -1520,7 +1538,9 @@ class Figure(wx.Frame):
         label_image = cellprofiler.object.overlay_labels(
             labels=image,
             opacity=opacity,
-            pixel_data=background_image
+            pixel_data=background_image,
+            max_label=max_label,
+            seed=seed
         )
 
         return self.subplot_imshow(
@@ -1803,8 +1823,8 @@ class Figure(wx.Frame):
         xvals, yvals - values to scatter
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
         title  - string title for the plot
         """
         xvals = numpy.array(xvals).flatten()
@@ -1842,7 +1862,7 @@ class Figure(wx.Frame):
         bins - number of bins to aggregate data in
         xlabel - string label for x axis
         xscale - 'log' to log-transform the data
-        yscale - scaling of the y axis (e.g. 'log')
+        yscale - scaling of the y axis (e.g., 'log')
         title  - string title for the plot
         """
         if clear:
@@ -1893,9 +1913,9 @@ class Figure(wx.Frame):
         gridsize - x & y bin size for data aggregation
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
-        bins - scaling of the color map (e.g. None or 'log', see mpl.hexbin)
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
+        bins - scaling of the color map (e.g., None or 'log', see mpl.hexbin)
         title  - string title for the plot
         """
         if clear:

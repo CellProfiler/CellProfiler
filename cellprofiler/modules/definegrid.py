@@ -23,6 +23,19 @@ the next, this allows the plates to be identified automatically and then
 cropped so that the interior of the plates, upon which the grids will be
 defined, are always in precise alignment with each other.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also **IdentifyObjectsInGrid**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -32,8 +45,6 @@ Measurements made by this module
    spot on the X-axis.
 -  *YLocationOfLowestYSpot:* The Y coordinate location of the lowest
    spot on the Y-axis.
-
-See also **IdentifyObjectsInGrid**.
 """
 
 import logging
@@ -259,8 +270,8 @@ define the grid)*
 
 This setting defines the location of the second of two cells in your
 grid. You should enter the coordinates of the center of the cell. You
-can display an image of your grid and use use the pixel coordinate
-display to determine the coordinates of the center of your cell.
+can display an image of your grid and use the pixel coordinate
+display to determine the coordinates (X,Y) of the center of your cell.
 """ % globals())
 
         self.second_spot_row = cps.Integer(

@@ -4,7 +4,7 @@
 MeasureGranularity
 ==================
 **MeasureGranularity** outputs spectra of size measurements of the
-textures in the image. This module supports 2D and volumetric images.
+textures in the image.
 
 Image granularity is a texture measurement that tries to fit a series of
 structure elements of increasing size into the texture of the image and outputs a spectrum of measures
@@ -12,6 +12,14 @@ based on how well they fit.
 Granularity is measured as described by Ilya Ravkin (references below).
 The size of the starting structure element as well as the range of the
 spectrum is given as input.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

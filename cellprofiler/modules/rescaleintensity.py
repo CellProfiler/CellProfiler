@@ -12,6 +12,14 @@ several methods. You should use caution when interpreting intensity and
 texture measurements derived from images that have been rescaled because
 certain options for this module do not preserve the relative intensities
 from image to image.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 """
 
 import numpy
@@ -70,8 +78,8 @@ There are a number of options for rescaling the input image:
    unmasked part of the image (or the whole image if there is no mask)
    and rescale every pixel so that the minimum has an intensity of zero
    and the maximum has an intensity of one.
--  *%(M_MANUAL_INPUT_RANGE)s:* Pixels are scaled from their
-   user-specified original range to the range 0 to 1. Options are
+-  *%(M_MANUAL_INPUT_RANGE)s:* Pixels are scaled from an original range
+   (which you provide) to the range 0 to 1. Options are
    available to handle values outside of the original range.
    To convert 12-bit images saved in 16-bit format to the correct range,
    use the range 0 to 0.0625. The value 0.0625 is equivalent to
@@ -89,7 +97,7 @@ There are a number of options for rescaling the input image:
    each pixel by the image’s maximum intensity value so that all pixel
    intensities are less than or equal to 1.
 -  *%(M_DIVIDE_BY_VALUE)s:* Divide the intensity value of each pixel
-   by the value entered.
+   by a value that you choose.
 -  *%(M_DIVIDE_BY_MEASUREMENT)s:* The intensity value of each pixel
    is divided by some previously calculated measurement. This
    measurement can be the output of some other module or can be a value
@@ -146,7 +154,7 @@ This setting controls how the maximum intensity is determined.
 *(Used only if "{RESCALE_METHOD}" is "{M_MANUAL_INPUT_RANGE}" or "{M_MANUAL_IO_RANGE}" and
 "{WANTS_AUTOMATIC_LOW}" is "{CUSTOM_VALUE}")*
 
-The minimum value of pixels in the input image that are rescaled to the minimum pixel
+The value of pixels in the input image that you want to rescale to the minimum pixel
 value in the output image. Pixel intensities less than this value in the input image are
 also rescaled to the minimum pixel value in the output image.
 """.format(**{
@@ -165,9 +173,9 @@ also rescaled to the minimum pixel value in the output image.
 *(Used only if "{RESCALE_METHOD}" is "{M_MANUAL_INPUT_RANGE}" or "{M_MANUAL_IO_RANGE}" and
 "{WANTS_AUTOMATIC_HIGH}" is "{CUSTOM_VALUE}")*
 
-The minimum value of pixels in the input image that are rescaled to the minimum pixel
+The value of pixels in the input image that you want to rescale to the maximum pixel
 value in the output image. Pixel intensities less than this value in the input image are
-also rescaled to the minimum pixel value in the output image.
+also rescaled to the maximum pixel value in the output image.
 """.format(**{
                 "CUSTOM_VALUE": CUSTOM_VALUE,
                 "M_MANUAL_INPUT_RANGE": M_MANUAL_INPUT_RANGE,

@@ -19,7 +19,7 @@ from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
 from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
     TECH_NOTE_ICON
-    
+
 __doc__ = """\
 Images
 ======
@@ -32,6 +32,14 @@ accessible with a URL. You can also provide rules to specify only those
 files that you want analyzed out of a larger collection (for example,
 from a folder containing both images for analysis and non-image files
 that should be disregarded).
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
 
 What is a “digital image”?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -95,8 +103,8 @@ options to modify the file list:
 -  *Clear File List:* Remove all files/folders in the file list panel.
    You will be prompted for confirmation beforehand.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do I configure the module?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you have a subset of files that you want to analyze from the full
 listing shown in the panel, you can filter the files according to a set
@@ -141,7 +149,7 @@ particular wavelength.
                 "IMG_PANEL_FILLED": _help.__image_resource('Images_FilelistPanel_Filled.png')
             })
 
-    
+
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
 FILTER_CHOICE_CUSTOM = "Custom"

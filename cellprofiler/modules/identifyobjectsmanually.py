@@ -19,6 +19,15 @@ The user interface has several mouse tools:
    that rectangle.
 -  *Zoom out:* Reverses the effect of the last zoom-in.
 -  *Erase:* Erases an object if you click on it.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import numpy as np

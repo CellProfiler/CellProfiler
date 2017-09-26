@@ -8,6 +8,9 @@ MergeOutputFiles
 
 This data tool lets you collect the output .mat files from several runs,
 for instance, as might be created by running CellProfiler in batch mode.
+To save .mat files, click the *View output settings* at the lower left
+of CellProfiler's main menu and follow the instructions there to save
+MATLAB output files.
 
 **MergeOutputFiles** is a pure data tool; *you cannot use it as a
 module*, and it will generate an error if you try to do so. To use it as
@@ -29,8 +32,8 @@ The dialog has the following parts:
    alphabetical order to the bottom of the current list of files.
 -  *Remove button:* Removes all currently selected files from the list.
 -  *Up button:* Moves the currently selected files up in the list.
--  *Down button:* Mves the currently selected files down in the list.
--  *OK button:*\ Accepts the file list and writes it to the output.
+-  *Down button:* Moves the currently selected files down in the list.
+-  *OK button:* Accepts the file list and writes it to the output.
 -  *Cancel button:* Closes the dialog without performing any operation.
 
 Once merged, this output file will be compatible with other data tools.
@@ -40,6 +43,17 @@ opened on your computer (based on the amount of memory available on your
 computer). It may be preferable instead to import data from individual
 output files directly into a database using **ExportDatabase** as a data
 tool.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
 
 See also **CreateBatchFiles**, **ExportToDatabase**.
 """
@@ -167,8 +181,12 @@ class MergeOutputFiles(cpm.Module):
     def on_help(event, list_control):
         import cellprofiler.modules
         from cellprofiler.gui.htmldialog import HTMLDialog
+        import cellprofiler.gui.html.utils
         dlg = HTMLDialog(
-                list_control, 'Help on module,"%s"' % MergeOutputFiles.module_name, __doc__)
+            list_control,
+            'Help on module,"%s"' % MergeOutputFiles.module_name,
+            cellprofiler.gui.html.utils.rst_to_html_fragment(__doc__)
+        )
         dlg.Show()
 
     @staticmethod

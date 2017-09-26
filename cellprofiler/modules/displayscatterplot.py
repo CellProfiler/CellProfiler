@@ -11,11 +11,28 @@ is, features) as a collection of points. If there are too many data
 points on the plot, you should consider using **DisplayDensityPlot**
 instead.
 
-The module will show a plot shows the values generated for the current
+The module will show a plot of the values generated for the current
 cycle. However, this module can also be run as a Data Tool, in which you
 will first be asked for the output file produced by the analysis run.
-The resultant plot is created from all the measurements collected during
+The resulting plot is created from all the measurements collected during
 the run.
+
+At this time, the display produced when **DisplayScatterPlot** is run as a
+module cannot be saved in the pipeline (e.g., by using **SaveImages**). The
+display can be saved manually by selecting the window produced by the
+module and clicking the Save icon in its menu bar or by choosing *File
+> Save* from CellProfiler's main menu bar.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
 
 See also **DisplayDensityPlot**, **DisplayHistogram**.
 """
@@ -47,7 +64,7 @@ You can plot two types of measurements:
    recorded for each image analyzed. Per-image measurements are produced
    by many modules. Many have **MeasureImage** in the name but others do
    not (e.g., the number of objects in each image is a per-image
-   measurement made by the **IdentifyObject** modules).
+   measurement made by the **Identify** modules).
 -  *%(SOURCE_OBJ)s:* For a per-object measurement, each identified
    object is measured, so there may be none or many numerical values
    recorded for each image analyzed. These are usually produced by
@@ -75,7 +92,7 @@ You can plot two types of measurements:
    recorded for each image analyzed. Per-image measurements are produced
    by many modules. Many have **MeasureImage** in the name but others do
    not (e.g., the number of objects in each image is a per-image
-   measurement made by **IdentifyObject** modules).
+   measurement made by **Identify** modules).
 -  *%(SOURCE_OBJ)s:* For a per-object measurement, each identified
    object is measured, so there may be none or many numerical values
    recorded for each image analyzed. These are usually produced by

@@ -38,6 +38,14 @@ with your images. The metadata can be extracted from the image file
 itself, from a part of the file name or location, and/or from a text
 file you provide.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 What is “metadata”?
 ^^^^^^^^^^^^^^^^^^^
 
@@ -94,13 +102,8 @@ which can be obtained from several sources:
    module to the location of this file.
 -  In the image file itself.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See below for help on the individual settings. In general, the settings
-serve in various forms of metadata extraction. You can extract metadata
-from all images from **Images** modules or a subset of them by using
-rules to filter the list.
+You can extract metadata from all images loaded via the **Images**
+module, or a subset of them by using rules to filter the list.
 
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -342,10 +345,10 @@ the images in any of three ways:
    metadata is embedded in the image file as header information; this
    information includes the dimensions and color depth among other
    things. **If you select this method, you must press the “Update metadata” button
-   (as opposed to the "Update" button beneath it) to extract the metadata.** 
-   Note that this extraction process can take a while for assays with lots 
-   of images since each one needs to read for extraction. Since the metadata 
-   is often image-format specific, this option will extract information that 
+   (as opposed to the "Update" button beneath it) to extract the metadata.**
+   Note that this extraction process can take a while for assays with lots
+   of images since each one needs to read for extraction. Since the metadata
+   is often image-format specific, this option will extract information that
    is common to most image types:
 
    -  *Series:* The series index of the image. This value is set to
@@ -409,7 +412,7 @@ extraction method” button to add more.
 *(Used only if you want to extract metadata from the file name)*
 
 The regular expression to extract the metadata from the file name is
-entered here. Please see the general module help for more information on 
+entered here. Please see the general module help for more information on
 construction of a regular expression.
 
 Clicking the magnifying glass icon to the right will bring up a tool for
@@ -572,7 +575,7 @@ extraction.
                 wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*",
                 doc="""\
 *(Used only if you want to extract metadata from a file)*
-                
+
 The file containing the metadata must be a comma-delimited file (CSV).
 You can create or edit such a file using a spreadsheet program such as
 Microsoft Excel.
@@ -631,8 +634,8 @@ source; press |image0| to add more rows.
                 "Use case insensitive matching?",
                 False,
                 doc="""\
-*(Used only if "Match file and image metadata" is set)*                
-                
+*(Used only if "Match file and image metadata" is set)*
+
 This setting controls whether row matching takes the metadata case into
 account when matching.
 

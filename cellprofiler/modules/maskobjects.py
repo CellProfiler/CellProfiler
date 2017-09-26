@@ -20,6 +20,14 @@ object that is outside of the region, remove the whole object if it is
 partially or fully outside of the region, or retain the whole object
 unless it is fully outside of the region.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -123,7 +131,7 @@ subsequent modules by this name.
 You can mask your objects by defining a region using objects you
 previously identified in your pipeline (*%(MC_OBJECTS)s*) or by
 defining a region based on the white regions in a binary image
-(*%(MC_IMAGE)s*).
+previously loaded or created in your pipeline (*%(MC_IMAGE)s*).
 """ % globals()
         )
 
@@ -131,6 +139,8 @@ defining a region based on the white regions in a binary image
             "Select the masking object",
             cps.NONE,
             doc="""\
+*(Used only if mask is to be made from objects)*
+
 Select the objects that will be used to define the masking region. You
 can choose from any objects created by a previous object processing
 module, such as **IdentifyPrimaryObjects**,
@@ -142,6 +152,8 @@ module, such as **IdentifyPrimaryObjects**,
             "Select the masking image",
             cps.NONE,
             doc="""\
+*(Used only if mask is to be made from an image)*
+
 Select an image that was either loaded or created by a previous module.
 The image should be a binary image where the white portion of the image
 is the region(s) you will use for masking. Binary images can be loaded
@@ -179,9 +191,9 @@ inside and outside the region. **MaskObjects** can handle this in one
 of three ways:
 
 -  *%(P_MASK)s:* Choosing this option will reduce the size of partially
-   overlapping objects. The part of the object that overlaps the region
-   will be retained. The part of the object that is outside of the
-   region will be removed.
+   overlapping objects. The part of the object that overlaps the masking
+   region will be retained. The part of the object that is outside of the
+   masking region will be removed.
 -  *%(P_KEEP)s:* If you choose this option, **MaskObjects** will keep
    the whole object if any part of it overlaps the masking region.
 -  *%(P_REMOVE)s:* Objects that are partially outside of the masking
@@ -200,7 +212,7 @@ of three ways:
             minval=0,
             maxval=1,
             doc="""\
-*(Used only if removing based on a overlap)*
+*(Used only if removing based on overlap)*
 
 Specify the minimum fraction of an object that must overlap the masking
 region for that object to be retained. For instance, if the fraction is
@@ -224,7 +236,7 @@ controls how remaining objects are associated with their predecessors:
    measurements from the original objects; your object measurements for
    the masked objects will not have gaps (where removed objects are
    missing).
--  *%(R_RETAIN)s:*: The original labels for the objects will be
+-  *%(R_RETAIN)s:* The original labels for the objects will be
    retained. This allows any measurements you make from the masked
    objects to be directly aligned with measurements you might have made
    of the original, unmasked objects (or objects directly associated

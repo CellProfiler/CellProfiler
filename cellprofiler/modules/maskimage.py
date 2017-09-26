@@ -8,18 +8,28 @@ MaskImage
 identified objects or a binary image) so they are ignored by subsequent
 mask-respecting modules in the pipeline.
 
-This module masks an image and saves it in the handles structure for
-future use. The masked image is based on the original image and the
+This module masks an image so you can use the mask downstream in the
+pipeline. The masked image is based on the original image and the
 masking object or image that is selected. If using a masking image, the
 mask is composed of the foreground (white portions); if using a masking
 object, the mask is composed of the area within the object. Note that
 the image created by this module for further processing downstream is
 grayscale. If a binary mask is desired in subsequent modules, use the
-**Threshold** module instead of **MaskImage**. See also
-**Threshold**, **IdentifyPrimaryObjects**,
-**IdentifyObjectsManually**.
+**Threshold** module instead of **MaskImage**.
 
-This module can be used both on 2D and volumetric images.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also
+^^^^^^^^
+
+See also **Threshold**, **IdentifyPrimaryObjects**, and
+**IdentifyObjectsManually**.
 """
 
 import numpy as np
@@ -59,8 +69,8 @@ You can mask an image in two ways:
    portions of the image (false or zero-value pixels) will be masked
    out. If the image is not binary, the module will use all pixels whose
    intensity is greater than 0.5 as the mask’s foreground (white area).
-   You can use **Threshold** instead to create a binary image and
-   have finer control over the intensity choice.
+   You can use **Threshold** instead to create a binary image with
+   finer control over the intensity choice.
    """ % globals()
         )
 
@@ -104,7 +114,7 @@ This option reverses the foreground/background relationship of the mask.
 
 -  Select "*%(NO)s*" to produce the mask from the foregound (white
    portion) of the masking image or the area within the masking objects.
--  Select "*%(YES)s*"\ to instead produce the mask from the *background*
+-  Select "*%(YES)s*" to instead produce the mask from the *background*
    (black portions) of the masking image or the area *outside* the
    masking objects.
        """ % globals()

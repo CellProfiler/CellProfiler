@@ -4,10 +4,18 @@
 Threshold
 =========
 
-**Threshold** produces a binary, or black and white, image based on a threshold which
+**Threshold** produces a binary, or black and white, image based on a threshold that
 can be pre-selected or calculated automatically using one of many
 methods. After the threshold value has been determined, the **Threshold** module will
-set pixel intensities below the value to zero and above the value to one.
+set pixel intensities below the value to zero (black) and above the value to one (white).
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 """
 
 import centrosome.threshold
@@ -68,16 +76,18 @@ threshold based on the whole image or based on image sub-regions.
 
 The choices for the threshold strategy are:
 
--  *{TS_GLOBAL}:* Calculate a single threshold value based on the
+-  *{TS_GLOBAL}:* Calculates a single threshold value based on the
    unmasked pixels of the input image and use that value to classify
    pixels above the threshold as foreground and below as background.
 
    |image0| This strategy is fast and robust, especially if the background is
-   uniformly illuminated.
+   relatively uniform (for example, after illumination correction).
 
--  *{TS_ADAPTIVE}:* Partition the input image into tiles and calculate
-   thresholds for each tile. For each tile, the calculated threshold is
-   applied only to the pixels within that tile.
+-  *{TS_ADAPTIVE}:* Calculates a different threshold for each pixel,
+   thus adapting to changes in foreground/background intensities
+   across the image. For each pixel, the threshold is calculated based
+   on the pixels within a given neighborhood (or window) surrounding
+   that pixel.
 
    |image1| This method is slower but can produce better results for
    non-uniform backgrounds. However, for significant illumination
@@ -106,7 +116,7 @@ The choices for the threshold strategy are:
 *(Used only if "{TS_GLOBAL}" is selected for thresholding strategy)*
 
 The intensity threshold affects the decision of whether each pixel
-will be considered foreground (region(s) of interest) or background. A
+will be considered foreground (objects/region(s) of interest) or background. A
 higher threshold value will result in only the brightest regions being
 identified, whereas a lower threshold value will include dim regions.
 You can have the threshold automatically calculated from a choice of
@@ -409,7 +419,7 @@ Note that whether two- or three-class thresholding is chosen, the image
 pixels are always finally assigned to only two classes: foreground and
 background.
 
-|image0|  Three-class thresholding may be useful for images
+|image0|  As an example, three-class thresholding can be useful for images
 in which you have nuclear staining along with low-intensity non-specific
 cell staining. In such a case, the background is one class, dim cell
 staining is the second class, and bright nucleus staining is the third

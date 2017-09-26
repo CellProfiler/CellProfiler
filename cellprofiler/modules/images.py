@@ -38,7 +38,7 @@ that should be disregarded).
 ============ ============
 Supports 2D? Supports 3D?
 ============ ============
-YES          NO
+YES          YES
 ============ ============
 
 What is a “digital image”?

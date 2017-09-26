@@ -27,6 +27,7 @@ import sys
 import tempfile
 import traceback
 import datetime
+import timeit
 import traceback
 import threading
 import urlparse
@@ -1684,7 +1685,7 @@ class Pipeline(object):
 
             last_image_number = None
 
-            pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
+            pipeline_stats_logger.info("Times reported are CPU and Wall-clock times for each module")
 
             __group = self.group(grouping, image_set_start, image_set_end, initial_measurements, workspace)
 
@@ -1762,8 +1763,8 @@ class Pipeline(object):
                     start_time = datetime.datetime.now()
 
                     os_times = os.times()
+                    wall_t0 = timeit.default_timer()
                     cpu_t0 = sum(os_times[:-1])
-                    wall_t0 = os_times[-1]
 
                     try:
                         self.run_module(module, workspace)
@@ -1777,8 +1778,8 @@ class Pipeline(object):
                     yield measurements
 
                     os_times = os.times()
+                    wall_t1 = timeit.default_timer()
                     cpu_t1 = sum(os_times[:-1])
-                    wall_t1 = os_times[-1]
 
                     cpu_delta_sec = max(0, cpu_t1 - cpu_t0)
                     wall_delta_sec = max(0, wall_t1 - wall_t0)
@@ -1905,8 +1906,8 @@ class Pipeline(object):
 
             start_time = datetime.datetime.now()
             os_times = os.times()
+            wall_t0 = timeit.default_timer()
             cpu_t0 = sum(os_times[:-1])
-            wall_t0 = os_times[-1]
             try:
                 self.run_module(module, workspace)
                 if module.show_window:
@@ -1928,8 +1929,8 @@ class Pipeline(object):
                     return
 
             os_times = os.times()
+            wall_t1 = timeit.default_timer()
             cpu_t1 = sum(os_times[:-1])
-            wall_t1 = os_times[-1]
             cpu_delta_secs = max(0, cpu_t1 - cpu_t0)
             wall_delta_secs = max(0, wall_t1 - wall_t0)
             pipeline_stats_logger.info("%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs" %

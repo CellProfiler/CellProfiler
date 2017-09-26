@@ -496,9 +496,6 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 dict(image=numpy.zeros((20, 10), bool)))
 
         assert isinstance(module, cellprofiler.modules.measureimageoverlap.MeasureImageOverlap)
-        module.object_name_GT.value = GROUND_TRUTH_OBJ
-        module.object_name_ID.value = ID_OBJ
-        obj_or_img = O_IMG
         name = TEST_IMAGE_NAME
 
         columns = module.get_measurement_columns(workspace.pipeline)
@@ -813,13 +810,13 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         ftr_true_pos_rate_measurement = measurements.get_current_image_measurement(ftr_true_pos_rate)
         assert ftr_true_pos_rate_measurement == 0
 
-#        ftr_false_pos_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE)
-#        ftr_false_pos_rate_measurement = measurements.get_current_image_measurement(ftr_false_pos_rate)
-#        assert ftr_false_pos_rate_measurement == 1
+        ftr_false_pos_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE)
+        ftr_false_pos_rate_measurement = measurements.get_current_image_measurement(ftr_false_pos_rate)
+        self.assertAlmostEqual(ftr_false_pos_rate_measurement, 0.006048387)
 
-#        ftr_true_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE)
-#        ftr_true_neg_rate_measurement = measurements.get_current_image_measurement(ftr_true_neg_rate)
-#        assert ftr_true_neg_rate_measurement == 0
+        ftr_true_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE)
+        ftr_true_neg_rate_measurement = measurements.get_current_image_measurement(ftr_true_neg_rate)
+        self.assertAlmostEqual(ftr_true_neg_rate_measurement, 0.99395161)
 
         ftr_false_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE)
         ftr_false_neg_rate_measurement = measurements.get_current_image_measurement(ftr_false_neg_rate)
@@ -827,12 +824,12 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_3D_half_overlap_objects(self):
         ground_truth_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
-        ground_truth_image_data[2:6, 30:40, 30:40] = True
+        ground_truth_image_data[2:7, 30:40, 30:40] = True
         ground_truth_image_data[8, 10:20, 10:20] = True
         ground_truth_image_data[1:5, 50:60, 50:60] = True
 
         test_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
-        test_image_data[2:6, 35:45, 30:40] = True
+        test_image_data[2:7, 35:45, 30:40] = True
         test_image_data[8, 10:20, 15:25] = True
         test_image_data[3:7, 50:60, 50:60] = True
 
@@ -862,16 +859,16 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         ftr_true_pos_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE)
         ftr_true_pos_rate_measurement = measurements.get_current_image_measurement(ftr_true_pos_rate)
-        assert ftr_true_pos_rate_measurement == 0.5
+        self.assertAlmostEqual(ftr_true_pos_rate_measurement, 0.5)
 
-#        ftr_false_pos_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE)
-#        ftr_false_pos_rate_measurement = measurements.get_current_image_measurement(ftr_false_pos_rate)
-#        assert ftr_false_pos_rate_measurement == 1
+        ftr_false_pos_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE)
+        ftr_false_pos_rate_measurement = measurements.get_current_image_measurement(ftr_false_pos_rate)
+        self.assertAlmostEqual(ftr_false_pos_rate_measurement, 0.005050505)
 
-#        ftr_true_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE)
-#        ftr_true_neg_rate_measurement = measurements.get_current_image_measurement(ftr_true_neg_rate)
-#        assert ftr_true_neg_rate_measurement == 0
+        ftr_true_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_NEG_RATE)
+        ftr_true_neg_rate_measurement = measurements.get_current_image_measurement(ftr_true_neg_rate)
+        self.assertAlmostEqual(ftr_true_neg_rate_measurement, 0.99494949)
 
         ftr_false_neg_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE)
         ftr_false_neg_rate_measurement = measurements.get_current_image_measurement(ftr_false_neg_rate)
-        assert ftr_false_neg_rate_measurement == 0.5
+        self.assertAlmostEqual(ftr_false_neg_rate_measurement, 0.5)

@@ -36,7 +36,7 @@ of images comprising a plate).
 ============ ============
 Supports 2D? Supports 3D?
 ============ ============
-YES          NO
+YES          YES
 ============ ============
 
 What is an image “group”?

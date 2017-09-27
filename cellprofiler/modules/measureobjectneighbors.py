@@ -23,14 +23,11 @@ Supports 2D? Supports 3D?
 YES          YES
 ============ ============
 
-<<<<<<< HEAD
-=======
 See also
 ^^^^^^^^
 
 See also the **Identify** modules.
 
->>>>>>> 78dd157f472acdedc7faa5cfd18b920191ee0def
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

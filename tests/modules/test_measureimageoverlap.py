@@ -723,8 +723,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertGreater(emd, numpy.sum(image1) * 3)
         self.assertLess(emd, numpy.sum(image1) * 6)
 
-    def test_3D_perfect_overlap(self):  # All tests start with test_, what follows is usually a short description of the test.
-        # Define an image
+    def test_3D_perfect_overlap(self):
         image_data = numpy.random.rand(10, 100, 100) >= 0.5
 
         workspace, module = self.make_workspace(
@@ -739,10 +738,8 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         module.run(workspace)
 
-        # Assuming that succeeds we make assertions.
         measurements = workspace.measurements
 
-        # Test of all FTRs (perfect overlap)
         ftr_precision = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_PRECISION)
         ftr_precision_measurement = measurements.get_current_image_measurement(ftr_precision)
         assert ftr_precision_measurement == 1.0
@@ -765,7 +762,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         ftr_precision = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_PRECISION)
         ftr_precision_measurement = measurements.get_current_image_measurement(ftr_precision)
-        assert ftr_precision_measurement == 1
+        self.assertAlmostEqual(ftr_precision_measurement, 1)
 
         ftr_F_factor = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_F_FACTOR)
         ftr_F_factor_measurement = measurements.get_current_image_measurement(ftr_F_factor)
@@ -783,7 +780,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         ftr_adj_rand_index_measurement = measurements.get_current_image_measurement(ftr_adj_rand_index)
         self.assertAlmostEqual(ftr_adj_rand_index_measurement, 1)
 
-    def test_3D_no_overlap_objects(self):
+    def test_3D_no_overlap(self):
         ground_truth_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
         ground_truth_image_data[4:6, 30:40, 30:40] = True
         ground_truth_image_data[7:10, 50:60, 50:60] = True
@@ -804,7 +801,6 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         module.run(workspace)
 
-        # Assuming that succeeds we make assertions.
         measurements = workspace.measurements
 
         ftr_true_pos_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE)
@@ -841,14 +837,13 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         ftr_rand_index = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX)
         ftr_rand_index_measurement = measurements.get_current_image_measurement(ftr_rand_index)
-        self.assertAlmostEqual(ftr_rand_index_measurement, 0.980199801998020,3)
+        self.assertAlmostEqual(ftr_rand_index_measurement, 0.980199801998020,2)
 
         ftr_adj_rand_index = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX)
         ftr_adj_rand_index_measurement = measurements.get_current_image_measurement(ftr_adj_rand_index)
-        self.assertAlmostEqual(ftr_adj_rand_index_measurement, 0.4934,4)
+        self.assertAlmostEqual(ftr_adj_rand_index_measurement, -0.004974470347776,2)
 
-
-    def test_3D_half_overlap_objects(self):
+    def test_3D_half_overlap(self):
         ground_truth_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
         ground_truth_image_data[2:7, 30:40, 30:40] = True
         ground_truth_image_data[8, 10:20, 10:20] = True
@@ -871,14 +866,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         module.run(workspace)
 
-        # Assuming that succeeds we make assertions.
         measurements = workspace.measurements
-
-        # Test of all FTRs (perfect overlap)
-
-#        ftr_rand_index = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX)
-#        ftr_rand_index_measurement = measurements.get_current_image_measurement(ftr_rand_index)
-#        assert ftr_rand_index_measurement == 1
 
         ftr_true_pos_rate = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_TRUE_POS_RATE)
         ftr_true_pos_rate_measurement = measurements.get_current_image_measurement(ftr_true_pos_rate)
@@ -914,8 +902,8 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         ftr_rand_index = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX)
         ftr_rand_index_measurement = measurements.get_current_image_measurement(ftr_rand_index)
-        self.assertAlmostEqual(ftr_rand_index_measurement, 0.980199801998020,3)
+        self.assertAlmostEqual(ftr_rand_index_measurement, 0.980199801998020,2)
 
         ftr_adj_rand_index = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX)
         ftr_adj_rand_index_measurement = measurements.get_current_image_measurement(ftr_adj_rand_index)
-        self.assertAlmostEqual(ftr_adj_rand_index_measurement, 0.489899917362959,3)
+        self.assertAlmostEqual(ftr_adj_rand_index_measurement, 0.489899917362959,2)

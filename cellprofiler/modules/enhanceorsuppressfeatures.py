@@ -6,8 +6,7 @@ EnhanceOrSuppressFeatures
 
 **EnhanceOrSuppressFeatures** enhances or suppresses certain image
 features (such as speckles, ring shapes, and neurites), which can
-improve subsequent identification of objects. It can operate on
-two- and three-dimensional images.
+improve subsequent identification of objects.
 
 This module enhances or suppresses the intensity of certain pixels
 relative to the rest of the image, by applying image processing filters
@@ -70,7 +69,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             ],
             doc="""\
 Select whether you want to enhance or suppress the features you
-designated.
+designate.
 
 -  *{ENHANCE}:* Produce an image whose intensity is largely composed
    of the features of interest.
@@ -94,7 +93,7 @@ designated.
             doc="""\
 *(Used only if "{ENHANCE}" is selected)*
 
-This module can enhance three kinds of image intensity features:
+This module can enhance several kinds of image features:
 
 -  *{E_SPECKLES}:* A speckle is an area of enhanced intensity
    relative to its immediate neighborhood. The module enhances speckles
@@ -109,13 +108,13 @@ This module can enhance three kinds of image intensity features:
 -  *{E_NEURITES}:* Neurites are taken to be long, thin features of
    enhanced intensity. Choose this option to enhance the intensity of
    the neurites using the {N_GRADIENT} or {N_TUBENESS} methods
-   described below.
+   described in a later setting.
 -  *{E_DARK_HOLES}:* The module uses morphological reconstruction
    (the rolling-ball algorithm) to identify dark holes within brighter
    areas, or brighter ring shapes. The image is inverted so that the
    dark holes turn into bright peaks. The image is successively eroded
    and the eroded image is reconstructed at each step, resulting in an
-   image which is missing the peaks. Finally, the reconstructed image is
+   image that is missing the peaks. Finally, the reconstructed image is
    subtracted from the previous reconstructed image. This leaves
    circular bright spots with a radius equal to the number of iterations
    performed.
@@ -129,8 +128,8 @@ This module can enhance three kinds of image intensity features:
    circle centers and then use these centers as seeds in
    **IdentifySecondaryObjects** to find whole, circular objects using a
    watershed.
--  *{E_TEXTURE}:* **EnanceOrSuppressFeatures** produces an image
-   whose intensity is the variance among nearby pixels. This method
+-  *{E_TEXTURE}:* This option produces an image
+   whose intensity is the variance among nearby pixels. The method
    weights pixel contributions by distance using a Gaussian to calculate
    the weighting. You can use this method to separate foreground from
    background if the foreground is textured and the background is not.
@@ -138,8 +137,6 @@ This module can enhance three kinds of image intensity features:
    by integrating in a direction perpendicular to the shear direction of
    the image.
 
-In addition, this module enables you to suppress certain features (such
-as speckles) by specifying the feature size.
 """.format(**{
                 "E_CIRCLES": E_CIRCLES,
                 "E_DARK_HOLES": E_DARK_HOLES,
@@ -161,9 +158,9 @@ as speckles) by specifying the feature size.
 *(Used only if “{E_CIRCLES}”, “{E_SPECKLES}” or “{E_NEURITES}” are
 selected, or if suppressing features)*
 
-Enter the diameter of the largest speckle, the width of the circle or
+Enter the diameter of the largest speckle, the width of the circle, or
 the width of the neurites to be enhanced or suppressed, which will be
-used to calculate an adequate filter size.
+used to calculate an appropriate filter size.
 
 {HELP_ON_MEASURING_DISTANCES}
 """.format(**{
@@ -195,7 +192,7 @@ holes whose diameters fall between these two values.
             doc="""\
 *(Used only for the "{E_TEXTURE}", "{E_DIC}" or "{E_NEURITES}" methods)*
 
--  *{E_TEXTURE}*: This is the scale of the texture features, roughly in
+-  *{E_TEXTURE}*: This is roughly the scale of the texture features, in
    pixels. The algorithm uses the smoothing value entered as the sigma
    of the Gaussian used to weight nearby pixels by distance in the
    variance calculation.
@@ -203,9 +200,8 @@ holes whose diameters fall between these two values.
    direction parallel to the shear axis of the image. The line
    integration method will leave streaks in the image without smoothing
    as it encounters noisy pixels during the course of the integration.
-   The smoothing takes contributions from nearby pixels which decreases
-   the noise but smooths the resulting image.
--  *{E_DIC}:* Increase the smoothing to eliminate streakiness and
+   The smoothing takes contributions from nearby pixels, which decreases
+   the noise but smooths the resulting image. Increase the smoothing to eliminate streakiness and
    decrease the smoothing to sharpen the image.
 -  *{E_NEURITES}:* The *{N_TUBENESS}* option uses this scale as the
    sigma of the Gaussian used to smooth the image prior to gradient
@@ -288,7 +284,7 @@ Two methods can be used to enhance neurites:
    morphological grayscale opening of the image; a black tophat
    filtering is the morphological grayscale closing of the image minus
    the image). The effect is to enhance lines whose width is the
-   “feature size”.
+   feature size.
 
 .. _ImageJ Tubeness plugin: http://www.longair.net/edinburgh/imagej/tubeness/
 """.format(**{
@@ -311,8 +307,7 @@ Two methods can be used to enhance neurites:
 
 -  *{S_FAST}:* Select this option for speckles that have a large radius
    (greater than 10 pixels) and need not be exactly circular.
--  *{S_SLOW}:* Use for speckles of small radius or to maintain
-   backwards compatibility with previous versions of CellProfiler.
+-  *{S_SLOW}:* Use for speckles of small radius.
 """.format(**{
                 "E_SPECKLES": E_SPECKLES,
                 "S_FAST": S_FAST,

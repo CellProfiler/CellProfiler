@@ -43,7 +43,7 @@ file you provide.
 ============ ============
 Supports 2D? Supports 3D?
 ============ ============
-YES          NO
+YES          YES
 ============ ============
 
 What is “metadata”?

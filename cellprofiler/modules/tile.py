@@ -13,6 +13,14 @@ imaged for the same sample. Images can be tiled either across cycles
 (multiple fields of view, for example) or within a cycle (multiple
 channels of the same field of view, for example).
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 Tiling images to create a montage with this module generates an image
 that is roughly the size of all the images’ sizes added together. For
 large numbers of images, this may cause memory errors, which might be
@@ -30,14 +38,14 @@ Please also note that this module does not perform *image stitching*
 For image stitching, you may find the following list of software
 packages useful:
 
--  `Photomerge Feature in Photoshop CS`_
+-  `Photomerge Feature in Photoshop`_
 -  `PTGui`_
 -  `Autostitch`_
 -  `ImageJ with the MosaicJ plugin`_
 
 Other packages are referenced `here`_.
 
-.. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
+.. _Photomerge Feature in Photoshop: https://helpx.adobe.com/photoshop/using/create-panoramic-images-photomerge.html
 .. _PTGui: http://www.ptgui.com/
 .. _Autostitch: http://matthewalunbrown.com/autostitch/autostitch.html
 .. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/

@@ -58,7 +58,6 @@ See also
 See also our `Worm Toolbox`_ page for sample images and pipelines, as
 well as video tutorials.
 
-
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

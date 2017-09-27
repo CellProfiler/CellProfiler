@@ -97,7 +97,7 @@ the other methods:
    out-of-focus blur to an image.
 -  *%(SM_TO_AVERAGE)s:* Creates a flat, smooth image where every pixel
    of the image equals the average value of the original image.
-   
+
 *Note, when deciding between %(MEDIAN_FILTER)s and %(GAUSSIAN_FILTER)s
 we typically recommend
 %(MEDIAN_FILTER)s over %(GAUSSIAN_FILTER)s because the

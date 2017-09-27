@@ -19,12 +19,11 @@ LabelImages assumes the following are true of the image order:
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
-
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
 
 See also
 ^^^^^^^^

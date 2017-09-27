@@ -27,11 +27,13 @@ images using a plugin for that purpose in FIJI/ImageJ.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

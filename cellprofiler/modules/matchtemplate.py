@@ -12,11 +12,11 @@ correlation coefficient`_ between the image and the template.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
 
 .. _normalized cross-correlation: http://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation
 .. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient

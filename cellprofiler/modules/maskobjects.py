@@ -22,11 +22,11 @@ unless it is fully outside of the region.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

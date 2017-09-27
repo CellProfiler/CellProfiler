@@ -20,11 +20,11 @@ particular image-object measures that you want.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

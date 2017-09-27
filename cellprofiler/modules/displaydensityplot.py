@@ -32,11 +32,11 @@ module and clicking the Save icon in its menu bar or by choosing *File
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
 
 See also
 ^^^^^^^^

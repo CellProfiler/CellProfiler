@@ -107,11 +107,11 @@ allows for special functionality for some downstream modules:
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

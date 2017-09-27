@@ -23,17 +23,28 @@ the next, this allows the plates to be identified automatically and then
 cropped so that the interior of the plates, upon which the grids will be
 defined, are always in precise alignment with each other.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also **IdentifyObjectsInGrid**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  *Rows, Columns*: The number of rows and columns in the grid
+-  *Rows, Columns*: The number of rows and columns in the grid.
 -  *XSpacing, YSpacing:* The spacing in X and Y of the grid elements.
 -  *XLocationOfLowestXSpot:* The X coordinate location of the lowest
    spot on the X-axis.
 -  *YLocationOfLowestYSpot:* The Y coordinate location of the lowest
    spot on the Y-axis.
-
-See also **IdentifyObjectsInGrid**.
 """
 
 import logging
@@ -75,9 +86,9 @@ GOOD_GRIDDING = "GoodGridding"
 
 '''Measurement category for this module'''
 M_CATEGORY = 'DefinedGrid'
-'''Feature name of top left spot x coordinate'''
+'''Feature name of top left spot X coordinate'''
 F_X_LOCATION_OF_LOWEST_X_SPOT = "XLocationOfLowestXSpot"
-'''Feature name of top left spot y coordinate'''
+'''Feature name of top left spot Y coordinate'''
 F_Y_LOCATION_OF_LOWEST_Y_SPOT = "YLocationOfLowestYSpot"
 '''Feature name of x distance between spots'''
 F_X_SPACING = "XSpacing"
@@ -104,9 +115,9 @@ class DefineGrid(cpm.Module):
 This is the name of the grid. You can use this name to
 retrieve the grid in subsequent modules.""")
 
-        self.grid_rows = cps.Integer("Number of rows", 8, 1, doc="""Along the height of the grid, define the number of rows""")
+        self.grid_rows = cps.Integer("Number of rows", 8, 1, doc="""Along the height of the grid, define the number of rows.""")
 
-        self.grid_columns = cps.Integer("Number of columns", 12, 1, doc="""Along the width of the grid, define the number of columns""")
+        self.grid_columns = cps.Integer("Number of columns", 12, 1, doc="""Along the width of the grid, define the number of columns.""")
 
         self.origin = cps.Choice(
                 "Location of the first spot",
@@ -122,13 +133,13 @@ larger numbers.""" % globals())
                 "Order of the spots",
                 [NUM_BY_ROWS, NUM_BY_COLUMNS], doc="""\
 Grid cells can either be numbered by rows, then columns or by columns,
-then rows. For instance, you might ask to start numbering a 96-well
-plate at the top left (by specifying the location of the first spot).
+then rows. For instance, if you asked to start numbering a 96-well
+plate at the top left (by specifying the location of the first spot), then:
 
--  *%(NUM_BY_ROWS)s:* This option will give well A01 the index 1, B01
+-  *%(NUM_BY_ROWS)s:* this option will give well A01 the index 1, B01
    the index 2, and so on up to H01 which receives the index 8. Well A02
    will be assigned the index 9.
--  *%(NUM_BY_COLUMNS)s:* With this option, the well A02 will be
+-  *%(NUM_BY_COLUMNS)s:* with this option, the well A02 will be
    assigned 2, well A12 will be assigned 12 and well B01 will be
    assigned 13.
 """ % globals())
@@ -162,7 +173,7 @@ setting controls how the grid is defined:
    image with a mouse or by entering coordinates.
 -  *%(AM_AUTOMATIC)s:* If you would like the grid to be defined
    automatically, an **IdentifyPrimaryObjects** module must be run prior
-   to this module to identify the objects which will be used to define
+   to this module to identify the objects that will be used to define
    the grid. The left-most, right-most, top-most, and bottom-most object
    will be used to define the edges of the grid, and the rows and
    columns will be evenly spaced between these edges. Note that
@@ -321,7 +332,7 @@ If the gridding fails, this setting allows you to control how the module
 responds to the error:
 
 -  *%(FAIL_NO)s:* The module will stop the pipeline if gridding fails.
--  *%(FAIL_ANY_PREVIOUS)s:*: The module will use the the most recent
+-  *%(FAIL_ANY_PREVIOUS)s:* The module will use the the most recent
    successful gridding.
 -  *%(FAIL_FIRST)s:* The module will use the first gridding.
 

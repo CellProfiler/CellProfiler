@@ -28,6 +28,20 @@ It requires grayscale images containing bright objects on a dark background.
 Incoming images must be 2D (including 2D slices of 3D images);
 please use the **Watershed** module for identification of objects in 3D.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
+See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
+**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
+
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -102,7 +116,7 @@ What do I get as output?
 
 A set of primary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations. See
-the section `"Available measurements" <#Available_measurements>`__ below
+the section `"Measurements made by this module" <#Measurements_made_by_thismodule>`__ below
 for the measurements that are produced directly by this module. Once the module
 has finished processing, the module display window will show the
 following panels:
@@ -201,9 +215,6 @@ References
 
 .. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
 .. _tutorial: http://blog.cellprofiler.org/2017/01/19/cellprofiler-ilastik-superpowered-segmentation/
-
-See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
-**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,

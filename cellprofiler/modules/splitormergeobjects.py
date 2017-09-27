@@ -17,6 +17,17 @@ numbers by either merging separate objects to share the same label, or
 splitting portions of separate objects that previously had the same
 label.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
 See also **RelateObjects**.
 
 Measurements made by this module

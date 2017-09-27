@@ -16,9 +16,18 @@ instance, the dilate operation will only consider unmasked pixels in the
 neighborhood of a pixel when determining the maximum within that
 neighborhood.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+
 The following operations are available:
-    
-.. list-table:: 
+
+.. list-table::
   :widths: 10 100 10
   :header-rows: 1
 
@@ -27,207 +36,216 @@ The following operations are available:
     - **Input image type allowed**
   * - *Branchpoints*
     - Removes all pixels except those that are the branchpoints
-      of a skeleton. This operation should be applied to an image 
-      after skeletonizing. It leaves only those pixels that are at the 
+      of a skeleton. This operation should be applied to an image
+      after skeletonizing. It leaves only those pixels that are at the
       intersection of branches.
-      
-      +---+---+---+---+---+----------------+---+---+---+---+---+         
-      | 1 | 0 | 0 | 0 | 0 |                | ? | 0 | 0 | 0 | 0 | 
-      +---+---+---+---+---+                +---+---+---+---+---+   
-      | 0 | 1 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 | 0 |  
-      +---+---+---+---+---+                +---+---+---+---+---+  
-      | 0 | 0 | 1 | 0 | 0 |        →       | 0 | 0 | 1 | 0 | 0 |  
-      +---+---+---+---+---+                +---+---+---+---+---+   
-      | 0 | 1 | 0 | 1 | 0 |                | 0 | 0 | 0 | 0 | 0 |  
-      +---+---+---+---+---+                +---+---+---+---+---+    
-      | 1 | 0 | 0 | 0 | 1 |                | ? | 0 | 0 | 0 | ? |   
-      +---+---+---+---+---+----------------+---+---+---+---+---+  
-         
+
+      +---+---+---+---+---+----------------+---+---+---+---+---+
+      | 1 | 0 | 0 | 0 | 0 |                | ? | 0 | 0 | 0 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 0 | 1 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 0 | 0 | 1 | 0 | 0 |        →       | 0 | 0 | 1 | 0 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 0 | 1 | 0 | 1 | 0 |                | 0 | 0 | 0 | 0 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 1 | 0 | 0 | 0 | 1 |                | ? | 0 | 0 | 0 | ? |
+      +---+---+---+---+---+----------------+---+---+---+---+---+
+
     - Binary
   * - *Bridge*
-    - Sets a pixel to 1 if it has two non-zero neighbors that are on 
+    - Sets a pixel to 1 if it has two non-zero neighbors that are on
       opposite sides of this pixel:
-  
-      +---+---+---+----------------+---+---+---+        
-      | 1 | 0 | 0 |                | 1 | 0 | 0 | 
-      +---+---+---+                +---+---+---+ 
-      | 0 | 0 | 0 |       →        | 0 | 1 | 0 |   
-      +---+---+---+                +---+---+---+   
-      | 0 | 0 | 1 |                | 0 | 0 | 1 | 
-      +---+---+---+----------------+---+---+---+  
-     
+
+      +---+---+---+----------------+---+---+---+
+      | 1 | 0 | 0 |                | 1 | 0 | 0 |
+      +---+---+---+                +---+---+---+
+      | 0 | 0 | 0 |       →        | 0 | 1 | 0 |
+      +---+---+---+                +---+---+---+
+      | 0 | 0 | 1 |                | 0 | 0 | 1 |
+      +---+---+---+----------------+---+---+---+
+
     - Binary
   * - *Clean*
     - Removes isolated pixels:
-  
-      +---+---+---+----------------+---+---+---+        
-      | 0 | 0 | 0 |                | 0 | 0 | 0 | 
-      +---+---+---+                +---+---+---+ 
-      | 0 | 1 | 0 |       →        | 0 | 0 | 0 |   
-      +---+---+---+                +---+---+---+   
-      | 0 | 0 | 0 |                | 0 | 0 | 0 | 
-      +---+---+---+----------------+---+---+---+  
-     
+
+      +---+---+---+----------------+---+---+---+
+      | 0 | 0 | 0 |                | 0 | 0 | 0 |
+      +---+---+---+                +---+---+---+
+      | 0 | 1 | 0 |       →        | 0 | 0 | 0 |
+      +---+---+---+                +---+---+---+
+      | 0 | 0 | 0 |                | 0 | 0 | 0 |
+      +---+---+---+----------------+---+---+---+
+
     - Binary
   * - *Convex hull*
-    - Finds the convex hull of a binary image. The convex hull is the smallest convex 
-      polygon that fits around all foreground pixels of the image: it is the shape 
-      that a rubber band would take if stretched around the foreground pixels. The 
-      convex hull can be used to regularize the boundary of a large, single object 
+    - Finds the convex hull of a binary image. The convex hull is the smallest convex
+      polygon that fits around all foreground pixels of the image: it is the shape
+      that a rubber band would take if stretched around the foreground pixels. The
+      convex hull can be used to regularize the boundary of a large, single object
       in an image, for instance, the edge of a well.
     - Binary
   * - *Diag*
-    - Fills in pixels whose neighbors are diagnonally connected to 4-connect 
+    - Fills in pixels whose neighbors are diagnonally connected to 4-connect
       pixels that are 8-connected:
-  
-      +---+---+----------------+---+---+      
+
+      +---+---+----------------+---+---+
       | 0 | 1 |                | 1 | 1 |
       +---+---+                +---+---+
-      | 1 | 0 |       →        | 1 | 1 |  
-      +---+---+----------------+---+---+ 
-      
-      +---+---+----------------+---+---+      
+      | 1 | 0 |       →        | 1 | 1 |
+      +---+---+----------------+---+---+
+
+      +---+---+----------------+---+---+
       | 0 | 1 |                | 1 | 1 |
       +---+---+                +---+---+
-      | 1 | 1 |       →        | 1 | 1 |  
-      +---+---+----------------+---+---+ 
-     
+      | 1 | 1 |       →        | 1 | 1 |
+      +---+---+----------------+---+---+
+
     - Binary
   * - *Distance*
-    - Computes the distance transform of a binary image. The distance of each 
-      foreground pixel is computed to the nearest background pixel. The 
+    - Computes the distance transform of a binary image. The distance of each
+      foreground pixel is computed to the nearest background pixel. The
       resulting image is then scaled so that the largest distance is 1.
     - Binary
   * - *Endpoints*
     - Removes all pixels except the ones that are at the end of a skeleton:
-      
-      +---+---+---+---+---+----------------+---+---+---+---+---+         
-      | 0 | 0 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 | 0 | 
-      +---+---+---+---+---+                +---+---+---+---+---+   
-      | 0 | 1 | 0 | 1 | 0 |                | 0 | 1 | 0 | 1 | 0 |  
-      +---+---+---+---+---+                +---+---+---+---+---+  
-      | 0 | 0 | 1 | 0 | 0 |       →        | 0 | 0 | 0 | 0 | 0 |  
-      +---+---+---+---+---+                +---+---+---+---+---+   
-      | 0 | 1 | 0 | 1 | 0 |                | 0 | 0 | 0 | 0 | 0 |  
-      +---+---+---+---+---+                +---+---+---+---+---+    
-      | 0 | 1 | 0 | 0 | 1 |                | 0 | ? | 0 | 0 | ? |   
-      +---+---+---+---+---+----------------+---+---+---+---+---+  
-         
+
+      +---+---+---+---+---+----------------+---+---+---+---+---+
+      | 0 | 0 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 0 | 1 | 0 | 1 | 0 |                | 0 | 1 | 0 | 1 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 0 | 0 | 1 | 0 | 0 |       →        | 0 | 0 | 0 | 0 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 0 | 1 | 0 | 1 | 0 |                | 0 | 0 | 0 | 0 | 0 |
+      +---+---+---+---+---+                +---+---+---+---+---+
+      | 0 | 1 | 0 | 0 | 1 |                | 0 | ? | 0 | 0 | ? |
+      +---+---+---+---+---+----------------+---+---+---+---+---+
+
     - Binary
   * - *Fill*
     - Sets a pixel to 1 if all of its neighbors are 1:
-  
-      +---+---+---+----------------+---+---+---+        
-      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
-      +---+---+---+                +---+---+---+ 
-      | 1 | 0 | 1 |       →        | 1 | 1 | 1 |   
-      +---+---+---+                +---+---+---+   
-      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
-      +---+---+---+----------------+---+---+---+  
-     
+
+      +---+---+---+----------------+---+---+---+
+      | 1 | 1 | 1 |                | 1 | 1 | 1 |
+      +---+---+---+                +---+---+---+
+      | 1 | 0 | 1 |       →        | 1 | 1 | 1 |
+      +---+---+---+                +---+---+---+
+      | 1 | 1 | 1 |                | 1 | 1 | 1 |
+      +---+---+---+----------------+---+---+---+
+
     - Binary
   * - *Hbreak*
     - Removes pixels that form vertical bridges between horizontal lines:
-  
-      +---+---+---+----------------+---+---+---+        
-      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
-      +---+---+---+                +---+---+---+ 
-      | 0 | 1 | 0 |       →        | 0 | 0 | 0 |   
-      +---+---+---+                +---+---+---+   
-      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
-      +---+---+---+----------------+---+---+---+  
-     
+
+      +---+---+---+----------------+---+---+---+
+      | 1 | 1 | 1 |                | 1 | 1 | 1 |
+      +---+---+---+                +---+---+---+
+      | 0 | 1 | 0 |       →        | 0 | 0 | 0 |
+      +---+---+---+                +---+---+---+
+      | 1 | 1 | 1 |                | 1 | 1 | 1 |
+      +---+---+---+----------------+---+---+---+
+
     - Binary
   * - *Life*
-    - Applies the interaction rules from the `Game of Life 
-      <http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life>`__, an example of a 
+    - Applies the interaction rules from the `Game of Life
+      <http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life>`__, an example of a
       cellular automaton.
     - Binary
   * - *Majority*
-    - Each pixel takes on the value of the majority that surround it (keep 
+    - Each pixel takes on the value of the majority that surround it (keep
       pixel value to break ties):
-  
-      +---+---+---+----------------+---+---+---+        
-      | 1 | 1 | 1 |                | 1 | 1 | 1 | 
-      +---+---+---+                +---+---+---+ 
-      | 1 | 0 | 1 |       →        | 1 | 1 | 1 |   
-      +---+---+---+                +---+---+---+   
-      | 0 | 0 | 0 |                | 0 | 0 | 0 | 
-      +---+---+---+----------------+---+---+---+  
-     
+
+      +---+---+---+----------------+---+---+---+
+      | 1 | 1 | 1 |                | 1 | 1 | 1 |
+      +---+---+---+                +---+---+---+
+      | 1 | 0 | 1 |       →        | 1 | 1 | 1 |
+      +---+---+---+                +---+---+---+
+      | 0 | 0 | 0 |                | 0 | 0 | 0 |
+      +---+---+---+----------------+---+---+---+
+
     - Binary
   * - *OpenLines*
-    - Performs an erosion followed by a dilation using rotating linear structural 
-      elements. The effect is to return parts of the image that have a linear 
+    - Performs an erosion followed by a dilation using rotating linear structural
+      elements. The effect is to return parts of the image that have a linear
       intensity distribution and suppress dots of the same size.
     - Binary, grayscale
   * - *Remove*
-    - Removes pixels that are otherwise surrounded by others (4 connected). The 
+    - Removes pixels that are otherwise surrounded by others (4 connected). The
       effect is to leave the perimeter of a solid object:
-  
-      +---+---+---+----------------+---+---+---+        
-      | 0 | 1 | 0 |                | 0 | 1 | 0 | 
-      +---+---+---+                +---+---+---+ 
-      | 1 | 1 | 1 |       →        | 1 | 0 | 1 |   
-      +---+---+---+                +---+---+---+   
-      | 0 | 1 | 0 |                | 0 | 1 | 0 | 
-      +---+---+---+----------------+---+---+---+  
-     
+
+      +---+---+---+----------------+---+---+---+
+      | 0 | 1 | 0 |                | 0 | 1 | 0 |
+      +---+---+---+                +---+---+---+
+      | 1 | 1 | 1 |       →        | 1 | 0 | 1 |
+      +---+---+---+                +---+---+---+
+      | 0 | 1 | 0 |                | 0 | 1 | 0 |
+      +---+---+---+----------------+---+---+---+
+
     - Binary
   * - *Shrink*
-    - Performs a thinning operation that erodes unless that operation would change 
-      the image's Euler number. This means that blobs are reduced to single points 
+    - Performs a thinning operation that erodes unless that operation would change
+      the image's Euler number. This means that blobs are reduced to single points
       and blobs with holes are reduced to rings if shrunken indefinitely.
     - Binary
   * - *SkelPE*
-    - Performs a skeletonizing operation using the metric, PE * D to control the 
-      erosion order. PE is the Poisson Equation (see Gorelick, "Shape representation 
-      and classification using the Poisson Equation", IEEE Transactions on Pattern 
-      Analysis and Machine Intelligence V28, # 12, 2006) evaluated within the 
-      foreground with the boundary condition that the background is zero. D is the 
-      distance transform (distance of a pixel to the nearest edge). The resulting 
-      skeleton has fewer spurs but some bit of erosion at the endpoints in the 
+    - Performs a skeletonizing operation using the metric, PE * D to control the
+      erosion order. PE is the Poisson Equation (see Gorelick, "Shape representation
+      and classification using the Poisson Equation", IEEE Transactions on Pattern
+      Analysis and Machine Intelligence V28, # 12, 2006) evaluated within the
+      foreground with the boundary condition that the background is zero. D is the
+      distance transform (distance of a pixel to the nearest edge). The resulting
+      skeleton has fewer spurs but some bit of erosion at the endpoints in the
       binary image.
     - Binary
   * - *Spur*
-    - Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor. 
+    - Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor.
       This operation essentially removes the endpoints of lines.
-      
-      +---+---+---+---+----------------+---+---+---+---+        
+
+      +---+---+---+---+----------------+---+---+---+---+
       | 0 | 0 | 0 | 0 |                | 0 | 0 | 0 | 0 |
-      +---+---+---+---+                +---+---+---+---+   
-      | 0 | 1 | 0 | 0 |                | 0 | 0 | 0 | 0 |  
-      +---+---+---+---+                +---+---+---+---+  
-      | 0 | 0 | 1 | 0 |       →        | 0 | 0 | 1 | 0 |  
-      +---+---+---+---+                +---+---+---+---+   
-      | 1 | 1 | 1 | 1 |                | 1 | 1 | 1 | 1 |   
-      +---+---+---+---+----------------+---+---+---+---+ 
-         
+      +---+---+---+---+                +---+---+---+---+
+      | 0 | 1 | 0 | 0 |                | 0 | 0 | 0 | 0 |
+      +---+---+---+---+                +---+---+---+---+
+      | 0 | 0 | 1 | 0 |       →        | 0 | 0 | 1 | 0 |
+      +---+---+---+---+                +---+---+---+---+
+      | 1 | 1 | 1 | 1 |                | 1 | 1 | 1 | 1 |
+      +---+---+---+---+----------------+---+---+---+---+
+
     - Binary
   * - *Thicken*
-    - Dilates the exteriors of objects where that dilation does not 8-connect the 
-      object with another. The image is labeled and the labeled objects are filled. 
-      Unlabeled points adjacent to uniquely labeled points change from background 
+    - Dilates the exteriors of objects where that dilation does not 8-connect the
+      object with another. The image is labeled and the labeled objects are filled.
+      Unlabeled points adjacent to uniquely labeled points change from background
       to foreground.
     - Binary
   * - *Thin*
-    - Thin lines preserving the Euler number using the thinning algorithm # 1 
-      described in Guo, "Parallel Thinning with Two Subiteration Algorithms", 
-      Communications of the ACM, Vol 32 #3, page 359. The result generally preserves 
+    - Thin lines preserving the Euler number using the thinning algorithm # 1
+      described in Guo, "Parallel Thinning with Two Subiteration Algorithms",
+      Communications of the ACM, Vol 32 #3, page 359. The result generally preserves
       the lines in an image while eroding their thickness.
     - Binary
   * - *Vbreak*
     - Removes pixels that form horizontal bridges between vertical lines:
-   
-      +---+---+---+----------------+---+---+---+        
-      | 1 | 0 | 1 |                | 1 | 0 | 1 | 
-      +---+---+---+                +---+---+---+ 
-      | 1 | 1 | 1 |       →        | 1 | 0 | 1 |   
-      +---+---+---+                +---+---+---+   
-      | 1 | 0 | 1 |                | 1 | 0 | 1 | 
-      +---+---+---+----------------+---+---+---+  
-     
+
+      +---+---+---+----------------+---+---+---+
+      | 1 | 0 | 1 |                | 1 | 0 | 1 |
+      +---+---+---+                +---+---+---+
+      | 1 | 1 | 1 |       →        | 1 | 0 | 1 |
+      +---+---+---+                +---+---+---+
+      | 1 | 0 | 1 |                | 1 | 0 | 1 |
+      +---+---+---+----------------+---+---+---+
+
     - Binary
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import logging
@@ -310,7 +328,7 @@ the operation added by this button.""")
     CUSTOM_REPEATS_TEXT = "Repetition number"
     CUSTOM_REPEATS_DOC = """\
 *(Used only if "Custom" selected)*
-    
+
 Enter the number of times to repeat the operation."""
 
     def add_function(self, can_remove=True):

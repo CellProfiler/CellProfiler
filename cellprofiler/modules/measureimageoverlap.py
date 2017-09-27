@@ -45,8 +45,6 @@ while a background pixel in the test image that overlaps with foreground
 in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
-This module supports both 2D and 3D volumetric images.
-
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -77,12 +75,9 @@ References
 
 -  Collins LM, Dent CW (1998) “Omega: A general formulation of the Rand
    Index of cluster recovery suitable for non-disjoint solutions”,
-   *Multivariate Behavioral Research*, 23, 231-242 `(link)`_
-
+   *Multivariate Behavioral Research*, 23, 231-242. `(link) <http://dx.doi.org/10.1207/s15327906mbr2302_6>`__
 -  Pele O, Werman M (2009) “Fast and Robust Earth Mover’s Distances”,
-   *2009 IEEE 12th International Conference on Computer Vision*
-
-.. _(link): http://dx.doi.org/10.1207/s15327906mbr2302_6
+   *2009 IEEE 12th International Conference on Computer Vision*.
 """
 
 import centrosome.cpmorphology

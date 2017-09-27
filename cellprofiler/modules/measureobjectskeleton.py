@@ -38,6 +38,17 @@ The module records *vertices* which include trunks, branchpoints, and endpoints.
 
 Note that this module was referred to as MeasureNeurons in previous versions of CellProfiler.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+See also
+^^^^^^^^
+
 See also **MeasureImageSkeleton**.
 
 Measurements made by this module

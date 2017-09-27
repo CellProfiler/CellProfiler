@@ -1,10 +1,19 @@
 # coding=utf-8
 
 """
-Remove objects
-==============
+RemoveObjectsBySize
+===================
 
-Remove objects smaller or larger than the specified diameter.
+**RemoveObjectsBySize** removes objects smaller or larger than the specified diameter.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import numpy

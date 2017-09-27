@@ -1,8 +1,19 @@
 # coding=utf-8
 
 """
-Median filter reduces salt-and-pepper noise in an image while preserving
+MedianFilter
+============
+
+**MedianFilter** reduces salt-and-pepper noise in an image while preserving
 borders.
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 """
 
 import cellprofiler.module

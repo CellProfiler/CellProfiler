@@ -17,6 +17,18 @@ LabelImages assumes the following are true of the image order:
 -  Each plate has the same number of rows and columns, so that the total
    number of images per plate is the same.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
+
+See also
+^^^^^^^^
+
 See also the **Metadata** module.
 
 Measurements made by this module

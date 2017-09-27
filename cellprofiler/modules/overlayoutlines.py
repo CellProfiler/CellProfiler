@@ -9,7 +9,13 @@ OverlayOutlines
 This module places outlines of objects on any desired image (grayscale, color, or blank).
 The resulting image can be saved using the **SaveImages** module.
 
-This module supports 2D and 3D objects.
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
 """
 
 import numpy

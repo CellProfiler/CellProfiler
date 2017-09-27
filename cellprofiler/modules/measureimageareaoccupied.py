@@ -19,6 +19,20 @@ threshold if you precede it with thresholding performed by
 **Threshold**, and then select the binary image output by
 **Threshold** to be measured by this module.
 
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          YES
+============ ============
+
+See also
+^^^^^^^^
+
+See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
+**IdentifyTertiaryObjects**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -29,8 +43,6 @@ Measurements made by this module
 -  *TotalImageArea:* The total pixel area of the image that was
    subjected to measurement, excluding masked regions.
 
-See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
-**IdentifyTertiaryObjects**.
 """
 
 import numpy

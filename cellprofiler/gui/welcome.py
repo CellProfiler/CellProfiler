@@ -35,7 +35,7 @@ CONFIGURE_IMAGES_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "CONFIGURE_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.CONFIGURE_IMAGES_HELP
+        cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
     )
 })
 
@@ -244,7 +244,7 @@ RUNNING_YOUR_PIPELINE_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "RUNNING_YOUR_PIPELINE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP
+        cellprofiler.gui.help.content.read_content("pipelines_running.rst")
     )
 })
 
@@ -261,7 +261,7 @@ TEST_MODE_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "TEST_MODE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.TEST_MODE_HELP
+        cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
     )
 })
 
@@ -278,7 +278,7 @@ SELECTING_IMAGES_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "SELECTING_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.SELECTING_IMAGES_HELP
+        cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
     )
 })
 

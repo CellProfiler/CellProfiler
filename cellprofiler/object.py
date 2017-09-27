@@ -953,8 +953,8 @@ def size_similarly(labels, secondary):
     return result, mask
 
 
-def overlay_labels(pixel_data, labels, opacity=0.7):
-    colors = _colors(labels)
+def overlay_labels(pixel_data, labels, opacity=0.7, max_label=None, seed=None):
+    colors = _colors(labels, max_label=max_label, seed=seed)
 
     if labels.ndim == 3:
         overlay = numpy.zeros(labels.shape + (3,), dtype=numpy.float32)
@@ -986,17 +986,19 @@ def overlay_labels(pixel_data, labels, opacity=0.7):
     )
 
 
-def _colors(labels):
-    unique_labels = numpy.unique(labels)
-
-    if unique_labels[0] == 0:
-        unique_labels = unique_labels[1:]
-
+def _colors(labels, max_label=None, seed=None):
     mappable = matplotlib.cm.ScalarMappable(
         cmap=matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
     )
 
-    colors = mappable.to_rgba(unique_labels)[:, :3]
+    colors = mappable.to_rgba(
+        numpy.arange(labels.max() if max_label is None else max_label)
+    )[:, :3]
+
+    if seed is not None:
+        # Resetting the random seed helps keep object label colors consistent in displays
+        # where consistency is important, like RelateObjects.
+        numpy.random.seed(seed)
 
     numpy.random.shuffle(colors)
 

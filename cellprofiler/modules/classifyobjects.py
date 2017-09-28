@@ -35,11 +35,17 @@ percentages.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **CalculateMath** and any of the modules in the **Measure**
+category.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -59,11 +65,6 @@ Measurements made by this module
       measurement versus the 2\ :sup:`nd` measurement binned into bins
       above (“high”) and below (“low”) the cutoff.
 
-See also
-^^^^^^^^
-
-See also **CalculateMath** and any of the modules in the **Measure**
-category.
 """
 
 import numpy as np

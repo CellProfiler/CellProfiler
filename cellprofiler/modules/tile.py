@@ -15,11 +15,11 @@ channels of the same field of view, for example).
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
 
 Tiling images to create a montage with this module generates an image
 that is roughly the size of all the images’ sizes added together. For

@@ -19,11 +19,11 @@ grayscale. If a binary mask is desired in subsequent modules, use the
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

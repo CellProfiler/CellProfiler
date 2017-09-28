@@ -13,11 +13,11 @@ or several files, as requested.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
 
 Using metadata tags for output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

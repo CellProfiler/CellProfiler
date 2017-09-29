@@ -166,9 +166,9 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.apply_threshold.threshold_scope.value = TS_GLOBAL
-        identify.apply_threshold.global_operation.value = TM_MANUAL
-        identify.apply_threshold.manual_threshold.value = .5
+        identify.threshold.threshold_scope.value = TS_GLOBAL
+        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
@@ -210,9 +210,9 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.apply_threshold.threshold_scope.value = TS_GLOBAL
-        identify.apply_threshold.global_operation.value = TM_MANUAL
-        identify.apply_threshold.manual_threshold.value = .5
+        identify.threshold.threshold_scope.value = TS_GLOBAL
+        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
@@ -255,9 +255,9 @@ class TestKnimeBridge(unittest.TestCase):
         identify.use_advanced.value = True
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.apply_threshold.threshold_scope.value = TS_GLOBAL
-        identify.apply_threshold.global_operation.value = TM_MANUAL
-        identify.apply_threshold.manual_threshold.value = .5
+        identify.threshold.threshold_scope.value = TS_GLOBAL
+        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
@@ -317,9 +317,9 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.apply_threshold.threshold_scope.value = TS_GLOBAL
-        identify.apply_threshold.global_operation.value = TM_MANUAL
-        identify.apply_threshold.manual_threshold.value = .5
+        identify.threshold.threshold_scope.value = TS_GLOBAL
+        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
@@ -366,9 +366,9 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.apply_threshold.threshold_scope.value = TS_GLOBAL
-        identify.apply_threshold.global_operation.value = TM_MANUAL
-        identify.apply_threshold.manual_threshold.value = .5
+        identify.threshold.threshold_scope.value = TS_GLOBAL
+        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 

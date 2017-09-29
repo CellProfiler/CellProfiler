@@ -23,19 +23,31 @@ __doc__ = """\
 IdentifyPrimaryObjects
 ======================
 
-**IdentifyPrimaryObjects** identifies biological components of
-interest in grayscale images containing bright objects on a dark
-background.  This module currently identifies objects in 2D images only
-(including 2D slices of 3D images);
+**IdentifyPrimaryObjects** identifies biological objects of interest.
+It requires grayscale images containing bright objects on a dark background.
+Incoming images must be 2D (including 2D slices of 3D images);
 please use the **Watershed** module for identification of objects in 3D.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**,
+**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
 
 What is a primary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually an organism, cell, or cellular
-compartment (for example, nuclei, cells, colonies, worms). We define an
-object as *primary* when it can be found in an image without needing the
+{DEFINITION_OBJECT}
+
+We define an object as *primary* when it can be found in an image without needing the
 assistance of another cellular feature as a reference. For example:
 
 -  The nuclei of cells are usually more easily identifiable than whole-
@@ -46,7 +58,7 @@ assistance of another cellular feature as a reference. For example:
    object identification.
 -  In contrast, whole-cell stains often yield irregular intensity patterns
    and are lower-contrast with more diffuse staining, making them more
-   challenging to identify than nuclei without some supplemental image 
+   challenging to identify than nuclei without some supplemental image
    information being provided. In addition, cells often touch or even overlap
    their neighbors making it harder to delineate the cell borders. For
    these reasons, cell bodies are better suited for *secondary object*
@@ -90,38 +102,21 @@ What are the advanced settings?
 so many that it can often become confusing where you should start. This is
 typically the most important but complex step in creating a good pipeline,
 so do not be discouraged: other modules are easier to configure!
-Using **IdentifyPrimaryObjects** with *'Use advanced settings?'* set to *'No'* 
+Using **IdentifyPrimaryObjects** with *'Use advanced settings?'* set to *'No'*
 allows you to quickly try to identify your objects based only their typical size;
-CellProfiler will then use its built-in defaults to decide how to set the 
-threshold and how to break clumped objects apart. If you are happy with the 
-results produced by the default settings, you can then move on to 
-construct the rest of your pipeline; if not, you can set 
-*'Use advanced settings?'* to *'Yes'* which will allow you to fully tweak and 
+CellProfiler will then use its built-in defaults to decide how to set the
+threshold and how to break clumped objects apart. If you are happy with the
+results produced by the default settings, you can then move on to
+construct the rest of your pipeline; if not, you can set
+*'Use advanced settings?'* to *'Yes'* which will allow you to fully tweak and
 customize all the settings.
-
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See below for help on the individual settings. The following icons are
-used to call attention to key items:
-
-.. list-table:: 
-  :widths: 10 100
-  :header-rows: 0
-  
-  * - .. image:: {PROTIP_RECOMEND_ICON}
-    - Our recommendation or example use case for which a particular setting is best used.
-  * - .. image:: {PROTIP_AVOID_ICON}
-    - Indicates a condition under which a particular setting may not work well.
-  * - .. image:: {TECH_NOTE_ICON}
-    - Technical note. Provides more detailed information on the setting.
 
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 A set of primary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations. See
-the section `"Available measurements" <#Available_measurements>`__ below
+the section `"Measurements made by this module" <#Measurements_made_by_thismodule>`__ below
 for the measurements that are produced directly by this module. Once the module
 has finished processing, the module display window will show the
 following panels:
@@ -221,14 +216,9 @@ References
 .. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
 .. _tutorial: http://blog.cellprofiler.org/2017/01/19/cellprofiler-ilastik-superpowered-segmentation/
 
-See also **IdentifySecondaryObjects**, **IdentifyTertiaryObjects**, 
-**IdentifyObjectsManually**, and **Watershed** (for segmentation of 3D objects).
-
 """.format(**{
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
-                "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
-                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
-            })
+    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+})
 
 
 
@@ -325,16 +315,16 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
     module_name = "IdentifyPrimaryObjects"
 
     def __init__(self):
-        self.apply_threshold = threshold.Threshold()
+        self.threshold = threshold.Threshold()
 
         super(IdentifyPrimaryObjects, self).__init__()
 
     def create_settings(self):
         super(IdentifyPrimaryObjects, self).create_settings()
-        
+
         self.x_name.text = "Select the input image"
         self.x_name.doc = "Select the image that you want to use to identify objects."
-        
+
         self.y_name.text = "Name the primary objects to be identified"
         self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
@@ -351,7 +341,7 @@ objects outside the size range you provide here.
 
 |image0| The units used here are pixels so that it is easy to zoom in
 on objects and determine typical diameters. {HELP_ON_MEASURING_DISTANCES}
-    
+
 A few important notes:
 
 -  The other settings that make use of the minimum object size entered
@@ -483,7 +473,7 @@ see the results of each.
    | interior as is required for the      |                                      |
    | *{UN_INTENSITY}* option.                  |                                      |
    |                                      |                                      |
-   | |image5|  The binary thresholded     |                                      | 
+   | |image5|  The binary thresholded     |                                      |
    | image is distance-transformed and    |                                      |
    | object centers are defined as peaks  |                                      |
    | in this image. A distance-transform  |                                      |
@@ -493,10 +483,9 @@ see the results of each.
    | *{UN_SHAPE}* of the object.               |                                      |
    +--------------------------------------+--------------------------------------+
    | *{UN_NONE}:* If objects are well separated and bright relative to the            |
-   | background, it may be unnecessary to attempt to separate clumped objects.   | 
+   | background, it may be unnecessary to attempt to separate clumped objects.   |
    | Using the very fast *{UN_NONE}* option, a simple threshold will be used to       |
-   | identify objects. This will override any declumping method chosen in the    |
-   | settings below.                                                             |
+   | identify objects.                                                           |
    +--------------------------------------+--------------------------------------+
 
 .. |image0| image:: {PROTIP_RECOMEND_ICON}
@@ -552,9 +541,8 @@ see the results of each.
 -  *{WA_NONE}*: If objects are well separated and bright relative to
    the background, it may be unnecessary to attempt to separate clumped
    objects. Using the very fast *{WA_NONE}* option, a simple threshold
-   will be used to identify objects. This will override any declumping
-   method chosen in the previous question.
-            """.format(**{
+   will be used to identify objects.
+""".format(**{
                 "WA_INTENSITY": WA_INTENSITY,
                 "WA_SHAPE": WA_SHAPE,
                 "WA_PROPAGATE": WA_PROPAGATE,
@@ -604,7 +592,7 @@ objects split up that ought to be merged (over-segmentation), the
 value should be higher.
 
 Note that splitting and merging is also
-affected by your choice of settings for the setting, 
+affected by your choice of settings for the setting,
 *{AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT}* It is an art to balance
 these two settings; read the help carefully for both.
 
@@ -670,7 +658,7 @@ each other will be assumed to be actually two lumpy parts of the same
 object, and they will be merged.
 
 Note that splitting and merging is also
-affected by your choice of settings for the setting, 
+affected by your choice of settings for the setting,
 *{SMOOTHING_FILTER_SIZE_SETTING_TEXT}* It is an art to balance
 these two settings; read the help carefully for both.
 """.format(**{"SMOOTHING_FILTER_SIZE_SETTING_TEXT": SMOOTHING_FILTER_SIZE_SETTING_TEXT})
@@ -778,16 +766,16 @@ If "*{NO}*" is selected, the following settings are used:
                 "LIMIT_CHOICE_VALUE": LIMIT_NONE,
                 "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
                 "NO": cellprofiler.setting.NO,
-                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.apply_threshold.threshold_correction_factor.get_text(),
+                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold.threshold_correction_factor.get_text(),
                 "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
-                "THRESHOLD_METHOD_TEXT": self.apply_threshold.global_operation.get_text(),
+                "THRESHOLD_METHOD_TEXT": self.threshold.global_operation.get_text(),
                 "THRESHOLD_METHOD_VALUE": threshold.TM_LI,
                 "THRESHOLD_RANGE_MAX": 1.0,
                 "THRESHOLD_RANGE_MIN": 0.0,
-                "THRESHOLD_RANGE_TEXT": self.apply_threshold.threshold_range.get_text(),
-                "THRESHOLD_SCOPE_TEXT": self.apply_threshold.threshold_scope.get_text(),
+                "THRESHOLD_RANGE_TEXT": self.threshold.threshold_range.get_text(),
+                "THRESHOLD_SCOPE_TEXT": self.threshold.threshold_scope.get_text(),
                 "THRESHOLD_SCOPE_VALUE": threshold.TS_GLOBAL,
-                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.apply_threshold.threshold_smoothing_scale.get_text(),
+                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.threshold.threshold_smoothing_scale.get_text(),
                 "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
                 "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
                 "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
@@ -799,12 +787,12 @@ If "*{NO}*" is selected, the following settings are used:
 
         self.threshold_setting_version = cellprofiler.setting.Integer(
             "Threshold setting version",
-            value=self.apply_threshold.variable_revision_number
+            value=self.threshold.variable_revision_number
         )
 
-        self.apply_threshold.create_settings()
+        self.threshold.create_settings()
 
-        self.apply_threshold.threshold_smoothing_scale.value = 1.3488  # sigma = 1
+        self.threshold.threshold_smoothing_scale.value = 1.3488  # sigma = 1
 
     def settings(self):
         settings = super(IdentifyPrimaryObjects, self).settings()
@@ -826,7 +814,7 @@ If "*{NO}*" is selected, the following settings are used:
             self.use_advanced
         ]
 
-        threshold_settings = self.apply_threshold.settings()[2:]
+        threshold_settings = self.threshold.settings()[2:]
 
         return settings + [self.threshold_setting_version] + threshold_settings
 
@@ -878,11 +866,11 @@ If "*{NO}*" is selected, the following settings are used:
         threshold_settings_version = int(threshold_setting_values[0])
 
         if threshold_settings_version < 4:
-            threshold_setting_values = self.apply_threshold.upgrade_threshold_settings(threshold_setting_values)
+            threshold_setting_values = self.threshold.upgrade_threshold_settings(threshold_setting_values)
 
             threshold_settings_version = 9
 
-        threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+        threshold_upgrade_settings, threshold_settings_version, _ = self.threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
             "Threshold",
@@ -896,7 +884,7 @@ If "*{NO}*" is selected, the following settings are used:
         return setting_values, variable_revision_number, False
 
     def help_settings(self):
-        threshold_help_settings = self.apply_threshold.help_settings()[2:]
+        threshold_help_settings = self.threshold.help_settings()[2:]
 
         return [
             self.use_advanced,
@@ -930,12 +918,12 @@ If "*{NO}*" is selected, the following settings are used:
         ]
 
         if self.use_advanced.value:
-            visible_settings += self.apply_threshold.visible_settings()[2:]
+            visible_settings += self.threshold.visible_settings()[2:]
 
-            visible_settings += [self.unclump_method]
+            visible_settings += [self.unclump_method, self.watershed_method]
 
-            if self.unclump_method != UN_NONE:
-                visible_settings += [self.watershed_method, self.automatic_smoothing]
+            if self.unclump_method != UN_NONE and self.watershed_method != WA_NONE:
+                visible_settings += [self.automatic_smoothing]
 
                 if not self.automatic_smoothing.value:
                     visible_settings += [self.smoothing_filter_size]
@@ -946,6 +934,13 @@ If "*{NO}*" is selected, the following settings are used:
                     visible_settings += [self.maxima_suppression_size]
 
                 visible_settings += [self.low_res_maxima]
+            else:  # self.unclump_method == UN_NONE or self.watershed_method == WA_NONE
+                visible_settings = visible_settings[:-2]
+
+                if self.unclump_method == UN_NONE:
+                    visible_settings += [self.unclump_method]
+                else:  # self.watershed_method == WA_NONE
+                    visible_settings += [self.watershed_method]
 
             visible_settings += [self.fill_holes, self.limit_choice]
 
@@ -1072,18 +1067,18 @@ If "*{NO}*" is selected, the following settings are used:
     def _threshold_image(self, image_name, workspace, automatic=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        local_threshold, global_threshold = self.apply_threshold.get_threshold(image, workspace, automatic)
+        local_threshold, global_threshold = self.threshold.get_threshold(image, workspace, automatic)
 
-        self.apply_threshold.add_threshold_measurements(
+        self.threshold.add_threshold_measurements(
             self.y_name.value,
             workspace.measurements,
             local_threshold,
             global_threshold
         )
 
-        binary_image, sigma = self.apply_threshold.apply_threshold(image, local_threshold, automatic)
+        binary_image, sigma = self.threshold.apply_threshold(image, local_threshold, automatic)
 
-        self.apply_threshold.add_fg_bg_measurements(
+        self.threshold.add_fg_bg_measurements(
             self.y_name.value,
             workspace.measurements,
             image,
@@ -1406,26 +1401,26 @@ If "*{NO}*" is selected, the following settings are used:
     def get_measurement_columns(self, pipeline):
         columns = super(IdentifyPrimaryObjects, self).get_measurement_columns(pipeline)
 
-        columns += self.apply_threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
+        columns += self.threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
 
         return columns
 
     def get_categories(self, pipeline, object_name):
-        categories = self.apply_threshold.get_categories(pipeline, object_name)
+        categories = self.threshold.get_categories(pipeline, object_name)
 
         categories += super(IdentifyPrimaryObjects, self).get_categories(pipeline, object_name)
 
         return categories
 
     def get_measurements(self, pipeline, object_name, category):
-        measurements = self.apply_threshold.get_measurements(pipeline, object_name, category)
+        measurements = self.threshold.get_measurements(pipeline, object_name, category)
 
         measurements += super(IdentifyPrimaryObjects, self).get_measurements(pipeline, object_name, category)
 
         return measurements
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if measurement in self.get_measurements(pipeline, object_name, category):
+        if measurement in self.threshold.get_measurements(pipeline, object_name, category):
             return [self.y_name.value]
 
         return []

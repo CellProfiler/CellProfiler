@@ -1,6 +1,22 @@
 # coding=utf-8
 
-"""
+import cellprofiler.measurement
+import matplotlib
+import matplotlib.cm
+import numpy as np
+from centrosome.outline import outline
+
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+import identify as cpmi
+from cellprofiler.setting import YES, NO
+import _help
+
+__doc__ = """\
 IdentifyTertiaryObjects
 =======================
 
@@ -8,19 +24,34 @@ IdentifyTertiaryObjects
 cytoplasm) by removing smaller primary objects (e.g., nuclei) from larger
 secondary objects (e.g., cells), leaving a ring shape.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **IdentifyPrimaryObjects** and **IdentifySecondaryObjects**
+modules.
+
 What is a tertiary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually an organism, cell, or cellular
-compartment (for example, nuclei, cells, colonies, worms). We define an
+{DEFINITION_OBJECT}
+
+We define an
 object as *tertiary* when it is identified using prior primary and
-secondary objects. A common use case is when nuclei have
-been found using **IdentifyPrimaryObjects** and the cell body has been
-found using **IdentifySecondaryObjects** but measurements from the
-cytoplasm, the region outside the nucleus but within the cell body, are
-desired. The **IdentifyTertiaryObjects** module may be used to define
-the cytoplasm as an new object.
+secondary objects.
+
+As an example, you can find nuclei using **IdentifyPrimaryObjects** and
+cell bodies using **IdentifySecondaryObjects**. Use the
+**IdentifyTertiaryObjects** module to define the
+cytoplasm, the region outside the nucleus but within the cell body, as a
+new object which can be measured in downstream **Measure** modules.
 
 What do I need as input?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -52,7 +83,7 @@ This may lead
 to unexpected results when running measurement modules such as
 **MeasureObjectSizeShape** because calculations of the perimeter, aspect
 ratio, solidity, etc. typically make sense only for contiguous objects.
-Other modules, such as **MeasureImageIntensity**, are not affected and 
+Other modules, such as **MeasureImageIntensity**, are not affected and
 will yield expected results.
 
 Measurements made by this module
@@ -70,24 +101,9 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified tertiary objects.
 
-See also **IdentifyPrimaryObjects** and **IdentifySecondaryObjects**
-modules.
-"""
-
-import cellprofiler.measurement
-import matplotlib
-import matplotlib.cm
-import numpy as np
-from centrosome.outline import outline
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import identify as cpmi
-from cellprofiler.setting import YES, NO
+""".format(**{
+    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT
+})
 
 '''The parent object relationship points to the secondary / larger objects'''
 R_PARENT = "Parent"

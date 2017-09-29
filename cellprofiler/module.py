@@ -217,14 +217,14 @@ class Module(object):
         if isinstance(setting, cellprofiler.setting.HiddenCount):
             return u""
 
-        return u"""
-        <div>
-            <h4>{SETTING_NAME}</h4>
-            <p>{SETTING_DOC}</p>
-        </div>
+        return u"""\
+<div>
+    <h4>{SETTING_NAME}</h4>
+    <p>{SETTING_DOC}</p>
+</div>
         """.format(**{
             "SETTING_DOC": self._rst_to_html_fragment(setting.doc),
-            "SETTING_NAME": setting.text
+            "SETTING_NAME": self._rst_to_html_fragment(setting.text)
         })
 
     def get_help(self):
@@ -233,21 +233,27 @@ class Module(object):
         The default help is taken from your modules docstring and from
         the settings.
         """
-        return u"""
-        <html style="font-family:arial">
-            <body>
-                <div>
-                    {MODULE_DOC}
-                </div>
-                <div>
-                    <h2>Settings:</h2>
-                    {SETTINGS_DOC}
-                </div>
-            </body>
-        </html>
-        """.format(**{
+        settings_help = u"""\
+<div>
+    <h2>Settings:</h2>
+    {SETTINGS_DOC}
+</div>
+""".format(**{
+            "SETTINGS_DOC": u"\n".join([self._get_setting_help(setting) for setting in self.help_settings()])
+        }) if len(self.help_settings()) else u""
+
+        return u"""\
+<html style="font-family:arial">
+    <body>
+        <div>
+            {MODULE_DOC}
+        </div>
+        {SETTINGS_HELP}
+    </body>
+</html>
+""".format(**{
             "MODULE_DOC": self._rst_to_html_fragment(self.__doc__),
-            "SETTINGS_DOC": u"\n".join([self._get_setting_help(setting) for setting in self.help_settings()]),
+            "SETTINGS_HELP": settings_help,
             "TITLE": self.module_name
         })
 

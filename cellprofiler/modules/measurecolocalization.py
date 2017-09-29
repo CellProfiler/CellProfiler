@@ -7,7 +7,7 @@ MeasureColocalization
 **MeasureColocalization** measures the colocalization and correlation
 between intensities in different images (e.g., different color channels)
 on a pixel-by-pixel basis, within identified objects or across an entire
-image.  This module supports both 2D and volumetric images.
+image.
 
 Given two or more images, this module calculates the correlation &
 colocalization (Overlap, Manders, Costes’ Automated Threshold & Rank
@@ -22,6 +22,14 @@ between the following:
 
 -  The blue and green, red and green, and red and blue images.
 -  The nuclei in each of the above image pairs.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -117,7 +125,7 @@ class MeasureColocalization(cpm.Module):
             15,
             minval=0,
             maxval=99,
-            doc='Select the threshold as a percentage of the maximum intensity of the above image [0-99].'
+            doc='You may choose to measure colocalization metrics only for those pixels above a certain threshold. Select the threshold as a percentage of the maximum intensity of the above image [0-99].'
         )
 
         self.images_or_objects = cps.Choice(
@@ -131,8 +139,8 @@ class MeasureColocalization(cpm.Module):
 You can measure the correlation in several ways:
 
 -  *%(M_OBJECTS)s:* Measure correlation only in those pixels previously
-   identified as an object. You will be asked to specify which object to
-   measure from.
+   identified as within an object. You will be asked to choose which object
+   type to measure within.
 -  *%(M_IMAGES)s:* Measure the correlation across all pixels in the
    images.
 -  *%(M_IMAGES_AND_OBJECTS)s:* Calculate both measurements above.

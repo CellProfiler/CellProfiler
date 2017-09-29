@@ -4,9 +4,9 @@
 ExportToDatabase
 ================
 
-**ExportToDatabase** exports data directly to a database, or in
-database readable format, including an imported file with column names
-and a CellProfiler Analyst properties file, if desired.
+**ExportToDatabase** exports data directly to a database or in
+database readable format, including a CellProfiler Analyst
+properties file, if desired.
 
 This module exports measurements directly to a database or to a
 SQL-compatible format. It allows you to create and import MySQL and
@@ -16,8 +16,10 @@ Optionally, you can create an SQLite database file if you do not have a
 server on which to run MySQL itself. This module must be run at the end
 of a pipeline, or second to last if you are using the
 **CreateBatchFiles** module. If you forget this module, you can also run
-the *ExportDatabase* data tool after processing is complete; its
-functionality is the same. The database is set up with two primary
+the *ExportDatabase* data tool (accessed from CellProfiler's main menu)
+after processing is complete; its functionality is the same.
+
+The database is set up with two primary
 tables. These tables are the *Per\_Image* table and the *Per\_Object*
 table (which may have a prefix if you specify):
 
@@ -51,9 +53,11 @@ image filenames or loaded “Plate” and “Well” metadata via the
 a “Per\_Well” table, which aggregates object measurements across wells.
 This option will output a SQL file (regardless of whether you choose to
 write directly to the database) that can be used to create the Per\_Well
-table. At the secure shell where you normally log in to MySQL, type the
+table.
+
+At the secure shell where you normally log in to MySQL, type the
 following, replacing the italics with references to your database and
-files:
+files, to import these CellProfiler measurements to your database:
 
 ``mysql -h hostname -u username -p databasename < pathtoimages/perwellsetupfile.SQL``
 
@@ -64,13 +68,24 @@ script to upload to the database.
 
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
 See also **ExportToSpreadsheet**.
 """
 
 import cellprofiler.icons
-from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, \
-    USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
-    IO_WITH_METADATA_HELP_TEXT
+from cellprofiler.modules._help import TECH_NOTE_ICON, USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, \
+    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 import csv
 import datetime
 import hashlib
@@ -372,8 +387,8 @@ Specify the type of database you want to use:
 -  *{DB_MYSQL_CSV}:* Writes a script file that contains SQL
    statements for creating a database and uploading the Per\_Image and
    Per\_Object tables. This option will write out the Per\_Image and
-   Per\_Object table data to two CSV files; you can use these files can
-   be used to import the data directly into an application that accepts
+   Per\_Object table data to two CSV files; you can use these files
+   to import the data directly into an application that accepts
    CSV data.
 -  *{DB_SQLITE}:* Writes SQLite files directly. SQLite is simpler to
    set up than MySQL and can more readily be run on your local computer
@@ -456,25 +471,16 @@ Enter the prefix to be used to name the SQL file.""" % globals())
 *(Used only when using a CSV or a SQLite database, and/or creating a
 properties or workspace file)*
 
-This setting determines where the CSV files or SQLite database is
+This setting determines where the CSV files or SQLite database are
 saved if you decide to write measurements to files instead of writing
-them directly to the database. If you request a CellProfiler Analyst
+them directly to a database. If you request a CellProfiler Analyst
 properties file or workspace file, it will also be saved to this
 location.
 
 %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
 %(IO_WITH_METADATA_HELP_TEXT)s
-
-%(USING_METADATA_TAGS_REF)s
-
-For instance, if you have a metadata tag named “Plate”, you can create
-a per-plate folder by selecting one of the subfolder options and then
-specifying the subfolder name with the “Plate” metadata tag. The
-module will substitute the metadata values for the last image set
-processed for any metadata tags in the folder name.
-
-%(USING_METADATA_HELP_REF)s.""" % globals())
+""" % globals())
 
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
@@ -485,18 +491,21 @@ Select "*%(YES)s*" to generate a template properties file that will allow
 you to use your new database with CellProfiler Analyst (a data
 exploration tool which can also be downloaded from
 http://www.cellprofiler.org/). The module will attempt to fill in as
-many as the entries as possible based on the pipeline’s settings,
-including the server name, username and password if MySQL is used.""" % globals())
+many entries as possible based on the pipeline’s settings, including the
+server name, username, and password if MySQL is used. Keep in mind you
+should not share the resulting file because it contains your password.
+""" % globals())
 
         self.location_object = cps.ObjectNameSubscriber(
                 "Which objects should be used for locations?", cps.NONE, doc="""\
 *(Used only if creating a properties file)*
 
-CellProfiler Analyst displays cells during classification. This
+CellProfiler Analyst displays cells (or other biological objects of
+interest) during classification. This
 setting determines which object centers will be used as the center of
-the cells to be displayed. Choose one of the listed objects and
+the cells/objects to be displayed. Choose one of the listed objects and
 CellProfiler will save that object’s location columns in the
-properties file so that CellProfiler Analyst centers cells using that
+properties file so that CellProfiler Analyst centers cells/objects using that
 object’s center.
 
 You can manually change this choice in the properties file by editing
@@ -504,19 +513,19 @@ the *cell\_x\_loc* and *cell\_y\_loc* properties.
 
 Note that if there are no objects defined in the pipeline (e.g., if only
 using MeasureImageQuality and/or Illumination Correction modules), a
-warning will diplay until you choose *‘None’* for the subsequent
+warning will display until you choose *‘None’* for the subsequent
 setting: ‘Export measurements for all objects to the database?’.
 """ % globals())
 
         self.wants_properties_image_url_prepend = cps.Binary(
-                "Access CPA images via URL?", False,
+                "Access CellProfiler Analyst images via URL?", False,
                 doc="""\
 *(Used only if creating a properties file)*
 
 The image paths written to the database will be the absolute path the
 image files on your computer. If you plan to make these files accessible
 via the web, you can have CellProfiler Analyst prepend a URL to your
-file name. Eg: If an image is loaded from the path
+file name. E.g., if an image is loaded from the path
 ``/cellprofiler/images/`` and you use a url prepend of
 ``http://mysite.com/``, CellProfiler Analyst will look for your file at
 ``http://mysite.com/cellprofiler/images/``  """
@@ -540,13 +549,13 @@ file name. Eg: If an image is loaded from the path
 
 The image paths written to the database will be the absolute path the
 image files on your computer. If you plan to make these files
-accessible via the web, you can enter a url prefix here. Eg: If an
+accessible via the web, you can enter a url prefix here. E.g., if an
 image is loaded from the path ``/cellprofiler/images/`` and you use a
 url prepend of ``http://mysite.com/``, CellProfiler Analyst will look
 for your file at ``http://mysite.com/cellprofiler/images/``
 
 If you are not using the web to access your files (i.e., they are
-locally aceesible by your computer), leave this setting blank.""")
+locally accessible by your computer), leave this setting blank.""")
 
         self.properties_plate_type = cps.Choice(
                 "Select the plate type",
@@ -567,7 +576,7 @@ If you are using a multi-well plate or microarray, you can select the
 metadata corresponding to the plate here. If there is no plate
 metadata associated with the image set, select *None*.
 
-%(USING_METADATA_HELP_REF)s.""" % globals())
+%(USING_METADATA_HELP_REF)s""" % globals())
 
         self.properties_well_metadata = cps.Choice(
                 "Select the well metadata",
@@ -578,7 +587,7 @@ If you are using a multi-well plate or microarray, you can select the
 metadata corresponding to the well here. If there is no well metadata
 associated with the image set, select *None*.
 
-%(USING_METADATA_HELP_REF)s.""" % globals())
+%(USING_METADATA_HELP_REF)s""" % globals())
 
         self.properties_export_all_image_defaults = cps.Binary(
                 "Include information for all images, using default values?", True, doc="""\
@@ -615,7 +624,7 @@ when several images represent the same experimental sample), by
 providing column(s) that identify unique images (the *image key*) to
 another set of columns (the *group key*).
 
-The format for a group in CPA is:
+The format for a group in CellProfiler Analyst is:
 
 ``group_SQL_<XXX> = <MySQL SELECT statement that returns image-key columns followed by group-key columns>``
 
@@ -626,7 +635,8 @@ plate names, you could define a group called *SQL\_Plate* as follows:
 
 Grouping is useful, for example, when you want to aggregate counts for
 each class of object and their scores on a per-group basis (e.g.,
-per-well) instead of on a per-image basis when scoring with Classifier.
+per-well) instead of on a per-image basis when scoring with the
+Classifier function within CellProfiler Analyst.
 It will also provide new options in the Classifier fetch menu so you can
 fetch objects from images with specific values for the group columns.""" % globals())
 
@@ -642,15 +652,15 @@ fetch objects from images with specific values for the group columns.""" % globa
 
 Select "*%(YES)s*" to specify a subset of the images in your experiment by
 defining a *filter*. Filters are useful, for example, for fetching and
-scoring objects in Classifier or making graphs using the plotting tools
+scoring objects in Classifier within CellProfiler Analyst or making graphs using the plotting tools
 that satisfy a specific metadata constraint.
 """ % globals())
 
         self.create_filters_for_plates = cps.Binary(
                 "Automatically create a filter for each plate?", False, doc="""\
-*(Used only if creating a properties file and specifiying an image data filter)*
+*(Used only if creating a properties file and specifying an image data filter)*
 
-If you have specified a plate metadata tag, selecting "*%(YES)s*" to
+If you have specified a plate metadata tag, select "*%(YES)s*" to
 create a set of filters in the properties file, one for each plate.
 """ % globals())
 
@@ -660,12 +670,12 @@ create a set of filters in the properties file, one for each plate.
                                                        self.add_filter_field_group)
 
         self.properties_class_table_name = cps.Text(
-                "Enter a phenotype class table name if using the classifier tool",
+                "Enter a phenotype class table name if using the Classifier tool in CellProfiler Analyst",
                 '', doc="""\
 *(Used only if creating a properties file)*
 
-If you are using the machine-learning tool in CellProfiler Analyst,
-you can create an additional table in your database which contains the
+If you are using the machine-learning tool Classifier in CellProfiler Analyst,
+you can create an additional table in your database that contains the
 per-object phenotype labels. This table is produced after scoring all
 the objects in your data set and will be named with the label given
 here. Note that the actual class table will be named by prepending the
@@ -673,7 +683,7 @@ table prefix (if any) to what you enter here.
 
 You can manually change this choice in the properties file by editing
 the *class\_table* field. Leave this field blank if you are not using
-the classifier or do not need the table written to the database.""")
+Classifier or do not need the table written to the database.""")
 
         self.properties_classification_type = cps.Choice(
                 "Select the classification type",
@@ -682,8 +692,8 @@ the classifier or do not need the table written to the database.""")
 
 Choose the type of classification this properties file will be used
 for. This setting will create and set a field called
-*classification\_type*. Note that if you are not using the classifier
-tool, this setting will be ignored.
+*classification\_type*. Note that if you will not be using the Classifier
+tool in CellProfiler Analyst, this setting will be ignored.
 
 -  *%(CT_OBJECT)s:* Object-based classification, i.e., set
    *classification\_type* to “object” (or leave it blank).
@@ -733,7 +743,7 @@ the *classification\_type* field.""" % globals())
 
         self.db_user = cps.Text("Username", "", doc="""Enter your database username.""")
 
-        self.db_passwd = cps.Text("Password", "", doc="""Enter your database password.""")
+        self.db_passwd = cps.Text("Password", "", doc="""Enter your database password. Note that this will be saved in your pipeline file and thus you should never share the pipeline file with anyone else.""")
 
         self.sqlite_file = cps.Text(
                 "Name the SQLite database file",
@@ -989,13 +999,13 @@ is white/saturated.""" % globals())
 **ExportToDatabase** creates tables and databases at the start of a
 run when writing directly to a MySQL or SQLite database. It writes SQL
 scripts and CSVs when not writing directly. It also can write
-CellProfiler Analysis property files. In some cases, it is appropriate
+CellProfiler Analyst property files. In some cases, it is appropriate
 to run CellProfiler and append to or overwrite the data in existing
-tables, for instance when running several CellProfiler instances which
+tables, for instance when running several CellProfiler instances that
 each process a range of the experiment’s image sets. In other cases,
 such as when the measurements to be written have changed, the data
 tables must be dropped completely.
-You can choose fromm three options to conrtol overwriting behavior:
+You can choose from three options to control overwriting behavior:
 
 -  *%(OVERWRITE_NEVER)s:* **ExportToDatabase** will ask before dropping
    and recreating tables unless you are running headless. CellProfiler
@@ -1022,9 +1032,9 @@ You can choose fromm three options to conrtol overwriting behavior:
                 "image_cols", cps.Choice(
                         "Select an image to include", [cps.NONE],
                         choices_fn=self.get_property_file_image_choices, doc="""\
-*(Used only if creating a properties file and specifiying the image information)*
+*(Used only if creating a properties file and specifying the image information)*
 
-Choose image name to include it in the properties file of images.
+Choose an image name to include it in the properties file of images.
 
 The images in the drop-down correspond to images that have been:
 
@@ -1032,26 +1042,26 @@ The images in the drop-down correspond to images that have been:
 -  Saved with the **SaveImages** module, with the corresponding file and
    path information stored.
 
-If you do not see your desired image listed, check the settings on these
+If you do not see your desired image listed, check the settings for these
 modules."""))
 
         group.append(
                 "wants_automatic_image_name", cps.Binary(
                         "Use the image name for the display?", True, doc="""\
-*(Used only if creating a properties file and specifiying the image information)*
+*(Used only if creating a properties file and specifying the image information)*
 
 Select "*%(YES)s*" to use the image name as given above for the
 displayed name.
 
-Select "*%(NO)s*" to name the file yourself.""" % globals()))
+Select "*%(NO)s*" to name the image yourself.""" % globals()))
 
         group.append(
                 "image_name", cps.Text(
                         "Image name", "Channel%d" % (len(self.image_groups) + 1), doc="""\
-*(Used only if creating a properties file, specifiying the image
+*(Used only if creating a properties file, specifying the image
 information and naming the image)*
 
-Enter a name for the specified image"""))
+Enter a name for the specified image."""))
 
         default_color = (COLOR_ORDER[len(self.image_groups)]
                          if len(self.image_groups) < len(COLOR_ORDER)
@@ -1060,7 +1070,7 @@ Enter a name for the specified image"""))
         group.append(
                 "image_channel_colors", cps.Choice(
                         "Channel color", COLOR_ORDER, default_color, doc="""\
-*(Used only if creating a properties file and specifiying the image information)*
+*(Used only if creating a properties file and specifying the image information)*
 
 Enter a color to display this channel."""))
 
@@ -1076,7 +1086,7 @@ Enter a color to display this channel."""))
         group.append(
                 "group_name", cps.Text(
                         "Enter the name of the group", '', doc="""\
-*(Used only if creating a properties file and specifiying an image data group)*
+*(Used only if creating a properties file and specifying an image data group)*
 
 Enter a name for the group. Only alphanumeric characters and underscores
 are permitted."""))
@@ -1084,12 +1094,12 @@ are permitted."""))
                 "group_statement", cps.Text(
                         "Enter the per-image columns which define the group, separated by commas", GROUP_COL_DEFAULT,
                         doc="""\
-*(Used only if creating a properties file and specifiying an image data group)*
+*(Used only if creating a properties file and specifying an image data group)*
 
 To define a group, enter the image key columns followed by group key
 columns, each separated by commas.
 
-In CellProfiler, the image key column is always given the name as
+In CellProfiler, the image key column is always given the name
 *ImageNumber*; group keys are typically metadata columns which are
 always prefixed with *Image\_Metadata\_*. For example, if you wanted
 to be able to group your data by unique plate and well metadata tags,
@@ -1117,7 +1127,7 @@ automatically, so there is no need to enter them here."""))
         group.append(
                 "filter_name", cps.Text(
                         "Enter the name of the filter", '', doc="""\
-*(Used only if creating a properties file and specifiying an image data filter)*
+*(Used only if creating a properties file and specifying an image data filter)*
 
 Enter a name for the filter. Only alphanumeric characters and
 underscores are permitted."""))
@@ -1125,7 +1135,7 @@ underscores are permitted."""))
         group.append(
                 "filter_statement", cps.Text(
                         "Enter the MySQL WHERE clause to define a filter", '', doc="""\
-*(Used only if creating a properties file and specifiying an image data filter)*
+*(Used only if creating a properties file and specifying an image data filter)*
 
 To define a filter, enter a MySQL *WHERE* clause that returns
 image-keys for images you want to include. For example, here is a
@@ -1157,7 +1167,7 @@ here."""))
                         W_DISPLAY_ALL, doc="""\
 *(Used only if creating a workspace file)*
 
-Select what display tool in CPA you want to use to open the measurements.
+Select what display tool in CellProfiler Analyst you want to use to open the measurements.
 
 -  %(W_SCATTERPLOT)s
 -  %(W_HISTOGRAM)s
@@ -1175,7 +1185,7 @@ You can plot two types of measurements:
    for each image analyzed. Per-image measurements are produced by many
    modules. Many have **MeasureImage** in the name but others do not
    (e.g., the number of objects in each image is a per-image measurement
-   made by **IdentifyObject** modules).
+   made by **Identify** modules).
 -  *Object:* For a per-object measurement, each identified object is
    measured, so there may be none or many numerical values recorded for
    each image analyzed. These are usually produced by modules with
@@ -1764,7 +1774,7 @@ available:
             if pipeline.in_batch_mode() or not cpprefs.get_allow_schema_write():
                 return True
             if self.db_type == DB_ORACLE:
-                raise NotImplementedError("Writing to an Oracle database is not yet supported")
+                raise NotImplementedError("Writing to an Oracle database is not supported")
             if self.db_type in (DB_MYSQL, DB_SQLITE):
                 tables = [self.get_table_name(cpmeas.IMAGE)]
                 if self.objects_choice != O_NONE:
@@ -3732,7 +3742,7 @@ cell_y_loc    = %(cell_y_loc)s
 image_path_cols = %(image_path_cols)s
 image_file_cols = %(image_file_cols)s
 
-# CPA will now read image thumbnails directly from the database, if chosen in ExportToDatabase.
+# CellProfiler Analyst will now read image thumbnails directly from the database, if chosen in ExportToDatabase.
 image_thumbnail_cols = %(image_thumbnail_cols)s
 
 # Give short names for each of the channels (respectively)...
@@ -3746,7 +3756,7 @@ image_channel_colors = %(image_channel_colors)s
 image_url_prepend = %(image_url)s
 
 # ==== Dynamic Groups ====
-# Here you can define groupings to choose from when classifier scores your experiment.  (eg: per-well)
+# Here you can define groupings to choose from when classifier scores your experiment.  (e.g., per-well)
 # This is OPTIONAL, you may leave "groups = ".
 # FORMAT:
 #   group_XXX  =  MySQL select statement that returns image-keys and group-keys.  This will be associated with the group name "XXX" from above.

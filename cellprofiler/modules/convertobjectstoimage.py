@@ -11,7 +11,13 @@ This module allows you to take previously identified objects and convert
 them into an image according to a colormap you select, which can then be
 saved with the **SaveImages** modules.
 
-This module can be used both on 2D and volumetric images.
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 """
 
 import centrosome.cpmorphology
@@ -91,7 +97,7 @@ objects.
 
 Choose the colormap to be used, which affects how the objects are
 colored. You can look up your default colormap under *File >
-Preferences*
+Preferences*.
 """
         )
 

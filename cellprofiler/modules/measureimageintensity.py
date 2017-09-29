@@ -1,29 +1,39 @@
 # coding=utf-8
 
-"""
+import numpy as np
+
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import _help
+
+__doc__ = """
 MeasureImageIntensity
 =====================
 
-**MeasureImageIntensity** measures the total intensity in an image by
-summing all of the pixel intensities (excluding masked pixels).
+**MeasureImageIntensity** measures several intensity features across an
+entire image (excluding masked pixels).
 
-This module will sum all pixel values to measure the total image
-intensity. You can measure all pixels in the image or restrict
+For example, this module will sum all pixel values to measure the total image
+intensity. You can choose to measure all pixels in the image or restrict
 the measurement to pixels within objects that were identified in a prior
 module. If the image has a mask, only unmasked pixels will be measured.
 
-Note that for publication purposes, the units of intensity from
-microscopy images are usually described as “Intensity units” or
-“Arbitrary intensity units” since microscopes are not calibrated to an
-absolute scale. Also, it is important to note whether you are reporting
-either the mean or the integrated intensity, so specify “Mean intensity
-units” or “Integrated intensity units” accordingly.
+{HELP_ON_MEASURING_INTENSITIES}
 
-Keep in mind that the default behavior in CellProfiler is to rescale the
-image intensity from 0 to 1 by dividing all pixels in the image by the
-maximum possible intensity value. This “maximum possible” value is
-defined by the “Set intensity range from” setting in **NamesAndTypes**;
-see the help for that setting for more details.
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES 
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **MeasureObjectIntensity**, **MaskImage**.
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -43,15 +53,9 @@ Measurements made by this module
 -  *TotalArea:* Number of pixels measured, e.g., the area of the image
    excluding masked regions.
 
-See also **MeasureObjectIntensity**, **MaskImage**.
-"""
-
-import numpy as np
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+""".format(**{
+    "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
+})
 
 '''Number of settings saved/loaded per image measured'''
 SETTINGS_PER_IMAGE = 3

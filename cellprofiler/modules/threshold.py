@@ -4,10 +4,18 @@
 Threshold
 =========
 
-**Threshold** produces a binary, or black and white, image based on a threshold which
+**Threshold** produces a binary, or black and white, image based on a threshold that
 can be pre-selected or calculated automatically using one of many
 methods. After the threshold value has been determined, the **Threshold** module will
-set pixel intensities below the value to zero and above the value to one.
+set pixel intensities below the value to zero (black) and above the value to one (white).
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 """
 
 import centrosome.threshold
@@ -411,7 +419,7 @@ Note that whether two- or three-class thresholding is chosen, the image
 pixels are always finally assigned to only two classes: foreground and
 background.
 
-|image0|  Three-class thresholding may be useful for images
+|image0|  As an example, three-class thresholding can be useful for images
 in which you have nuclear staining along with low-intensity non-specific
 cell staining. In such a case, the background is one class, dim cell
 staining is the second class, and bright nucleus staining is the third

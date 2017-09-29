@@ -17,18 +17,61 @@ Please note that for best results, this module should be applied to the
 original raw images, rather than images that have already been
 corrected for illumination.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  **Blur metrics**
 
    -  *FocusScore:* A measure of the intensity variance across the
-      image.
+      image. This score is calculated using a normalized
+      variance, which was the best-ranking algorithm for brightfield, phase
+      contrast, and DIC images (*Sun, 2004*). Higher focus scores
+      correspond to lower bluriness.
+      More specifically, the focus score computes the intensity variance of
+      the entire image divided by mean image intensity. Since it is
+      tailored for autofocusing applications (difference focus for the same
+      field of view), it assumes that the overall intensity and the number
+      of objects in the image is constant, making it less useful for
+      comparison images of different fields of view. For distinguishing
+      extremely blurry images, however, it performs well.
    -  *LocalFocusScore:* A measure of the intensity variance between
-      image sub-regions.
+      image sub-regions. A local version of the Focus Score, it
+      subdivides the image into non-overlapping tiles, computes the
+      normalized variance for each, and takes the mean of these values as
+      the final metric. It is potentially more useful for comparing focus
+      between images of different fields of view, but is subject to the
+      same caveats as the Focus Score. It can be useful in differentiating
+      good versus badly segmented images in the cases when badly segmented
+      images usually contain no cell objects with high background noise.
    -  *Correlation:* A measure of the correlation of the image for a
-      given spatial scale.
+      given spatial scale. This is a measure of the image spatial
+      intensity distribution computed across sub-regions of an image for a
+      given spatial scale (*Haralick, 1973*). If an image is blurred, the
+      correlation between neighboring pixels becomes high, producing a high
+      correlation value. A similar approach was found to give optimal
+      performance for fluorescence microscopy applications (*Vollath,
+      1987*).
+      Some care is required in selecting an appropriate spatial scale
+      because differences in the spatial scale capture various features:
+      moderate scales capture the blurring of intracellular features better
+      than small scales and larger scales are more likely to reflect
+      cell confluence than focal blur. You should select a spatial scale
+      no bigger than the objects of interest, although you can select
+      as many scales as desired and check empirically which is best.
    -  *PowerLogLogSlope:* The slope of the image log-log power spectrum.
+      The power spectrum contains the frequency information of the image,
+      and the slope gives a measure of image blur. A higher slope
+      indicates more lower frequency components, and hence more blur
+      (*Field, 1997*). This metric is recommended for blur detection in
+      most cases.
 
 -  **Saturation metrics**
 
@@ -66,9 +109,23 @@ References
 
 -  Bray MA, Fraser AN, Hasaka TP, Carpenter AE (2012) “Workflow and
    metrics for image quality control in large-scale high-content
-   screens.” *J Biomol Screen* 17(2):266-74. `(link)`_
-
-.. _(link): http://dx.doi.org/10.1177/1087057111420292
+   screens.” *J Biomol Screen* 17(2):266-74.
+   `(link) <http://dx.doi.org/10.1177/1087057111420292>`__
+-  Field DJ (1997) "Relations between the statistics of natural images
+   and the response properties of cortical cells" *Journal of the
+   Optical Society of America. A, Optics, image science, and vision*,
+   4(12):2379-94.
+   `(pdf) <http://redwood.psych.cornell.edu/papers/field_87.pdf>`__
+-  Haralick RM (1979) "Statistical and structural approaches to texture"
+   Proc. IEEE, 67(5):786-804.
+   `(link) <http://dx.doi.org/10.1109/PROC.1979.11328>`__
+-  Vollath D (1987) "Automatic focusing by correlative methods" *Journal
+   of Microscopy* 147(3):279-288.
+   `(link) <http://dx.doi.org/10.1111/j.1365-2818.1987.tb02839.x>`__
+-  Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in computer
+   microscopy: Selecting the optimal focus algorithm" *Microscopy
+   Research and Technique*, 65:139-149
+   `(link) <http://dx.doi.org/10.1002/jemt.20118>`__
 """
 
 import logging
@@ -196,64 +253,7 @@ information.""" % globals()))
                 True, doc="""\
 Select *%(YES)s* to compute a series of blur metrics. The blur metrics
 are described in the overall help for this module (select the module in
-the pipeline and press the "?" button).
-
--  *%(F_POWER_SPECTRUM_SLOPE)s:* The power spectrum contains the
-   frequency information of the image, and the slope gives a measure of
-   image blur. A higher slope indicates more lower frequency components,
-   and hence more blur (*Field, 1997*). This metric is recommended for
-   blur detection in most cases.
--  *%(F_CORRELATION)s:* This is a measure of the image spatial
-   intensity distribution computed across sub-regions of an image for a
-   given spatial scale (*Haralick, 1973*). If an image is blurred, the
-   correlation between neighboring pixels becomes high, producing a high
-   correlation value. A similar approach was found to give optimal
-   performance for fluorescence microscopy applications (*Vollath,
-   1987*).
-   Some care is required in selecting an appropriate spatial scale
-   because differences in the spatial scale capture various features:
-   moderate scales capture the blurring of intracellular features better
-   than small scales and larger scales are more likely to reflect
-   intercellular confluence than focal blur. A spatial scale no bigger
-   than the feature of interest is recommended, although you can select
-   as many scales as desired.
--  *%(F_FOCUS_SCORE)s:* This score is calculated using a normalized
-   variance, which was the best-ranking algorithm for brightfield, phase
-   contrast, and DIC images (*Sun, 2004*). Higher focus scores
-   correspond to lower bluriness.
-   More specifically, the focus score computes the intensity variance of
-   the entire image divided by mean image intensity. Since it is
-   tailored for autofocusing applications (difference focus for the same
-   field of view), it assumes that the overall intensity and the number
-   of objects in the image is constant, making it less useful for
-   comparison images of different fields of view. For distinguishing
-   extremely blurry images, however, it performs well.
--  *%(F_LOCAL_FOCUS_SCORE)s:* A local version of the Focus Score, it
-   subdivides the image into non-overlapping tiles, computes the
-   normalized variance for each, and takes the mean of these values as
-   the final metric. It is potentially more useful for comparing focus
-   between images of different fields of view, but is subject to the
-   same caveats as the Focus Score. It can be useful in differentiating
-   good versus badly segmented images in the cases when badly segmented
-   images usually contain no cell objects with high background noise.
-
-**References**
-
--  Field DJ (1997) "Relations between the statistics of natural images
-   and the response properties of cortical cells" *Journal of the
-   Optical Society of America. A, Optics, image science, and vision*,
-   4(12):2379-94.
-   `(pdf) <http://redwood.psych.cornell.edu/papers/field_87.pdf>`__
--  Haralick RM (1979) "Statistical and structural approaches to texture"
-   Proc. IEEE, 67(5):786-804.
-   `(link) <http://dx.doi.org/10.1109/PROC.1979.11328>`__
--  Vollath D (1987) "Automatic focusing by correlative methods" *Journal
-   of Microscopy* 147(3):279-288.
-   `(link) <http://dx.doi.org/10.1111/j.1365-2818.1987.tb02839.x>`__
--  Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in computer
-   microscopy: Selecting the optimal focus algorithm" *Microscopy
-   Research and Technique*, 65:139-149
-   `(link) <http://dx.doi.org/10.1002/jemt.20118>`__""" % globals()))
+the pipeline and press the "?" button).""" % globals()))
 
         group.append("include_local_blur", cps.Binary(
                 "Include local blur metrics?",

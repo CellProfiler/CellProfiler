@@ -1228,8 +1228,11 @@ class PipelineController(object):
                 dlg.EndModal(0)
 
             def do_help(event):
-                cellprofiler.gui.htmldialog.HTMLDialog(self.__frame, "Help for plate viewer",
-                                                       cellprofiler.gui.help.content.PLATEVIEWER_HELP).Show()
+                cellprofiler.gui.htmldialog.HTMLDialog(
+                    self.__frame,
+                    "Help for plate viewer",
+                    cellprofiler.gui.help.content.read_content("output_plateviewer.rst")
+                ).Show()
 
             ok_button.Bind(wx.EVT_BUTTON, do_ok)
             help_button.Bind(wx.EVT_BUTTON, do_help)

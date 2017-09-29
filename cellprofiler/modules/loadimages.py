@@ -26,6 +26,21 @@ When used in combination with a **SaveImages** module, you can load
 images in one file format and save them in another, using CellProfiler
 as a file format converter.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also the **Input** modules (**Images**, **NamesAndTypes**,
+**MetaData**, **Groups**), **LoadData**, **LoadSingleImage**,
+and **SaveImages**.
+
 Using metadata in LoadImages
 ''''''''''''''''''''''''''''
 
@@ -48,8 +63,6 @@ Measurements made by this module
 -  *Scaling:* The maximum possible intensity value for the image format.
 -  *Height, Width:* The height and width of the current image.
 
-See also the **Input** modules, **LoadData**, **LoadSingleImage**,
-**SaveImages**.
 """
 
 import cgi
@@ -291,13 +304,15 @@ Three options are available:
    contain that text exactly will be loaded and given the name you
    specify. The search for the text is case-sensitive.
 -  *%(MS_REGEXP)s:* Used to load image (or movie) files that match a
-   pattern of regular expressions. %(REGEXP_HELP_REF)s
+   pattern of regular expressions.
 -  *%(MS_ORDER)s:* Used when image (or movie) files are present in a
    repeating order, like “DAPI, FITC, Red; DAPI, FITC, Red;” and so on.
    Images are loaded based on the order of their location on the hard
    disk, and they are assigned an identity based on how many images are
    in each group and what position within each group the file is located
    (e.g., three images per group; DAPI is always first).
+
+%(REGEXP_HELP_REF)s
 """ % globals())
 
         self.exclude = cps.Binary(
@@ -743,8 +758,8 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3."""))
 This setting determines whether you load an image as image data or as
 segmentation results (i.e., objects):
 
--  *%(IO_IMAGES)s:* The input image will be given a user-specified name
-   by which it will be refered downstream. This is the most common usage
+-  *%(IO_IMAGES)s:* The input image will be given the name you specify,
+   by which it will be referred downstream. This is the most common usage
    for this module.
 -  *%(IO_OBJECTS)s:* Use this option if the input image is a label
    matrix and you want to obtain the objects that it defines. A *label

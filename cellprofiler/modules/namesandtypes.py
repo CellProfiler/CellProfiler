@@ -47,6 +47,14 @@ module (and/or has had metadata associated with the images using the
 meaningful name by which modules in the analysis pipeline will refer to
 it.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
+
 What is an “image set”?
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -74,8 +82,8 @@ The **NamesAndTypes** module receives the file list produced by the
 metadata to the images, this information is also received by
 **NamesAndTypes** and available for its use.
 
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do I configure the module?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the above example, the **NamesAndTypes** module allows you to assign
 each of these channels a unique name, provided by you. All files of a
@@ -388,7 +396,7 @@ The choices are:
         )
 
         self.process_as_3d = cps.Binary(
-            text="Process as 3D",
+            text="Process as 3D?",
             value=False,
             doc="""\
 If you want to treat the data as three-dimensional, select "Yes" to
@@ -399,35 +407,46 @@ two-dimensional images.
         )
 
         self.x = cps.Float(
-            text="x",
+            text="Relative pixel spacing in X",
             value=1.0,
             minval=0.0,
             doc="""\
-*(Used only if "Process as 3D" is "Yes")*
+*(Used only if "Process as 3D?" is "Yes")*
 
-Spacing between voxels in the x-dimension.
+Enter the spacing between voxels in the X dimension, relative to Y and Z.
+Normally, you will set one of these values to 1 and the others
+relative to that. For example, most images have equal pixel spacing
+in X and Y, but the distance between Z slices is often longer,
+say two times the distance between pixels in X and Y. In such
+a case, you would set X = 1, Y = 1, Z = 2. This calibration
+affects modules that handle 3D images as volumes: for example,
+**MeasureObjectAreaShape** will report different measurements for
+volume depending on how far apart the Z-slices are from each other,
+as set here in **NamesAndTypes**.
 """
         )
 
         self.y = cps.Float(
-            text="y",
+            text="Relative pixel spacing in Y",
             value=1.0,
             minval=0.0,
             doc="""\
-*(Used only if "Process as 3D" is "Yes")*
+*(Used only if "Process as 3D?" is "Yes")*
 
-Spacing between voxels in the y-dimension.
+Enter the spacing between voxels in the Y dimension, relative to X and Z.
+See help for *Relative pixel spacing in X* for details.
 """
         )
 
         self.z = cps.Float(
-            text="z",
+            text="Relative pixel spacing in Z",
             value=1.0,
             minval=0.0,
             doc="""\
-*(Used only if "Process as 3D" is "Yes")*
+*(Used only if "Process as 3D?" is "Yes")*
 
-Spacing between voxels in the z-dimension.
+Enter the spacing between voxels in the Z dimension, relative to X and Y.
+See help for *Relative pixel spacing in X* for details.
 """
         )
 

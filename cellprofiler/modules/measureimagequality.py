@@ -90,7 +90,7 @@ Measurements made by this module
    -  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel
       intensity values.
    -  *TotalArea:* Number of pixels measured.
-   -  Image’s rescaling value: if *Yes* is chosen for "Include the image rescaling value?",
+   -  *Image’s rescaling value*: if *Yes* is chosen for "Include the image rescaling value?",
       image’s rescaling value will be stored as a quality control metric.
       This is useful in confirming that all images are rescaled by the same value,
       given that some acquisition device vendors may output this value differently.
@@ -246,7 +246,7 @@ images, the list includes the images that were created by prior modules.""" % gl
                 "Include the image rescaling value?",
                 True, doc="""\
 Select *%(YES)s* to add the image’s rescaling value as a quality control
-metric. This value is recorded only for images specified in the setting **"Calculate metrics for which images?"** above.
+metric. This value is recorded only for images specified in the setting **Calculate metrics for which images?** above.
 This is useful in confirming that all images are
 rescaled by the same value, given that some acquisition device vendors may
 output this value differently. See **NamesAndTypes** for more

@@ -38,6 +38,7 @@ MENU_HELP = {
     "Selecting Images for Input": cellprofiler.gui.help.content.read_content("projects_selecting_images.rst"),
     "Using Spreadsheets and Databases": cellprofiler.gui.help.content.read_content("output_spreadsheets.rst"),
     "Using the Test Menu": cellprofiler.gui.help.content.read_content("navigation_test_menu.rst"),
+    "Using Plugins": cellprofiler.gui.help.content.read_content("other_plugins.rst"),
     "Setting the Output Filename": cellprofiler.gui.help.content.read_content("legacy_output_file.rst"),
     "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content("why_use_cellprofiler.rst")
 }

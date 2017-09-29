@@ -48,6 +48,11 @@ modules are:
 Detailed help for each module is provided by selecting the module and
 clicking the “?” button on the bottom of CellProfiler.
 
+Rather than the four input modules, you may alternatively use the **LoadData**
+module to associate images with your project.  **LoadData** allows you to upload
+a spreadsheet to provide the same location, metadata, channel, and grouping information 
+as the four input modules.  See the help for that module for more information.
+
 Saving a project
 ^^^^^^^^^^^^^^^^
 

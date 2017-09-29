@@ -218,6 +218,12 @@ class Menu(cellprofiler.gui.menu.Menu):
             "Accessing Images From OMERO",
             contents=cellprofiler.gui.help.content.read_content("other_omero.rst")
         )
+        
+        other_menu.append(
+            "Using Plugins",
+            contents=cellprofiler.gui.help.content.read_content("other_plugins.rst")
+        )
+
 
         return other_menu
 

@@ -15,7 +15,8 @@ You may download these modules individually by clicking on a module's name,
 hitting the "Raw" button on GitHub, then using your browser's Save function.  
 You can also download the whole repository of pipelines by cloning the whole 
 repository from GitHub using Git, the GitHub app, or by downloading a ZIP file
-with all the modules from the main GitHub page.
+with all the modules using the "Clone or download" green button on the
+repository's landing page.
 
 CellProfiler will check for plugins in its plugins directory, which you can set
 from the *File > Preferences* menu.  Once you've obtained the module(s) you're 
@@ -27,8 +28,7 @@ If it does not load correctly, we encourage you to please check the log (see
 *Help > Configuring Logging* ) for more information then check for known issues 
 and/or notify us on the `issues`_ page or the CellProfiler `forum`_.
 
-
-Additionally, if you write your own module based on our `recommendations`_ , you
+Additionally, if you write your own module based on our `recommendations`_, you
 can add it to your own plugins directory.  If you think it fills an unmet need 
 in the CellProfiler code, feel free to contribute it to the CellProfiler-plugins
 repository!

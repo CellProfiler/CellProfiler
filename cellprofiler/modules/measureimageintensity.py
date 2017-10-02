@@ -24,11 +24,11 @@ module. If the image has a mask, only unmasked pixels will be measured.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES 
+============ ============ ===============
 
 See also
 ^^^^^^^^

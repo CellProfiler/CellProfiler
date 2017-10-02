@@ -25,11 +25,11 @@ defined, are always in precise alignment with each other.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
 
 See also
 ^^^^^^^^

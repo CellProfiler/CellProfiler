@@ -44,11 +44,11 @@ see *Help > Creating a Project > Loading Image Stacks and Movies*.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

@@ -24,11 +24,11 @@ parent objects, you might want to expand the parent objects using
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

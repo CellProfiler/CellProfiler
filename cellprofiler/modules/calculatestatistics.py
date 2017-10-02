@@ -19,6 +19,12 @@ calculated for all measured values (Intensity, AreaShape, Texture,
 etc.) upstream in the pipeline. The statistics calculated by this module
 can be exported as the “Experiment” set of data.
 
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
 See also
 ^^^^^^^^
 
@@ -63,12 +69,6 @@ Here is an example file:
 +-------------------------+-------------------------+------------------+--------------+
 
 |
-
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

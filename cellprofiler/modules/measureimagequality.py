@@ -19,11 +19,11 @@ corrected for illumination.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -90,6 +90,10 @@ Measurements made by this module
    -  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel
       intensity values.
    -  *TotalArea:* Number of pixels measured.
+   -  *Scaling*: if *Yes* is chosen for "Include the image rescaling value?",
+      image’s rescaling value will be stored as a quality control metric.
+      This is useful in confirming that all images are rescaled by the same value,
+      given that some acquisition device vendors may output this value differently.
 
 -  **Threshold metrics:**
 

@@ -26,11 +26,11 @@ secondary objects (e.g., cells), leaving a ring shape.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

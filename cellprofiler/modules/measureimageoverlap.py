@@ -45,6 +45,14 @@ while a background pixel in the test image that overlaps with foreground
 in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

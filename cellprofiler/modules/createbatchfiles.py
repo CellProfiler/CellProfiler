@@ -17,11 +17,11 @@ paths to the image and output files.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
 """
 
 from cellprofiler.gui.help.content import BATCH_PROCESSING_HELP_REF

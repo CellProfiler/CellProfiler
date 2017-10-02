@@ -21,11 +21,11 @@ threshold if you precede it with thresholding performed by
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

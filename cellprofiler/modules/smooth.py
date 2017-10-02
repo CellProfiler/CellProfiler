@@ -11,11 +11,11 @@ remove small artifacts. Note that smoothing can be a time-consuming process.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

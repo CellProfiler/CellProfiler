@@ -30,11 +30,11 @@ please use the **Watershed** module for identification of objects in 3D.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

@@ -23,11 +23,11 @@ to be made post-filtering by the desired measurement modules.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 See also
 ^^^^^^^^

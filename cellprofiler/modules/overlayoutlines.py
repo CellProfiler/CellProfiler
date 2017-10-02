@@ -11,11 +11,11 @@ The resulting image can be saved using the **SaveImages** module.
 
 |
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          YES
-============ ============
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
 """
 
 import numpy

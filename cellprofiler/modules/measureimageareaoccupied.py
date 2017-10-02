@@ -283,7 +283,7 @@ like to measure the area occupied by the foreground in the image.
 
         region_properties = skimage.measure.regionprops(label_image)
 
-        area_occupied = [region["area"] for region in region_properties]
+        area_occupied = numpy.sum([region["area"] for region in region_properties])
 
         if objects.volumetric:
             spacing = None
@@ -298,7 +298,7 @@ like to measure the area occupied by the foreground in the image.
 
             perimeter = surface_area(label_image, spacing=spacing, index=labels)
         else:
-            perimeter = [region["perimeter"] for region in region_properties]
+            perimeter = numpy.sum([numpy.round(region["perimeter"]) for region in region_properties])
 
         m = workspace.measurements
 
@@ -454,7 +454,7 @@ like to measure the area occupied by the foreground in the image.
         return setting_values, variable_revision_number, from_matlab
 
     def volumetric(self):
-        True
+        return True
 
 
 def surface_area(label_image, spacing=None, index=None):
@@ -466,7 +466,7 @@ def surface_area(label_image, spacing=None, index=None):
 
         return skimage.measure.mesh_surface_area(verts, faces)
 
-    return [_label_surface_area(label_image, label, spacing) for label in index]
+    return numpy.sum([numpy.round(_label_surface_area(label_image, label, spacing)) for label in index])
 
 
 def _label_surface_area(label_image, label, spacing):

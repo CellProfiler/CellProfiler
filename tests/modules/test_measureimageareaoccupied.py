@@ -116,8 +116,8 @@ class TestMeasureImageArea(unittest.TestCase):
         labels[:2, :2, :2] = 1
         labels[3:, 8:, 8:] = 2
 
-        expected_area = [8, 8]
-        expected_perimeter = [8, 8]
+        expected_area = 16
+        expected_perimeter = 16
         expected_total_area = 500
 
         workspace = self.make_workspace(labels)
@@ -153,8 +153,8 @@ class TestMeasureImageArea(unittest.TestCase):
 
         image = cellprofiler.image.Image(pixel_data, dimensions=3)
 
-        expected_area = 16
-        expected_perimeter = 16
+        expected_area = [16]
+        expected_perimeter = [16]
         expected_total_area = 500
 
         workspace = self.make_workspace(numpy.zeros_like(pixel_data), parent_image=image)

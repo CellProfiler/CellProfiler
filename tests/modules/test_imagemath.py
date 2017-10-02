@@ -217,7 +217,7 @@ def test_invert(image_a, module, workspace):
 
     actual = output.pixel_data
 
-    expected = image_a.pixel_data.max() - image_a.pixel_data
+    expected = 1.0 - image_a.pixel_data
 
     numpy.testing.assert_array_equal(expected, actual)
 
@@ -1050,7 +1050,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
-        expected = image.max() - image
+        expected = 1.0 - image
         output = self.run_imagemath([{'pixel_data': image}], fn)
         self.check_expected(output, expected)
 

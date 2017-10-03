@@ -90,7 +90,7 @@ options to modify the file list:
    list. Note that this does not remove the file/folder from the hard
    drive.
 -  *Remove Unavailable Files:* Refresh the list by checking for
-   existence of file. Note that this does not remove the file from the
+   existence of file. Note that this does not remove the files from the
    hard drive.
 -  *Browse For Images:* Use a dialog box to select an image file (though
    drag-and-drop is recommended).
@@ -101,7 +101,8 @@ options to modify the file list:
 -  *Collapse All Folders:* Collapse all folder trees shown in the file
    list panel.
 -  *Clear File List:* Remove all files/folders in the file list panel.
-   You will be prompted for confirmation beforehand.
+   You will be prompted for confirmation beforehand. Note that this does
+   not remove the files from the hard drive.
 
 How do I configure the module?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

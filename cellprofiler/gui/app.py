@@ -83,6 +83,8 @@ class App(wx.App):
         if cellprofiler.preferences.get_telemetry():
             logging = raven.handlers.logging.SentryHandler(sentry)
 
+            handler.setLevel(logging.ERROR)
+
             raven.conf.setup_logging(logging)
 
         if self.frame.startup_blurb_frame.IsShownOnScreen():

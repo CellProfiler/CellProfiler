@@ -84,7 +84,9 @@ Installation
 
 .. code:: sh
 
-    $ brew install wxpython
+    $ brew install wxmac --build-from-source --with-static --with-stl
+
+    $ brew install wxpython --build-from-source
 
 Use
 ---

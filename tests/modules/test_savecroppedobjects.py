@@ -44,3 +44,9 @@ def test_run(image, module, image_set, workspace, object_set, tmpdir):
         filename = glob.glob(os.path.join(directory, "example_{:04d}_*.tiff".format(label)))[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
+
+
+def test_defaults(module):
+    module.create_settings()
+
+    assert module.directory.get_dir_choice() == cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME

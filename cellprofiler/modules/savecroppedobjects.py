@@ -47,7 +47,8 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
         self.directory = cellprofiler.setting.DirectoryPath(
             "Directory",
-            doc="Enter the directory where object crops are saved."
+            doc="Enter the directory where object crops are saved.",
+            value=cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
         )
 
     def display(self, workspace, figure):

@@ -59,6 +59,11 @@ class SaveCroppedObjects(cellprofiler.module.Module):
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.objects_name.value)
 
+        directory = self.directory.get_absolute_path()
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
         labels = objects.segmented
 
         unique_labels = numpy.unique(labels)

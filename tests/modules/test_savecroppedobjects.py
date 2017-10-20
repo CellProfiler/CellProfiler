@@ -98,3 +98,55 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
         filename = glob.glob(os.path.join(directory, "subdirectory", "example_{:04d}_*.tiff".format(label)))[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
+
+
+@pytest.mark.parametrize(
+    "image",
+    [
+        pytest.param(
+            cellprofiler.image.Image(numpy.random.rand(100, 100)),
+            id="grayscale_image"
+        )
+    ]
+)
+def test_create_subfolders_from_metadata(image, module, image_set, workspace, object_set, tmpdir):
+    directory = str(tmpdir.mkdir("example"))
+
+    segmented = skimage.measure.label(image.pixel_data > 0.5)
+
+    obj = cellprofiler.object.Objects()
+
+    obj.segmented = segmented
+
+    object_set.add_objects(obj, "example")
+
+    workspace.measurements.add_measurement("Image", "Metadata_Plate", "002")
+
+    workspace.measurements.add_measurement("Image", "Metadata_Well", "D")
+
+    module.objects_name.value = "example"
+
+    module.directory.value = "{}|{}".format(
+        cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
+        os.path.join(directory, "\\g<Plate>", "\\g<Well>")
+    )
+
+    module.run(workspace)
+
+    unique_labels = numpy.unique(obj.segmented)
+
+    if unique_labels[0] == 0:
+        unique_labels = unique_labels[1:]
+
+    filenames = glob.glob(os.path.join(directory, "002", "D", "example_*.tiff"))
+
+    assert len(filenames) > 0
+
+    for label in unique_labels:
+        mask = obj.segmented == label
+
+        mask = skimage.img_as_ubyte(mask)
+
+        filename = glob.glob(os.path.join(directory, "002", "D", "example_{:04d}_*.tiff".format(label)))[0]
+
+        numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)

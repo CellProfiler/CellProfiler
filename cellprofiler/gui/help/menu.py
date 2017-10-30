@@ -1,5 +1,9 @@
 # coding:utf-8
 
+import webbrowser
+
+import requests
+
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
@@ -181,14 +185,10 @@ class Menu(cellprofiler.gui.menu.Menu):
 
     @staticmethod
     def __on_help_developers_guide():
-        import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler/wiki")
 
     @staticmethod
     def __on_help_online_manual(event):
-        import requests
-        import webbrowser
-
         url = "http://cellprofiler.readthedocs.io/en/v{}/".format(cellprofiler.__version__)
 
         if requests.get(url).ok:
@@ -198,7 +198,6 @@ class Menu(cellprofiler.gui.menu.Menu):
 
     @staticmethod
     def __on_help_source_code():
-        import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_search_help(self):

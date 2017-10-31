@@ -890,7 +890,7 @@ def test_enhance_dic(image, module, workspace):
 
     module.decay.value = 1
 
-    module.smoothing.value = 0.1
+    module.smoothing.value = 0
 
     module.run(workspace)
 

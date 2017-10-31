@@ -188,7 +188,7 @@ holes whose diameters fall between these two values.
         self.smoothing = cellprofiler.setting.Float(
             'Smoothing scale',
             value=2.0,
-            minval=0.1,
+            minval=0.0,
             doc="""\
 *(Used only for the "{E_TEXTURE}", "{E_DIC}" or "{E_NEURITES}" methods)*
 
@@ -555,6 +555,9 @@ Two methods can be used to enhance neurites:
                 result[index] = centrosome.filter.line_integration(plane, angle, decay, smoothing)
 
             return result
+
+        if smoothing == 0:
+            smoothing = numpy.finfo(float).eps
 
         return centrosome.filter.line_integration(pixel_data, angle, decay, smoothing)
 

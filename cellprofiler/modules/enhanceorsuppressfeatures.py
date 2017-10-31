@@ -188,7 +188,7 @@ holes whose diameters fall between these two values.
         self.smoothing = cellprofiler.setting.Float(
             'Smoothing scale',
             value=2.0,
-            minval=0,
+            minval=0.1,
             doc="""\
 *(Used only for the "{E_TEXTURE}", "{E_DIC}" or "{E_NEURITES}" methods)*
 

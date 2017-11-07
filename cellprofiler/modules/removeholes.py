@@ -1,17 +1,27 @@
 # coding=utf-8
 
 """
-Remove holes
-============
+RemoveHoles
+===========
+
+**RemoveHoles** fills holes smaller than the specified diameter.
+
+This module works best on binary and integer-labeled images (i.e., the output of
+**ConvertObjectsToImage** when the color format is *uint16*). Greyscale and multichannel
+image data is converted to binary by setting values below 50% of the data range to 0 and
+the other 50% of values to 1.
+
+The output of this module is a binary image, regardless of the input data type. It is
+recommended that **RemoveHoles** is run before any labeling or segmentation module (e.g.,
+**ConvertImageToObjects** or **Watershed**).
 
 |
 
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES          NO
 ============ ============ ===============
-
 """
 
 import numpy
@@ -34,7 +44,8 @@ class RemoveHoles(cellprofiler.module.ImageProcessing):
 
         self.size = cellprofiler.setting.Float(
             text="Size",
-            value=1.0
+            value=1.0,
+            doc="Holes smaller than this diameter will be filled."
         )
 
     def settings(self):
@@ -60,7 +71,8 @@ class RemoveHoles(cellprofiler.module.ImageProcessing):
 def fill_holes(image, diameter):
     radius = diameter / 2.0
 
-    image = skimage.img_as_bool(image)
+    if image.dtype.kind == "f":
+        image = skimage.img_as_bool(image)
 
     if image.ndim == 2 or image.shape[-1] in (3, 4):
         factor = radius ** 2

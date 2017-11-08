@@ -73,7 +73,7 @@ setuptools.setup(
     license="BSD",
     name="CellProfiler",
     package_data={
-        "cellprofiler": ['data/*']
+        "cellprofiler": ['data/**/*']
     },
     include_package_data=True,
     packages=setuptools.find_packages(exclude=[

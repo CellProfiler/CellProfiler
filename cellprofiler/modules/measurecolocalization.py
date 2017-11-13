@@ -23,7 +23,13 @@ between the following:
 -  The blue and green, red and green, and red and blue images.
 -  The nuclei in each of the above image pairs.
 
-This module supports both 2D and volumetric images.
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

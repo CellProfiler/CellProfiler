@@ -12,8 +12,20 @@ reduce uneven background in images.
 This module applies a previously created illumination correction
 function, either loaded by the **Images** module, a **Load** module, or
 created by **CorrectIlluminationCalculate**. This module corrects each
-image in the pipeline using the function specified. See also
-**CorrectIlluminationCalculate**.
+image in the pipeline using the function specified.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **CorrectIlluminationCalculate**.
 """
 
 import numpy as np

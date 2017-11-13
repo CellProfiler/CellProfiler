@@ -21,6 +21,20 @@ module. However, old pipelines loaded into CellProfiler that contain
 this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also the **Input** modules (**Images**, **NamesAndTypes**,
+**MetaData**, **Groups**), **LoadImages**, and **LoadData**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -45,8 +59,6 @@ If you have a single file to load in the pipeline (and only that file),
 you will want to use **LoadImages** or **LoadData** with a single,
 hardcoded file name.
 
-See also the **Input** modules (**Images**, **NamesAndTypes**,
-**MetaData**, **Groups**), **LoadImages**, and **LoadData**.
 """
 
 import hashlib

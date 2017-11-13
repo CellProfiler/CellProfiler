@@ -18,12 +18,24 @@ scaled from 0 – 1 for object identification and display purposes, so
 additional rescaling may be needed. Please see the **RescaleIntensity**
 module for more scaling options.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
 See also **Threshold**, **RescaleIntensity**,
 **CorrectIlluminationCalculate**.
 """
 
 import inflect
 import numpy
+import skimage.util
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -167,8 +179,8 @@ value of 1.
 
         self.ignore_mask = cellprofiler.setting.Binary(
                 "Ignore the image masks?", False, doc="""\
-Select *%(YES)s* to set equal to zero all previously masked pixels and 
-operate on the masked images as if no mask had been applied. Otherwise, 
+Select *%(YES)s* to set equal to zero all previously masked pixels and
+operate on the masked images as if no mask had been applied. Otherwise,
 the smallest image mask is applied after image math has been completed.
 """ % globals())
 
@@ -393,7 +405,7 @@ is applied before other operations."""))
             if opval == O_AVERAGE:
                 output_pixel_data /= sum(image_factors)
         elif opval == O_INVERT:
-            output_pixel_data = output_pixel_data.max() - output_pixel_data
+            output_pixel_data = skimage.util.invert(output_pixel_data)
         elif opval == O_NOT:
             output_pixel_data = numpy.logical_not(output_pixel_data)
         elif opval == O_LOG_TRANSFORM:

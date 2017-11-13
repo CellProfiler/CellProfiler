@@ -12,6 +12,14 @@ several methods. You should use caution when interpreting intensity and
 texture measurements derived from images that have been rescaled because
 certain options for this module do not preserve the relative intensities
 from image to image.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 """
 
 import numpy

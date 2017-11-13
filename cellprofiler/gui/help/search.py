@@ -2,6 +2,7 @@ import os
 import re
 
 import wx
+import wx.html
 
 import cellprofiler.gui
 import cellprofiler.gui.help.content
@@ -9,33 +10,37 @@ import cellprofiler.gui.html.utils
 import cellprofiler.modules
 
 MENU_HELP = {
-    "Accessing Images From OMERO": cellprofiler.gui.help.content.ACCESSING_OMERO_IMAGES,
-    "Batch Processing": cellprofiler.gui.help.content.BATCHPROCESSING_HELP,
-    "How To Build A Pipeline": cellprofiler.gui.help.content.BUILDING_A_PIPELINE_HELP,
-    "Configuring Images for Analysis": cellprofiler.gui.help.content.CONFIGURE_IMAGES_HELP,
-    "Configuring Logging": cellprofiler.gui.help.content.CONFIGURING_LOGGING_HELP,
-    "Introduction to Projects": cellprofiler.gui.help.content.INTRODUCTION_TO_PROJECTS_HELP,
-    "Load Modules": cellprofiler.gui.help.content.LEGACY_LOAD_MODULES_HELP,
-    "Loading Image Stacks and Movies": cellprofiler.gui.help.content.LOADING_IMAGE_SEQUENCES_HELP,
-    "MATLAB format images": cellprofiler.gui.help.content.MATLAB_FORMAT_IMAGES_HELP,
-    "How Measurements are Named": cellprofiler.gui.help.content.MEASUREMENT_NOMENCLATURE_HELP,
-    "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.MEMORY_AND_SPEED_HELP,
-    "Using the Edit Menu": cellprofiler.gui.help.content.MENU_BAR_EDIT_HELP,
-    "Using the File Menu": cellprofiler.gui.help.content.MENU_BAR_FILE_HELP,
-    "Using the Window Menu": cellprofiler.gui.help.content.MENU_BAR_WINDOW_HELP,
-    "How To Use The Image Tools": cellprofiler.gui.help.content.MODULE_DISPLAY_IMAGE_TOOLS_HELP,
+    "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content("other_omero.rst"),
+    "Batch Processing": cellprofiler.gui.help.content.read_content("other_batch.rst"),
+    "How To Build A Pipeline": cellprofiler.gui.help.content.read_content("pipelines_building.rst"),
+    "Configuring Images for Analysis": cellprofiler.gui.help.content.read_content("projects_configure_images.rst"),
+    "Configuring Logging": cellprofiler.gui.help.content.read_content("other_logging.rst"),
+    "Introduction to Projects": cellprofiler.gui.help.content.read_content("projects_introduction.rst"),
+    "Load Modules": cellprofiler.gui.help.content.read_content("legacy_load_modules.rst"),
+    "Loading Image Stacks and Movies": cellprofiler.gui.help.content.read_content("projects_image_sequences.rst"),
+    "MATLAB format images": cellprofiler.gui.help.content.read_content("legacy_matlab_image.rst"),
+    "How Measurements are Named": cellprofiler.gui.help.content.read_content("output_measurements.rst"),
+    "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.read_content("other_troubleshooting.rst"),
+    "Using the Data Tools Menu": cellprofiler.gui.help.content.read_content("navigation_data_tools_menu.rst"),
+    "Using the Edit Menu": cellprofiler.gui.help.content.read_content("navigation_file_menu.rst"),
+    "Using the File Menu": cellprofiler.gui.help.content.read_content("navigation_edit_menu.rst"),
+    "Using the Window Menu": cellprofiler.gui.help.content.read_content("navigation_window_menu.rst"),
+    "How To Use The Image Tools": cellprofiler.gui.help.content.read_content("display_image_tools.rst"),
     "Using The Interactive Navigation Toolbar":
-        cellprofiler.gui.help.content.MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP,
-    "Using The Display Window Menu Bar": cellprofiler.gui.help.content.MODULE_DISPLAY_MENU_BAR_HELP,
-    "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.PARAMETER_SAMPLING_MENU_HELP,
-    "Plate Viewer": cellprofiler.gui.help.content.PLATEVIEWER_HELP,
-    "Running Multiple Pipelines": cellprofiler.gui.help.content.RUN_MULTIPLE_PIPELINES_HELP,
-    "Running Your Pipeline": cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP,
-    "Selecting Images for Input": cellprofiler.gui.help.content.SELECTING_IMAGES_HELP,
-    "Using Spreadsheets and Databases": cellprofiler.gui.help.content.SPREADSHEETS_DATABASE_HELP,
-    "Testing Your Pipeline": cellprofiler.gui.help.content.TEST_MODE_HELP,
-    "Setting the Output Filename": cellprofiler.gui.help.content.USING_THE_OUTPUT_FILE_HELP,
-    "Why Use CellProfiler?": cellprofiler.gui.help.content.WHEN_CAN_I_USE_CELLPROFILER_HELP
+        cellprofiler.gui.help.content.read_content("display_interactive_navigation.rst"),
+    "Using The Display Window Menu Bar": cellprofiler.gui.help.content.read_content("display_menu_bar.rst"),
+    "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.read_content(
+        "navigation_parameter_sampling_menu.rst"
+    ),
+    "Plate Viewer": cellprofiler.gui.help.content.read_content("output_plateviewer.rst"),
+    "Running Multiple Pipelines": cellprofiler.gui.help.content.read_content("other_multiple_pipelines.rst"),
+    "Running Your Pipeline": cellprofiler.gui.help.content.read_content("pipelines_running.rst"),
+    "Selecting Images for Input": cellprofiler.gui.help.content.read_content("projects_selecting_images.rst"),
+    "Using Spreadsheets and Databases": cellprofiler.gui.help.content.read_content("output_spreadsheets.rst"),
+    "Using the Test Menu": cellprofiler.gui.help.content.read_content("navigation_test_menu.rst"),
+    "Using Plugins": cellprofiler.gui.help.content.read_content("other_plugins.rst"),
+    "Setting the Output Filename": cellprofiler.gui.help.content.read_content("legacy_output_file.rst"),
+    "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content("why_use_cellprofiler.rst")
 }
 
 

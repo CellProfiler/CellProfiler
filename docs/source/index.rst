@@ -6,112 +6,213 @@
 Welcome to CellProfiler's documentation!
 ========================================
 
+Most laboratories studying biological processes and human disease use
+light/fluorescence microscopes to image cells and other biological
+samples. There is strong and growing demand for software to analyze
+these images, as automated microscopes collect images faster than can be
+examined by eye and the information sought from images is increasingly
+quantitative and complex.
+
+CellProfiler is a versatile, open-source software tool for quantifying
+data from biological images, particularly in high-throughput
+experiments. CellProfiler is designed for modular, flexible,
+high-throughput analysis of images, measuring size, shape, intensity,
+and texture of every cell (or other object) in every image. Using the
+point-and-click graphical user interface (GUI), users construct an image
+analysis “pipeline”, a sequential series of modules that each perform an
+image processing function such as illumination correction, object
+identification (segmentation), and object measurement. Users mix and
+match modules and adjust their settings to measure the phenotype of
+interest. While originally designed for high-throughput images, it is
+equally appropriate for low-throughput assays as well (i.e., assays of <
+100 images).
+
+CellProfiler can extract valuable biological information from images
+quickly while increasing the objectivity and statistical power of
+assays. It helps researchers approach a variety of biological questions
+quantitatively, including standard assays (e.g., cell count, size,
+per-cell protein levels) as well as complex morphological assays (e.g.,
+cell/organelle shape or subcellular patterns of DNA or protein
+staining).
+
+The wide variety of measurements produced by CellProfiler serves as
+useful “raw material” for machine learning algorithms. CellProfiler’s
+companion software, CellProfiler Analyst, has an interactive machine
+learning tool called Classifier which can learn to recognize a phenotype
+of interest based on your guidance. Once you complete the training
+phase, CellProfiler Analyst will score every object in your images based
+on CellProfiler’s measurements. CellProfiler Analyst also contains tools
+for the interactive visualization of the data produced by CellProfiler.
+
+In summary, CellProfiler contains:
+
+-  Advanced algorithms for image analysis that are able to accurately
+   identify crowded cells and non-mammalian cell types.
+-  A modular, flexible design allowing analysis of new assays and
+   phenotypes.
+-  Open-source code so the underlying methodology is known and can be
+   modified or improved by others.
+-  A user-friendly interface.
+-  The ability to use high-throughput computing (clusters, cloud).
+-  A design that eliminates the tedium of the many steps typically
+   involved in image analysis, many of which are not easily transferable
+   from one project to another (for example, image formatting, combining
+   several image analysis steps, or repeating the analysis with slightly
+   different parameters).
+
+References
+^^^^^^^^^^
+
+For a full list of references, visit our `citation`_ page.
+
+-  Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
+   Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM
+   (2006) “CellProfiler: image analysis software for identifying and
+   quantifying cell phenotypes” *Genome Biology* 7:R100 (`link`_)
+-  Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V,
+   Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) “Improved
+   structure, function, and compatibility for CellProfiler: modular
+   high-throughput image analysis software” *Bioinformatics*
+   27(8):1179-1180
+   (`link <http://dx.doi.org/10.1093/bioinformatics/btr095>`__)
+-  Lamprecht MR, Sabatini DM, Carpenter AE (2007) “CellProfiler: free,
+   versatile software for automated biological image analysis”
+   *Biotechniques* 42(1):71-75.
+   (`link <http://dx.doi.org/10.2144/000112257>`__)
+-  Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J,
+   Root D, Golland P, Sabatini DM (2009) “Scoring diverse cellular
+   morphologies in image-based screens with iterative feedback and
+   machine learning” *PNAS* 106(6):1826-1831
+   (`link <http://dx.doi.org/10.1073/pnas.0808843106>`__)
+-  Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM,
+   Golland P, Carpenter AE (2008) “CellProfiler Analyst: data
+   exploration and analysis software for complex image-based screens”
+   *BMC Bioinformatics* 9(1):482
+   (`link <http://dx.doi.org/10.1186/1471-2105-9-482>`__)
+
+.. _citation: http://cellprofiler.org/citations/
+.. _link: http://dx.doi.org/10.1186/gb-2006-7-10-r100
+
+
+Menu Options
+============
+Instructions for navigating CellProfiler's menus.
+
+.. toctree::
+   :titlesonly:
+
+   help/navigation_file_menu
+   help/navigation_edit_menu
+   help/navigation_test_menu
+   help/navigation_window_menu
+   help/navigation_parameter_sampling_menu
+   help/navigation_data_tools_menu
+
+`(Jump to top)`_
+
+Display Options
+===============
+
+Tips and instructions for using CellProfiler's interactive
+module output displays.
+
+.. toctree::
+   :titlesonly:
+
+   help/display_menu_bar
+   help/display_interactive_navigation
+   help/display_image_tools
+
+`(Jump to top)`_
+
+Creating a Project
+==================
+Learn how to configure a project and load images.
+
+.. toctree::
+   :titlesonly:
+
+   help/projects_introduction
+   help/projects_selecting_images
+   help/projects_configure_images
+   help/projects_image_sequences
+
+`(Jump to top)`_
+
+Pipelines
+=========
+Learn how to create, run, and debug CellProfiler pipelines.
+
+.. toctree::
+   :titlesonly:
+
+   help/pipelines_building
+   help/navigation_test_menu
+   help/pipelines_running
+
+`(Jump to top)`_
+
+Using Your Output
+=================
+Learn how to interact with and export data generated by
+CellProfiler.
+
+.. toctree::
+   :titlesonly:
+
+   help/output_measurements
+   help/output_spreadsheets
+   help/output_plateviewer
+
+`(Jump to top)`_
+
+Other Features
+==============
+Learn about the other features of CellProfiler.
+
+.. toctree::
+   :titlesonly:
+
+   help/other_troubleshooting
+   help/other_batch
+   help/other_multiple_pipelines
+   help/other_logging
+   help/other_omero
+   help/other_plugins
+
+`(Jump to top)`_
+
+Modules
+=======
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-.. automodule:: cellprofiler.modules.align
-.. automodule:: cellprofiler.modules.blobdetection
-.. automodule:: cellprofiler.modules.calculatemath
-.. automodule:: cellprofiler.modules.calculatestatistics
-.. automodule:: cellprofiler.modules.classifyobjects
-.. automodule:: cellprofiler.modules.closing
-.. automodule:: cellprofiler.modules.colortogray
-.. automodule:: cellprofiler.modules.convertobjectstoimage
-.. automodule:: cellprofiler.modules.correctilluminationapply
-.. automodule:: cellprofiler.modules.correctilluminationcalculate
-.. automodule:: cellprofiler.modules.createbatchfiles
-.. automodule:: cellprofiler.modules.crop
-.. automodule:: cellprofiler.modules.definegrid
-.. automodule:: cellprofiler.modules.dilation
-.. automodule:: cellprofiler.modules.displaydataonimage
-.. automodule:: cellprofiler.modules.displaydensityplot
-.. automodule:: cellprofiler.modules.displayhistogram
-.. automodule:: cellprofiler.modules.displayplatemap
-.. automodule:: cellprofiler.modules.displayscatterplot
-.. automodule:: cellprofiler.modules.edgedetection
-.. automodule:: cellprofiler.modules.editobjectsmanually
-.. automodule:: cellprofiler.modules.enhanceedges
-.. automodule:: cellprofiler.modules.enhanceorsuppressfeatures
-.. automodule:: cellprofiler.modules.erosion
-.. automodule:: cellprofiler.modules.expandorshrinkobjects
-.. automodule:: cellprofiler.modules.exporttodatabase
-.. automodule:: cellprofiler.modules.exporttospreadsheet
-.. automodule:: cellprofiler.modules.filterobjects
-.. automodule:: cellprofiler.modules.flagimage
-.. automodule:: cellprofiler.modules.flipandrotate
-.. automodule:: cellprofiler.modules.gammacorrection
-.. automodule:: cellprofiler.modules.gaussianfilter
-.. automodule:: cellprofiler.modules.graytocolor
-.. automodule:: cellprofiler.modules.groups
-.. automodule:: cellprofiler.modules.histogramequalization
-.. automodule:: cellprofiler.modules.identifydeadworms
-.. automodule:: cellprofiler.modules.identifyobjectsingrid
-.. automodule:: cellprofiler.modules.identifyobjectsmanually
-.. automodule:: cellprofiler.modules.identifyprimaryobjects
-.. automodule:: cellprofiler.modules.identifysecondaryobjects
-.. automodule:: cellprofiler.modules.identifytertiaryobjects
-.. automodule:: cellprofiler.modules.imagegradient
-.. automodule:: cellprofiler.modules.imagemath
-.. automodule:: cellprofiler.modules.images
-.. automodule:: cellprofiler.modules.invertforprinting
-.. automodule:: cellprofiler.modules.label
-.. automodule:: cellprofiler.modules.labelimages
-.. automodule:: cellprofiler.modules.laplacianofgaussian
-.. automodule:: cellprofiler.modules.loaddata
-.. automodule:: cellprofiler.modules.loadimages
-.. automodule:: cellprofiler.modules.loadsingleimage
-.. automodule:: cellprofiler.modules.makeprojection
-.. automodule:: cellprofiler.modules.maskimage
-.. automodule:: cellprofiler.modules.maskobjects
-.. automodule:: cellprofiler.modules.matchtemplate
-.. automodule:: cellprofiler.modules.measurecolocalization
-.. automodule:: cellprofiler.modules.measuregranularity
-.. automodule:: cellprofiler.modules.measureimageareaoccupied
-.. automodule:: cellprofiler.modules.measureimageintensity
-.. automodule:: cellprofiler.modules.measureimageoverlap
-.. automodule:: cellprofiler.modules.measureimagequality
-.. automodule:: cellprofiler.modules.measureimageskeleton
-.. automodule:: cellprofiler.modules.measureobjectintensity
-.. automodule:: cellprofiler.modules.measureobjectintensitydistribution
-.. automodule:: cellprofiler.modules.measureobjectneighbors
-.. automodule:: cellprofiler.modules.measureobjectsizeshape
-.. automodule:: cellprofiler.modules.measureobjectskeleton
-.. automodule:: cellprofiler.modules.measuretexture
-.. automodule:: cellprofiler.modules.medianfilter
-.. automodule:: cellprofiler.modules.medialaxis
-.. automodule:: cellprofiler.modules.mergeoutputfiles
-.. automodule:: cellprofiler.modules.metadata
-.. automodule:: cellprofiler.modules.morph
-.. automodule:: cellprofiler.modules.morphologicalskeleton
-.. automodule:: cellprofiler.modules.namesandtypes
-.. automodule:: cellprofiler.modules.opening
-.. automodule:: cellprofiler.modules.overlayobjects
-.. automodule:: cellprofiler.modules.overlayoutlines
-.. automodule:: cellprofiler.modules.randomwalkeralgorithm
-.. automodule:: cellprofiler.modules.reducenoise
-.. automodule:: cellprofiler.modules.relateobjects
-.. automodule:: cellprofiler.modules.removeholes
-.. automodule:: cellprofiler.modules.removeobjectsbysize
-.. automodule:: cellprofiler.modules.rescaleintensity
-.. automodule:: cellprofiler.modules.resize
-.. automodule:: cellprofiler.modules.resizeobjects
-.. automodule:: cellprofiler.modules.savecroppedobjects
-.. automodule:: cellprofiler.modules.saveimages
-.. automodule:: cellprofiler.modules.smooth
-.. automodule:: cellprofiler.modules.splitormergeobjects
-.. automodule:: cellprofiler.modules.straightenworms
-.. automodule:: cellprofiler.modules.threshold
-.. automodule:: cellprofiler.modules.tile
-.. automodule:: cellprofiler.modules.tophattransform
-.. automodule:: cellprofiler.modules.trackobjects
-.. automodule:: cellprofiler.modules.unmixcolors
-.. automodule:: cellprofiler.modules.untangleworms
-.. automodule:: cellprofiler.modules.watershed
+   modules/input
+   modules/fileprocessing
+   modules/imageprocessing
+   modules/objectprocessing
+   modules/measurement
+   modules/datatools
+   modules/advanced
+   modules/wormtoolbox
+   modules/other
 
-Indices and tables
-==================
+`(Jump to top)`_
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Legacy Features
+===============
+These features are considered deprecated and will be removed
+in a future version of CellProfiler.
+
+.. toctree::
+   :titlesonly:
+
+   help/legacy_load_modules
+   help/legacy_output_file
+   help/legacy_matlab_image
+
+`(Jump to top)`_
+
+:ref:`search`
+
+.. _(Jump to top): index.html#

@@ -905,6 +905,24 @@ class TestCropLabelsAndImage(unittest.TestCase):
         assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_3[0, 0, 0])
         assert not numpy.all(overlay_region_2[0, 0, 0] == overlay_region_3[0, 0, 0])
 
+    # https://github.com/CellProfiler/CellProfiler/issues/3268
+    def test_overlay_objects_empty_label(self):
+        data = numpy.zeros((9, 9, 9))
+
+        labels = numpy.zeros_like(data, dtype=numpy.uint8)
+        labels[:3, :3, :3] = 1
+        labels[-3:, -3:, -3:] = 3
+
+        overlay_pixel_data = cpo.overlay_labels(pixel_data=data, labels=labels)
+
+        overlay_region_1 = overlay_pixel_data[:3, :3, :3]
+        assert numpy.all(overlay_region_1 == overlay_region_1[0, 0, 0])
+
+        overlay_region_3 = overlay_pixel_data[-3:, -3:, -3:]
+        assert numpy.all(overlay_region_3 == overlay_region_3[0, 0, 0])
+
+        assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_3[0, 0, 0])
+
 
 class TestSizeSimilarly(unittest.TestCase):
     def test_01_01_size_same(self):

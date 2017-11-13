@@ -1,7 +1,18 @@
 # coding=utf-8
 
 """
+Erosion
+=======
+
 **Erosion** shrinks shapes in an image.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
 """
 
 import numpy

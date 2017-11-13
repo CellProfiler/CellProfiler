@@ -43,8 +43,6 @@ a value of False for all bins. However, they are still counted in the
 total number of objects and hence are reflected in the classification
 percentages.
 
-{HELP_ON_SAVING_OBJECTS}
-
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -62,12 +60,6 @@ Measurements made by this module
    -  Two measurement: Classification (true/false) of the 1\ :sup:`st`
       measurement versus the 2\ :sup:`nd` measurement binned into bins
       above (“high”) and below (“low”) the cutoff.
-
-See also **CalculateMath** and any of the modules in the **Measure**
-category.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"

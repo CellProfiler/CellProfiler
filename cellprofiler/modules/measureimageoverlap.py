@@ -8,12 +8,12 @@ MeasureImageOverlap
 the white portions of two black and white images
 
 This module calculates overlap by determining a set of statistics that
-measure the closeness of an image or object to its true value. One
-image/object is considered the “ground truth” (possibly the result of
-hand-segmentation) and the other is the “test” image/object; the images
+measure the closeness of an image to its true value. One
+image is considered the “ground truth” (possibly the result of
+hand-segmentation) and the other is the “test” image; the images
 are determined to overlap most completely when the test image matches
-the ground truth perfectly. If using images, the module requires binary
-(black and white) input, where the foreground is white and the
+the ground truth perfectly. The module requires binary
+(black and white) input, where the foreground of the images is white and the
 background is black. If you segment your images in CellProfiler using
 **IdentifyPrimaryObjects**, you can create such an image using
 **ConvertObjectsToImage** by selecting *Binary* as the color type. If
@@ -45,58 +45,47 @@ while a background pixel in the test image that overlaps with foreground
 in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  **For images and objects:**
+-  *True positive rate:* Total number of true positive pixels / total number of actual positive pixels.
 
-   -  *True positive rate:* Total number of true positive pixels / total
-      number of actual positive pixels.
+-  *False positive rate:* Total number of false positive pixels / total number of actual negative pixels.
 
-   -  *False positive rate:* Total number of false positive pixels /
-      total number of actual negative pixels
+-  *True negative rate:* Total number of true negative pixels / total number of actual negative pixels.
 
-   -  *True negative rate:* Total number of true negative pixels / total
-      number of actual negative pixels.
+-  *False negative rate:* Total number of false negative pixels / total number of actual positive pixels.
 
-   -  *False negative rate:* Total number of false negative pixels /
-      total number of actual postive pixels
+-  *Precision:* Number of true positive pixels / (number of true positive pixels + number of false positive pixels).
 
-   -  *Precision:* Number of true positive pixels / (number of true
-      positive pixels + number of false positive pixels)
+-  *Recall:* Number of true positive pixels/ (number of true positive pixels + number of false negative pixels).
 
-   -  *Recall:* Number of true positive pixels/ (number of true positive
-      pixels + number of false negative pixels)
+-  *F-factor:* 2 × (precision × recall)/(precision + recall). Also known as F\ :sub:`1` score, F-score or F-measure.
 
-   -  *F-factor:* 2 × (precision × recall)/(precision + recall). Also
-      known as F\ :sub:`1` score, F-score or F-measure.
+-  *Earth mover’s distance:* The minimum distance required to move each foreground pixel in the test image to
+   some corresponding foreground pixel in the reference image.
 
-   -  *Earth mover’s distance:*\ The minimum distance required to move
-      each foreground pixel in the test image to some corresponding
-      foreground pixel in the reference image.
+-  *Rand index:* A measure of the similarity between two data clusterings. Perfectly random clustering
+   returns the minimum score of 0, perfect clustering returns the maximum score of 1.
 
--  **For objects:**
-
-   -  *Rand index:* A measure of the similarity between two data
-      clusterings. Perfectly random clustering returns the minimum score
-      of 0, perfect clustering returns the maximum score of 1.
-
-   -  *Adjusted Rand index:* A variation of the Rand index which takes
-      into account the fact that random chance will cause some objects
-      to occupy the same clusters, so the Rand Index will never actually
-      be zero. Can return a value between -1 and +1.
+-  *Adjusted Rand index:* A variation of the Rand index which considers a correction for chance.
 
 References
 ^^^^^^^^^^
 
 -  Collins LM, Dent CW (1998) “Omega: A general formulation of the Rand
    Index of cluster recovery suitable for non-disjoint solutions”,
-   *Multivariate Behavioral Research*, 23, 231-242 `(link)`_
-
+   *Multivariate Behavioral Research*, 23, 231-242. `(link) <http://dx.doi.org/10.1207/s15327906mbr2302_6>`__
 -  Pele O, Werman M (2009) “Fast and Robust Earth Mover’s Distances”,
-   *2009 IEEE 12th International Conference on Computer Vision*
-
-.. _(link): http://dx.doi.org/10.1207/s15327906mbr2302_6
+   *2009 IEEE 12th International Conference on Computer Vision*.
 """
 
 import centrosome.cpmorphology
@@ -115,7 +104,6 @@ import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 import _help
-
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
@@ -143,7 +131,6 @@ FTR_ALL = [
 
 O_OBJ = "Segmented objects"
 O_IMG = "Foreground/background segmentation"
-O_ALL = [O_OBJ, O_IMG]
 
 L_LOAD = "Loaded from a previous run"
 L_CP = "From this CP pipeline"
@@ -154,22 +141,14 @@ DM_SKEL = "Skeleton"
 
 class MeasureImageOverlap(cellprofiler.module.Module):
     category = "Measurement"
-    variable_revision_number = 4
+    variable_revision_number = 5
     module_name = "MeasureImageOverlap"
 
     def create_settings(self):
-        self.obj_or_img = cellprofiler.setting.Choice(
-            "Compare segmented objects, or foreground/background?",
-            O_ALL,
-            doc="Choose whether to compare objects or images."
-        )
-
         self.ground_truth = cellprofiler.setting.ImageNameSubscriber(
             "Select the image to be used as the ground truth basis for calculating the amount of overlap",
             cellprofiler.setting.NONE,
             doc="""\
-*(Used only when comparing foreground/background)*
-
 This binary (black and white) image is known as the “ground truth”
 image. It can be the product of segmentation performed by hand, or the
 result of another segmentation algorithm whose results you would like to
@@ -180,32 +159,8 @@ compare."""
             "Select the image to be used to test for overlap",
             cellprofiler.setting.NONE,
             doc="""\
-*(Used only when comparing foreground/background)*
-
 This binary (black and white) image is what you will compare with the
 ground truth image. It is known as the “test image”."""
-        )
-
-        self.object_name_GT = cellprofiler.setting.ObjectNameSubscriber(
-            "Select the objects to be used as the ground truth basis for calculating the amount of overlap",
-            cellprofiler.setting.NONE,
-            doc="""\
-*(Used only when comparing segmented objects)*
-
-Choose which set of objects will used as the “ground truth” objects. It
-can be the product of segmentation performed by hand, or the result of
-another segmentation algorithm whose results you would like to compare.
-See the **Load** modules for more details on loading objects."""
-        )
-
-        self.object_name_ID = cellprofiler.setting.ObjectNameSubscriber(
-            "Select the objects to be tested for overlap against the ground truth",
-            cellprofiler.setting.NONE,
-            doc="""\
-*(Used only when comparing segmented objects)*
-
-This set of objects is what you will compare with the ground truth
-objects. It is known as the “test object.”"""
         )
 
         self.wants_emd = cellprofiler.setting.Binary(
@@ -308,11 +263,8 @@ the two images. Set this setting to “No” to assess no penalty."""
 
     def settings(self):
         return [
-            self.obj_or_img,
             self.ground_truth,
             self.test_img,
-            self.object_name_GT,
-            self.object_name_ID,
             self.wants_emd,
             self.max_points,
             self.decimation_method,
@@ -321,21 +273,11 @@ the two images. Set this setting to “No” to assess no penalty."""
         ]
 
     def visible_settings(self):
-        visible_settings = [self.obj_or_img]
-
-        if self.obj_or_img == O_IMG:
-            visible_settings += [
-                self.ground_truth,
-                self.test_img
-            ]
-
-        elif self.obj_or_img == O_OBJ:
-            visible_settings += [
-                self.object_name_GT,
-                self.object_name_ID
-            ]
-
-        visible_settings += [self.wants_emd]
+        visible_settings = [
+            self.ground_truth,
+            self.test_img,
+            self.wants_emd
+        ]
 
         if self.wants_emd:
             visible_settings += [
@@ -348,19 +290,11 @@ the two images. Set this setting to “No” to assess no penalty."""
         return visible_settings
 
     def run(self, workspace):
-        if self.obj_or_img == O_IMG:
-            self.measure_image(workspace)
-
-        elif self.obj_or_img == O_OBJ:
-            self.measure_objects(workspace)
-
-    def measure_image(self, workspace):
         image_set = workspace.image_set
 
         ground_truth_image = image_set.get_image(self.ground_truth.value, must_be_binary=True)
 
         test_image = image_set.get_image(self.test_img.value, must_be_binary=True)
-
 
         ground_truth_pixels = ground_truth_image.pixel_data
 
@@ -374,6 +308,14 @@ the two images. Set this setting to “No” to assess no penalty."""
             mask = mask & test_image.mask
 
         test_pixels = test_image.pixel_data
+
+# In volumetric case the 3D image stack gets converted to a long 2D image and gets analyzed
+        if ground_truth_image.volumetric:
+            ground_truth_pixels = ground_truth_pixels.reshape(-1, ground_truth_pixels.shape[-1])
+
+            mask = mask.reshape(-1, mask.shape[-1])
+
+            test_pixels = test_pixels.reshape(-1, test_pixels.shape[-1])
 
         false_positives = test_pixels & ~ground_truth_pixels
 
@@ -525,207 +467,6 @@ the two images. Set this setting to “No” to assess no penalty."""
             if self.wants_emd:
                 workspace.display_data.statistics.append((FTR_EARTH_MOVERS_DISTANCE, emd))
 
-    def measure_objects(self, workspace):
-        image_set = workspace.image_set
-        object_name_GT = self.object_name_GT.value
-        objects_GT = workspace.get_objects(object_name_GT)
-        iGT, jGT, lGT = objects_GT.ijv.transpose()
-        object_name_ID = self.object_name_ID.value
-        objects_ID = workspace.get_objects(object_name_ID)
-        iID, jID, lID = objects_ID.ijv.transpose()
-        ID_obj = 0 if len(lID) == 0 else max(lID)
-        GT_obj = 0 if len(lGT) == 0 else max(lGT)
-
-        xGT, yGT = objects_GT.shape
-        xID, yID = objects_ID.shape
-        GT_pixels = numpy.zeros((xGT, yGT))
-        ID_pixels = numpy.zeros((xID, yID))
-        total_pixels = xGT * yGT
-
-        GT_pixels[iGT, jGT] = 1
-        ID_pixels[iID, jID] = 1
-
-        GT_tot_area = len(iGT)
-        if len(iGT) == 0 and len(iID) == 0:
-            intersect_matrix = numpy.zeros((0, 0), int)
-        else:
-            #
-            # Build a matrix with rows of i, j, label and a GT/ID flag
-            #
-            all_ijv = numpy.column_stack(
-                    (numpy.hstack((iGT, iID)),
-                     numpy.hstack((jGT, jID)),
-                     numpy.hstack((lGT, lID)),
-                     numpy.hstack((numpy.zeros(len(iGT)), numpy.ones(len(iID))))))
-            #
-            # Order it so that runs of the same i, j are consecutive
-            #
-            order = numpy.lexsort((all_ijv[:, -1], all_ijv[:, 0], all_ijv[:, 1]))
-            all_ijv = all_ijv[order, :]
-            # Mark the first at each i, j != previous i, j
-            first = numpy.where(numpy.hstack(
-                    ([True],
-                     ~ numpy.all(all_ijv[:-1, :2] == all_ijv[1:, :2], 1),
-                     [True])))[0]
-            # Count # at each i, j
-            count = first[1:] - first[:-1]
-            # First indexer - mapping from i,j to index in all_ijv
-            all_ijv_map = centrosome.index.Indexes([count])
-            # Bincount to get the # of ID pixels per i,j
-            id_count = numpy.bincount(all_ijv_map.rev_idx,
-                                   all_ijv[:, -1]).astype(int)
-            gt_count = count - id_count
-            # Now we can create an indexer that has NxM elements per i,j
-            # where N is the number of GT pixels at that i,j and M is
-            # the number of ID pixels. We can then use the indexer to pull
-            # out the label values for each to populate a sparse array.
-            #
-            cross_map = centrosome.index.Indexes([id_count, gt_count])
-            off_gt = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[0]
-            off_id = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[1] + \
-                     id_count[cross_map.rev_idx]
-            intersect_matrix = scipy.sparse.coo_matrix(
-                    (numpy.ones(len(off_gt)),
-                     (all_ijv[off_id, 2], all_ijv[off_gt, 2])),
-                    shape=(ID_obj + 1, GT_obj + 1)).toarray()[1:, 1:]
-
-        gt_areas = objects_GT.areas
-        id_areas = objects_ID.areas
-        FN_area = gt_areas[numpy.newaxis, :] - intersect_matrix
-        all_intersecting_area = numpy.sum(intersect_matrix)
-
-        dom_ID = []
-
-        for i in range(0, ID_obj):
-            indices_jj = numpy.nonzero(lID == i)
-            indices_jj = indices_jj[0]
-            id_i = iID[indices_jj]
-            id_j = jID[indices_jj]
-            ID_pixels[id_i, id_j] = 1
-
-        for i in intersect_matrix:  # loop through the GT objects first
-            if len(i) == 0 or max(i) == 0:
-                id = -1  # we missed the object; arbitrarily assign -1 index
-            else:
-                id = numpy.where(i == max(i))[0][0]  # what is the ID of the max pixels?
-            dom_ID += [id]  # for ea GT object, which is the dominating ID?
-
-        dom_ID = numpy.array(dom_ID)
-
-        for i in range(0, len(intersect_matrix.T)):
-            if len(numpy.where(dom_ID == i)[0]) > 1:
-                final_id = numpy.where(intersect_matrix.T[i] == max(intersect_matrix.T[i]))
-                final_id = final_id[0][0]
-                all_id = numpy.where(dom_ID == i)[0]
-                nonfinal = [x for x in all_id if x != final_id]
-                for n in nonfinal:  # these others cannot be candidates for the corr ID now
-                    intersect_matrix.T[i][n] = 0
-            else:
-                continue
-
-        TP = 0
-        FN = 0
-        FP = 0
-        for i in range(0, len(dom_ID)):
-            d = dom_ID[i]
-            if d == -1:
-                tp = 0
-                fn = id_areas[i]
-                fp = 0
-            else:
-                fp = numpy.sum(intersect_matrix[i][0:d]) + numpy.sum(intersect_matrix[i][(d + 1)::])
-                tp = intersect_matrix[i][d]
-                fn = FN_area[i][d]
-            TP += tp
-            FN += fn
-            FP += fp
-
-        TN = max(0, total_pixels - TP - FN - FP)
-
-        def nan_divide(numerator, denominator):
-            if denominator == 0:
-                return numpy.nan
-            return float(numerator) / float(denominator)
-
-        accuracy = nan_divide(TP, all_intersecting_area)
-        recall = nan_divide(TP, GT_tot_area)
-        precision = nan_divide(TP, (TP + FP))
-        F_factor = nan_divide(2 * (precision * recall), (precision + recall))
-        true_positive_rate = nan_divide(TP, (FN + TP))
-        false_positive_rate = nan_divide(FP, (FP + TN))
-        false_negative_rate = nan_divide(FN, (FN + TP))
-        true_negative_rate = nan_divide(TN, (FP + TN))
-        shape = numpy.maximum(numpy.maximum(
-                numpy.array(objects_GT.shape), numpy.array(objects_ID.shape)),
-                numpy.ones(2, int))
-        rand_index, adjusted_rand_index = self.compute_rand_index_ijv(
-                objects_GT.ijv, objects_ID.ijv, shape)
-        m = workspace.measurements
-        m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), F_factor)
-        m.add_image_measurement(self.measurement_name(FTR_PRECISION),
-                                precision)
-        m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
-        m.add_image_measurement(self.measurement_name(FTR_TRUE_POS_RATE),
-                                true_positive_rate)
-        m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE),
-                                false_positive_rate)
-        m.add_image_measurement(self.measurement_name(FTR_TRUE_NEG_RATE),
-                                true_negative_rate)
-        m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
-                                false_negative_rate)
-        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),
-                                rand_index)
-        m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
-                                adjusted_rand_index)
-
-        def subscripts(condition1, condition2):
-            x1, y1 = numpy.where(GT_pixels == condition1)
-            x2, y2 = numpy.where(ID_pixels == condition2)
-            mask = set(zip(x1, y1)) & set(zip(x2, y2))
-            return list(mask)
-
-        TP_mask = subscripts(1, 1)
-        FN_mask = subscripts(1, 0)
-        FP_mask = subscripts(0, 1)
-        TN_mask = subscripts(0, 0)
-
-        TP_pixels = numpy.zeros((xGT, yGT))
-        FN_pixels = numpy.zeros((xGT, yGT))
-        FP_pixels = numpy.zeros((xGT, yGT))
-        TN_pixels = numpy.zeros((xGT, yGT))
-
-        def maskimg(mask, img):
-            for ea in mask:
-                img[ea] = 1
-            return img
-
-        TP_pixels = maskimg(TP_mask, TP_pixels)
-        FN_pixels = maskimg(FN_mask, FN_pixels)
-        FP_pixels = maskimg(FP_mask, FP_pixels)
-        TN_pixels = maskimg(TN_mask, TN_pixels)
-        if self.wants_emd:
-            emd = self.compute_emd(objects_ID, objects_GT)
-            m.add_image_measurement(
-                    self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), emd)
-
-        if self.show_window:
-            workspace.display_data.true_positives = TP_pixels
-            workspace.display_data.true_negatives = TN_pixels
-            workspace.display_data.false_positives = FP_pixels
-            workspace.display_data.false_negatives = FN_pixels
-            workspace.display_data.statistics = [
-                (FTR_F_FACTOR, F_factor),
-                (FTR_PRECISION, precision),
-                (FTR_RECALL, recall),
-                (FTR_FALSE_POS_RATE, false_positive_rate),
-                (FTR_FALSE_NEG_RATE, false_negative_rate),
-                (FTR_RAND_INDEX, rand_index),
-                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index)
-            ]
-            if self.wants_emd:
-                workspace.display_data.statistics.append(
-                        (FTR_EARTH_MOVERS_DISTANCE, emd))
-
     def compute_rand_index(self, test_labels, ground_truth_labels, mask):
         """Calculate the Rand Index
 
@@ -822,148 +563,6 @@ the two images. Set this setting to “No” to assess no penalty."""
                 (A * total - expected_index) / (max_index - expected_index)
         else:
             rand_index = adjusted_rand_index = numpy.nan
-        return rand_index, adjusted_rand_index
-
-    def compute_rand_index_ijv(self, gt_ijv, test_ijv, shape):
-        '''Compute the Rand Index for an IJV matrix
-
-        This is in part based on the Omega Index:
-        Collins, "Omega: A General Formulation of the Rand Index of Cluster
-        Recovery Suitable for Non-disjoint Solutions", Multivariate Behavioral
-        Research, 1988, 23, 231-242
-
-        The basic idea of the paper is that a pair should be judged to
-        agree only if the number of clusters in which they appear together
-        is the same.
-        '''
-        #
-        # The idea here is to assign a label to every pixel position based
-        # on the set of labels given to that position by both the ground
-        # truth and the test set. We then assess each pair of labels
-        # as agreeing or disagreeing as to the number of matches.
-        #
-        # First, add the backgrounds to the IJV with a label of zero
-        #
-        gt_bkgd = numpy.ones(shape, bool)
-        gt_bkgd[gt_ijv[:, 0], gt_ijv[:, 1]] = False
-        test_bkgd = numpy.ones(shape, bool)
-        test_bkgd[test_ijv[:, 0], test_ijv[:, 1]] = False
-        gt_ijv = numpy.vstack([
-            gt_ijv,
-            numpy.column_stack([numpy.argwhere(gt_bkgd),
-                                numpy.zeros(numpy.sum(gt_bkgd), gt_bkgd.dtype)])])
-        test_ijv = numpy.vstack([
-            test_ijv,
-            numpy.column_stack([numpy.argwhere(test_bkgd),
-                                numpy.zeros(numpy.sum(test_bkgd), test_bkgd.dtype)])])
-        #
-        # Create a unified structure for the pixels where a fourth column
-        # tells you whether the pixels came from the ground-truth or test
-        #
-        u = numpy.vstack([
-            numpy.column_stack([gt_ijv, numpy.zeros(gt_ijv.shape[0], gt_ijv.dtype)]),
-            numpy.column_stack([test_ijv, numpy.ones(test_ijv.shape[0], test_ijv.dtype)])])
-        #
-        # Sort by coordinates, then by identity
-        #
-        order = numpy.lexsort([u[:, 2], u[:, 3], u[:, 0], u[:, 1]])
-        u = u[order, :]
-        # Get rid of any duplicate labelings (same point labeled twice with
-        # same label.
-        #
-        first = numpy.hstack([[True], numpy.any(u[:-1, :] != u[1:, :], 1)])
-        u = u[first, :]
-        #
-        # Create a 1-d indexer to point at each unique coordinate.
-        #
-        first_coord_idxs = numpy.hstack([
-            [0],
-            numpy.argwhere((u[:-1, 0] != u[1:, 0]) |
-                           (u[:-1, 1] != u[1:, 1])).flatten() + 1,
-            [u.shape[0]]])
-        first_coord_counts = first_coord_idxs[1:] - first_coord_idxs[:-1]
-        indexes = centrosome.index.Indexes([first_coord_counts])
-        #
-        # Count the number of labels at each point for both gt and test
-        #
-        count_test = numpy.bincount(indexes.rev_idx, u[:, 3]).astype(numpy.int64)
-        count_gt = first_coord_counts - count_test
-        #
-        # For each # of labels, pull out the coordinates that have
-        # that many labels. Count the number of similarly labeled coordinates
-        # and record the count and labels for that group.
-        #
-        labels = []
-        for i in range(1, numpy.max(count_test) + 1):
-            for j in range(1, numpy.max(count_gt) + 1):
-                match = ((count_test[indexes.rev_idx] == i) &
-                         (count_gt[indexes.rev_idx] == j))
-                if not numpy.any(match):
-                    continue
-                #
-                # Arrange into an array where the rows are coordinates
-                # and the columns are the labels for that coordinate
-                #
-                lm = u[match, 2].reshape(numpy.sum(match) / (i + j), i + j)
-                #
-                # Sort by label.
-                #
-                order = numpy.lexsort(lm.transpose())
-                lm = lm[order, :]
-                #
-                # Find indices of unique and # of each
-                #
-                lm_first = numpy.hstack([
-                    [0],
-                    numpy.argwhere(numpy.any(lm[:-1, :] != lm[1:, :], 1)).flatten() + 1,
-                    [lm.shape[0]]])
-                lm_count = lm_first[1:] - lm_first[:-1]
-                for idx, count in zip(lm_first[:-1], lm_count):
-                    labels.append((count,
-                                   lm[idx, :j],
-                                   lm[idx, j:]))
-        #
-        # We now have our sets partitioned. Do each against each to get
-        # the number of true positive and negative pairs.
-        #
-        max_t_labels = reduce(max, [len(t) for c, t, g in labels], 0)
-        max_g_labels = reduce(max, [len(g) for c, t, g in labels], 0)
-        #
-        # tbl is the contingency table from Table 4 of the Collins paper
-        # It's a table of the number of pairs which fall into M sets
-        # in the ground truth case and N in the test case.
-        #
-        tbl = numpy.zeros(((max_t_labels + 1), (max_g_labels + 1)))
-        for i, (c1, tobject_numbers1, gobject_numbers1) in enumerate(labels):
-            for j, (c2, tobject_numbers2, gobject_numbers2) in \
-                    enumerate(labels[i:]):
-                nhits_test = numpy.sum(
-                    tobject_numbers1[:, numpy.newaxis] ==
-                    tobject_numbers2[numpy.newaxis, :])
-                nhits_gt = numpy.sum(
-                    gobject_numbers1[:, numpy.newaxis] ==
-                    gobject_numbers2[numpy.newaxis, :])
-                if j == 0:
-                    N = c1 * (c1 - 1) / 2
-                else:
-                    N = c1 * c2
-                tbl[nhits_test, nhits_gt] += N
-
-        N = numpy.sum(tbl)
-        #
-        # Equation 13 from the paper
-        #
-        min_JK = min(max_t_labels, max_g_labels) + 1
-        rand_index = numpy.sum(tbl[:min_JK, :min_JK] * numpy.identity(min_JK)) / N
-        #
-        # Equation 15 from the paper, the expected index
-        #
-        e_omega = numpy.sum(numpy.sum(tbl[:min_JK, :min_JK], 0) *
-                            numpy.sum(tbl[:min_JK, :min_JK], 1)) / N ** 2
-        #
-        # Equation 16 is the adjusted index
-        #
-        adjusted_rand_index = (rand_index - e_omega) / (1 - e_omega)
         return rand_index, adjusted_rand_index
 
     def compute_emd(self, src_objects, dest_objects):
@@ -1137,14 +736,7 @@ the two images. Set this setting to “No” to assess no penalty."""
         )
 
     def measurement_name(self, feature):
-        if self.obj_or_img == O_IMG:
-            name = '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
-
-        if self.obj_or_img == O_OBJ:
-            name = '_'.join((C_IMAGE_OVERLAP, feature,
-                             self.object_name_GT.value,
-                             self.object_name_ID.value))
-        return name
+        return '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
@@ -1159,17 +751,8 @@ the two images. Set this setting to “No” to assess no penalty."""
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        if measurement in self.get_measurements(pipeline, object_name, category) and self.obj_or_img == O_IMG:
+        if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.test_img.value]
-
-        return []
-
-    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
-        if object_name == cellprofiler.measurement.IMAGE and \
-                        category == C_IMAGE_OVERLAP and \
-                        measurement in FTR_ALL and \
-                        self.obj_or_img == O_OBJ:
-            return ["_".join((self.object_name_GT.value, self.object_name_ID.value))]
 
         return []
 
@@ -1217,4 +800,21 @@ the two images. Set this setting to “No” to assess no penalty."""
             ]
             variable_revision_number = 4
 
+        if variable_revision_number == 4:
+            obj_or_img = setting_values[0]
+
+            if obj_or_img == O_OBJ:
+                raise RuntimeError("""\
+MeasureImageOverlap does not compute object measurements.
+
+Please update your pipeline to use MeasureObjectOverlap to compute object measurements.
+"""
+                                   )
+
+            setting_values = setting_values[1:]
+            variable_revision_number = 5
+
         return setting_values, variable_revision_number, from_matlab
+
+    def volumetric(self):
+        return True

@@ -17,6 +17,14 @@ cropped image and then trying to measure their intensity in the
 *original* image will not work because the two images are not the same
 size.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

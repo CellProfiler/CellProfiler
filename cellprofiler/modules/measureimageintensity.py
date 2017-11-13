@@ -22,6 +22,19 @@ module. If the image has a mask, only unmasked pixels will be measured.
 
 {HELP_ON_MEASURING_INTENSITIES}
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES 
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **MeasureObjectIntensity**, **MaskImage**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -40,7 +53,6 @@ Measurements made by this module
 -  *TotalArea:* Number of pixels measured, e.g., the area of the image
    excluding masked regions.
 
-See also **MeasureObjectIntensity**, **MaskImage**.
 """.format(**{
     "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
 })

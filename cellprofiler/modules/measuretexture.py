@@ -18,7 +18,13 @@ texture combinations that are unnecessary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
-This module can be used both on 2D and volumetric images.
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -92,9 +98,8 @@ References
 
 -  Haralick RM, Shanmugam K, Dinstein I. (1973), “Textural Features for
    Image Classification” *IEEE Transaction on Systems Man, Cybernetics*,
-   SMC-3(6):610-621. `(link)`_
+   SMC-3(6):610-621. `(link) <http://dx.doi.org/10.1109/TSMC.1973.4309314>`__
 
-.. _(link): http://dx.doi.org/10.1109/TSMC.1973.4309314
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 """
 

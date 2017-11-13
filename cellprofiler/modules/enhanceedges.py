@@ -14,6 +14,15 @@ an **Identify** module or thresholded using the **Threshold**
 module to produce a binary (black/white) mask of edges. The Canny
 algorithm produces a binary (black/white) mask image consisting of the
 edge pixels.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 """
 
 import numpy as np
@@ -175,7 +184,7 @@ values below this threshold as not being edges.
             self.wants_automatic_low_threshold,
             self.low_threshold
         ]
-    
+
     def visible_settings(self):
         settings = [self.image_name, self.output_image_name]
         settings += [self.method]

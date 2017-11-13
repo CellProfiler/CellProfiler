@@ -19,8 +19,27 @@ Warning: illumination correction is a challenge to do properly;
 please see the `examples`_ and `tutorials`_ pages on the CellProfiler
 website for further advice.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
 See also **CorrectIlluminationApply**, **Smooth**, and
 **EnhanceOrSuppressFeatures**.
+
+References
+^^^^^^^^^^
+
+-  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation
+   of intensity nonuniformities in 2D and 3D microscope images of fluorescence
+   stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
+   (SCIA), pp. 264-271
 
 .. _examples: http://www.cellprofiler.org/examples.html
 .. _tutorials: http://cellprofiler.org/tutorials.html
@@ -258,7 +277,7 @@ time-consuming process, but some methods are faster than others.
    view), this method will produce an image with a bright central region
    and dimmer edges. But, in some cases the peak/trough of the
    polynomial may actually occur outside of the image itself.
--  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:* 
+-  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:*
    We typically recommend
    *%(SM_MEDIAN_FILTER)s* vs. *%(SM_GAUSSIAN_FILTER)s* because the
    median is less sensitive to outliers, although the results are also
@@ -280,7 +299,9 @@ time-consuming process, but some methods are faster than others.
    pixels from the calculation. It operates iteratively, classifying
    pixels as background, computing a best fit spline to this background
    and then reclassifying pixels as background until the spline
-   converges on its final value.
+   converges on its final value. This method is best for backgrounds that
+   are highly variable and irregular. Note that the computation time can
+   be significant, especially with a large number of control points.
 -  *%(SM_CONVEX_HULL)s:* This method can be used on an image whose objects are
    darker than their background and whose illumination intensity
    decreases monotonically from the brightest point. It proceeds as follows:
@@ -294,6 +315,11 @@ time-consuming process, but some methods are faster than others.
       -  Find the convex hull that encloses those pixels
       -  Set the intensity of the output image within the convex hull to
          the current intensity
+
+   The *%(SM_CONVEX_HULL)s* method is useful for calculating illumination correction
+   images in empty brightfield images. It is a good option if the image contains a whole well.
+   The edges of the well will be preserved, where there is a sharp transition in
+   intensity, because there is no smoothing involved with this method.
 
 **References**
 -  J Lindblad and E Bengtsson (2001) “A comparison of methods for estimation

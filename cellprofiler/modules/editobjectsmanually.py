@@ -28,8 +28,6 @@ the ‘?’ button. The pipeline pauses once per processed image when it
 reaches this module. You must press the *Done* button to accept the
 selected objects and continue the pipeline.
 
-{HELP_ON_SAVING_OBJECTS}
-
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -41,6 +39,9 @@ Measurements made by this module
 
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the edited objects.
+
+See also
+^^^^^^^^
 
 See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 **ConvertToImage**.

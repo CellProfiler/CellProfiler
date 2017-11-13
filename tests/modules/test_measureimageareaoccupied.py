@@ -48,7 +48,7 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), None)
+        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), 0.0)
         self.assertEqual(m.get_current_measurement("Image", mn("TotalArea")), 100)
 
         columns = module.get_measurement_columns(workspace.pipeline)
@@ -116,8 +116,8 @@ class TestMeasureImageArea(unittest.TestCase):
         labels[:2, :2, :2] = 1
         labels[3:, 8:, 8:] = 2
 
-        expected_area = [8, 8]
-        expected_perimeter = [8, 8]
+        expected_area = 16
+        expected_perimeter = 16
         expected_total_area = 500
 
         workspace = self.make_workspace(labels)

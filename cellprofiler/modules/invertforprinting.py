@@ -15,6 +15,15 @@ channels of a color image) or on an image that is already a color image.
 The module can produce either three grayscale images or one color image
 as output. If you want to invert the grayscale intensities of an image,
 use **ImageMath**.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
 """
 
 import numpy as np

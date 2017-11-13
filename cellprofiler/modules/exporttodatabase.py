@@ -53,7 +53,8 @@ image filenames or loaded “Plate” and “Well” metadata via the
 a “Per\_Well” table, which aggregates object measurements across wells.
 This option will output a SQL file (regardless of whether you choose to
 write directly to the database) that can be used to create the Per\_Well
-table.
+table. **Note** that the “Per\_Well” mean/median/stdev values are only usable
+for database type MySQL (and CSV/MySQL), not SQLite.
 
 At the secure shell where you normally log in to MySQL, type the
 following, replacing the italics with references to your database and
@@ -68,6 +69,17 @@ script to upload to the database.
 
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
 
 See also **ExportToSpreadsheet**.
 """
@@ -797,6 +809,8 @@ WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);`` """ % globals())
 
         self.wants_agg_mean_well = cps.Binary(
                 "Calculate the per-well mean values of object measurements?", False, doc='''\
+*(Used only if %(DB_MYSQL)s or %(DB_MYSQL_CSV)s are selected as database type)*
+
 Select "*%(YES)s*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
@@ -818,6 +832,8 @@ create the Per\_Well table, regardless of the option chosen above.
 
         self.wants_agg_median_well = cps.Binary(
                 "Calculate the per-well median values of object measurements?", False, doc='''\
+*(Used only if %(DB_MYSQL)s or %(DB_MYSQL_CSV)s are selected as database type)*
+
 Select "*%(YES)s*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
@@ -840,6 +856,8 @@ create the Per\_Well table, regardless of the option chosen above.
 
         self.wants_agg_std_dev_well = cps.Binary(
                 "Calculate the per-well standard deviation values of object measurements?", False, doc='''\
+*(Used only if %(DB_MYSQL)s or %(DB_MYSQL_CSV)s are selected as database type)*
+
 Select "*%(YES)s*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the

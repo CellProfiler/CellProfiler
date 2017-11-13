@@ -40,7 +40,18 @@ analysis pipeline.
 image Z-slices across image cycles; it will not work on images that
 have been loaded as 3D volumes in **NamesAndTypes** so be sure *Process
 as 3D* is set to *No* in that module. For more information on loading image stacks and movies,
-see *Help > Creating a Project > Loading Image Stacks and Movies*. 
+see *Help > Creating a Project > Loading Image Stacks and Movies*.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
 
 See also the help for the **Input** modules.
 """
@@ -119,7 +130,8 @@ The final projection image can be created by the following methods:
    **MaskImage** or **MaskObjects** in another pipeline to mask all
    images or objects in the group similarly.
 
-**References**
+References
+^^^^^^^^^^
 
 -  Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al.
    (2009) “Bright field microscopy as an alternative to whole cell

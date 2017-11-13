@@ -9,8 +9,6 @@ an image.
 
 This module allows you to take previously identified objects and convert
 them into an image according to a colormap you select.
-
-*Note on saving images:* The image can be saved with the **SaveImages** module.
 """
 
 import centrosome.cpmorphology

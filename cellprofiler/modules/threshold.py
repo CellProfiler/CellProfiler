@@ -8,6 +8,14 @@ Threshold
 can be pre-selected or calculated automatically using one of many
 methods. After the threshold value has been determined, the **Threshold** module will
 set pixel intensities below the value to zero (black) and above the value to one (white).
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 """
 
 import centrosome.threshold

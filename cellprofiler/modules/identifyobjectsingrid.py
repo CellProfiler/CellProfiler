@@ -34,6 +34,14 @@ from a previous successful image cycle.
 
 {HELP_ON_SAVING_OBJECTS}
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -47,6 +55,9 @@ Measurements made by this module
    of mass of the identified objects.
 -  *Number:* The numeric label assigned to each identified object
    according to the arrangement order you specified.
+
+See also
+^^^^^^^^
 
 See also **DefineGrid**.
 """.format(**{

@@ -30,11 +30,6 @@ The user interface has several mouse tools:
 -  *Zoom out:* Reverses the effect of the last zoom-in.
 -  *Erase:* Erases an object if you click on it.
 
-{HELP_ON_SAVING_OBJECTS}
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
-
 import numpy as np
 from centrosome.cpmorphology import draw_line
 from centrosome.cpmorphology import fill_labeled_holes

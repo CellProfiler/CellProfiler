@@ -13,7 +13,13 @@ Granularity is measured as described by Ilya Ravkin (references below).
 The size of the starting structure element as well as the range of the
 spectrum is given as input.
 
-This module supports 2D and volumetric images.
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

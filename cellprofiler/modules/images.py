@@ -19,7 +19,7 @@ from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
 from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
     TECH_NOTE_ICON
-    
+
 __doc__ = """\
 Images
 ======
@@ -32,6 +32,14 @@ accessible with a URL. You can also provide rules to specify only those
 files that you want analyzed out of a larger collection (for example,
 from a folder containing both images for analysis and non-image files
 that should be disregarded).
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
 
 What is a “digital image”?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -82,7 +90,7 @@ options to modify the file list:
    list. Note that this does not remove the file/folder from the hard
    drive.
 -  *Remove Unavailable Files:* Refresh the list by checking for
-   existence of file. Note that this does not remove the file from the
+   existence of file. Note that this does not remove the files from the
    hard drive.
 -  *Browse For Images:* Use a dialog box to select an image file (though
    drag-and-drop is recommended).
@@ -93,7 +101,8 @@ options to modify the file list:
 -  *Collapse All Folders:* Collapse all folder trees shown in the file
    list panel.
 -  *Clear File List:* Remove all files/folders in the file list panel.
-   You will be prompted for confirmation beforehand.
+   You will be prompted for confirmation beforehand. Note that this does
+   not remove the files from the hard drive.
 
 How do I configure the module?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -141,7 +150,7 @@ particular wavelength.
                 "IMG_PANEL_FILLED": _help.__image_resource('Images_FilelistPanel_Filled.png')
             })
 
-    
+
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
 FILTER_CHOICE_CUSTOM = "Custom"

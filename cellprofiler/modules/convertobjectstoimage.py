@@ -11,12 +11,12 @@ This module allows you to take previously identified objects and convert
 them into an image according to a colormap you select, which can then be saved 
 with the **SaveImages** module.
 
-|		
-		
-============ ============ ===============		
-Supports 2D? Supports 3D? Respects masks?		
-============ ============ ===============		
-YES          YES          YES		
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
 ============ ============ ===============
 """
 

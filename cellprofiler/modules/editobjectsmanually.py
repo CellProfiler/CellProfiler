@@ -29,7 +29,7 @@ reaches this module. You must press the *Done* button to accept the
 selected objects and continue the pipeline.
 
 |
-		
+
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
@@ -53,9 +53,7 @@ See also
 
 See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 **ConvertToImage**.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+"""
 
 import logging
 

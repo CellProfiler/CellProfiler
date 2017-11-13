@@ -16,6 +16,7 @@ YES          YES          NO
 
 import numpy
 import skimage.morphology
+import scipy.ndimage.morphology
 
 import cellprofiler.image
 import cellprofiler.module
@@ -67,6 +68,16 @@ def remove_objects_and_fill_holes(image, diameter):
     else:
         factor = (4.0 / 3.0) * (radius ** 3)
 
-    size = numpy.pi * factor
+    min_obj_size = numpy.pi * factor
 
-    return skimage.morphology.remove_small_holes(image, size)
+    removed = skimage.morphology.remove_small_objects(image, min_obj_size)
+
+    # Iterate through each label as a mask, fill holes on the mask, and reapply to original image
+    for n in numpy.unique(removed):
+        if n == 0:
+            continue
+
+        filled_mask = scipy.ndimage.morphology.binary_fill_holes(removed == n)
+        removed[filled_mask] = n
+
+    return removed

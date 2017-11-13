@@ -1,8 +1,18 @@
 # coding=utf-8
 
 """
-Remove labeled holes
-====================
+RemoveLabeledHoles
+==================
+
+**RemoveLabeledHoles** fills holes smaller than the specified diameter.
+
+This module works best on integer-labeled images (i.e., the output of **ConvertObjectsToImage**
+when the color format is *uint16*).
+
+The output of this module is a labeled image of the same data type as the input.
+**RemoveLabeledHoles** can be run *after* any labeling or segmentation module (e.g.,
+**ConvertImageToObjects** or **Watershet**). Labels are preserved and, where possible, holes
+entirely within the boundary of labeled objects are filled with the surrounding object number.
 
 |
 
@@ -35,7 +45,8 @@ class RemoveLabeledHoles(cellprofiler.module.ImageProcessing):
 
         self.size = cellprofiler.setting.Float(
             text="Size",
-            value=1.0
+            value=1.0,
+            doc="Holes smaller than this diameter will be filled."
         )
 
     def settings(self):

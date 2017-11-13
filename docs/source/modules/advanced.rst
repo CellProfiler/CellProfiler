@@ -56,6 +56,10 @@ Advanced modules include computer vision algorithms.
 
 `(Jump to top)`_
 
+.. automodule:: cellprofiler.modules.removelabeledholes
+
+`(Jump to top)`_
+
 .. automodule:: cellprofiler.modules.removeobjectsbysize
 
 `(Jump to top)`_

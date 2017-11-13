@@ -1,5 +1,9 @@
 # coding:utf-8
 
+import webbrowser
+
+import requests
+
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
@@ -18,11 +22,10 @@ class Menu(cellprofiler.gui.menu.Menu):
             event_fn=lambda _: self.frame.show_welcome_screen(True)
         )
 
-        # TODO: Requires updated online help manual
-        # self.append(
-        #     "Online Manual",
-        #     event_fn=self.__on_help_online_manual
-        # )
+        self.append(
+            "Online Manual",
+            event_fn=self.__on_help_online_manual
+        )
 
         self.AppendSeparator()
 
@@ -182,17 +185,19 @@ class Menu(cellprofiler.gui.menu.Menu):
 
     @staticmethod
     def __on_help_developers_guide():
-        import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler/wiki")
 
-    # @staticmethod
-    # def __on_help_online_manual(event):
-    #     import webbrowser
-    #     webbrowser.open("http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html")
+    @staticmethod
+    def __on_help_online_manual(event):
+        url = "http://cellprofiler.readthedocs.io/en/v{}/".format(cellprofiler.__version__)
+
+        if requests.get(url).ok:
+            webbrowser.open(url)
+        else:
+            webbrowser.open("http://cellprofiler.readthedocs.io/en/latest")
 
     @staticmethod
     def __on_help_source_code():
-        import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_search_help(self):
@@ -218,7 +223,7 @@ class Menu(cellprofiler.gui.menu.Menu):
             "Accessing Images From OMERO",
             contents=cellprofiler.gui.help.content.read_content("other_omero.rst")
         )
-        
+
         other_menu.append(
             "Using Plugins",
             contents=cellprofiler.gui.help.content.read_content("other_plugins.rst")

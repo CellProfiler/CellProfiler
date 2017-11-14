@@ -38,6 +38,8 @@ If you want to include child objects that lie outside but still near
 parent objects, you might want to expand the parent objects using
 **ExpandOrShrink** or **IdentifySecondaryObjects**.
 
+|
+
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
@@ -64,8 +66,8 @@ Measurements made by this module
 
 -  *Parent:* The label number of the parent object, as assigned by an
    **Identify** or **Watershed** module.
--  *Distances:* The distance of each child object to its respective
-   parent.
+-  *Distances:* The distance of each child object to its respective parent.
+"""
 
 D_NONE = "None"
 D_CENTROID = "Centroid"
@@ -95,7 +97,6 @@ FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
 
 FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
-
 
 class RelateObjects(cellprofiler.module.ObjectProcessing):
     module_name = "RelateObjects"

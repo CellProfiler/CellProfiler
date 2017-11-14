@@ -15,15 +15,6 @@ import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
 import threshold
-
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import _help
 
 __doc__ = """\

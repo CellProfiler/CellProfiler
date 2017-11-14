@@ -58,6 +58,21 @@ For an example pipeline using TrackObjects, see the CellProfiler
 `Examples <http://cellprofiler.org/examples/#Tracking>`__
 webpage.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**, **Groups**.
+
+{HELP_ON_SAVING_OBJECTS}
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

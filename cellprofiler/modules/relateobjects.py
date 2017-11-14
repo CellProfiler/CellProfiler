@@ -1,13 +1,19 @@
 # coding=utf-8
 
 import numpy as np
-
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
+import re
+import numpy
+import scipy.ndimage
+import skimage.segmentation
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
 import _help
 
 __doc__ = """\
@@ -60,16 +66,6 @@ Measurements made by this module
    **Identify** or **Watershed** module.
 -  *Distances:* The distance of each child object to its respective
    parent.
-
-import re
-
-import numpy
-import scipy.ndimage
-import skimage.segmentation
-
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.setting
 
 D_NONE = "None"
 D_CENTROID = "Centroid"

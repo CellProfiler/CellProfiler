@@ -30,6 +30,15 @@ The user interface has several mouse tools:
 -  *Zoom out:* Reverses the effect of the last zoom-in.
 -  *Erase:* Erases an object if you click on it.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+"""
+
 import numpy as np
 from centrosome.cpmorphology import draw_line
 from centrosome.cpmorphology import fill_labeled_holes
@@ -45,7 +54,6 @@ import identify as I
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
 TOOL_ERASE = "Erase"
-
 
 class IdentifyObjectsManually(I.Identify):
     category = "Object Processing"

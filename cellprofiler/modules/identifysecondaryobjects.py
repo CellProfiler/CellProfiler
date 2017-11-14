@@ -13,15 +13,6 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import _help
 
 __doc__ = """\
@@ -132,6 +123,8 @@ modules might be needed):
 -  *Lower right:* A table showing some of the settings you chose,
    as well as those calculated by the module in order to produce
    the objects shown.
+
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

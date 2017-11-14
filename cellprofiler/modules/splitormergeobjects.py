@@ -1,12 +1,21 @@
 # coding=utf-8
 
+import centrosome.cpmorphology as morph
 import numpy as np
+import scipy.ndimage as scind
+from centrosome.filter import stretch
+from scipy.sparse import coo_matrix
 
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
+from cellprofiler.measurement import C_PARENT, C_CHILDREN, FF_CHILDREN_COUNT, FF_PARENT
+from cellprofiler.modules.identify import add_object_count_measurements
+from cellprofiler.modules.identify import add_object_location_measurements
+from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.setting import YES, NO
 import _help
 
@@ -81,24 +90,6 @@ reassignment.
 """.format(**{
     "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
-
-import centrosome.cpmorphology as morph
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.filter import stretch
-from scipy.sparse import coo_matrix
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.measurement import C_PARENT, C_CHILDREN, FF_CHILDREN_COUNT, FF_PARENT
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.setting import YES, NO
 
 OPTION_MERGE = "Merge"
 OPTION_SPLIT = "Split"

@@ -32,6 +32,14 @@ than in this module. There are also several related modules in the
 
 {HELP_ON_SAVING_OBJECTS}
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

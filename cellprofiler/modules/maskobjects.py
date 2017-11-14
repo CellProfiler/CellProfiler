@@ -1,12 +1,18 @@
 # coding=utf-8
 
 import numpy as np
+import cellprofiler.measurement
+import scipy.ndimage as scind
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.outline import outline
 
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
+import identify as I
 from cellprofiler.setting import YES, NO
 import _help
 
@@ -30,6 +36,14 @@ object that is outside of the region, remove the whole object if it is
 partially or fully outside of the region, or retain the whole object
 unless it is fully outside of the region.
 
+|
+
+============ ============ =============== 
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -46,21 +60,6 @@ Measurements made by this module
 """.format(**{
     "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
-
-import cellprofiler.measurement
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.outline import outline
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import identify as I
-from cellprofiler.setting import YES, NO
 
 MC_OBJECTS = "Objects"
 MC_IMAGE = "Image"

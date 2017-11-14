@@ -84,7 +84,6 @@ MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Nam
 # MENU HELP CONTENT
 #
 ####################
-
 FIGURE_HELP = (
     ("Using The Display Window Menu Bar", read_content("display_menu_bar.rst")),
     ("Using The Interactive Navigation Toolbar", read_content("display_interactive_navigation.rst")),

@@ -11,18 +11,31 @@ This module allows you to assign a flag if an image meets certain
 measurement criteria that you specify (for example, if the image fails a
 quality control measurement). The value of the flag is 1 if the image
 meets the selected criteria (for example, if it fails QC), and 0 if it
-does not meet the criteria (if it passes QC). The flag can be used in
+does not meet the criteria (if it passes QC).
+
+The flag can be used in
 post-processing to filter out images you do not want to analyze, e.g.,
 in CellProfiler Analyst. In addition, you can use
 **ExportToSpreadsheet** to generate a file that includes the flag as a
 metadata measurement associated with the images. The **Metadata** module
 can then use this flag to put images that pass QC into one group and
-images that fail into another. A flag can be based on one or more
+images that fail into another.
+
+A flag can be based on one or more
 measurements. If you create a flag based on more than one measurement,
 you can choose between setting the flag if all measurements are outside
 the bounds or if one of the measurements is outside of the bounds. This
 module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
 """
 
 import logging
@@ -36,7 +49,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
-from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)
@@ -88,9 +101,9 @@ Name a measurement category by which to categorize the flag. The
 information about images (referred to as *metadata*).
 
 The flag is stored as a per-image measurement whose name is a
-combination of the flag’s category and feature name, underscore
-delimited. For instance, if the measurement category is *Metadata* and
-the feature name is *QCFlag*, then the default measurement name would be
+combination of the flag’s category and the flag name that you choose, separated by
+underscores. For instance, if the measurement category is *Metadata* and
+the flag name is *QCFlag*, then the default measurement name would be
 *Metadata_QCFlag*.
 '''))
 
@@ -98,9 +111,9 @@ the feature name is *QCFlag*, then the default measurement name would be
                      cps.Text(
                              "Name the flag", "QCFlag", doc='''\
 The flag is stored as a per-image measurement whose name is a
-combination of the flag’s category and feature name, separated by
+combination of the flag’s category and the flag name that you choose, separated by
 underscores. For instance, if the measurement category is *Metadata* and
-the feature name is *QCFlag*, then the default measurement name would be
+the flag name is *QCFlag*, then the default measurement name would be
 *Metadata_QCFlag*.
 '''))
 
@@ -126,7 +139,7 @@ an image set is flagged:
                              "Skip image set if flagged?", False, doc="""\
 Select *%(YES)s* to skip the remainder of the pipeline for image sets
 that are flagged. CellProfiler will not run subsequent modules in the
-pipeline on the images in any image set that is flagged. Select *%(NO)s*
+pipeline on the images for any image set that is flagged. Select *%(NO)s*
 for CellProfiler to continue to process the pipeline regardless of
 flagging.
 
@@ -140,7 +153,7 @@ measures image quality and flags inappropriate images before it runs
         group.append("add_measurement_button",
                      cps.DoSomething("",
                                      "Add another measurement",
-                                     self.add_measurement, group, doc="""Add another measurement as a criteria"""))
+                                     self.add_measurement, group, doc="""Add another measurement as a criteria."""))
         self.add_measurement(group, False if not can_delete else True)
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this flag", self.flags, group))
@@ -187,7 +200,7 @@ Select the objects whose measurements you want to use for flagging.
                              "Rules file location", doc="""\
 *(Used only when flagging using "%(S_RULES)s")*
 
-Select the location of the rules file that will be used for filtering.
+Select the location of the rules file that will be used for flagging images.
 %(IO_FOLDER_CHOICE_HELP_TEXT)s
 """ % globals()))
 
@@ -206,7 +219,8 @@ Select the location of the rules file that will be used for filtering.
                              set_directory_fn=set_directory_fn, doc="""\
 *(Used only when flagging using "%(S_RULES)s")*
 
-The name of the rules file. This file should be a plain text file
+The name of the rules file, most commonly from CellProfiler Analyst's
+Classifier. This file should be a plain text file
 containing the complete set of rules.
 
 Each line of this file should be a rule naming a measurement to be made
@@ -245,7 +259,7 @@ whose positive score is higher than the negative score.
 *(Used only when flagging using "%(S_RULES)s")*
 
 Select which classes to flag when filtering. The CellProfiler Analyst
-classifier user interface lists the names of the classes in order. By
+Classifier user interface lists the names of the classes in order. By
 default, these are the positive (class 1) and negative (class 2)
 classes. **FlagImage** uses the first class from CellProfiler Analyst
 if you choose “1”, etc.
@@ -260,7 +274,7 @@ Please note the following:
         group.rules_class.get_choices = get_rules_class_choices
 
         group.append("measurement",
-                     cps.Measurement("Which measurement?", object_fn, doc="""Choose the measurement to be used as criteria"""))
+                     cps.Measurement("Which measurement?", object_fn, doc="""Choose the measurement to be used as criteria."""))
 
         group.append("wants_minimum",
                      cps.Binary(
@@ -270,7 +284,7 @@ cutoff. If the measurement evaluates to Not-A-Number (NaN), then the
 image is not flagged.
 ''' % globals()))
 
-        group.append("minimum_value", cps.Float("Minimum value", 0, doc="""Set a value as a lower limit"""))
+        group.append("minimum_value", cps.Float("Minimum value", 0, doc="""Set a value as a lower limit."""))
 
         group.append("wants_maximum",
                      cps.Binary(
@@ -280,7 +294,7 @@ cutoff. If the measurement evaluates to Not-A-Number (NaN), then the
 image is not flagged.
 ''' % globals()))
 
-        group.append("maximum_value", cps.Float("Maximum value", 1, doc="""Set a value as an upper limit"""))
+        group.append("maximum_value", cps.Float("Maximum value", 1, doc="""Set a value as an upper limit."""))
 
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))
@@ -634,7 +648,7 @@ image is not flagged.
                     [int(x) - 1 for x in ms.rules_class.get_selections()])
             #
             # There should only be one in the vector, but if not, take
-            # a majority vote (e.g. are there more class 1 objects than
+            # a majority vote (e.g., are there more class 1 objects than
             # class 2?)
             #
             is_not_nan = np.any(~ np.isnan(scores), 1)

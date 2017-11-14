@@ -4,10 +4,23 @@
 SaveCroppedObjects
 ==================
 
-**SaveCroppedObjects** crops objects into masks. Each object is saved as a mask
-where the object is labeled as “255” and the background is labeled as “0.”
-The dimensions of the mask are the same as the parent image. The filename
-for a mask is formatted like “{object name}_{label index}_{timestamp}.tiff”
+**SaveCroppedObjects** exports each object as a binary image. Pixels corresponding to an exported object are assigned
+the value 255. All other pixels (i.e., background pixels and pixels corresponding to other objects) are assigned the
+value 0. The dimensions of each image are the same as the original image.
+
+The filename for an exported image is formatted as "{object name}_{label index}_{timestamp}.tiff", where *object name*
+is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting
+from 1), and *timestamp* is the time at which the image was saved (this prevents accidentally overwriting a previously
+exported image).
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 """
 
 import numpy
@@ -34,7 +47,8 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
         self.directory = cellprofiler.setting.DirectoryPath(
             "Directory",
-            doc="Enter the directory where object crops are saved."
+            doc="Enter the directory where object crops are saved.",
+            value=cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
         )
 
     def display(self, workspace, figure):
@@ -44,6 +58,11 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.objects_name.value)
+
+        directory = self.directory.get_absolute_path(workspace.measurements)
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         labels = objects.segmented
 
@@ -58,7 +77,7 @@ class SaveCroppedObjects(cellprofiler.module.Module):
             mask = labels == label
 
             filename = os.path.join(
-                self.directory.get_absolute_path(),
+                directory,
                 "{}_{:04d}_{}.tiff".format(self.objects_name.value, label, int(time.time()))
             )
 

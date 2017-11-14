@@ -13,6 +13,14 @@ imaged for the same sample. Images can be tiled either across cycles
 (multiple fields of view, for example) or within a cycle (multiple
 channels of the same field of view, for example).
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
 Tiling images to create a montage with this module generates an image
 that is roughly the size of all the images’ sizes added together. For
 large numbers of images, this may cause memory errors, which might be
@@ -21,30 +29,36 @@ avoided by the following suggestions:
 -  Resize the images to a fraction of their original size, using the
    **Resize** module prior to this module in the pipeline.
 -  Rescale the images to 8-bit using the **RescaleIntensity** module,
-   which diminished image quality by decreasing the number of graylevels
+   which diminishes image quality by decreasing the number of graylevels
    in the image (that is, bit depth) but also decreases the size of the
    image.
--  Place this module prior to the **Tile** module (and maybe also
-   afterwards) and set it to retain only those images that are needed
-   for downstream modules.
 
 Please also note that this module does not perform *image stitching*
 (i.e., intelligent adjustment of the alignment between adjacent images).
 For image stitching, you may find the following list of software
 packages useful:
 
--  `Photomerge Feature in Photoshop CS`_
+-  `Photomerge Feature in Photoshop`_
 -  `PTGui`_
 -  `Autostitch`_
 -  `ImageJ with the MosaicJ plugin`_
 
-Other packages are referenced `here`_
+Other packages are referenced `here`_.
 
-.. _Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm
+.. _Photomerge Feature in Photoshop: https://helpx.adobe.com/photoshop/using/create-panoramic-images-photomerge.html
 .. _PTGui: http://www.ptgui.com/
 .. _Autostitch: http://matthewalunbrown.com/autostitch/autostitch.html
 .. _ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/
 .. _here: http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm
+
+|
+
+============ ============
+Supports 2D? Supports 3D?
+============ ============
+YES          NO
+============ ============
+
 """
 
 import logging
@@ -95,7 +109,7 @@ class Tile(cpm.Module):
         self.input_image = cps.ImageNameSubscriber(
                 "Select an input image",
                 cps.NONE, doc="""Select the image to be tiled. Additional images within the cycle can be
-added later by choosing the "*%(T_ACROSS_CYCLES)s*"option below.
+added later by choosing the "*%(T_ACROSS_CYCLES)s*" option below.
 """ % globals())
 
         self.output_image = cps.ImageNameProvider(
@@ -110,7 +124,7 @@ added later by choosing the "*%(T_ACROSS_CYCLES)s*"option below.
                 "Tile assembly method",
                 T_ALL, doc='''\
 This setting controls the method by which the final tiled image is
-asembled:
+assembled:
 
 -  *%(T_WITHIN_CYCLES)s:* If you have loaded more than one image for
    each cycle using modules upstream in the pipeline, the images can be
@@ -162,8 +176,8 @@ left-hand corner for a typical multi-well plate format where the first image is 
 ''')
 
         self.tile_style = cps.Choice(
-                "Direction to begin tiling", S_ALL, doc='''This setting specifies the order that the images are to be arranged. If
-your images are named A01, A02, etc, enter *%(S_ROW)s*".
+                "Direction to begin tiling", S_ALL, doc='''This setting specifies the order that the images are to be arranged. For example, if
+your images are named A01, A02, etc, enter "*%(S_ROW)s*".
 ''' % globals())
 
         self.meander = cps.Binary(

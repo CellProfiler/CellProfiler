@@ -18,6 +18,14 @@ the ‘?’ button. The pipeline pauses once per processed image when it
 reaches this module. You must press the *Done* button to accept the
 selected objects and continue the pipeline.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -29,6 +37,9 @@ Measurements made by this module
 
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the edited objects.
+
+See also
+^^^^^^^^
 
 See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 **ConvertToImage**.
@@ -88,7 +99,7 @@ class EditObjectsManually(I.Identify):
                 "Select the objects to be edited", cps.NONE, doc="""\
 Choose a set of previously identified objects
 for editing, such as those produced by one of the
-**Identify** modules (e.g. "*IdentifyPrimaryObjects*", "*IdentifySecondaryObjects*" etc.).""")
+**Identify** modules (e.g., "*IdentifyPrimaryObjects*", "*IdentifySecondaryObjects*" etc.).""")
 
         self.filtered_objects = cps.ObjectNameProvider(
                 "Name the edited objects", "EditedObjects", doc="""\

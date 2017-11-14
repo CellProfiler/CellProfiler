@@ -10,8 +10,13 @@ as in **GaussianFilter**, multiple neighborhoods are pooled together. The
 neighborhood pool is determined by scanning the image for regions similar to
 the area around the central pixel using a correlation metric and a cutoff value.
 
-Single-channel images can be two-or-three-dimensional and multichannel
-images can be two-dimensional.
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
 """
 
 import cellprofiler.image

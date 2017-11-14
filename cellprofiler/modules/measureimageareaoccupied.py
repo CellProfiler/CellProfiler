@@ -19,6 +19,20 @@ threshold if you precede it with thresholding performed by
 **Threshold**, and then select the binary image output by
 **Threshold** to be measured by this module.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
+**IdentifyTertiaryObjects**.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -26,10 +40,9 @@ Measurements made by this module
    binary image.
 -  *Perimeter:* The total length of the perimeter of the input
    objects/binary image.
--  *TotalImageArea:* The total pixel area of the image.
+-  *TotalImageArea:* The total pixel area of the image that was
+   subjected to measurement, excluding masked regions.
 
-See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
-**IdentifyTertiaryObjects**
 """
 
 import numpy
@@ -63,7 +76,7 @@ OBJECT_SETTING_COUNT = 3
 class MeasureImageAreaOccupied(cellprofiler.module.Module):
     module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
         self.operands = []
@@ -118,34 +131,6 @@ Select the previously identified objects you would like to measure.
                     })
                 )
 
-                self.__should_save_image = cellprofiler.setting.Binary(
-                    "Retain a binary image of the object regions?",
-                    False,
-                    doc="""\
-*(Used only if ‘{O_OBJECTS}’ are to be measured)*
-
-Select *{YES}* if you would like to use a binary image later in the
-pipeline, for example in **SaveImages**. The image will display the
-object area that you have measured as the foreground in white and the
-background in black.
-                    """.format(**{
-                        "O_OBJECTS": O_OBJECTS,
-                        "YES": cellprofiler.setting.YES
-                    })
-                )
-
-                self.__image_name = cellprofiler.setting.ImageNameProvider(
-                    "Name the output binary image",
-                    "Stain",
-                    doc="""\
-*(Used only if the binary image of the objects is to be retained for
-later use in the pipeline)*
-
-Specify a name that will allow the binary image of the objects to be
-selected later in the pipeline.
-                    """
-                )
-
                 self.__binary_name = cellprofiler.setting.ImageNameSubscriber(
                     "Select a binary image to measure",
                     cellprofiler.setting.NONE,
@@ -170,14 +155,6 @@ like to measure the area occupied by the foreground in the image.
             @property
             def operand_objects(self):
                 return self.__operand_objects
-
-            @property
-            def should_save_image(self):
-                return self.__should_save_image
-
-            @property
-            def image_name(self):
-                return self.__image_name
 
             @property
             def binary_name(self):
@@ -230,8 +207,6 @@ like to measure the area occupied by the foreground in the image.
             result += [
                 op.operand_choice,
                 op.operand_objects,
-                op.should_save_image,
-                op.image_name,
                 op.binary_name
             ]
 
@@ -257,10 +232,7 @@ like to measure the area occupied by the foreground in the image.
 
             result += [op.operand_choice]
 
-            result += [op.operand_objects, op.should_save_image] if op.operand_choice == O_OBJECTS else [op.binary_name]
-
-            if op.should_save_image:
-                result.append(op.image_name)
+            result += [op.operand_objects] if op.operand_choice == O_OBJECTS else [op.binary_name]
 
         result.append(self.add_operand_button)
 
@@ -311,7 +283,7 @@ like to measure the area occupied by the foreground in the image.
 
         region_properties = skimage.measure.regionprops(label_image)
 
-        area_occupied = [region["area"] for region in region_properties]
+        area_occupied = numpy.sum([region["area"] for region in region_properties])
 
         if objects.volumetric:
             spacing = None
@@ -326,7 +298,7 @@ like to measure the area occupied by the foreground in the image.
 
             perimeter = surface_area(label_image, spacing=spacing, index=labels)
         else:
-            perimeter = [region["perimeter"] for region in region_properties]
+            perimeter = numpy.sum([numpy.round(region["perimeter"]) for region in region_properties])
 
         m = workspace.measurements
 
@@ -344,13 +316,6 @@ like to measure the area occupied by the foreground in the image.
             F_TOTAL_AREA % operand.operand_objects.value,
             numpy.array([total_area], dtype=float)
         )
-
-        if operand.should_save_image.value:
-            binary_pixels = label_image > 0
-
-            output_image = cellprofiler.image.Image(binary_pixels, parent_image=objects.parent_image)
-
-            workspace.image_set.add(operand.image_name.value, output_image)
 
         return [[
             operand.operand_objects.value,
@@ -470,10 +435,26 @@ like to measure the area occupied by the foreground in the image.
 
             variable_revision_number = 3
 
+        if variable_revision_number == 3:
+            n_objects = int(setting_values[0])
+
+            operand_choices = setting_values[1::5][:n_objects]
+            operand_objects = setting_values[2::5][:n_objects]
+            binary_name = setting_values[5::5][:n_objects]
+
+            object_settings = sum(
+                [list(settings) for settings in zip(operand_choices, operand_objects, binary_name)],
+                []
+            )
+
+            setting_values = [setting_values[0]] + object_settings
+
+            variable_revision_number = 4
+
         return setting_values, variable_revision_number, from_matlab
 
     def volumetric(self):
-        True
+        return True
 
 
 def surface_area(label_image, spacing=None, index=None):
@@ -485,7 +466,7 @@ def surface_area(label_image, spacing=None, index=None):
 
         return skimage.measure.mesh_surface_area(verts, faces)
 
-    return [_label_surface_area(label_image, label, spacing) for label in index]
+    return numpy.sum([numpy.round(_label_surface_area(label_image, label, spacing)) for label in index])
 
 
 def _label_surface_area(label_image, label, spacing):

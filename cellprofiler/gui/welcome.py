@@ -35,7 +35,7 @@ CONFIGURE_IMAGES_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "CONFIGURE_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.CONFIGURE_IMAGES_HELP
+        cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
     )
 })
 
@@ -55,7 +55,7 @@ EXPORTING_RESULTS_HELP = u"""\
     <p>For larger assays, involving tens of thousands of images or more, a
     spreadsheet is usually insufficient to handle the massive amounts of data
     generated. A <i>database</i> is a better solution in this case, although
-    this requires more sophistication by the user; the <b>ExportToDatabase</b>
+    this requires more computational expertise; the <b>ExportToDatabase</b>
     module is to be used for this task. If this avenue is needed, it is best to
     consult with your information technology department.</p>
     <p>CellProfiler will not save images produce by analysis modules unless
@@ -63,7 +63,7 @@ EXPORTING_RESULTS_HELP = u"""\
     identified; this can is useful as a sanity check of the object
     identification results or for quality control purposes. The
     <b>SaveImages</b> module is used for saving images to a variety of output
-    formats, with the nomenclature specified by the user.</p>
+    formats; you can specify the nomenclature.</p>
     <p>For more information on these modules and how to configure them for best
     performance, please see the detailed help by selecting the module and
     clicking the <img src="{MODULE_HELP_BUTTON}"> button at the bottom
@@ -244,7 +244,7 @@ RUNNING_YOUR_PIPELINE_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "RUNNING_YOUR_PIPELINE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.RUNNING_YOUR_PIPELINE_HELP
+        cellprofiler.gui.help.content.read_content("pipelines_running.rst")
     )
 })
 
@@ -261,7 +261,7 @@ TEST_MODE_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "TEST_MODE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.TEST_MODE_HELP
+        cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
     )
 })
 
@@ -278,7 +278,7 @@ SELECTING_IMAGES_HELP = u"""\
 """.format(**{
     "GO_BACK": GO_BACK,
     "SELECTING_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.SELECTING_IMAGES_HELP
+        cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
     )
 })
 

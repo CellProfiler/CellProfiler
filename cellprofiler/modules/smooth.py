@@ -7,8 +7,21 @@ Smooth
 **Smooth** smooths (i.e., blurs) images.
 
 This module allows you to smooth (blur) images, which can be helpful to
-remove artifacts of a particular size. Note that smoothing can be a
-time-consuming process.
+remove small artifacts. Note that smoothing can be a time-consuming process.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also several related modules in the *Advanced* category (e.g.,
+**MedianFilter** and **GaussianFilter**).
 """
 
 import numpy as np
@@ -38,9 +51,9 @@ class Smooth(cpm.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber('Select the input image', cps.NONE, doc="""Select the image to be smoothed""")
+        self.image_name = cps.ImageNameSubscriber('Select the input image', cps.NONE, doc="""Select the image to be smoothed.""")
 
-        self.filtered_image_name = cps.ImageNameProvider('Name the output image', 'FilteredImage', doc="""Enter a name for the resulting image""")
+        self.filtered_image_name = cps.ImageNameProvider('Name the output image', 'FilteredImage', doc="""Enter a name for the resulting image.""")
 
         self.smoothing_method = cps.Choice(
                 'Select smoothing method',
@@ -50,7 +63,9 @@ This module smooths images using one of several filters. Fitting a
 polynomial is fastest but does not allow a very tight fit compared to
 the other methods:
 
--  *%(FIT_POLYNOMIAL)s:* This method treats the intensity of the image
+-  *%(FIT_POLYNOMIAL)s:* This method is fastest but does not allow
+   a very tight “fit” compared to the other methods. Thus, it will usually be less
+   accurate. The method treats the intensity of the image
    pixels as a polynomial function of the x and y position of each
    pixel. It fits the intensity to the polynomial, *A x* :sup:`2` *+ B
    y* :sup:`2` *+ C xy + D x + E y + F*. This will produce a smoothed
@@ -63,11 +78,11 @@ the other methods:
 -  *%(GAUSSIAN_FILTER)s:* This method convolves the image with a
    Gaussian whose full width at half maximum is the artifact diameter
    entered. Its effect is to blur and obscure features smaller than the
-   artifact diameter and spread bright or dim features larger than the
-   artifact diameter.
+   specified diameter and spread bright or dim features larger than the
+   specified diameter.
 -  *%(MEDIAN_FILTER)s:* This method finds the median pixel value within
-   the artifact diameter you specify. It removes bright or dim features
-   that are much smaller than the artifact diameter.
+   the diameter you specify. It removes bright or dim features
+   that are significantly smaller than the specified diameter.
 -  *%(SMOOTH_KEEPING_EDGES)s:* This method uses a bilateral filter
    which limits Gaussian smoothing across an edge while applying
    smoothing perpendicular to an edge. The effect is to respect edges in
@@ -82,6 +97,14 @@ the other methods:
    out-of-focus blur to an image.
 -  *%(SM_TO_AVERAGE)s:* Creates a flat, smooth image where every pixel
    of the image equals the average value of the original image.
+
+*Note, when deciding between %(MEDIAN_FILTER)s and %(GAUSSIAN_FILTER)s
+we typically recommend
+%(MEDIAN_FILTER)s over %(GAUSSIAN_FILTER)s because the
+median is less sensitive to outliers, although the results are also
+slightly less smooth and the fact that images are in the range of 0
+to 1 means that outliers typically will not dominate too strongly
+anyway.*
 """ % globals())
 
         self.wants_automatic_object_size = cps.Binary(

@@ -11,6 +11,14 @@ This module will convert the measurements to a comma-, tab-, or other
 character-delimited text format and save them to the hard drive in one
 or several files, as requested.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
 Using metadata tags for output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -24,7 +32,13 @@ measurements with a given “Treatment1” in separate directories. You can
 do this by specifying metadata tags for the folder name and file name:
 
 -  Choose "*Elsewhere…*" or "*Default Input/Output Folder sub-folder*" for
-   the output file location.
+   the output file location. Do note that regardless of your choice,
+   the Experiment.csv is saved to the Default Input/Output Folder and
+   *not* to individual subfolders. All other per-image and per-object
+   .csv files are saved to the appropriate subfolders.
+   See `Github issue #1110 <http://github.com/CellProfiler/CellProfiler/issues/1110>`__
+   for details.
+
 -  Insert the metadata tag of choice into the output path. You can
    insert a previously defined metadata tag by either using:
 
@@ -42,7 +56,7 @@ do this by specifying metadata tags for the folder name and file name:
 
    In this instance, you would select the metadata tag “Treatment1”
 -  Uncheck "*Export all measurements?*"
--  Uncheck "*Use the object name for the file name?*".
+-  Uncheck "*Use the object name for the file name?*"
 -  Using the same approach as above, select the metadata tag
    “Treatment2”, and complete the filename by appending the text “.csv”.
 
@@ -65,6 +79,9 @@ Measurements made by this module
 
 For details on the nomenclature used by CellProfiler for the exported
 measurements, see *Help > General Help > How Measurements Are Named*.
+See also
+^^^^^^^^
+
 See also **ExportToDatabase**.
 """
 
@@ -110,7 +127,7 @@ SETTING_OG_OFFSET_V9 = 15
 SETTING_OG_OFFSET_V10 = 17
 SETTING_OG_OFFSET_V11 = 18
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 18
+SETTING_OG_OFFSET = 17
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -153,14 +170,14 @@ NANS_AS_NANS = "NaN"
 class ExportToSpreadsheet(cpm.Module):
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing", "Data Tools"]
-    variable_revision_number = 11
+    variable_revision_number = 12
 
     def create_settings(self):
         self.delimiter = cps.CustomChoice(
                 "Select the column delimiter", DELIMITERS, doc="""\
 Select the delimiter to use, i.e., the character that separates columns in a file. The
 two default choices are tab and comma, but you can type in any single character delimiter
-you would prefer. Be sure that the delimiter you choose is not a character that is present
+you prefer. Be sure that the delimiter you choose is not a character that is present
 within your data (for example, in file names).""")
 
         self.directory = cps.DirectoryPath(
@@ -172,14 +189,7 @@ within your data (for example, in file names).""")
 This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
 %(IO_WITH_METADATA_HELP_TEXT)s
-
-%(USING_METADATA_TAGS_REF)s
-
-For instance, if you have a metadata tag named “Plate”, you can create
-a per-plate folder by selecting one of the subfolder options and then
-specifying the subfolder name as “\\g<Plate>”. The module will
-substitute the metadata values for the current image set for any
-metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.""" % globals())
+""" % globals())
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
         self.wants_prefix = cps.Binary(
@@ -190,8 +200,8 @@ This setting lets you choose whether or not to add a prefix to each of
 the .CSV filenames produced by **ExportToSpreadsheet**. A prefix may be
 useful if you use the same directory for the results of more than one
 pipeline; you can specify a different prefix in each pipeline. Select
-*"%(YES)s"* to add a prefix to each file name (e.g. “MyExpt\_Images.csv”).
-Select *"%(NO)s"* to use filenames without prefixes (e.g. “Images.csv”).
+*"%(YES)s"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
+Select *"%(NO)s"* to use filenames without prefixes (e.g., “Images.csv”).
             """ % globals())
 
         self.prefix = cps.Text(
@@ -218,14 +228,6 @@ GUI and to fail when running headless.""" % globals())
 file, but if you select *"%(YES)s"*, they will also be exported with the
 Object data file(s).""" % globals())
 
-        self.excel_limits = cps.Binary(
-                "Limit output to a size that is allowed in older Excel versions?", False, doc="""\
-If your output has more than 256 columns, select *"%(YES)s"* will open a
-window allowing you to select the columns you’d like to export. If your
-output exceeds 65,000 rows, you can still open the CSV in Excel, but not
-all rows will be visible. Note that these limits only apply to Excel versions utilizing ".xls",
-modern versions of Excel supporting ".xlsx" do not have any such limits""" % globals())
-
         self.nan_representation = cps.Choice(
                 "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc="""\
 This setting controls the output for numeric fields if the calculated
@@ -239,10 +241,20 @@ of an image.
    “-Inf”.""" % globals())
 
         self.pick_columns = cps.Binary(
-                "Select the measurements to export", False, doc="""\
-Select *"%(YES)s"* to provide a button that allows you to select which
+            "Select the measurements to export",
+            False,
+            doc="""\
+Select *{YES}* to provide a button that allows you to select which
 measurements you want to export. This is useful if you know exactly what
-measurements you want included in the final spreadheet(s).""" % globals())
+measurements you want included in the final spreadsheet(s) and additional
+measurements would be a nuisance.
+
+Alternatively, this option can be helpful for viewing spreadsheets in
+programs which limit the number of rows and columns.
+""".format(**{
+                "YES": YES
+            })
+        )
 
         self.columns = cps.MeasurementMultiChoice(
                 "Press button to select measurements", doc="""\
@@ -258,14 +270,10 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “Mean\_Nuclei\_AreaShape\_Area”.
+called “Mean\_Nuclei\_AreaShape\_Area”. Note that this setting can
+generate a very large number of columns of data.
 
-You may not want to use **ExportToSpreadsheet** to calculate these
-measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on
-the number of columns (256).
-
-Keep in mind that if you chose to select the specific measurements to
+However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
 per-object measurements.""" % globals())
 
@@ -276,14 +284,10 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “Median\_Nuclei\_AreaShape\_Area”.
+called “Median\_Nuclei\_AreaShape\_Area”. Note that this setting can
+generate a very large number of columns of data.
 
-You may not want to use **ExportToSpreadsheet** to calculate these
-measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on
-the number of columns (256).
-
-Keep in mind that if you chose to select the specific measurements to
+However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
 per-object measurements.""" % globals())
 
@@ -294,22 +298,18 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “StDev\_Nuclei\_AreaShape\_Area”.
+called “StDev\_Nuclei\_AreaShape\_Area”. Note that this setting can
+generate a very large number of columns of data.
 
-You may not want to use **ExportToSpreadsheet** to calculate these
-measurements if your pipeline generates a large number of per-object
-measurements; doing so might exceed older versions of Excel’s limits on
-the number of columns (256).
-
-Keep in mind that if you chose to select the specific measurements to
+However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
 per-object measurements.""" % globals())
 
         self.wants_genepattern_file = cps.Binary(
                 "Create a GenePattern GCT file?", False, doc="""\
 Select *"%(YES)s"* to create a GCT file compatible with `GenePattern`_.
-The GCT file format is a tab-delimited text file format that describes a
-gene expression dataset; the specifics of the format are described
+The GCT file format is a tab-delimited text file format designed for
+gene expression datasets; the specifics of the format are described
 `here`_. By converting your measurements into a GCT file, you can make
 use of GenePattern’s data visualization and clustering methods.
 
@@ -348,7 +348,7 @@ specified in one of two ways:
 name each row)*
 
 Choose the measurement that corresponds to the identifier, such as
-metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s.""" % globals())
+metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s""" % globals())
 
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
                 "Select the image to use as the identifier", cps.NONE, doc="""\
@@ -394,7 +394,10 @@ for more details on the various measurement types.""" % globals()))
 *(Used only when “Export all measurements?” is set to “%(NO)s”)*
 
 Select *"%(YES)s"* to create a file composed of measurements made on
-this object and the one directly above it.
+this object and the one directly above it. This can be convenient, for
+example, if you measured Nuclei, Cells, and Cytoplasm objects, and you
+want to look at the measurements for all of them in a single spreadsheet.
+
 Select *"%(NO)s"* to create separate files for this and the previous
 object.""" % globals()))
 
@@ -403,7 +406,7 @@ object.""" % globals()))
 *(Used only when “Export all measurements?” is set to “%(NO)s”)*
 
 Select *"%(YES)s"* to use the object name as selected above to generate
-a file name for the spreadsheet. For example, if you selected *Image*,
+a file name for the spreadsheet. For example, if you selected *Image*
 above and have not checked the "*Prepend output file name*" option, your
 output file will be named “Image.csv”.
 Select *"%(NO)s"* to name the file yourself.""" % globals()))
@@ -444,7 +447,7 @@ desired.
     def settings(self):
         """Return the settings in the order used when storing """
         result = [self.delimiter, self.add_metadata,
-                  self.excel_limits, self.pick_columns,
+                  self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
                   self.wants_aggregate_std, self.directory,
                   self.wants_genepattern_file, self.how_to_specify_gene_name,
@@ -464,7 +467,7 @@ desired.
             result += [self.prefix]
         result += [
             self.wants_overwrite_without_warning, self.add_metadata,
-            self.excel_limits, self.nan_representation, self.pick_columns]
+            self.nan_representation, self.pick_columns]
         if self.pick_columns:
             result += [self.columns]
         result += [self.wants_aggregate_means, self.wants_aggregate_medians,
@@ -882,10 +885,7 @@ desired.
                 IMAGE, workspace, image_set_numbers[0], settings_group)
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
-        if not self.check_excel_limits(workspace, file_name,
-                                       len(image_set_numbers),
-                                       len(image_features)):
-            return
+
         fd = open(file_name, "wb")
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
@@ -977,10 +977,6 @@ desired.
         m = workspace.measurements
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
-        if not self.check_excel_limits(workspace, file_name,
-                                       len(image_set_numbers),
-                                       len(image_features)):
-            return
 
         fd = open(file_name, "wb")
         try:
@@ -1042,27 +1038,6 @@ desired.
         finally:
             fd.close()
 
-    def check_excel_limits(self, workspace, file_name, row_count, col_count):
-        '''Return False if we shouldn't write because of Excel'''
-        if self.excel_limits and self.show_window:
-            message = None
-            if col_count > MAX_EXCEL_COLUMNS:
-                message = ("""The image file, "%s", will have %d columns, but Excel only supports %d.
-Do you want to save it anyway?""" %
-                           (file_name, col_count, MAX_EXCEL_COLUMNS))
-            elif row_count > MAX_EXCEL_ROWS:
-                message = ("""The image file, "%s", will have %d rows, but Excel only supports %d.
-Do you want to save it anyway?""" %
-                           (file_name, row_count, MAX_EXCEL_COLUMNS))
-            if message is not None:
-                # This is okay, as the only path to this function is via
-                # post_run(), which is called in the main thread.
-                import wx
-                assert wx.Thread_IsMain(), "exporttospreadsheet.post_run() called in non-main thread."
-                if wx.MessageBox(message, "Excel limits exceeded", wx.YES_NO) == wx.ID_NO:
-                    return False
-        return True
-
     def filter_columns(self, features, object_name):
         if self.pick_columns:
             columns = [
@@ -1122,17 +1097,6 @@ Do you want to save it anyway?""" %
             ofeatures.sort()
             features += ofeatures
         fd = open(file_name, "wb")
-        if self.excel_limits:
-            row_count = 1
-            for img_number in image_set_numbers:
-                object_count = \
-                    np.max([m.get_measurement(IMAGE, "Count_%s" % name, img_number)
-                            for name in object_names])
-                row_count += int(object_count)
-            if not self.check_excel_limits(workspace, file_name,
-                                           row_count, len(features)):
-                return
-
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             #
@@ -1369,8 +1333,13 @@ Do you want to save it anyway?""" %
                              setting_values[SETTING_OG_OFFSET_V10:]
             variable_revision_number = 11
 
+        if variable_revision_number == 11:
+            setting_values = setting_values[:2] + setting_values[3:]
+
+            variable_revision_number = 12
+
         # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 7
+        SLOT_DIRCHOICE = 6
         directory = setting_values[SLOT_DIRCHOICE]
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values = (setting_values[:SLOT_DIRCHOICE] +

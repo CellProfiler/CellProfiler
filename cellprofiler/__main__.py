@@ -41,7 +41,7 @@ def main(args=None):
 
     """Run CellProfiler
 
-    args - command-line arguments, e.g. sys.argv
+    args - command-line arguments, e.g., sys.argv
     """
     if args is None:
         args = sys.argv

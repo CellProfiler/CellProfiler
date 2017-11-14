@@ -15,6 +15,19 @@ the distance within which objects should be considered neighbors, or
 that objects are only considered neighbors if they are directly
 touching.
 
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also the **Identify** modules.
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -26,9 +39,11 @@ Measurements made by this module
    distance. Note that this measurement is only available if you use the
    same set of objects for both objects and neighbors.
 -  *FirstClosestObjectNumber:* The index of the closest object.
--  *FirstClosestDistance:* The distance to the closest object.
+-  *FirstClosestDistance:* The distance to the closest object (in units
+   of pixels).
 -  *SecondClosestObjectNumber:* The index of the second closest object.
--  *SecondClosestDistance:* The distance to the second closest object.
+-  *SecondClosestDistance:* The distance to the second closest object (in units
+   of pixels).
 -  *AngleBetweenNeighbors:* The angle formed with the object center as
    the vertex and the first and second closest object centers along the
    vectors.
@@ -47,7 +62,8 @@ Objects discarded via modules such as **IdentifyPrimaryObjects** or
 purposes of accurate measurement. For instance, if an object touches a
 single object and that object had been discarded, *NumberOfNeighbors*
 will be positive, but there will not be a corresponding
-*ClosestObjectNumber*. See also the **Identify** modules.
+*ClosestObjectNumber*.
+
 """
 
 import matplotlib.cm
@@ -189,7 +205,7 @@ Specify a name that will allow the image of objects colored by percent
 of touching pixels to be selected later in the pipeline.""")
 
         self.touching_colormap = cps.Colormap(
-                'Select a colormap', doc="""\
+                'Select colormap', doc="""\
 *(Used only if the image of objects colored by percent touching is to be
 retained for later use in the pipeline)*
 
@@ -400,7 +416,7 @@ available colormaps can be seen `here`_.
                 if object_number == 0:
                     #
                     # No corresponding object in small-removed. This means
-                    # that the object has no pixels, e.g. not renumbered.
+                    # that the object has no pixels, e.g., not renumbered.
                     #
                     continue
                 index = object_number - 1

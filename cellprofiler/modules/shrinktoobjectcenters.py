@@ -11,6 +11,15 @@ Note that if the object is not sufficiently *round*, the resulting single pixel 
 original object. For example, a 'U' shaped object, perhaps a *C. Elegans*, could potentially lead to this
 special case. This could be a concern if these points are later used as seeds or markers for a **Watershed**
 operation further in the pipeline.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
 """
 
 import cellprofiler.image

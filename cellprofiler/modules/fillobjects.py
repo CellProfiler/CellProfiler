@@ -1,17 +1,17 @@
 # coding=utf-8
 
 """
-RemoveLabeledHoles
-==================
+FillObjects
+===========
 
-**RemoveLabeledHoles** fills holes smaller than the specified diameter.
+**FillObjects** fills holes within all objects in an image
 
 This module works best on integer-labeled images (i.e., the output of **ConvertObjectsToImage**
 when the color format is *uint16*).
 
 The output of this module is a labeled image of the same data type as the input.
-**RemoveLabeledHoles** can be run *after* any labeling or segmentation module (e.g.,
-**ConvertImageToObjects** or **Watershet**). Labels are preserved and, where possible, holes
+**FillObjects** can be run *after* any labeling or segmentation module (e.g.,
+**ConvertImageToObjects** or **Watershed**). Labels are preserved and, where possible, holes
 entirely within the boundary of labeled objects are filled with the surrounding object number.
 
 |
@@ -33,15 +33,15 @@ import cellprofiler.module
 import cellprofiler.setting
 
 
-class RemoveLabeledHoles(cellprofiler.module.ImageProcessing):
+class FillObjects(cellprofiler.module.ImageProcessing):
     category = "Advanced"
 
-    module_name = "RemoveLabeledHoles"
+    module_name = "FillObjects"
 
     variable_revision_number = 1
 
     def create_settings(self):
-        super(RemoveLabeledHoles, self).create_settings()
+        super(FillObjects, self).create_settings()
 
         self.size = cellprofiler.setting.Float(
             text="Size",
@@ -50,14 +50,14 @@ class RemoveLabeledHoles(cellprofiler.module.ImageProcessing):
         )
 
     def settings(self):
-        __settings__ = super(RemoveLabeledHoles, self).settings()
+        __settings__ = super(FillObjects, self).settings()
 
         return __settings__ + [
             self.size
         ]
 
     def visible_settings(self):
-        __settings__ = super(RemoveLabeledHoles, self).visible_settings()
+        __settings__ = super(FillObjects, self).visible_settings()
 
         return __settings__ + [
             self.size
@@ -66,13 +66,11 @@ class RemoveLabeledHoles(cellprofiler.module.ImageProcessing):
     def run(self, workspace):
         self.function = lambda image, diameter: remove_objects_and_fill_holes(image, diameter)
 
-        super(RemoveLabeledHoles, self).run(workspace)
+        super(FillObjects, self).run(workspace)
 
 
 def remove_objects_and_fill_holes(image, diameter):
     radius = diameter / 2.0
-
-    image = skimage.img_as_bool(image)
 
     if image.ndim == 2 or image.shape[-1] in (3, 4):
         factor = radius ** 2

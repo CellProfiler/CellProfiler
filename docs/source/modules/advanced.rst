@@ -20,6 +20,10 @@ Advanced modules include computer vision algorithms.
 
 `(Jump to top)`_
 
+.. automodule:: cellprofiler.modules.fillobjects
+
+`(Jump to top)`_
+
 .. automodule:: cellprofiler.modules.gaussianfilter
 
 `(Jump to top)`_
@@ -53,10 +57,6 @@ Advanced modules include computer vision algorithms.
 `(Jump to top)`_
 
 .. automodule:: cellprofiler.modules.removeholes
-
-`(Jump to top)`_
-
-.. automodule:: cellprofiler.modules.removelabeledholes
 
 `(Jump to top)`_
 

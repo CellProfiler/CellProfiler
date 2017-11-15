@@ -40,6 +40,10 @@ Advanced modules include computer vision algorithms.
 
 `(Jump to top)`_
 
+.. automodule:: cellprofiler.modules.mergeobjects
+
+`(Jump to top)`_
+
 .. automodule:: cellprofiler.modules.morphologicalskeleton
 
 `(Jump to top)`_

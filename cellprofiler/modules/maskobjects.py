@@ -44,6 +44,11 @@ Supports 2D? Supports 3D? Respects masks?
 YES          NO           YES
 ============ ============ ===============
 
+See also
+^^^^^^^^
+
+{HELP_ON_SAVING_OBJECTS}
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

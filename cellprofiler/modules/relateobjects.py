@@ -60,7 +60,9 @@ Measurements made by this module
 -  *Parent:* The label number of the parent object, as assigned by an
    **Identify** or **Watershed** module.
 -  *Distances:* The distance of each child object to its respective parent.
-"""
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 D_NONE = "None"
 D_CENTROID = "Centroid"

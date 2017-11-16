@@ -17,7 +17,7 @@ and **Watershed** may yield unexpected results.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           YES
+YES          YES          YES
 ============ ============ ===============
 
 .. _scikit-image documentation: http://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html

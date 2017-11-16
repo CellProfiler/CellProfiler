@@ -33,10 +33,10 @@ YES          NO           NO
 See also
 ^^^^^^^^
 
-{HELP_ON_SAVING_OUTLINES}
+{HELP_ON_SAVING_OBJECTS}
 
 """.format(**{
-    "HELP_ON_SAVING_OUTLINES": _help.HELP_ON_SAVING_OUTLINES
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
 
 import numpy as np

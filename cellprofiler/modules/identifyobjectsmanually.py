@@ -1,13 +1,5 @@
 # coding=utf-8
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import _help
 
 __doc__ = """\
@@ -37,7 +29,15 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          NO           NO
 ============ ============ ===============
-"""
+
+See also
+^^^^^^^^
+
+{HELP_ON_SAVING_OUTLINES}
+
+""".format(**{
+    "HELP_ON_SAVING_OUTLINES": _help.HELP_ON_SAVING_OUTLINES
+})
 
 import numpy as np
 from centrosome.cpmorphology import draw_line

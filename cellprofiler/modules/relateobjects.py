@@ -1,6 +1,15 @@
 # coding=utf-8
 
-"""
+import re
+import numpy
+import scipy.ndimage
+import skimage.segmentation
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+import _help
+
+__doc__ = """\
 RelateObjects
 =============
 
@@ -35,6 +44,8 @@ See also
 
 See also: **SplitOrMergeObjects**, **MaskObjects**.
 
+{HELP_ON_SAVING_OBJECTS}
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -48,20 +59,10 @@ Measurements made by this module
 
 -  *Parent:* The label number of the parent object, as assigned by an
    **Identify** or **Watershed** module.
--  *Distances:* The distance of each child object to its respective
-   parent.
-
-"""
-
-import re
-
-import numpy
-import scipy.ndimage
-import skimage.segmentation
-
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.setting
+-  *Distances:* The distance of each child object to its respective parent.
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 D_NONE = "None"
 D_CENTROID = "Centroid"
@@ -91,7 +92,6 @@ FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
 
 FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
-
 
 class RelateObjects(cellprofiler.module.ObjectProcessing):
     module_name = "RelateObjects"

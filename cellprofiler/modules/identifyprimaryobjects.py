@@ -3,7 +3,6 @@
 import cellprofiler.gui.help
 
 import math
-
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate
@@ -12,12 +11,11 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
-
 import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
-import _help
 import threshold
+import _help
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -141,6 +139,8 @@ following panels:
    in order to produce the objects shown. Some of these are as you
    specified in settings; others are calculated by the module itself.
 
+{HELP_ON_SAVING_OBJECTS}
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -218,6 +218,7 @@ References
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
 
 

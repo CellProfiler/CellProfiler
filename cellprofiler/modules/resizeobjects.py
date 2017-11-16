@@ -1,12 +1,5 @@
 # coding=utf-8
 
-import numpy as np
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import numpy
 import scipy.ndimage
 import skimage.transform
@@ -35,7 +28,15 @@ before computing measurements with the original 3D image. **ResizeObjects** diff
 from **ExpandOrShrinkObjects** and **ShrinkToObjectCenters** in that the overall dimensions
 of the object label matrix, or image, are changed. In contrast, **ExpandOrShrinkObjects**
 will alter the size of the objects within an image, but it will not change the size of the image itself.
-"""
+
+See also
+^^^^^^^^
+
+{HELP_ON_SAVING_OBJECTS}
+
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 class ResizeObjects(cellprofiler.module.ObjectProcessing):
     module_name = "ResizeObjects"

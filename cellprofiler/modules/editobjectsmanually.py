@@ -1,13 +1,5 @@
 # coding=utf-8
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import _help
 
 __doc__ = """\
@@ -53,7 +45,12 @@ See also
 
 See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 **ConvertToImage**.
-"""
+
+{HELP_ON_SAVING_OBJECTS}
+
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import logging
 

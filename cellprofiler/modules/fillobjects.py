@@ -32,7 +32,7 @@ import cellprofiler.module
 import cellprofiler.setting
 
 
-class FillObjects(cellprofiler.module.ImageProcessing):
+class FillObjects(cellprofiler.module.ObjectProcessing):
     category = "Advanced"
 
     module_name = "FillObjects"
@@ -63,16 +63,16 @@ class FillObjects(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        self.function = lambda image, diameter: \
-            fill_object_holes(image, diameter)
+        self.function = lambda labels, diameter: \
+            fill_object_holes(labels, diameter)
 
         super(FillObjects, self).run(workspace)
 
 
-def fill_object_holes(image, diameter):
+def fill_object_holes(labels, diameter):
     radius = diameter / 2.0
 
-    if image.ndim == 2 or image.shape[-1] in (3, 4):
+    if labels.ndim == 2 or labels.shape[-1] in (3, 4):
         factor = radius ** 2
     else:
         factor = (4.0 / 3.0) * (radius ** 3)
@@ -80,11 +80,11 @@ def fill_object_holes(image, diameter):
     min_obj_size = numpy.pi * factor
 
     # Iterate through each label as a mask, fill holes on the mask, and reapply to original image
-    for n in numpy.unique(image):
+    for n in numpy.unique(labels):
         if n == 0:
             continue
 
-        filled_mask = skimage.morphology.remove_small_holes(image == n, min_obj_size)
-        image[filled_mask] = n
+        filled_mask = skimage.morphology.remove_small_holes(labels == n, min_obj_size)
+        labels[filled_mask] = n
 
-    return image
+    return labels

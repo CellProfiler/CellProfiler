@@ -35,7 +35,7 @@ import cellprofiler.module
 import cellprofiler.setting
 
 
-class MergeObjects(cellprofiler.module.ImageProcessing):
+class MergeObjects(cellprofiler.module.ObjectProcessing):
     category = "Advanced"
 
     module_name = "MergeObjects"
@@ -66,34 +66,34 @@ class MergeObjects(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        self.function = lambda image, diameter: \
-            fill_object_holes(image, diameter)
+        self.function = lambda labels, diameter: \
+            fill_object_holes(labels, diameter)
 
         super(MergeObjects, self).run(workspace)
 
 
-def fill_object_holes(image, diameter):
+def fill_object_holes(labels, diameter):
     radius = diameter / 2.0
 
-    if image.ndim == 2 or image.shape[-1] in (3, 4):
+    if labels.ndim == 2 or labels.shape[-1] in (3, 4):
         factor = radius ** 2
     else:
         factor = (4.0 / 3.0) * (radius ** 3)
 
     min_obj_size = np.pi * factor
 
-    sizes = np.bincount(image.ravel())
+    sizes = np.bincount(labels.ravel())
     # Find the indices of all objects below threshold
     mask_sizes = (sizes < min_obj_size) & (sizes != 0)
 
-    merged = np.copy(image)
+    merged = np.copy(labels)
     # Iterate through each small object, determine most significant adjacent neighbor,
     # and merge the object into that neighbor
     for n in np.nonzero(mask_sizes)[0]:
-        mask = image == n
+        mask = labels == n
         # "Thick" mode ensures the border bleeds into the neighboring objects
         bound = skimage.segmentation.find_boundaries(mask, mode='thick')
-        neighbors = np.bincount(image[bound].ravel())
+        neighbors = np.bincount(labels[bound].ravel())
         # If self is the largest neighbor, the object should be removed
         if len(neighbors) >= n:
             neighbors[n] = 0

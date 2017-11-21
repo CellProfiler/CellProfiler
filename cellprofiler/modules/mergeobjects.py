@@ -6,10 +6,7 @@ MergeObjects
 
 **MergeObjects** merges objects below a certain threshold into its most prevalent, adjacent neighbor.
 
-This module works best on integer-labeled images (i.e., the output of **ConvertObjectsToImage**
-when the color format is *uint16*).
-
-The output of this module is a labeled image of the same data type as the input.
+The output of this module is a object image of the same data type as the input.
 **MergeObjects** can be run *after* any labeling or segmentation module (e.g.,
 **ConvertImageToObjects** or **Watershed**). Labels are preserved and, where possible, small
 objects are merged into neighboring objects that constitute a majority of the small object's
@@ -51,49 +48,57 @@ class MergeObjects(cellprofiler.module.ObjectProcessing):
             doc="Objects smaller than this diameter will be merged with their most significant neighbor."
         )
 
+        self.slice_wise = cellprofiler.setting.Binary(
+            text="Slice wise merge",
+            value=False,
+            doc="""\
+Select "*{YES}*" to merge objects on a per-slice level. 
+This will perform the "significant neighbor" merge on 
+each slice of a volumetric image, rather than on the 
+image as a whole. This may be helpful for removing seed
+artifacts that are the result of segmentation.
+**Note**: Slice-wise operations will be considerably slower.
+""".format(**{
+                "YES": cellprofiler.setting.YES
+            })
+        )
+
     def settings(self):
         __settings__ = super(MergeObjects, self).settings()
 
         return __settings__ + [
-            self.size
+            self.size,
+            self.slice_wise
         ]
 
     def visible_settings(self):
         __settings__ = super(MergeObjects, self).visible_settings()
 
         return __settings__ + [
-            self.size
+            self.size,
+            self.slice_wise
         ]
 
     def run(self, workspace):
-        self.function = lambda labels, diameter: \
-            fill_object_holes(labels, diameter)
+        self.function = lambda labels, diameter, slicewise: \
+            merge_objects(labels, diameter, slicewise)
 
         super(MergeObjects, self).run(workspace)
 
 
-def fill_object_holes(labels, diameter):
-    radius = diameter / 2.0
-
-    if labels.ndim == 2 or labels.shape[-1] in (3, 4):
-        factor = radius ** 2
-    else:
-        factor = (4.0 / 3.0) * (radius ** 3)
-
-    min_obj_size = np.pi * factor
-
-    sizes = np.bincount(labels.ravel())
+def _merge_neighbors(array, min_obj_size):
+    sizes = np.bincount(array.ravel())
     # Find the indices of all objects below threshold
     mask_sizes = (sizes < min_obj_size) & (sizes != 0)
 
-    merged = np.copy(labels)
+    merged = np.copy(array)
     # Iterate through each small object, determine most significant adjacent neighbor,
     # and merge the object into that neighbor
     for n in np.nonzero(mask_sizes)[0]:
-        mask = labels == n
+        mask = array == n
         # "Thick" mode ensures the border bleeds into the neighboring objects
         bound = skimage.segmentation.find_boundaries(mask, mode='thick')
-        neighbors = np.bincount(labels[bound].ravel())
+        neighbors = np.bincount(array[bound].ravel())
         # If self is the largest neighbor, the object should be removed
         if len(neighbors) >= n:
             neighbors[n] = 0
@@ -102,5 +107,19 @@ def fill_object_holes(labels, diameter):
         max_neighbor = np.argmax(neighbors)
         # Set object value to largest neighbor
         merged[merged == n] = max_neighbor
-
     return merged
+
+
+def merge_objects(labels, diameter, slicewise):
+    radius = diameter / 2.0
+
+    if labels.ndim == 2 or labels.shape[-1] in (3, 4) or slicewise:
+        factor = radius ** 2
+    else:
+        factor = (4.0 / 3.0) * (radius ** 3)
+
+    min_obj_size = np.pi * factor
+
+    if not slicewise:
+        return _merge_neighbors(labels, min_obj_size)
+    return np.array([_merge_neighbors(x, min_obj_size) for x in labels])

@@ -70,20 +70,18 @@ def module(request):
 
 
 @pytest.fixture(scope="function")
-def object_set(objects=None):
+def object_set(objects):
     objects_set = cellprofiler.object.ObjectSet()
-    if objects is not None:
-        objects_set.add_objects(objects, "InputObjects")
+    objects_set.add_objects(objects, "InputObjects")
 
     return objects_set
 
 
 @pytest.fixture(scope="function")
-def objects(image=None):
+def objects(image):
     obj = cellprofiler.object.Objects()
-    if image is not None:
-        obj.parent_image = image
-        
+    obj.parent_image = image
+
     return obj
 
 

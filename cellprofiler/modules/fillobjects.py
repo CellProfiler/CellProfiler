@@ -6,13 +6,12 @@ FillObjects
 
 **FillObjects** fills holes within all objects in an image.
 
-This module works best on integer-labeled images (i.e., the output of **ConvertObjectsToImage**
-when the color format is *uint16*).
-
-The output of this module is a labeled image of the same data type as the input.
 **FillObjects** can be run *after* any labeling or segmentation module (e.g.,
 **ConvertImageToObjects** or **Watershed**). Labels are preserved and, where possible, holes
 entirely within the boundary of labeled objects are filled with the surrounding object number.
+
+**FillObjects** can also be run on a "per-slice" basis working with volumetric data.
+Holes will be filled for each XY slice, rather than on the whole volume.
 
 |
 

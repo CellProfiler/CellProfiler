@@ -1,6 +1,9 @@
 import numpy
 import pytest
 import skimage.data
+import skimage.color
+import skimage.filters
+import skimage.measure
 
 import cellprofiler.__main__
 import cellprofiler.image
@@ -70,6 +73,16 @@ def module(request):
 
 
 @pytest.fixture(scope="function")
+def pipeline():
+    return cellprofiler.pipeline.Pipeline()
+
+
+@pytest.fixture(scope="function")
+def workspace(pipeline, module, image_set, object_set, measurements, image_set_list):
+    return cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set, measurements, image_set_list)
+
+
+@pytest.fixture(scope="function")
 def object_set(objects):
     objects_set = cellprofiler.object.ObjectSet()
     objects_set.add_objects(objects, "InputObjects")
@@ -86,10 +99,33 @@ def objects(image):
 
 
 @pytest.fixture(scope="function")
-def pipeline():
-    return cellprofiler.pipeline.Pipeline()
+def object_with_data(image):
+    data = image.pixel_data
+
+    if image.multichannel:
+        data = skimage.color.rgb2gray(data)
+
+    binary = data > skimage.filters.threshold_li(data)
+
+    labels = skimage.measure.label(binary)
+
+    objects = cellprofiler.object.Objects()
+
+    objects.segmented = labels
+    objects.parent_image = image
+
+    return objects
 
 
 @pytest.fixture(scope="function")
-def workspace(pipeline, module, image_set, object_set, measurements, image_set_list):
-    return cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set, measurements, image_set_list)
+def object_set_with_data(object_with_data):
+    objects_set = cellprofiler.object.ObjectSet()
+    objects_set.add_objects(object_with_data, "InputObjects")
+
+    return objects_set
+
+
+@pytest.fixture(scope="function")
+def workspace_with_data(pipeline, module, image_set, object_set_with_data, measurements, image_set_list):
+    return cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set_with_data,
+                                            measurements, image_set_list)

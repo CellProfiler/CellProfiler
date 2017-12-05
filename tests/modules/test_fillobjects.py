@@ -35,23 +35,23 @@ labels[4:9, 12:18, 0:8] = 3
 labels[1:8, 12:20, 12:20] = 4
 
 
-def test_run(image, module, workspace):
-    module.x_name.value = "example"
-    module.y_name.value = "output"
+def test_run(object_set_with_data, module, workspace_with_data):
+    module.x_name.value = "InputObjects"
+    module.y_name.value = "OutputObjects"
     module.size.value = 6.
 
-    module.run(workspace)
+    module.run(workspace_with_data)
 
-    actual = workspace.image_set.get_image("output").pixel_data
+    actual = workspace_with_data.object_set.get_objects("OutputObjects").segmented
 
-    if image.dimensions == 2:
+    if actual.ndim == 2:
         factor = 3 ** 2
     else:
         factor = (4.0 / 3.0) * (3 ** 3)
 
     size = numpy.pi * factor
 
-    expected = image.pixel_data.copy()
+    expected = actual.copy()
 
     for n in numpy.unique(expected):
         if n == 0:

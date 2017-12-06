@@ -3,11 +3,8 @@ import numpy.testing
 import skimage.morphology
 import pytest
 
-import cellprofiler.image
-import cellprofiler.measurement
 import cellprofiler.modules.fillobjects
 import cellprofiler.object
-import pdb
 
 
 instance = cellprofiler.modules.fillobjects.FillObjects()

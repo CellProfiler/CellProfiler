@@ -32,17 +32,10 @@ def image_labels():
 
 
 @pytest.fixture(scope="function")
-def object_set(objects):
-    object_set = cellprofiler.object.ObjectSet()
-
-    object_set.add_objects(objects, "InputObjects")
-
-    return object_set
-
-
-@pytest.fixture(scope="function")
 def objects():
-    return cellprofiler.object.Objects()
+    obj = cellprofiler.object.Objects()
+
+    return obj
 
 
 @pytest.fixture(scope="module")

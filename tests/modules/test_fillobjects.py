@@ -1,6 +1,7 @@
 import numpy
 import numpy.testing
 import skimage.morphology
+import pytest
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -10,29 +11,39 @@ import cellprofiler.object
 
 instance = cellprofiler.modules.fillobjects.FillObjects()
 
-labels = numpy.zeros((20, 20), dtype=numpy.uint8)
 
-labels[2:8, 2:8] = 1
-labels[5, 5] = 0
+@pytest.fixture(scope="module")
+def image_labels():
+    labels = numpy.zeros((20, 20), dtype=numpy.uint8)
 
-labels[0:8, 12:18] = 2
-labels[2, 15] = 0
+    labels[2:8, 2:8] = 1
 
-labels[12:18, 0:8] = 3
-labels[15, 2] = 0
+    labels[0:8, 12:18] = 2
 
-labels[12:20, 12:20] = 4
-labels[15, 15] = 0
+    labels[12:18, 0:8] = 3
 
-labels = numpy.zeros((9, 20, 20), dtype=numpy.uint8)
+    labels[12:20, 12:20] = 4
 
-labels[0:9, 2:8, 2:8] = 1
+    return labels
 
-labels[0:5, 0:8, 12:18] = 2
 
-labels[4:9, 12:18, 0:8] = 3
+@pytest.fixture(scope="module")
+def volume_labels():
+    labels = numpy.zeros((9, 20, 20), dtype=numpy.uint8)
 
-labels[1:8, 12:20, 12:20] = 4
+    labels[0:9, 2:8, 2:8] = 1
+
+    labels[0:5, 0:8, 12:18] = 2
+
+    labels[4:9, 12:18, 0:8] = 3
+
+    labels[1:8, 12:20, 12:20] = 4
+    labels[5, 5, 5] = 0
+    labels[2, 2, 15] = 0
+    labels[5, 15, 2] = 0
+    labels[5, 15, 15] = 0
+
+    return labels
 
 
 def test_run(object_set_with_data, module, workspace_with_data):
@@ -61,5 +72,17 @@ def test_run(object_set_with_data, module, workspace_with_data):
         expected[filled_mask] = n
 
     numpy.testing.assert_array_equal(actual, expected)
+
+def test_2d_fill_holes(image_labels, module, object_set, objects, workspace):
+    labels = image_labels.copy()
+    labels[5, 5] = 0
+    labels[2, 15] = 0
+    labels[15, 2] = 0
+    labels[15, 15] = 0
+
+    objects.segmented = labels
+
+    module.x_name.value = "InputObjects"
+
 
 

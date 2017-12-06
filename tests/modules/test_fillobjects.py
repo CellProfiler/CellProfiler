@@ -59,7 +59,7 @@ def test_run(object_set_with_data, module, workspace_with_data):
 
     size = numpy.pi * factor
 
-    expected = actual.copy()
+    expected = object_set_with_data.get_objects("InputObjects").segmented
 
     for n in numpy.unique(expected):
         if n == 0:

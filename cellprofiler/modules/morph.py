@@ -238,14 +238,28 @@ The following operations are available:
 
     - Binary
 
-|
+Upgrading:
+~~~~~~~~~~
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+The following **Morph** operations have been extracted to separate modules in CellProfiler 3.0.
+Use the table below to update your pipeline to use the corresponding module and, where appropriate,
+setting and value.
 
+=================  ======================  ===========  =======================
+Morph operation    Module                  Setting      Value
+=================  ======================  ===========  =======================
+bothat             TopHatTransform*        *Operation*  Black top-hat transform
+close              Closing
+dilate             Dilation
+erode              Erosion
+fill small holes   RemoveHoles
+invert             ImageMath               *Operation*  Invert
+open               Opening
+skel               MorphologicalSkeleton
+tophat             TopHatTransform*        *Operation*  White top-hat transform
+=================  ======================  ===========  =======================
+
+\* Available as a `CellProfiler plugin <http://github.com/CellProfiler/CellProfiler-plugins>`_.
 """
 
 import logging
@@ -576,15 +590,6 @@ input for a measurement module.""" % globals()))
 
         if variable_revision_number == 4:
             functions = setting_values[2::12]
-
-            unavailable = [function for function in functions if function not in F_ALL]
-
-            if len(unavailable) > 0:
-                message = "Unsupported operation(s): {}".format(", ".join(unavailable))
-
-                message += "\nYou can reimplement this functionality using equivalent Mathematical Morphology modules."
-
-                raise NotImplementedError(message)
 
             repeats = setting_values[3::12]
 

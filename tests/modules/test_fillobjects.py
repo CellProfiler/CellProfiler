@@ -73,16 +73,28 @@ def test_run(object_set_with_data, module, workspace_with_data):
 
     numpy.testing.assert_array_equal(actual, expected)
 
-def test_2d_fill_holes(image_labels, module, object_set, objects, workspace):
+
+def test_2d_fill_holes(image_labels, module, object_set_empty, objects_empty, workspace_empty):
     labels = image_labels.copy()
     labels[5, 5] = 0
     labels[2, 15] = 0
     labels[15, 2] = 0
     labels[15, 15] = 0
 
-    objects.segmented = labels
+    print(labels.shape)
+    objects_empty.segmented = labels
 
     module.x_name.value = "InputObjects"
+    module.y_name.value = "OutputObjects"
+    module.size.value = 2.
+
+    module.run(workspace_empty)
+
+    actual = object_set_empty.get_objects("OutputObjects").segmented
+    expected = image_labels
+
+    numpy.testing.assert_array_equal(actual, expected)
+
 
 
 

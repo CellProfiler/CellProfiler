@@ -108,7 +108,7 @@ def fill_object_holes(labels, diameter, slicewise):
     min_obj_size = numpy.pi * factor
 
     # Only operate slicewise if image is 3D and slicewise requested
-    if slicewise and labels.ndim != 2 or labels.shape[-1] not in (3, 4):
+    if slicewise and (labels.ndim != 2 or labels.shape[-1] not in (3, 4)):
         return numpy.array([_fill_holes(x, min_obj_size) for x in labels])
     return _fill_holes(labels, min_obj_size)
 

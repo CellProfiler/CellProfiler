@@ -7,6 +7,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.fillobjects
 import cellprofiler.object
+import pdb
 
 
 instance = cellprofiler.modules.fillobjects.FillObjects()
@@ -38,10 +39,6 @@ def volume_labels():
     labels[4:9, 12:18, 0:8] = 3
 
     labels[1:8, 12:20, 12:20] = 4
-    labels[5, 5, 5] = 0
-    labels[2, 2, 15] = 0
-    labels[5, 15, 2] = 0
-    labels[5, 15, 15] = 0
 
     return labels
 
@@ -81,7 +78,6 @@ def test_2d_fill_holes(image_labels, module, object_set_empty, objects_empty, wo
     labels[15, 2] = 0
     labels[15, 15] = 0
 
-    print(labels.shape)
     objects_empty.segmented = labels
 
     module.x_name.value = "InputObjects"
@@ -96,5 +92,66 @@ def test_2d_fill_holes(image_labels, module, object_set_empty, objects_empty, wo
     numpy.testing.assert_array_equal(actual, expected)
 
 
+def test_3d_fill_holes(volume_labels, module, object_set_empty, objects_empty, workspace_empty):
+    labels = volume_labels.copy()
+    labels[5, 5, 5] = 0
+    labels[2, 2, 15] = 0
+    labels[5, 15, 2] = 0
+    labels[5, 15, 15] = 0
+
+    objects_empty.segmented = labels
+
+    module.x_name.value = "InputObjects"
+    module.y_name.value = "OutputObjects"
+    module.size.value = 2.
+
+    module.run(workspace_empty)
+
+    actual = object_set_empty.get_objects("OutputObjects").segmented
+    expected = volume_labels
+
+    numpy.testing.assert_array_equal(actual, expected)
 
 
+def test_fail_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empty, workspace_empty):
+    labels = volume_labels.copy()
+    # Create a 'bowl' topology
+    labels[5:10, 4:6, 4:6] = 0
+
+    objects_empty.segmented = labels
+
+    module.x_name.value = "InputObjects"
+    module.y_name.value = "OutputObjects"
+    module.size.value = 2.
+
+    module.run(workspace_empty)
+
+    actual = object_set_empty.get_objects("OutputObjects").segmented
+    expected = labels
+
+    # Since a bowl morphology technically doesn't have a 3D whole, they should not be equal
+    # i.e. the array should be unaffected
+    numpy.testing.assert_array_equal(actual, expected)
+
+
+def test_pass_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empty, workspace_empty):
+    labels = volume_labels.copy()
+    # Create a 'bowl' topology
+    labels[5:10, 4:6, 4:6] = 0
+
+    objects_empty.segmented = labels
+
+    module.x_name.value = "InputObjects"
+    module.y_name.value = "OutputObjects"
+    module.size.value = 3.
+    # Set to slicewise so the bowl is "filled" on each slice
+    module.slice_wise.value = True
+
+    module.run(workspace_empty)
+
+    actual = object_set_empty.get_objects("OutputObjects").segmented
+    expected = volume_labels
+
+    # We're filling slice-wise here, so each 2D slice should have its holes filled,
+    # meaning the 'bowl' should be filled
+    numpy.testing.assert_array_equal(actual, expected)

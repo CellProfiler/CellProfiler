@@ -120,6 +120,7 @@ def merge_objects(labels, diameter, slicewise):
 
     min_obj_size = np.pi * factor
 
-    if not slicewise:
-        return _merge_neighbors(labels, min_obj_size)
-    return np.array([_merge_neighbors(x, min_obj_size) for x in labels])
+    # Only operate slicewise if image is 3D and slicewise requested
+    if slicewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
+        return np.array([_merge_neighbors(x, min_obj_size) for x in labels])
+    return _merge_neighbors(labels, min_obj_size)

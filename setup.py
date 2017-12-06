@@ -61,7 +61,7 @@ setuptools.setup(
         "matplotlib>=2.0.0, !=2.1.0",
         "MySQL-python",
         "numpy",
-        "prokaryote==2.3.1",
+        "prokaryote==2.3.2",
         "python-bioformats==1.3.1",
         "pyzmq==15.3.0",
         "raven",
@@ -73,7 +73,7 @@ setuptools.setup(
     license="BSD",
     name="CellProfiler",
     package_data={
-        "cellprofiler": os.path.join("data", "**", "*")
+        "cellprofiler": [os.path.join("data", "**", "*")]
     },
     include_package_data=True,
     packages=setuptools.find_packages(exclude=[

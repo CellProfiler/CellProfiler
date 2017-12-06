@@ -1,6 +1,16 @@
 # coding=utf-8
 
-"""
+import numpy as np
+
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import _help
+
+__doc__ = """\
 ClassifyObjects
 ===============
 
@@ -32,21 +42,20 @@ the module display window); in the object classification they will have
 a value of False for all bins. However, they are still counted in the
 total number of objects and hence are reflected in the classification
 percentages.
-
-|
-
-============ ============ ===============
-Supports 2D? Supports 3D? Respects masks?
-============ ============ ===============
-YES          NO           NO
-============ ============ ===============
-
-See also
-^^^^^^^^
-
-See also **CalculateMath** and any of the modules in the **Measure**
-category.
-
+ 
+|		
+ 		
+============ ============ ===============		
+Supports 2D? Supports 3D? Respects masks?		
+============ ============ ===============		
+YES          NO           NO		
+============ ============ ===============		
+ 		
+See also		
+^^^^^^^^		
+ 		
+See also **CalculateMath** and any of the modules in the **Measure**	category.		
+ 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -64,17 +73,7 @@ Measurements made by this module
    -  Two measurement: Classification (true/false) of the 1\ :sup:`st`
       measurement versus the 2\ :sup:`nd` measurement binned into bins
       above (“high”) and below (“low”) the cutoff.
-
-"""
-
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+"""		
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"

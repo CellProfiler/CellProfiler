@@ -30,7 +30,7 @@ each category. Here is an example file:
 ::
 
     [loggers]
-    keys=root,pipelinestatistics
+    keys=root,pipelineStatistics
 
     [handlers]
     keys=console,logfile
@@ -42,34 +42,35 @@ each category. Here is an example file:
     level=WARNING
     handlers=console
 
-    [logger_pipelinestatistics]
+    [logger_pipelineStatistics]
     level=INFO
     handlers=logfile
-    qualname=pipelineStatistics
+    qualname=PipelineStatistics
     propagate=0
 
     [handler_console]
     class=StreamHandler
-    formatter=detailed
     level=WARNING
-    args=(sys.stderr)
+    formatter=detailed
+    args=(sys.stderr,)
 
     [handler_logfile]
     class=FileHandler
     level=INFO
-    args=('~/CellProfiler/logfile.log','w')
+    formatter=detailed
+    args=('cellprofiler.log', 'w')
 
     [formatter_detailed]
-    format=[%(asctime)s] %(name)s %(levelname)s %(message)s
+    format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
     datefmt=
 
 The above file would print warnings and errors to the console for all
 messages but “pipeline statistics” which are configured using the
-*pipelineStatistics* logger are written to a file instead. The
-pipelineStatistics logger is the logger that is used to print progress
-messages when the pipeline is run. You can find out which loggers are
-being used to write particular messages by printing all messages with a
-formatter that prints the logger name (“%(name)s”).
+*PipelineStatistics* logger are written to the file `cellprofiler.log`
+instead. The *PipelineStatistics* logger is the logger that is used to
+print progress messages when the pipeline is run. You can find out which
+loggers are being used to write particular messages by printing all
+messages with a formatter that prints the logger name (“%(name)s”).
 The format of the file is described in greater detail `here`_.
 
 .. _here: http://docs.python.org/2.7/howto/logging.html#configuring-logging

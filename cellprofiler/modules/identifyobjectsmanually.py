@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""
+import _help
+
+__doc__ = """\
 IdentifyObjectsManually
 =======================
 
@@ -28,7 +30,14 @@ Supports 2D? Supports 3D? Respects masks?
 YES          NO           NO
 ============ ============ ===============
 
-"""
+See also
+^^^^^^^^
+
+{HELP_ON_SAVING_OBJECTS}
+
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import numpy as np
 from centrosome.cpmorphology import draw_line
@@ -45,7 +54,6 @@ import identify as I
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
 TOOL_ERASE = "Erase"
-
 
 class IdentifyObjectsManually(I.Identify):
     category = "Object Processing"

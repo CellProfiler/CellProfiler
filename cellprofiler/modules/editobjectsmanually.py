@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""
+import _help
+
+__doc__ = """\
 EditObjectsManually
 ===================
 
@@ -43,7 +45,12 @@ See also
 
 See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 **ConvertToImage**.
-"""
+
+{HELP_ON_SAVING_OBJECTS}
+
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import logging
 

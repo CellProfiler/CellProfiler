@@ -124,6 +124,8 @@ modules might be needed):
    as well as those calculated by the module in order to produce
    the objects shown.
 
+{HELP_ON_SAVING_OBJECTS}
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -149,6 +151,7 @@ Measurements made by this module
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
 
 M_PROPAGATION = "Propagation"
@@ -349,7 +352,7 @@ border. Select *{NO:s}* to retain objects regardless of whether they
 touch the image edge or not.
 
 Note: the objects are discarded with respect to downstream measurement
-modules, but they are retained in memory as “unedited objects”; this
+modules, but they are retained in memory as “Unedited objects”; this
 allows them to be considered in downstream modules that modify the
 segmentation.
 """.format(**{

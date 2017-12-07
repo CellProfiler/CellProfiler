@@ -2,7 +2,7 @@
 
 """
 DilateObjects
-===================
+=============
 
 **DilateObjects** removes objects smaller or larger than the specified diameter.
 

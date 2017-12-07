@@ -1,10 +1,10 @@
 # coding=utf-8
 
 """
-DilatePixels
-========
+DilateImage
+===========
 
-**DilatePixels** expands shapes in an image.
+**DilateImage** expands shapes in an image.
 
 |
 
@@ -23,7 +23,7 @@ import cellprofiler.module
 import cellprofiler.setting
 
 
-class DilatePixels(cellprofiler.module.ImageProcessing):
+class DilateImage(cellprofiler.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "DilatePixels"
@@ -31,19 +31,19 @@ class DilatePixels(cellprofiler.module.ImageProcessing):
     variable_revision_number = 1
 
     def create_settings(self):
-        super(DilatePixels, self).create_settings()
+        super(DilateImage, self).create_settings()
 
         self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
 
     def settings(self):
-        __settings__ = super(DilatePixels, self).settings()
+        __settings__ = super(DilateImage, self).settings()
 
         return __settings__ + [
             self.structuring_element
         ]
 
     def visible_settings(self):
-        __settings__ = super(DilatePixels, self).settings()
+        __settings__ = super(DilateImage, self).settings()
 
         return __settings__ + [
             self.structuring_element
@@ -69,7 +69,7 @@ class DilatePixels(cellprofiler.module.ImageProcessing):
 
             self.function = skimage.morphology.dilation
 
-        super(DilatePixels, self).run(workspace)
+        super(DilateImage, self).run(workspace)
 
 
 def planewise_morphology_dilation(x_data, structuring_element):

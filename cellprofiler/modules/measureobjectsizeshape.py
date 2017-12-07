@@ -459,7 +459,7 @@ module.""" % globals())
             # Centers of mass
             centers = objects.center_of_mass()
 
-            center_z, center_x, center_y = centers.transpose()
+            center_z, center_y, center_x = centers.transpose()
 
             self.record_measurement(workspace, object_name, F_CENTER_X, center_x)
 

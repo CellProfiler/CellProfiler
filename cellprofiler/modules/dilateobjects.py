@@ -24,10 +24,6 @@ import cellprofiler.object
 import cellprofiler.module
 import cellprofiler.setting
 
-SQUARE = 'Square'
-DIAMOND = 'Diamond'
-DISK = 'Disk'
-
 
 class DilateObjects(cellprofiler.module.ObjectProcessing):
     category = "Advanced"
@@ -39,77 +35,53 @@ class DilateObjects(cellprofiler.module.ObjectProcessing):
     def create_settings(self):
         super(DilateObjects, self).create_settings()
 
-        self.size = cellprofiler.setting.Integer(
-            text="Dilation Radius",
-            value=2,
-            doc="Radius by which to dilate a single pixel"
-        )
-
-        # TODO: MORE DOCUMENTATION HERE
-        self.method = cellprofiler.setting.Choice(
-            text="Dilation Method",
-            choices=[SQUARE, DIAMOND, DISK],
-            doc="Method by which to dilate a single pixel"
-        )
-
+        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
 
     def settings(self):
         __settings__ = super(DilateObjects, self).settings()
 
         return __settings__ + [
-            self.size,
-            self.method
+            self.structuring_element
         ]
 
     def visible_settings(self):
         __settings__ = super(DilateObjects, self).visible_settings()
 
         return __settings__ + [
-            self.size,
-            self.method
+            self.structuring_element
         ]
 
     def run(self, workspace):
         x_name = self.x_name.value
-        y_name = self.y_name.value
         object_set = workspace.object_set
-        images = workspace.image_set
 
         x = object_set.get_objects(x_name)
 
-        dimensions = x.dimensions
-        y_data = x.segmented.copy()
+        is_strel_2d = self.structuring_element.value.ndim == 2
 
-        structure = None
-        r = self.size.value
+        is_img_2d = x.segmented.ndim == 2
 
-        if self.method == SQUARE:
-            structure = get_structure(x, r*2, skimage.morphology.square, skimage.morphology.cube)
-        elif self.method == DIAMOND:
-            structure = get_structure(x, r, skimage.morphology.diamond, skimage.morphology.octahedron)
-        elif self.method == DISK:
-            structure = get_structure(x, r, skimage.morphology.disk, skimage.morphology.ball)
+        if is_strel_2d and not is_img_2d:
 
-        y_data = skimage.morphology.dilation(y_data, structure)
+            self.function = planewise_morphology_dilation
 
-        objects = cellprofiler.object.Objects()
+        elif not is_strel_2d and is_img_2d:
 
-        objects.segmented = y_data
-        objects.parent_image = x.parent_image
+            raise NotImplementedError("A 3D structuring element cannot be applied to 2D objects.")
 
-        workspace.object_set.add_objects(objects, y_name)
+        else:
 
-        self.add_measurements(workspace)
+            self.function = skimage.morphology.dilation
 
-        if self.show_window:
-            workspace.display_data.x_data = x.segmented
-
-            workspace.display_data.y_data = y_data
-
-            workspace.display_data.dimensions = dimensions
+        super(DilateObjects, self).run(workspace)
 
 
-def get_structure(objects, size, func2D, func3D):
-    if objects.volumetric:
-        return func3D(size)
-    return func2D(size)
+def planewise_morphology_dilation(x_data, structuring_element):
+
+    y_data = numpy.zeros_like(x_data)
+
+    for index, plane in enumerate(x_data):
+
+        y_data[index] = skimage.morphology.dilation(plane, structuring_element)
+
+    return y_data

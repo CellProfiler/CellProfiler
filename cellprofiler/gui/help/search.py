@@ -262,10 +262,7 @@ def search_module_help(text):
 
     match_num = 1
 
-    prev_link = u"""\
-<a href="#match%d" title="Previous match">
-    <img alt="previous match" src=memory:previous.png">
-</a>"""
+    prev_link = u"""<a href="#match%d" title="Previous match"><img alt="previous match" src="memory:previous.png"></a>"""
 
     anchor = u"""<a name="match%d"><u>%s</u></a>"""
 

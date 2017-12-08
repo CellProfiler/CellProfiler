@@ -15,19 +15,16 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import numpy
-import skimage.morphology
-
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import cellprofiler.utilities.sharedmethods
+import cellprofiler.utilities.morphology
 
 
 class DilateImage(cellprofiler.module.ImageProcessing):
     category = "Advanced"
 
-    module_name = "DilatePixels"
+    module_name = "DilateImage"
 
     variable_revision_number = 1
 
@@ -51,6 +48,6 @@ class DilateImage(cellprofiler.module.ImageProcessing):
         ]
 
     def run(self, workspace):
-        self.function = cellprofiler.utilities.sharedmethods.dilation
+        self.function = cellprofiler.utilities.morphology.dilation
 
         super(DilateImage, self).run(workspace)

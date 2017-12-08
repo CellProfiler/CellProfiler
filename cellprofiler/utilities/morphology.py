@@ -1,5 +1,5 @@
 """
-Shared methods used by multiple modules
+Shared mophology methods used by multiple modules
 """
 
 import numpy
@@ -7,13 +7,11 @@ import skimage.morphology
 
 
 def dilation(x_data, structuring_element):
-
     is_strel_2d = structuring_element.ndim == 2
 
     is_img_2d = x_data.ndim == 2
 
     if is_strel_2d and not is_img_2d:
-
         y_data = numpy.zeros_like(x_data)
 
         for index, plane in enumerate(x_data):
@@ -22,12 +20,9 @@ def dilation(x_data, structuring_element):
 
         return y_data
 
-    elif not is_strel_2d and is_img_2d:
-
+    if not is_strel_2d and is_img_2d:
         raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
 
-    else:
+    y_data = skimage.morphology.dilation(x_data, structuring_element)
 
-        y_data = skimage.morphology.dilation(x_data, structuring_element)
-
-        return y_data
+    return y_data

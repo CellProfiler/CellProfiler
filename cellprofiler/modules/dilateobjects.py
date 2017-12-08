@@ -16,14 +16,10 @@ YES          YES          NO
 
 """
 
-import numpy
-import skimage.morphology
-import skimage.segmentation
-
 import cellprofiler.object
 import cellprofiler.module
 import cellprofiler.setting
-import cellprofiler.utilities.sharedmethods
+import cellprofiler.utilities.morphology
 
 
 class DilateObjects(cellprofiler.module.ObjectProcessing):
@@ -53,6 +49,6 @@ class DilateObjects(cellprofiler.module.ObjectProcessing):
         ]
 
     def run(self, workspace):
-        self.function = cellprofiler.utilities.sharedmethods.dilation
+        self.function = cellprofiler.utilities.morphology.dilation
 
         super(DilateObjects, self).run(workspace)

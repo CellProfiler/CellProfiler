@@ -249,7 +249,7 @@ def search_module_help(text):
     <title>{count} match{es} found</title>
 </head>
 <body>
-    <h1>Match{es} found</h1><br>
+    <h1>Match{es} found ({count} total)</h1><br>
     <ul></ul>
 </body>
 </html>

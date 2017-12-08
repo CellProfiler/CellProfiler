@@ -271,9 +271,6 @@ def search_module_help(text):
     for title, help_text, pairs in matching_help:
         top += u"""<li><a href="#match{:d}">{}</a></li>\n""".format(match_num, title)
 
-        if help_text.find("<h1>") == -1:
-            body += u"<h1>{}</h1>".format(title)
-
         start_match = re.search(r"<\s*body[^>]*?>", help_text, re.IGNORECASE)
 
         if start_match is None:

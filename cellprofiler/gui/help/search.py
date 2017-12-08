@@ -273,6 +273,11 @@ def search_module_help(text):
 
         start_match = re.search(r"<\s*body[^>]*?>", help_text, re.IGNORECASE)
 
+        # Some pages don't have in-line titles
+        # Not matching "<h1>" here for cases that have "<h1 class='title'>", etc.
+        if not help_text.startswith(u"<h1"):
+            body += u"<h1>{}</h1>".format(title)
+
         if start_match is None:
             start = 0
         else:

@@ -12,7 +12,11 @@ Advanced modules include computer vision algorithms.
 
 `(Jump to top)`_
 
-.. automodule:: cellprofiler.modules.dilation
+.. automodule:: cellprofiler.modules.dilateimage
+
+`(Jump to top)`_
+
+.. automodule:: cellprofiler.modules.dilateobjects
 
 `(Jump to top)`_
 

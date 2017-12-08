@@ -1679,7 +1679,7 @@ class Choice(Setting):
 
 class StructuringElement(Setting):
     def __init__(self, text="Structuring element",
-                 value="disk,1",
+                 value="Disk,1",
                  allow_planewise=False,
                  *args,
                  **kwargs):
@@ -1690,13 +1690,13 @@ class StructuringElement(Setting):
     @staticmethod
     def get_choices():
         return [
-            "ball",
-            "cube",
-            "diamond",
-            "disk",
-            "octahedron",
-            "square",
-            "star"
+            "Ball",
+            "Cube",
+            "Diamond",
+            "Disk",
+            "Octahedron",
+            "Square",
+            "Star"
         ]
 
     def get_value(self):
@@ -1707,7 +1707,7 @@ class StructuringElement(Setting):
 
     @property
     def shape(self):
-        return str(self.value_text.split(",")[0])
+        return str(self.value_text.split(",")[0]).lower()
 
     @shape.setter
     def shape(self, value):

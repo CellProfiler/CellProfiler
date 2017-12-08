@@ -1,6 +1,10 @@
 # coding=utf-8
 
-"""
+import _help
+MeasureObjectIntensityDistribution_Magnitude_Phase = _help.__image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')
+MeasureObjectIntensityDistribution_Edges_Centers = _help.__image_resource('MeasureObjectIntensityDistribution_Edges_Centers.png')
+
+__doc__ = """
 MeasureObjectIntensityDistribution
 ==================================
 
@@ -58,31 +62,10 @@ Measurements made by this module
 .. |MeasureObjectIntensityDistribution_image0| image:: {MeasureObjectIntensityDistribution_Magnitude_Phase}
 .. |MeasureObjectIntensityDistribution_image1| image:: {MeasureObjectIntensityDistribution_Edges_Centers}
 
-"""
-
-import os
-import pkg_resources
-
-
-def __image_resource(filename):
-    #If you're rendering in the GUI, relative paths are fine
-    if os.path.relpath(pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", filename)
-    )) == os.path.join("cellprofiler","data", "images", filename):
-        return os.path.relpath(pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "images", filename)
-        ))
-    else:
-    #If you're rendering in sphinx, the relative path of the rst file is one below the make file so compensate accordingly
-        return os.path.join('..',os.path.relpath(pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "images", filename)
-        )))
-
-MeasureObjectIntensityDistribution_Magnitude_Phase = __image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')
-MeasureObjectIntensityDistribution_Edges_Centers = __image_resource('MeasureObjectIntensityDistribution_Edges_Centers.png')
+""".format(**{
+    "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase,
+    "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers
+})
 
 import centrosome.cpmorphology
 import centrosome.propagate
@@ -164,10 +147,6 @@ MEASUREMENT_ALIASES = {
 
 
 class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
-    __doc__ = __doc__.format(**{
-        "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase,
-        "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers
-    })
     module_name = "MeasureObjectIntensityDistribution"
     category = "Measurement"
     variable_revision_number = 5

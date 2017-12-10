@@ -790,7 +790,7 @@ objects:
         d = self.get_dictionary(workspace.image_set_list)
         r = d[SH_RECTANGLE]
         left, top, right, bottom = [
-            r[x] for x in (RE_LEFT, RE_TOP, RE_RIGHT, RE_BOTTOM)]
+            int(r[x]) for x in (RE_LEFT, RE_TOP, RE_RIGHT, RE_BOTTOM)]
         if left > 0:
             cropping[:, :left] = False
         if right < cropping.shape[1]:

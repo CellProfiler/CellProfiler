@@ -141,14 +141,14 @@ def test_pass_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empt
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
     module.size.value = 3.
-    # Set to slicewise so the bowl is "filled" on each slice
-    module.slice_wise.value = True
+    # Set to planewise so the bowl is "filled" on each plane
+    module.planewise.value = True
 
     module.run(workspace_empty)
 
     actual = object_set_empty.get_objects("OutputObjects").segmented
     expected = volume_labels
 
-    # We're filling slice-wise here, so each 2D slice should have its holes filled,
+    # We're filling plane-wise here, so each 2D plane should have its holes filled,
     # meaning the 'bowl' should be filled
     numpy.testing.assert_array_equal(actual, expected)

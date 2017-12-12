@@ -10,8 +10,8 @@ FillObjects
 **ConvertImageToObjects** or **Watershed**). Labels are preserved and, where possible, holes
 entirely within the boundary of labeled objects are filled with the surrounding object number.
 
-**FillObjects** can also be run on a "per-slice" basis working with volumetric data.
-Holes will be filled for each XY slice, rather than on the whole volume.
+**FillObjects** can also be run on a "per-plane" basis working with volumetric data.
+Holes will be filled for each XY plane, rather than on the whole volume.
 
 |
 
@@ -47,16 +47,16 @@ class FillObjects(cellprofiler.module.ObjectProcessing):
             doc="Holes smaller than this diameter will be filled."
         )
 
-        self.slice_wise = cellprofiler.setting.Binary(
-            text="Slice wise fill",
+        self.planewise = cellprofiler.setting.Binary(
+            text="Planewise fill",
             value=False,
             doc="""\
-Select "*{YES}*" to fill objects on a per-slice level. 
-This will perform the hole filling on each slice of a 
+Select "*{YES}*" to fill objects on a per-plane level. 
+This will perform the hole filling on each plane of a 
 volumetric image, rather than on the image as a whole. 
 This may be helpful for removing seed artifacts that 
 are the result of segmentation.
-**Note**: Slice-wise operations will be considerably slower.
+**Note**: Planewise operations will be considerably slower.
 """.format(**{
                 "YES": cellprofiler.setting.YES
             })
@@ -67,7 +67,7 @@ are the result of segmentation.
 
         return __settings__ + [
             self.size,
-            self.slice_wise
+            self.planewise
         ]
 
     def visible_settings(self):
@@ -75,12 +75,12 @@ are the result of segmentation.
 
         return __settings__ + [
             self.size,
-            self.slice_wise
+            self.planewise
         ]
 
     def run(self, workspace):
-        self.function = lambda labels, diameter, slicewise: \
-            fill_object_holes(labels, diameter, slicewise)
+        self.function = lambda labels, diameter, planewise: \
+            fill_object_holes(labels, diameter, planewise)
 
         super(FillObjects, self).run(workspace)
 
@@ -97,18 +97,18 @@ def _fill_holes(labels, min_obj_size):
     return array
 
 
-def fill_object_holes(labels, diameter, slicewise):
+def fill_object_holes(labels, diameter, planewise):
     radius = diameter / 2.0
 
-    if labels.ndim == 2 or labels.shape[-1] in (3, 4) or slicewise:
+    if labels.ndim == 2 or labels.shape[-1] in (3, 4) or planewise:
         factor = radius ** 2
     else:
         factor = (4.0 / 3.0) * (radius ** 3)
 
     min_obj_size = numpy.pi * factor
 
-    # Only operate slicewise if image is 3D and slicewise requested
-    if slicewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
+    # Only operate planewise if image is 3D and planewise requested
+    if planewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
         return numpy.array([_fill_holes(x, min_obj_size) for x in labels])
     return _fill_holes(labels, min_obj_size)
 

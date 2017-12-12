@@ -249,7 +249,7 @@ def search_module_help(text):
     <title>{count} match{es} found</title>
 </head>
 <body>
-    <h1>Match{es} found</h1><br>
+    <h1>Match{es} found ({count} total)</h1><br>
     <ul></ul>
 </body>
 </html>
@@ -262,10 +262,7 @@ def search_module_help(text):
 
     match_num = 1
 
-    prev_link = u"""\
-<a href="#match%d" title="Previous match">
-    <img alt="previous match" src=memory:previous.png">
-</a>"""
+    prev_link = u"""<a href="#match%d" title="Previous match"><img alt="previous match" src="memory:previous.png"></a>"""
 
     anchor = u"""<a name="match%d"><u>%s</u></a>"""
 
@@ -274,10 +271,12 @@ def search_module_help(text):
     for title, help_text, pairs in matching_help:
         top += u"""<li><a href="#match{:d}">{}</a></li>\n""".format(match_num, title)
 
-        if help_text.find("<h1>") == -1:
-            body += u"<h1>{}</h1>".format(title)
-
         start_match = re.search(r"<\s*body[^>]*?>", help_text, re.IGNORECASE)
+
+        # Some pages don't have in-line titles
+        # Not matching "<h1>" here for cases that have "<h1 class='title'>", etc.
+        if not help_text.startswith(u"<h1"):
+            body += u"<h1>{}</h1>".format(title)
 
         if start_match is None:
             start = 0

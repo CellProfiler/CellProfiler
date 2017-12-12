@@ -1646,7 +1646,7 @@ class PipelineController(object):
             if result == wx.YES:
                 self.do_load_pipeline(path)
             return
-        show_image(paths[0], self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2)
+        show_image(path, self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2)
 
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_urls(paths)

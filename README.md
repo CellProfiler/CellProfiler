@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/cellprofiler/data/images/splash.png">
+![CellProfiler](cellprofiler/data/images/splash.png)
 
 [![Build Status](https://img.shields.io/travis/CellProfiler/CellProfiler/master.svg)](https://travis-ci.org/CellProfiler/CellProfiler)
 

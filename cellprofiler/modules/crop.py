@@ -47,8 +47,6 @@ import matplotlib.figure
 import matplotlib.cm
 import matplotlib.axes
 import matplotlib.patches
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-import wx
 
 import cellprofiler.image
 import cellprofiler.module
@@ -518,6 +516,8 @@ objects:
             return self.apply_rectangle_cropping(workspace, orig_image)
 
     def handle_interaction(self, current_shape, orig_image):
+        from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+        import wx
         """Show the cropping user interface"""
         pixel_data = stretch(orig_image)
         #
@@ -867,7 +867,7 @@ objects:
         d = self.get_dictionary(workspace.image_set_list)
         r = d[SH_RECTANGLE]
         left, top, right, bottom = [
-            int(r[x]) for x in (RE_LEFT, RE_TOP, RE_RIGHT, RE_BOTTOM)]
+            int(numpy.round(r[x])) for x in (RE_LEFT, RE_TOP, RE_RIGHT, RE_BOTTOM)]
         if left > 0:
             cropping[:, :left] = False
         if right < cropping.shape[1]:

@@ -110,7 +110,7 @@ from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \
     C_OBJECTS_URL
 import numpy
-import skimage.io
+import skimage.external.tifffile
 
 '''STK TIFF Tag UIC1 - for MetaMorph internal use'''
 UIC1_TAG = 33628
@@ -3371,7 +3371,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if self.is_numpy_file():
             data = np.load(pathname)
         else:
-            data = skimage.io.imread(pathname)
+            data = skimage.external.tifffile.imread(pathname)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:

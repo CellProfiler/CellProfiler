@@ -1497,7 +1497,9 @@ class Figure(wx.Frame):
         if image.shape[2] > 4:
             logger.warn(
                 "Multichannel display is only supported for RGB(A) (3- or 4-channel) data."
-                " Input image has {:d} channels. Only the first 3 channels will be displayed.".format(image.shape[-1])
+                " Input image has {:d} channels. Only the first 3 channels will be displayed as RGB.".format(
+                    image.shape[-1]
+                )
             )
 
             return self.subplot_imshow(x, y, image[:, :, :3], title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)

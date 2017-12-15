@@ -189,12 +189,7 @@ class Menu(cellprofiler.gui.menu.Menu):
 
     @staticmethod
     def __on_help_online_manual(event):
-        url = "http://cellprofiler.readthedocs.io/en/v{}/".format(cellprofiler.__version__)
-
-        if requests.get(url).ok:
-            webbrowser.open(url)
-        else:
-            webbrowser.open("http://cellprofiler.readthedocs.io/en/latest")
+        webbrowser.open(cellprofiler.gui.help.content.MANUAL_URL)
 
     @staticmethod
     def __on_help_source_code():

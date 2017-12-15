@@ -5,6 +5,8 @@ import re
 
 import pkg_resources
 
+import cellprofiler
+
 
 def __image_resource(filename):
     return pkg_resources.resource_filename(
@@ -29,6 +31,8 @@ def read_content(filename):
         ),
         content
     )
+
+MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.html".format(cellprofiler.__version__)
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"

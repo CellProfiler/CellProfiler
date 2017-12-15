@@ -400,7 +400,7 @@ WELCOME_MAIN = u"""\
                             <b><font size="+1">Manual</font></b><br>
                             <br>
                             <a href=
-                            "http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html">
+                            "{MANUAL_URL}">
                             <img src="memory:welcomescreen_manual.png"></a><br>
                             <br>
                             Online version of In-App help
@@ -438,6 +438,7 @@ WELCOME_MAIN = u"""\
     "IDENTIFY_FEATUREES_REF": IDENTIFY_FEATUREES_REF,
     "IN_APP_HELP_REF": IN_APP_HELP_REF,
     "MAKING_MEASUREMENTS_REF": MAKING_MEASUREMENTS_REF,
+    "MANUAL_URL": cellprofiler.gui.help.content.MANUAL_URL,
     "RUNNING_YOUR_PIPELINE_REF": RUNNING_YOUR_PIPELINE_REF,
     "SELECTING_IMAGES_REF": SELECTING_IMAGES_REF,
     "TEST_MODE_REF": TEST_MODE_REF

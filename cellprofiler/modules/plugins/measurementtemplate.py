@@ -1,4 +1,31 @@
-'''<b>MeasurementTemplate</b> - an example measurement module
+# coding=utf-8
+
+#################################
+#
+# Imports from useful Python libraries
+#
+#################################
+
+import numpy
+import scipy.ndimage
+
+#################################
+#
+# Imports from CellProfiler
+#
+##################################
+
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.measurement
+import cellprofiler.object
+import cellprofiler.setting
+
+import centrosome.zernike
+import centrosome.cpmorphology
+
+
+__doc__ = '''<b>MeasurementTemplate</b> - an example measurement module
 <hr>
 This is an example of a module that measures a property of an image both
 for the image as a whole and for every object in the image. It demonstrates
@@ -19,34 +46,6 @@ parts.
 Features names are in the format,
 "MT_Intensity_<i>Image name</i>_N<i>(radial degree)</i>M<i>(Azimuthal degree)</i>
 '''
-#################################
-#
-# Imports from useful Python libraries
-#
-#################################
-
-import numpy as np
-import scipy.ndimage as scind
-
-#################################
-#
-# Imports from CellProfiler
-#
-# The package aliases are the standard ones we use
-# throughout the code.
-#
-##################################
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
-
-from centrosome.zernike import construct_zernike_polynomials
-from centrosome.zernike import get_zernike_indexes
-from centrosome.cpmorphology import minimum_enclosing_circle
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 ##################################
 #
@@ -71,7 +70,7 @@ C_MEASUREMENT_TEMPLATE = "MT"
 #
 ###################################
 
-class MeasurementTemplate(cpm.Module):
+class MeasurementTemplate(cellprofiler.module.Module):
     ###############################################
     #
     # The module starts by declaring the name that's used for display,
@@ -101,7 +100,7 @@ class MeasurementTemplate(cpm.Module):
         # The ImageSubscriber gives your user a list of these images
         # which can then be used as inputs in your module.
         #
-        self.input_image_name = cps.ImageNameSubscriber(
+        self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
                 # The text to the left of the edit box
                 "Input image name:",
                 # HTML help that gets displayed when the user presses the
@@ -117,7 +116,7 @@ class MeasurementTemplate(cpm.Module):
         # which object to pick from the list of objects provided by
         # upstream modules.
         #
-        self.input_object_name = cps.ObjectNameSubscriber(
+        self.input_object_name = cellprofiler.setting.ObjectNameSubscriber(
                 "Input object name",
                 doc="""These are the objects that the module operates on.""")
         #
@@ -128,7 +127,7 @@ class MeasurementTemplate(cpm.Module):
         # The setting is an integer setting, bounded between 1 and 50.
         # N = 50 generates 1200 features!
         #
-        self.radial_degree = cps.Integer(
+        self.radial_degree = cellprofiler.setting.Integer(
                 "Radial degree", 10, minval=1, maxval=50,
                 doc="""Calculate all Zernike features up to the given radial
             degree. The Zernike function is parameterized by a radial
@@ -161,7 +160,7 @@ class MeasurementTemplate(cpm.Module):
         # make in here
         #
         meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        assert isinstance(meas, cellprofiler.measurement.Measurements)
         #
         # We record some statistics which we will display later.
         # We format them so that Matplotlib can display them in a table.
@@ -206,7 +205,7 @@ class MeasurementTemplate(cpm.Module):
         # The object set has all of the objects in it.
         #
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
+        assert isinstance(object_set, cellprofiler.object.ObjectSet)
         #
         # Get objects from the object set. The most useful array in
         # the objects is "objects.segmented" which is a labels matrix
@@ -246,7 +245,7 @@ class MeasurementTemplate(cpm.Module):
         # in those indexes. MEC returns the i and j coordinate of the center
         # and the radius of the circle and that defines the circle entirely.
         #
-        centers, radius = minimum_enclosing_circle(labels, indexes)
+        centers, radius = centrosome.cpmorphology.minimum_enclosing_circle(labels, indexes)
         ###############################################################
         #
         # The module computes a measurement based on the image intensity
@@ -275,9 +274,9 @@ class MeasurementTemplate(cpm.Module):
             #
             # Record the statistics.
             #
-            zmean = np.mean(zr)
-            zmedian = np.median(zr)
-            zsd = np.std(zr)
+            zmean = numpy.mean(zr)
+            zmedian = numpy.median(zr)
+            zsd = numpy.std(zr)
             statistics.append([feature, zmean, zmedian, zsd])
 
     ################################
@@ -300,19 +299,19 @@ class MeasurementTemplate(cpm.Module):
         wants_negative - if True, return both positive and negative M, if false
                          return only positive
         '''
-        zi = get_zernike_indexes(self.radial_degree.value + 1)
+        zi = centrosome.zernike.get_zernike_indexes(self.radial_degree.value + 1)
         if wants_negative:
             #
             # np.vstack means concatenate rows of two 2d arrays.
             # The multiplication by [1, -1] negates every m, but preserves n.
             # zi[zi[:, 1] != 0] picks out only elements with m not equal to zero.
             #
-            zi = np.vstack([zi, zi[zi[:, 1] != 0] * np.array([1, -1])])
+            zi = numpy.vstack([zi, zi[zi[:, 1] != 0] * numpy.array([1, -1])])
             #
             # Sort by azimuth degree and radial degree so they are ordered
             # reasonably
             #
-            order = np.lexsort((zi[:, 1], zi[:, 0]))
+            order = numpy.lexsort((zi[:, 1], zi[:, 0]))
             zi = zi[order, :]
         return zi
 
@@ -353,16 +352,16 @@ class MeasurementTemplate(cpm.Module):
         # but we want to do the indexing without ignoring the background
         # because that's easier.
         #
-        center_x = np.hstack([[0], center_x])
-        center_y = np.hstack([[0], center_y])
-        radius = np.hstack([[1], radius])
+        center_x = numpy.hstack([[0], center_x])
+        center_y = numpy.hstack([[0], center_y])
+        radius = numpy.hstack([[1], radius])
         #
         # Now get one array that's the y coordinate of each pixel and one
         # that's the x coordinate. This might look stupid and wasteful,
         # but these "arrays" are never actually realized and made into
         # real memory.
         #
-        y, x = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+        y, x = numpy.mgrid[0:labels.shape[0], 0:labels.shape[1]]
         #
         # Get the x and y coordinates relative to the object centers.
         # This uses Numpy broadcasting. For each pixel, we use the
@@ -390,14 +389,14 @@ class MeasurementTemplate(cpm.Module):
         # We use a mask of all of the non-zero labels so the calculation
         # runs a little faster.
         #
-        zernike_polynomial = construct_zernike_polynomials(
-                x, y, np.array([[n, m]]), labels > 0)
+        zernike_polynomial = centrosome.zernike.construct_zernike_polynomials(
+                x, y, numpy.array([[n, m]]), labels > 0)
         #
         # For historical reasons, CellProfiler didn't multiply by the per/zernike
         # normalizing factor: 2*n + 2 / E / pi where E is 2 if m is zero and 1
         # if m is one. We do it here to aid with the reconstruction
         #
-        zernike_polynomial *= (2 * n + 2) / (2 if m == 0 else 1) / np.pi
+        zernike_polynomial *= (2 * n + 2) / (2 if m == 0 else 1) / numpy.pi
         #
         # Multiply the Zernike polynomial by the image to dissect
         # the image by the Zernike basis set.
@@ -412,8 +411,8 @@ class MeasurementTemplate(cpm.Module):
         # each pixel in an object, using the labels matrix to name
         # the pixels in an object
         #
-        zr = fix(scind.sum(output_pixels.real, labels, indexes))
-        zi = fix(scind.sum(output_pixels.imag, labels, indexes))
+        zr = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(output_pixels.real, labels, indexes))
+        zi = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(output_pixels.imag, labels, indexes))
         #
         # And we're done! Did you like it? Did you get it?
         #
@@ -476,7 +475,7 @@ class MeasurementTemplate(cpm.Module):
         input_object_name = self.input_object_name.value
         return [(input_object_name,
                  self.get_measurement_name(n, m),
-                 cpmeas.COLTYPE_FLOAT)
+                 cellprofiler.measurement.COLTYPE_FLOAT)
                 for n, m in self.get_zernike_indexes(True)]
 
     #
@@ -543,16 +542,16 @@ class MeasurementTemplate(cpm.Module):
 
         returns a greyscale image based on the feature dictionary.
         '''
-        i, j = np.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(float) / radius
+        i, j = numpy.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(float) / radius
         mask = (i * i + j * j) <= 1
 
-        zernike_indexes = np.array(feature_dictionary.keys())
-        zernike_features = np.array(feature_dictionary.values())
+        zernike_indexes = numpy.array(feature_dictionary.keys())
+        zernike_features = numpy.array(feature_dictionary.values())
 
-        z = construct_zernike_polynomials(
-                j, i, np.abs(zernike_indexes), mask=mask)
-        zn = (2 * zernike_indexes[:, 0] + 2) / ((zernike_indexes[:, 1] == 0) + 1) / np.pi
-        z = z * zn[np.newaxis, np.newaxis, :]
-        z = z.real * (zernike_indexes[:, 1] >= 0)[np.newaxis, np.newaxis, :] + \
-            z.imag * (zernike_indexes[:, 1] <= 0)[np.newaxis, np.newaxis, :]
-        return np.sum(z * zernike_features[np.newaxis, np.newaxis, :], 2)
+        z = centrosome.zernike.construct_zernike_polynomials(
+                j, i, numpy.abs(zernike_indexes), mask=mask)
+        zn = (2 * zernike_indexes[:, 0] + 2) / ((zernike_indexes[:, 1] == 0) + 1) / numpy.pi
+        z = z * zn[numpy.newaxis, numpy.newaxis, :]
+        z = z.real * (zernike_indexes[:, 1] >= 0)[numpy.newaxis, numpy.newaxis, :] + \
+            z.imag * (zernike_indexes[:, 1] <= 0)[numpy.newaxis, numpy.newaxis, :]
+        return numpy.sum(z * zernike_features[numpy.newaxis, numpy.newaxis, :], 2)

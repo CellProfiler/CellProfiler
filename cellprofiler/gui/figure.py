@@ -1493,12 +1493,12 @@ class Figure(wx.Frame):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
 
-        # Truncate multichannel data that is not RGB(A) (5+ channel data) and display it as RGB.
-        if image.shape[2] > 4:
+        # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
+        if image.shape[2] > 3:
             logger.warn(
-                "Multichannel display is only supported for RGB(A) (3- or 4-channel) data."
-                " Input image has {:d} channels. Only the first 3 channels will be displayed as RGB.".format(
-                    image.shape[-1]
+                "Multichannel display is only supported for RGB (3-channel) data."
+                " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
+                    image.shape[2]
                 )
             )
 

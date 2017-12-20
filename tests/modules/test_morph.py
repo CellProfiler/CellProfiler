@@ -126,48 +126,6 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         self.assertEqual(module.output_image_name, "MorphImage")
         self.assertEqual(len(module.functions), len(ops))
 
-    def test_load_v3(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:300
-GitHash:
-ModuleCount:1
-HasImagePlaneDetails:False
-
-Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Select the input image:DNA
-    Name the output image:MorphBlue
-    Select the operation to perform:life
-    Number of times to repeat operation:Forever
-    Repetition number:2
-    Diameter:3.0
-    Structuring element:Disk
-    X offset:1.0
-    Y offset:1.0
-    Angle:0.0
-    Width:3.0
-    Height:3.0
-    Custom:5,5,1111111111111111111111111
-    Rescale values from 0 to 1?:Yes
-        """
-
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-
-        pipeline.load(StringIO.StringIO(data))
-
-        module = pipeline.modules()[0]
-
-        self.assertEqual(module.image_name.value, "DNA")
-
-        self.assertEqual(module.output_image_name.value, "MorphBlue")
-
-        self.assertEqual(module.functions[0].function.value, "life")
-
     # https://github.com/CellProfiler/CellProfiler/issues/3349
     def test_load_with_extracted_operations(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org

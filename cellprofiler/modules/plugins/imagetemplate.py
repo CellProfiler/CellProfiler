@@ -1,15 +1,95 @@
-'''<b>ImageTemplate</b> - an example image processing module
-<hr>
+__doc__ = """\
+ImageTemplate
+=============
+
+**ImageTemplate** is an example image processing module. It's recommended to
+put a brief description of this module here and go into more detail below.
+
 This is an example of a module that takes one image as an input and
 produces a second image for downstream processing. You can use this as
 a starting point for your own module: rename this file and put it in your
 plugins directory.
 
-The text you see here will be displayed as the help for your module. You
-can use HTML markup here and in the settings text; the Python HTML control
-does not fully support the HTML specification, so you may have to experiment
-to get it to display correctly.
-'''
+The text you see here will be displayed as the help for your module, formatted
+as `reStructuredText <http://docutils.sourceforge.net/rst.html>`_.
+
+Note whether or not this module supports 3D image data and respects masks.
+A module which respects masks applies an image's mask and operates only on
+the unmasked data. Update the table below to indicate which image processing
+features this module supports.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+Is there another **Module** that is related to this one? If so, refer
+to that **Module** in this section. Otherwise, this section can be omitted.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Are there any assumptions about input data someone using this module
+should be made aware of? For example, is there a strict requirement that
+image data be single-channel, or that the foreground is brighter than
+the background? Describe any assumptions here.
+
+This section can be omitted if there is no requirement on the input.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Describe the output of this module. This is necessary if the output is
+more complex than a single image. For example, if there is data displayed
+over the image then describe what the data represents.
+
+This section can be omitted if there is no specialized output.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Describe the measurements made by this module, if any. Typically, measurements
+are described in the following format:
+
+**Measurement category:**
+
+-  *MeasurementName*: A brief description of the measurement.
+-  *MeasurementName*: A brief description of the measurement.
+
+**Measurement category:**
+
+-  *MeasurementName*: A brief description of the measurement.
+-  *MeasurementName*: A brief description of the measurement.
+
+This section can be omitted if no measurements are made by this module.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+Include implementation details or notes here. Additionally provide any 
+other background information about this module, including definitions
+or adopted conventions. Information which may be too specific to fit into
+the general description should be provided here.
+
+Omit this section if there is no technical information to mention.
+
+References
+^^^^^^^^^^
+
+Provide citations here, if appropriate. Citations are formatted as a list and,
+wherever possible, include a link to the original work. For example,
+
+-  Meyer F, Beucher S (1990) “Morphological segmentation.” *J Visual
+   Communication and Image Representation* 1, 21-46.
+   (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
+"""
+
 #################################
 #
 # Imports from useful Python libraries

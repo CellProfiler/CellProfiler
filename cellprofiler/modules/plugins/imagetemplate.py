@@ -302,21 +302,24 @@ scales will give you short-range gradients.
         #
         input_image_name = self.input_image_name.value
         output_image_name = self.output_image_name.value
+
         #
         # Get the image set. The image set has all of the images in it.
         #
         image_set = workspace.image_set
+
         #
         # Get the input image object. We want a grayscale image here.
         # The image set will convert a color image to a grayscale one
         # and warn the user.
         #
-        input_image = image_set.get_image(input_image_name,
-                                          must_be_grayscale=True)
+        input_image = image_set.get_image(input_image_name, must_be_grayscale=True)
+
         #
         # Get the pixels - these are a 2-d Numpy array.
         #
         pixels = input_image.pixel_data
+
         #
         # Get the smoothing parameter
         #
@@ -330,19 +333,22 @@ scales will give you short-range gradients.
             scale = numpy.sqrt(numpy.sum((mode + .5) ** 2))
         else:
             scale = self.scale.value
-        g = scipy.ndimage.gaussian_gradient_magnitude(pixels, scale)
+
+        gradient_magnitude = scipy.ndimage.gaussian_gradient_magnitude(pixels, scale)
+
         if self.gradient_choice == GRADIENT_MAGNITUDE:
-            output_pixels = g
+            output_pixels = gradient_magnitude
         else:
             # Numpy uses i and j instead of x and y. The x axis is 1
             # and the y axis is 0
-            x = scipy.ndimage.correlate1d(g, [-1, 0, 1], 1)
-            y = scipy.ndimage.correlate1d(g, [-1, 0, 1], 0)
+            x = scipy.ndimage.correlate1d(gradient_magnitude, [-1, 0, 1], 1)
+            y = scipy.ndimage.correlate1d(gradient_magnitude, [-1, 0, 1], 0)
             norm = numpy.sqrt(x ** 2 + y ** 2)
             if self.gradient_choice == GRADIENT_DIRECTION_X:
                 output_pixels = .5 + x / norm / 2
             else:
                 output_pixels = .5 + y / norm / 2
+
         #
         # Make an image object. It's nice if you tell CellProfiler
         # about the parent image - the child inherits the parent's
@@ -350,12 +356,13 @@ scales will give you short-range gradients.
         #
         output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
         image_set.add(output_image_name, output_image)
+
         #
         # Save intermediate results for display if the window frame is on
         #
         if self.show_window:
             workspace.display_data.input_pixels = pixels
-            workspace.display_data.gradient = g
+            workspace.display_data.gradient = gradient_magnitude
             workspace.display_data.output_pixels = output_pixels
 
     #
@@ -368,28 +375,40 @@ scales will give you short-range gradients.
         # so we pretty much ignore the figure.
         #
         figure = workspace.create_or_find_figure(subplots=(3, 1))
+
         #
         # Show the user the input image
         #
         figure.subplot_imshow_grayscale(
-                0, 0,  # show the image in the first row and column
-                workspace.display_data.input_pixels,
-                title=self.input_image_name.value)
+            x=0,  # show the image in the first column
+            y=0,  # and first row
+            image=workspace.display_data.input_pixels,
+            title=self.input_image_name.value
+        )
+
         lead_subplot = figure.subplot(0, 0)
+
         #
         # Show the user the gradient image, linking it to the first
         # so that they zoom and pan together
         #
         figure.subplot_imshow_grayscale(
-                1, 0,  # show the image in the first row and second column
-                workspace.display_data.gradient,
-                title="Gradient",
-                sharex=lead_subplot, sharey=lead_subplot)
+            x=1,  # show the image in the second column
+            y=0,  # and first row
+            image=workspace.display_data.gradient,
+            title="Gradient",
+            sharex=lead_subplot,
+            sharey=lead_subplot
+        )
+
         #
         # Show the user the final image
         #
         figure.subplot_imshow_grayscale(
-                2, 0,  # show the image in the first row and last column
-                workspace.display_data.output_pixels,
-                title=self.output_image_name.value,
-                sharex=lead_subplot, sharey=lead_subplot)
+            x=2,  # show the image in the last column
+            y=0,  # and first row
+            image=workspace.display_data.output_pixels,
+            title=self.output_image_name.value,
+            sharex=lead_subplot,
+            sharey=lead_subplot
+        )

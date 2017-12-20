@@ -157,74 +157,80 @@ class ImageTemplate(cellprofiler.module.Module):
     # settings you can use.
     #
     ################################################
-
     def create_settings(self):
         #
         # The ImageNameSubscriber "subscribes" to all ImageNameProviders in
         # prior modules. Modules before yours will put images into CellProfiler.
-        # The ImageSubscriber gives your user a list of these images
+        # The ImageNameSubscriber gives your user a list of these images
         # which can then be used as inputs in your module.
         #
         self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
-                # The text to the left of the edit box
-                "Input image name:",
-                # HTML help that gets displayed when the user presses the
-                # help button to the right of the edit box
-                doc="""This is the image that the module operates on. You can
-            choose any image that is made available by a prior module.
-            <br>
-            <b>ImageTemplate</b> will do something to this image.
-            """)
+            text="Input image name:",  # The text to the left of the edit box
+            # reST help that gets displayed when the user presses the
+            # help button to the right of the edit box
+            doc="""\
+This is the image that the module operates on. You can choose any image
+that is made available by a prior module.
+
+**ImageTemplate** will do something to this image.
+"""
+        )
+
         #
         # The ImageNameProvider makes the image available to subsequent
         # modules.
         #
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
-                "Output image name:",
-                # The second parameter holds a suggested name for the image.
-                "OutputImage",
-                doc="""This is the image resulting from the operation.""")
+            text="Output image name:",
+            value="OutputImage",  # The second parameter holds a suggested name for the image.
+            doc="This is the image resulting from the operation."
+        )
+
         #
         # Here's a choice box - the user gets a drop-down list of what
         # can be done.
         #
         self.gradient_choice = cellprofiler.setting.Choice(
-                "Gradient choice:",
-                # The choice takes a list of possibilities. The first one
-                # is the default - the one the user will typically choose.
-                [GRADIENT_MAGNITUDE, GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y],
-                #
-                # Here, in the documentation, we do a little trick so that
-                # we use the actual text that's displayed in the documentation.
-                #
-                # %(GRADIENT_MAGNITUDE)s will get changed into "Gradient magnitude"
-                # etc. Python will look in globals() for the "GRADIENT_" names
-                # and paste them in where it sees %(GRADIENT_...)s
-                #
-                # The <ul> and <li> tags make a neat bullet-point list in the docs
-                #
-                doc="""Choose what to calculate:
-            <ul>
-            <li><i>%(GRADIENT_MAGNITUDE)s</i> to calculate the
-            magnitude of the gradient at each pixel.</li>
-            <li><i>%(GRADIENT_DIRECTION_X)s</i> to get the relative contribution
-            of the gradient in the X direction (.5 = no contribution,
-            0 to .5 = decreasing with increasing X, .5 to 1 = increasing
-            with increasing X).</li>
-            <li><i>%(GRADIENT_DIRECTION_Y)s</i> to get the relative
-            contribution of the gradient in the Y direction.</li></ul>
-            """ % globals()
+            text="Gradient choice:",
+            # The choice takes a list of possibilities. The first one
+            # is the default - the one the user will typically choose.
+            choices=[GRADIENT_MAGNITUDE, GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y],
+            #
+            # Here, in the documentation, we do a little trick so that
+            # we use the actual text that's displayed in the documentation.
+            #
+            # {GRADIENT_MAGNITUDE} will get changed into "Gradient magnitude"
+            # etc. Python will look in keyword arguments for format()
+            # for the "GRADIENT_" names and paste them in where it sees
+            # a matching {GRADIENT_...}.
+            #
+            doc="""\
+Choose what to calculate:
 
+-  *{GRADIENT_MAGNITUDE}*: calculate the magnitude of the gradient at
+   each pixel.
+-  *{GRADIENT_DIRECTION_X}*: get the relative contribution of the
+   gradient in the X direction (.5 = no contribution, 0 to .5 =
+   decreasing with increasing X, .5 to 1 = increasing with increasing
+   X).
+-  *{GRADIENT_DIRECTION_Y}*: get the relative contribution of the
+   gradient in the Y direction.
+""".format(**{
+                "GRADIENT_MAGNITUDE": GRADIENT_MAGNITUDE,
+                "GRADIENT_DIRECTION_X": GRADIENT_DIRECTION_X,
+                "GRADIENT_DIRECTION_Y": GRADIENT_DIRECTION_Y
+            })
         )
+
         #
         # A binary setting displays a checkbox.
         #
         self.automatic_smoothing = cellprofiler.setting.Binary(
-                "Automatically choose the smoothing scale?",
-                # The default value is to choose automatically
-                True,
-                doc="""The module will automatically choose a
-            smoothing scale for you if you leave this checked.""")
+            text="Automatically choose the smoothing scale?",
+            value=True,  # The default value is to choose automatically
+            doc="The module will automatically choose a smoothing scale for you if you leave this checked."
+        )
+
         #
         # We do a little smoothing which supplies a scale to the gradient.
         #
@@ -233,18 +239,17 @@ class ImageTemplate(cellprofiler.module.Module):
         # an invalid scale.
         #
         self.scale = cellprofiler.setting.Float(
-                "Scale:",
-                # The default value is 1 - a short-range scale
-                1,
-                # We don't let the user type in really small values
-                minval=.1,
-                # or large values
-                maxval=100,
-                doc="""This is a scaling factor that supplies the sigma for
-            a gaussian that's used to smooth the image. The gradient is
-            calculated on the smoothed image, so large scales will give
-            you long-range gradients and small scales will give you
-            short-range gradients""")
+            text="Scale",
+            value=1,  # The default value is 1 - a short-range scale
+            minval=0.1,  # We don't let the user type in really small values
+            maxval=100,  # or large values
+            doc="""\
+This is a scaling factor that supplies the sigma for a gaussian that's
+used to smooth the image. The gradient is calculated on the smoothed
+image, so large scales will give you long-range gradients and small
+scales will give you short-range gradients.
+"""
+        )
 
     #
     # The "settings" method tells CellProfiler about the settings you

@@ -420,7 +420,7 @@ Select the name of the output grayscale image."""))
         output_image = workspace.display_data.output_image
         figure.set_subplots((1, 2))
         figure.subplot_imshow_color(0, 0, input_image,
-                              title="Original image (as RGBA): %s" % self.image_name)
+                              title="Original image: %s" % self.image_name)
         figure.subplot_imshow(0, 1, output_image,
                               title="Grayscale image: %s" % self.grayscale_name,
                               colormap=matplotlib.cm.Greys_r,
@@ -454,7 +454,7 @@ Select the name of the output grayscale image."""))
         ncols = int(np.ceil((ndisp+1)**0.5))
         subplots = (ncols, (ndisp/ncols)+1)
         figure.set_subplots(subplots)
-        figure.subplot_imshow_color(0, 0, input_image, title="Original image (as RGBA)")
+        figure.subplot_imshow_color(0, 0, input_image, title="Original image")
 
         for eachplot in range(ndisp):
              placenum = eachplot +1

@@ -597,10 +597,10 @@ input for a measurement module.""" % globals()))
 
         if variable_revision_number == 5:
             # Removed "life" operation
-            logger.warn("""
-            Morph's 'Life' option has been removed, this pipeline might
-            not be compatible with the current version of CellProfiler.
-            """)
+            logger.warn(
+                "Morph's 'Life' option has been removed, this pipeline might "
+                "not be compatible with the current version of CellProfiler."
+            )
 
             variable_revision_number = 6
 

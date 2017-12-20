@@ -258,9 +258,13 @@ scales will give you short-range gradients.
     # pipeline file.
     #
     def settings(self):
-        return [self.input_image_name, self.output_image_name,
-                self.gradient_choice, self.automatic_smoothing,
-                self.scale]
+        return [
+            self.input_image_name,
+            self.output_image_name,
+            self.gradient_choice,
+            self.automatic_smoothing,
+            self.scale
+        ]
 
     #
     # visible_settings tells CellProfiler which settings should be
@@ -271,13 +275,19 @@ scales will give you short-range gradients.
     # for display.
     #
     def visible_settings(self):
-        result = [self.input_image_name, self.output_image_name,
-                  self.gradient_choice, self.automatic_smoothing]
+        result = [
+            self.input_image_name,
+            self.output_image_name,
+            self.gradient_choice,
+            self.automatic_smoothing
+        ]
+
         #
         # Show the user the scale only if self.wants_smoothing is checked
         #
         if not self.automatic_smoothing:
             result += [self.scale]
+
         return result
 
     #

@@ -140,6 +140,15 @@ GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 # unless you re-implement them. You can let cellprofiler.module.ImageProcessing
 # do most of the work and implement only what you need.
 #
+# Other classes you can inherit from are:
+#
+# -  cellprofiler.module.ImageSegmentation: modules which take an image
+#    as input and output a segmentation (objects) should inherit from this
+#    class.
+# -  cellprofiler.module.ObjectProcessing: modules which operate on objects
+#    should inherit from this class. These are modules that take objects as
+#    input and output new objects.
+#
 ###################################
 class ImageTemplate(cellprofiler.module.ImageProcessing):
     ###############################################

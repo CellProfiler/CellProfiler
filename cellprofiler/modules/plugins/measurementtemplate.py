@@ -189,24 +189,27 @@ class MeasurementTemplate(cellprofiler.module.Module):
         # which can then be used as inputs in your module.
         #
         self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
-                # The text to the left of the edit box
-                "Input image name:",
-                # HTML help that gets displayed when the user presses the
-                # help button to the right of the edit box
-                doc="""This is the image that the module operates on. You can
-            choose any image that is made available by a prior module.
-            <br>
-            <b>ImageTemplate</b> will do something to this image.
-            """)
+            # The text to the left of the edit box
+            text="Input image name:",
+            # reST help that gets displayed when the user presses the
+            # help button to the right of the edit box.
+            doc="""\
+This is the image that the module operates on. You can choose any image
+that is made available by a prior module.
+
+**MeasurementTemplate** will measure something about this image.
+"""
+        )
 
         #
-        # The ObjectNameSubscriber is similar - it will ask the user
-        # which object to pick from the list of objects provided by
-        # upstream modules.
+        # The ObjectNameSubscriber is similar to the ImageNameSubscriber.
+        # It will ask the user which object to pick from the list of
+        # objects provided by upstream modules.
         #
         self.input_object_name = cellprofiler.setting.ObjectNameSubscriber(
-                "Input object name",
-                doc="""These are the objects that the module operates on.""")
+            text="Input object name",
+            doc="These are the objects that the module operates on.")
+
         #
         # The radial degree is the "N" parameter in the Zernike - how many
         # inflection points there are, radiating out from the center. Higher
@@ -216,12 +219,18 @@ class MeasurementTemplate(cellprofiler.module.Module):
         # N = 50 generates 1200 features!
         #
         self.radial_degree = cellprofiler.setting.Integer(
-                "Radial degree", 10, minval=1, maxval=50,
-                doc="""Calculate all Zernike features up to the given radial
-            degree. The Zernike function is parameterized by a radial
-            and azimuthal degree. The module will calculate all Zernike
-            features for all azimuthal degrees up to and including the
-            radial degree you enter here.""")
+            text="Radial degree",
+            value=10,
+            minval=1,
+            maxval=50,
+            doc="""\
+Calculate all Zernike features up to the given radial
+degree. The Zernike function is parameterized by a radial
+and azimuthal degree. The module will calculate all Zernike
+features for all azimuthal degrees up to and including the
+radial degree you enter here.
+"""
+        )
 
     #
     # The "settings" method tells CellProfiler about the settings you

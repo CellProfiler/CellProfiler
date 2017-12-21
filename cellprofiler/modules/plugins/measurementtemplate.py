@@ -25,27 +25,114 @@ import centrosome.zernike
 import centrosome.cpmorphology
 
 
-__doc__ = '''<b>MeasurementTemplate</b> - an example measurement module
-<hr>
+__doc__ = """\
+MeasurementTemplate
+===================
+
+**MeasurementTemplate** - an example measurement module. It's recommended to
+put a brief description of this module here and go into more detail below.
+
 This is an example of a module that measures a property of an image both
-for the image as a whole and for every object in the image. It demonstrates
-how to load an image, how to load an object and how to record a measurement.
+for the image as a whole and for every object in the image. It
+demonstrates how to load an image, how to load an object and how to
+record a measurement. 
 
-The text you see here will be displayed as the help for your module. You
-can use HTML markup here and in the settings text; the Python HTML control
-does not fully support the HTML specification, so you may have to experiment
-to get it to display correctly.
+The text you see here will be displayed as the help for your module, formatted
+as `reStructuredText <http://docutils.sourceforge.net/rst.html>`_.
+ 
+Note whether or not this module supports 3D image data and respects masks.
+A module which respects masks applies an image's mask and operates only on
+the unmasked data. Update the table below to indicate which image processing
+features this module supports.
 
-The Zernike features measured here are themselves interesting. You can
-reconstruct the image of a cell, approximately, by constructing the
-Zernike functions on a unit circle, multiplying the real parts by the
-corresponding features for positive M, multiplying the imaginary parts
-by the corresponding features for negative M and adding real and imaginary
-parts.
+|
 
-Features names are in the format,
-"MT_Intensity_<i>Image name</i>_N<i>(radial degree)</i>M<i>(Azimuthal degree)</i>
-'''
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+Is there another **Module** that is related to this one? If so, refer
+to that **Module** in this section. Otherwise, this section can be omitted.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Are there any assumptions about input data someone using this module
+should be made aware of? For example, is there a strict requirement that
+image data be single-channel, or that the foreground is brighter than
+the background? Describe any assumptions here.
+
+This section can be omitted if there is no requirement on the input.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Describe the output of this module. This is necessary if the output is
+more complex than a single image. For example, if there is data displayed
+over the image then describe what the data represents.
+
+This section can be omitted if there is no specialized output.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Describe the measurements made by this module, if any. Typically, measurements
+are described in the following format:
+
+**Measurement category:**
+
+-  *MeasurementName*: A brief description of the measurement.
+-  *MeasurementName*: A brief description of the measurement.
+
+**Measurement category:**
+
+-  *MeasurementName*: A brief description of the measurement.
+-  *MeasurementName*: A brief description of the measurement.
+
+This section can be omitted if no measurements are made by this module.
+
+This module makes the following measurements:
+
+**MT** (the MeasurementTemplate category):
+
+-  *Intensity_[IMAGE_NAME]_N[Ni]_M[Mj]*: the Zernike feature of the
+   IMAGE_NAME image with radial degree Ni and Azimuthal degree Mj,
+   Mj >= 0.
+-  *Intensity_[IMAGE_NAME]_N[Ni]_MM[Mj]*: the Zernike feature of
+   the IMAGE_NAME image with radial degree Ni and Azimuthal degree
+   Mj, Mj < 0.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+Include implementation details or notes here. Additionally provide any 
+other background information about this module, including definitions
+or adopted conventions. Information which may be too specific to fit into
+the general description should be provided here.
+
+Omit this section if there is no technical information to mention.
+
+The Zernike features measured here are themselves interesting. You can 
+reconstruct the image of a cell, approximately, by constructing the Zernike 
+functions on a unit circle, multiplying the real parts by the corresponding 
+features for positive M, multiplying the imaginary parts by the corresponding 
+features for negative M and adding real and imaginary parts.
+
+References
+^^^^^^^^^^
+
+Provide citations here, if appropriate. Citations are formatted as a list and,
+wherever possible, include a link to the original work. For example,
+
+-  Meyer F, Beucher S (1990) “Morphological segmentation.” *J Visual
+   Communication and Image Representation* 1, 21-46.
+   (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
+"""
 
 ##################################
 #

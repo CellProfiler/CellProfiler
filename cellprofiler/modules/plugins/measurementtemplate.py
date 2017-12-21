@@ -465,7 +465,7 @@ radial degree you enter here.
         # but these "arrays" are never actually realized and made into
         # real memory.
         #
-        y, x = numpy.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+        y, x = numpy.mgrid[0.0:labels.shape[0], 0.0:labels.shape[1]]
 
         #
         # Get the x and y coordinates relative to the object centers.

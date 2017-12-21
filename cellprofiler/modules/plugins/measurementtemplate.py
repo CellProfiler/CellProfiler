@@ -382,14 +382,14 @@ radial degree you enter here.
 
     ################################
     #
-    # DISPLAY
+    # "display" lets you use matplotlib to display your results.
     #
-    def display(self, workspace, figure=None):
+    ################################
+    def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
-        if figure is None:
-            figure = workspace.create_or_find_figure(subplots=(1, 1,))
-        else:
-            figure.set_subplots((1, 1))
+
+        figure.set_subplots((1, 1))
+
         figure.subplot_table(0, 0, statistics)
 
     def get_zernike_indexes(self, wants_negative=False):

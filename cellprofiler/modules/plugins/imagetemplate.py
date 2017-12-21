@@ -159,7 +159,7 @@ class ImageTemplate(cellprofiler.module.ImageProcessing):
 
     ###############################################
     #
-    # create_settings is where you declare the user interface elements
+    # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.
     #
     # You can look at other modules and in cellprofiler.settings for

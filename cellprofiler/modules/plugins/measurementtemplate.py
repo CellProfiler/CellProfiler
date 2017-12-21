@@ -134,12 +134,14 @@ wherever possible, include a link to the original work. For example,
    (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
 """
 
-##################################
+###################################
 #
 # Constants
 #
-# I put constants that are used more than once here.
-#
+# It's good programming practice to replace things like strings with
+# constants if they will appear more than once in your program. That way,
+# if someone wants to change the text, that text will change everywhere.
+# Also, you can't misspell it by accident.
 ###################################
 
 '''This is the measurement template category'''
@@ -150,9 +152,9 @@ C_MEASUREMENT_TEMPLATE = "MT"
 #
 # The module class
 #
-# Your module should "inherit" from cellprofiler.cpmodule.CPModule.
-# This means that your module will use the methods from CPModule unless
-# you re-implement them. You can let CPModule do most of the work and
+# Your module should "inherit" from cellprofiler.module.Module.
+# This means that your module will use the methods from Module unless
+# you re-implement them. You can let Module do most of the work and
 # implement only what you need.
 #
 ###################################
@@ -172,14 +174,13 @@ class MeasurementTemplate(cellprofiler.module.Module):
 
     ###############################################
     #
-    # create_settings is where you declare the user interface elements
+    # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.
     #
     # You can look at other modules and in cellprofiler.settings for
     # settings you can use.
     #
     ################################################
-
     def create_settings(self):
         #
         # The ImageNameSubscriber "subscribes" to all ImageNameProviders in

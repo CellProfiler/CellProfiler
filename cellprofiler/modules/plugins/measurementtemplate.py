@@ -401,6 +401,7 @@ radial degree you enter here.
                          return only positive
         '''
         zi = centrosome.zernike.get_zernike_indexes(self.radial_degree.value + 1)
+
         if wants_negative:
             #
             # np.vstack means concatenate rows of two 2d arrays.
@@ -408,22 +409,22 @@ radial degree you enter here.
             # zi[zi[:, 1] != 0] picks out only elements with m not equal to zero.
             #
             zi = numpy.vstack([zi, zi[zi[:, 1] != 0] * numpy.array([1, -1])])
+
             #
             # Sort by azimuth degree and radial degree so they are ordered
             # reasonably
             #
             order = numpy.lexsort((zi[:, 1], zi[:, 0]))
             zi = zi[order, :]
+
         return zi
 
     ################################
     #
-    # measure_zernike makes one Zernike measurement on each object
+    # "measure_zernike" makes one Zernike measurement on each object
     #
+    ################################
     def measure_zernike(self, pixels, labels, indexes, centers, radius, n, m):
-        # I'll put some documentation in here to explain what it does.
-        # If someone ever wants to call it, their editor might display
-        # the documentation.
         '''Measure the intensity of the image with Zernike (N, M)
 
         pixels - the intensity image to be measured
@@ -447,6 +448,7 @@ radial degree you enter here.
         # I'll try to explain some - hopefully, you can reuse.
         center_x = centers[:, 1]
         center_y = centers[:, 0]
+
         #
         # Make up fake values for 0 (the background). This lets us do our
         # indexing tricks. Really, we're going to ignore the background,
@@ -456,6 +458,7 @@ radial degree you enter here.
         center_x = numpy.hstack([[0], center_x])
         center_y = numpy.hstack([[0], center_y])
         radius = numpy.hstack([[1], radius])
+
         #
         # Now get one array that's the y coordinate of each pixel and one
         # that's the x coordinate. This might look stupid and wasteful,
@@ -463,6 +466,7 @@ radial degree you enter here.
         # real memory.
         #
         y, x = numpy.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+
         #
         # Get the x and y coordinates relative to the object centers.
         # This uses Numpy broadcasting. For each pixel, we use the
@@ -471,6 +475,7 @@ radial degree you enter here.
         #
         y -= center_y[labels]
         x -= center_x[labels]
+
         #
         # Zernikes take x and y values from zero to one. We scale the
         # integer coordinate values by dividing them by the radius of
@@ -479,10 +484,7 @@ radial degree you enter here.
         #
         y = y.astype(float) / radius[labels]
         x = x.astype(float) / radius[labels]
-        #
-        #################################
-        #
-        # ZERNIKE POLYNOMIALS
+
         #
         # Now we can get Zernike polynomials per-pixel where each pixel
         # value is calculated according to its object's MEC.
@@ -491,40 +493,40 @@ radial degree you enter here.
         # runs a little faster.
         #
         zernike_polynomial = centrosome.zernike.construct_zernike_polynomials(
-                x, y, numpy.array([[n, m]]), labels > 0)
+            x,
+            y,
+            numpy.array([[n, m]]),
+            labels > 0
+        )
+
         #
-        # For historical reasons, CellProfiler didn't multiply by the per/zernike
+        # For historical reasons, centrosome didn't multiply by the per/zernike
         # normalizing factor: 2*n + 2 / E / pi where E is 2 if m is zero and 1
         # if m is one. We do it here to aid with the reconstruction
         #
         zernike_polynomial *= (2 * n + 2) / (2 if m == 0 else 1) / numpy.pi
+
         #
         # Multiply the Zernike polynomial by the image to dissect
         # the image by the Zernike basis set.
         #
         output_pixels = pixels * zernike_polynomial[:, :, 0]
-        #
-        # Finally, we use Scipy to sum the intensities. Scipy has different
-        # versions with different quirks. The "fix" function takes all
-        # of that into account.
+
         #
         # The sum function calculates the sum of the pixel values for
         # each pixel in an object, using the labels matrix to name
         # the pixels in an object
         #
-        zr = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(output_pixels.real, labels, indexes))
-        zi = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(output_pixels.imag, labels, indexes))
-        #
-        # And we're done! Did you like it? Did you get it?
-        #
+        zr = scipy.ndimage.sum(output_pixels.real, labels, indexes)
+        zi = scipy.ndimage.sum(output_pixels.imag, labels, indexes)
+
         return zr, zi
 
-    #######################################
     #
     # Here, we go about naming the measurements.
     #
-    # Measurement names have parts to them, traditionally separated
-    # by underbars. There's always a category and a feature name
+    # Measurement names have parts to them, separated by underbars.
+    # There's always a category and a feature name
     # and sometimes there are modifiers such as the image that
     # was measured or the scale at which it was measured.
     #
@@ -538,14 +540,14 @@ radial degree you enter here.
         #
         if m >= 0:
             return "Intensity_%s_N%dM%d" % (self.input_image_name.value, n, m)
-        else:
-            return "Intensity_%s_N%dMM%d" % (self.input_image_name.value, n, -m)
+
+        return "Intensity_%s_N%dMM%d" % (self.input_image_name.value, n, -m)
 
     def get_measurement_name(self, n, m):
         '''Return the whole measurement name'''
         input_image_name = self.input_image_name.value
-        return '_'.join([C_MEASUREMENT_TEMPLATE,
-                         self.get_feature_name(n, m)])
+
+        return '_'.join([C_MEASUREMENT_TEMPLATE, self.get_feature_name(n, m)])
 
     #
     # We have to tell CellProfiler about the measurements we produce.
@@ -554,8 +556,7 @@ radial degree you enter here.
     # of measurement columns produced. The second is more informal and
     # tells CellProfiler how to categorize its measurements.
     #
-    #
-    # get_measurement_columns gets the measurements for use in the database
+    # "get_measurement_columns" gets the measurements for use in the database
     # or in a spreadsheet. Some modules need this because they
     # might make measurements of measurements and need those names.
     #
@@ -574,37 +575,36 @@ radial degree you enter here.
         # in measurement.py for what you can use
         #
         input_object_name = self.input_object_name.value
-        return [(input_object_name,
-                 self.get_measurement_name(n, m),
-                 cellprofiler.measurement.COLTYPE_FLOAT)
-                for n, m in self.get_zernike_indexes(True)]
+
+        return [(
+            input_object_name,
+            self.get_measurement_name(n, m),
+            cellprofiler.measurement.COLTYPE_FLOAT
+        ) for n, m in self.get_zernike_indexes(True)]
 
     #
-    # get_categories returns a list of the measurement categories produced
+    # "get_categories" returns a list of the measurement categories produced
     # by this module. It takes an object name - only return categories
     # if the name matches.
     #
     def get_categories(self, pipeline, object_name):
         if object_name == self.input_object_name:
             return [C_MEASUREMENT_TEMPLATE]
-        else:
-            # Don't forget to return SOMETHING! I do this all the time
-            # and CP mysteriously bombs when you use ImageMath
-            return []
+
+        return []
 
     #
     # Return the feature names if the object_name and category match
     #
     def get_measurements(self, pipeline, object_name, category):
-        if (object_name == self.input_object_name and
-                    category == C_MEASUREMENT_TEMPLATE):
+        if (object_name == self.input_object_name and category == C_MEASUREMENT_TEMPLATE):
             return ["Intensity"]
-        else:
-            return []
+
+        return []
 
     #
     # This module makes per-image measurements. That means we need
-    # get_measurement_images to distinguish measurements made on two
+    # "get_measurement_images" to distinguish measurements made on two
     # different images by this module
     #
     def get_measurement_images(self, pipeline, object_name, category, measurement):
@@ -612,24 +612,20 @@ radial degree you enter here.
         # This might seem wasteful, but UI code can be slow. Just see
         # if the measurement is in the list returned by get_measurements
         #
-        if measurement in self.get_measurements(
-                pipeline, object_name, category):
+        if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.input_image_name.value]
-        else:
-            return []
 
-    def get_measurement_scales(self, pipeline, object_name, category,
-                               measurement, image_name):
+        return []
+
+    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
         '''Get the scales for a measurement
 
         For the Zernikes, the scales are of the form, N2M2 or N2MM2 for
         negative azimuthal degree
         '''
-        if image_name in self.get_measurement_images(
-                pipeline, object_name, category, measurement):
-            return [("N%dM%d" % (n, m)) if m >= 0 else
-                    ("N%dMM%d" % (n, -m)) for n, m in
-                    self.get_zernike_indexes(True)]
+        if image_name in self.get_measurement_images(pipeline, object_name, category, measurement):
+            return [("N%dM%d" % (n, m)) if m >= 0 else ("N%dMM%d" % (n, -m)) for n, m in self.get_zernike_indexes(True)]
+
         return []
 
     @staticmethod
@@ -649,10 +645,10 @@ radial degree you enter here.
         zernike_indexes = numpy.array(feature_dictionary.keys())
         zernike_features = numpy.array(feature_dictionary.values())
 
-        z = centrosome.zernike.construct_zernike_polynomials(
-                j, i, numpy.abs(zernike_indexes), mask=mask)
+        z = centrosome.zernike.construct_zernike_polynomials(j, i, numpy.abs(zernike_indexes), mask=mask)
         zn = (2 * zernike_indexes[:, 0] + 2) / ((zernike_indexes[:, 1] == 0) + 1) / numpy.pi
-        z = z * zn[numpy.newaxis, numpy.newaxis, :]
+        z *= zn[numpy.newaxis, numpy.newaxis, :]
         z = z.real * (zernike_indexes[:, 1] >= 0)[numpy.newaxis, numpy.newaxis, :] + \
             z.imag * (zernike_indexes[:, 1] <= 0)[numpy.newaxis, numpy.newaxis, :]
+
         return numpy.sum(z * zernike_features[numpy.newaxis, numpy.newaxis, :], 2)

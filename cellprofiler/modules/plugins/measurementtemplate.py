@@ -244,8 +244,11 @@ radial degree you enter here.
     # a template for visible_settings that you can cut and paste here.
     #
     def settings(self):
-        return [self.input_image_name, self.input_object_name,
-                self.radial_degree]
+        return [
+            self.input_image_name,
+            self.input_object_name,
+            self.radial_degree
+        ]
 
     #
     # CellProfiler calls "run" on each image set in your pipeline.

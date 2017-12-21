@@ -259,19 +259,21 @@ radial degree you enter here.
         # Get the measurements object - we put the measurements we
         # make in here
         #
-        meas = workspace.measurements
-        assert isinstance(meas, cellprofiler.measurement.Measurements)
+        measurements = workspace.measurements
+
         #
         # We record some statistics which we will display later.
         # We format them so that Matplotlib can display them in a table.
         # The first row is a header that tells what the fields are.
         #
         statistics = [["Feature", "Mean", "Median", "SD"]]
+
         #
         # Put the statistics in the workspace display data so we
         # can get at them when we display
         #
         workspace.display_data.statistics = statistics
+
         #
         # Get the input image and object. You need to get the .value
         # because otherwise you'll get the setting object instead of
@@ -279,6 +281,7 @@ radial degree you enter here.
         #
         input_image_name = self.input_image_name.value
         input_object_name = self.input_object_name.value
+
         ################################################################
         #
         # GETTING AN IMAGE FROM THE IMAGE SET
@@ -291,13 +294,14 @@ radial degree you enter here.
         # The image set will convert a color image to a grayscale one
         # and warn the user.
         #
-        input_image = image_set.get_image(input_image_name,
-                                          must_be_grayscale=True)
+        input_image = image_set.get_image(input_image_name, must_be_grayscale=True)
         #
         # Get the pixels - these are a 2-d Numpy array.
         #
         pixels = input_image.pixel_data
         #
+        ###############################################################
+
         ###############################################################
         #
         # GETTING THE LABELS MATRIX FROM THE OBJECT SET
@@ -305,7 +309,6 @@ radial degree you enter here.
         # The object set has all of the objects in it.
         #
         object_set = workspace.object_set
-        assert isinstance(object_set, cellprofiler.object.ObjectSet)
         #
         # Get objects from the object set. The most useful array in
         # the objects is "objects.segmented" which is a labels matrix
@@ -327,8 +330,8 @@ radial degree you enter here.
         #
         objects = object_set.get_objects(input_object_name)
         labels = objects.segmented
-        #
-        ###########################################
+        ###############################################################
+
         #
         # The minimum enclosing circle (MEC) is the smallest circle that
         # will fit around the object. We get the centers and radii of
@@ -346,7 +349,6 @@ radial degree you enter here.
         # and the radius of the circle and that defines the circle entirely.
         #
         centers, radius = centrosome.cpmorphology.minimum_enclosing_circle(labels, indexes)
-        ###############################################################
         #
         # The module computes a measurement based on the image intensity
         # inside an object times a Zernike polynomial inscribed in the
@@ -356,24 +358,23 @@ radial degree you enter here.
         #
         for n, m in self.get_zernike_indexes():
             # Compute the zernikes for each object, returned in an array
-            zr, zi = self.measure_zernike(
-                    pixels, labels, indexes, centers, radius, n, m)
+            zr, zi = self.measure_zernike(pixels, labels, indexes, centers, radius, n, m)
+
             # Get the name of the measurement feature for this zernike
             feature = self.get_measurement_name(n, m)
+
             # Add a measurement for this kind of object
             if m != 0:
-                meas.add_measurement(input_object_name, feature, zr)
-                #
+                measurements.add_measurement(input_object_name, feature, zr)
+
                 # Do the same with -m
-                #
                 feature = self.get_measurement_name(n, -m)
-                meas.add_measurement(input_object_name, feature, zi)
+                measurements.add_measurement(input_object_name, feature, zi)
             else:
                 # For zero, the total is the sum of real and imaginary parts
-                meas.add_measurement(input_object_name, feature, zr + zi)
-            #
+                measurements.add_measurement(input_object_name, feature, zr + zi)
+
             # Record the statistics.
-            #
             zmean = numpy.mean(zr)
             zmedian = numpy.median(zr)
             zsd = numpy.std(zr)

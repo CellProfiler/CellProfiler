@@ -338,6 +338,15 @@ scales will give you short-range gradients.
 
         super(ImageTemplate, self).run(workspace)
 
+    #
+    # "volumetric" indicates whether or not this module supports 3D images.
+    # The "gradient_image" function is inherently 2D, and we've noted this
+    # in the documentation for the module. Explicitly return False here
+    # to indicate that 3D images are not supported.
+    #
+    def volumetric(self):
+        return False
+
 #
 # This is the function that gets called during "run" to create the output image.
 # The first parameter must be the input image data. The remaining parameters are

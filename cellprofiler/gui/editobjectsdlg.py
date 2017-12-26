@@ -1194,7 +1194,10 @@ class EditObjectsDialog(wx.Dialog):
         self.update_artists()
 
     def update_artists(self):
-        self.figure.canvas.restore_region(self.background)
+        if self.background is not None:
+            self.figure.canvas.restore_region(self.background)
+        else:
+            self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
         for artist in self.artists:
             self.orig_axes.draw_artist(artist)
         if self.split_artist is not None:

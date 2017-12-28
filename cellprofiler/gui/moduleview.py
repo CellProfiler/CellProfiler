@@ -472,7 +472,7 @@ class ModuleView(object):
                     control = self.make_binary_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                     text_sizer_item.Flag = \
-                        wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
+                        wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
                 elif isinstance(v, cellprofiler.setting.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
                         v, control_name, control)

@@ -131,7 +131,7 @@ Measurements made by this module
 -  *Group\_Number:* The index of each grouping, as defined by the unique
    combinations of the metadata tags specified. These are written to the
    per-image table.
--  *Group\_Index:* The index of each imaget set within each grouping, as
+-  *Group\_Index:* The index of each image set within each grouping, as
    defined by the *Group\_Number*. These are written to the per-image
    table.
 
@@ -628,7 +628,7 @@ desired behavior.
         pass
 
     def get_measurement_columns(self, pipeline):
-        '''Return the measurments recorded by this module
+        '''Return the measurements recorded by this module
 
         GroupNumber and GroupIndex are accounted for by the pipeline itself.
         '''

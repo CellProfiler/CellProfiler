@@ -7,7 +7,7 @@ RemoveHoles
 **RemoveHoles** fills holes smaller than the specified diameter.
 
 This module works best on binary and integer-labeled images (i.e., the output of
-**ConvertObjectsToImage** when the color format is *uint16*). Greyscale and multichannel
+**ConvertObjectsToImage** when the color format is *uint16*). Grayscale and multichannel
 image data is converted to binary by setting values below 50% of the data range to 0 and
 the other 50% of values to 1.
 

@@ -241,7 +241,7 @@ def __image_resource(filename):
     return "../images/{}".format(filename)
 
 
-PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")
+PROTIP_RECOMMEND_ICON = __image_resource("thumb-up.png")
 
 PROTIP_AVOID_ICON = __image_resource("thumb-down.png")
 

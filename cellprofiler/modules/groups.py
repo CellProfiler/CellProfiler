@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import cellprofiler.icons
-from cellprofiler.modules._help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 import logging
 
 logger = logging.getLogger(__name__)

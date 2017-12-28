@@ -17,7 +17,7 @@ import _help
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
 from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, \
     TECH_NOTE_ICON
 
 __doc__ = """\

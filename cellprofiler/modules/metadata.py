@@ -26,7 +26,7 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import \
     well_metadata_tokens, urlfilename, urlpathname
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP,PROTIP_RECOMEND_ICON
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP,PROTIP_RECOMMEND_ICON
 from cellprofiler.gui.help import content
 
 __doc__ = """\
@@ -378,14 +378,14 @@ Specifics on the metadata extraction options are described below. Any or
 all of these options may be used at time; press the “Add another
 extraction method” button to add more.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
-.. |image1| image:: {PROTIP_RECOMEND_ICON}
-.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
                     "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
                     "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
                     "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION,
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 })
             )
         )
@@ -646,11 +646,11 @@ account when matching.
 |image0| If you note that your CSV metadata is
 not being applied, your choice on this setting may be the culprit.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
                     "NO": NO,
                     "YES": YES,
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 })
             )
         )

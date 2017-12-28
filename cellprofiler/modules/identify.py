@@ -66,8 +66,6 @@ TSM_AUTOMATIC = "Automatic"
 '''Allow the user to enter a smoothing factor'''
 TSM_MANUAL = "Manual"
 
-PROTIP_RECOMEND_ICON = "thumb-up.png"
-PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 

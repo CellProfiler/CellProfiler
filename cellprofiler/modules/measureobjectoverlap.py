@@ -186,11 +186,11 @@ are chosen.
 images. *{DM_SKEL}* is best suited to long, skinny objects such as
 worms or neurites.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
                 "DM_KMEANS": DM_KMEANS,
                 "DM_SKEL": DM_SKEL,
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON
             })
         )
 

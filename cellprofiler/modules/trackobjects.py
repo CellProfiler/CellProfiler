@@ -96,7 +96,7 @@ Measurements made by this module
    is, it is the straight-line path between the two points.
 -  *IntegratedDistance:* The total distance traveled by the object
    during the lifetime of the object.
--  *Linearity:* A measure of how linear the object trajectity is during
+-  *Linearity:* A measure of how linear the object trajectory is during
    the object lifetime. Calculated as (displacement from initial to
    final location)/(integrated object distance). Value is in range of
    [0,1].
@@ -432,7 +432,7 @@ is most consistent from frame to frame of your movie.
          settings in the **Images** module to use only certain files
          from the movie in the pipeline.
 
-   -  *Begin by optimzing the settings for the first phase of the LAP:*
+   -  *Begin by optimizing the settings for the first phase of the LAP:*
       The 2nd phase of the LAP method depends on the results of the
       first phase. Therefore, it is a good idea to optimize the first
       phase settings as the initial step.
@@ -2990,7 +2990,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         self.add_image_measurement(workspace, F_LOST_OBJECT_COUNT,
                                    lost_object_count)
         #
-        # Find parents with more than one child. These are the progenetors
+        # Find parents with more than one child. These are the progenitors
         # for daughter cells.
         #
         if np.any(parents != 0):
@@ -3318,7 +3318,7 @@ Enter a name to give the color-coded image of tracked labels.''')
 
         # added after integration of FOLLOWNEIGHBORS
         if variable_revision_number == 6:
-            # addeing new settings for FOLLOWNEIGHBORS
+            # adding new settings for FOLLOWNEIGHBORS
             setting_values = setting_values + [30., False, 15., 25.]
             # order of params in settings
             # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight

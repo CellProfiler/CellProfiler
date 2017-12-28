@@ -269,7 +269,7 @@ depending on the method chosen.
                                gridding.x_locations[j])
 
     def run_circle(self, workspace, gridding, spot_center_i, spot_center_j):
-        '''Return a labels matrix compose of circles centered on the x,y locs
+        '''Return a labels matrix compose of circles centered on the x,y locations
 
         workspace - workspace for the run
         gridding - an instance of CPGridInfo giving the details of the grid

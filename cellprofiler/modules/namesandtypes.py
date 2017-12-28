@@ -229,7 +229,7 @@ You can specify how these images should be treated:
    If this option is applied to a color image, the red, green and blue
    pixel intensities will be averaged to produce a single intensity
    value.
--  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel repesents a
+-  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel represents a
    red, green and blue (RGB) triplet of intensity values OR which contains
    multiple individual grayscale channels. Please note
    that the object detection modules such as **IdentifyPrimaryObjects**

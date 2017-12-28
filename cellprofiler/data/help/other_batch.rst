@@ -47,7 +47,7 @@ cluster.
    Default Input Folder setting will only appear if a legacy pipeline is
    being run.
 #. *Create a pipeline for your image set.* You should test it on a few
-   example images from your image set (if you are unfamilar with the
+   example images from your image set (if you are unfamiliar with the
    concept of an image set, please see the help for the **Input**
    modules). The module settings selected for your pipeline will be
    applied to *all* your images, but the results may vary depending on

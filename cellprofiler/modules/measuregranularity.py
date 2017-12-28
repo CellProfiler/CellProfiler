@@ -480,7 +480,7 @@ class GranularitySettingsGroup(cps.SettingsGroup):
         og = cps.SettingsGroup()
         og.append("objects_name", cps.ObjectNameSubscriber(
                 "Select objects to measure", cps.NONE, doc="""\
-Select the objects whose granualarity will be measured. You can select
+Select the objects whose granularity will be measured. You can select
 objects from prior modules that identify objects, such as
 **IdentifyPrimaryObjects**. If you only want to measure the granularity
 for the image overall, you can remove all objects using the “Remove this

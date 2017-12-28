@@ -69,7 +69,7 @@ RM_NO = "No"
 RM_EDGES = "Edges"
 RM_ALL = "All"
 
-# Doens't seem to like importing defs from cellprofiler.gui.moduleview so define here
+# Doesn't seem to like importing defs from cellprofiler.gui.moduleview so define here
 ABSOLUTE = "Absolute"
 FROM_EDGE = "From edge"
 

@@ -11,7 +11,7 @@ This module loads a file that supplies text or numerical data associated
 with the images to be processed, e.g., sample names, plate names, well
 identifiers, or even a list of image file names to be processed in the
 analysis run. Please note that most researchers will prefer to use the
-Input modues (i.e., **Images**,
+Input modules (i.e., **Images**,
 **Metadata**, **NamesAndTypes** and **Groups**) to load images.
 
 Note that 3D images to be analyzed volumetrically CANNOT be loaded
@@ -86,7 +86,7 @@ allows for special functionality for some downstream modules:
    image columns in a CSV, one for loading frames 1,2,…,999, and the
    other for loading frames 2,3,…,1000. In this case, CellProfiler would
    load the frame and its predecessor for each cycle and **ImageMath**
-   could be used to create the differece image for downstream use.
+   could be used to create the difference image for downstream use.
 
 -  *Columns that contain dose-response or positive/negative control
    information:* The **CalculateStatistics** module can calculate

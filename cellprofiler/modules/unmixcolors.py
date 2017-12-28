@@ -195,7 +195,7 @@ loaded or created by some prior module.""")
 Press this button to add another stain to the list.
 
 You will be able to name the image produced and to either pick
-the stain from a list of precalibrated stains or to enter
+the stain from a list of pre-calibrated stains or to enter
 custom values for the stain's red, green and blue absorbance.
             """)
 

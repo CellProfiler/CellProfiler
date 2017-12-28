@@ -16,7 +16,7 @@ compartment (for example, nuclei, cells, colonies, worms).
 REGEXP_HELP_REF = """\
 **Details on regular expressions:**
 
-A *regular expression* is a general term refering to a method of
+A *regular expression* is a general term referring to a method of
 searching for pattern matches in text. There is a high learning curve to
 using them, but are quite powerful once you understand the basics.
 

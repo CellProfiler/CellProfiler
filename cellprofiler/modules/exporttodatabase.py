@@ -1314,7 +1314,7 @@ available:
         return image_names
 
     def prepare_settings(self, setting_values):
-        # These check the groupings of settings avilable in properties and workspace file creation
+        # These check the groupings of settings available in properties and workspace file creation
         for count, sequence, fn in \
                 ((int(setting_values[SETTING_IMAGE_GROUP_COUNT]), self.image_groups, self.add_image_group),
                  (int(setting_values[SETTING_GROUP_FIELD_GROUP_COUNT]), self.group_field_groups,
@@ -1647,7 +1647,7 @@ available:
 
         '''Warn user re: bad characters in object used for center, filter/group names and class_table name'''
         if self.save_cpa_properties:
-            warning_string = "CellProfiler Analyst will not recogize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
+            warning_string = "CellProfiler Analyst will not recognize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
             if not re.match("^[\w]*$", self.location_object.value):
                 raise cps.ValidationError(warning_string % "object", self.location_object)
 

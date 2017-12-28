@@ -318,7 +318,7 @@ somewhat empirical.
             variable_revision_number = 2
 
         if not from_matlab and variable_revision_number == 2:
-            # If revsion < 2, remove rescaling option; warning user and suggest RescaleIntensity instead.
+            # If revision < 2, remove rescaling option; warning user and suggest RescaleIntensity instead.
             # Keep the prior selection around for the validation warning.
             SLOT_RESCALE_OPTION = 4
             SETTINGS_PER_IMAGE_V2 = 5
@@ -329,7 +329,7 @@ somewhat empirical.
 
             variable_revision_number = 3
         else:
-            # If revision >= 2, initalize rescaling option for validation warning
+            # If revision >= 2, initialize rescaling option for validation warning
             for i, image in enumerate(self.images):
                 image.rescale_option = RE_NONE
 

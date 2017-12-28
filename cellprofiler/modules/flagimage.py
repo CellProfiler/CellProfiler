@@ -702,7 +702,7 @@ image is not flagged.
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for each flag mesurment in the module'''
+        '''Return column definitions for each flag measurment in the module'''
         return [(cpmeas.IMAGE, self.measurement_name(flag), cpmeas.COLTYPE_INTEGER)
                 for flag in self.flags]
 

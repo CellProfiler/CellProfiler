@@ -386,7 +386,7 @@ path and ``/server_name/your_name/`` here for the cluster root path."""))
                 remote_directory = remote_directory.replace("\\", "\\\\")
 
             if sys.platform.startswith('win'):
-                # Windows is case-insentitve so do case-insensitve mapping
+                # Windows is case-insensitive so do case-insensitive mapping
                 if path.upper().startswith(local_directory.upper()):
                     path = (remote_directory +
                             path[len(local_directory):])

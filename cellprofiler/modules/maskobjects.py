@@ -177,7 +177,7 @@ image using **ApplyThreshold**.
             doc="""\
 This option reverses the foreground/background relationship of the mask.
 
--  Select "*%(NO)s*" for the mask to be composed of the foregound (white
+-  Select "*%(NO)s*" for the mask to be composed of the foreground (white
    portion) of the masking image or the area within the masking objects.
 -  Select "*%(YES)s*" for the mask to instead be composed of the
    *background* (black portions) of the masking image or the area

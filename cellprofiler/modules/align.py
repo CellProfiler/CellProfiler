@@ -437,7 +437,7 @@ a separate alignment to the first image can be calculated:
         p2_sum = np.fliplr(np.flipud(p2_sum))
         p2_mean = p2_sum / unit
         #
-        # Once we have the means for u,v, we can caluclate the
+        # Once we have the means for u,v, we can calculate the
         # variance-like parts of the equation. We have to multiply
         # the mean^2 by the # of elements being summed-over
         # to account for the mean being summed that many times.
@@ -528,7 +528,7 @@ a separate alignment to the first image can be calculated:
 
         output_image_name - name of the resultant image
 
-        off_x, off_y - offset of the resultant image relative to the origninal
+        off_x, off_y - offset of the resultant image relative to the original
 
         shape - shape of the resultant image
         '''

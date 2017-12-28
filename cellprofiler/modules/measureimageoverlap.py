@@ -211,7 +211,7 @@ are chosen.
    representative. The same representatives are then used for the test
    and reference images.
 -  *{DM_SKEL}:* Select to skeletonize the image and pick points
-   eqidistant along the skeleton.
+   equidistant along the skeleton.
 
 |image0|  *{DM_KMEANS}* is a choice that’s generally applicable to all
 images. *{DM_SKEL}* is best suited to long, skinny objects such as
@@ -641,7 +641,7 @@ the two images. Set this setting to “No” to assess no penalty."""
             markers[branchpoints] = numpy.arange(numpy.sum(branchpoints)) + 1
             #
             # We compute the propagation distance to that point, then impose
-            # a slightly arbitarary order to get an unambiguous ordering
+            # a slightly arbitrary order to get an unambiguous ordering
             # which should number the pixels in a skeleton branch monotonically
             #
             ts_labels, distances = centrosome.propagate.propagate(numpy.zeros(markers.shape),

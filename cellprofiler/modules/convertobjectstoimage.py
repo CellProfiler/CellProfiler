@@ -265,6 +265,6 @@ Preferences*.
         return True
 
 #
-# Backwards compatability
+# Backwards compatibility
 #
 ConvertToImage = ConvertObjectsToImage

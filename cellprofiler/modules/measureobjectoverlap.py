@@ -180,7 +180,7 @@ are chosen.
    representative. The same representatives are then used for the test
    and reference objects.
 -  *{DM_SKEL}:* Select to skeletonize the object and pick points
-   eqidistant along the skeleton.
+   equidistant along the skeleton.
 
 |image0|  *{DM_KMEANS}* is a choice that’s generally applicable to all
 images. *{DM_SKEL}* is best suited to long, skinny objects such as
@@ -600,7 +600,7 @@ the two objects. Set this setting to “No” to assess no penalty."""
         #
         order = numpy.lexsort([u[:, 2], u[:, 3], u[:, 0], u[:, 1]])
         u = u[order, :]
-        # Get rid of any duplicate labelings (same point labeled twice with
+        # Get rid of any duplicate labellings (same point labeled twice with
         # same label.
         #
         first = numpy.hstack([[True], numpy.any(u[:-1, :] != u[1:, :], 1)])

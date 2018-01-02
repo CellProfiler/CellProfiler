@@ -720,7 +720,11 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_select_all_ui,
                   id=wx.ID_SELECTALL)
 
+        # ID_HELP_MODULE is used in _both_ button contexts and menu contexts,
+        # so it needs event bindings for either type
         wx.EVT_BUTTON(self, ID_HELP_MODULE, self.__on_help_module)
+        wx.EVT_MENU(self, ID_HELP_MODULE, self.__on_help_module)
+
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.about)
         wx.EVT_MENU(self, ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self, ID_WINDOW_CLOSE_ALL, self.__on_close_all)

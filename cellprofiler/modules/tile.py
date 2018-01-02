@@ -268,8 +268,6 @@ create a grid that has roughly the same number of rows and columns.
                   self.place_first, self.tile_style,
                   self.meander]
 
-        for additional in self.additional_images:
-            result += [additional.input_image_name]
         return result
 
     def is_aggregation_module(self):

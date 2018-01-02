@@ -1133,6 +1133,6 @@ value will be retained.""".format(**{
 
 
 #
-# backwards compatability
+# backwards compatibility
 #
 FilterByObjectMeasurement = FilterObjects

@@ -124,7 +124,7 @@ between 0 and 1.
 This threshold adjustment factor is a multiplier that is applied to both
 the lower and upper Canny thresholds if they are calculated
 automatically. An adjustment factor of 1 indicates no adjustment. The
-adjustment factor has no effect on any threshhold entered manually.
+adjustment factor has no effect on any threshold entered manually.
 ''' % globals())
 
         self.direction = cps.Choice(

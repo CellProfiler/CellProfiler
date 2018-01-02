@@ -138,7 +138,7 @@ same intensity as the brightest pixel in the image.
 The following options are possible for setting the intensity
 (brightness) of the outlines:
 
--  *{MAX_IMAGE}:* Set the brighness to the the same as the brightest
+-  *{MAX_IMAGE}:* Set the brightness to the the same as the brightest
    point in the image.
 -  *{MAX_POSSIBLE}:* Set to the maximum possible value for this image
    format.

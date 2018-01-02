@@ -52,7 +52,7 @@ TM_LI = "Minimum cross entropy"
 
 TS_ALL = [TS_GLOBAL, TS_ADAPTIVE]
 
-PROTIP_RECOMEND_ICON = "thumb-up.png"
+PROTIP_RECOMMEND_ICON = "thumb-up.png"
 PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
@@ -93,10 +93,10 @@ The choices for the threshold strategy are:
    non-uniform backgrounds. However, for significant illumination
    variation, using the **CorrectIllumination** modules is preferable.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
-.. |image1| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
-                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
                 "TS_ADAPTIVE": TS_ADAPTIVE,
                 "TS_GLOBAL": TS_GLOBAL
             })
@@ -211,16 +211,16 @@ There are a number of methods for finding thresholds automatically:
    Imaging*, 13(1), 146-165. (`link`_)
 
 .. _link: http://dx.doi.org/10.1117/1.1631315
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_AVOID_ICON}
-.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMMEND_ICON}
 .. |image3| image:: {TECH_NOTE_ICON}
-.. |image4| image:: {PROTIP_RECOMEND_ICON}
-.. |image5| image:: {PROTIP_RECOMEND_ICON}
+.. |image4| image:: {PROTIP_RECOMMEND_ICON}
+.. |image5| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
-                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
                 "TECH_NOTE_ICON":_help.TECH_NOTE_ICON,
                 "TM_LI": TM_LI,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
@@ -253,7 +253,7 @@ disadvantages of the various thresholding options there.
 
 {HELP_ON_PIXEL_INTENSITIES}
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_AVOID_ICON}
 
 The threshold that is used for each image is recorded as a per-image
@@ -279,7 +279,7 @@ threshold value.
    background) or three classes (foreground, mid-level, and background).
    See the help below for more details.
 
-.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMMEND_ICON}
 .. |image3| image:: {TECH_NOTE_ICON}
 
 **References**
@@ -292,7 +292,7 @@ threshold value.
 """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
-                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
                 "TECH_NOTE_ICON":_help.TECH_NOTE_ICON,
                 "TM_OTSU": centrosome.threshold.TM_OTSU,
                 "TS_ADAPTIVE": TS_ADAPTIVE
@@ -340,9 +340,9 @@ larger percentage of the image is covered, the Otsu method will give a
 slightly biased threshold that may have to be corrected using this
 setting.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
-                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
                 "TM_OTSU": centrosome.threshold.TM_OTSU
             })
         )
@@ -368,10 +368,10 @@ empirically-determined value.
 
 {HELP_ON_PIXEL_INTENSITIES}
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
-                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON
             })
         )
 
@@ -433,13 +433,13 @@ assigned as foreground.
 there are almost no objects or the entire field of view is covered with
 objects, three-class thresholding may perform worse than two-class.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_AVOID_ICON}
 """.format(**{
                 "O_THREE_CLASS": O_THREE_CLASS,
                 "O_TWO_CLASS": O_TWO_CLASS,
                 "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
-                "PROTIP_RECOMEND_ICON":_help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON
             })
         )
 

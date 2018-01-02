@@ -4,7 +4,7 @@
 ColorToGray
 ===========
 
-**ColortoGray** converts an image with multiple color channels to one or more
+**ColorToGray** converts an image with multiple color channels to one or more
 grayscale images.
 
 This module converts color and channel-stacked
@@ -161,7 +161,7 @@ blue channel will be ignored.
 
 Enter a name for the resulting grayscale image coming from the blue channel.""")
 
-        # The following settings are used for the split HSV ption
+        # The following settings are used for the split HSV option
         self.use_hue = cps.Binary('Convert hue to gray?', True, doc="""\
 *(Used only when splitting HSV images)*
 

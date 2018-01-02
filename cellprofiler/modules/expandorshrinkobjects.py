@@ -368,6 +368,6 @@ order to keep from breaking up the object or breaking the hole.
 
 
 #
-# backwards compatability
+# backwards compatibility
 #
 ExpandOrShrink = ExpandOrShrinkObjects

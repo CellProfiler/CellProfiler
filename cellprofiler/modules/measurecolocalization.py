@@ -40,8 +40,8 @@ Measurements made by this module
 -  *Slope:* The slope of the least-squares regression between a pair of
    images I and J. Calculated using the model *A* × *I* + *B* = *J*, where *A* is the slope.
 -  *Overlap coefficient:* The overlap coefficient is a modification of
-   Pearson’s correlation where average intesity values of the pixels are
-   not subtracted from the original intesity values. For a pair of
+   Pearson’s correlation where average intensity values of the pixels are
+   not subtracted from the original intensity values. For a pair of
    images R and G, the overlap coefficient is measured as r = sum(Ri \*
    Gi) / sqrt (sum(Ri\*Ri)\*sum(Gi\*Gi)).
 -  *Manders coefficient:* The Manders coefficient for a pair of images R
@@ -52,8 +52,8 @@ Measurements made by this module
    threshold estimates maximum threshold of intensity for each image
    based on correlation. Manders coefficient is applied on thresholded
    images as Ri_coloc = Ri when Gi > Gthr and Gi_coloc = Gi when Ri >
-   Rthr where Gthr and Rthr are thresholds calculed using Costes’
-   authomated threshold method.
+   Rthr where Gthr and Rthr are thresholds calculated using Costes’
+   automated threshold method.
 -  *Rank Weighted Colocalization coefficient:* The RWC coefficient for a
    pair of images R and G is measured as RWC1 =
    sum(Ri_coloc\*Wi)/sum(Ri) and RWC2 = sum(Gi_coloc\*Wi)/sum(Gi),

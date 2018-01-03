@@ -212,7 +212,10 @@ that is made available by a prior module.
             text="Gradient choice:",
             # The choice takes a list of possibilities. The first one
             # is the default - the one the user will typically choose.
-            choices=[GRADIENT_MAGNITUDE, GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y],
+            choices=[GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y, GRADIENT_MAGNITUDE],
+            # The default value is the first choice in choices. You can
+            # specify a different initial value using the value keyword.
+            value=GRADIENT_MAGNITUDE,
             #
             # Here, in the documentation, we do a little trick so that
             # we use the actual text that's displayed in the documentation.

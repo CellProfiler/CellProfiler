@@ -81,7 +81,7 @@ This section can be omitted if there is no specialized output.
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Describe the measurements made by this module, if any. Typically, measurements
+Describe the measurements made by this module. Typically, measurements
 are described in the following format:
 
 **Measurement category:**
@@ -93,8 +93,6 @@ are described in the following format:
 
 -  *MeasurementName*: A brief description of the measurement.
 -  *MeasurementName*: A brief description of the measurement.
-
-This section can be omitted if no measurements are made by this module.
 
 This module makes the following measurements:
 

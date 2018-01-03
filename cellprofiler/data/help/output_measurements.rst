@@ -28,7 +28,7 @@ Below is the description for each of the terms:
    -  A descriptive name indicative of the type of measurement taken
       (e.g., “Intensity”)
    -  No name if there is no appropriate ``Category`` (e.g., if the
-      *SpecificFeatureName* is “Count”, no ``Category`` is specfied).
+      *SpecificFeatureName* is “Count”, no ``Category`` is specified).
 
 -  ``SpecificFeatureName:`` The specific feature recorded by a module
    (e.g., “Perimeter”). Usually the module recording the measurement

@@ -86,7 +86,7 @@ The following operations are available:
       in an image, for instance, the edge of a well.
     - Binary
   * - *Diag*
-    - Fills in pixels whose neighbors are diagnonally connected to 4-connect
+    - Fills in pixels whose neighbors are diagonally connected to 4-connect
       pixels that are 8-connected:
 
       +---+---+----------------+---+---+

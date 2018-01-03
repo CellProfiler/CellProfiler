@@ -109,7 +109,7 @@ modules might be needed):
 -  *Upper right:* The identified objects shown as a color image where
    connected pixels that belong to the same object are assigned the same
    color (*label image*). Note that assigned colors
-   are arbitrary; they are used simply to help you distingush the
+   are arbitrary; they are used simply to help you distinguish the
    various objects.
 -  *Lower left:* The raw image overlaid with the colored outlines of the
    identified secondary objects. The objects are shown with the

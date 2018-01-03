@@ -261,6 +261,15 @@ create a grid that has roughly the same number of rows and columns.
             result += [self.add_button]
         return result
 
+    def help_settings(self):
+        result = [self.input_image, self.output_image, self.tile_method,
+                  self.wants_automatic_rows, self.rows,
+                  self.wants_automatic_columns, self.columns,
+                  self.place_first, self.tile_style,
+                  self.meander]
+
+        return result
+
     def is_aggregation_module(self):
         return self.tile_method == T_ACROSS_CYCLES
 

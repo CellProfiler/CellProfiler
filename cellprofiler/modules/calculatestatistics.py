@@ -793,7 +793,7 @@ def calc_init_params(x, y):
     # divide-by-zero warnings since 'x(2)-x(sizex)' would necessarily have
     # zeros.
     # The NEW way just checks to see whether the depenmdent var is increasing (note
-    # negative hillc) or descreasing (positive hillc) and sets them initally
+    # negative hillc) or decreasing (positive hillc) and sets them initially
     # to +/-1.  This could be smarter about how to initialize hillc, but +/-1 seems ok for now
     # DL 2007.09.25
 

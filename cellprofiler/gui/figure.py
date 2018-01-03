@@ -2039,7 +2039,7 @@ class Figure(wx.Frame):
             self.plate_choice.plate_type = plate_type
             self.plate_choice.x = x
             self.plate_choice.y = y
-            self.plate_choice.cmap = cmap
+            self.plate_choice.cmap = matplotlib.cm.get_cmap(cmap)
             self.plate_choice.axis_title = title
             self.plate_choice.colorbar = colorbar
         else:

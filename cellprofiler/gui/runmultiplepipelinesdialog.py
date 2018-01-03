@@ -239,12 +239,14 @@ class RunMultplePipelinesDialog(wx.Dialog):
 
     def on_help(self, event):
         import cellprofiler.gui.help.content
-        import cellprofiler.gui.htmldialog as H
-        H.HTMLDialog(
-            self,
-            "Run multiple pipelines help",
-            cellprofiler.gui.help.content.read_content("other_multiple_pipelines.rst")
-        ).Show()
+        import cellprofiler.gui.html.utils
+        import cellprofiler.gui.htmldialog
+        content = cellprofiler.gui.help.content.read_content("other_multiple_pipelines.rst")
+        with cellprofiler.gui.htmldialog.HTMLDialog(self,
+                                                    "Run multiple pipelines help",
+                                                    cellprofiler.gui.html.utils.rst_to_html_fragment(content)
+                                                    ) as dlg:
+            dlg.ShowModal()
 
     def get_pipelines(self):
         """Return the user's chosen pipelines & other details

@@ -569,7 +569,7 @@ parents or children of the parent object."""
             # Finally, find the minimum distance per child
             min_dist = scipy.ndimage.minimum(dist, clabel, numpy.arange(len(ccounts)))
 
-            # Account for unparented children
+            # Account for parentless children
             dist = numpy.array([numpy.NaN] * len(mask))
 
             dist[mask] = min_dist
@@ -577,7 +577,7 @@ parents or children of the parent object."""
         meas.add_measurement(sub_object_name, FF_MINIMUM % parent_name, dist)
 
     def get_parents_of(self, workspace, parent_name):
-        '''Return the parents_of measurment or equivalent
+        '''Return the parents_of measurement or equivalent
 
         parent_name - name of parent objects
 

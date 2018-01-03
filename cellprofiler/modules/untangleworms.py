@@ -11,7 +11,7 @@ create a worm model, or takes a binary image and the results of worm
 training and labels the worms in the image, untangling them and
 associating all of a worm’s pieces together. The results of untangling
 the input image will be an object set that can be used with downstream
-measurment modules. If using the *overlapping* style of objects, these
+measurement modules. If using the *overlapping* style of objects, these
 can be saved as images using **SaveImages** to create a multi-page TIF
 file by specifying “Objects” as the type of image to save.
 
@@ -442,7 +442,7 @@ the *Maximum area factor* (see below) to get the maximum area
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 The *Maximum area factor* setting is used to compute the maximum area as
-decribed above in *Maximum area percentile*.
+described above in *Maximum area percentile*.
 """ % globals())
 
         self.min_length_percentile = cps.Float(
@@ -453,7 +453,7 @@ decribed above in *Maximum area percentile*.
 worms in a clump to worms of at least the minimum length.
 **UntangleWorms** sorts all worms by length and picks the worm at the
 percentile indicated by this setting. It then multiplies the length of
-this worm by the *Mininmum length factor* (see below) to get the minimum
+this worm by the *Minimum length factor* (see below) to get the minimum
 length.
 """ % globals())
 
@@ -1134,7 +1134,7 @@ should be processed.
         followed by a dilation. If max_radius is supplied, all pixels remaining
         after opening the binary image consisting of all pixels further
         than max_pix from the image background. This allows skeleton pixels
-        in thick regions to be replaced by branchppoint regions, which increases
+        in thick regions to be replaced by branchpoint regions, which increases
         the chance of connecting skeleton pieces correctly.
 
         incidence_matrix: A num_branch_areas x num_segments logical array,
@@ -1463,7 +1463,7 @@ should be processed.
         neighbor_index = neighbor_index[neighbor_count > 0]
         neighbor_count = neighbor_count[neighbor_count > 0]
         #
-        # Correct n2 beause we have formerly added N1 to its labels. Make
+        # Correct n2 because we have formerly added N1 to its labels. Make
         # it zero-based.
         #
         n2 -= N1 + 1
@@ -1495,7 +1495,7 @@ should be processed.
         line segments form the path itself.)
 
         path_struct: A structure, with entries 'segments' and 'branch_areas',
-        descring the path found, in relation to graph_struct. See
+        describing the path found, in relation to graph_struct. See
         get_all_paths.m for details.'''
 
         path_list = self.get_all_paths(graph_struct, 0, max_length)
@@ -1566,7 +1566,7 @@ should be processed.
                           np.cumsum(np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))))
 
     def single_worm_filter(self, workspace, path_coords, params):
-        '''Given a path representing a single worm, caculates its shape cost, and
+        '''Given a path representing a single worm, calculates its shape cost, and
         either accepts it as a worm or rejects it, depending on whether or not
         the shape cost is higher than some threshold.
 
@@ -1615,7 +1615,7 @@ should be processed.
 
         cumul_lengths: A vector, where the ith entry indicates the
         length from the first point of the path to the ith in path_coords).
-        In most cases, should be calculate_cumulative_lenghts(path_coords).
+        In most cases, should be calculate_cumulative_lengths(path_coords).
 
         n: A positive integer. The number of control points to sample.
 
@@ -1772,7 +1772,7 @@ should be processed.
         not self-crossing ones.)
 
         Furthermore, this function also considers two paths identical if one can
-        be obtained by a simple reversation of the other.
+        be obtained by a simple reverse of the other.
 
         This function works by a simple depth-first search. It seems
         unnecessarily complicated compared to what it perhaps could have been;
@@ -1835,7 +1835,7 @@ should be processed.
         '''Return a list of all branch areas incident to j for each segment
 
         incident_branch_areas{j} is a row array containing a list of all those
-        branch areas incident to segment j; similary, incident_segments{i} is a
+        branch areas incident to segment j; similarly, incident_segments{i} is a
         row array containing a list of all those segments incident to branch area
         i.'''
         m = graph_struct.incidence_matrix.shape[1]
@@ -2080,7 +2080,7 @@ should be processed.
 
         overlap_weight - the penalty per pixel of an overlap
 
-        leftover_weight - the penalty per pixel of an unincluded segment
+        leftover_weight - the penalty per pixel of an excluded segment
 
         max_num_worms - maximum # of worms allowed in returned match.
         '''
@@ -2241,7 +2241,7 @@ should be processed.
         for index in order:
             new_cost = current_cost + current_overlapped_costs[index]
             if new_cost >= current_best_cost:
-                break  # No chance of subseequent better cost
+                break  # No chance of subsequent better cost
             path_index = last_chosen + index
             current_best_subset, current_best_cost = self.search_recur(
                     path_segment_matrix, segment_lengths, path_raw_costs,

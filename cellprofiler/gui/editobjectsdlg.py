@@ -810,6 +810,7 @@ class EditObjectsDialog(wx.Dialog):
             self.orig_axes.add_line(artist)
         if self.split_artist is not None:
             self.orig_axes.add_line(self.split_artist)
+        # Set background to None as we've effectively redrawn the display
         self.background = None
         self.Refresh()
 
@@ -1194,7 +1195,12 @@ class EditObjectsDialog(wx.Dialog):
         self.update_artists()
 
     def update_artists(self):
-        self.figure.canvas.restore_region(self.background)
+        # Only restore if background was set, otherwise no need
+        if self.background is not None:
+            self.figure.canvas.restore_region(self.background)
+        else:
+            self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
+
         for artist in self.artists:
             self.orig_axes.draw_artist(artist)
         if self.split_artist is not None:

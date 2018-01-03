@@ -196,8 +196,12 @@ class AddModuleFrame(wx.Frame):
 
     def __on_getting_started(self, event):
         import cellprofiler.gui.help.content
-        self.display_helpframe(cellprofiler.gui.help.content.read_content("pipelines_building.rst"),
-                               'Add modules: Getting Started')
+        import cellprofiler.gui.html.utils
+        self.display_helpframe(
+            cellprofiler.gui.html.utils.rst_to_html_fragment(
+                cellprofiler.gui.help.content.read_content("pipelines_building.rst")
+            ),
+            'Add modules: Getting Started')
 
     def display_helpframe(self, help_text, title):
         from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow

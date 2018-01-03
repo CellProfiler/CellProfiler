@@ -16,7 +16,7 @@ compartment (for example, nuclei, cells, colonies, worms).
 REGEXP_HELP_REF = """\
 **Details on regular expressions:**
 
-A *regular expression* is a general term refering to a method of
+A *regular expression* is a general term referring to a method of
 searching for pattern matches in text. There is a high learning curve to
 using them, but are quite powerful once you understand the basics.
 
@@ -241,7 +241,7 @@ def __image_resource(filename):
     return "../images/{}".format(filename)
 
 
-PROTIP_RECOMEND_ICON = __image_resource("thumb-up.png")
+PROTIP_RECOMMEND_ICON = __image_resource("thumb-up.png")
 
 PROTIP_AVOID_ICON = __image_resource("thumb-down.png")
 

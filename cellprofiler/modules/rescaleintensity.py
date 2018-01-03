@@ -317,7 +317,7 @@ Select the measurement value to use as the divisor for the final image.
         grouping - a dictionary that describes the key for the grouping.
                    For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
         image_numbers - a sequence of the image numbers within the
-                   group (image sets can be retreved as
+                   group (image sets can be retrieved as
                    image_set_list.get_image_set(image_numbers[i]-1)
 
         We use prepare_group to compute the minimum or maximum values

@@ -36,8 +36,8 @@ as `reStructuredText <http://docutils.sourceforge.net/rst.html>`_.
 
 Note whether or not this module supports 3D image data and respects masks.
 A module which respects masks applies an image's mask and operates only on
-the unmasked data. Update the table below to indicate which image processing
-features this module supports.
+the image data not obscured by the mask. Update the table below to indicate 
+which image processing features this module supports.
 
 |
 

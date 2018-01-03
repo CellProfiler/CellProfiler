@@ -375,8 +375,12 @@ def gradient_image(pixels, gradient_choice, automatic_smoothing, scale):
     if gradient_choice == GRADIENT_MAGNITUDE:
         gradient_image = gradient_magnitude
     else:
-        # Numpy uses i and j instead of x and y. The x axis is 1
-        # and the y axis is 0
+        # Image data is indexed by rows and columns, with a given point located at
+        # position (row, column). Here, x represents the column coordinate (at index 1)
+        # and y represents the row coordinate (at index 0).
+        #
+        # You can learn more about image coordinate systems here:
+        # http://scikit-image.org/docs/dev/user_guide/numpy_images.html#coordinate-conventions
         x = scipy.ndimage.correlate1d(gradient_magnitude, [-1, 0, 1], 1)
         y = scipy.ndimage.correlate1d(gradient_magnitude, [-1, 0, 1], 0)
         norm = numpy.sqrt(x ** 2 + y ** 2)

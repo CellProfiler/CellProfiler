@@ -320,6 +320,9 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
 
         super(IdentifyPrimaryObjects, self).__init__()
 
+    def volumetric(self):
+        return False
+
     def create_settings(self):
         super(IdentifyPrimaryObjects, self).create_settings()
 

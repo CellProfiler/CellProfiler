@@ -1680,6 +1680,12 @@ class Figure(wx.Frame):
     @staticmethod
     def normalize_image(image, **kwargs):
         """Produce a color image normalized according to user spec"""
+        if 0 in image.shape:
+            # No normalization to perform for images with an empty dimension.
+            # Return the image.
+            # https://github.com/CellProfiler/CellProfiler/issues/3330
+            return image
+
         colormap = kwargs['colormap']
         normalize = kwargs['normalize']
         vmin = kwargs['vmin']

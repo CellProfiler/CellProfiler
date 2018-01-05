@@ -415,7 +415,7 @@ considerations to note:
             }))
 
         self.test_connection_button = cps.DoSomething(
-                "Press this button to test the connection to the remote server using the current settings",
+                "Test the database connection",
                 "Test connection", self.test_connection, doc="""\
 This button test the connection to MySQL server specified using
 the settings entered by the user.""")

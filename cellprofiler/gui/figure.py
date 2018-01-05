@@ -524,6 +524,15 @@ class Figure(wx.Frame):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
+
+        # On some operating systems (specifically Ubuntu), the matplotlib toolbar
+        # may not render with an appropriate height. This is the result of creating
+        # the navtoolbar without an appropriate slider. Until this is refactored
+        # to make it size properly, this check ensures the navtoolbar at least appears.
+        # https://github.com/CellProfiler/CellProfiler/issues/2679
+        if nbheight < 40:
+            nbheight = 40
+
         self.navtoolbar.SetPosition((0, 0))
         self.navtoolbar.SetSize((available_width, nbheight))
 
@@ -1671,6 +1680,12 @@ class Figure(wx.Frame):
     @staticmethod
     def normalize_image(image, **kwargs):
         """Produce a color image normalized according to user spec"""
+        if 0 in image.shape:
+            # No normalization to perform for images with an empty dimension.
+            # Return the image.
+            # https://github.com/CellProfiler/CellProfiler/issues/3330
+            return image
+
         colormap = kwargs['colormap']
         normalize = kwargs['normalize']
         vmin = kwargs['vmin']

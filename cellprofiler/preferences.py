@@ -342,6 +342,7 @@ IM_BICUBIC = "Bicubic"
 INTENSITY_MODE_RAW = "raw"
 INTENSITY_MODE_NORMAL = "normalized"
 INTENSITY_MODE_LOG = "log"
+INTENSITY_MODE_GAMMA = "gamma"
 
 WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
 WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
@@ -624,6 +625,24 @@ saved. CellProfiler will also save images accessed by http URL
 temporarily to disk (but will efficiently access OMERO image planes
 directly from the server).\
 """
+
+NORMALIZATION_FACTOR_HELP = """\
+Sets the normalization factor for intensity normalization methods:
+
+-  *{INTENSITY_MODE_LOG}*: Set the gain applied to the each pixel in the image during log normalization. Pixels are
+   transformed according to the formula O = gain * log(1 + I), where I is the pixel intensity.
+-  *{INTENSITY_MODE_GAMMA}*: Set the value of gamma. Pixels are transformed according to the formula O = I ** gamma,
+   where I is the pixel intensity. For gamma > 1.0, the output image will appear darker than the original image. For
+   gamma < 1.0, the output image will appear brighter than the original image.
+   
+The normalization factor is ignored when the normalization method is *{INTENSITY_MODE_NORMAL}* or 
+*{INTENSITY_MODE_RAW}*.
+""".format(**{
+    "INTENSITY_MODE_GAMMA": INTENSITY_MODE_GAMMA,
+    "INTENSITY_MODE_LOG": INTENSITY_MODE_LOG,
+    "INTENSITY_MODE_NORMAL": INTENSITY_MODE_NORMAL,
+    "INTENSITY_MODE_RAW": INTENSITY_MODE_RAW
+})
 
 
 def recent_file(index, category=""):
@@ -1838,6 +1857,21 @@ def set_choose_image_set_frame_size(w, h):
     global __choose_image_set_frame_size
     __choose_image_set_frame_size = (w, h)
     config_write(CHOOSE_IMAGE_SET_FRAME_SIZE, "%d,%d" % (w, h))
+
+
+__normalization_factor = "1.0"
+
+
+def get_normalization_factor():
+    global __normalization_factor
+
+    return __normalization_factor
+
+
+def set_normalization_factor(normalization_factor):
+    global __normalization_factor
+
+    __normalization_factor = normalization_factor
 
 
 def add_progress_callback(callback):

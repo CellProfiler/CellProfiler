@@ -119,8 +119,7 @@ class PreferencesDlg(wx.Dialog):
                 current = getter()
                 if current is None:
                     current = ""
-                ctl = wx.TextCtrl(scrollpanel, -1, current,
-                                  validator=validator)
+                ctl = wx.TextCtrl(parent=scrollpanel, id=-1, value=current, validator=validator)
                 min_height = ctl.GetMinHeight()
                 min_width = ctl.GetTextExtent("Make sure the window can display this")[0]
                 ctl.SetMinSize((min_width, min_height))
@@ -282,9 +281,16 @@ class PreferencesDlg(wx.Dialog):
                 ["Intensity normalization",
                  cellprofiler.preferences.get_intensity_mode,
                  cellprofiler.preferences.set_intensity_mode,
-                 [cellprofiler.preferences.INTENSITY_MODE_RAW, cellprofiler.preferences.INTENSITY_MODE_NORMAL,
-                  cellprofiler.preferences.INTENSITY_MODE_LOG],
+                 [cellprofiler.preferences.INTENSITY_MODE_RAW,
+                  cellprofiler.preferences.INTENSITY_MODE_NORMAL,
+                  cellprofiler.preferences.INTENSITY_MODE_LOG,
+                  cellprofiler.preferences.INTENSITY_MODE_GAMMA],
                  cellprofiler.preferences.INTENSITY_MODE_HELP],
+                ["Intensity normalization factor",
+                 cellprofiler.preferences.get_normalization_factor,
+                 cellprofiler.preferences.set_normalization_factor,
+                 "Text",
+                 cellprofiler.preferences.NORMALIZATION_FACTOR_HELP],
                 ["CellProfiler plugins directory",
                  cellprofiler.preferences.get_plugin_directory,
                  cellprofiler.preferences.set_plugin_directory,

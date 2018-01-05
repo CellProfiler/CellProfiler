@@ -449,6 +449,11 @@ radial degree you enter here.
         # but these "arrays" are never actually realized and made into
         # real memory.
         #
+        # Using 0.0:X creates floating point indices. This makes the
+        # data type of x, y consistent with center_x, center_y and
+        # raidus. Numpy requires consistent data types for in-place
+        # operations like -= and /=.
+        #
         y, x = numpy.mgrid[0.0:labels.shape[0], 0.0:labels.shape[1]]
 
         #
@@ -466,8 +471,8 @@ radial degree you enter here.
         # the circle. Again, we use the indexing trick to look up the
         # values for each object.
         #
-        y = y.astype(float) / radius[labels]
-        x = x.astype(float) / radius[labels]
+        y /= radius[labels]
+        x /= radius[labels]
 
         #
         # Now we can get Zernike polynomials per-pixel where each pixel

@@ -132,7 +132,6 @@ wherever possible, include a link to the original work. For example,
    (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
 """
 
-###################################
 #
 # Constants
 #
@@ -140,13 +139,11 @@ wherever possible, include a link to the original work. For example,
 # constants if they will appear more than once in your program. That way,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
-###################################
-
+#
 '''This is the measurement template category'''
 C_MEASUREMENT_TEMPLATE = "MT"
 
 
-###################################
 #
 # The module class
 #
@@ -155,22 +152,17 @@ C_MEASUREMENT_TEMPLATE = "MT"
 # you re-implement them. You can let Module do most of the work and
 # implement only what you need.
 #
-###################################
-
 class MeasurementTemplate(cellprofiler.module.Module):
-    ###############################################
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
     # number which can be used to provide backwards compatibility if
     # you add user-interface functionality later.
     #
-    ###############################################
     module_name = "MeasurementTemplate"
     category = "Measurement"
     variable_revision_number = 1
 
-    ###############################################
     #
     # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.
@@ -178,7 +170,6 @@ class MeasurementTemplate(cellprofiler.module.Module):
     # You can look at other modules and in cellprofiler.settings for
     # settings you can use.
     #
-    ################################################
     def create_settings(self):
         #
         # The ImageNameSubscriber "subscribes" to all ImageNameProviders in
@@ -250,7 +241,6 @@ radial degree you enter here.
 
     #
     # CellProfiler calls "run" on each image set in your pipeline.
-    # This is where you do the real work.
     #
     def run(self, workspace):
         #
@@ -378,11 +368,9 @@ radial degree you enter here.
             zsd = numpy.std(zr)
             statistics.append([feature, zmean, zmedian, zsd])
 
-    ################################
     #
     # "display" lets you use matplotlib to display your results.
     #
-    ################################
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
 
@@ -417,11 +405,9 @@ radial degree you enter here.
 
         return zi
 
-    ################################
     #
     # "measure_zernike" makes one Zernike measurement on each object
     #
-    ################################
     def measure_zernike(self, pixels, labels, indexes, centers, radius, n, m):
         '''Measure the intensity of the image with Zernike (N, M)
 

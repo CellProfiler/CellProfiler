@@ -111,7 +111,6 @@ wherever possible, include a link to the original work. For example,
    (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
 """
 
-###################################
 #
 # Constants
 #
@@ -119,14 +118,12 @@ wherever possible, include a link to the original work. For example,
 # constants if they will appear more than once in your program. That way,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
-###################################
-
+#
 GRADIENT_MAGNITUDE = "Gradient magnitude"
 GRADIENT_DIRECTION_X = "Gradient direction - X"
 GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 
 
-###################################
 #
 # The module class.
 #
@@ -149,9 +146,7 @@ GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 #    should inherit from this class. These are modules that take objects as
 #    input and output new objects.
 #
-###################################
 class ImageTemplate(cellprofiler.module.ImageProcessing):
-    ###############################################
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
@@ -161,12 +156,10 @@ class ImageTemplate(cellprofiler.module.ImageProcessing):
     # This module's category is "Image Processing" which is defined
     # by its superclass.
     #
-    ###############################################
     module_name = "ImageTemplate"
 
     variable_revision_number = 1
 
-    ###############################################
     #
     # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.
@@ -174,7 +167,6 @@ class ImageTemplate(cellprofiler.module.ImageProcessing):
     # You can look at other modules and in cellprofiler.settings for
     # settings you can use.
     #
-    ################################################
     def create_settings(self):
         #
         # The superclass (cellprofiler.module.ImageProcessing) defines two

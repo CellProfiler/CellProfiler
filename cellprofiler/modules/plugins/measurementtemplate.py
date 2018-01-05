@@ -390,7 +390,7 @@ radial degree you enter here.
 
         if wants_negative:
             #
-            # np.vstack means concatenate rows of two 2d arrays.
+            # numpy.vstack means concatenate rows of two 2d arrays.
             # The multiplication by [1, -1] negates every m, but preserves n.
             # zi[zi[:, 1] != 0] picks out only elements with m not equal to zero.
             #
@@ -556,7 +556,7 @@ radial degree you enter here.
         # for how this works.
         #
         # The first thing in the list is the object being measured. If it's
-        # the whole image, use cpmeas.IMAGE as the name.
+        # the whole image, use cellprofiler.measurement.IMAGE as the name.
         #
         # The second thing is the measurement name.
         #

@@ -612,8 +612,14 @@ radial degree you enter here.
         For the Zernikes, the scales are of the form, N2M2 or N2MM2 for
         negative azimuthal degree
         '''
+        def get_scale(n, m):
+            if m >= 0:
+                return "N%dM%d" % (n, m)
+
+            return "N%dMM%d" % (n, -m)
+
         if image_name in self.get_measurement_images(pipeline, object_name, category, measurement):
-            return [("N%dM%d" % (n, m)) if m >= 0 else ("N%dMM%d" % (n, -m)) for n, m in self.get_zernike_indexes(True)]
+            return [get_scale(n, m) for n, m in self.get_zernike_indexes(True)]
 
         return []
 

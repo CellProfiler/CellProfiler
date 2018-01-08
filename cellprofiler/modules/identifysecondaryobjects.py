@@ -179,6 +179,9 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
 
         super(IdentifySecondaryObjects, self).__init__()
 
+    def volumetric(self):
+        return False
+
     def create_settings(self):
         super(IdentifySecondaryObjects, self).create_settings()
 

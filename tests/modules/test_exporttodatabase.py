@@ -21,7 +21,8 @@ if hasattr(unittest, "SkipTest"):
 else:
     SkipTestException = None
 
-from cellprofiler.preferences import set_headless, DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME
+from cellprofiler.preferences import set_headless, DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+    DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 
 set_headless()
@@ -453,8 +454,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
-        self.assertEqual(module.directory.dir_choice,
-                         E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.db_name, "DefaultDB")
@@ -509,7 +509,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.db_name, "DefaultDB")
@@ -566,7 +566,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:13|
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.db_name, "DefaultDB")

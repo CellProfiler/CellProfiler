@@ -459,10 +459,15 @@ combination of the table name and prefix exceeds this limit, you will
 receive an error associated with this setting.""")
 
         self.sql_file_prefix = cellprofiler.setting.Text(
-                "SQL file prefix", "SQL_", doc="""\
-*(Used if %(DB_MYSQL_CSV)s is selected as the database type)*
+            "SQL file prefix", "SQL_", doc="""\
+*(Used if {DB_MYSQL_CSV} is selected as the database type)*
 
-Enter the prefix to be used to name the SQL file.""" % globals())
+Enter the prefix to be used to name the SQL file.
+""".format(**{
+                "DB_MYSQL_CSV": DB_MYSQL_CSV
+            }
+           )
+        )
 
         self.directory = cellprofiler.setting.DirectoryPath(
                 "Output file location",
@@ -479,10 +484,14 @@ them directly to a database. If you request a CellProfiler Analyst
 properties file or workspace file, it will also be saved to this
 location.
 
-%(IO_FOLDER_CHOICE_HELP_TEXT)s
+{IO_FOLDER_CHOICE_HELP_TEXT}
 
-%(IO_WITH_METADATA_HELP_TEXT)s
-""" % globals())
+{IO_WITH_METADATA_HELP_TEXT}
+""".format(**{
+                "IO_FOLDER_CHOICE_HELP_TEXT": IO_FOLDER_CHOICE_HELP_TEXT,
+                "IO_WITH_METADATA_HELP_TEXT": IO_WITH_METADATA_HELP_TEXT
+            })
+        )
 
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
@@ -581,7 +590,11 @@ If you are using a multi-well plate or microarray, you can select the
 metadata corresponding to the plate here. If there is no plate
 metadata associated with the image set, select *None*.
 
-%(USING_METADATA_HELP_REF)s""" % globals())
+{USING_METADATA_HELP_REF}
+""".format(**{
+                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+            })
+        )
 
         self.properties_well_metadata = cellprofiler.setting.Choice(
                 "Select the well metadata",
@@ -592,7 +605,11 @@ If you are using a multi-well plate or microarray, you can select the
 metadata corresponding to the well here. If there is no well metadata
 associated with the image set, select *None*.
 
-%(USING_METADATA_HELP_REF)s""" % globals())
+{USING_METADATA_HELP_REF}
+""".format(**{
+                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+            })
+        )
 
         self.properties_export_all_image_defaults = cellprofiler.setting.Binary(
                 "Include information for all images, using default values?", True, doc="""\
@@ -714,13 +731,18 @@ for. This setting will create and set a field called
 *classification\_type*. Note that if you will not be using the Classifier
 tool in CellProfiler Analyst, this setting will be ignored.
 
--  *%(CT_OBJECT)s:* Object-based classification, i.e., set
+-  *{CT_OBJECT}:* Object-based classification, i.e., set
    *classification\_type* to “object” (or leave it blank).
--  *%(CT_IMAGE)s:* Image-based classification, e.g., set
+-  *{CT_IMAGE}:* Image-based classification, e.g., set
    *classification\_type* to “image”.
 
 You can manually change this choice in the properties file by editing
-the *classification\_type* field.""" % globals())
+the *classification\_type* field.
+""".format(**{
+                "CT_OBJECT": CT_OBJECT,
+                "CT_IMAGE": CT_IMAGE
+            })
+        )
 
         self.create_workspace_file = cellprofiler.setting.Binary(
                 "Create a CellProfiler Analyst workspace file?", False, doc="""\
@@ -731,13 +753,18 @@ for. This setting will create and set a field called
 *classification\_type*. Note that if you are not using the classifier
 tool, this setting will be ignored.
 
--  *%(CT_OBJECT)s:* Object-based classification, i.e., set
+-  *{CT_OBJECT}:* Object-based classification, i.e., set
    *classification\_type* to “object” (or leave it blank).
--  *%(CT_IMAGE)s:* Image-based classification, e.g., set
+-  *{CT_IMAGE}:* Image-based classification, e.g., set
    *classification\_type* to “image”.
 
 You can manually change this choice in the properties file by editing
-the *classification\_type* field.""" % globals())
+the *classification\_type* field.
+""".format(**{
+                "CT_OBJECT": CT_OBJECT,
+                "CT_IMAGE": CT_IMAGE
+            })
+        )
 
         self.divider = cellprofiler.setting.Divider(line=True)
         self.divider_props = cellprofiler.setting.Divider(line=True)
@@ -948,11 +975,17 @@ create the Per\_Well table, regardless of the option chosen above.
 This option lets you choose the objects whose measurements will be saved
 in the Per\_Object and Per\_Well(s) database tables.
 
--  *%(O_ALL)s:* Export measurements from all objects.
--  *%(O_NONE)s:* Do not export data to a Per\_Object table. Save only
+-  *{O_ALL}:* Export measurements from all objects.
+-  *{O_NONE}:* Do not export data to a Per\_Object table. Save only
    Per\_Image or Per\_Well measurements (which nonetheless include
    population statistics from objects).
--  *%(O_SELECT)s:* Select the objects you want to export from a list.""" % globals())
+-  *{O_SELECT}:* Select the objects you want to export from a list.
+""".format(**{
+                "O_ALL": O_ALL,
+                "O_NONE": O_NONE,
+                "O_SELECT": O_SELECT
+            })
+        )
 
         self.objects_list = cellprofiler.setting.ObjectSubscriberMultiChoice(
                 "Select the objects", doc="""\
@@ -1016,36 +1049,42 @@ no two columns have the same name.""")
 **ExportToDatabase** can create either one table for each type of
 object exported or a single object table.
 
--  *%(OT_PER_OBJECT)s* creates one table for each object type you
+-  *{OT_PER_OBJECT}* creates one table for each object type you
    export. The table name will reflect the name of your objects. The
    table will have one row for each of your objects. You can write SQL
    queries that join tables using the “Number\_ObjectNumber” columns of
    parent objects (such as those created by **IdentifyPrimaryObjects**)
    with the corresponding “Parent\_… column” of the child objects.
-   Choose *%(OT_PER_OBJECT)s* if parent objects can have more than one
+   Choose *{OT_PER_OBJECT}* if parent objects can have more than one
    child object, if you want a relational representation of your objects
    in the database, or if you need to split columns among different
    tables and shorten column names because of database limitations.
--  *%(OT_COMBINE)s* creates a single database table that records the
+-  *{OT_COMBINE}* creates a single database table that records the
    object measurements. **ExportToDatabase** will prepend each column
    name with the name of the object associated with that column’s
    measurement. Each row of the table will have measurements for all
    objects that have the same image and object number. Choose
-   *%(OT_COMBINE)s* if parent objects have a single child, or if you
+   *{OT_COMBINE}* if parent objects have a single child, or if you
    want a simple table structure in your database. You can combine the
    measurements for all or selected objects in this way.
--  *%(OT_VIEW)s* creates a single database view to contain the object
+-  *{OT_VIEW}* creates a single database view to contain the object
    measurements. A *view* is a virtual database table which can be used
    to package together multiple per-object tables into a single
    structure that is accessed just like a regular table. Choose
-   *%(OT_VIEW)s* if you want to combine multiple objects but using
-   *%(OT_COMBINE)s* would produce a table that hits the database size
+   *{OT_VIEW}* if you want to combine multiple objects but using
+   *{OT_COMBINE}* would produce a table that hits the database size
    limitations.
    An important note is that only objects that are related as primary,
    secondary or tertiary objects to each other should be combined in a
    view. This is because the view expects a one-to-one relationship
    between the combined objects. If you are selecting objects for the
-   view, the module will warn you if they are not related in this way.""" % globals())
+   view, the module will warn you if they are not related in this way.
+""".format(**{
+                "OT_PER_OBJECT": OT_PER_OBJECT,
+                "OT_COMBINE": OT_COMBINE,
+                "OT_VIEW": OT_VIEW
+            })
+        )
 
         self.want_image_thumbnails = cellprofiler.setting.Binary(
                 "Write image thumbnails directly to the database?", False, doc="""\
@@ -1108,21 +1147,27 @@ such as when the measurements to be written have changed, the data
 tables must be dropped completely.
 You can choose from three options to control overwriting behavior:
 
--  *%(OVERWRITE_NEVER)s:* **ExportToDatabase** will ask before dropping
+-  *{OVERWRITE_NEVER}:* **ExportToDatabase** will ask before dropping
    and recreating tables unless you are running headless. CellProfiler
    will exit if running headless if the tables exist and this option is
    chosen.
--  *%(OVERWRITE_DATA)s:* **ExportToDatabase** will keep the existing
+-  *{OVERWRITE_DATA}:* **ExportToDatabase** will keep the existing
    tables if present and will overwrite the data. Choose
-   *%(OVERWRITE_DATA)s* if you are breaking your experiment into ranges
+   *{OVERWRITE_DATA}* if you are breaking your experiment into ranges
    of image sets and running each range on a separate instance of
    CellProfiler.
--  *%(OVERWRITE_ALL)s:* **ExportToDatabase** will drop previous
+-  *{OVERWRITE_ALL}:* **ExportToDatabase** will drop previous
    versions of tables at the start of a run. This option is appropriate
    if you are using the **CreateBatchFiles** module; your tables will be
    created by the run that creates the batch data file. The actual
    analysis runs that utilize the ``Batch_data`` file will use the
-   existing tables without trying to recreate them.""" % globals())
+   existing tables without trying to recreate them.
+""".format(**{
+                "OVERWRITE_NEVER": OVERWRITE_NEVER,
+                "OVERWRITE_DATA": OVERWRITE_DATA,
+                "OVERWRITE_ALL": OVERWRITE_ALL
+            })
+        )
 
     def add_image_group(self, can_remove=True):
         group = cellprofiler.setting.SettingsGroup()
@@ -1278,18 +1323,27 @@ here."""))
         group.append("divider", cellprofiler.setting.Divider(line=False))
 
         group.append(
-                "measurement_display", cellprofiler.setting.Choice(
-                        "Select the measurement display tool",
-                        W_DISPLAY_ALL, doc="""\
+            "measurement_display", cellprofiler.setting.Choice(
+                "Select the measurement display tool",
+                W_DISPLAY_ALL, doc="""\
 *(Used only if creating a workspace file)*
 
 Select what display tool in CellProfiler Analyst you want to use to open the measurements.
 
--  %(W_SCATTERPLOT)s
--  %(W_HISTOGRAM)s
--  %(W_DENSITYPLOT)s
--  %(W_PLATEVIEWER)s
--  %(W_BOXPLOT)s""" % globals()))
+-  {W_SCATTERPLOT}
+-  {W_HISTOGRAM}
+-  {W_DENSITYPLOT}
+-  {W_PLATEVIEWER}
+-  {W_BOXPLOT}
+""".format(**{
+                    "W_SCATTERPLOT": W_SCATTERPLOT,
+                    "W_HISTOGRAM": W_HISTOGRAM,
+                    "W_DENSITYPLOT": W_DENSITYPLOT,
+                    "W_PLATEVIEWER": W_PLATEVIEWER,
+                    "W_BOXPLOT": W_BOXPLOT
+                })
+            )
+        )
 
         def measurement_type_help():
             return """\
@@ -1329,15 +1383,20 @@ Select the measurement to be plotted on the desired axis."""
 Select the index to be plot on the selected axis. Two options are
 available:
 
--  *%(C_IMAGE_NUMBER)s:* In CellProfiler, the unique identifier for
+-  *{C_IMAGE_NUMBER}:* In CellProfiler, the unique identifier for
    each image is always given this name. Selecting this option allows
    you to plot a single measurement for each image indexed by the order
    it was processed.
--  *%(GROUP_INDEX)s:* This identifier is used in cases where grouping
+-  *{GROUP_INDEX}:* This identifier is used in cases where grouping
    is applied. Each image in a group is given an index indicating the
    order it was processed. Selecting this option allows you to plot a
    set of measurements grouped by a common index.
-   %(USING_METADATA_GROUPING_HELP_REF)s""" % globals()
+   {USING_METADATA_GROUPING_HELP_REF}
+""".format(**{
+                "C_IMAGE_NUMBER": C_IMAGE_NUMBER,
+                "GROUP_INDEX": GROUP_INDEX,
+                "USING_METADATA_GROUPING_HELP_REF": USING_METADATA_GROUPING_HELP_REF
+            })
 
         group.append(
                 "x_measurement_type", cellprofiler.setting.Choice(

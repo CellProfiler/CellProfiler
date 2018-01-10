@@ -94,6 +94,7 @@ import logging
 import numpy
 import os
 import re
+import wx
 import cellprofiler
 import cellprofiler.gui.dialog
 import cellprofiler.module

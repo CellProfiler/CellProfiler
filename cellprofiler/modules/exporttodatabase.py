@@ -84,9 +84,6 @@ See also
 See also **ExportToSpreadsheet**.
 """
 
-import cellprofiler.icons
-from cellprofiler.modules._help import TECH_NOTE_ICON, USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, \
-IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 import csv
 import datetime
 import hashlib
@@ -99,11 +96,11 @@ import cellprofiler.module
 import cellprofiler.setting
 import cellprofiler.preferences
 import cellprofiler.measurement
+import cellprofiler.icons
+from cellprofiler.modules._help import TECH_NOTE_ICON, USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, \
+    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.preferences import DEFAULT_INPUT_FOLDER_NAME, \
-    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
-    DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME
 
 
 logger = logging.getLogger(__name__)
@@ -469,11 +466,14 @@ Enter the prefix to be used to name the SQL file.
         )
 
         self.directory = cellprofiler.setting.DirectoryPath(
-                "Output file location",
-                dir_choices=[
-                    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,
-                    ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
+            "Output file location",
+            dir_choices=[
+                cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME],
+            doc="""\
 *(Used only when using a CSV or a SQLite database, and/or creating a
 properties or workspace file)*
 
@@ -492,7 +492,7 @@ location.
             })
         )
 
-        self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
+        self.directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
 
         self.save_cpa_properties = cellprofiler.setting.Binary(
                 "Create a CellProfiler Analyst properties file?",

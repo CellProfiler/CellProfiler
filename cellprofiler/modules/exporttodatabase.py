@@ -94,9 +94,7 @@ import logging
 import numpy
 import os
 import re
-import wx
 import cellprofiler
-import cellprofiler.gui.dialog
 import cellprofiler.module
 import cellprofiler.setting
 import cellprofiler.preferences
@@ -2014,6 +2012,7 @@ available:
                 self.create_database_tables(self.cursor, workspace)
             return True
         except sqlite3.OperationalError as err:
+            import cellprofiler.gui.dialog
             if err.message.startswith("too many columns"):
                 # Maximum columns reached
                 # https://github.com/CellProfiler/CellProfiler/issues/3373

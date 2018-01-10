@@ -2017,8 +2017,12 @@ available:
                 # Maximum columns reached
                 # https://github.com/CellProfiler/CellProfiler/issues/3373
                 message = "MySQL Error: maximum columns reached. \n" \
-                          "Try exporting a single object per table"
-                cellprofiler.gui.dialog.Error("Error", message)
+                          "Try exporting a single object per table. \n\n" \
+                          "Problematic table: {}".format(err.message.replace("too many columns on ", ""))
+            else:
+                # A different MySQL error has occurred, let the user know
+                message = "MySQL Error: {}".format(err.message)
+            cellprofiler.gui.dialog.Error("Error", message)
         finally:
             if needs_close:
                 self.connection.commit()

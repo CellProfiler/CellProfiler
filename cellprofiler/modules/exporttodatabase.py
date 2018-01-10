@@ -97,10 +97,9 @@ import cellprofiler.setting
 import cellprofiler.preferences
 import cellprofiler.measurement
 import cellprofiler.icons
-from cellprofiler.modules._help import TECH_NOTE_ICON, USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+import cellprofiler.pipeline
+import cellprofiler.modules.loadimages
+import _help
 
 
 logger = logging.getLogger(__name__)
@@ -180,7 +179,7 @@ W_BOXPLOT = "BoxPlot"
 W_DISPLAY_ALL = [W_SCATTERPLOT, W_HISTOGRAM, W_PLATEVIEWER, W_DENSITYPLOT, W_BOXPLOT]
 W_INDEX = "Index"
 W_TYPE_ALL = [cellprofiler.measurement.IMAGE, cellprofiler.measurement.OBJECT, W_INDEX]
-W_INDEX_ALL = [C_IMAGE_NUMBER, GROUP_INDEX]
+W_INDEX_ALL = [C_IMAGE_NUMBER, cellprofiler.pipeline.GROUP_INDEX]
 
 ################################################
 #
@@ -400,7 +399,7 @@ considerations to note:
 
 .. |image0| image:: {TECH_NOTE_ICON}
                 """.format(**{
-                "TECH_NOTE_ICON": TECH_NOTE_ICON,
+                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
                 "DB_MYSQL": DB_MYSQL,
                 "DB_MYSQL_CSV": DB_MYSQL_CSV,
                 "DB_SQLITE": DB_SQLITE
@@ -487,8 +486,8 @@ location.
 
 {IO_WITH_METADATA_HELP_TEXT}
 """.format(**{
-                "IO_FOLDER_CHOICE_HELP_TEXT": IO_FOLDER_CHOICE_HELP_TEXT,
-                "IO_WITH_METADATA_HELP_TEXT": IO_WITH_METADATA_HELP_TEXT
+                "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
+                "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT
             })
         )
 
@@ -591,7 +590,7 @@ metadata associated with the image set, select *None*.
 
 {USING_METADATA_HELP_REF}
 """.format(**{
-                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF
             })
         )
 
@@ -606,7 +605,7 @@ associated with the image set, select *None*.
 
 {USING_METADATA_HELP_REF}
 """.format(**{
-                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF
             })
         )
 
@@ -900,7 +899,7 @@ create the Per\_Well table, regardless of the option chosen above.
                 "DB_MYSQL": DB_MYSQL,
                 "DB_MYSQL_CSV": DB_MYSQL_CSV,
                 "YES": cellprofiler.setting.YES,
-                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF
             })
         )
 
@@ -933,7 +932,7 @@ create the Per\_Well table, regardless of the option chosen above.
                     "DB_MYSQL": DB_MYSQL,
                     "DB_MYSQL_CSV": DB_MYSQL_CSV,
                     "YES": cellprofiler.setting.YES,
-                    "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+                    "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF
                 })
         )
 
@@ -964,7 +963,7 @@ create the Per\_Well table, regardless of the option chosen above.
                 "DB_MYSQL": DB_MYSQL,
                 "DB_MYSQL_CSV": DB_MYSQL_CSV,
                 "YES": cellprofiler.setting.YES,
-                "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF
             })
         )
 
@@ -1393,8 +1392,8 @@ available:
    {USING_METADATA_GROUPING_HELP_REF}
 """.format(**{
                 "C_IMAGE_NUMBER": C_IMAGE_NUMBER,
-                "GROUP_INDEX": GROUP_INDEX,
-                "USING_METADATA_GROUPING_HELP_REF": USING_METADATA_GROUPING_HELP_REF
+                "GROUP_INDEX": cellprofiler.pipeline.GROUP_INDEX,
+                "USING_METADATA_GROUPING_HELP_REF": _help.USING_METADATA_GROUPING_HELP_REF
             })
 
         group.append(
@@ -1475,8 +1474,9 @@ available:
         image_names = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(C_FILE_NAME) + 1):]
-            if object_name == cellprofiler.measurement.IMAGE and (feature.startswith(C_FILE_NAME)):
+            choice = feature[(len(cellprofiler.modules.loadimages.C_FILE_NAME) + 1):]
+            if object_name == cellprofiler.measurement.IMAGE and \
+                    (feature.startswith(cellprofiler.modules.loadimages.C_FILE_NAME)):
                 image_names.append(choice)
         return image_names
 
@@ -1927,6 +1927,7 @@ available:
 
         needs_close = False
         try:
+            import cellprofiler.gui.dialog
             if self.db_type == DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(self.db_host.value,
                                                              self.db_user.value,
@@ -2012,7 +2013,6 @@ available:
                 self.create_database_tables(self.cursor, workspace)
             return True
         except sqlite3.OperationalError as err:
-            import cellprofiler.gui.dialog
             if err.message.startswith("too many columns"):
                 # Maximum columns reached
                 # https://github.com/CellProfiler/CellProfiler/issues/3373
@@ -3308,7 +3308,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             ###########################################
             stmt = "UPDATE %s SET %s='%s'" % \
                    (self.get_table_name(cellprofiler.measurement.EXPERIMENT),
-                    M_MODIFICATION_TIMESTAMP,
+                    cellprofiler.pipeline.M_MODIFICATION_TIMESTAMP,
                     datetime.datetime.now().isoformat())
             execute(self.cursor, stmt, return_result=False)
             ###########################################
@@ -3688,7 +3688,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             c[1] for c in workspace.pipeline.get_measurement_columns()
             if c[0] == cellprofiler.measurement.IMAGE]
         for feature in image_features:
-            match = re.match('^%s_(.+)$' % C_FILE_NAME, feature)
+            match = re.match('^%s_(.+)$' % cellprofiler.modules.loadimages.C_FILE_NAME, feature)
             if match:
                 default_image_names.append(match.groups()[0])
 
@@ -3787,11 +3787,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             if self.properties_export_all_image_defaults:
                 image_file_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       C_FILE_NAME,
+                                       cellprofiler.modules.loadimages.C_FILE_NAME,
                                        name) for name in default_image_names])
                 image_path_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       C_PATH_NAME,
+                                       cellprofiler.modules.loadimages.C_PATH_NAME,
                                        name) for name in default_image_names])
 
                 # Provide default colors
@@ -3832,11 +3832,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
                 image_file_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       C_FILE_NAME,
+                                       cellprofiler.modules.loadimages.C_FILE_NAME,
                                        name) for name in selected_image_names])
                 image_path_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       C_PATH_NAME,
+                                       cellprofiler.modules.loadimages.C_PATH_NAME,
                                        name) for name in selected_image_names])
 
                 # Try to match thumbnail order to selected image order
@@ -4148,13 +4148,13 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         PathNameWidth = 128
         image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
         for feature in image_features:
-            if feature.startswith(C_FILE_NAME):
+            if feature.startswith(cellprofiler.modules.loadimages.C_FILE_NAME):
                 names = [name
                          for name in m.get_all_measurements(cellprofiler.measurement.IMAGE, feature)
                          if name is not None]
                 if len(names) > 0:
                     FileNameWidth = max(FileNameWidth, numpy.max(map(len, names)))
-            elif feature.startswith(C_PATH_NAME):
+            elif feature.startswith(cellprofiler.modules.loadimages.C_PATH_NAME):
                 names = [name
                          for name in m.get_all_measurements(cellprofiler.measurement.IMAGE, feature)
                          if name is not None]

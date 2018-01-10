@@ -1927,7 +1927,8 @@ available:
 
         needs_close = False
         try:
-            import cellprofiler.gui.dialog
+            # This is necessary to prevent python from thinking cellprofiler doesn't exist in this scope
+            import cellprofiler
             if self.db_type == DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(self.db_host.value,
                                                              self.db_user.value,
@@ -2022,7 +2023,7 @@ available:
             else:
                 # A different MySQL error has occurred, let the user know
                 message = "MySQL Error: {}".format(err.message)
-            cellprofiler.gui.dialog.Error("Error", message)
+            raise RuntimeError(message)
         finally:
             if needs_close:
                 self.connection.commit()

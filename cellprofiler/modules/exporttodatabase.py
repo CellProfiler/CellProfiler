@@ -85,42 +85,37 @@ See also **ExportToSpreadsheet**.
 """
 
 import cellprofiler.icons
-from cellprofiler.modules._help import TECH_NOTE_ICON, USING_METADATA_GROUPING_HELP_REF, USING_METADATA_HELP_REF, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+from cellprofiler.modules._help import TECH_NOTE_ICON
 import csv
 import datetime
 import hashlib
 import logging
 import numpy as np
 import os
-import random
 import re
-import sys
-import traceback
+import cellprofiler
+import cellprofiler.gui.dialog
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
+import cellprofiler.preferences as cpprefs
+import cellprofiler.measurement as cpmeas
+from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.preferences import DEFAULT_INPUT_FOLDER_NAME, \
+    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
+    DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME
+
 
 logger = logging.getLogger(__name__)
 try:
     import MySQLdb
     from MySQLdb.cursors import SSCursor
+    import sqlite3
 
     HAS_MYSQL_DB = True
 except:
     logger.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB = False
-
-import cellprofiler
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurement as cpmeas
-from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
-from cellprofiler.measurement import M_NUMBER_OBJECT_NUMBER
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
-    DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME
 
 ##############################################
 #
@@ -1842,6 +1837,13 @@ available:
                                    if column[0] in onames]
                 self.create_database_tables(self.cursor, workspace)
             return True
+        except sqlite3.OperationalError as err:
+            if err.message.startswith("too many columns"):
+                # Maximum columns reached
+                # https://github.com/CellProfiler/CellProfiler/issues/3373
+                message = "MySQL Error: maximum columns reached. \n" \
+                          "Try exporting a single object per table"
+                cellprofiler.gui.dialog.Error("Error", message)
         finally:
             if needs_close:
                 self.connection.commit()

@@ -4425,12 +4425,12 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
             dir_choice, custom_directory = setting_values[5:7]
             if dir_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
                 if custom_directory.startswith('.'):
-                    dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                 elif custom_directory.startswith('&'):
-                    dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
+                    dir_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                     custom_directory = '.' + custom_directory[1:]
                 else:
-                    dir_choice = ABSOLUTE_FOLDER_NAME
+                    dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
             directory = cellprofiler.setting.DirectoryPath.static_join_string(dir_choice,
                                                              custom_directory)
             setting_values = (setting_values[:5] + [directory] +

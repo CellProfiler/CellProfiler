@@ -366,9 +366,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
                 #
                 # Zernike features
                 #
-                zf_l = cpmz.zernike(zernike_numbers, labels, indices)
-                for (n,m), z in zip(zernike_numbers, zf_l.transpose()):
-                    zf[(n,m)][to_indices] = z
+                if self.calculate_zernikes.value:
+                    zf_l = cpmz.zernike(zernike_numbers, labels, indices)
+                    for (n,m), z in zip(zernike_numbers, zf_l.transpose()):
+                        zf[(n,m)][to_indices] = z
             #
             # Form factor
             #

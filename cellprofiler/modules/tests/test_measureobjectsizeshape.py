@@ -3,9 +3,11 @@
 
 import StringIO
 import base64
+import os
 import unittest
 
 import numpy as np
+import skimage.io
 
 from cellprofiler.preferences import set_headless
 
@@ -388,5 +390,47 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             self.assertTrue(column[0] in ['SomeObjects', 'OtherObjects'])
             self.assertTrue(column[1] in features)
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
-        
-                
+
+    # https://github.com/CellProfiler/CellProfiler/issues/2813
+    def test_run_without_zernikes(self):
+        cells_resource = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "cells.tiff"
+            )
+        )
+
+        workspace, module = self.make_workspace(skimage.io.imread(cells_resource))
+
+        module.calculate_zernikes.value = False
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        for feature in measurements.get_feature_names(OBJECTS_NAME):
+            assert "Zernike_" not in feature
+
+    def test_run_with_zernikes(self):
+        cells_resource = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "cells.tiff"
+            )
+        )
+
+        workspace, module = self.make_workspace(skimage.io.imread(cells_resource))
+
+        module.calculate_zernikes.value = True
+
+        module.run(workspace)
+
+        measurements = workspace.measurements
+
+        zernikes = [feature for feature in measurements.get_feature_names(OBJECTS_NAME) if "Zernike_" in feature]
+
+        assert len(zernikes) > 0
+
+
+if __name__ == "__main__":
+        unittest.main()

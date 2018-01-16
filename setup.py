@@ -428,7 +428,7 @@ setuptools.setup(
         "cellh5",
         "centrosome>=1.0.4",
         "decorator",
-        "h5py",
+        "h5py<2.7.0",
         "inflect",
         "javabridge",
         "libtiff",

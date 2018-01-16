@@ -1165,7 +1165,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertIn(url, p.file_list)
 
     def test_19_04_read_http_file_list(self):
-        url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/cellprofiler/tests/"\
+        url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/2.2.0/cellprofiler/tests/"\
             "url_file_list.txt"
         urls = ["http://cellprofiler.org/foo.tif",
                 "https://github.com/foo.tif",

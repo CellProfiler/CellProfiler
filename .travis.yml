@@ -1,20 +1,13 @@
 addons:
   apt:
     packages:
-      - cython
       - libhdf5-serial-dev
       - libwxgtk2.8-dev
       - libgtk2.0-dev
-      - python-dateutil
       - python-imaging
-      - python-lxml
-      - python-matplotlib
       - python-mysqldb
       - python-networkx
-      - python-numpy
-      - python-pandas
       - python-pip
-      - python-scipy
       - python-tk
       - python-wxgtk2.8
 env:
@@ -25,8 +18,6 @@ before_script:
   - sleep 3
 cache:
   apt: true
-  directories:
-    - $HOME/.cache/pip
 language: python
 notifications:
   email: false
@@ -37,16 +28,10 @@ virtualenv:
   system_site_packages: true
 install:
   - pip install --upgrade pip
-  - pip install --upgrade wheel
-  - pip install --upgrade pytest
-  - pip install --upgrade cython
-  - pip install joblib
-  - pip install scikit-learn
-  - pip install --no-deps pyzmq==13.1.0
+  - pip install --upgrade 'numpy<1.12.0'
   - pip install --requirement requirements.txt
-  - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
-  - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - pip freeze
-  - pip install --no-deps .
 script:
+  # Ensure tags are present for version tests
+  - git fetch --tags
   - python setup.py test

@@ -18,5 +18,6 @@ class TestVersion(unittest.TestCase):
         dotted_version = cellprofiler.utilities.version.dotted_version
         # for now, assume Int.Int.Int.  We may need to relax update to be other
         # than Int, at some point.
-        major, minor, update = [int(v) for v in dotted_version.split('.')]
+        major, minor, update = dotted_version.split('.')
+        major, minor, update = map(int, [major.lstrip('v'), minor, update])
         assert major >= 2  # Otherwise, we've regressed to Matlab.

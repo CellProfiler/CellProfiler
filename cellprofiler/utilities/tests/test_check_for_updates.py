@@ -47,6 +47,9 @@ class TestCheckForUpdates(unittest.TestCase):
         vc.join()
         self.assertTrue(we_updated[0])
 
+    @unittest.skip(
+        'Update infrastructure removed in CellProfiler/CellProfiler#1878'
+    )
     def test_01_03_website(self):
         url = 'http://cellprofiler.org/CPupdate.html'
         we_updated = [False]

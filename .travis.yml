@@ -32,4 +32,6 @@ install:
   - pip install --requirement requirements.txt
   - pip freeze
 script:
+  # Ensure tags are present for version tests
+  - git fetch --tags
   - python setup.py test

@@ -427,7 +427,6 @@ setuptools.setup(
     install_requires=[
         "cellh5",
         "centrosome>=1.0.4",
-        "decorator",
         "h5py<2.7.0",
         "inflect",
         "javabridge",

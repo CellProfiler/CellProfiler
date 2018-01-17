@@ -6,7 +6,6 @@ addons:
       - libgtk2.0-dev
       - python-imaging
       - python-mysqldb
-      - python-networkx
       - python-pip
       - python-tk
       - python-wxgtk2.8

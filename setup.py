@@ -435,7 +435,6 @@ setuptools.setup(
         "MySQL-python",
         "numpy<1.12.0",
         "prokaryote",
-        "pytest",
         "python-bioformats",
         "pyzmq",
         "scipy"
@@ -455,6 +454,9 @@ setuptools.setup(
         "tutorial"
     ])+["artwork"],
     setup_requires=[
+        "pytest"
+    ],
+    tests_requires=[
         "pytest"
     ],
     url="https://github.com/CellProfiler/CellProfiler",

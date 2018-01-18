@@ -238,7 +238,7 @@ def __image_resource(filename):
 
     # Otherwise, we are probably building the documentation in sphinx.
     # The path separator used by sphinx is "/" on all platforms.
-    return "../images/{}".format(filename)
+    return "./data/images/{}".format(filename)
 
 
 PROTIP_RECOMMEND_ICON = __image_resource("thumb-up.png")

@@ -405,11 +405,11 @@ class EditObjectsDialog(wx.Dialog):
         # The buttons on the bottom
         #
         ###################################################
-        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sub_sizer = wx.WrapSizer(wx.HORIZONTAL)
         #
         # Need padding on top because tool bar is wonky about its height
         #
-        sizer.Add(sub_sizer, 0, wx.EXPAND)
+        sizer.Add(sub_sizer, 0, wx.ALIGN_CENTER)
 
         #########################################
         #

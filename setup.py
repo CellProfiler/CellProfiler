@@ -427,7 +427,6 @@ setuptools.setup(
     install_requires=[
         "cellh5",
         "centrosome>=1.0.4",
-        "decorator",
         "h5py<2.7.0",
         "inflect",
         "javabridge",
@@ -436,7 +435,6 @@ setuptools.setup(
         "MySQL-python",
         "numpy<1.12.0",
         "prokaryote",
-        "pytest",
         "python-bioformats",
         "pyzmq",
         "scipy"
@@ -456,6 +454,9 @@ setuptools.setup(
         "tutorial"
     ])+["artwork"],
     setup_requires=[
+        "pytest"
+    ],
+    tests_requires=[
         "pytest"
     ],
     url="https://github.com/CellProfiler/CellProfiler",

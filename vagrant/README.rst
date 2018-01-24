@@ -1,10 +1,10 @@
 Use
 ---
 
-
 .. code:: sh
-	$ vagrant up
-
-	$ vagrant ssh
-	
-	$ cellprofiler
+  
+  $ vagrant up
+  
+  $ vagrant ssh
+  
+  $ cellprofiler

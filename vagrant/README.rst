@@ -1,14 +1,13 @@
 Use
 ---
 
-```sh
-$ vagrant up
-```
+.. code:: sh
+	$ vagrant up
 
-```sh
-$ vagrant ssh
-```
+.. code:: sh
 
-```sh
-$ cellprofiler
-```
+	$ vagrant ssh
+
+.. code:: sh
+	
+	$ cellprofiler

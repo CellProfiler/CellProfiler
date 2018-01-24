@@ -11,6 +11,7 @@
 *.sage.py
 *.so
 *.spec
+*.swp
 .cache
 .coverage
 .coverage.*

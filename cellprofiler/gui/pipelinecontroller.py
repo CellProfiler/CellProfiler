@@ -1162,7 +1162,7 @@ class PipelineController(object):
         if len(image_numbers) == 0:
             self.display_plate_viewer_help(
                 "Your project does not produce any image sets.\n"
-                "Please configure the input modules correctly.",
+                "Please configure the input modules correctly or see the CellProfiler blog post %s."%('https://blog.cellprofiler.org/2017/01/09/help-why-does-cellprofiler-say-it-cant-find-any-valid-image-sets/'),
                 "Plate viewer: No image sets")
             return
         url_features = [f for f in m.get_feature_names(cellprofiler.measurement.IMAGE)

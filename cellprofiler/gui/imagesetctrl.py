@@ -435,8 +435,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             wx.MessageBox(
                     "Sorry, your pipeline doesn't produce any valid image sets "
                     "as currently configured. Check your Input module settings, "
-                    "or see Help > %(CREATING_A_PROJECT_CAPTION)s for additional assistance "
-                    "on using the Input modules." % locals(),
+                    "see Help > %(CREATING_A_PROJECT_CAPTION)s for additional assistance "
+                    "on using the Input modules, or see the CellProfiler blog post %s." % (locals(), 'https://blog.cellprofiler.org/2017/01/09/help-why-does-cellprofiler-say-it-cant-find-any-valid-image-sets/'),
                     caption="No Image Sets Available",
                     style=wx.OK | wx.ICON_INFORMATION,
                     parent=self)

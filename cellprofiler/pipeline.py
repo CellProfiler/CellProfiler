@@ -2102,7 +2102,7 @@ class Pipeline(object):
                         None,
                         "The pipeline did not identify any image sets.\n"
                         "Please correct any problems in your input module settings\n"
-                        "and try again.")
+                        "or see the CellProfiler blog post %s and try again."%('https://blog.cellprofiler.org/2017/01/09/help-why-does-cellprofiler-say-it-cant-find-any-valid-image-sets/'))
             return False
 
         if not m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):

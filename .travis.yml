@@ -21,6 +21,10 @@ install:
 language: python
 notifications:
   email: false
+  slack:
+    secure: kDWVy90sDY+o3g0/ZTGX2D+PTbzhtd74Whe1AJHhcUDobTUzkch8GtY9eZxybZk4nga9lQxL6YeJ72SfBBEPaLzXcUMe0YcNaBydkQHcipKZn+Vcb8kf2FiZC6YwsUYfTvvH9MPLbkZOZvsNyd0h85z+hYMB8jHsq6Yn5gf79BA=
+    on_failure: always
+    on_success: change
 python: 2.7.12
 script: pytest
 services: mysql

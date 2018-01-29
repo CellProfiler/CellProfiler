@@ -16,6 +16,7 @@ FILEBROWSE = "FileBrowse"
 FONT = "Font"
 COLOR = "Color"
 CHOICE = "Choice"
+TEXT = "Text"
 
 
 class IntegerPreference(object):
@@ -289,7 +290,7 @@ class PreferencesDlg(wx.Dialog):
                 ["Intensity normalization factor",
                  cellprofiler.preferences.get_normalization_factor,
                  cellprofiler.preferences.set_normalization_factor,
-                 "Text",
+                 TEXT,
                  cellprofiler.preferences.NORMALIZATION_FACTOR_HELP],
                 ["CellProfiler plugins directory",
                  cellprofiler.preferences.get_plugin_directory,

@@ -93,3 +93,5 @@ FIGURE_HELP = (
     ("Using The Interactive Navigation Toolbar", read_content("display_interactive_navigation.rst")),
     ("How To Use The Image Tools", read_content("display_image_tools.rst"))
 )
+
+CREATING_A_PROJECT_CAPTION = "Creating A Project"

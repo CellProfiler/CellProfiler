@@ -606,8 +606,8 @@ the file as “Windows CSV” or “Windows Comma Separated”.
             "csv_joiner",
             cellprofiler.setting.Joiner(
                 "Match file and image metadata",
-            allow_none=False,
-            doc="""\
+                allow_none=False,
+                doc="""\
 *(Used only if you want to extract metadata from the file and/or folder name
 AND you're extracting metadata from a file)*
 
@@ -703,7 +703,7 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
-        except:
+        except Exception:
             return None
         return group.imported_metadata_header_line
 
@@ -725,8 +725,7 @@ not being applied, your choice on this setting may be the culprit.
         for join_idx in group.csv_joiner.parse():
             csv_key = join_idx[self.CSV_JOIN_NAME]
             ipd_key = join_idx[self.IPD_JOIN_NAME]
-            if self.get_data_type(csv_key) in dt_numeric and \
-                            self.get_data_type(ipd_key) in dt_numeric:
+            if self.get_data_type(csv_key) in dt_numeric and self.get_data_type(ipd_key) in dt_numeric:
                 kp_method = "makeNumericKeyPair"
             elif group.wants_case_insensitive:
                 kp_method = "makeCaseInsensitiveKeyPair"
@@ -748,10 +747,7 @@ not being applied, your choice on this setting may be the culprit.
                     "(Ljava/lang/String;)V",
                     header)
         elif group.csv_location.is_url():
-            jurl = javabridge.make_instance(
-                    "java/net/URL",
-                    "(Ljava/lang/String;)V",
-                self.csv_path(group))
+            jurl = javabridge.make_instance("java/net/URL", "(Ljava/lang/String;)V", self.csv_path(group))
             stream = javabridge.call(
                     jurl, "openStream",
                     "()Ljava/io/InputStream;")
@@ -760,10 +756,7 @@ not being applied, your choice on this setting may be the culprit.
                     "(Ljava/io/InputStream;)V",
                     stream)
         else:
-            stream = javabridge.make_instance(
-                    "java/io/FileInputStream",
-                    "(Ljava/lang/String;)V",
-                self.csv_path(group))
+            stream = javabridge.make_instance("java/io/FileInputStream", "(Ljava/lang/String;)V", self.csv_path(group))
             rdr = javabridge.make_instance(
                     "java/io/InputStreamReader",
                     "(Ljava/io/InputStream;)V",
@@ -857,7 +850,7 @@ not being applied, your choice on this setting may be the culprit.
             result += [self.add_extraction_method_button]
             try:
                 has_keys = len(self.get_dt_metadata_keys()) > 0
-            except:
+            except Exception:
                 has_keys = False
             if has_keys:
                 result += [self.dtc_divider, self.data_type_choice]
@@ -951,11 +944,12 @@ not being applied, your choice on this setting may be the culprit.
         extractor = javabridge.make_instance(
                 "org/cellprofiler/imageset/ImagePlaneMetadataExtractor",
                 "()V")
-        javabridge.call(extractor, "addImagePlaneExtractor",
-               "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
-                        javabridge.make_instance(
-                       "org/cellprofiler/imageset/URLSeriesIndexMetadataExtractor",
-                       "()V"))
+        javabridge.call(
+            extractor,
+            "addImagePlaneExtractor",
+            "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
+            javabridge.make_instance("org/cellprofiler/imageset/URLSeriesIndexMetadataExtractor", "()V")
+        )
         if any([group.extraction_method == X_AUTOMATIC_EXTRACTION
                 for group in self.extraction_methods]):
             for method_name, class_name in (
@@ -963,9 +957,12 @@ not being applied, your choice on this setting may be the culprit.
                     ("addImageSeriesExtractor", "OMESeriesMetadataExtractor"),
                     ("addImagePlaneExtractor", "OMEPlaneMetadataExtractor")):
                 class_name = "org/cellprofiler/imageset/" + class_name
-                javabridge.call(extractor, method_name,
-                       "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
-                                javabridge.make_instance(class_name, "()V"))
+                javabridge.call(
+                    extractor,
+                    method_name,
+                    "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
+                    javabridge.make_instance(class_name, "()V")
+                )
 
         has_well_extractor = False
         for group in self.extraction_methods:
@@ -991,19 +988,24 @@ not being applied, your choice on this setting may be the culprit.
                     re.search(pattern, "")
                 except re.error:
                     continue
-                javabridge.call(extractor,
-                                method,
-                       "(Ljava/lang/String;Lorg/cellprofiler/imageset/filter/Filter;)V",
-                                pattern, fltr)
+                javabridge.call(
+                    extractor,
+                    method,
+                    "(Ljava/lang/String;Lorg/cellprofiler/imageset/filter/Filter;)V",
+                    pattern,
+                    fltr
+                )
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
                 imported_extractor = self.build_imported_metadata_extractor(
                         group, extractor, for_metadata_only)
                 if imported_extractor is not None:
-                    javabridge.call(extractor,
-                           "addImagePlaneDetailsExtractor",
-                           "(Lorg/cellprofiler/imageset/MetadataExtractor;"
-                           "Lorg/cellprofiler/imageset/filter/Filter;)V",
-                                    imported_extractor, fltr)
+                    javabridge.call(
+                        extractor,
+                        "addImagePlaneDetailsExtractor",
+                        "(Lorg/cellprofiler/imageset/MetadataExtractor;Lorg/cellprofiler/imageset/filter/Filter;)V",
+                        imported_extractor,
+                        fltr
+                    )
             #
             # Finally, we add the WellMetadataExtractor which has the inglorious
             # job of making a well name from row and column, if present,
@@ -1042,13 +1044,12 @@ not being applied, your choice on this setting may be the culprit.
 
         import wx
         from bioformats.formatreader import get_omexml_metadata
-        with wx.ProgressDialog("Updating metadata",
-                               msg(list(urls)[0]),
-                               len(urls),
-                               style=wx.PD_CAN_ABORT
-                                       | wx.PD_APP_MODAL
-                                       | wx.PD_ELAPSED_TIME
-                                       | wx.PD_REMAINING_TIME) as dlg:
+        with wx.ProgressDialog(
+                "Updating metadata",
+                msg(list(urls)[0]),
+                len(urls),
+                style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME
+        ) as dlg:
             for i, url in enumerate(urls):
                 if i > 0:
                     keep_going, _ = dlg.Update(i, msg(url))
@@ -1101,8 +1102,7 @@ not being applied, your choice on this setting may be the culprit.
         columns = set(self.get_metadata_keys())
         columns.discard(COL_SERIES)
         columns.discard(COL_INDEX)
-        columns = [COL_PATH, COL_SERIES, COL_INDEX] + \
-                  sorted(list(columns))
+        columns = [COL_PATH, COL_SERIES, COL_INDEX] + sorted(list(columns))
         self.table.clear_columns()
         self.table.clear_rows()
         data = []
@@ -1111,12 +1111,12 @@ not being applied, your choice on this setting may be the culprit.
         # Use the low-level Javabridge interface to make things a bit faster
         #
         env = javabridge.get_env()
-        clsIPD = env.find_class("org/cellprofiler/imageset/ImagePlaneDetails")
-        methodID = env.get_method_id(
-                clsIPD, "getIPDFields", "(Ljava/util/List;)[Ljava/lang/String;")
+        cls_ipd = env.find_class("org/cellprofiler/imageset/ImagePlaneDetails")
+        method_id = env.get_method_id(
+                cls_ipd, "getIPDFields", "(Ljava/util/List;)[Ljava/lang/String;")
         has_data = [False] * len(columns)
         for ipd in self.pipeline.get_image_plane_details(self.workspace):
-            fields = env.call_method(ipd.jipd, methodID, md_keys.o)
+            fields = env.call_method(ipd.jipd, method_id, md_keys.o)
             row = [None] * len(columns)
             for i, f in enumerate(env.get_object_array_elements(fields)):
                 if f is not None:
@@ -1172,8 +1172,10 @@ not being applied, your choice on this setting may be the culprit.
                 for token in cellprofiler.measurement.find_metadata_tokens(re_setting.value):
                     if token.upper() in [reservedtag.upper() for reservedtag in cellprofiler.measurement.RESERVED_METADATA_TAGS]:
                         raise cellprofiler.setting.ValidationError(
-                                'The metadata tag, "%s", is reserved for use by CellProfiler. Please use some other tag name.' %
-                                token, re_setting)
+                            'The metadata tag, "%s", is reserved for use by CellProfiler.'
+                            ' Please use some other tag name.' % token,
+                            re_setting
+                        )
 
     def get_metadata_keys(self):
         '''Return a collection of metadata keys to be associated with files'''
@@ -1181,9 +1183,9 @@ not being applied, your choice on this setting may be the culprit.
             return []
         extractor = self.build_extractor(for_metadata_only=True)
         keys = javabridge.get_collection_wrapper(
-                javabridge.call(extractor,
-                       "getMetadataKeys",
-                       "()Ljava/util/List;"), javabridge.to_string)
+            javabridge.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
+            javabridge.to_string
+        )
         return keys
 
     def get_dt_metadata_keys(self):
@@ -1194,10 +1196,16 @@ not being applied, your choice on this setting may be the culprit.
                       self.get_metadata_keys())
 
     NUMERIC_DATA_TYPES = (
-        cellprofiler.pipeline.ImagePlaneDetails.MD_T, cellprofiler.pipeline.ImagePlaneDetails.MD_Z,
-        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_C, cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_T,
-        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Z, cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_X,
-        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Y, cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME)
+        cellprofiler.pipeline.ImagePlaneDetails.MD_T,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_Z,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_C,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_T,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Z,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_X,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Y,
+        cellprofiler.measurement.C_SERIES,
+        cellprofiler.measurement.C_FRAME
+    )
 
     def get_data_type(self, key):
         '''Get the data type for a particular metadata key'''
@@ -1299,8 +1307,7 @@ not being applied, your choice on this setting may be the culprit.
                         (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i):
                         (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (i + 1))]
                 group[0] = X_AUTOMATIC_EXTRACTION if group[0] == "Automatic" \
-                    else (X_MANUAL_EXTRACTION if group[0] == "Manual" \
-                              else X_IMPORTED_EXTRACTION)
+                    else (X_MANUAL_EXTRACTION if group[0] == "Manual" else X_IMPORTED_EXTRACTION)
                 group[1] = XM_FILE_NAME if group[1] == "From file name" \
                     else XM_FOLDER_NAME
                 group[4] = F_FILTERED_IMAGES if group[4] == "Images selected using a filter" \

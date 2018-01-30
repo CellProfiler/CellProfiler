@@ -59,8 +59,6 @@ AVAILABLE_ON_LAST_ATTRIBUTE = "available_on_last"
 '''Indicates that the control can contain metadata tags'''
 METADATA_ATTRIBUTE = "metadata"
 
-SUPPORT_URLS_SHOW_DIR = "show_directory"
-
 
 class Setting(object):
     """A module setting which holds a single string value
@@ -365,6 +363,9 @@ class DirectoryPath(Text):
         return self.dir_choice in [
             ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
             DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME]
+
+    def is_url(self):
+        return self.dir_choice == URL_FOLDER_NAME
 
     def get_absolute_path(self, measurements=None, image_set_number=None):
         '''Return the absolute path specified by the setting

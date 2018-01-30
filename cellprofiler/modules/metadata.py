@@ -186,7 +186,7 @@ LEN_EXTRACTION_METHOD = 9
 
 
 class Metadata(cpm.Module):
-    variable_revision_number = 4
+    variable_revision_number = 5
     module_name = "Metadata"
     category = "File Processing"
 
@@ -570,9 +570,9 @@ extraction.
 
         group.append(
             "csv_location",
-            cps.PathnameOrURL(
+            cps.DirectoryPath(
                 "Metadata file location",
-                wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*",
+                support_urls=True,
                 doc="""\
 *(Used only if you want to extract metadata from a file)*
 
@@ -599,7 +599,23 @@ the file as “Windows CSV” or “Windows Comma Separated”.
         )
 
         group.append(
-            "csv_joiner", cps.Joiner(
+            "csv_filename",
+            cps.FilenameText(
+                "Metadata file name",
+                cps.NONE,
+                browse_msg="Choose CSV file",
+                exts=[("Data file (*.csv)", "*.csv")],
+                doc="Provide the file name of the CSV file containing the metadata you want to load.",
+                get_directory_fn=group.csv_location.get_absolute_path,
+                set_directory_fn=lambda path: group.csv_location.join_parts(
+                    *group.csv_location.get_parts_from_path(path)
+                )
+            )
+        )
+
+        group.append(
+            "csv_joiner",
+            cps.Joiner(
                 "Match file and image metadata",
             allow_none=False,
             doc="""\
@@ -674,9 +690,15 @@ not being applied, your choice on this setting may be the culprit.
                     '', 'Remove this extraction method',
                     self.extraction_methods, group))
 
+    def csv_path(self, group):
+        return os.path.join(
+            group.csv_location.get_absolute_path(),
+            group.csv_filename.value
+        )
+
     def get_group_header(self, group):
         '''Get the header line from the imported extraction group's csv file'''
-        csv_path = group.csv_location.value
+        csv_path = self.csv_path(group)
         if csv_path == group.imported_metadata_header_path:
             if group.csv_location.is_url():
                 return group.imported_metadata_header_line
@@ -740,7 +762,7 @@ not being applied, your choice on this setting may be the culprit.
             jurl = J.make_instance(
                     "java/net/URL",
                     "(Ljava/lang/String;)V",
-                    group.csv_location.value)
+                self.csv_path(group))
             stream = J.call(
                     jurl, "openStream",
                     "()Ljava/io/InputStream;")
@@ -752,7 +774,7 @@ not being applied, your choice on this setting may be the culprit.
             stream = J.make_instance(
                     "java/io/FileInputStream",
                     "(Ljava/lang/String;)V",
-                    group.csv_location.value)
+                self.csv_path(group))
             rdr = J.make_instance(
                     "java/io/InputStreamReader",
                     "(Ljava/io/InputStream;)V",
@@ -793,14 +815,26 @@ not being applied, your choice on this setting may be the culprit.
         joiner.entities[self.CSV_JOIN_NAME] = list(header_keys)
 
     def settings(self):
-        result = [self.wants_metadata, self.data_type_choice, self.data_types,
-                  self.extraction_method_count]
+        result = [
+            self.wants_metadata,
+            self.data_type_choice,
+            self.data_types,
+            self.extraction_method_count
+        ]
+
         for group in self.extraction_methods:
             result += [
-                group.extraction_method, group.source, group.file_regexp,
-                group.folder_regexp, group.filter_choice, group.filter,
-                group.csv_location, group.csv_joiner,
-                group.wants_case_insensitive]
+                group.extraction_method,
+                group.source,
+                group.file_regexp,
+                group.folder_regexp,
+                group.filter_choice,
+                group.filter,
+                group.csv_location,
+                group.csv_joiner,
+                group.wants_case_insensitive,
+                group.csv_filename
+            ]
         return result
 
     def visible_settings(self):
@@ -820,7 +854,7 @@ not being applied, your choice on this setting may be the culprit.
                     if group.filter_choice == F_FILTERED_IMAGES:
                         result += [group.filter]
                 elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                    result += [group.csv_location, group.filter_choice]
+                    result += [group.csv_location, group.csv_filename, group.filter_choice]
                     if group.filter_choice == F_FILTERED_IMAGES:
                         result += [group.filter]
                     result += [group.csv_joiner, group.wants_case_insensitive]
@@ -1293,6 +1327,29 @@ not being applied, your choice on this setting may be the culprit.
             setting_values = setting_values[:IDX_EXTRACTION_METHOD_COUNT_V3] + \
                              [DTC_TEXT, "{}"] + setting_values[IDX_EXTRACTION_METHOD_COUNT_V3:]
             variable_revision_number = 4
+
+        if variable_revision_number == 4:
+            # Allow metadata CSVs to be loaded from default io directories.
+            groups = []
+            n_groups = int(setting_values[3])
+            for group_idx in xrange(n_groups):
+                # group offset: 4
+                # no. group settings: 9
+                group = setting_values[4 + (group_idx * 9):4 + ((group_idx + 1) * 9)]
+
+                csv_location = group[6]
+                directory, filename = os.path.split(csv_location)
+                if any([csv_location.lower().startswith(scheme) for scheme in ["http:", "https:", "ftp:"]]):
+                    directory_choice = cellprofiler.setting.URL_FOLDER_NAME
+                else:
+                    directory_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+
+                group[6] = "{}|{}".format(directory_choice, directory)
+                group += [filename]
+                groups += [group]
+
+            setting_values[4:] = sum(groups, [])
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
 

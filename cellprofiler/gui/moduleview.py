@@ -1540,7 +1540,7 @@ class ModuleView(object):
                                 cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME):
                 custom_label.Label = "Sub-folder:"
             elif v.dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
-                if v.support_urls == cellprofiler.setting.SUPPORT_URLS_SHOW_DIR:
+                if v.support_urls:
                     custom_label.Label = "URL:"
                     custom_label.Show()
                     custom_ctrl.Show()

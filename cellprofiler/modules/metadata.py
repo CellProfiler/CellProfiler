@@ -1,33 +1,22 @@
 # coding=utf-8
-import cellprofiler.gui.help.content
-import cellprofiler.icons
-import numpy as np
 import logging
-
-logger = logging.getLogger(__name__)
-import csv
-import re
 import os
+import re
 import time
 import urllib
-import urlparse
-import _help
 
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import javabridge as J
-from cellprofiler.modules.images import FilePredicate
-from cellprofiler.modules.images import ExtensionPredicate
-from cellprofiler.modules.images import ImagePredicate
-from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images
-from cellprofiler.modules.loadimages import \
-    well_metadata_tokens, urlfilename, urlpathname
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP,PROTIP_RECOMMEND_ICON
-from cellprofiler.gui.help import content
+import javabridge
+
+import _help
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.pipeline
+import cellprofiler.setting
+import images
+import loadimages
+
+logger = logging.getLogger(__name__)
 
 __doc__ = """\
 Metadata
@@ -185,7 +174,7 @@ LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
 
-class Metadata(cpm.Module):
+class Metadata(cellprofiler.module.Module):
     variable_revision_number = 5
     module_name = "Metadata"
     category = "File Processing"
@@ -203,7 +192,7 @@ class Metadata(cpm.Module):
             "file name and/or location, or in an external file."]
         self.set_notes([" ".join(module_explanation)])
 
-        self.wants_metadata = cps.Binary(
+        self.wants_metadata = cellprofiler.setting.Binary(
             "Extract metadata?",
             False,
             doc="""\
@@ -211,7 +200,7 @@ Select "*{YES}*" if your file or path names or file headers contain
 information (i.e., metadata) you would like to extract and store along
 with your measurements. See the main module help for more details.
 """.format(**{
-                "YES": YES
+                "YES": cellprofiler.setting.YES
             })
         )
 
@@ -219,20 +208,20 @@ with your measurements. See the main module help for more details.
 
         self.add_extraction_method(False)
 
-        self.extraction_method_count = cps.HiddenCount(
+        self.extraction_method_count = cellprofiler.setting.HiddenCount(
             self.extraction_methods,
             "Extraction method count"
         )
 
-        self.add_extraction_method_button = cps.DoSomething(
+        self.add_extraction_method_button = cellprofiler.setting.DoSomething(
             "",
             "Add another extraction method",
             self.add_extraction_method
         )
 
-        self.dtc_divider = cps.Divider()
+        self.dtc_divider = cellprofiler.setting.Divider()
 
-        self.data_type_choice = cps.Choice(
+        self.data_type_choice = cellprofiler.setting.Choice(
             "Metadata data type",
             DTC_ALL,
             tooltips={
@@ -259,7 +248,7 @@ Metadata can be stored as either a text or numeric value:
             })
         )
 
-        self.data_types = cps.DataTypes(
+        self.data_types = cellprofiler.setting.DataTypes(
             "Metadata types",
             name_fn=self.get_metadata_keys,
             doc="""\
@@ -281,7 +270,7 @@ See **NamesAndTypes** for more details.
             })
         )
 
-        self.table = cps.Table(
+        self.table = cellprofiler.setting.Table(
             "",
             use_sash=True,
             corner_button=dict(
@@ -292,16 +281,16 @@ See **NamesAndTypes** for more details.
         )
 
     def add_extraction_method(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
 
         self.extraction_methods.append(group)
 
         if can_remove:
-            group.append("divider", cps.Divider())
+            group.append("divider", cellprofiler.setting.Divider())
 
         group.append(
             "extraction_method",
-            cps.Choice(
+            cellprofiler.setting.Choice(
                 "Metadata extraction method",
                 X_ALL_EXTRACTION_METHODS,
                 X_MANUAL_EXTRACTION,
@@ -385,14 +374,14 @@ extraction method” button to add more.
                     "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
                     "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
                     "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION,
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON
                 })
             )
         )
 
         group.append(
             "source",
-            cps.Choice(
+            cellprofiler.setting.Choice(
                 "Metadata source",
                 [
                     XM_FILE_NAME,
@@ -404,7 +393,7 @@ extraction method” button to add more.
 
         group.append(
             "file_regexp",
-            cps.RegexpText(
+            cellprofiler.setting.RegexpText(
                 "Regular expression to extract from file name",
                 '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])',
                 get_example_fn=self.example_file_fn,
@@ -470,11 +459,11 @@ the standard well nomenclature.
 
         group.append(
             "folder_regexp",
-            cps.RegexpText(
+            cellprofiler.setting.RegexpText(
                 "Regular expression to extract from folder name",
                 '(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$',
                 get_example_fn=self.example_directory_fn,
-                guess=cps.RegexpText.GUESS_FOLDER,
+                guess=cellprofiler.setting.RegexpText.GUESS_FOLDER,
                 doc="""\
 *(Used only if you want to extract metadata from the path)*
 
@@ -516,7 +505,7 @@ the plate, well, and site in the fields *Date* and *Run*:
 
         group.append(
             "filter_choice",
-            cps.Choice(
+            cellprofiler.setting.Choice(
                 "Extract metadata from",
                 [
                     F_ALL_IMAGES,
@@ -548,12 +537,12 @@ There are two choices:
 
         group.append(
             "filter",
-            cps.Filter(
+            cellprofiler.setting.Filter(
                 "Select the filtering criteria",
                 [
-                    FilePredicate(),
-                    DirectoryPredicate(),
-                    ExtensionPredicate()
+                    images.FilePredicate(),
+                    images.DirectoryPredicate(),
+                    images.ExtensionPredicate()
                 ],
                 'and (file does contain "")',
                 doc="""\
@@ -562,15 +551,15 @@ extraction.
 
 {FILTER_RULES_BUTTONS_HELP}
 """.format(**{
-                    "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP,
-                    "YES": YES
+                    "FILTER_RULES_BUTTONS_HELP": _help.FILTER_RULES_BUTTONS_HELP,
+                    "YES": cellprofiler.setting.YES
                 })
             )
         )
 
         group.append(
             "csv_location",
-            cps.DirectoryPath(
+            cellprofiler.setting.DirectoryPath(
                 "Metadata file location",
                 support_urls=True,
                 doc="""\
@@ -600,9 +589,9 @@ the file as “Windows CSV” or “Windows Comma Separated”.
 
         group.append(
             "csv_filename",
-            cps.FilenameText(
+            cellprofiler.setting.FilenameText(
                 "Metadata file name",
-                cps.NONE,
+                cellprofiler.setting.NONE,
                 browse_msg="Choose CSV file",
                 exts=[("Data file (*.csv)", "*.csv")],
                 doc="Provide the file name of the CSV file containing the metadata you want to load.",
@@ -615,7 +604,7 @@ the file as “Windows CSV” or “Windows Comma Separated”.
 
         group.append(
             "csv_joiner",
-            cps.Joiner(
+            cellprofiler.setting.Joiner(
                 "Match file and image metadata",
             allow_none=False,
             doc="""\
@@ -639,14 +628,14 @@ source; press |image0| to add more rows.
 
 .. |image0| image:: {MODULE_ADD_BUTTON}
 """.format(**{
-                    "MODULE_ADD_BUTTON": content.MODULE_ADD_BUTTON
+                    "MODULE_ADD_BUTTON": cellprofiler.gui.help.content.MODULE_ADD_BUTTON
                 })
             )
         )
 
         group.append(
             "wants_case_insensitive",
-            cps.Binary(
+            cellprofiler.setting.Binary(
                 "Use case insensitive matching?",
                 False,
                 doc="""\
@@ -664,16 +653,16 @@ not being applied, your choice on this setting may be the culprit.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
-                    "NO": NO,
-                    "YES": YES,
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
+                    "NO": cellprofiler.setting.NO,
+                    "YES": cellprofiler.setting.YES,
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON
                 })
             )
         )
 
         group.append(
             "update_metadata",
-            cps.DoSomething(
+            cellprofiler.setting.DoSomething(
                 "",
                 "Update metadata",
                 lambda: self.do_update_metadata(group),
@@ -686,7 +675,7 @@ not being applied, your choice on this setting may be the culprit.
         group.imported_metadata_header_line = None
         group.can_remove = can_remove
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                     '', 'Remove this extraction method',
                     self.extraction_methods, group))
 
@@ -730,7 +719,7 @@ not being applied, your choice on this setting may be the culprit.
                  imported metadata extractor.
         '''
         key_pairs = []
-        dt_numeric = (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER)
+        dt_numeric = (cellprofiler.measurement.COLTYPE_FLOAT, cellprofiler.measurement.COLTYPE_INTEGER)
         kp_cls = 'org/cellprofiler/imageset/MetadataKeyPair'
         kp_sig = '(Ljava/lang/String;Ljava/lang/String;)L%s;' % kp_cls
         for join_idx in group.csv_joiner.parse():
@@ -743,10 +732,10 @@ not being applied, your choice on this setting may be the culprit.
                 kp_method = "makeCaseInsensitiveKeyPair"
             else:
                 kp_method = "makeCaseSensitiveKeyPair"
-            key_pair = J.static_call(
+            key_pair = javabridge.static_call(
                     kp_cls, kp_method, kp_sig, csv_key, ipd_key)
             key_pairs.append(key_pair)
-        key_pairs = J.get_nice_arg(
+        key_pairs = javabridge.get_nice_arg(
                 key_pairs,
                 "[L%s;" % kp_cls)
 
@@ -754,32 +743,32 @@ not being applied, your choice on this setting may be the culprit.
             header = self.get_group_header(group)
             if header is None:
                 return None
-            rdr = J.make_instance(
+            rdr = javabridge.make_instance(
                     "java/io/StringReader",
                     "(Ljava/lang/String;)V",
                     header)
         elif group.csv_location.is_url():
-            jurl = J.make_instance(
+            jurl = javabridge.make_instance(
                     "java/net/URL",
                     "(Ljava/lang/String;)V",
                 self.csv_path(group))
-            stream = J.call(
+            stream = javabridge.call(
                     jurl, "openStream",
                     "()Ljava/io/InputStream;")
-            rdr = J.make_instance(
+            rdr = javabridge.make_instance(
                     "java/io/InputStreamReader",
                     "(Ljava/io/InputStream;)V",
                     stream)
         else:
-            stream = J.make_instance(
+            stream = javabridge.make_instance(
                     "java/io/FileInputStream",
                     "(Ljava/lang/String;)V",
                 self.csv_path(group))
-            rdr = J.make_instance(
+            rdr = javabridge.make_instance(
                     "java/io/InputStreamReader",
                     "(Ljava/io/InputStream;)V",
                     stream)
-        return J.make_instance(
+        return javabridge.make_instance(
                 "org/cellprofiler/imageset/ImportedMetadataExtractor",
                 "(Ljava/io/Reader;[Lorg/cellprofiler/imageset/MetadataKeyPair;)V",
                 rdr, key_pairs)
@@ -796,22 +785,22 @@ not being applied, your choice on this setting may be the culprit.
         #
         # Get the key set.
         #
-        possible_keys = J.get_collection_wrapper(
-                J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
-                J.to_string)
+        possible_keys = javabridge.get_collection_wrapper(
+                javabridge.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
+                javabridge.to_string)
         joiner = group.csv_joiner
-        assert isinstance(joiner, cps.Joiner)
+        assert isinstance(joiner, cellprofiler.setting.Joiner)
         joiner.entities[self.IPD_JOIN_NAME] = list(possible_keys)
         header = self.get_group_header(group)
         if header is None:
             header_keys = ["None"]
         else:
-            header_keys = J.get_collection_wrapper(
-                    J.static_call(
+            header_keys = javabridge.get_collection_wrapper(
+                    javabridge.static_call(
                             "org/cellprofiler/imageset/ImportedMetadataExtractor",
                             "readHeader",
                             "(Ljava/lang/String;)Ljava/util/List;",
-                            header), J.to_string)
+                            header), javabridge.to_string)
         joiner.entities[self.CSV_JOIN_NAME] = list(header_keys)
 
     def settings(self):
@@ -887,7 +876,7 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return urlfilename(urls[0])
+                return loadimages.urlfilename(urls[0])
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
 
     def example_directory_fn(self):
@@ -900,7 +889,7 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return urlpathname(urls[0])
+                return loadimages.urlpathname(urls[0])
         return "/images/2012_01_12"
 
     def change_causes_prepare_run(self, setting):
@@ -920,10 +909,10 @@ not being applied, your choice on this setting may be the culprit.
             return True
 
         pipeline = workspace.pipeline
-        assert isinstance(pipeline, cpp.Pipeline)
+        assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
         filtered_file_list = pipeline.get_filtered_file_list(workspace)
         extractor = self.build_extractor()
-        env = J.get_env()
+        env = javabridge.get_env()
         scls = env.find_class("java/lang/String")
         url_array = env.make_object_array(len(filtered_file_list), scls)
         metadata_array = env.make_object_array(len(filtered_file_list), scls)
@@ -937,15 +926,15 @@ not being applied, your choice on this setting may be the culprit.
             if xmlmetadata is not None:
                 xmlmetadata = env.new_string(xmlmetadata)
                 env.set_object_array_element(metadata_array, i, xmlmetadata)
-        key_set = J.make_instance("java/util/HashSet", "()V")
-        jipds = J.call(
+        key_set = javabridge.make_instance("java/util/HashSet", "()V")
+        jipds = javabridge.call(
                 extractor, "extract",
                 "([Ljava/lang/String;[Ljava/lang/String;Ljava/util/Set;)"
                 "[Lorg/cellprofiler/imageset/ImagePlaneDetails;",
                 url_array, metadata_array, key_set)
-        ipds = [cpp.ImagePlaneDetails(jipd)
+        ipds = [cellprofiler.pipeline.ImagePlaneDetails(jipd)
                 for jipd in env.get_object_array_elements(jipds)]
-        keys = sorted(J.iterate_collection(key_set, J.to_string))
+        keys = sorted(javabridge.iterate_collection(key_set, javabridge.to_string))
         pipeline.set_image_plane_details(ipds, keys, self)
         return True
 
@@ -959,12 +948,12 @@ not being applied, your choice on this setting may be the culprit.
         #
         # Build a metadata extractor
         #
-        extractor = J.make_instance(
+        extractor = javabridge.make_instance(
                 "org/cellprofiler/imageset/ImagePlaneMetadataExtractor",
                 "()V")
-        J.call(extractor, "addImagePlaneExtractor",
+        javabridge.call(extractor, "addImagePlaneExtractor",
                "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
-               J.make_instance(
+                        javabridge.make_instance(
                        "org/cellprofiler/imageset/URLSeriesIndexMetadataExtractor",
                        "()V"))
         if any([group.extraction_method == X_AUTOMATIC_EXTRACTION
@@ -974,20 +963,20 @@ not being applied, your choice on this setting may be the culprit.
                     ("addImageSeriesExtractor", "OMESeriesMetadataExtractor"),
                     ("addImagePlaneExtractor", "OMEPlaneMetadataExtractor")):
                 class_name = "org/cellprofiler/imageset/" + class_name
-                J.call(extractor, method_name,
+                javabridge.call(extractor, method_name,
                        "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
-                       J.make_instance(class_name, "()V"))
+                                javabridge.make_instance(class_name, "()V"))
 
         has_well_extractor = False
         for group in self.extraction_methods:
             if group == end_group:
                 break
             if group.filter_choice == F_FILTERED_IMAGES:
-                fltr = J.make_instance(
+                fltr = javabridge.make_instance(
                         "org/cellprofiler/imageset/filter/Filter",
                         "(Ljava/lang/String;Ljava/lang/Class;)V",
                         group.filter.value_text,
-                        J.class_for_name("org.cellprofiler.imageset.ImageFile"))
+                        javabridge.class_for_name("org.cellprofiler.imageset.ImageFile"))
             else:
                 fltr = None
             if group.extraction_method == X_MANUAL_EXTRACTION:
@@ -1002,19 +991,19 @@ not being applied, your choice on this setting may be the culprit.
                     re.search(pattern, "")
                 except re.error:
                     continue
-                J.call(extractor,
-                       method,
+                javabridge.call(extractor,
+                                method,
                        "(Ljava/lang/String;Lorg/cellprofiler/imageset/filter/Filter;)V",
-                       pattern, fltr)
+                                pattern, fltr)
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
                 imported_extractor = self.build_imported_metadata_extractor(
                         group, extractor, for_metadata_only)
                 if imported_extractor is not None:
-                    J.call(extractor,
+                    javabridge.call(extractor,
                            "addImagePlaneDetailsExtractor",
                            "(Lorg/cellprofiler/imageset/MetadataExtractor;"
                            "Lorg/cellprofiler/imageset/filter/Filter;)V",
-                           imported_extractor, fltr)
+                                    imported_extractor, fltr)
             #
             # Finally, we add the WellMetadataExtractor which has the inglorious
             # job of making a well name from row and column, if present,
@@ -1022,17 +1011,17 @@ not being applied, your choice on this setting may be the culprit.
             # might require it.
             #
             if not has_well_extractor:
-                metadata_keys = J.call(
+                metadata_keys = javabridge.call(
                         extractor, "getMetadataKeys", "()Ljava/util/List;")
-                if J.static_call(
+                if javabridge.static_call(
                         "org/cellprofiler/imageset/WellMetadataExtractor",
                         "maybeYouNeedThis", "(Ljava/util/List;)Z",
                         metadata_keys):
-                    J.call(
+                    javabridge.call(
                             extractor,
                             "addImagePlaneDetailsExtractor",
                             "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
-                            J.make_instance(
+                            javabridge.make_instance(
                                     "org/cellprofiler/imageset/WellMetadataExtractor",
                                     "()V"))
                     has_well_extractor = True
@@ -1053,8 +1042,6 @@ not being applied, your choice on this setting may be the culprit.
 
         import wx
         from bioformats.formatreader import get_omexml_metadata
-        from bioformats.omexml import OMEXML
-        from cellprofiler.modules.loadimages import url2pathname
         with wx.ProgressDialog("Updating metadata",
                                msg(list(urls)[0]),
                                len(urls),
@@ -1069,8 +1056,8 @@ not being applied, your choice on this setting may be the culprit.
                         break
                 if group.filter_choice == F_FILTERED_IMAGES:
                     match = group.filter.evaluate(
-                            (cps.FileCollectionDisplay.NODE_IMAGE_PLANE,
-                             Images.url_to_modpath(url), self))
+                            (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
+                             images.Images.url_to_modpath(url), self))
                     if not match:
                         continue
                 metadata = filelist.get_metadata(url)
@@ -1119,11 +1106,11 @@ not being applied, your choice on this setting may be the culprit.
         self.table.clear_columns()
         self.table.clear_rows()
         data = []
-        md_keys = J.make_list(columns[3:])
+        md_keys = javabridge.make_list(columns[3:])
         #
         # Use the low-level Javabridge interface to make things a bit faster
         #
-        env = J.get_env()
+        env = javabridge.get_env()
         clsIPD = env.find_class("org/cellprofiler/imageset/ImagePlaneDetails")
         methodID = env.get_method_id(
                 clsIPD, "getIPDFields", "(Ljava/util/List;)[Ljava/lang/String;")
@@ -1134,7 +1121,7 @@ not being applied, your choice on this setting may be the culprit.
             for i, f in enumerate(env.get_object_array_elements(fields)):
                 if f is not None:
                     has_data[i] = True
-                    row[i] = J.to_string(f)
+                    row[i] = javabridge.to_string(f)
             data.append(row)
         columns = [c for c, h in zip(columns, has_data) if h]
         for i in range(len(data)):
@@ -1182,9 +1169,9 @@ not being applied, your choice on this setting may be the culprit.
             if group.extraction_method == X_MANUAL_EXTRACTION:
                 re_setting = (group.file_regexp if group.source == XM_FILE_NAME
                               else group.folder_regexp)
-                for token in cpmeas.find_metadata_tokens(re_setting.value):
-                    if token.upper() in [reservedtag.upper() for reservedtag in cpmeas.RESERVED_METADATA_TAGS]:
-                        raise cps.ValidationError(
+                for token in cellprofiler.measurement.find_metadata_tokens(re_setting.value):
+                    if token.upper() in [reservedtag.upper() for reservedtag in cellprofiler.measurement.RESERVED_METADATA_TAGS]:
+                        raise cellprofiler.setting.ValidationError(
                                 'The metadata tag, "%s", is reserved for use by CellProfiler. Please use some other tag name.' %
                                 token, re_setting)
 
@@ -1193,10 +1180,10 @@ not being applied, your choice on this setting may be the culprit.
         if not self.wants_metadata:
             return []
         extractor = self.build_extractor(for_metadata_only=True)
-        keys = J.get_collection_wrapper(
-                J.call(extractor,
+        keys = javabridge.get_collection_wrapper(
+                javabridge.call(extractor,
                        "getMetadataKeys",
-                       "()Ljava/util/List;"), J.to_string)
+                       "()Ljava/util/List;"), javabridge.to_string)
         return keys
 
     def get_dt_metadata_keys(self):
@@ -1207,32 +1194,32 @@ not being applied, your choice on this setting may be the culprit.
                       self.get_metadata_keys())
 
     NUMERIC_DATA_TYPES = (
-        cpp.ImagePlaneDetails.MD_T, cpp.ImagePlaneDetails.MD_Z,
-        cpp.ImagePlaneDetails.MD_SIZE_C, cpp.ImagePlaneDetails.MD_SIZE_T,
-        cpp.ImagePlaneDetails.MD_SIZE_Z, cpp.ImagePlaneDetails.MD_SIZE_X,
-        cpp.ImagePlaneDetails.MD_SIZE_Y, cpmeas.C_SERIES, cpmeas.C_FRAME)
+        cellprofiler.pipeline.ImagePlaneDetails.MD_T, cellprofiler.pipeline.ImagePlaneDetails.MD_Z,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_C, cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_T,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Z, cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_X,
+        cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Y, cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME)
 
     def get_data_type(self, key):
         '''Get the data type for a particular metadata key'''
         if isinstance(key, basestring):
-            return self.get_data_type([key]).get(key, cpmeas.COLTYPE_VARCHAR)
+            return self.get_data_type([key]).get(key, cellprofiler.measurement.COLTYPE_VARCHAR)
         result = {}
         if self.data_type_choice == DTC_CHOOSE:
-            data_types = cps.DataTypes.decode_data_types(
+            data_types = cellprofiler.setting.DataTypes.decode_data_types(
                     self.data_types.value_text)
         for k in key:
             if k in self.NUMERIC_DATA_TYPES:
-                result[k] = cpmeas.COLTYPE_INTEGER
+                result[k] = cellprofiler.measurement.COLTYPE_INTEGER
             elif self.data_type_choice == DTC_CHOOSE:
-                dt = data_types.get(k, cps.DataTypes.DT_TEXT)
-                if dt == cps.DataTypes.DT_TEXT:
-                    result[k] = cpmeas.COLTYPE_VARCHAR
-                elif dt == cps.DataTypes.DT_INTEGER:
-                    result[k] = cpmeas.COLTYPE_INTEGER
-                elif dt == cps.DataTypes.DT_FLOAT:
-                    result[k] = cpmeas.COLTYPE_FLOAT
+                dt = data_types.get(k, cellprofiler.setting.DataTypes.DT_TEXT)
+                if dt == cellprofiler.setting.DataTypes.DT_TEXT:
+                    result[k] = cellprofiler.measurement.COLTYPE_VARCHAR
+                elif dt == cellprofiler.setting.DataTypes.DT_INTEGER:
+                    result[k] = cellprofiler.measurement.COLTYPE_INTEGER
+                elif dt == cellprofiler.setting.DataTypes.DT_FLOAT:
+                    result[k] = cellprofiler.measurement.COLTYPE_FLOAT
             else:
-                result[k] = cpmeas.COLTYPE_VARCHAR
+                result[k] = cellprofiler.measurement.COLTYPE_VARCHAR
 
         return result
 
@@ -1264,28 +1251,28 @@ not being applied, your choice on this setting may be the culprit.
         for key, coltype in key_types.iteritems():
             if self.data_type_choice == DTC_CHOOSE:
                 data_type = self.get_data_type(key)
-                if data_type == cps.DataTypes.DT_NONE:
+                if data_type == cellprofiler.setting.DataTypes.DT_NONE:
                     continue
-                elif data_type == cps.DataTypes.DT_INTEGER:
-                    data_type = cpmeas.COLTYPE_INTEGER
-                elif data_type == cps.DataTypes.DT_FLOAT:
-                    data_type = cpmeas.COLTYPE_FLOAT
+                elif data_type == cellprofiler.setting.DataTypes.DT_INTEGER:
+                    data_type = cellprofiler.measurement.COLTYPE_INTEGER
+                elif data_type == cellprofiler.setting.DataTypes.DT_FLOAT:
+                    data_type = cellprofiler.measurement.COLTYPE_FLOAT
                 else:
-                    data_type = cpmeas.COLTYPE_VARCHAR_FILE_NAME
+                    data_type = cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME
             else:
-                data_type = cpmeas.COLTYPE_VARCHAR_FILE_NAME
+                data_type = cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME
             result.append((
-                cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, key)), data_type))
+                cellprofiler.measurement.IMAGE, '_'.join((cellprofiler.measurement.C_METADATA, key)), data_type))
         return result
 
     def get_categories(self, pipeline, object_name):
         '''Return the measurement categories for a particular object'''
-        if object_name == cpmeas.IMAGE and len(self.get_metadata_keys()) > 0:
-            return [cpmeas.C_METADATA]
+        if object_name == cellprofiler.measurement.IMAGE and len(self.get_metadata_keys()) > 0:
+            return [cellprofiler.measurement.C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == cpmeas.C_METADATA:
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_METADATA:
             keys = self.get_metadata_keys()
             return keys
         return []
@@ -1299,7 +1286,7 @@ not being applied, your choice on this setting may be the culprit.
                 new_setting_values += setting_values[
                                       (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i):
                                       (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i + 1))]
-                new_setting_values.append(cps.NO)
+                new_setting_values.append(cellprofiler.setting.NO)
             setting_values = new_setting_values
             variable_revision_number = 2
 

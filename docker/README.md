@@ -1,12 +1,41 @@
-[![Build Status](https://travis-ci.org/CellProfiler/docker.svg?branch=master)](https://travis-ci.org/CellProfiler/docker)
+Authors: [@purohit](https://github.com/purohit), [@mcquin](https://github.com/mcquin), [@0x00b1](https://github.com/0x00b1)
 
 Testing docker locally:
 
     make
+    make clean
     make test
+
+Note: `make test` will work only for CellProfiler 3.3.0 and higher because the example pipeline in the test is not backward compatible.
+
+This is configured to build a docker image for `3.0.0`. To build a different version, edit these lines:
+
+Makefile:
+
+    VERSION := 3.0.0
+
+Dockerfile:
+
+    ARG version=3.0.0
+    
+You can do this using `sed` e.g.
+    
+    $ export VERSION=2.2.1
+    $ sed -i s,"ARG version=3.0.0","ARG version=${VERSION}",g Dockerfile
+    $ sed -i s,"VERSION := 3.0.0","VERSION := ${VERSION}",g Makefile
+
+Note: the sed commands above are for GNU sed. If you're on OS X, see [this](https://stackoverflow.com/questions/30003570/how-to-use-gnu-sed-on-mac-os-x).
+
+To push to docker hub, do the following (look up instructions at https://docs.docker.com/docker-cloud/builds/push-images/ for details)
+
+    $ export DOCKER_ID_USER="username" # replace with your Docker Hub username 
+    $ export VERSION=3.0.0 # replace with the version you are building
+    $ docker login
+    $ docker tag cellprofiler:${VERSION}  ${DOCKER_ID_USER}/cellprofiler:${VERSION} 
+    $ docker push ${DOCKER_ID_USER}/cellprofiler:${VERSION} 
 
 On a Linux host machine, running CellProfiler's GUI from the container:
 
     # Note, the following line is insecure.
     xhost +local:root
-    docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro cellprofiler:latest ""
+    VERSION=3.0.0 docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro cellprofiler:${VERSION} ""

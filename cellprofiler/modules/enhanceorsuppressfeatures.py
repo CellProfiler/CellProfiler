@@ -531,7 +531,7 @@ Two methods can be used to enhance neurites:
         for i in range(max_radius + 1):
             eroded_image = skimage.morphology.erosion(eroded_image, se)
 
-            if mask:
+            if mask is not None:
                 eroded_image *= mask
 
             reconstructed_image = skimage.morphology.reconstruction(eroded_image, inverted_image, "dilation", se)

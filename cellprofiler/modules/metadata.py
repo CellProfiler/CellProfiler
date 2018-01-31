@@ -1149,7 +1149,7 @@ not being applied, your choice on this setting may be the culprit.
                 re_setting = (group.file_regexp if group.source == XM_FILE_NAME
                               else group.folder_regexp)
                 for token in cpmeas.find_metadata_tokens(re_setting.value):
-                    if token in cpmeas.RESERVED_METADATA_TAGS:
+                    if token.upper() in [reservedtag.upper() for reservedtag in cpmeas.RESERVED_METADATA_TAGS]:
                         raise cps.ValidationError(
                                 'The metadata tag, "%s", is reserved for use by CellProfiler. Please use some other tag name.' %
                                 token, re_setting)

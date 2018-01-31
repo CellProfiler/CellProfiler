@@ -109,7 +109,7 @@ modules might be needed):
 -  *Upper right:* The identified objects shown as a color image where
    connected pixels that belong to the same object are assigned the same
    color (*label image*). Note that assigned colors
-   are arbitrary; they are used simply to help you distingush the
+   are arbitrary; they are used simply to help you distinguish the
    various objects.
 -  *Lower left:* The raw image overlaid with the colored outlines of the
    identified secondary objects. The objects are shown with the
@@ -123,6 +123,8 @@ modules might be needed):
 -  *Lower right:* A table showing some of the settings you chose,
    as well as those calculated by the module in order to produce
    the objects shown.
+
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,6 +151,7 @@ Measurements made by this module
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
 
 M_PROPAGATION = "Propagation"
@@ -175,6 +178,9 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.threshold = threshold.Threshold()
 
         super(IdentifySecondaryObjects, self).__init__()
+
+    def volumetric(self):
+        return False
 
     def create_settings(self):
         super(IdentifySecondaryObjects, self).create_settings()
@@ -349,7 +355,7 @@ border. Select *{NO:s}* to retain objects regardless of whether they
 touch the image edge or not.
 
 Note: the objects are discarded with respect to downstream measurement
-modules, but they are retained in memory as “unedited objects”; this
+modules, but they are retained in memory as “Unedited objects”; this
 allows them to be considered in downstream modules that modify the
 segmentation.
 """.format(**{

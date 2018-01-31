@@ -1,4 +1,6 @@
 :orphan:
+Why Use CellProfiler?
+=====================
 
 Most laboratories studying biological processes and human disease use
 light/fluorescence microscopes to image cells and other biological

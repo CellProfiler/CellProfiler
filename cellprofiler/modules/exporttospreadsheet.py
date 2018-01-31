@@ -1206,7 +1206,7 @@ desired.
         """
 
         if variable_revision_number == 1 and from_matlab:
-            # Added create subdirectories questeion
+            # Added create subdirectories question
             setting_values = list(setting_values)
             setting_values.append(cps.NO)
             variable_revision_number = 2

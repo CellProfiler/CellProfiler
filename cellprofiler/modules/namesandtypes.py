@@ -25,7 +25,7 @@ from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF,PROTIP_RECOMEND_ICON
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF,PROTIP_RECOMMEND_ICON
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J
@@ -229,7 +229,7 @@ You can specify how these images should be treated:
    If this option is applied to a color image, the red, green and blue
    pixel intensities will be averaged to produce a single intensity
    value.
--  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel repesents a
+-  *{LOAD_AS_COLOR_IMAGE}:* An image in which each pixel represents a
    red, green and blue (RGB) triplet of intensity values OR which contains
    multiple individual grayscale channels. Please note
    that the object detection modules such as **IdentifyPrimaryObjects**
@@ -769,9 +769,9 @@ settings (e.g., an image stack with many frames). Using this button will
 help avoid the tedium of having to select the same settings multiple
 times.
 
-.. |NAT_CopyAssignment_image0| image:: {PROTIP_RECOMEND_ICON}
+.. |NAT_CopyAssignment_image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 })
             )
         )

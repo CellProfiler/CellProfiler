@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""
+import _help
+
+__doc__ = """\
 FilterObjects
 =============
 
@@ -35,6 +37,8 @@ See also
 See also any of the **MeasureObject** modules, **MeasureTexture**,
 **MeasureColocalization**, and **CalculateMath**.
 
+{HELP_ON_SAVING_OBJECTS}
+
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -48,8 +52,9 @@ Measurements made by this module
    filtered (remaining) object.
 -  *Location\_X, Location\_Y, Location\_Z:* The pixel (X,Y,Z)
    coordinates of the center of mass of the filtered (remaining) objects.
-
-"""
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import logging
 import os
@@ -1128,6 +1133,6 @@ value will be retained.""".format(**{
 
 
 #
-# backwards compatability
+# backwards compatibility
 #
 FilterByObjectMeasurement = FilterObjects

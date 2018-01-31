@@ -16,8 +16,8 @@ view) together for processing in a single CellProfiler cycle. Finally,
 you can use this module to retrieve a label matrix and give the
 collection of objects a meaningful name.
 
-*Disclaimer:* Please note that the Input modues (i.e., **Images**,
-**Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
+*Disclaimer:* Please note that the Input modules (i.e., **Images**,
+**Metadata**, **NamesAndTypes** and **Groups**) largely supersedes this
 module. However, old pipelines loaded into CellProfiler that contain
 this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
@@ -49,7 +49,7 @@ If you would like to use the metadata-specific settings, please see
 on metadata usage and syntax. Briefly, **LoadImages** can extract
 metadata from the image filename using pattern-matching strings, for
 grouping similar images together for the analysis run and for
-metadata-specfic options in other modules; see the settings help for
+metadata-specific options in other modules; see the settings help for
 *Where to extract metadata*, and if an option for that setting is
 selected, *Regular expression that finds metadata in the file name*
 for the necessary syntax.
@@ -110,7 +110,7 @@ from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \
     C_OBJECTS_URL
 import numpy
-import skimage.io
+import skimage.external.tifffile
 
 '''STK TIFF Tag UIC1 - for MetaMorph internal use'''
 UIC1_TAG = 33628
@@ -2316,7 +2316,7 @@ to store the image."""% globals()))
                     #
                     #  Interpret file as objects
                     #
-                    # Get the frame count from the OME-XML metadta
+                    # Get the frame count from the OME-XML metadata
                     #
                     from bioformats.formatreader import get_omexml_metadata
                     import bioformats.omexml
@@ -2996,7 +2996,7 @@ to store the image."""% globals()))
                     for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]
                 if self.exclude:
                     # Exclude with a predicate of
-                    # File doesnot contain <match_exclude>
+                    # File does not contain <match_exclude>
                     #
                     structure.append([
                         fp, fp_does_not, cps.Filter.CONTAINS_PREDICATE,
@@ -3371,7 +3371,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if self.is_numpy_file():
             data = np.load(pathname)
         else:
-            data = skimage.io.imread(pathname)
+            data = skimage.external.tifffile.imread(pathname)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:
@@ -3456,7 +3456,7 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
 def convert_image_to_objects(image):
     '''Interpret an image as object indices
 
-    image - a greyscale or color image, assumes zero == background
+    image - a grayscale or color image, assumes zero == background
 
     returns - a similarly shaped integer array with zero representing background
               and other values representing the indices of the associated object.

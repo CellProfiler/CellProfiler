@@ -6,7 +6,7 @@ pipelines which will be run consecutively. Please note the following:
 
 -  Pipeline files (.cppipe) are supported.
 -  Project files (.cpproj) from CellProfiler 2.1 or newer are not supported.
-   To convert your project to a pipeline (.cppipe), select *File > Export > Pipeline…*
+   To convert your project to a pipeline (.cppipe), select *File > Export > Pipeline...*
    and, under the “Save as type” dropdown, select “CellProfiler pipeline and file list”
    to export the project file list with the pipeline.
 

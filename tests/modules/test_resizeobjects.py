@@ -12,11 +12,6 @@ instance = cellprofiler.modules.resizeobjects.ResizeObjects()
 
 
 @pytest.fixture(scope="module")
-def image():
-    return cellprofiler.image.Image()
-
-
-@pytest.fixture(scope="module")
 def image_labels():
     labels = numpy.zeros((20, 20), dtype=numpy.uint8)
 
@@ -29,20 +24,6 @@ def image_labels():
     labels[12:20, 12:20] = 4
 
     return labels
-
-
-@pytest.fixture(scope="function")
-def object_set(objects):
-    object_set = cellprofiler.object.ObjectSet()
-
-    object_set.add_objects(objects, "InputObjects")
-
-    return object_set
-
-
-@pytest.fixture(scope="function")
-def objects():
-    return cellprofiler.object.Objects()
 
 
 @pytest.fixture(scope="module")
@@ -60,8 +41,8 @@ def volume_labels():
     return labels
 
 
-def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, objects, workspace):
-    objects.segmented = image_labels
+def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set_empty, objects_empty, workspace_empty):
+    objects_empty.segmented = image_labels
 
     module.x_name.value = "InputObjects"
 
@@ -69,7 +50,7 @@ def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, 
 
     module.factor.value = 0.5
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((10, 10), dtype=numpy.uint8)
 
@@ -81,10 +62,10 @@ def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, 
 
     expected_labels[6:10, 6:10] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -92,7 +73,7 @@ def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, 
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),
@@ -100,8 +81,8 @@ def test_resize_by_factor_shrink_image_labels(image_labels, module, object_set, 
     )
 
 
-def test_resize_by_factor_enlarge_image_labels(image_labels, module, object_set, objects, workspace):
-    objects.segmented = image_labels
+def test_resize_by_factor_enlarge_image_labels(image_labels, module, object_set_empty, objects_empty, workspace_empty):
+    objects_empty.segmented = image_labels
 
     module.x_name.value = "InputObjects"
 
@@ -109,7 +90,7 @@ def test_resize_by_factor_enlarge_image_labels(image_labels, module, object_set,
 
     module.factor.value = 2.0
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((40, 40), dtype=numpy.uint8)
 
@@ -121,10 +102,10 @@ def test_resize_by_factor_enlarge_image_labels(image_labels, module, object_set,
 
     expected_labels[24:40, 24:40] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -132,7 +113,7 @@ def test_resize_by_factor_enlarge_image_labels(image_labels, module, object_set,
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),
@@ -140,8 +121,8 @@ def test_resize_by_factor_enlarge_image_labels(image_labels, module, object_set,
     )
 
 
-def test_resize_by_dimensions_shrink_image_labels(image_labels, module, object_set, objects, workspace):
-    objects.segmented = image_labels
+def test_resize_by_dimensions_shrink_image_labels(image_labels, module, object_set_empty, objects_empty, workspace_empty):
+    objects_empty.segmented = image_labels
 
     module.x_name.value = "InputObjects"
 
@@ -151,7 +132,7 @@ def test_resize_by_dimensions_shrink_image_labels(image_labels, module, object_s
 
     module.height.value = 10
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((10, 5), dtype=numpy.uint8)
 
@@ -163,10 +144,10 @@ def test_resize_by_dimensions_shrink_image_labels(image_labels, module, object_s
 
     expected_labels[6:10, 3:5] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -174,7 +155,7 @@ def test_resize_by_dimensions_shrink_image_labels(image_labels, module, object_s
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),
@@ -182,8 +163,8 @@ def test_resize_by_dimensions_shrink_image_labels(image_labels, module, object_s
     )
 
 
-def test_resize_by_dimensions_enlarge_image_labels(image_labels, module, object_set, objects, workspace):
-    objects.segmented = image_labels
+def test_resize_by_dimensions_enlarge_image_labels(image_labels, module, object_set_empty, objects_empty, workspace_empty):
+    objects_empty.segmented = image_labels
 
     module.x_name.value = "InputObjects"
 
@@ -193,7 +174,7 @@ def test_resize_by_dimensions_enlarge_image_labels(image_labels, module, object_
 
     module.height.value = 40
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((40, 80), dtype=numpy.uint8)
 
@@ -205,10 +186,10 @@ def test_resize_by_dimensions_enlarge_image_labels(image_labels, module, object_
 
     expected_labels[24:40, 48:80] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -216,7 +197,7 @@ def test_resize_by_dimensions_enlarge_image_labels(image_labels, module, object_
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),
@@ -224,8 +205,8 @@ def test_resize_by_dimensions_enlarge_image_labels(image_labels, module, object_
     )
 
 
-def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volume_labels, workspace):
-    objects.segmented = volume_labels
+def test_resize_by_factor_shrink_volume_labels(module, object_set_empty, objects_empty, volume_labels, workspace_empty):
+    objects_empty.segmented = volume_labels
 
     module.x_name.value = "InputObjects"
 
@@ -233,7 +214,7 @@ def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volu
 
     module.factor.value = 0.5
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((9, 10, 10), dtype=numpy.uint8)
 
@@ -245,10 +226,10 @@ def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volu
 
     expected_labels[1:8, 6:10, 6:10] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -256,7 +237,7 @@ def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volu
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),
@@ -264,8 +245,8 @@ def test_resize_by_factor_shrink_volume_labels(module, object_set, objects, volu
     )
 
 
-def test_resize_by_factor_enlarge_volume_labels(module, object_set, objects, volume_labels, workspace):
-    objects.segmented = volume_labels
+def test_resize_by_factor_enlarge_volume_labels(module, object_set_empty, objects_empty, volume_labels, workspace_empty):
+    objects_empty.segmented = volume_labels
 
     module.x_name.value = "InputObjects"
 
@@ -273,7 +254,7 @@ def test_resize_by_factor_enlarge_volume_labels(module, object_set, objects, vol
 
     module.factor.value = 2.0
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((9, 40, 40), dtype=numpy.uint8)
 
@@ -285,10 +266,10 @@ def test_resize_by_factor_enlarge_volume_labels(module, object_set, objects, vol
 
     expected_labels[1:8, 24:40, 24:40] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -296,7 +277,7 @@ def test_resize_by_factor_enlarge_volume_labels(module, object_set, objects, vol
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),
@@ -304,8 +285,8 @@ def test_resize_by_factor_enlarge_volume_labels(module, object_set, objects, vol
     )
 
 
-def test_resize_by_dimensions_shrink_volume_labels(module, object_set, objects, volume_labels, workspace):
-    objects.segmented = volume_labels
+def test_resize_by_dimensions_shrink_volume_labels(module, object_set_empty, objects_empty, volume_labels, workspace_empty):
+    objects_empty.segmented = volume_labels
 
     module.x_name.value = "InputObjects"
 
@@ -315,7 +296,7 @@ def test_resize_by_dimensions_shrink_volume_labels(module, object_set, objects, 
 
     module.height.value = 10
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((9, 10, 5), dtype=numpy.uint8)
 
@@ -327,10 +308,10 @@ def test_resize_by_dimensions_shrink_volume_labels(module, object_set, objects, 
 
     expected_labels[1:8, 6:10, 3:5] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -338,7 +319,7 @@ def test_resize_by_dimensions_shrink_volume_labels(module, object_set, objects, 
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),
@@ -346,8 +327,8 @@ def test_resize_by_dimensions_shrink_volume_labels(module, object_set, objects, 
     )
 
 
-def test_resize_by_dimensions_enlarge_volume_labels(module, object_set, objects, volume_labels, workspace):
-    objects.segmented = volume_labels
+def test_resize_by_dimensions_enlarge_volume_labels(module, object_set_empty, objects_empty, volume_labels, workspace_empty):
+    objects_empty.segmented = volume_labels
 
     module.x_name.value = "InputObjects"
 
@@ -357,7 +338,7 @@ def test_resize_by_dimensions_enlarge_volume_labels(module, object_set, objects,
 
     module.height.value = 40
 
-    module.run(workspace)
+    module.run(workspace_empty)
 
     expected_labels = numpy.zeros((9, 40, 80), dtype=numpy.uint8)
 
@@ -369,10 +350,10 @@ def test_resize_by_dimensions_enlarge_volume_labels(module, object_set, objects,
 
     expected_labels[1:8, 24:40, 48:80] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ResizeObjects").segmented, expected_labels)
+    numpy.testing.assert_array_equal(object_set_empty.get_objects("ResizeObjects").segmented, expected_labels)
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "InputObjects",
             cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
@@ -380,7 +361,7 @@ def test_resize_by_dimensions_enlarge_volume_labels(module, object_set, objects,
     )
 
     numpy.testing.assert_array_equal(
-        workspace.measurements.get_current_measurement(
+        workspace_empty.measurements.get_current_measurement(
             "ResizeObjects",
             cellprofiler.measurement.FF_PARENT % "InputObjects"
         ),

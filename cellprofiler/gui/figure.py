@@ -524,6 +524,15 @@ class Figure(wx.Frame):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
+
+        # On some operating systems (specifically Ubuntu), the matplotlib toolbar
+        # may not render with an appropriate height. This is the result of creating
+        # the navtoolbar without an appropriate slider. Until this is refactored
+        # to make it size properly, this check ensures the navtoolbar at least appears.
+        # https://github.com/CellProfiler/CellProfiler/issues/2679
+        if nbheight < 40:
+            nbheight = 40
+
         self.navtoolbar.SetPosition((0, 0))
         self.navtoolbar.SetSize((available_width, nbheight))
 
@@ -900,6 +909,7 @@ class Figure(wx.Frame):
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
+        MENU_CONTRAST_GAMMA = wx.NewId()
         MENU_INTERPOLATION_NEAREST = wx.NewId()
         MENU_INTERPOLATION_BILINEAR = wx.NewId()
         MENU_INTERPOLATION_BICUBIC = wx.NewId()
@@ -924,13 +934,25 @@ class Figure(wx.Frame):
                                          'Stretch pixel intensities to fit '
                                          'the interval [0,1]',
                                          wx.ITEM_RADIO)
-        item_log = submenu.Append(MENU_CONTRAST_LOG, 'Log normalized',
-                                  'Log transform pixel intensities, then '
-                                  'stretch them to fit the interval [0,1]',
-                                  wx.ITEM_RADIO)
+        item_log = submenu.Append(
+            MENU_CONTRAST_LOG,
+            'Log normalized',
+            'Log transform pixel intensities, after stretching them to fit the interval [0,1]',
+            wx.ITEM_RADIO
+        )
+
+        item_gamma = submenu.Append(
+            MENU_CONTRAST_GAMMA,
+            'Adjust gamma',
+            'Apply gamma correction (a.k.a., power law transform) pixel intensities, after stretching them'
+            ' to fit the interval [0,1].',
+            wx.ITEM_RADIO
+        )
 
         if params['normalize'] == 'log':
             item_log.Check()
+        elif params['normalize'] == 'gamma':
+            item_gamma.Check()
         elif params['normalize']:
             item_normalized.Check()
         else:
@@ -1011,6 +1033,8 @@ class Figure(wx.Frame):
                 params['normalize'] = True
             elif evt.Id == MENU_CONTRAST_LOG:
                 params['normalize'] = 'log'
+            elif evt.Id == MENU_CONTRAST_GAMMA:
+                params['normalize'] = 'gamma'
             for artist in axes.artists:
                 if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.kwargs["normalize"] = params['normalize']
@@ -1022,6 +1046,24 @@ class Figure(wx.Frame):
                 self.subplot(x, y).set_xlim(xlims[0], xlims[1])
                 self.subplot(x, y).set_ylim(ylims[0], ylims[1])
                 self.figure.canvas.draw()
+
+        def adjust_gamma(evt):
+            dlg = wx.TextEntryDialog(self, 'Normalization factor', 'Adjust gamma')
+            dlg.SetValue(cellprofiler.preferences.get_normalization_factor())
+            if dlg.ShowModal() == wx.ID_OK:
+                params["normalize_args"] = {"gamma": float(dlg.GetValue())}
+            dlg.Destroy()
+
+            change_contrast(evt)
+
+        def adjust_log(evt):
+            dlg = wx.TextEntryDialog(self, 'Normalization factor', 'Log normalization')
+            dlg.SetValue(cellprofiler.preferences.get_normalization_factor())
+            if dlg.ShowModal() == wx.ID_OK:
+                params["normalize_args"] = {"gain": float(dlg.GetValue())}
+            dlg.Destroy()
+
+            change_contrast(evt)
 
         def change_interpolation(evt):
             if evt.Id == MENU_INTERPOLATION_NEAREST:
@@ -1119,7 +1161,8 @@ class Figure(wx.Frame):
         self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
-        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
+        self.Bind(wx.EVT_MENU, adjust_log, id=MENU_CONTRAST_LOG)
+        self.Bind(wx.EVT_MENU, adjust_gamma, id=MENU_CONTRAST_GAMMA)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)
@@ -1223,7 +1266,7 @@ class Figure(wx.Frame):
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1,
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow=False, interpolation=None, cplabels=None):
+                       use_imshow=False, interpolation=None, cplabels=None, normalize_args={}):
         """Show an image in a subplot
 
         x, y  - show image in this subplot
@@ -1262,6 +1305,10 @@ class Figure(wx.Frame):
                     normalize = False
                 elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
                     normalize = "log"
+                    normalize_args["gain"] = float(cellprofiler.preferences.get_normalization_factor())
+                elif normalize == cellprofiler.preferences.INTENSITY_MODE_GAMMA:
+                    normalize = "gamma"
+                    normalize_args["gamma"] = float(cellprofiler.preferences.get_normalization_factor())
                 else:
                     normalize = True
 
@@ -1315,7 +1362,8 @@ class Figure(wx.Frame):
                 'rgb_mask': rgb_mask,
                 'use_imshow': use_imshow,
                 'interpolation': interpolation,
-                'cplabels': cplabels
+                'cplabels': cplabels,
+                'normalize_args': normalize_args
             }
 
             if (x, y) not in self.subplot_user_params:
@@ -1493,6 +1541,17 @@ class Figure(wx.Frame):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
 
+        # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
+        if image.shape[2] > 3:
+            logger.warn(
+                "Multichannel display is only supported for RGB (3-channel) data."
+                " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
+                    image.shape[2]
+                )
+            )
+
+            return self.subplot_imshow(x, y, image[:, :, :3], title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
+
         return self.subplot_imshow(x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
 
     @allow_sharexy
@@ -1660,6 +1719,12 @@ class Figure(wx.Frame):
     @staticmethod
     def normalize_image(image, **kwargs):
         """Produce a color image normalized according to user spec"""
+        if 0 in image.shape:
+            # No normalization to perform for images with an empty dimension.
+            # Return the image.
+            # https://github.com/CellProfiler/CellProfiler/issues/3330
+            return image
+
         colormap = kwargs['colormap']
         normalize = kwargs['normalize']
         vmin = kwargs['vmin']
@@ -1672,11 +1737,18 @@ class Figure(wx.Frame):
         # Perform normalization
         if normalize == 'log':
             if is_color_image(image):
-                image = [skimage.exposure.adjust_log(image[:, :, ch]) for ch in range(image.shape[2])]
+                image = [skimage.exposure.adjust_log(image[:, :, ch], **kwargs["normalize_args"]) for ch in range(image.shape[2])]
 
                 image = numpy.dstack(image)
             else:
-                image = skimage.exposure.adjust_log(image)
+                image = skimage.exposure.adjust_log(image, **kwargs["normalize_args"])
+        elif normalize == "gamma":
+            if is_color_image(image):
+                image = [skimage.exposure.adjust_gamma(image[:, :, ch], **kwargs["normalize_args"]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
+            else:
+                image = skimage.exposure.adjust_gamma(image, **kwargs["normalize_args"])
         elif normalize:
             if is_color_image(image):
                 image = [skimage.exposure.rescale_intensity(image[:, :, ch]) for ch in range(image.shape[2])]
@@ -2028,7 +2100,7 @@ class Figure(wx.Frame):
             self.plate_choice.plate_type = plate_type
             self.plate_choice.x = x
             self.plate_choice.y = y
-            self.plate_choice.cmap = cmap
+            self.plate_choice.cmap = matplotlib.cm.get_cmap(cmap)
             self.plate_choice.axis_title = title
             self.plate_choice.colorbar = colorbar
         else:

@@ -47,7 +47,8 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
         self.directory = cellprofiler.setting.DirectoryPath(
             "Directory",
-            doc="Enter the directory where object crops are saved."
+            doc="Enter the directory where object crops are saved.",
+            value=cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
         )
 
     def display(self, workspace, figure):
@@ -57,6 +58,11 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.objects_name.value)
+
+        directory = self.directory.get_absolute_path(workspace.measurements)
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         labels = objects.segmented
 
@@ -71,7 +77,7 @@ class SaveCroppedObjects(cellprofiler.module.Module):
             mask = labels == label
 
             filename = os.path.join(
-                self.directory.get_absolute_path(),
+                directory,
                 "{}_{:04d}_{}.tiff".format(self.objects_name.value, label, int(time.time()))
             )
 

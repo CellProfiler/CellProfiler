@@ -1,6 +1,22 @@
 # coding=utf-8
 
-"""
+import numpy as np
+import cellprofiler.measurement
+import scipy.ndimage as scind
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.outline import outline
+
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+import identify as I
+from cellprofiler.setting import YES, NO
+import _help
+
+__doc__ = """\
 MaskObjects
 ===========
 
@@ -22,11 +38,16 @@ unless it is fully outside of the region.
 
 |
 
-============ ============ ===============
+============ ============ =============== 
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          NO           YES
 ============ ============ ===============
+
+See also
+^^^^^^^^
+
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,22 +62,9 @@ Measurements made by this module
 -  *Parent:* The label number of the parent object.
 -  *Location_X, Location_Y:* The pixel (X,Y) coordinates of the center
    of mass of the masked objects.
-"""
-
-import cellprofiler.measurement
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.outline import outline
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import identify as I
-from cellprofiler.setting import YES, NO
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 MC_OBJECTS = "Objects"
 MC_IMAGE = "Image"
@@ -169,7 +177,7 @@ image using **ApplyThreshold**.
             doc="""\
 This option reverses the foreground/background relationship of the mask.
 
--  Select "*%(NO)s*" for the mask to be composed of the foregound (white
+-  Select "*%(NO)s*" for the mask to be composed of the foreground (white
    portion) of the masking image or the area within the masking objects.
 -  Select "*%(YES)s*" for the mask to instead be composed of the
    *background* (black portions) of the masking image or the area

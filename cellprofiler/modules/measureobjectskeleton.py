@@ -388,7 +388,7 @@ The file has the following columns:
         branch_points[1:, 1:][odd_case] = True
         #
         # Find the branching counts for the trunks (# of extra branches
-        # eminating from a point other than the line it might be on).
+        # emanating from a point other than the line it might be on).
         #
         branching_counts = morph.branchings(combined_skel)
         branching_counts = np.array([0, 0, 0, 1, 2])[branching_counts]

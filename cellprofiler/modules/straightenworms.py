@@ -24,7 +24,7 @@ mapped onto the straight worms. The objects and images can then be used
 to compute measurements using any of the object measurement modules, for
 instance, **MeasureTexture**. The module can be configured to make
 intensity measurements on parts of the worm, dividing the worm up into
-pieces of equal width and/or height. Measurements are made longitudally
+pieces of equal width and/or height. Measurements are made longitudinally
 in stripes from head to tail and transversely in segments across the
 width of the worm. Longitudinal stripes are numbered from left to right
 and transverse segments are numbered from top to bottom. The module will
@@ -162,7 +162,7 @@ non-overlapping objects as input. It will use the control point
 measurements associated with the objects to reconstruct the straight
 worms. You can also use objects saved from a previous run and loaded via
 the **Input** modules, objects edited using **EditObjectsManually** or
-objects from one of the Identify modulues. **StraightenWorms** will
+objects from one of the Identify modules. **StraightenWorms** will
 recalculate the control points for these images.
 """)
 
@@ -226,9 +226,9 @@ the segments differs between phenotypes.
 (*Only used if intensities are measured*)
 
 This setting controls the number of segments measured, dividing the worm
-longitudally into transverse segments starting at the head and ending at
+longitudinally into transverse segments starting at the head and ending at
 the tail. These measurements might be used to identify a phenotype in
-which a stain is localized longitudally, for instance, in the head. Set
+which a stain is localized longitudinally, for instance, in the head. Set
 the number of vertical segments to 1 to only measure intensity in the
 horizontal direction.
 """)
@@ -238,7 +238,7 @@ horizontal direction.
 (*Only used if intensities are measured*)
 
 This setting controls the number of stripes measured, dividing the worm
-transversely into areas that run longitudally. These measurements might
+transversely into areas that run longitudinally. These measurements might
 be used to identify a phenotype in which a stain is localized
 transversely, for instance in the gut of the worm. Set the number of
 horizontal stripes to 1 to only measure intensity in the vertical

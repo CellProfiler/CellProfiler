@@ -383,7 +383,7 @@ Enter the power by which you would like to raise the result.
                     break
             else:
                 logger.warning(
-                        "Incompatable objects: %s has %d objects and %s has %d objects" %
+                        "Incompatible objects: %s has %d objects and %s has %d objects" %
                         (operand_object1, len(values[0]),
                          operand_object2, len(values[1])))
                 #

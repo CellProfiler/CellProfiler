@@ -282,6 +282,19 @@ class TestCrop(unittest.TestCase):
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
 
+    def test_04_07_crop_with_rectangle_float_bounds(self):
+        x, y = np.mgrid[0:10, 0:10]
+        input_image = (x / 100.0 + y / 10.0).astype(np.float32)
+        expected_image = input_image[2:8, 1:9]
+        workspace, module = self.make_workspace(input_image)
+        module.shape.value = cpmc.SH_RECTANGLE
+        module.horizontal_limits.set_value((1.2, 9.0000003))
+        module.vertical_limits.set_value((2.5, 8.999999))
+        module.remove_rows_and_columns.value = cpmc.RM_EDGES
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        self.assertTrue(np.all(output_image.pixel_data == expected_image))
+
     def test_06_01_mask_with_objects(self):
         np.random.seed()
         input_image = np.random.uniform(size=(20, 10))

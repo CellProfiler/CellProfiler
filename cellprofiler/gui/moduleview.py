@@ -464,7 +464,7 @@ class ModuleView(object):
                                                 encode_label(v.text),
                                                 style=wx.ALIGN_RIGHT,
                                                 name=text_name)
-                text_sizer_item = sizer.Add(static_text, 3, wx.EXPAND | wx.ALL, 2)
+                text_sizer_item = sizer.Add(static_text, 3, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 2)
                 if control:
                     control.Show()
                 self.__static_texts.append(static_text)
@@ -1355,7 +1355,9 @@ class ModuleView(object):
                     self.__on_cell_change(event, setting, control)
 
             def on_kill_focus(event, setting=v, control=text_ctrl):
-                if self.__module is not None:
+                # Make sure not to call set_selection again if a set_selection is already
+                # in process. Doing so may have adverse effects (e.g. disappearing textboxes)
+                if self.__module is not None and self.__handle_change:
                     self.set_selection(self.__module.module_num)
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, text_ctrl)

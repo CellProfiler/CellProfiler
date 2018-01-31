@@ -3910,6 +3910,29 @@ class TestLoadImagesImageProviderURL(unittest.TestCase):
 
         self.assertTrue(np.all(expected == image.pixel_data))
 
+    def test_provide_volume_3_planes(self):
+        data = np.random.rand(3, 256, 256)
+
+        path = tempfile.NamedTemporaryFile(suffix=".tif", delete=False).name
+
+        name = os.path.splitext(os.path.basename(path))[0]
+
+        provider = LI.LoadImagesImageProviderURL(
+            name=name,
+            url="file:/" + path,
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        try:
+            skimage.io.imsave(path, data)
+
+            image = provider.provide_image(None)
+        finally:
+            os.unlink(path)
+
+        assert image.pixel_data.shape == (3, 256, 256)
+
 '''A two-channel tif containing two overlapped objects'''
 overlapped_objects_data = zlib.decompress(base64.b64decode(
         "eJztlU9oI1Ucx1/abau7KO7irq6u8BwQqnYymfTfNiRZ2NRAILsJNMVuQfBl"

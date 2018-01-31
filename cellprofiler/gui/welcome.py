@@ -149,6 +149,26 @@ IDENTIFY_FEATUREES_HELP = u"""\
     "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON
 })
 
+IN_APP_HELP = u"""\
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <p>In addition to the Help menu in the main CellProfiler window, there are <img src="{MODULE_HELP_BUTTON}">
+    buttons containing more specific documentation for using CellProfiler. Clicking the "?" button near the pipeline 
+    window will show information about the selected module within the pipeline, whereas clicking the 
+    <img src="{MODULE_HELP_BUTTON}"> button to the right of each of the module setting displays help for that 
+    particular setting.</p>
+    {GO_BACK}
+</body>
+</html>
+""".format(**{
+    "GO_BACK": GO_BACK,
+    "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON
+})
+
 MAKING_MEASUREMENTS_HELP = u"""\
 <!DOCTYPE html>
 <html>
@@ -380,7 +400,7 @@ WELCOME_MAIN = u"""\
                             <b><font size="+1">Manual</font></b><br>
                             <br>
                             <a href=
-                            "http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html">
+                            "{MANUAL_URL}">
                             <img src="memory:welcomescreen_manual.png"></a><br>
                             <br>
                             Online version of In-App help
@@ -418,6 +438,7 @@ WELCOME_MAIN = u"""\
     "IDENTIFY_FEATUREES_REF": IDENTIFY_FEATUREES_REF,
     "IN_APP_HELP_REF": IN_APP_HELP_REF,
     "MAKING_MEASUREMENTS_REF": MAKING_MEASUREMENTS_REF,
+    "MANUAL_URL": cellprofiler.gui.help.content.MANUAL_URL,
     "RUNNING_YOUR_PIPELINE_REF": RUNNING_YOUR_PIPELINE_REF,
     "SELECTING_IMAGES_REF": SELECTING_IMAGES_REF,
     "TEST_MODE_REF": TEST_MODE_REF
@@ -459,6 +480,7 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
         CONFIGURE_IMAGES_REF: CONFIGURE_IMAGES_HELP,
         EXPORTING_RESULTS_REF: EXPORTING_RESULTS_HELP,
         IDENTIFY_FEATUREES_REF: IDENTIFY_FEATUREES_HELP,
+        IN_APP_HELP_REF: IN_APP_HELP,
         MAKING_MEASUREMENTS_REF: MAKING_MEASUREMENTS_HELP,
         RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
         TEST_MODE_REF: TEST_MODE_HELP,

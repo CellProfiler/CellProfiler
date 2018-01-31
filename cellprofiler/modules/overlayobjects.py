@@ -35,7 +35,7 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
             minval=0.0,
             maxval=1.0,
             doc="""
-            Opacity of overlaid labels. Increase this value to descrease the transparency of the colorized object
+            Opacity of overlaid labels. Increase this value to decrease the transparency of the colorized object
             labels.
             """
         )

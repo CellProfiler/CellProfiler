@@ -469,12 +469,12 @@ first image.
         if self.display_image_name.value == cps.LEAVE_BLANK:
             if gridding is None:
                 return None
-            image = np.zeros((gridding.total_height +
+            image = np.zeros((int(gridding.total_height +
                               (gridding.y_location_of_lowest_y_spot -
-                               gridding.y_spacing / 2) * 2 + 2,
-                              gridding.total_width +
+                               gridding.y_spacing / 2) * 2) + 2,
+                              int(gridding.total_width +
                               (gridding.x_location_of_lowest_x_spot -
-                               gridding.x_spacing / 2) * 2 + 2, 3))
+                               gridding.x_spacing / 2) * 2 )+ 2, 3))
         else:
             image = workspace.image_set.get_image(self.display_image_name.value).pixel_data
             if image.ndim == 2:

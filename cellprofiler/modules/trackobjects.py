@@ -15,6 +15,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
+import _help
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -23,7 +24,7 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = """\
 TrackObjects
@@ -68,8 +69,9 @@ YES          NO           YES
 See also
 ^^^^^^^^
 
-See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**,
-**Groups**.
+See also: Any of the **Measure** modules, **IdentifyPrimaryObjects**, **Groups**.
+
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -94,7 +96,7 @@ Measurements made by this module
    is, it is the straight-line path between the two points.
 -  *IntegratedDistance:* The total distance traveled by the object
    during the lifetime of the object.
--  *Linearity:* A measure of how linear the object trajectity is during
+-  *Linearity:* A measure of how linear the object trajectory is during
    the object lifetime. Calculated as (displacement from initial to
    final location)/(integrated object distance). Value is in range of
    [0,1].
@@ -182,12 +184,13 @@ tracking method:
 -  *MergedObjectCount:* Number of objects in the current frame that
    resulted from the merging of child objects in the previous frame.
 
-.. |TO_image0| image:: {PROTIP_RECOMEND_ICON}
-.. |TO_image1| image:: {PROTIP_RECOMEND_ICON}
-.. |TO_image2| image:: {PROTIP_RECOMEND_ICON}
+.. |TO_image0| image:: {PROTIP_RECOMMEND_ICON}
+.. |TO_image1| image:: {PROTIP_RECOMMEND_ICON}
+.. |TO_image2| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
-                "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
-                })
+    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'
@@ -234,7 +237,7 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 # if neighmovetrack is not available remove it from options
 TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
@@ -429,7 +432,7 @@ is most consistent from frame to frame of your movie.
          settings in the **Images** module to use only certain files
          from the movie in the pipeline.
 
-   -  *Begin by optimzing the settings for the first phase of the LAP:*
+   -  *Begin by optimizing the settings for the first phase of the LAP:*
       The 2nd phase of the LAP method depends on the results of the
       first phase. Therefore, it is a good idea to optimize the first
       phase settings as the initial step.
@@ -473,11 +476,11 @@ References
   Spring Harb Protoc. 2009(12):pdb.top65.
   `(link) <http://dx.doi.org/10.1101/pdb.top65>`__
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
-.. |image1| image:: {PROTIP_RECOMEND_ICON}
-.. |image2| image:: {PROTIP_RECOMEND_ICON}
-.. |image3| image:: {PROTIP_RECOMEND_ICON}""".format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMMEND_ICON}
+.. |image3| image:: {PROTIP_RECOMMEND_ICON}""".format(**{
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.object_name = cps.ObjectNameSubscriber(
@@ -486,7 +489,7 @@ References
         self.measurement = cps.Measurement(
             'Select object measurement to use for tracking',
             lambda: self.object_name.value, doc="""\
-*(Used only if Measurements is the tracking method)*
+*(Used only if "Measurements" is the tracking method)*
 
 Select which type of measurement (category) and which specific feature
 from the **Measure** module will be used for tracking. Select the
@@ -506,7 +509,7 @@ or use the distance measurement tool.
 
         self.model = cps.Choice(
             "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""\
-*(Used only if the LAP tracking method is applied)*
+*(Used only if the "LAP" tracking method is applied)*
 
 This setting controls how to predict an object’s position in the next
 frame, assuming that each object moves randomly with a frame-to-frame
@@ -533,17 +536,17 @@ variance in position that follows a Gaussian distribution.
    |image2| Use this option if both models above are applicable over
    time.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
-.. |image1| image:: {PROTIP_RECOMEND_ICON}
-.. |image2| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
+.. |image1| image:: {PROTIP_RECOMMEND_ICON}
+.. |image2| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
                     "M_RANDOM": M_RANDOM,
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.radius_std = cps.Float(
             "Number of standard deviations for search radius", 3, minval=1, doc="""\
-*(Used only if the LAP tracking method is applied)*
+*(Used only if the "LAP" tracking method is applied)*
 
 **TrackObjects** derives a search radius from an error estimation
 based on (a) the standard deviation of the movement and (b) the
@@ -559,14 +562,14 @@ error times the number of standard deviations that you enter here.
    large spatial jump, this value may need to be set higher in order to
    increase the search area and thereby make the frame-to-frame linkage.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.radius_limit = cps.FloatRange(
             "Search radius limit, in pixel units (Min,Max)", (2, 10), minval=0, doc="""\
-*(Used only if the LAP tracking method is applied)*
+*(Used only if the "LAP" tracking method is applied)*
 
 **TrackObjects** derives a search radius from an error estimation
 based on (a) the standard deviation of the movement and (b) the
@@ -598,14 +601,14 @@ constrains the search radius to reasonable values.
    frame-to-frame linkage is not being made in the case of a unusually
    large displacement, this value may need to be increased.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""\
-*(Used only if the LAP tracking method is applied)*
+*(Used only if the "LAP" tracking method is applied)*
 
 Select "*%(YES)s*" to run the second phase of the LAP algorithm after
 processing all images. Select *%(NO)s* to omit the second phase or to
@@ -622,7 +625,7 @@ each the settings.""" % globals())
 
         self.gap_cost = cps.Integer(
             'Gap closing cost', 40, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting assigns a cost to keeping a gap caused when an object is
 missing from one of the frames of a track (the alternative to keeping
@@ -638,14 +641,14 @@ pixels, of the displacement of the object between frames.
 -  Set the gap closing cost lower if tracks are not properly joined due
    to gaps caused by mis-segmentation.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the cost of keeping two tracks distinct when the
 alternative is to make them into one track that splits. A split occurs
@@ -670,14 +673,14 @@ is (conceptually) subtracted from the cost of making the split.
 -  If you are confident that there should be no splits present in the
    data, the cost can be set to 1 (the minimum value possible)
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the cost of keeping two tracks distinct when the
 alternative is to merge them into one. A merge occurs when two objects
@@ -701,14 +704,14 @@ The merge cost is measured in pixels. The merge alternative cost is
 -  If you are confident that there should be no merges present in the
    data, the cost can be set to 1 (the minimum value possible)
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.mitosis_cost = cps.Integer(
             'Mitosis alternative cost', 80, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the cost of not linking a parent and two daughters via
 the mitosis model. the LAP tracking method weighs this cost against
@@ -728,21 +731,21 @@ Area(daughters) / Area(parent) and Area(parent) / Area(daughters)).
 -  Increase the mitosis alternative cost to favor more mitoses and
    decrease it to prevent more mitoses candidates from being accepted.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.mitosis_max_distance = cps.Integer(
             'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the maximum allowed distance in pixels of either of the
 daughter candidate centroids after mitosis from the parent candidate.''' % globals())
 
         self.max_gap_score = cps.Integer(
             'Maximum gap displacement, in pixel units', 5, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting acts as a filter for unreasonably large displacements
 during the second phase.
@@ -762,14 +765,14 @@ during the second phase.
 -  This setting may be the culprit if an object is not tracked
    fame-to-frame despite optimizing the LAP first-pass settings.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.max_merge_score = cps.Integer(
             'Maximum merge score', 50, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting acts as a filter for unreasonably large merge scores. The
 merge score has two components:
@@ -786,14 +789,14 @@ merge score has two components:
 -  Objects that would have been merged at a lower maximum merge score
    will not be considered for merging.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.max_split_score = cps.Integer(
             'Maximum split score', 50, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting acts as a filter for unreasonably large split scores. The
 split score has two components:
@@ -809,14 +812,14 @@ split score has two components:
 -  Objects that would have been split at a lower maximum split score
    will not be considered for splitting.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.max_frame_distance = cps.Integer(
             'Maximum temporal gap, in frames', 5, minval=1, doc='''\
-*(Used only if the LAP tracking method is applied and the second phase is run)*
+*(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 **Care must be taken to adjust this setting appropriate to the data.**
 
@@ -834,15 +837,15 @@ find an object in one or more frames.
    connecting to the wrong object after correctly losing the original
    object (e.g., if the cell dies or moves off-screen).
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.average_cell_diameter = cps.Float(
             "Average cell diameter in pixels",
             35.0, minval=5, doc='''\
-*(Used only if Follow Neighbors tracking method is applied*
+*(Used only if "Follow Neighbors" tracking method is applied)*
 
 The average cell diameter is used to scale many Follow Neighbors
 algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s''' % globals()
@@ -850,7 +853,7 @@ algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s''' % globals()
 
         self.advanced_parameters = cps.Binary(
             'Use advanced configuration parameters', False, doc="""\
-*(Used only if Follow Neighbors tracking method is applied*
+*(Used only if "Follow Neighbors" tracking method is applied)*
 
 Do you want to use advanced parameters to configure plugin? The default
 values should be sufficient in most cases. You may want to use advanced
@@ -861,7 +864,7 @@ cells of different sizes are falsely matched."""
         self.drop_cost = cps.Float(
             "Cost of cell to empty matching",
             15, minval=1, maxval=200, doc='''\
-*(Used only if Follow Neighbors tracking method is applied)*
+*(Used only if "Follow Neighbors" tracking method is applied)*
 
 The cost of considering cell (from frame t) not present in frame t+1.
 Increasing this value leads to more cells (from t) being matched with
@@ -874,16 +877,16 @@ cells (from t+1) rather then classified as missing.
 -  A value which is too low might make the algorithm not to match cells
    between the frames.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 })
         )
 
         self.area_weight = cps.Float(
             "Weight of area difference in function matching cost",
             25, minval=1, doc='''\
-*(Used only if Follow Neighbors tracking method is applied)*
+*(Used only if "Follow Neighbors" tracking method is applied)*
 Increasing this value will make differences in position favored over
 differences in area when identifying objects between frames.'''
         )
@@ -904,9 +907,9 @@ mis-segmentation.
    Splits continue the lifetime count from their parents, so the minimum
    lifetime value does not apply to them.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 '''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.wants_minimum_lifetime = cps.Binary(
@@ -915,7 +918,7 @@ mis-segmentation.
 
 Select "*%(YES)s*" to filter the object on the basis of a minimum number
 of frames.'''.format(**{
-                    "PROTIP_RECOMEND_ICON": PROTIP_RECOMEND_ICON
+                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
                 }))
 
         self.min_lifetime = cps.Integer(
@@ -2987,7 +2990,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         self.add_image_measurement(workspace, F_LOST_OBJECT_COUNT,
                                    lost_object_count)
         #
-        # Find parents with more than one child. These are the progenetors
+        # Find parents with more than one child. These are the progenitors
         # for daughter cells.
         #
         if np.any(parents != 0):
@@ -3315,7 +3318,7 @@ Enter a name to give the color-coded image of tracked labels.''')
 
         # added after integration of FOLLOWNEIGHBORS
         if variable_revision_number == 6:
-            # addeing new settings for FOLLOWNEIGHBORS
+            # adding new settings for FOLLOWNEIGHBORS
             setting_values = setting_values + [30., False, 15., 25.]
             # order of params in settings
             # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight

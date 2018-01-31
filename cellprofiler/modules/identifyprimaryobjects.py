@@ -3,7 +3,6 @@
 import cellprofiler.gui.help
 
 import math
-
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate
@@ -12,12 +11,11 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
-
 import cellprofiler.gui.help
 import cellprofiler.object
 import cellprofiler.setting
-import _help
 import threshold
+import _help
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -125,7 +123,7 @@ following panels:
 -  *Upper right:* The identified objects shown as a color image where
    connected pixels that belong to the same object are assigned the same
    color (*label image*). Note that assigned colors
-   are arbitrary; they are used simply to help you distingush the
+   are arbitrary; they are used simply to help you distinguish the
    various objects.
 -  *Lower left:* The raw image overlaid with the colored outlines of the
    identified objects. Each object is assigned one of three (default)
@@ -140,6 +138,8 @@ following panels:
 -  *Lower right:* A table showing some of the settings used by the module
    in order to produce the objects shown. Some of these are as you
    specified in settings; others are calculated by the module itself.
+
+{HELP_ON_SAVING_OBJECTS}
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -218,6 +218,7 @@ References
 
 """.format(**{
     "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
 })
 
 
@@ -319,6 +320,9 @@ class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
 
         super(IdentifyPrimaryObjects, self).__init__()
 
+    def volumetric(self):
+        return False
+
     def create_settings(self):
         super(IdentifyPrimaryObjects, self).create_settings()
 
@@ -355,10 +359,10 @@ A few important notes:
    the “equivalent diameter”, i.e., the diameter of a circle with the
    same area as the object.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(**{
                 "EXCLUDE_SIZE_SETTING_TEXT": EXCLUDE_SIZE_SETTING_TEXT,
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 "HELP_ON_MEASURING_DISTANCES": _help.HELP_ON_MEASURING_DISTANCES,
                 "AUTOMATIC_SMOOTHING_SETTING_TEXT": AUTOMATIC_SMOOTHING_SETTING_TEXT,
                 "AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT": AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT
@@ -381,12 +385,12 @@ objects based on some other measurement.
 dust, noise, and debris) or large objects (e.g., large clumps) if
 desired.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 "NO": cellprofiler.setting.NO,
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON
             })
         )
 
@@ -407,11 +411,11 @@ you do not want to make downstream measurements of objects that are not
 fully within the field of view. For example, measuring the area of a
 partial object would not be accurate.
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO,
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON
+                "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON
             })
         )
 
@@ -488,16 +492,16 @@ see the results of each.
    | identify objects.                                                           |
    +--------------------------------------+--------------------------------------+
 
-.. |image0| image:: {PROTIP_RECOMEND_ICON}
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {INTENSITY_DECLUMPING_ICON}
 .. |image2| image:: {TECH_NOTE_ICON}
-.. |image3| image:: {PROTIP_RECOMEND_ICON}
+.. |image3| image:: {PROTIP_RECOMMEND_ICON}
 .. |image4| image:: {SHAPE_DECLUMPING_ICON}
 .. |image5| image:: {TECH_NOTE_ICON}
             """.format(**{
                 "UN_INTENSITY": UN_INTENSITY,
                 "UN_SHAPE": UN_SHAPE,
-                "PROTIP_RECOMEND_ICON": _help.PROTIP_RECOMEND_ICON,
+                "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 "INTENSITY_DECLUMPING_ICON": INTENSITY_DECLUMPING_ICON,
                 "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
                 "SHAPE_DECLUMPING_ICON": SHAPE_DECLUMPING_ICON,

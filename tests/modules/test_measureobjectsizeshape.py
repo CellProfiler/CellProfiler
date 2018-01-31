@@ -384,21 +384,46 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_FLOAT)
 
     def test_run_volume(self):
-        labels = numpy.ones((10, 10, 10), dtype=numpy.uint8)
-
-        labels[0, :, :] = 0
+        labels = numpy.zeros((10, 20, 40), dtype=numpy.uint8)
+        labels[:, 5:15, 25:35] = 1
 
         workspace, module = self.make_workspace(labels)
 
         module.run(workspace)
 
-        for feature in [cellprofiler.modules.measureobjectsizeshape.F_AREA, cellprofiler.modules.measureobjectsizeshape.F_EXTENT, cellprofiler.modules.measureobjectsizeshape.F_CENTER_X, cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y, cellprofiler.modules.measureobjectsizeshape.F_CENTER_Z,
+        for feature in [cellprofiler.modules.measureobjectsizeshape.F_AREA,
+                        cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
+                        cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
+                        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
+                        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Z,
                         cellprofiler.modules.measureobjectsizeshape.F_PERIMETER]:
-            assert workspace.measurements.has_current_measurements(OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature)
+            assert workspace.measurements.has_current_measurements(
+                OBJECTS_NAME,
+                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature
+            )
 
-            assert len(
-                workspace.measurements.get_current_measurement(OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature)
-            ) == 1
+            assert len(workspace.measurements.get_current_measurement(
+                OBJECTS_NAME,
+                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature
+            )) == 1
+
+        # Assert AreaShape_Center_X and AreaShape_Center_Y aren't flipped. See:
+        # https://github.com/CellProfiler/CellProfiler/issues/3352
+        center_x = workspace.measurements.get_current_measurement(
+            OBJECTS_NAME,
+            "_".join([cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
+                      cellprofiler.modules.measureobjectsizeshape.F_CENTER_X])
+        )[0]
+
+        assert center_x == 29.5
+
+        center_y = workspace.measurements.get_current_measurement(
+            OBJECTS_NAME,
+            "_".join([cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
+                      cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y])
+        )[0]
+
+        assert center_y == 9.5
 
     # https://github.com/CellProfiler/CellProfiler/issues/2813
     def test_run_without_zernikes(self):

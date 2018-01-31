@@ -90,6 +90,10 @@ Measurements made by this module
    -  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel
       intensity values.
    -  *TotalArea:* Number of pixels measured.
+   -  *Scaling*: if *Yes* is chosen for "Include the image rescaling value?",
+      image’s rescaling value will be stored as a quality control metric.
+      This is useful in confirming that all images are rescaled by the same value,
+      given that some acquisition device vendors may output this value differently.
 
 -  **Threshold metrics:**
 
@@ -406,7 +410,7 @@ covered by objects.""" % globals()))
 thresholding method is used)*
 
 Select *%(O_TWO_CLASS)s* if the grayscale levels are readily
-distinguishable into foregound (i.e., objects) and background. Select
+distinguishable into foreground (i.e., objects) and background. Select
 *%(O_THREE_CLASS)s* if there is a middle set of grayscale levels
 that belongs to neither the foreground nor background.
 
@@ -547,7 +551,7 @@ to the foreground pixels or the background pixels.""" % globals()))
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure a mesurement is selected in image_names'''
+        '''Make sure a measurement is selected in image_names'''
         if self.images_choice.value == O_SELECT:
             for image_group in self.image_groups:
                 if not image_group.image_names.get_selections():
@@ -589,7 +593,7 @@ to the foreground pixels or the background pixels.""" % globals()))
                     for image_group in self.image_groups])
 
     def any_intensity(self):
-        '''True if some image has its intesnity calculated'''
+        '''True if some image has its intensity calculated'''
         return any([image_group.check_intensity.value
                     for image_group in self.image_groups])
 

@@ -86,7 +86,7 @@ The following operations are available:
       in an image, for instance, the edge of a well.
     - Binary
   * - *Diag*
-    - Fills in pixels whose neighbors are diagnonally connected to 4-connect
+    - Fills in pixels whose neighbors are diagonally connected to 4-connect
       pixels that are 8-connected:
 
       +---+---+----------------+---+---+
@@ -146,11 +146,6 @@ The following operations are available:
       | 1 | 1 | 1 |                | 1 | 1 | 1 |
       +---+---+---+----------------+---+---+---+
 
-    - Binary
-  * - *Life*
-    - Applies the interaction rules from the `Game of Life
-      <http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life>`__, an example of a
-      cellular automaton.
     - Binary
   * - *Majority*
     - Each pixel takes on the value of the majority that surround it (keep
@@ -238,14 +233,28 @@ The following operations are available:
 
     - Binary
 
-|
+Upgrading:
+~~~~~~~~~~
 
-============ ============
-Supports 2D? Supports 3D?
-============ ============
-YES          NO
-============ ============
+The following **Morph** operations have been extracted to separate modules in CellProfiler 3.0.
+Use the table below to update your pipeline to use the corresponding module and, where appropriate,
+setting and value.
 
+=================  ======================  ===========  =======================
+Morph operation    Module                  Setting      Value
+=================  ======================  ===========  =======================
+bothat             TopHatTransform*        *Operation*  Black top-hat transform
+close              Closing
+dilate             Dilation
+erode              Erosion
+fill small holes   RemoveHoles
+invert             ImageMath               *Operation*  Invert
+open               Opening
+skel               MorphologicalSkeleton
+tophat             TopHatTransform*        *Operation*  White top-hat transform
+=================  ======================  ===========  =======================
+
+\* Available as a `CellProfiler plugin <http://github.com/CellProfiler/CellProfiler-plugins>`_.
 """
 
 import logging
@@ -272,7 +281,6 @@ F_DISTANCE = 'distance'
 F_ENDPOINTS = 'endpoints'
 F_FILL = 'fill'
 F_HBREAK = 'hbreak'
-F_LIFE = 'life'
 F_MAJORITY = 'majority'
 F_OPENLINES = 'openlines'
 F_REMOVE = 'remove'
@@ -284,7 +292,7 @@ F_THIN = 'thin'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CONVEX_HULL,
          F_DIAG, F_DISTANCE, F_ENDPOINTS, F_FILL,
-         F_HBREAK, F_LIFE, F_MAJORITY, F_OPENLINES, F_REMOVE,
+         F_HBREAK, F_MAJORITY, F_OPENLINES, F_REMOVE,
          F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_VBREAK]
 
 R_ONCE = 'Once'
@@ -460,7 +468,7 @@ input for a measurement module.""" % globals()))
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_HBREAK, F_LIFE, F_MAJORITY,
+                              F_HBREAK, F_MAJORITY,
                               F_REMOVE, F_SHRINK, F_SKELPE, F_SPUR,
                               F_THICKEN, F_THIN, F_VBREAK)
             and not is_binary):
@@ -470,7 +478,7 @@ input for a measurement module.""" % globals()))
             pixel_data = pixel_data != 0
 
         if function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                             F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN,
+                             F_HBREAK, F_MAJORITY, F_REMOVE, F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN,
                              F_THIN, F_VBREAK, F_OPENLINES):
             # All of these have an iterations argument or it makes no
             # sense to iterate
@@ -498,8 +506,6 @@ input for a measurement module.""" % globals()))
                 return morph.fill(pixel_data, mask, count)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)
-            elif function_name == F_LIFE:
-                return morph.life(pixel_data, count)
             elif function_name == F_MAJORITY:
                 return morph.majority(pixel_data, mask, count)
             elif function_name == F_OPENLINES:
@@ -577,15 +583,6 @@ input for a measurement module.""" % globals()))
         if variable_revision_number == 4:
             functions = setting_values[2::12]
 
-            unavailable = [function for function in functions if function not in F_ALL]
-
-            if len(unavailable) > 0:
-                message = "Unsupported operation(s): {}".format(", ".join(unavailable))
-
-                message += "\nYou can reimplement this functionality using equivalent Mathematical Morphology modules."
-
-                raise NotImplementedError(message)
-
             repeats = setting_values[3::12]
 
             repeat_counts = setting_values[4::12]
@@ -597,6 +594,15 @@ input for a measurement module.""" % globals()))
             setting_values = setting_values[:2] + new_setting_values
 
             variable_revision_number = 5
+
+        if variable_revision_number == 5:
+            # Removed "life" operation
+            logger.warn(
+                "Morph's 'Life' option has been removed, this pipeline might "
+                "not be compatible with the current version of CellProfiler."
+            )
+
+            variable_revision_number = 6
 
         return setting_values, variable_revision_number, from_matlab
 

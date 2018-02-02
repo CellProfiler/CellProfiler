@@ -233,7 +233,7 @@ class TestBinaryImages(object):
     @staticmethod
     def test_average(image_a, image_b, module, workspace):
         operation = "Average"
-        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
         run_operation(operation, expected, module, workspace)
 
     @staticmethod

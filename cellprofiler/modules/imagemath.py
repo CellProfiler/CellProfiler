@@ -314,6 +314,9 @@ is applied before other operations."""))
         while len(self.images) < image_count:
             self.add_image()
 
+    def use_logical_operation(self, pixel_data):
+        return all([pd.dtype == numpy.bool for pd in pixel_data if not numpy.isscalar(pd)])
+
     def run(self, workspace):
         image_names = [image.image_name.value for image in self.images if image.image_or_measurement == IM_IMAGE]
         image_factors = [image.factor.value for image in self.images]
@@ -361,12 +364,18 @@ is applied before other operations."""))
             if opval in (O_ADD, O_AVERAGE):
                 op = numpy.add
             elif opval == O_SUBTRACT:
-                op = numpy.subtract
+                if self.use_logical_operation(pixel_data):
+                    op = numpy.logical_xor
+                else:
+                    op = numpy.subtract
             elif opval == O_DIFFERENCE:
-                def op(x, y):
-                    return numpy.abs(numpy.subtract(x, y))
+                if self.use_logical_operation(pixel_data):
+                    op = numpy.logical_xor
+                else:
+                    def op(x, y):
+                        return numpy.abs(numpy.subtract(x, y))
             elif opval == O_MULTIPLY:
-                if all([pd.dtype == numpy.bool for pd in pixel_data if not numpy.isscalar(pd)]):
+                if self.use_logical_operation(pixel_data):
                     op = numpy.logical_and
                 else:
                     op = numpy.multiply
@@ -403,7 +412,8 @@ is applied before other operations."""))
                     elif mask is not None:
                         output_mask = (output_mask & mask)
             if opval == O_AVERAGE:
-                output_pixel_data /= sum(image_factors)
+                if not self.use_logical_operation(pixel_data):
+                    output_pixel_data /= sum(image_factors)
         elif opval == O_INVERT:
             output_pixel_data = skimage.util.invert(output_pixel_data)
         elif opval == O_NOT:

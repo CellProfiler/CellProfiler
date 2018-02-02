@@ -221,7 +221,16 @@ Enter the number that you would like to multiply the above image by. This multip
 is applied before other operations."""))
 
         if removable:
-            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.images, group))
+            group.append(
+                "remover",
+                cellprofiler.setting.RemoveSettingButton(
+                    "",
+                    "Remove this image",
+                    self.images,
+                    group
+                )
+            )
+
         group.append("divider", cellprofiler.setting.Divider())
         self.images.append(group)
 
@@ -306,47 +315,38 @@ is applied before other operations."""))
             self.add_image()
 
     def run(self, workspace):
-        image_names = [image.image_name.value for image in self.images
-                       if image.image_or_measurement == IM_IMAGE]
+        image_names = [image.image_name.value for image in self.images if image.image_or_measurement == IM_IMAGE]
         image_factors = [image.factor.value for image in self.images]
-        wants_image = [image.image_or_measurement == IM_IMAGE
-                       for image in self.images]
-        if self.operation.value in \
-                (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NOT, O_NONE):
+        wants_image = [image.image_or_measurement == IM_IMAGE for image in self.images]
+
+        if self.operation.value in [O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NOT, O_NONE]:
             # these only operate on the first image
             image_names = image_names[:1]
             image_factors = image_factors[:1]
 
-        images = [workspace.image_set.get_image(x)
-                  for x in image_names]
+        images = [workspace.image_set.get_image(x) for x in image_names]
         pixel_data = [image.pixel_data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]
-        #
+
         # Crop all of the images similarly
-        #
         smallest = numpy.argmin([numpy.product(pd.shape) for pd in pixel_data])
         smallest_image = images[smallest]
         for i in [x for x in range(len(images)) if x != smallest]:
             pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
             if masks[i] is not None:
                 masks[i] = smallest_image.crop_image_similarly(masks[i])
+
         # weave in the measurements
         idx = 0
         measurements = workspace.measurements
-        assert isinstance(measurements, cellprofiler.measurement.Measurements)
         for i in range(self.operand_count):
             if not wants_image[i]:
-                value = measurements.get_current_image_measurement(
-                        self.images[i].measurement.value)
-                if value is None:
-                    value = numpy.NaN
-                else:
-                    value = float(value)
+                value = measurements.get_current_image_measurement(self.images[i].measurement.value)
+                value = numpy.NaN if value is None else float(value)
                 pixel_data.insert(i, value)
                 masks.insert(i, True)
-        #
+
         # Multiply images by their factors
-        #
         for i, image_factor in enumerate(image_factors):
             if image_factor != 1 and self.operation not in BINARY_OUTPUT_OPS:
                 pixel_data[i] = pixel_data[i] * image_factors[i]
@@ -355,18 +355,18 @@ is applied before other operations."""))
         output_mask = masks[0]
 
         opval = self.operation.value
-        if opval in (O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE,
-                     O_AVERAGE, O_MAXIMUM, O_MINIMUM, O_AND, O_OR, O_EQUALS):
+        if opval in [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE,
+                     O_AVERAGE, O_MAXIMUM, O_MINIMUM, O_AND, O_OR, O_EQUALS]:
             # Binary operations
             if opval in (O_ADD, O_AVERAGE):
                 op = numpy.add
             elif opval == O_SUBTRACT:
                 op = numpy.subtract
             elif opval == O_DIFFERENCE:
-                op = lambda x, y: numpy.abs(numpy.subtract(x, y))
+                def op(x, y):
+                    return numpy.abs(numpy.subtract(x, y))
             elif opval == O_MULTIPLY:
-                if all([pd.dtype == numpy.bool for pd in pixel_data
-                        if not numpy.isscalar(pd)]):
+                if all([pd.dtype == numpy.bool for pd in pixel_data if not numpy.isscalar(pd)]):
                     op = numpy.logical_and
                 else:
                     op = numpy.multiply
@@ -395,7 +395,7 @@ is applied before other operations."""))
                     output_pixel_data = output_pixel_data & (comparitor == pd)
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
-                if self.ignore_mask == True:
+                if self.ignore_mask:
                     continue
                 else:
                     if output_mask is None:
@@ -505,10 +505,9 @@ is applied before other operations."""))
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if (from_matlab and module_name == 'Subtract' and
-                    variable_revision_number == 3):
+        if (from_matlab and module_name == 'Subtract' and variable_revision_number == 3):
             subtract_image_name, basic_image_name, resulting_image_name, \
-            multiply_factor_1, multiply_factor_2, truncate = setting_values
+                multiply_factor_1, multiply_factor_2, truncate = setting_values
             setting_values = [O_SUBTRACT,
                               1,  # exponent
                               1,  # post-multiply factor
@@ -523,8 +522,7 @@ is applied before other operations."""))
             module_name = 'ImageMath'
             from_matlab = False
             variable_revision_number = 1
-        if (from_matlab and module_name == 'Combine' and
-                    variable_revision_number == 3):
+        if (from_matlab and module_name == 'Combine' and variable_revision_number == 3):
             names_and_weights = [
                 (name, weight)
                 for name, weight in zip(setting_values[:3],
@@ -546,16 +544,14 @@ is applied before other operations."""))
             module_name = 'ImageMath'
             variable_revision_number = 1
             from_matlab = False
-        if (from_matlab and module_name == 'InvertIntensity' and
-                    variable_revision_number == 1):
+        if (from_matlab and module_name == 'InvertIntensity' and variable_revision_number == 1):
             image_name, output_image = setting_values
             setting_values = [image_name, cellprofiler.setting.DO_NOT_USE, cellprofiler.setting.DO_NOT_USE,
                               'Invert',
                               1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO, output_image]
             module_name = 'ImageMath'
             variable_revision_number = 2
-        if (from_matlab and module_name == 'Multiply' and
-                    variable_revision_number == 1):
+        if (from_matlab and module_name == 'Multiply' and variable_revision_number == 1):
             image1, image2, output_image = setting_values
             setting_values = [image1, image2, cellprofiler.setting.DO_NOT_USE,
                               'Multiply', 1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO,
@@ -563,8 +559,7 @@ is applied before other operations."""))
             module_name = 'ImageMath'
             variable_revision_number = 2
 
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'ImageMath'):
+        if (from_matlab and variable_revision_number == 1 and module_name == 'ImageMath'):
             image_names = [setting_values[1]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]
@@ -573,7 +568,7 @@ is applied before other operations."""))
             try:
                 factors += [float(setting_values[2]) *
                             float(setting_values[5])]
-            except:
+            except ValueError:
                 if setting_values[2] != cellprofiler.setting.DO_NOT_USE:
                     image_names += [setting_values[2]]
                     input_factors += [float(setting_values[5])]
@@ -608,8 +603,7 @@ is applied before other operations."""))
             from_matlab = False
             variable_revision_number = 1
 
-        if (from_matlab and variable_revision_number == 2 and
-                    module_name == 'ImageMath'):
+        if (from_matlab and variable_revision_number == 2 and module_name == 'ImageMath'):
             image_names = [setting_values[0]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]
@@ -617,10 +611,8 @@ is applied before other operations."""))
             for i in range(1, 3 if operation == O_COMBINE else 2):
                 # The user could type in a constant for the second or third image name
                 try:
-                    factors += [float(setting_values[i]) *
-                                float(setting_values[i + 4])]
-
-                except:
+                    factors += [float(setting_values[i]) * float(setting_values[i + 4])]
+                except ValueError:
                     if setting_values[i] != cellprofiler.setting.DO_NOT_USE:
                         image_names += [setting_values[i]]
                         input_factors += [float(setting_values[i + 4])]

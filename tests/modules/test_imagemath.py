@@ -202,59 +202,87 @@ class TestBinaryImages(object):
 
     @staticmethod
     def test_add(image_a, image_b, module, workspace):
-        pass
+        operation = "Add"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_subtract(image_a, image_b, module, workspace):
-        pass
+        operation = "Subtract"
+        expected = numpy.logical_xor(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_absolute_difference(image_a, image_b, module, workspace):
-        pass
+        operation = "Absolute Difference"
+        expected = numpy.logical_xor(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_multiply(image_a, image_b, module, workspace):
-        pass
+        operation = "Multiply"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_divide(image_a, image_b, module, workspace):
-        pass
+        operation = "Divide"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_average(image_a, image_b, module, workspace):
-        pass
+        operation = "Average"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_minimum(image_a, image_b, module, workspace):
-        pass
+        operation = "Minimum"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_maximum(image_a, image_b, module, workspace):
-        pass
+        operation = "Maximum"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_invert(image_a, module, workspace):
-        pass
+        operation = "Invert"
+        expected = numpy.logical_not(image_a.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_log_transform(image_a, module, workspace):
-        pass
+        operation = "Log transform (base 2)"
+        expected = image_a.pixel_data
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_and(image_a, image_b, module, workspace):
-        pass
+        operation = "And"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_or(image_a, image_b, module, workspace):
-        pass
+        operation = "Or"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_not(image_a, module, workspace):
-        pass
+        operation = "Not"
+        expected = numpy.logical_not(image_a.pixel_data)
+        run_operation(operation, expected, module, workspace)
 
     @staticmethod
     def test_equals(image_a, image_b, module, workspace):
-        pass
+        operation = "Equals"
+        expected = image_a.pixel_data == image_b.pixel_data
+        run_operation(operation, expected, module, workspace)
 
 
 class TestImageMath(unittest.TestCase):

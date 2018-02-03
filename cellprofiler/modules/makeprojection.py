@@ -138,7 +138,7 @@ References
    fluorescence in automated analysis of macrophage images”, *PLoS ONE*
    4(10): e7497 `(link)`_.
 
-.. _(link): http://dx.doi.org/10.1371/journal.pone.0007497
+.. _(link): https://doi.org/10.1371/journal.pone.0007497
 """% globals())
 
         self.projection_image_name = cps.ImageNameProvider(

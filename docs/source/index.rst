@@ -74,24 +74,24 @@ For a full list of references, visit our `citation`_ page.
    structure, function, and compatibility for CellProfiler: modular
    high-throughput image analysis software” *Bioinformatics*
    27(8):1179-1180
-   (`link <http://dx.doi.org/10.1093/bioinformatics/btr095>`__)
+   (`link <https://doi.org/10.1093/bioinformatics/btr095>`__)
 -  Lamprecht MR, Sabatini DM, Carpenter AE (2007) “CellProfiler: free,
    versatile software for automated biological image analysis”
    *Biotechniques* 42(1):71-75.
-   (`link <http://dx.doi.org/10.2144/000112257>`__)
+   (`link <https://doi.org/10.2144/000112257>`__)
 -  Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J,
    Root D, Golland P, Sabatini DM (2009) “Scoring diverse cellular
    morphologies in image-based screens with iterative feedback and
    machine learning” *PNAS* 106(6):1826-1831
-   (`link <http://dx.doi.org/10.1073/pnas.0808843106>`__)
+   (`link <https://doi.org/10.1073/pnas.0808843106>`__)
 -  Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM,
    Golland P, Carpenter AE (2008) “CellProfiler Analyst: data
    exploration and analysis software for complex image-based screens”
    *BMC Bioinformatics* 9(1):482
-   (`link <http://dx.doi.org/10.1186/1471-2105-9-482>`__)
+   (`link <https://doi.org/10.1186/1471-2105-9-482>`__)
 
 .. _citation: http://cellprofiler.org/citations/
-.. _link: http://dx.doi.org/10.1186/gb-2006-7-10-r100
+.. _link: https://doi.org/10.1186/gb-2006-7-10-r100
 
 
 Menu Options

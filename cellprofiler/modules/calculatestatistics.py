@@ -44,7 +44,7 @@ is a good way to guarantee that images are matched with the correct
 data. The control and dose information can be designated in one of two
 ways:
 
-.. _(link): http://dx.doi.org/10.1177/108705719900400206
+.. _(link): https://doi.org/10.1177/108705719900400206
 .. _Ilya Ravkin: http://www.ravkin.net
 
 -  As metadata (so that the column header is prefixed with the

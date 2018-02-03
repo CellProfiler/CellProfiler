@@ -114,7 +114,7 @@ References
 -  Bray MA, Fraser AN, Hasaka TP, Carpenter AE (2012) “Workflow and
    metrics for image quality control in large-scale high-content
    screens.” *J Biomol Screen* 17(2):266-74.
-   `(link) <http://dx.doi.org/10.1177/1087057111420292>`__
+   `(link) <https://doi.org/10.1177/1087057111420292>`__
 -  Field DJ (1997) "Relations between the statistics of natural images
    and the response properties of cortical cells" *Journal of the
    Optical Society of America. A, Optics, image science, and vision*,
@@ -122,14 +122,14 @@ References
    `(pdf) <http://redwood.psych.cornell.edu/papers/field_87.pdf>`__
 -  Haralick RM (1979) "Statistical and structural approaches to texture"
    Proc. IEEE, 67(5):786-804.
-   `(link) <http://dx.doi.org/10.1109/PROC.1979.11328>`__
+   `(link) <https://doi.org/10.1109/PROC.1979.11328>`__
 -  Vollath D (1987) "Automatic focusing by correlative methods" *Journal
    of Microscopy* 147(3):279-288.
-   `(link) <http://dx.doi.org/10.1111/j.1365-2818.1987.tb02839.x>`__
+   `(link) <https://doi.org/10.1111/j.1365-2818.1987.tb02839.x>`__
 -  Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in computer
    microscopy: Selecting the optimal focus algorithm" *Microscopy
    Research and Technique*, 65:139-149
-   `(link) <http://dx.doi.org/10.1002/jemt.20118>`__
+   `(link) <https://doi.org/10.1002/jemt.20118>`__
 """
 
 import logging

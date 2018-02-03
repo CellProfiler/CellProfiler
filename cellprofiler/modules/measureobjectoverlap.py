@@ -54,7 +54,7 @@ References
 -  Pele O, Werman M (2009) “Fast and Robust Earth Mover’s Distances”,
    *2009 IEEE 12th International Conference on Computer Vision*
 
-.. _(link): http://dx.doi.org/10.1207/s15327906mbr2302_6
+.. _(link): https://doi.org/10.1207/s15327906mbr2302_6
 """
 
 import centrosome.cpmorphology

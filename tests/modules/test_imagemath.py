@@ -23,40 +23,6 @@ MEASUREMENT_NAME = 'mymeasurement'
 
 
 @pytest.fixture(scope="function")
-def image_a():
-    image_a = cellprofiler.image.Image()
-
-    data_a = numpy.zeros((11, 11, 15))
-
-    k, i, j = numpy.mgrid[-5:6, -5:6, -5:10]
-
-    data_a[k ** 2 + i ** 2 + j ** 2 <= 25] = 1
-
-    image_a.pixel_data = data_a
-
-    image_a.dimensions = 3
-
-    return image_a
-
-
-@pytest.fixture(scope="function")
-def image_b():
-    image_b = cellprofiler.image.Image()
-
-    data_b = numpy.zeros((11, 11, 15))
-
-    k, i, j = numpy.mgrid[-5:6, -5:6, -10:5]
-
-    data_b[k ** 2 + i ** 2 + j ** 2 <= 25] = 0.5
-
-    image_b.pixel_data = data_b
-
-    image_b.dimensions = 3
-
-    return image_b
-
-
-@pytest.fixture(scope="function")
 def module():
     return cellprofiler.modules.imagemath.ImageMath()
 
@@ -64,9 +30,7 @@ def module():
 @pytest.fixture(scope="function")
 def workspace(image_a, image_b, module):
     image_set_list = cellprofiler.image.ImageSetList()
-
     image_set = image_set_list.get_image_set(0)
-
     workspace = cellprofiler.workspace.Workspace(
         image_set=image_set,
         image_set_list=image_set_list,
@@ -77,19 +41,15 @@ def workspace(image_a, image_b, module):
     )
 
     workspace.image_set.add("input_a", image_a)
-
     workspace.image_set.add("input_b", image_b)
 
     module.images[0].image_name.value = "input_a"
-
     module.images[0].factor.value = 1.0
 
     module.images[1].image_name.value = "input_b"
-
     module.images[1].factor.value = 1.0
 
     module.truncate_low.value = False
-
     module.truncate_high.value = False
 
     module.output_image_name.value = "output"
@@ -97,200 +57,232 @@ def workspace(image_a, image_b, module):
     return workspace
 
 
-def test_add(image_a, image_b, module, workspace):
-    module.operation.value = "Add"
-
+def run_operation(operation, expected, module, workspace):
+    module.operation.value = operation
     module.run(workspace)
-
     output = workspace.image_set.get_image("output")
-
     actual = output.pixel_data
-
-    expected = image_a.pixel_data + image_b.pixel_data
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_subtract(image_a, image_b, module, workspace):
-    module.operation.value = "Subtract"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = image_a.pixel_data - image_b.pixel_data
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_absolute_difference(image_a, image_b, module, workspace):
-    module.operation.value = "Absolute Difference"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = numpy.abs(image_a.pixel_data - image_b.pixel_data)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_multiply(image_a, image_b, module, workspace):
-    module.operation.value = "Multiply"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = image_a.pixel_data * image_b.pixel_data
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_divide(image_a, image_b, module, workspace):
-    module.operation.value = "Divide"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = image_a.pixel_data / image_b.pixel_data
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_average(image_a, image_b, module, workspace):
-    module.operation.value = "Average"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = (image_a.pixel_data + image_b.pixel_data) / 2.0
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_minimum(image_a, image_b, module, workspace):
-    module.operation.value = "Minimum"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = numpy.minimum(image_a.pixel_data, image_b.pixel_data)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_maximum(image_a, image_b, module, workspace):
-    module.operation.value = "Maximum"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = numpy.maximum(image_a.pixel_data, image_b.pixel_data)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_invert(image_a, module, workspace):
-    module.operation.value = "Invert"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = skimage.util.invert(image_a.pixel_data)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_log_transform(image_a, module, workspace):
-    module.operation.value = "Log transform (base 2)"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = numpy.log2(image_a.pixel_data + 1)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_and(image_a, image_b, module, workspace):
-    module.operation.value = "And"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = 1.0 * numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_or(image_a, image_b, module, workspace):
-    module.operation.value = "Or"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_not(image_a, module, workspace):
-    module.operation.value = "Not"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = numpy.logical_not(image_a.pixel_data)
-
-    numpy.testing.assert_array_equal(expected, actual)
-
-
-def test_equals(image_a, image_b, module, workspace):
-    module.operation.value = "Equals"
-
-    module.run(workspace)
-
-    output = workspace.image_set.get_image("output")
-
-    actual = output.pixel_data
-
-    expected = image_a.pixel_data == image_b.pixel_data
-
-    numpy.testing.assert_array_equal(expected, actual)
+    numpy.testing.assert_array_equal(actual, expected)
+
+
+class TestVolumes(object):
+    @staticmethod
+    @pytest.fixture(scope="function")
+    def image_a():
+        k, i, j = numpy.mgrid[-5:6, -5:6, -5:10]
+        data_a = numpy.zeros((11, 11, 15))
+        data_a[k ** 2 + i ** 2 + j ** 2 <= 25] = 1
+
+        image_a = cellprofiler.image.Image()
+        image_a.pixel_data = data_a
+        image_a.dimensions = 3
+
+        return image_a
+
+    @staticmethod
+    @pytest.fixture(scope="function")
+    def image_b():
+        k, i, j = numpy.mgrid[-5:6, -5:6, -10:5]
+        data_b = numpy.zeros((11, 11, 15))
+        data_b[k ** 2 + i ** 2 + j ** 2 <= 25] = 0.5
+
+        image_b = cellprofiler.image.Image()
+        image_b.pixel_data = data_b
+        image_b.dimensions = 3
+
+        return image_b
+
+    @staticmethod
+    def test_add(image_a, image_b, module, workspace):
+        operation = "Add"
+        expected = image_a.pixel_data + image_b.pixel_data
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_subtract(image_a, image_b, module, workspace):
+        operation = "Subtract"
+        expected = image_a.pixel_data - image_b.pixel_data
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_absolute_difference(image_a, image_b, module, workspace):
+        operation = "Absolute Difference"
+        expected = numpy.abs(image_a.pixel_data - image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_multiply(image_a, image_b, module, workspace):
+        operation = "Multiply"
+        expected = image_a.pixel_data * image_b.pixel_data
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_divide(image_a, image_b, module, workspace):
+        operation = "Divide"
+        expected = image_a.pixel_data / image_b.pixel_data
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_average(image_a, image_b, module, workspace):
+        operation = "Average"
+        expected = (image_a.pixel_data + image_b.pixel_data) / 2.0
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_minimum(image_a, image_b, module, workspace):
+        operation = "Minimum"
+        expected = numpy.minimum(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_maximum(image_a, image_b, module, workspace):
+        operation = "Maximum"
+        expected = numpy.maximum(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_invert(image_a, module, workspace):
+        operation = "Invert"
+        expected = skimage.util.invert(image_a.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_log_transform(image_a, module, workspace):
+        operation = "Log transform (base 2)"
+        expected = numpy.log2(image_a.pixel_data + 1)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_and(image_a, image_b, module, workspace):
+        operation = "And"
+        expected = 1.0 * numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_or(image_a, image_b, module, workspace):
+        operation = "Or"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_not(image_a, module, workspace):
+        operation = "Not"
+        expected = numpy.logical_not(image_a.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_equals(image_a, image_b, module, workspace):
+        operation = "Equals"
+        expected = image_a.pixel_data == image_b.pixel_data
+        run_operation(operation, expected, module, workspace)
+
+
+class TestBinaryImages(object):
+    @staticmethod
+    @pytest.fixture()
+    def image_a():
+        data_a = numpy.random.rand(128, 128) > 0.5
+
+        image_a = cellprofiler.image.Image()
+        image_a.pixel_data = data_a
+        image_a.dimensions = 2
+
+        return image_a
+
+    @staticmethod
+    @pytest.fixture()
+    def image_b():
+        data_b = numpy.random.rand(128, 128) > 0.5
+
+        image_b = cellprofiler.image.Image()
+        image_b.pixel_data = data_b
+        image_b.dimensions = 2
+
+        return image_b
+
+    @staticmethod
+    def test_add(image_a, image_b, module, workspace):
+        operation = "Add"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_subtract(image_a, image_b, module, workspace):
+        operation = "Subtract"
+        expected = numpy.logical_xor(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_absolute_difference(image_a, image_b, module, workspace):
+        operation = "Absolute Difference"
+        expected = numpy.logical_xor(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_multiply(image_a, image_b, module, workspace):
+        operation = "Multiply"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_divide(image_a, image_b, module, workspace):
+        operation = "Divide"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_average(image_a, image_b, module, workspace):
+        operation = "Average"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_minimum(image_a, image_b, module, workspace):
+        operation = "Minimum"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_maximum(image_a, image_b, module, workspace):
+        operation = "Maximum"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_invert(image_a, module, workspace):
+        operation = "Invert"
+        expected = numpy.logical_not(image_a.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_log_transform(image_a, module, workspace):
+        operation = "Log transform (base 2)"
+        expected = image_a.pixel_data
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_and(image_a, image_b, module, workspace):
+        operation = "And"
+        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_or(image_a, image_b, module, workspace):
+        operation = "Or"
+        expected = numpy.logical_or(image_a.pixel_data, image_b.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_not(image_a, module, workspace):
+        operation = "Not"
+        expected = numpy.logical_not(image_a.pixel_data)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
+    def test_equals(image_a, image_b, module, workspace):
+        operation = "Equals"
+        expected = image_a.pixel_data == image_b.pixel_data
+        run_operation(operation, expected, module, workspace)
 
 
 class TestImageMath(unittest.TestCase):

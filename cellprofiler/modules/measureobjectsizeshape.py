@@ -165,7 +165,7 @@ References
 .. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49
 .. |MOSS_image0| image:: {ECCENTRICITY_ICON}
 """.format(**{
-                "ECCENTRICITY_ICON": cellprofiler.gui.help.content.__image_resource("MeasureObjectSizeShape_Eccentricity.png")
+                "ECCENTRICITY_ICON": cellprofiler.gui.help.content.image_resource("MeasureObjectSizeShape_Eccentricity.png")
             })
 
 """The category of the per-object measurements made by this module"""

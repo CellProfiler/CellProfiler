@@ -146,8 +146,8 @@ particular wavelength.
 .. _“lossy”: http://www.techterms.com/definition/lossy
 .. _“lossless”: http://www.techterms.com/definition/lossless
 """.format(**{
-                "IMG_PANEL_BLANK": cellprofiler.gui.help.content.__image_resource('Images_FilelistPanel_Blank.png'),
-                "IMG_PANEL_FILLED": cellprofiler.gui.help.content.__image_resource('Images_FilelistPanel_Filled.png')
+                "IMG_PANEL_BLANK": cellprofiler.gui.help.content.image_resource('Images_FilelistPanel_Blank.png'),
+                "IMG_PANEL_FILLED": cellprofiler.gui.help.content.image_resource('Images_FilelistPanel_Filled.png')
             })
 
 

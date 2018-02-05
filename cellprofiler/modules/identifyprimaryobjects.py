@@ -305,8 +305,8 @@ SMOOTHING_FILTER_SIZE_SETTING_TEXT = "Size of smoothing filter"
 AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT = "Automatically calculate minimum allowed distance between local maxima?"
 
 # Icons for use in the help
-INTENSITY_DECLUMPING_ICON = cellprofiler.gui.help.content.__image_resource("IdentifyPrimaryObjects_IntensityDeclumping.png")
-SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.__image_resource("IdentifyPrimaryObjects_ShapeDeclumping.png")
+INTENSITY_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource("IdentifyPrimaryObjects_IntensityDeclumping.png")
+SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource("IdentifyPrimaryObjects_ShapeDeclumping.png")
 
 
 class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):

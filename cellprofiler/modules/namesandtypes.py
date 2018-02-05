@@ -150,9 +150,9 @@ Measurements made by this module
 .. |NAT_image2| image:: {NAT_EXAMPLE_DISPLAY}
                 :width: 100%
 """.format(**{
-                "DAPI": cellprofiler.gui.help.content.__image_resource('dapi.png'),
-                "GFP": cellprofiler.gui.help.content.__image_resource('gfp.png'),
-                "NAT_EXAMPLE_DISPLAY": cellprofiler.gui.help.content.__image_resource('NamesAndTypes_ExampleDisplayTable.png')
+                "DAPI": cellprofiler.gui.help.content.image_resource('dapi.png'),
+                "GFP": cellprofiler.gui.help.content.image_resource('gfp.png'),
+                "NAT_EXAMPLE_DISPLAY": cellprofiler.gui.help.content.image_resource('NamesAndTypes_ExampleDisplayTable.png')
             })
 
 ASSIGN_ALL = "All images"

@@ -144,7 +144,7 @@ you may have multiple workers created (as set under the Preferences),
 but only a subset of them may actually be active, depending on the
 number of groups you have.
 """.format(**{
-                "GROUPS_DISPLAY_TABLE": cellprofiler.gui.help.content.__image_resource('Groups_ExampleDisplayTable.png')
+                "GROUPS_DISPLAY_TABLE": cellprofiler.gui.help.content.image_resource('Groups_ExampleDisplayTable.png')
             })
 
 class Groups(cpm.Module):

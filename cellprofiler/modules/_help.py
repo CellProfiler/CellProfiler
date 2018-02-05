@@ -89,7 +89,7 @@ conditions you want to include.
 
 {REGEXP_HELP_REF}
 """.format(**{
-    "IMAGES_USING_RULES_ICON": cellprofiler.gui.help.content.__image_resource("Images_UsingRules.png"),
+    "IMAGES_USING_RULES_ICON": cellprofiler.gui.help.content.image_resource("Images_UsingRules.png"),
     "REGEXP_HELP_REF": REGEXP_HELP_REF
 })
 
@@ -219,8 +219,8 @@ The resulting image can also be saved with the **SaveImages** module.
 
 
 # TODO: Move these too??
-PROTIP_RECOMMEND_ICON = cellprofiler.gui.help.content.__image_resource("thumb-up.png")
+PROTIP_RECOMMEND_ICON = cellprofiler.gui.help.content.image_resource("thumb-up.png")
 
-PROTIP_AVOID_ICON = cellprofiler.gui.help.content.__image_resource("thumb-down.png")
+PROTIP_AVOID_ICON = cellprofiler.gui.help.content.image_resource("thumb-down.png")
 
-TECH_NOTE_ICON = cellprofiler.gui.help.content.__image_resource("gear.png")
+TECH_NOTE_ICON = cellprofiler.gui.help.content.image_resource("gear.png")

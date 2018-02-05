@@ -417,8 +417,8 @@ created according to the pathname you have typed.
 .. |image0| image:: {BROWSE_BUTTON}
 .. |image1| image:: {CREATE_BUTTON}\
 """.format(**{
-    "CREATE_BUTTON": cellprofiler.gui.help.content.__image_resource("folder_create.png"),
-    "BROWSE_BUTTON": cellprofiler.gui.help.content.__image_resource("folder_browse.png")
+    "CREATE_BUTTON": cellprofiler.gui.help.content.image_resource("folder_create.png"),
+    "BROWSE_BUTTON": cellprofiler.gui.help.content.image_resource("folder_browse.png")
 })
 
 DEFAULT_OUTPUT_FOLDER_HELP = """\

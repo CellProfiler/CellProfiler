@@ -226,19 +226,18 @@ The resulting image can also be saved with the **SaveImages** module.
 #
 ####################
 def __image_resource(filename):
-    #If you're rendering in the GUI, relative paths are fine
-    if os.path.relpath(pkg_resources.resource_filename(
+    relpath = os.path.relpath(pkg_resources.resource_filename(
         "cellprofiler",
         os.path.join("data", "images", filename)
-    )) == os.path.join("cellprofiler","data", "images", filename):
-        return os.path.relpath(pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "images", filename)
-        ))
+    ))
 
-    # Otherwise, we are probably building the documentation in sphinx.
-    # The path separator used by sphinx is "/" on all platforms.
-    return "./data/images/{}".format(filename)
+    # With this specific relative path we are probably building the documentation
+    # in sphinx The path separator used by sphinx is "/" on all platforms.
+    if relpath == os.path.join("..", "cellprofiler","data", "images", filename):
+        return "../images/{}".format(filename)
+
+    # Otherwise, if you're rendering in the GUI, relative paths are fine
+    return relpath
 
 
 PROTIP_RECOMMEND_ICON = __image_resource("thumb-up.png")

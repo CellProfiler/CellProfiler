@@ -1,18 +1,12 @@
 # coding: utf-8
 
 import os
+import os.path
 import re
 
 import pkg_resources
 
 import cellprofiler
-
-
-def __image_resource(filename):
-    return pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", filename)
-    )
 
 
 def read_content(filename):
@@ -95,3 +89,20 @@ FIGURE_HELP = (
 )
 
 CREATING_A_PROJECT_CAPTION = "Creating A Project"
+
+
+def __image_resource(filename):
+    relpath = os.path.relpath(pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "images", filename)
+    ))
+
+    # With this specific relative path we are probably building the documentation
+    # in sphinx The path separator used by sphinx is "/" on all platforms.
+    if relpath == os.path.join("..", "cellprofiler", "data", "images", filename):
+        return "../images/{}".format(filename)
+
+    # Otherwise, if you're rendering in the GUI, relative paths are fine
+    # Note: the HTML renderer requires to paths to use '/' so we replace
+    # the windows default '\\' here
+    return relpath.replace('\\', '/')

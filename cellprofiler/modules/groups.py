@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import cellprofiler.gui.help.content
 import cellprofiler.icons
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 import logging
@@ -144,7 +144,7 @@ you may have multiple workers created (as set under the Preferences),
 but only a subset of them may actually be active, depending on the
 number of groups you have.
 """.format(**{
-                "GROUPS_DISPLAY_TABLE": _help.__image_resource('Groups_ExampleDisplayTable.png')
+                "GROUPS_DISPLAY_TABLE": cellprofiler.gui.help.content.__image_resource('Groups_ExampleDisplayTable.png')
             })
 
 class Groups(cpm.Module):

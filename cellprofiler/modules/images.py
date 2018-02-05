@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
@@ -146,8 +146,8 @@ particular wavelength.
 .. _“lossy”: http://www.techterms.com/definition/lossy
 .. _“lossless”: http://www.techterms.com/definition/lossless
 """.format(**{
-                "IMG_PANEL_BLANK": _help.__image_resource('Images_FilelistPanel_Blank.png'),
-                "IMG_PANEL_FILLED": _help.__image_resource('Images_FilelistPanel_Filled.png')
+                "IMG_PANEL_BLANK": cellprofiler.gui.help.content.__image_resource('Images_FilelistPanel_Blank.png'),
+                "IMG_PANEL_FILLED": cellprofiler.gui.help.content.__image_resource('Images_FilelistPanel_Filled.png')
             })
 
 

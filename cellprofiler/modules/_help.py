@@ -237,7 +237,9 @@ def __image_resource(filename):
         return "../images/{}".format(filename)
 
     # Otherwise, if you're rendering in the GUI, relative paths are fine
-    return relpath
+    # Note: the HTML renderer requires to paths to use '/' so we replace
+    # the windows default '\\' here
+    return relpath.replace('\\', '/')
 
 
 PROTIP_RECOMMEND_ICON = __image_resource("thumb-up.png")

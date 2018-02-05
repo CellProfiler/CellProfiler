@@ -22,6 +22,7 @@ import sys
 import time
 
 import cellprofiler
+import cellprofiler.gui.help.content
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)

@@ -218,7 +218,6 @@ The resulting image can also be saved with the **SaveImages** module.
 """
 
 
-# TODO: Move these too??
 PROTIP_RECOMMEND_ICON = cellprofiler.gui.help.content.image_resource("thumb-up.png")
 
 PROTIP_AVOID_ICON = cellprofiler.gui.help.content.image_resource("thumb-down.png")

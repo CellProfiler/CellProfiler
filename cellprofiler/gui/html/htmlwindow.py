@@ -21,7 +21,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         href = linkinfo.Href
         if href.startswith("#"):
             super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
-        elif href.startswith('http://'):
+        elif href.startswith('http://') or href.startswith("https://"):
             webbrowser.open(href)
         else:
             newpage = utils.find_link(href)

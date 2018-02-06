@@ -87,4 +87,4 @@ For a full list of references, visit our `citation`_ page.
    (`link <https://doi.org/10.1186/1471-2105-9-482>`__)
 
 .. _citation: http://cellprofiler.org/citations/
-.. _link: http://doi.org/10.1186/gb-2006-7-10-r100
+.. _link: https://doi.org/10.1186/gb-2006-7-10-r100

@@ -455,11 +455,11 @@ def crop_image(image, crop_mask,crop_internal = False):
         # The last are at the first where the cumsum is it's max (meaning
         # what came after was all zeros and added nothing)
         #
-        i_first     = np.argwhere(i_cumsum==1)[0]
-        i_last      = np.argwhere(i_cumsum==i_cumsum.max())[0]
+        i_first     = np.argwhere(i_cumsum==1)[0][0]
+        i_last      = np.argwhere(i_cumsum==i_cumsum.max())[0][0]
         i_end       = i_last+1
-        j_first     = np.argwhere(j_cumsum==1)[0]
-        j_last      = np.argwhere(j_cumsum==j_cumsum.max())[0]
+        j_first     = np.argwhere(j_cumsum==1)[0][0]
+        j_last      = np.argwhere(j_cumsum==j_cumsum.max())[0][0]
         j_end       = j_last+1
         if image.ndim == 3:
             return image[i_first:i_end,j_first:j_end,:].copy()

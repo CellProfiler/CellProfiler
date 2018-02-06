@@ -108,19 +108,4 @@ CellProfiler Analyst software in general:
 }
 
 
-CellProfiler Analyst for scoring phenotypes by machine learning:
-
-@article{Jones1826,
-  title = {Scoring Diverse Cellular Morphologies in Image-Based Screens with Iterative Feedback and Machine Learning},
-  volume = {106},
-  issn = {0027-8424},
-  doi = {10.1073/pnas.0808843106},
-  abstract = {Many biological pathways were first uncovered by identifying mutants with visible phenotypes and by scoring every sample in a screen via tedious and subjective visual inspection. Now, automated image analysis can effectively score many phenotypes. In practical application, customizing an image-analysis algorithm or finding a sufficient number of example cells to train a machine learning algorithm can be infeasible, particularly when positive control samples are not available and the phenotype of interest is rare. Here we present a supervised machine learning approach that uses iterative feedback to readily score multiple subtle and complex morphological phenotypes in high-throughput, image-based screens. First, automated cytological profiling extracts hundreds of numerical descriptors for every cell in every image. Next, the researcher generates a rule (i.e., classifier) to recognize cells with a phenotype of interest during a short, interactive training session using iterative feedback. Finally, all of the cells in the experiment are automatically classified and each sample is scored based on the presence of cells displaying the phenotype. By using this approach, we successfully scored images in RNA interference screens in 2 organisms for the prevalence of 15 diverse cellular morphologies, some of which were previously intractable.},
-  number = {6},
-  url = {http://www.pnas.org/content/106/6/1826},
-  journal = {Proceedings of the National Academy of Sciences},
-  author = {Jones, Thouis R. and Carpenter, Anne E. and Lamprecht, Michael R. and Moffat, Jason and Silver, Serena J. and Grenier, Jennifer K. and Castoreno, Adam B. and Eggert, Ulrike S. and Root, David E. and Golland, Polina and Sabatini, David M.},
-  year = {2009},
-  pages = {1826--1831},
-  eprint = {http://www.pnas.org/content/106/6/1826.full.pdf}
-}
+Please find the CellProfiler Analyst's BibTeX snippets in  https://github.com/CellProfiler/CellProfiler-Analyst/blob/master/CITATION

@@ -1,18 +1,12 @@
 # coding: utf-8
 
 import os
+import os.path
 import re
 
 import pkg_resources
 
 import cellprofiler
-
-
-def __image_resource(filename):
-    return pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", filename)
-    )
 
 
 def read_content(filename):
@@ -27,10 +21,28 @@ def read_content(filename):
     return re.sub(
         r"image:: (.*\.png)",
         lambda md: "image:: {}".format(
-            __image_resource(os.path.basename(md.group(0)))
+            image_resource(os.path.basename(md.group(0)))
         ),
         content
     )
+
+
+def image_resource(filename):
+    relpath = os.path.relpath(pkg_resources.resource_filename(
+        "cellprofiler",
+        os.path.join("data", "images", filename)
+    ))
+
+    # With this specific relative path we are probably building the documentation
+    # in sphinx The path separator used by sphinx is "/" on all platforms.
+    if relpath == os.path.join("..", "cellprofiler", "data", "images", filename):
+        return "../images/{}".format(filename)
+
+    # Otherwise, if you're rendering in the GUI, relative paths are fine
+    # Note: the HTML renderer requires to paths to use '/' so we replace
+    # the windows default '\\' here
+    return relpath.replace('\\', '/')
+
 
 MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.html".format(cellprofiler.__version__)
 
@@ -45,30 +57,30 @@ VIEW_OUTPUT_SETTINGS_BUTTON_NAME = "View output settings"
 # ICONS
 #
 ####################
-MODULE_HELP_BUTTON = __image_resource('module_help.png')
-MODULE_MOVEUP_BUTTON = __image_resource('module_moveup.png')
-MODULE_MOVEDOWN_BUTTON = __image_resource('module_movedown.png')
-MODULE_ADD_BUTTON = __image_resource('module_add.png')
-MODULE_REMOVE_BUTTON = __image_resource('module_remove.png')
-TESTMODE_PAUSE_ICON = __image_resource('IMG_PAUSE.png')
-TESTMODE_GO_ICON = __image_resource('IMG_GO.png')
-DISPLAYMODE_SHOW_ICON = __image_resource('eye-open.png')
-DISPLAYMODE_HIDE_ICON = __image_resource('eye-close.png')
-SETTINGS_OK_ICON = __image_resource('check.png')
-SETTINGS_ERROR_ICON = __image_resource('remove-sign.png')
-SETTINGS_WARNING_ICON = __image_resource('IMG_WARN.png')
-RUNSTATUS_PAUSE_BUTTON = __image_resource('status_pause.png')
-RUNSTATUS_STOP_BUTTON = __image_resource('status_stop.png')
-RUNSTATUS_SAVE_BUTTON = __image_resource('status_save.png')
-WINDOW_HOME_BUTTON = __image_resource('window_home.png')
-WINDOW_BACK_BUTTON = __image_resource('window_back.png')
-WINDOW_FORWARD_BUTTON = __image_resource('window_forward.png')
-WINDOW_PAN_BUTTON = __image_resource('window_pan.png')
-WINDOW_ZOOMTORECT_BUTTON = __image_resource('window_zoom_to_rect.png')
-WINDOW_SAVE_BUTTON = __image_resource('window_filesave.png')
-ANALYZE_IMAGE_BUTTON = __image_resource('IMG_ANALYZE_16.png')
-STOP_ANALYSIS_BUTTON = __image_resource('stop.png')
-PAUSE_ANALYSIS_BUTTON = __image_resource('IMG_PAUSE.png')
+MODULE_HELP_BUTTON = image_resource('module_help.png')
+MODULE_MOVEUP_BUTTON = image_resource('module_moveup.png')
+MODULE_MOVEDOWN_BUTTON = image_resource('module_movedown.png')
+MODULE_ADD_BUTTON = image_resource('module_add.png')
+MODULE_REMOVE_BUTTON = image_resource('module_remove.png')
+TESTMODE_PAUSE_ICON = image_resource('IMG_PAUSE.png')
+TESTMODE_GO_ICON = image_resource('IMG_GO.png')
+DISPLAYMODE_SHOW_ICON = image_resource('eye-open.png')
+DISPLAYMODE_HIDE_ICON = image_resource('eye-close.png')
+SETTINGS_OK_ICON = image_resource('check.png')
+SETTINGS_ERROR_ICON = image_resource('remove-sign.png')
+SETTINGS_WARNING_ICON = image_resource('IMG_WARN.png')
+RUNSTATUS_PAUSE_BUTTON = image_resource('status_pause.png')
+RUNSTATUS_STOP_BUTTON = image_resource('status_stop.png')
+RUNSTATUS_SAVE_BUTTON = image_resource('status_save.png')
+WINDOW_HOME_BUTTON = image_resource('window_home.png')
+WINDOW_BACK_BUTTON = image_resource('window_back.png')
+WINDOW_FORWARD_BUTTON = image_resource('window_forward.png')
+WINDOW_PAN_BUTTON = image_resource('window_pan.png')
+WINDOW_ZOOMTORECT_BUTTON = image_resource('window_zoom_to_rect.png')
+WINDOW_SAVE_BUTTON = image_resource('window_filesave.png')
+ANALYZE_IMAGE_BUTTON = image_resource('IMG_ANALYZE_16.png')
+STOP_ANALYSIS_BUTTON = image_resource('stop.png')
+PAUSE_ANALYSIS_BUTTON = image_resource('IMG_PAUSE.png')
 
 
 ####################

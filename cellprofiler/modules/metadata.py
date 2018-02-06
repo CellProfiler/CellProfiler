@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import cellprofiler.gui.help.content
 import cellprofiler.icons
 import numpy as np
 import logging
@@ -148,7 +148,7 @@ Measurements made by this module
 
 -  *Metadata:* The prefix of each metadata tag in the per-image table.
 """.format(**{
-                "METADATA_DISPLAY_TABLE": _help.__image_resource('Metadata_ExampleDisplayTable.png')
+                "METADATA_DISPLAY_TABLE": cellprofiler.gui.help.content.image_resource('Metadata_ExampleDisplayTable.png')
             })
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"

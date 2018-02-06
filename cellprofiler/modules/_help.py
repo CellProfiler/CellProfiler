@@ -4,7 +4,7 @@ import os.path
 
 import pkg_resources
 
-import cellprofiler.setting
+import cellprofiler.gui.help.content
 from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 DEFINITION_OBJECT = """\
@@ -89,10 +89,7 @@ conditions you want to include.
 
 {REGEXP_HELP_REF}
 """.format(**{
-    "IMAGES_USING_RULES_ICON": pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", "Images_UsingRules.png")
-    ),
+    "IMAGES_USING_RULES_ICON": cellprofiler.gui.help.content.image_resource("Images_UsingRules.png"),
     "REGEXP_HELP_REF": REGEXP_HELP_REF
 })
 
@@ -220,29 +217,9 @@ overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
 """
 
-####################
-#
-# ICONS
-#
-####################
-def __image_resource(filename):
-    #If you're rendering in the GUI, relative paths are fine
-    if os.path.relpath(pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", filename)
-    )) == os.path.join("cellprofiler","data", "images", filename):
-        return os.path.relpath(pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "images", filename)
-        ))
 
-    # Otherwise, we are probably building the documentation in sphinx.
-    # The path separator used by sphinx is "/" on all platforms.
-    return "../images/{}".format(filename)
+PROTIP_RECOMMEND_ICON = cellprofiler.gui.help.content.image_resource("thumb-up.png")
 
+PROTIP_AVOID_ICON = cellprofiler.gui.help.content.image_resource("thumb-down.png")
 
-PROTIP_RECOMMEND_ICON = __image_resource("thumb-up.png")
-
-PROTIP_AVOID_ICON = __image_resource("thumb-down.png")
-
-TECH_NOTE_ICON = __image_resource("gear.png")
+TECH_NOTE_ICON = cellprofiler.gui.help.content.image_resource("gear.png")

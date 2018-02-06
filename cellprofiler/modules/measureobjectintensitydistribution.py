@@ -1,8 +1,10 @@
 # coding=utf-8
 
 import _help
-MeasureObjectIntensityDistribution_Magnitude_Phase = _help.__image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')
-MeasureObjectIntensityDistribution_Edges_Centers = _help.__image_resource('MeasureObjectIntensityDistribution_Edges_Centers.png')
+import cellprofiler.gui.help.content
+
+MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')
+MeasureObjectIntensityDistribution_Edges_Centers = cellprofiler.gui.help.content.image_resource('MeasureObjectIntensityDistribution_Edges_Centers.png')
 
 __doc__ = """
 MeasureObjectIntensityDistribution

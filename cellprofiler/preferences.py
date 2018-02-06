@@ -22,6 +22,7 @@ import sys
 import time
 
 import cellprofiler
+import cellprofiler.gui.help.content
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)
@@ -418,14 +419,8 @@ created according to the pathname you have typed.
 .. |image0| image:: {BROWSE_BUTTON}
 .. |image1| image:: {CREATE_BUTTON}\
 """.format(**{
-    "CREATE_BUTTON": pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", "folder_create.png")
-    ),
-    "BROWSE_BUTTON": pkg_resources.resource_filename(
-        "cellprofiler",
-        os.path.join("data", "images", "folder_browse.png")
-    )
+    "CREATE_BUTTON": cellprofiler.gui.help.content.image_resource("folder_create.png"),
+    "BROWSE_BUTTON": cellprofiler.gui.help.content.image_resource("folder_browse.png")
 })
 
 DEFAULT_OUTPUT_FOLDER_HELP = """\

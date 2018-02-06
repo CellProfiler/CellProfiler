@@ -86,7 +86,7 @@ References
    EJ, Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P,
    Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
    for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
-   714-716. `(link) <http://dx.doi.org/10.1038/nmeth.1984>`__
+   714-716. `(link) <https://doi.org/10.1038/nmeth.1984>`__
 
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """

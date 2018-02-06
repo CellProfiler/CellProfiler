@@ -200,21 +200,21 @@ References
    (`link`_)
 -  Meyer F, Beucher S (1990) “Morphological segmentation.” *J Visual
    Communication and Image Representation* 1, 21-46.
-   (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
+   (`link <https://doi.org/10.1016/1047-3203(90)90014-M>`__)
 -  Ortiz de Solorzano C, Rodriguez EG, Jones A, Pinkel D, Gray JW, Sudar
    D, Lockett SJ. (1999) “Segmentation of confocal microscope images of
    cell nuclei in thick tissue sections.” *Journal of Microscopy-Oxford*
    193, 212-226.
-   (`link <http://dx.doi.org/10.1046/j.1365-2818.1999.00463.x>`__)
+   (`link <https://doi.org/10.1046/j.1365-2818.1999.00463.x>`__)
 -  Wählby C (2003) *Algorithms for applied digital image cytometry*,
    Ph.D., Uppsala University, Uppsala.
 -  Wählby C, Sintorn IM, Erlandsson F, Borgefors G, Bengtsson E. (2004)
    “Combining intensity, edge and shape information for 2D and 3D
    segmentation of cell nuclei in tissue sections.” *J Microsc* 215,
    67-76.
-   (`link <http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x>`__)
+   (`link <https://doi.org/10.1111/j.0022-2720.2004.01338.x>`__)
 
-.. _link: http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
+.. _link: https://doi.org/10.1002/(SICI)1097-0320(19970801)28:4%3C289::AID-CYTO3%3E3.0.CO;2-7
 .. _tutorial: http://blog.cellprofiler.org/2017/01/19/cellprofiler-ilastik-superpowered-segmentation/
 
 """.format(**{

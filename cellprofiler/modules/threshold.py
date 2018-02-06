@@ -210,7 +210,7 @@ There are a number of methods for finding thresholds automatically:
    and quantitative performance evaluation.” *Journal of Electronic
    Imaging*, 13(1), 146-165. (`link`_)
 
-.. _link: http://dx.doi.org/10.1117/1.1631315
+.. _link: https://doi.org/10.1117/1.1631315
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_AVOID_ICON}
 .. |image2| image:: {PROTIP_RECOMMEND_ICON}
@@ -288,7 +288,7 @@ threshold value.
    and quantitative performance evaluation.” *Journal of Electronic
    Imaging*, 13(1), 146-165. (`link`_)
 
-.. _link: http://dx.doi.org/10.1117/1.1631315
+.. _link: https://doi.org/10.1117/1.1631315
 """.format(**{
                 "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
                 "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,

@@ -470,11 +470,11 @@ References
 -  Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL,
   Danuser G. (2008) "Robust single-particle tracking in live-cell
   time-lapse sequences." *Nature Methods* 5(8),695-702.
-  `(link) <http://dx.doi.org/10.1038/nmeth.1237>`__
+  `(link) <https://doi.org/10.1038/nmeth.1237>`__
 -  Jaqaman K, Danuser G. (2009) "Computational image analysis of
   cellular dynamics: a case study based on particle tracking." Cold
   Spring Harb Protoc. 2009(12):pdb.top65.
-  `(link) <http://dx.doi.org/10.1101/pdb.top65>`__
+  `(link) <https://doi.org/10.1101/pdb.top65>`__
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_RECOMMEND_ICON}

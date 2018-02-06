@@ -484,7 +484,7 @@ class TestMeasurements(unittest.TestCase):
             try:
                 os.unlink(filename)
             except:
-                print "Failed to remove file %s" % filename
+                print("Failed to remove file %s" % filename)
 
     def test_09_01_group_by_metadata(self):
         m = cpmeas.Measurements()

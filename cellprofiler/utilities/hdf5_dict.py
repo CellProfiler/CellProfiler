@@ -2002,6 +2002,8 @@ class VStringArray(object):
         with self.lock:
             if idx < 0:
                 idx = self.index.shape[0] - idx
+            if not isinstance(idx, int):
+                idx = idx[0]
             begin, end = self.index[idx, :]
             if begin > end:
                 return None

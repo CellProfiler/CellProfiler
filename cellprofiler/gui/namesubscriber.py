@@ -42,7 +42,6 @@ class NameSubscriberComboBox(wx.Panel):
         if choices is None:
             choices = []
         self.orig_choices = choices
-        self.IDs = [wx.NewId() for c in choices]
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.combo_dlg = wx.ComboBox(
                 self, choices=[choice[0] for choice in choices],
@@ -65,7 +64,6 @@ class NameSubscriberComboBox(wx.Panel):
         for child in self.combo_dlg.Children:
             # Mac implements read_only combobox as a choice in a child
             child.Bind(wx.EVT_RIGHT_DOWN, self.right_menu)
-        self.Bind(wx.EVT_MENU, self.menu_selected)
         self.callbacks = []
 
     def choice_made(self, evt):
@@ -97,12 +95,8 @@ class NameSubscriberComboBox(wx.Panel):
         menu = wx.Menu()
         all_menu = wx.Menu()
 
-        unsorted_choices = [
-            (name, annotation, num, is_input_module, identifier)
-            for (name, annotation, num, is_input_module), identifier in
-            zip(self.orig_choices, self.IDs)]
         fn_key = lambda x: (x[2], x)
-        choices_sorted_by_num = sorted(unsorted_choices, key=fn_key)
+        choices_sorted_by_num = sorted(self.orig_choices, key=fn_key)
         for name, annotation, num, is_input_module, choiceid in \
                 choices_sorted_by_num:
             all_menu.Append(choiceid, "filler")
@@ -137,11 +131,6 @@ class NameSubscriberComboBox(wx.Panel):
                     in sorted_submenus])
         self.PopupMenu(menu)
         menu.Destroy()
-
-    def menu_selected(self, evt):
-        self.combo_dlg.Selection = self.IDs.index(evt.Id)
-        # fake a choice
-        self.choice_made(evt)
 
     def GetItems(self):
         return self.orig_choices

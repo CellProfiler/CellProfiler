@@ -455,7 +455,7 @@ module.""".format(**{
             # Area
             areas = [prop.area for prop in props]
 
-            self.record_measurement(workspace, object_name, F_AREA, areas)
+            self.record_measurement(workspace, object_name, F_VOLUME, areas)
 
             # Extent
             extents = [prop.extent for prop in props]
@@ -473,8 +473,8 @@ module.""".format(**{
 
             self.record_measurement(workspace, object_name, F_CENTER_Z, center_z)
 
-            # Perimeters
-            perimeters = []
+            # SurfaceArea
+            surface_areas = []
 
             for label in numpy.unique(labels):
                 if label == 0:
@@ -490,15 +490,15 @@ module.""".format(**{
                     level=0
                 )
 
-                perimeters += [skimage.measure.mesh_surface_area(verts, faces)]
+                surface_areas += [skimage.measure.mesh_surface_area(verts, faces)]
 
-            if len(perimeters) == 0:
-                self.record_measurement(workspace, object_name, F_PERIMETER, [0])
+            if len(surface_areas) == 0:
+                self.record_measurement(workspace, object_name, F_SURFACE_AREA, [0])
             else:
-                self.record_measurement(workspace, object_name, F_PERIMETER, perimeters)
+                self.record_measurement(workspace, object_name, F_SURFACE_AREA, surface_areas)
 
             for feature in self.get_feature_names(workspace.pipeline):
-                if feature in [F_AREA, F_EXTENT, F_CENTER_X, F_CENTER_Y, F_CENTER_Z, F_PERIMETER]:
+                if feature in [F_VOLUME, F_EXTENT, F_CENTER_X, F_CENTER_Y, F_CENTER_Z, F_SURFACE_AREA]:
                     continue
 
                 self.record_measurement(workspace, object_name, feature, [numpy.nan])

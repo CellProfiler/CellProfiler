@@ -36,13 +36,13 @@ See also **IdentifyPrimaryObjects**, **IdentifySecondaryObjects**,
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  *AreaOccupied:* The total area occupied by the input objects or
-   binary image.
--  *Perimeter:* The total length of the perimeter of the input
-   objects/binary image.
--  *TotalImageArea:* The total pixel area of the image that was
-   subjected to measurement, excluding masked regions.
-
+-  *AreaOccupied/VolumeOccupied:* The total area (2D) or volume (3D)
+   occupied by the input objects or binary image.
+-  *Perimeter/SurfaceArea* The total length of the perimeter (2D) or
+   surface area (3D) of the input objects/binary image.
+-  *TotalArea/TotalVolume:* The total pixel area (2D) or volume (3D)
+   of the image that was subjected to measurement, excluding masked
+   regions.
 """
 
 import numpy
@@ -55,14 +55,17 @@ import cellprofiler.setting
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
-# Measurement feature name format for the AreaOccupied measurement
-F_AREA_OCCUPIED = "AreaOccupied_AreaOccupied_%s"
+# Measurement feature name format for the AreaOccupied/VolumeOccupied measurement
+F_AREA_OCCUPIED = "AreaOccupied"
+F_VOLUME_OCCUPIED = "VolumeOccupied"
 
-# Measure feature name format for the Perimeter measurement
-F_PERIMETER = "AreaOccupied_Perimeter_%s"
+# Measure feature name format for the Perimeter/SurfaceArea measurement
+F_PERIMETER = "Perimeter"
+F_SURFACE_AREA = "SurfaceArea"
 
-# Measure feature name format for the TotalArea measurement
-F_TOTAL_AREA = "AreaOccupied_TotalArea_%s"
+# Measure feature name format for the TotalArea/TotalVolume measurement
+F_TOTAL_AREA = "TotalArea"
+F_TOTAL_VOLUME = "TotalVolume"
 
 O_BINARY_IMAGE = "Binary Image"
 O_OBJECTS = "Objects"
@@ -267,6 +270,12 @@ like to measure the area occupied by the foreground in the image.
 
         figure.subplot_table(0, 0, workspace.display_data.statistics, col_labels=workspace.display_data.col_labels)
 
+    def _add_image_measurement(self, name, feature_name, features, measurements):
+        measurements.add_image_measurement(
+            "{:s}_{:s}_{:s}".format(C_AREA_OCCUPIED, feature_name, name),
+            numpy.array([features], dtype=float)
+        )
+
     def measure_objects(self, operand, workspace):
         objects = workspace.get_objects(operand.operand_objects.value)
 
@@ -300,21 +309,28 @@ like to measure the area occupied by the foreground in the image.
         else:
             perimeter = numpy.sum([numpy.round(region["perimeter"]) for region in region_properties])
 
-        m = workspace.measurements
+        measurements = workspace.measurements
+        pipeline = workspace.pipeline
 
-        m.add_image_measurement(
-            F_AREA_OCCUPIED % operand.operand_objects.value,
-            numpy.array([area_occupied], dtype=float)
+        self._add_image_measurement(
+            operand.operand_objects.value,
+            F_VOLUME_OCCUPIED if pipeline.volumetric() else F_AREA_OCCUPIED,
+            area_occupied,
+            measurements
         )
 
-        m.add_image_measurement(
-            F_PERIMETER % operand.operand_objects.value,
-            numpy.array([perimeter], dtype=float)
+        self._add_image_measurement(
+            operand.operand_objects.value,
+            F_SURFACE_AREA if pipeline.volumetric() else F_PERIMETER,
+            perimeter,
+            measurements
         )
 
-        m.add_image_measurement(
-            F_TOTAL_AREA % operand.operand_objects.value,
-            numpy.array([total_area], dtype=float)
+        self._add_image_measurement(
+            operand.operand_objects.value,
+            F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA,
+            total_area,
+            measurements
         )
 
         return [[
@@ -336,21 +352,28 @@ like to measure the area occupied by the foreground in the image.
 
         total_area = numpy.prod(numpy.shape(image.pixel_data))
 
-        m = workspace.measurements
+        measurements = workspace.measurements
+        pipeline = workspace.pipeline
 
-        m.add_image_measurement(
-            F_AREA_OCCUPIED % operand.binary_name.value,
-            numpy.array([area_occupied], dtype=float)
+        self._add_image_measurement(
+            operand.binary_name.value,
+            F_VOLUME_OCCUPIED if pipeline.volumetric() else F_AREA_OCCUPIED,
+            area_occupied,
+            measurements
         )
 
-        m.add_image_measurement(
-            F_PERIMETER % operand.binary_name.value,
-            numpy.array([perimeter], dtype=float)
+        self._add_image_measurement(
+            operand.binary_name.value,
+            F_SURFACE_AREA if pipeline.volumetric() else F_PERIMETER,
+            perimeter,
+            measurements
         )
 
-        m.add_image_measurement(
-            F_TOTAL_AREA % operand.binary_name.value,
-            numpy.array([total_area], dtype=float)
+        self._add_image_measurement(
+            operand.binary_name.value,
+            F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA,
+            total_area,
+            measurements
         )
 
         return [[
@@ -360,18 +383,26 @@ like to measure the area occupied by the foreground in the image.
             str(total_area)
         ]]
 
+    def _get_feature_names(self, pipeline):
+        if pipeline.volumetric():
+            return [F_VOLUME_OCCUPIED, F_SURFACE_AREA, F_TOTAL_VOLUME]
+
+        return [F_AREA_OCCUPIED, F_PERIMETER, F_TOTAL_AREA]
+
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         columns = []
 
         for op in self.operands:
-            for feature, coltype in ((F_AREA_OCCUPIED, cellprofiler.measurement.COLTYPE_FLOAT),
-                                     (F_PERIMETER, cellprofiler.measurement.COLTYPE_FLOAT),
-                                     (F_TOTAL_AREA, cellprofiler.measurement.COLTYPE_FLOAT)):
+            for feature in self._get_feature_names(pipeline):
                 columns.append((
                     cellprofiler.measurement.IMAGE,
-                    feature % (op.operand_objects.value if op.operand_choice == O_OBJECTS else op.binary_name.value),
-                    coltype
+                    "{:s}_{:s}_{:s}".format(
+                        C_AREA_OCCUPIED,
+                        feature,
+                        op.operand_objects.value if op.operand_choice == O_OBJECTS else op.binary_name.value
+                    ),
+                    cellprofiler.measurement.COLTYPE_FLOAT
                 ))
 
         return columns
@@ -384,21 +415,18 @@ like to measure the area occupied by the foreground in the image.
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cellprofiler.measurement.IMAGE and category == C_AREA_OCCUPIED:
-            return [
-                "AreaOccupied",
-                "TotalArea"
-            ]
+            return self._get_feature_names(pipeline)
 
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if (object_name == "Image" and category == "AreaOccupied" and measurement in ("AreaOccupied", "TotalArea")):
+        if object_name == "Image" and category == "AreaOccupied" and measurement in self._get_feature_names(pipeline):
             return [op.operand_objects.value for op in self.operands if op.operand_choice == O_OBJECTS]
 
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        if (object_name == "Image" and category == "AreaOccupied" and measurement in ("AreaOccupied", "TotalArea")):
+        if object_name == "Image" and category == "AreaOccupied" and measurement in self._get_feature_names(pipeline):
             return [op.binary_name.value for op in self.operands if op.operand_choice == O_BINARY_IMAGE]
 
         return []

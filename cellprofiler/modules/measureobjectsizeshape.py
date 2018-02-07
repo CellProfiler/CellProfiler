@@ -55,9 +55,12 @@ See the *Technical Notes* below for an explanation of a key step
 underlying many of the following metrics: creating an
 ellipse with the same second-moments as each object.
 
--  *Area:* The number of pixels (2D) or voxels (3D) in the region.
--  *Perimeter:* The total number of pixels (2D) or voxels (3D) around the boundary of each
-   region in the image. In 3D, this is more commonly described as the surface area.
+-  *Area:* *(2D only)* The number of pixels in the region.
+-  *Volume:* *(3D only)* The number of voxels in the region.
+-  *Perimeter:* *(2D only)* The total number of pixels around the boundary of each
+   region in the image.
+-  *Surface Area:* *(3D only)# The total number of voxels around the boundary of
+   each region in the image.
 -  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
    for a perfectly circular object.
 -  *Solidity:* *(2D only)* The proportion of the pixels in the convex hull that are

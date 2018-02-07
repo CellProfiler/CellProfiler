@@ -129,7 +129,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                                                      image_set_list.get_image_set(0),
                                                      object_set, measurements, image_set_list)
         module.run(workspace)
-        self.features_and_columns_match(measurements, module)
+        self.features_and_columns_match(measurements, module, pipeline)
 
         a = measurements.get_current_measurement('SomeObjects', 'AreaShape_Area')
         self.assertEqual(len(a), 2)
@@ -181,9 +181,11 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
+        pipeline = cellprofiler.pipeline.Pipeline()
         for object_name in settings[:-1]:
-            measurements = module.get_measurements(None, object_name, 'AreaShape')
-            for measurement in cellprofiler.modules.measureobjectsizeshape.F_STANDARD:
+            measurements = module.get_measurements(pipeline, object_name, 'AreaShape')
+            for measurement in cellprofiler.modules.measureobjectsizeshape.F_STANDARD + \
+                    cellprofiler.modules.measureobjectsizeshape.F_STD_2D:
                 self.assertTrue(measurement in measurements)
             self.assertTrue('Zernike_3_1' in measurements)
 
@@ -191,9 +193,11 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "No"]
         module.set_settings_from_values(settings, 1, module.module_class())
+        pipeline = cellprofiler.pipeline.Pipeline()
         for object_name in settings[:-1]:
-            measurements = module.get_measurements(None, object_name, 'AreaShape')
-            for measurement in cellprofiler.modules.measureobjectsizeshape.F_STANDARD:
+            measurements = module.get_measurements(pipeline, object_name, 'AreaShape')
+            for measurement in cellprofiler.modules.measureobjectsizeshape.F_STANDARD + \
+                    cellprofiler.modules.measureobjectsizeshape.F_STD_2D:
                 self.assertTrue(measurement in measurements)
             self.assertFalse('Zernike_3_1' in measurements)
 
@@ -340,7 +344,9 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                                                          image_set_list.get_image_set(0),
                                                          object_set, measurements, image_set_list)
             module.run(workspace)
-        for c in module.get_measurement_columns(None):
+
+        pipeline = cellprofiler.pipeline.Pipeline()
+        for c in module.get_measurement_columns(pipeline):
             oname, feature = c[:2]
             if oname != "SomeObjects":
                 continue
@@ -370,13 +376,13 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.assertEqual(max_radius[0], 2)
         self.assertEqual(max_radius[1], 3)
 
-    def features_and_columns_match(self, measurements, module):
+    def features_and_columns_match(self, measurements, module, pipeline):
         self.assertEqual(len(measurements.get_object_names()), 3)
         self.assertTrue('SomeObjects' in measurements.get_object_names())
         self.assertTrue('OtherObjects' in measurements.get_object_names())
         features = measurements.get_feature_names('SomeObjects')
         features += measurements.get_feature_names('OtherObjects')
-        columns = module.get_measurement_columns(None)
+        columns = module.get_measurement_columns(pipeline)
         self.assertEqual(len(features), len(columns))
         for column in columns:
             self.assertTrue(column[0] in ['SomeObjects', 'OtherObjects'])
@@ -388,15 +394,15 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         labels[:, 5:15, 25:35] = 1
 
         workspace, module = self.make_workspace(labels)
-
+        workspace.pipeline.set_volumetric(True)
         module.run(workspace)
 
-        for feature in [cellprofiler.modules.measureobjectsizeshape.F_AREA,
+        for feature in [cellprofiler.modules.measureobjectsizeshape.F_VOLUME,
                         cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
                         cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
                         cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
                         cellprofiler.modules.measureobjectsizeshape.F_CENTER_Z,
-                        cellprofiler.modules.measureobjectsizeshape.F_PERIMETER]:
+                        cellprofiler.modules.measureobjectsizeshape.F_SURFACE_AREA]:
             assert workspace.measurements.has_current_measurements(
                 OBJECTS_NAME,
                 cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature

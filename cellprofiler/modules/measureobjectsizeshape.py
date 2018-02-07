@@ -297,12 +297,18 @@ module.""".format(**{
         """
         return "Zernike_%d_%d" % (zernike_index[0], zernike_index[1])
 
-    def get_feature_names(self):
+    def get_feature_names(self, pipeline):
         """Return the names of the features measured"""
-        result = list(F_STANDARD)
-        result.extend([self.get_zernike_name(index)
-                       for index in self.get_zernike_numbers()])
-        return result
+        feature_names = list(F_STANDARD)
+
+        if pipeline.volumetric():
+            feature_names += list(F_STD_3D)
+        else:
+            feature_names += list(F_STD_2D)
+
+        feature_names += [self.get_zernike_name(index) for index in self.get_zernike_numbers()]
+
+        return feature_names
 
     def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
@@ -313,7 +319,7 @@ module.""".format(**{
         """
         if (category == AREA_SHAPE and
                 self.get_categories(pipeline, object_name)):
-            return self.get_feature_names()
+            return self.get_feature_names(pipeline)
         return []
 
     def run(self, workspace):
@@ -488,7 +494,7 @@ module.""".format(**{
             else:
                 self.record_measurement(workspace, object_name, F_PERIMETER, perimeters)
 
-            for feature in self.get_feature_names():
+            for feature in self.get_feature_names(workspace.pipeline):
                 if feature in [F_AREA, F_EXTENT, F_CENTER_X, F_CENTER_Y, F_CENTER_Z, F_PERIMETER]:
                     continue
 
@@ -561,7 +567,7 @@ module.""".format(**{
         '''Return measurement column definitions.
         All cols returned as float even though "Area" will only ever be int'''
         object_names = [s.value for s in self.settings()][:-1]
-        measurement_names = self.get_feature_names()
+        measurement_names = self.get_feature_names(pipeline)
         cols = []
         for oname in object_names:
             for mname in measurement_names:

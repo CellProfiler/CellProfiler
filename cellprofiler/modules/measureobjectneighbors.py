@@ -1,4 +1,4 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each 
+'''<b>Measure Object Neighbors</b> calculates how many neighbors each
 object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
@@ -243,7 +243,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
                 neighbor_labels, neighbor_objects.segmented)
-            neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
+            neighbor_has_pixels = np.bincount(neighbor_objects.small_removed_segmented.ravel())[1:] > 0
         neighbor_count = np.zeros((nobjects,))
         pixel_count = np.zeros((nobjects,))
         first_object_number = np.zeros((nobjects,),int)

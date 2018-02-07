@@ -619,7 +619,7 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
                     dj = missing_j_centers[:, np.newaxis] - jg[np.newaxis, :]
                     missing_best = lg[np.argsort((di*di + dj*dj, ))[:, 0]]
                     best = np.zeros(np.max(labels) + 1, int)
-                    best[missing_labels] = missing_best
+                    best[missing_labels] = missing_best[0]
                     cl[missing_mask] = best[labels[missing_mask]]
                     #
                     # Now compute the crow-flies distance to the centers

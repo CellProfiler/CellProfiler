@@ -320,7 +320,7 @@ class TestCrop(unittest.TestCase):
         crop_image = np.zeros((10,10),bool)
         crop_image[2:,1:9] = True
         crop_image[1,(1,4)] = True # A rough edge to be cropped
-        expected_image = input_image[2:,1:9.:]
+        expected_image = input_image[2:,1:9,:]
         workspace, module = self.make_workspace(input_image,
                                                 crop_image = crop_image)
         module.shape.value = cpmc.SH_IMAGE

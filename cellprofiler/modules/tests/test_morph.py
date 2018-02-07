@@ -458,7 +458,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
             expected = expected > 0
             self.assertTrue(np.all(output==expected))
         else:
-            self.assertTrue(np.all(np.abs(output-expected) < np.finfo(np.float32).eps))
+            self.assertTrue(np.all(np.abs(np.logical_xor(output, expected)) < np.finfo(np.float32).eps))
 
     def test_02_01_binary_bothat(self):
         self.binary_tteesstt('bothat',cpmorph.black_tophat, scale = 5)

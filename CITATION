@@ -1,0 +1,100 @@
+When using CellProfiler, please cite one of the following papers.
+See also: http://cellprofiler.org/citations/
+
+
+CellProfiler for cells:
+
+@Article{Carpenter2006,
+    abstract="Biologists can now prepare and image thousands of samples per day using automation, enabling chemical screens and functional genomics (for example, using RNA interference). Here we describe the first free, open-source system designed for flexible, high-throughput cell image analysis, CellProfiler. CellProfiler can address a variety of biological questions quantitatively, including standard assays (for example, cell count, size, per-cell protein levels) and complex morphological assays (for example, cell/organelle shape or subcellular patterns of DNA or protein staining).",
+    author={Carpenter, Anne E. and Jones, Thouis R. and Lamprecht, Michael R. and Clarke, Colin and Kang, In Han and Friman, Ola and Guertin, David A. and Chang, Joo Han and Lindquist, Robert A. and Moffat, Jason and Golland, Polina and Sabatini, David M.},
+    day="31",
+    doi="10.1186/gb-2006-7-10-r100",
+    issn="1474-760X",
+    journal="Genome Biology",
+    month="Oct",
+    number="10",
+    pages="R100",
+    title="CellProfiler: image analysis software for identifying and quantifying cell phenotypes",
+    url="https://doi.org/10.1186/gb-2006-7-10-r100",
+    volume="7",
+    year="2006"
+}
+
+or
+
+@article{doi:10.1093/bioinformatics/btr095,
+    author = {Kamentsky, Lee and Jones, Thouis R. and Fraser, Adam and Bray, Mark-Anthony and Logan, David J. and Madden, Katherine L. and Ljosa, Vebjorn and Rueden, Curtis and Eliceiri, Kevin W. and Carpenter, Anne E.},
+    doi = {10.1093/bioinformatics/btr095},
+    eprint = {/oup/backfile/content_public/journal/bioinformatics/27/8/10.1093_bioinformatics_btr095/2/btr095.pdf},
+    journal = {Bioinformatics},
+    number = {8},
+    pages = {1179-1180},
+    title = {Improved structure, function and compatibility for CellProfiler: modular high-throughput image analysis software},
+    URL = { + http://dx.doi.org/10.1093/bioinformatics/btr095},
+    volume = {27},
+    year = {2011}
+}
+
+
+CellProfiler for the Worm Toolbox:
+
+@article{Wahlby_image_2012,
+    abstract = {We present a toolbox for high-throughput screening of image-based Caenorhabditis elegans phenotypes. The image analysis algorithms measure morphological phenotypes in individual worms and are effective for a variety of assays and imaging systems. This WormToolbox is available through the open-source CellProfiler project and enables objective scoring of whole-worm high-throughput image-based assays of C. elegans for the study of diverse biological pathways that are relevant to human disease.},
+    author = {W{\"a}hlby, Carolina and Kamentsky, Lee and Liu, Zihan H. and Riklin-Raviv, Tammy and Conery, Annie L. and O'Rourke, Eyleen J. and Sokolnicki, Katherine L. and Visvikis, Orane and Ljosa, Vebjorn and Irazoqui, Javier E. and Golland, Polina and Ruvkun, Gary and Ausubel, Frederick M. and Carpenter, Anne E.},
+    copyright = {2012 Nature Publishing Group},
+    doi = {10.1038/nmeth.1984},
+    file = {/Users/katrinleinweber/Zotero/storage/H7CUV6S5/Wählby et al. - 2012 - An image analysis toolbox for high-throughput iC.pdf},
+    issn = {1548-7105},
+    journal = {Nature Methods},
+    language = {en},
+    month = jul,
+    number = {7},
+    pages = {714--716},
+    title = {An Image Analysis Toolbox for High-Throughput {{{\emph{C}}}}{\emph{. Elegans}} Assays},
+    url = {https://www.nature.com/articles/nmeth.1984},
+    urldate = {2018-02-06},
+    volume = {9},
+    year = {2012}
+}
+
+
+CellProfiler for other biological images:
+
+@article{Lamprecht_CellProfiler:_2007,
+    abstract = {Careful visual examination of biological samples is quite powerful, but many visual analysis tasks done in the laboratory are repetitive, tedious, and subjective. Here we describe the use of the open-source software, CellProfiler, to automatically identify and measure a variety of biological objects in images. The applications demonstrated here include yeast colony counting and classifying, cell microarray annotation, yeast patch assays, mouse tumor quantification, wound healing assays, and tissue topology measurement. The software automatically identifies objects in digital images, counts them, and records a full spectrum of measurements for each object, including location within the image, size, shape, color intensity, degree of correlation between colors, texture (smoothness), and number of neighbors. Small numbers of images can be processed automatically on a personal computer and hundreds of thousands can be analyzed using a computing cluster. This free, easy-to-use software enables biologists to comprehensively and quantitatively address many questions that previously would have required custom programming, thereby facilitating discovery in a variety of biological fields of study.},
+    author = {Lamprecht, Michael R. and Sabatini, David M. and Carpenter, Anne E.},
+    issn = {0736-6205},
+    journal = {BioTechniques},
+    keywords = {Software,Cell Count,Colony Count; Microbial,Cytological Techniques,Image Processing; Computer-Assisted,Saccharomyces cerevisiae,Tissue Array Analysis,Wound Healing},
+    language = {eng},
+    month = jan,
+    number = {1},
+    pages = {71--75},
+    pmid = {17269487},
+    shorttitle = {{{CellProfiler}}},
+    title = {{{CellProfiler}}: Free, Versatile Software for Automated Biological Image Analysis},
+    volume = {42},
+    year = {2007}
+}
+
+
+CellProfiler Analyst software in general:
+
+@article{Jones2008,
+    abstract = {Image-based screens can produce hundreds of measured features for each of hundreds of millions of individual cells in a single experiment.},
+    author = {Jones, Thouis R. and Kang, In Han and Wheeler, Douglas B. and Lindquist, Robert A. and Papallo, Adam and Sabatini, David M. and Golland, Polina and Carpenter, Anne E.},
+    day = {15},
+    doi = {10.1186/1471-2105-9-482},
+    issn = {1471-2105},
+    journal = {BMC Bioinformatics},
+    month = nov,
+    number = {1},
+    pages = {482},
+    title = {{{CellProfiler Analyst}}: Data Exploration and Analysis Software for Complex Image-Based Screens},
+    url = {https://doi.org/10.1186/1471-2105-9-482},
+    volume = {9},
+    year = {2008}
+}
+
+
+Please find the CellProfiler Analyst's BibTeX snippets in  https://github.com/CellProfiler/CellProfiler-Analyst/blob/master/CITATION

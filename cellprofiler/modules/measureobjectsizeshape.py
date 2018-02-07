@@ -174,7 +174,10 @@ AREA_SHAPE = 'AreaShape'
 """Calculate Zernike features for N,M where N=0 through ZERNIKE_N"""
 ZERNIKE_N = 9
 
-F_AREA = "Area"
+F_AREA = 'Area'
+F_PERIMETER = 'Perimeter'
+F_VOLUME = 'Volume'
+F_SURFACE_AREA = 'Surface Area'
 F_ECCENTRICITY = 'Eccentricity'
 F_SOLIDITY = 'Solidity'
 F_EXTENT = 'Extent'
@@ -182,7 +185,6 @@ F_CENTER_X = 'Center_X'
 F_CENTER_Y = 'Center_Y'
 F_CENTER_Z = 'Center_Z'
 F_EULER_NUMBER = 'EulerNumber'
-F_PERIMETER = 'Perimeter'
 F_FORM_FACTOR = 'FormFactor'
 F_MAJOR_AXIS_LENGTH = 'MajorAxisLength'
 F_MINOR_AXIS_LENGTH = 'MinorAxisLength'
@@ -195,9 +197,10 @@ F_MIN_FERET_DIAMETER = 'MinFeretDiameter'
 F_MAX_FERET_DIAMETER = 'MaxFeretDiameter'
 
 """The non-Zernike features"""
-F_STANDARD = [F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
-              F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
-              F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
+F_STD_2D = [F_AREA, F_PERIMETER]
+F_STD_3D = [F_VOLUME, F_SURFACE_AREA]
+F_STANDARD = [F_ECCENTRICITY, F_SOLIDITY, F_EXTENT, F_EULER_NUMBER,
+              F_FORM_FACTOR, F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
               F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y, F_CENTER_Z,
               F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS,
               F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]

@@ -1,6 +1,7 @@
 *.egg-info/
 *.iml
 *.pyc
+.DS_Store
 .cache/
 .eggs/
 .idea/

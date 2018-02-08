@@ -473,7 +473,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
     def check_expected(self, image, expected, mask=None, ignore=False):
         if mask is None and not image.has_crop_mask:
-            self.assertTrue(np.all(np.abs(image.pixel_data - expected <
+            self.assertTrue(np.all(np.abs(np.logical_xor(image.pixel_data, expected) <
                                           np.sqrt(np.finfo(np.float32).eps))))
             self.assertFalse(image.has_mask)
         elif mask is not None and ignore==True:

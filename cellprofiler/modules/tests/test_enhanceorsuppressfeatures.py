@@ -338,7 +338,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         #
         image = np.zeros((11,20))
         expected = np.zeros((11,20))
-        i,j = np.mgrid[-5:6,-5:16]
+        i,j = np.mgrid[-5:6,-5:15]
         image[i**2+j**2 < 23] = 1
         i,j = np.mgrid[-5:6,-15:5]
         image[i**2+j**2 <= 9] = 1

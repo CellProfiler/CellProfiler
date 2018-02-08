@@ -27,7 +27,7 @@ virtualenv:
   system_site_packages: true
 install:
   - pip install --upgrade pip
-  - pip install --upgrade 'numpy<1.12.0'
+  - pip install --upgrade 'numpy<=1.13.0'
   - pip install --requirement requirements.txt
   - pip freeze
 script:

@@ -815,11 +815,11 @@ class Crop(cpm.CPModule):
         i_cumsum    = np.cumsum(i_histogram > pixel_data.shape[0]/2)
         j_histogram = pixel_data.sum(axis=0)
         j_cumsum    = np.cumsum(j_histogram > pixel_data.shape[1]/2)
-        i_first     = np.argwhere(i_cumsum==1)[0]
-        i_last      = np.argwhere(i_cumsum==i_cumsum.max())[0]
+        i_first     = np.argwhere(i_cumsum==1)[0][0]
+        i_last      = np.argwhere(i_cumsum==i_cumsum.max())[0][0]
         i_end       = i_last+1
-        j_first     = np.argwhere(j_cumsum==1)[0]
-        j_last      = np.argwhere(j_cumsum==j_cumsum.max())[0]
+        j_first     = np.argwhere(j_cumsum==1)[0][0]
+        j_last      = np.argwhere(j_cumsum==j_cumsum.max())[0][0]
         j_end       = j_last+1
         if not self.horizontal_limits.unbounded_min:
             j_first = max(j_first,self.horizontal_limits.min)

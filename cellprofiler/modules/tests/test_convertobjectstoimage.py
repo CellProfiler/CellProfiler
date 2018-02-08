@@ -160,7 +160,8 @@ class TestConvertObjectsToImage(unittest.TestCase):
         order = np.lexsort((i, j, v))
         ijv = np.column_stack((i, j, v))
         ijv = ijv[order, :]
-        same = np.all(ijv[:-1, :] == ijv[1:, :], 1)
+        # Array is missing an element so we add it at the end
+        same = np.append(np.all(ijv[:-1, :] == ijv[1:, :], 1), False)
         ijv = ijv[~same, :]
 
         pipeline = cpp.Pipeline()

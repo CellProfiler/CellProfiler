@@ -1363,7 +1363,7 @@ to the foreground pixels or the background pixels.
                 threshold_image = setting_values[i + 1]
                 threshold_method = setting_values[i + 2]
                 if saturation_image != cellprofiler.setting.DO_NOT_USE:
-                    if d not in saturation_image:
+                    if saturation_image not in d:
                         d[saturation_image] = {"check_blur": check_blur,
                                                "check_saturation": cellprofiler.setting.YES,
                                                "check_threshold": cellprofiler.setting.NO,
@@ -1372,7 +1372,7 @@ to the foreground pixels or the background pixels.
                         d[saturation_image]["check_blur"] = check_blur
                         d[saturation_image]["check_saturation"] = cellprofiler.setting.YES
                 if threshold_image != cellprofiler.setting.DO_NOT_USE:
-                    if d not in threshold_image:
+                    if threshold_image not in d:
                         d[threshold_image] = {"check_blur": cellprofiler.setting.NO,
                                               "check_saturation": cellprofiler.setting.NO,
                                               "check_threshold": cellprofiler.setting.YES,

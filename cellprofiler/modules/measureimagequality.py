@@ -177,6 +177,7 @@ F_LOCAL_FOCUS_SCORE = 'LocalFocusScore'
 F_CORRELATION = 'Correlation'
 F_POWER_SPECTRUM_SLOPE = 'PowerLogLogSlope'
 F_TOTAL_AREA = 'TotalArea'
+F_TOTAL_VOLUME = 'TotalVolume'
 F_TOTAL_INTENSITY = 'TotalIntensity'
 F_MEAN_INTENSITY = 'MeanIntensity'
 F_MEDIAN_INTENSITY = 'MedianIntensity'
@@ -184,7 +185,7 @@ F_STD_INTENSITY = 'StdIntensity'
 F_MAD_INTENSITY = 'MADIntensity'
 F_MAX_INTENSITY = 'MaxIntensity'
 F_MIN_INTENSITY = 'MinIntensity'
-INTENSITY_FEATURES = [F_TOTAL_AREA, F_TOTAL_INTENSITY, F_MEAN_INTENSITY, F_MEDIAN_INTENSITY, F_STD_INTENSITY,
+INTENSITY_FEATURES = [F_TOTAL_INTENSITY, F_MEAN_INTENSITY, F_MEDIAN_INTENSITY, F_STD_INTENSITY,
                       F_MAD_INTENSITY, F_MAX_INTENSITY, F_MIN_INTENSITY]
 F_PERCENT_MAXIMAL = 'PercentMaximal'
 F_PERCENT_MINIMAL = 'PercentMinimal'
@@ -645,7 +646,8 @@ to the foreground pixels or the background pixels.""" % globals()))
             # Intensity measurements
             if image_group.check_intensity.value:
                 for image_name in selected_images:
-                    for feature in INTENSITY_FEATURES:
+                    area_measurement = [F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA]
+                    for feature in area_measurement + INTENSITY_FEATURES:
                         measurement_name = image_name
                         columns.append((cpmeas.IMAGE,
                                         '%s_%s_%s' % (C_IMAGE_QUALITY, feature,
@@ -702,6 +704,7 @@ to the foreground pixels or the background pixels.""" % globals()))
             if self.any_blur():
                 result += [F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION]
             if self.any_intensity():
+                result += [F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA]
                 result += INTENSITY_FEATURES
             if self.any_saturation():
                 result += SATURATION_FEATURES
@@ -741,7 +744,7 @@ to the foreground pixels or the background pixels.""" % globals()))
                     result += self.images_to_process(image_group, None, pipeline)
             return result
 
-        if measurement in INTENSITY_FEATURES:
+        if measurement in INTENSITY_FEATURES + [F_TOTAL_AREA, F_TOTAL_VOLUME]:
             result = []
             for image_group in self.image_groups:
                 if image_group.check_intensity.value:

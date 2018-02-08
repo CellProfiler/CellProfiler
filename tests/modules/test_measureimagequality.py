@@ -83,14 +83,14 @@ class TestMeasureImageQuality(unittest.TestCase):
                 self.assertEqual(m_value, value,
                                  "Measured value, %f, for feature %s was not %f" %
                                  (m_value, feature_name, value))
-        self.features_and_columns_match(m, q)
+        self.features_and_columns_match(m, q, pipeline=workspace.pipeline)
 
     def features_and_columns_match(self, measurements, module,
-                                   object_name=cpmeas.IMAGE):
+                                   object_name=cpmeas.IMAGE, pipeline=None):
         self.assertTrue(object_name in measurements.get_object_names())
         features = measurements.get_feature_names(object_name)
         columns = filter((lambda x: x[0] == object_name),
-                         module.get_measurement_columns(None))
+                         module.get_measurement_columns(pipeline))
         self.assertEqual(len(features), len(columns))
         for column in columns:
             self.assertTrue(column[1] in features, 'features_and_columns_match, %s not in %s' % (column[1], features))
@@ -433,7 +433,7 @@ class TestMeasureImageQuality(unittest.TestCase):
 
         m.add_all_measurements(cpmeas.IMAGE, feature, dlist)
         module.post_run(workspace)
-        self.features_and_columns_match(m, module, cpmeas.EXPERIMENT)
+        self.features_and_columns_match(m, module, cpmeas.EXPERIMENT, pipeline=workspace.pipeline)
 
         # Check threshold algorithms
         threshold_group = module.image_groups[0].threshold_groups[0]

@@ -89,7 +89,7 @@ Measurements made by this module
       absolute deviation (MAD) of pixel intensity values.
    -  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel
       intensity values.
-   -  *TotalArea:* Number of pixels measured.
+   -  *TotalArea/TotalVolume:* Number of pixels (or voxels) measured.
    -  *Scaling*: if *Yes* is chosen for "Include the image rescaling value?",
       image’s rescaling value will be stored as a quality control metric.
       This is useful in confirming that all images are rescaled by the same value,
@@ -1005,6 +1005,9 @@ to the foreground pixels or the background pixels.""" % globals()))
         if image.has_mask:
             pixels = pixels[image.mask]
 
+        volumetric = workspace.pipeline.volumetric()
+        area_text, area_measurement = ("Volume", F_TOTAL_VOLUME) if volumetric else ("Area", F_TOTAL_AREA)
+
         result = []
         pixel_count = np.product(pixels.shape)
         if pixel_count == 0:
@@ -1025,7 +1028,7 @@ to the foreground pixels or the background pixels.""" % globals()))
             pixel_max = np.max(pixels)
 
         m = workspace.measurements
-        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_TOTAL_AREA, image_name)), pixel_count)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, area_measurement, image_name)), pixel_count)
         m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_TOTAL_INTENSITY, image_name)), pixel_sum)
         m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_MEAN_INTENSITY, image_name)), pixel_mean)
         m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_MEDIAN_INTENSITY, image_name)), pixel_median)
@@ -1044,7 +1047,7 @@ to the foreground pixels or the background pixels.""" % globals()))
                                               ('MAD intensity', pixel_mad),
                                               ('Min intensity', pixel_min),
                                               ('Max intensity', pixel_max),
-                                              ('Total area', pixel_count))]
+                                              ('Total {}'.format(area_text), pixel_count))]
         return result
 
     def calculate_power_spectrum(self, image_group, workspace):

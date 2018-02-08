@@ -23,27 +23,27 @@ import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
 import centrosome.threshold as cpthresh
 
-MY_IMAGE = "my_image"
-MY_OBJECTS = "my_objects"
+IMAGES_NAME = "my_image"
+OBJECTS_NAME = "my_objects"
 
 
 class TestMeasureImageQuality(unittest.TestCase):
-    def make_workspace(self, pixel_data, mask=None, objects=None):
+    def make_workspace(self, pixel_data, mask=None, objects=None, dimensions=2):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        image = cpi.Image(pixel_data)
+        image = cpi.Image(pixel_data, dimensions=dimensions)
         if not mask is None:
             image.mask = mask
-        image_set.add(MY_IMAGE, image)
+        image_set.add(IMAGES_NAME, image)
         if not objects is None:
             o = cpo.Objects()
             o.segmented = objects
-            object_set.add_objects(o, MY_OBJECTS)
+            object_set.add_objects(o, OBJECTS_NAME)
         module = miq.MeasureImageQuality()
         module.images_choice.value = miq.O_SELECT
         module.image_groups[0].include_image_scalings.value = False
-        module.image_groups[0].image_names.value = MY_IMAGE
+        module.image_groups[0].image_names.value = IMAGES_NAME
         module.image_groups[0].use_all_threshold_methods.value = False
         module.module_num = 1
         pipeline = cpp.Pipeline()
@@ -896,3 +896,48 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertEqual(len(image_names), len(expected_names))
         for image_name in image_names:
             self.assertTrue(image_name in expected_names)
+
+    def test_07_01_volumetric_measurements(self):
+        # Test that a volumetric pipeline returns volumetric measurements
+        labels = np.zeros((10, 20, 40), dtype=np.uint8)
+        labels[:, 5:15, 25:35] = 1
+        labels[:, 7, 27] = 2
+
+        workspace = self.make_workspace(labels, dimensions=3)
+        workspace.pipeline.set_volumetric(True)
+        module = workspace.module
+        module.run(workspace)
+
+        # Names and values will be associated directly
+        names = ["_".join([miq.C_IMAGE_QUALITY, feature, IMAGES_NAME])
+                 for feature in [miq.F_TOTAL_VOLUME,
+                                 miq.F_TOTAL_INTENSITY,
+                                 miq.F_MEAN_INTENSITY,
+                                 miq.F_MEDIAN_INTENSITY,
+                                 miq.F_STD_INTENSITY,
+                                 miq.F_MAD_INTENSITY,
+                                 miq.F_MAX_INTENSITY,
+                                 miq.F_MIN_INTENSITY]]
+        values = [8000,
+                  3.9607843137254903,
+                  0.0004950980392156863,
+                  0.,
+                  0.0013171505688094403,
+                  0.,
+                  0.00784313725490196,
+                  0.]
+        expected = dict(zip(names, values))
+
+        for feature, value in expected.items():
+            assert workspace.measurements.has_current_measurements(
+                cpmeas.IMAGE,
+                feature
+            )
+
+            actual = workspace.measurements.get_current_measurement(
+                cpmeas.IMAGE,
+                feature
+            )
+
+            np.testing.assert_almost_equal(actual, value, decimal=5)
+            print("{} expected {}, got {}".format(feature, value, actual))

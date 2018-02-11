@@ -1,7 +1,9 @@
 # coding:utf-8
 
+import os.path
 import urllib
 
+import pkg_resources
 import wx
 
 import cellprofiler
@@ -326,7 +328,7 @@ WELCOME_MAIN = u"""\
             <td width="1">&nbsp;</td>
             <td colspan="2">
                 <a href=
-                "loadexample:https://raw.githubusercontent.com/CellProfiler/examples/{{}}/ExampleFly/ExampleFlyURL.cppipe">
+                "loadexample:ExampleFlyURL.cppipe">
                 Load</a> an example pipeline, then click on the "Analyze
                 Images" button.
             </td>
@@ -507,41 +509,18 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
         html_str = self.href_to_help[href]
         self.SetPage(html_str)
 
-    def __load_example_pipeline(self, pipeline_filename):
+    @staticmethod
+    def __load_example_pipeline(pipeline_filename):
+        pipeline_pathname = pkg_resources.resource_filename(
+            "cellprofiler",
+            os.path.join("data", "examples", pipeline_filename)
+        )
+
         try:
-            # Try loading an example pipeline corresponding to the running version of CellProfiler.
-            fd = urllib.urlopen(pipeline_filename.format(cellprofiler.__version__))
-            if fd.code < 200 or fd.code > 200:
-                # Try loading the example pipeline from CellProfiler/examples master branch.
-                fd = urllib.urlopen(pipeline_filename.format("master"))
-
-            if fd.code < 200 or fd.code > 299:
-                wx.MessageBox(
-                    "Sorry, the link, \"%s\" is broken,"
-                    " please contact the webmaster" % pipeline_filename.format("master"),
-                    caption="Unable to access pipeline via internet",
-                    style=wx.OK | wx.ICON_INFORMATION
-                )
-                return
-
-            def fn(fd=fd):
-                import cellprofiler.modules.loaddata
-
+            def load(pathname=pipeline_pathname):
                 pipeline = wx.GetApp().frame.pipeline
 
-                pipeline.load(fd)
-
-                for module in pipeline.modules():
-                    if isinstance(module, cellprofiler.modules.loaddata.LoadData):
-                        # Would prefer to call LoadData's do_reload but not sure how at this point
-                        global header_cache
-
-                        header_cache = {}
-
-                        try:
-                            module.open_csv()
-                        except:
-                            pass
+                pipeline.load(pathname)
 
                 wx.MessageBox(
                     "Now that you have loaded an example pipeline, press the \"Analyze images\" button to access and"
@@ -550,10 +529,10 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
                     wx.ICON_INFORMATION
                 )
 
-            wx.CallAfter(fn)
+            wx.CallAfter(load)
         except:
             wx.MessageBox(
-                "CellProfiler was unable to load %s" % pipeline_filename.format("master"),
+                "CellProfiler was unable to load {}".format(pipeline_pathname),
                 "Error loading pipeline",
                 style=wx.OK | wx.ICON_ERROR
             )

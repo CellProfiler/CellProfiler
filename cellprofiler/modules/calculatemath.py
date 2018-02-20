@@ -24,7 +24,7 @@ for each cell).
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES          NO
 ============ ============ ===============
 
 See also
@@ -598,3 +598,6 @@ Enter the power by which you would like to raise the result.
             setting_values += ["0", cps.NO, "0", cps.NO, "1"]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
+    
+    def volumetric(self):
+        return True

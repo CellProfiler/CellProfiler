@@ -1,16 +1,16 @@
 CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
-GitHash:eb6fa7a7e
+GitHash:
 ModuleCount:16
-HasImagePlaneDetails:True
+HasImagePlaneDetails:False
 
 Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     :
     Filter images?:Images only
     Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Extract metadata?:No
     Metadata data type:Text
     Metadata types:{}
@@ -21,9 +21,10 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_w
     Regular expression to extract from folder name:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
     Extract metadata from:All images
     Select the filtering criteria:and (file does contain "")
-    Metadata file location:
+    Metadata file location:Elsewhere...\x7C
     Match file and image metadata:\x5B\x5D
     Use case insensitive matching?:No
+    Metadata file name:
 
 NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:8|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Assign a name to:Images matching rules
@@ -279,15 +280,3 @@ ExportToSpreadsheet:[module_num:16|svn_version:\'Unknown\'|variable_revision_num
     Combine these object measurements with those of the previous object?:No
     File name:Cytoplasm.csv
     Use the object name for the file name?:No
-    
-"Version":"1","PlaneCount":"9"
-"URL","Series","Index","Channel"
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS002_D.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS002_F.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS002_R.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS076_D.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS076_F.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS076_R.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS218_D.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS218_F.TIF",,,
-"https://raw.githubusercontent.com/CellProfiler/examples/master/ExampleFly/images/01_POS218_R.TIF",,,

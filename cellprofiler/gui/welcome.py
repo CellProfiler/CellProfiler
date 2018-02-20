@@ -1,5 +1,6 @@
 # coding:utf-8
 
+import glob
 import os.path
 import urllib
 
@@ -328,7 +329,7 @@ WELCOME_MAIN = u"""\
             <td width="1">&nbsp;</td>
             <td colspan="2">
                 <a href=
-                "loadexample:ExampleFlyURL.cppipe">
+                "loadexample:ExampleFly">
                 Load</a> an example pipeline, then click on the "Analyze
                 Images" button.
             </td>
@@ -510,17 +511,21 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
         self.SetPage(html_str)
 
     @staticmethod
-    def __load_example_pipeline(pipeline_filename):
-        pipeline_pathname = pkg_resources.resource_filename(
+    def __load_example_pipeline(example_name):
+        example_dir = pkg_resources.resource_filename(
             "cellprofiler",
-            os.path.join("data", "examples", pipeline_filename)
+            os.path.join("data", "examples", example_name)
         )
+
+        pipeline_pathname = os.path.join(example_dir, "{:s}.cppipe".format(example_name))
+
+        images_dir = os.path.join(example_dir, "images")
 
         try:
             def load(pathname=pipeline_pathname):
                 pipeline = wx.GetApp().frame.pipeline
-
                 pipeline.load(pathname)
+                pipeline.add_pathnames_to_file_list(glob.glob(os.path.join(images_dir, "*")))
 
                 wx.MessageBox(
                     "Now that you have loaded an example pipeline, press the \"Analyze images\" button to access and"

@@ -459,5 +459,5 @@ setuptools.setup(
         "pytest"
     ],
     url="https://github.com/CellProfiler/CellProfiler",
-    version="2.2.0"
+    version="2.2.2"
 )

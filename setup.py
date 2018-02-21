@@ -1,5 +1,4 @@
 import codecs
-import glob
 import os
 import re
 
@@ -21,6 +20,15 @@ def find_version(*pathnames):
         return matched.group(1)
 
     raise RuntimeError("Unable to find version string.")
+
+
+def find_resources(directory, subdirectory):
+    resources = []
+    for root, _, filenames in os.walk(os.path.join(directory, subdirectory)):
+        resources += [os.path.relpath(os.path.join(root, filename), directory) for filename in filenames]
+
+    return resources
+
 
 setuptools.setup(
     author="cellprofiler-dev",
@@ -73,7 +81,7 @@ setuptools.setup(
     license="BSD",
     name="CellProfiler",
     package_data={
-        "cellprofiler": [os.path.join("data", "**", "*")]
+        "cellprofiler": find_resources("cellprofiler", "data")
     },
     include_package_data=True,
     packages=setuptools.find_packages(exclude=[

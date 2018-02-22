@@ -24,7 +24,8 @@ Given an image with identified objects (e.g., nuclei or cells), this
 module extracts area and shape features of each one. Note that these
 features are only reliable for objects that are completely inside the
 image borders, so you may wish to exclude objects touching the edge of
-the image using **Identify** settings for 2D objects or **ClearBorder** for 3D objects.
+the image using **Identify** settings for 2D objects, or by applying
+**FilterObjects** downstream.
 
 The display window for this module shows per-image
 aggregates for the per-object measurements. If you want to view the

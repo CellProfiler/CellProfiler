@@ -161,7 +161,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertTrue(isinstance(li, LI.LoadImages))
                 module = pipeline.modules()[1]
                 self.assertTrue(isinstance(module, C.CreateBatchFiles))
-                li.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+                li.location.dir_choice = cps.ABSOLUTE_FOLDER_NAME
                 li.location.custom_path = ipath
                 module.wants_default_output_directory.value = False
                 module.custom_output_directory.value = bpath

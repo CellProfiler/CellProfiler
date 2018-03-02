@@ -84,13 +84,14 @@ from cellprofiler.setting import YES, NO
 from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
 from identify import add_object_count_measurements, add_object_location_measurements
 from identify import get_object_measurement_columns
-from loadimages import C_HEIGHT, C_WIDTH, C_PATH_NAME, C_MD5_DIGEST, C_URL
-from loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_URL
-from loadimages import C_OBJECTS_PATH_NAME, IO_IMAGES, IO_OBJECTS, IO_ALL
+from loadimages import C_HEIGHT, C_WIDTH, C_MD5_DIGEST, IO_IMAGES, IO_OBJECTS, IO_ALL
+from cellprofiler.measurement import C_OBJECTS_FILE_NAME, C_OBJECTS_URL, C_PATH_NAME, C_URL,\
+    C_OBJECTS_PATH_NAME, C_FILE_NAME
 from loadimages import IMAGE_FOR_OBJECTS_F
 from loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
-from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
+from loadimages import LoadImagesImageProvider, C_SCALING
 from loadimages import convert_image_to_objects, pathname2url
+import images
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
@@ -689,7 +690,7 @@ pipeline.
             edited_modules.add(namesandtypes)
             assignment = namesandtypes.assignments[-1]
             structure = [cps.Filter.AND_PREDICATE]
-            fp = cpnamesandtypes.FilePredicate()
+            fp = images.FilePredicate()
             fp_does, fp_does_not = [
                 [d for d in fp.subpredicates if isinstance(d, c)][0]
                 for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]

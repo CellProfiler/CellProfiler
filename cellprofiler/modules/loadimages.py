@@ -3642,7 +3642,7 @@ def bad_sizes_warning(first_size, first_filename,
 
 
 FILE_SCHEME = "file:"
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
+PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
 
 
 def pathname2url(path):

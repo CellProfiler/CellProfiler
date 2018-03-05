@@ -5,6 +5,7 @@ import re
 import time
 import urllib
 
+import boto3
 import javabridge
 
 import _help
@@ -699,11 +700,20 @@ not being applied, your choice on this setting may be the culprit.
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                fd = urllib.urlopen(csv_path)
+                url = csv_path
+
+                if url.startswith('s3'):
+                    client = boto3.client('s3')
+                    bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+                    url = client.generate_presigned_url('get_object',
+                                                        Params={'Bucket': bucket_name,
+                                                                'Key': filename.replace("+", " ")},
+                                                        ExpiresIn=86400)
+                fd = urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
-        except Exception:
+        except Exception as e:
             return None
         return group.imported_metadata_header_line
 
@@ -747,7 +757,17 @@ not being applied, your choice on this setting may be the culprit.
                     "(Ljava/lang/String;)V",
                     header)
         elif group.csv_location.is_url():
-            jurl = javabridge.make_instance("java/net/URL", "(Ljava/lang/String;)V", self.csv_path(group))
+            url = self.csv_path(group)
+
+            if url.startswith('s3'):
+                client = boto3.client('s3')
+                bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+                url = client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': bucket_name,
+                                                            'Key': filename.replace("+", " ")},
+                                                    ExpiresIn=86400)
+
+            jurl = javabridge.make_instance("java/net/URL", "(Ljava/lang/String;)V", url)
             stream = javabridge.call(
                     jurl, "openStream",
                     "()Ljava/io/InputStream;")

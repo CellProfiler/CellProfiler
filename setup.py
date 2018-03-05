@@ -59,6 +59,7 @@ setuptools.setup(
         ]
     },
     install_requires=[
+        "boto3",
         "centrosome",
         "docutils",
         "h5py",
@@ -69,8 +70,8 @@ setuptools.setup(
         "matplotlib>=2.0.0, !=2.1.0",
         "MySQL-python",
         "numpy",
-        "prokaryote==2.3.2",
-        "python-bioformats==1.3.1",
+        "prokaryote==2.3.3",
+        "python-bioformats==1.4.0",
         "pyzmq==15.3.0",
         "raven",
         "requests",

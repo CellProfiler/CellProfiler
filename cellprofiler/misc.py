@@ -18,7 +18,7 @@ def generate_presigned_url(url):
         url = client.generate_presigned_url(
             "get_object",
             Params={"Bucket": bucket_name,
-                    "Key": filename.replace("+", " ")},
-            ExpiresIn=86400)
+                    "Key": filename.replace("+", " ")}
+        )
 
     return url

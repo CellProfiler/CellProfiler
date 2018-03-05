@@ -741,17 +741,8 @@ class PipelineController:
                                  "ExampleSBSImages/ExampleSBS.cppipe",
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
-            import re
-            import boto3
-
-            url = dlg.Value
-            if url.startswith('s3'):
-                client = boto3.client('s3')
-                bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
-                url = client.generate_presigned_url('get_object',
-                                                    Params={'Bucket': bucket_name, 'Key': filename.replace("+", " ")},
-                                                    ExpiresIn=86400)
-
+            import cellprofiler.misc
+            url = cellprofiler.misc.generate_presigned_url(dlg.Value)
             filename, headers = urllib.urlretrieve(url)
             try:
                 self.do_load_pipeline(filename)

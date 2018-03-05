@@ -1,4 +1,4 @@
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and 
+'''<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
 This module loads a file that supplies text or numerical data associated with
@@ -168,6 +168,7 @@ import matplotlib.mlab
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
+import cellprofiler.misc
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
@@ -633,16 +634,7 @@ class LoadData(cpm.CPModule):
                     raise RuntimeError('Need to fetch URL manually.')
                 import urllib2
                 try:
-                    url = self.csv_path
-
-                    if url.startswith('s3'):
-                        client = boto3.client('s3')
-                        bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
-                        url = client.generate_presigned_url('get_object',
-                                                            Params={'Bucket': bucket_name,
-                                                                    'Key': filename.replace("+", " ")},
-                                                            ExpiresIn=86400)
-
+                    url = cellprofiler.misc.generate_presigned_url(self.csv_path)
                     url_fd = urllib2.urlopen(url)
                 except Exception, e:
                     entry["URLEXCEPTION"] = e

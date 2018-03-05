@@ -103,10 +103,9 @@ import time
 import urllib
 import urlparse
 
-import boto3
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.misc
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -509,15 +508,7 @@ class Metadata(cpm.CPModule):
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                url = csv_path
-
-                if url.startswith('s3'):
-                    client = boto3.client('s3')
-                    bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
-                    url = client.generate_presigned_url('get_object',
-                                                        Params={'Bucket': bucket_name,
-                                                                'Key': filename.replace("+", " ")},
-                                                        ExpiresIn=86400)
+                url = cellprofiler.misc.generate_presigned_url(csv_path)
                 fd = urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
@@ -567,7 +558,7 @@ class Metadata(cpm.CPModule):
                 "(Ljava/lang/String;)V",
                 header)
         elif group.csv_location.is_url():
-            url = group.csv_location.value
+            url = cellprofiler.misc.generate_presigned_url(group.csv_location.value)
 
             if url.startswith('s3'):
                 client = boto3.client('s3')
@@ -576,7 +567,7 @@ class Metadata(cpm.CPModule):
                                                     Params={'Bucket': bucket_name,
                                                             'Key': filename.replace("+", " ")},
                                                     ExpiresIn=86400)
-            
+
             jurl = J.make_instance(
                 "java/net/URL",
                 "(Ljava/lang/String;)V",

@@ -633,7 +633,17 @@ class LoadData(cpm.CPModule):
                     raise RuntimeError('Need to fetch URL manually.')
                 import urllib2
                 try:
-                    url_fd = urllib2.urlopen(self.csv_path)
+                    url = self.csv_path
+
+                    if url.startswith('s3'):
+                        client = boto3.client('s3')
+                        bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+                        url = client.generate_presigned_url('get_object',
+                                                            Params={'Bucket': bucket_name,
+                                                                    'Key': filename.replace("+", " ")},
+                                                            ExpiresIn=86400)
+
+                    url_fd = urllib2.urlopen(url)
                 except Exception, e:
                     entry["URLEXCEPTION"] = e
                     raise e

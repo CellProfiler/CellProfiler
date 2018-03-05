@@ -1,4 +1,4 @@
-import cellprofiler.icons 
+import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
 __doc__ = """
 The <b>Metadata</b> module connects information about the images (i.e., metadata)
@@ -102,6 +102,8 @@ import os
 import time
 import urllib
 import urlparse
+
+import boto3
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -507,7 +509,16 @@ class Metadata(cpm.CPModule):
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                fd = urllib.urlopen(csv_path)
+                url = csv_path
+
+                if url.startswith('s3'):
+                    client = boto3.client('s3')
+                    bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+                    url = client.generate_presigned_url('get_object',
+                                                        Params={'Bucket': bucket_name,
+                                                                'Key': filename.replace("+", " ")},
+                                                        ExpiresIn=86400)
+                fd = urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
@@ -556,10 +567,20 @@ class Metadata(cpm.CPModule):
                 "(Ljava/lang/String;)V",
                 header)
         elif group.csv_location.is_url():
+            url = group.csv_location.value
+
+            if url.startswith('s3'):
+                client = boto3.client('s3')
+                bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+                url = client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': bucket_name,
+                                                            'Key': filename.replace("+", " ")},
+                                                    ExpiresIn=86400)
+            
             jurl = J.make_instance(
                 "java/net/URL",
                 "(Ljava/lang/String;)V",
-                group.csv_location.value)
+                url)
             stream = J.call(
                 jurl, "openStream",
                 "()Ljava/io/InputStream;")

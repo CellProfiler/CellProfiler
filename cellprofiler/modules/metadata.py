@@ -5,12 +5,12 @@ import re
 import time
 import urllib
 
-import boto3
 import javabridge
 
 import _help
 import cellprofiler.gui.help
 import cellprofiler.measurement
+import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.setting
@@ -700,15 +700,7 @@ not being applied, your choice on this setting may be the culprit.
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                url = csv_path
-
-                if url.startswith('s3'):
-                    client = boto3.client('s3')
-                    bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
-                    url = client.generate_presigned_url('get_object',
-                                                        Params={'Bucket': bucket_name,
-                                                                'Key': filename.replace("+", " ")},
-                                                        ExpiresIn=86400)
+                url = cellprofiler.misc.generate_presigned_url(csv_path)
                 fd = urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
@@ -757,16 +749,7 @@ not being applied, your choice on this setting may be the culprit.
                     "(Ljava/lang/String;)V",
                     header)
         elif group.csv_location.is_url():
-            url = self.csv_path(group)
-
-            if url.startswith('s3'):
-                client = boto3.client('s3')
-                bucket_name, filename = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
-                url = client.generate_presigned_url('get_object',
-                                                    Params={'Bucket': bucket_name,
-                                                            'Key': filename.replace("+", " ")},
-                                                    ExpiresIn=86400)
-
+            url = cellprofiler.misc.generate_presigned_url(self.csv_path(group))
             jurl = javabridge.make_instance("java/net/URL", "(Ljava/lang/String;)V", url)
             stream = javabridge.call(
                     jurl, "openStream",

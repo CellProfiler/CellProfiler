@@ -726,6 +726,9 @@ class Metadata(cpm.CPModule):
         url_array = env.make_object_array(len(filtered_file_list), scls)
         metadata_array = env.make_object_array(len(filtered_file_list), scls)
         for i, url in enumerate(filtered_file_list):
+            if url.startswith("s3:"):
+                url = url.replace(" ", "+")
+
             if isinstance(url, unicode):
                 ourl = env.new_string(url)
             else:

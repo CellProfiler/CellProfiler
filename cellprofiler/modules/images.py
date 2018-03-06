@@ -327,6 +327,9 @@ pass the current filter.
                 expression, ifcls)
             file_array = env.make_object_array(len(file_list), scls)
             for i, url in enumerate(file_list):
+                if url.startswith("s3:"):
+                    url = url.replace(" ", "+")
+
                 if isinstance(url, unicode):
                     ourl = env.new_string(url)
                 else:

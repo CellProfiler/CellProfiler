@@ -978,7 +978,7 @@ def get_absolute_path(path, abspath_mode=ABSPATH_IMAGE):
 
 def is_url_path(path):
     '''Return True if the path should be treated as a URL'''
-    for protocol in ('http', 'https', 'ftp'):
+    for protocol in ('http', 'https', 'ftp', 's3'):
         if path.lower().startswith('%s:' % protocol):
             return True
     return False

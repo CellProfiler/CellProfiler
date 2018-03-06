@@ -1,20 +1,12 @@
-'''test_images.py - test the Images module
-'''
-
-import csv
 import os
 import tempfile
 import unittest
-import urllib
-from cStringIO import StringIO
+import cStringIO
 
-import numpy as np
-
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.images as I
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
+import cellprofiler.measurement
+import cellprofiler.modules.images
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 
 class TestImages(unittest.TestCase):
@@ -23,7 +15,7 @@ class TestImages(unittest.TestCase):
         # an HDF5 file.
         #
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.measurements = cpmeas.Measurements(
+        self.measurements = cellprofiler.measurement.Measurements(
                 filename=self.temp_filename)
         os.close(self.temp_fd)
 
@@ -44,17 +36,17 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
     Filter based on rules:Yes
     Filter:or (directory does startwith "foo") (file does contain "bar")
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(cStringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, I.Images))
-        self.assertEqual(module.filter_choice, I.FILTER_CHOICE_CUSTOM)
+        self.assertTrue(isinstance(module, cellprofiler.modules.images.Images))
+        self.assertEqual(module.filter_choice, cellprofiler.modules.images.FILTER_CHOICE_CUSTOM)
         self.assertEqual(module.filter.value, 'or (directory does startwith "foo") (file does contain "bar")')
 
     def test_01_02_load_v2(self):
@@ -69,25 +61,25 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
     Filter choice:%s
     Filter:or (directory does startwith "foo") (file does contain "bar")
 """
-        for fc, fctext in ((I.FILTER_CHOICE_CUSTOM, "Custom"),
-                           (I.FILTER_CHOICE_IMAGES, "Images only"),
-                           (I.FILTER_CHOICE_NONE, "No filtering")):
-            pipeline = cpp.Pipeline()
+        for fc, fctext in ((cellprofiler.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
+                           (cellprofiler.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
+                           (cellprofiler.modules.images.FILTER_CHOICE_NONE, "No filtering")):
+            pipeline = cellprofiler.pipeline.Pipeline()
 
             def callback(caller, event):
-                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+                self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
             pipeline.add_listener(callback)
-            pipeline.load(StringIO(data % fctext))
+            pipeline.load(cStringIO.StringIO(data % fctext))
             self.assertEqual(len(pipeline.modules()), 1)
             module = pipeline.modules()[0]
-            self.assertTrue(isinstance(module, I.Images))
+            self.assertTrue(isinstance(module, cellprofiler.modules.images.Images))
             self.assertEqual(module.filter_choice, fc)
             self.assertEqual(module.filter.value, 'or (directory does startwith "foo") (file does contain "bar")')
 
     def test_02_04_filter_url(self):
-        module = I.Images()
-        module.filter_choice.value = I.FILTER_CHOICE_CUSTOM
+        module = cellprofiler.modules.images.Images()
+        module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_CUSTOM
         for url, filter_value, expected in (
                 ("file:/TestImages/NikonTIF.tif",
                  'and (file does startwith "Nikon") (extension does istif)', True),
@@ -102,12 +94,12 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
     def check(self, module, url, expected):
         '''Check filtering of one URL using the module as configured'''
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_urls([url])
         module.module_num = 1
         pipeline.add_module(module)
-        m = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, module, None, None, m, None)
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, None)
         file_list = pipeline.get_filtered_file_list(workspace)
         if expected:
             self.assertEqual(len(file_list), 1)
@@ -116,8 +108,8 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             self.assertEqual(len(file_list), 0)
 
     def test_02_05_filter_standard(self):
-        module = I.Images()
-        module.filter_choice.value = I.FILTER_CHOICE_IMAGES
+        module = cellprofiler.modules.images.Images()
+        module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_IMAGES
         for url, expected in (
                 ("file:/TestImages/NikonTIF.tif", True),
                 ("file:/foo/.bar/baz.tif", False),

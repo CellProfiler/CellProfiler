@@ -747,8 +747,9 @@ class PipelineController(object):
                                  "ExampleSBSImages/ExampleSBS.cppipe",
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
-            import urllib2
-            filename, headers = urllib.urlretrieve(dlg.Value)
+            import cellprofiler.misc
+            url = cellprofiler.misc.generate_presigned_url(dlg.Value)
+            filename, headers = urllib.urlretrieve(url)
             try:
                 self.do_load_pipeline(filename)
             finally:

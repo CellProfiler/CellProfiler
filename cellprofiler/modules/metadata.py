@@ -10,6 +10,7 @@ import javabridge
 import _help
 import cellprofiler.gui.help
 import cellprofiler.measurement
+import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.setting
@@ -699,11 +700,12 @@ not being applied, your choice on this setting may be the culprit.
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                fd = urllib.urlopen(csv_path)
+                url = cellprofiler.misc.generate_presigned_url(csv_path)
+                fd = urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
-        except Exception:
+        except Exception as e:
             return None
         return group.imported_metadata_header_line
 
@@ -747,7 +749,8 @@ not being applied, your choice on this setting may be the culprit.
                     "(Ljava/lang/String;)V",
                     header)
         elif group.csv_location.is_url():
-            jurl = javabridge.make_instance("java/net/URL", "(Ljava/lang/String;)V", self.csv_path(group))
+            url = cellprofiler.misc.generate_presigned_url(self.csv_path(group))
+            jurl = javabridge.make_instance("java/net/URL", "(Ljava/lang/String;)V", url)
             stream = javabridge.call(
                     jurl, "openStream",
                     "()Ljava/io/InputStream;")
@@ -910,6 +913,9 @@ not being applied, your choice on this setting may be the culprit.
         url_array = env.make_object_array(len(filtered_file_list), scls)
         metadata_array = env.make_object_array(len(filtered_file_list), scls)
         for i, url in enumerate(filtered_file_list):
+            if url.startswith("s3:"):
+                url = url.replace(" ", "+")
+
             if isinstance(url, unicode):
                 ourl = env.new_string(url)
             else:

@@ -1479,9 +1479,9 @@ available:
         image_names = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.modules.loadimages.C_FILE_NAME) + 1):]
+            choice = feature[(len(cellprofiler.measurement.C_FILE_NAME) + 1):]
             if object_name == cellprofiler.measurement.IMAGE and \
-                    (feature.startswith(cellprofiler.modules.loadimages.C_FILE_NAME)):
+                    (feature.startswith(cellprofiler.measurement.C_FILE_NAME)):
                 image_names.append(choice)
         return image_names
 
@@ -3690,7 +3690,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             c[1] for c in workspace.pipeline.get_measurement_columns()
             if c[0] == cellprofiler.measurement.IMAGE]
         for feature in image_features:
-            match = re.match('^%s_(.+)$' % cellprofiler.modules.loadimages.C_FILE_NAME, feature)
+            match = re.match('^%s_(.+)$' % cellprofiler.measurement.C_FILE_NAME, feature)
             if match:
                 default_image_names.append(match.groups()[0])
 
@@ -3789,11 +3789,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             if self.properties_export_all_image_defaults:
                 image_file_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       cellprofiler.modules.loadimages.C_FILE_NAME,
+                                       cellprofiler.measurement.C_FILE_NAME,
                                        name) for name in default_image_names])
                 image_path_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       cellprofiler.modules.loadimages.C_PATH_NAME,
+                                       cellprofiler.measurement.C_PATH_NAME,
                                        name) for name in default_image_names])
 
                 # Provide default colors
@@ -3834,11 +3834,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
                 image_file_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       cellprofiler.modules.loadimages.C_FILE_NAME,
+                                       cellprofiler.measurement.C_FILE_NAME,
                                        name) for name in selected_image_names])
                 image_path_cols = ','.join(
                         ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
-                                       cellprofiler.modules.loadimages.C_PATH_NAME,
+                                       cellprofiler.measurement.C_PATH_NAME,
                                        name) for name in selected_image_names])
 
                 # Try to match thumbnail order to selected image order
@@ -4150,13 +4150,13 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         PathNameWidth = 128
         image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
         for feature in image_features:
-            if feature.startswith(cellprofiler.modules.loadimages.C_FILE_NAME):
+            if feature.startswith(cellprofiler.measurement.C_FILE_NAME):
                 names = [name
                          for name in m.get_all_measurements(cellprofiler.measurement.IMAGE, feature)
                          if name is not None]
                 if len(names) > 0:
                     FileNameWidth = max(FileNameWidth, numpy.max(map(len, names)))
-            elif feature.startswith(cellprofiler.modules.loadimages.C_PATH_NAME):
+            elif feature.startswith(cellprofiler.measurement.C_PATH_NAME):
                 names = [name
                          for name in m.get_all_measurements(cellprofiler.measurement.IMAGE, feature)
                          if name is not None]

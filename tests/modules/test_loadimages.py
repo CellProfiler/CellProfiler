@@ -1,6 +1,4 @@
-"""Test the LoadImages module
-"""
-
+import StringIO
 import base64
 import glob
 import hashlib
@@ -13,27 +11,23 @@ import traceback
 import unittest
 import urllib
 import zlib
-from StringIO import StringIO
 
-import cellprofiler.image as I
+import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.measurement as measurements
-import cellprofiler.modules.loadimages as LI
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.pipeline as P
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as W
-import numpy as np
-import tests.modules as T
-from bioformats.formatreader import clear_image_reader_cache
-from bioformats.formatwriter import write_image
-from bioformats.omexml import PT_UINT8
-from cellprofiler.modules.namesandtypes import M_IMAGE_SET
-from tests.modules import \
-    example_images_directory, maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly, \
-    cp_logo_url_folder, cp_logo_url_filename, cp_logo_url_shape
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.namesandtypes
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.workspace
+import numpy
 import skimage.io
+import tests.modules
+
+import bioformats.formatreader
+import bioformats.formatwriter
+import bioformats.omexml
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -56,22 +50,22 @@ class ConvtesterMixin:
         fn_filter - a function that returns True if a file should be included
                     in the workspace file list.
         '''
-        cpprefs.set_default_image_directory(directory)
-        pipeline = cpp.Pipeline()
-        pipeline.load(StringIO(pipeline_text))
+        cellprofiler.preferences.set_default_image_directory(directory)
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.load(StringIO.StringIO(pipeline_text))
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        m = [m for m in pipeline.modules() if isinstance(m, LI.LoadImages)][0]
-        m1 = measurements.Measurements()
-        w1 = W.Workspace(pipeline, m, m1, None, m1, None)
+        m = [m for m in pipeline.modules() if isinstance(m, cellprofiler.modules.loadimages.LoadImages)][0]
+        m1 = cellprofiler.measurement.Measurements()
+        w1 = cellprofiler.workspace.Workspace(pipeline, m, m1, None, m1, None)
         pipeline.prepare_run(w1)
 
-        m2 = measurements.Measurements()
-        w2 = W.Workspace(pipeline, m, m2, None, m2, None)
-        urls = [LI.pathname2url(os.path.join(directory, filename))
+        m2 = cellprofiler.measurement.Measurements()
+        w2 = cellprofiler.workspace.Workspace(pipeline, m, m2, None, m2, None)
+        urls = [cellprofiler.modules.loadimages.pathname2url(os.path.join(directory, filename))
                 for filename in os.listdir(directory)
                 if fn_filter(filename)]
         w2.file_list.add_files_to_filelist(urls)
@@ -79,24 +73,24 @@ class ConvtesterMixin:
         pipeline.convert_legacy_input_modules()
         pipeline.prepare_run(w2)
 
-        ff1 = m1.get_feature_names(measurements.IMAGE)
+        ff1 = m1.get_feature_names(cellprofiler.measurement.IMAGE)
         ffexpected = [f.replace("IMAGE_FOR_", "") for f in ff1
-                      if not f.startswith(measurements.C_METADATA)]
-        ff2 = [x for x in m2.get_feature_names(measurements.IMAGE)
+                      if not f.startswith(cellprofiler.measurement.C_METADATA)]
+        ff2 = [x for x in m2.get_feature_names(cellprofiler.measurement.IMAGE)
                if not any([x.startswith(y) for y in (
-                measurements.C_FRAME, measurements.C_SERIES,
-                measurements.C_OBJECTS_FRAME,
-                measurements.C_OBJECTS_SERIES,
-                measurements.C_CHANNEL,
-                measurements.C_OBJECTS_CHANNEL,
-                measurements.C_METADATA,
-                M_IMAGE_SET
+                cellprofiler.measurement.C_FRAME, cellprofiler.measurement.C_SERIES,
+                cellprofiler.measurement.C_OBJECTS_FRAME,
+                cellprofiler.measurement.C_OBJECTS_SERIES,
+                cellprofiler.measurement.C_CHANNEL,
+                cellprofiler.measurement.C_OBJECTS_CHANNEL,
+                cellprofiler.measurement.C_METADATA,
+                cellprofiler.modules.namesandtypes.M_IMAGE_SET
             )])]
         self.assertItemsEqual(ffexpected, ff2)
         for feature in ff1:
-            if feature.startswith(measurements.C_METADATA):
-                self.assertTrue(m2.has_feature(measurements.IMAGE, feature))
-        ff1a = filter((lambda x: not x.startswith(measurements.C_METADATA)),
+            if feature.startswith(cellprofiler.measurement.C_METADATA):
+                self.assertTrue(m2.has_feature(cellprofiler.measurement.IMAGE, feature))
+        ff1a = filter((lambda x: not x.startswith(cellprofiler.measurement.C_METADATA)),
                       ff1)
         self.assertEqual(m1.image_set_count, m2.image_set_count)
         image_numbers = m1.get_image_numbers()
@@ -105,44 +99,44 @@ class ConvtesterMixin:
         #
         m_url1 = sorted(ff1, key=lambda f: f.replace("IMAGE_FOR_", ""))
         m_url2 = sorted(ff2)
-        order1, order2 = [np.lexsort(
-                [mm.get_measurement(measurements.IMAGE, f, image_numbers)
+        order1, order2 = [numpy.lexsort(
+                [mm.get_measurement(cellprofiler.measurement.IMAGE, f, image_numbers)
                  for f in m_url]) for mm, m_url in ((m1, m_url1), (m2, m_url2))]
         image_numbers1 = image_numbers[order1]
         image_numbers2 = image_numbers[order2]
         for f1, f2 in zip(ff1a, ff2):
-            if f1 in (measurements.GROUP_INDEX, measurements.GROUP_NUMBER,
-                      measurements.IMAGE_NUMBER):
+            if f1 in (cellprofiler.measurement.GROUP_INDEX, cellprofiler.measurement.GROUP_NUMBER,
+                      cellprofiler.measurement.IMAGE_NUMBER):
                 continue
-            v1 = m1.get_measurement(measurements.IMAGE, f1,
+            v1 = m1.get_measurement(cellprofiler.measurement.IMAGE, f1,
                                     image_set_number=image_numbers1)
-            v2 = m2.get_measurement(measurements.IMAGE, f2,
+            v2 = m2.get_measurement(cellprofiler.measurement.IMAGE, f2,
                                     image_set_number=image_numbers2)
-            if (f1.startswith(measurements.C_PATH_NAME) or
-                    f1.startswith(measurements.C_OBJECTS_PATH_NAME)):
+            if (f1.startswith(cellprofiler.measurement.C_PATH_NAME) or
+                    f1.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)):
                 for p1, p2 in zip(v1, v2):
                     self.assertEqual(os.path.normcase(p1),
                                      os.path.normcase(p2))
-            elif (f1.startswith(measurements.C_URL) or
-                      f1.startswith(measurements.C_OBJECTS_URL)):
+            elif (f1.startswith(cellprofiler.measurement.C_URL) or
+                  f1.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
                 for p1, p2 in zip(v1, v2):
                     self.assertEqual(
-                            os.path.normcase(LI.url2pathname(p1.encode("utf-8"))),
-                            os.path.normcase(LI.url2pathname(p2.encode("utf-8"))))
+                            os.path.normcase(cellprofiler.modules.loadimages.url2pathname(p1.encode("utf-8"))),
+                            os.path.normcase(cellprofiler.modules.loadimages.url2pathname(p2.encode("utf-8"))))
             else:
-                np.testing.assert_array_equal(v1, v2)
+                numpy.testing.assert_array_equal(v1, v2)
 
 
 class testLoadImages(unittest.TestCase, ConvtesterMixin):
     @classmethod
     def setUpClass(cls):
-        maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
 
     def setUp(self):
         self.directory = None
 
     def tearDown(self):
-        clear_image_reader_cache()
+        bioformats.formatreader.clear_image_reader_cache()
         if self.directory is not None:
             try:
                 for path in (os.path.sep.join((self.directory, "*", "*")),
@@ -159,7 +153,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 traceback.print_exc()
 
     def error_callback(self, calller, event):
-        if isinstance(event, P.RunExceptionEvent):
+        if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             self.fail(event.error.message)
 
             # def test_00_00init(self):
@@ -1396,71 +1390,71 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     pipeline.run()
 
     def test_05_05_load_url(self):
-        lip = LI.LoadImagesImageProvider(
+        lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "broad",
-                cp_logo_url_folder,
-                cp_logo_url_filename, True)
+                tests.modules.cp_logo_url_folder,
+                tests.modules.cp_logo_url_filename, True)
         logo = lip.provide_image(None)
-        self.assertEqual(logo.pixel_data.shape, cp_logo_url_shape)
+        self.assertEqual(logo.pixel_data.shape, tests.modules.cp_logo_url_shape)
         lip.release_memory()
 
     def test_05_06_load_Nikon_tif(self):
         '''This is the Nikon format TIF file from IMG-838'''
-        maybe_download_tesst_image("NikonTIF.tif")
-        lip = LI.LoadImagesImageProvider(
+        tests.modules.maybe_download_tesst_image("NikonTIF.tif")
+        lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "nikon",
-                T.testimages_directory(),
+                tests.modules.testimages_directory(),
                 "NikonTIF.tif",
                 True)
         image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (731, 805, 3))
-        self.assertAlmostEqual(np.sum(image.astype(np.float64)), 560730.83, 0)
+        self.assertAlmostEqual(numpy.sum(image.astype(numpy.float64)), 560730.83, 0)
 
     def test_05_07_load_Metamorph_tif(self):
         '''Regression test of IMG-883
 
         This file generated a null-pointer exception in the MetamorphReader
         '''
-        maybe_download_tesst_image(
+        tests.modules.maybe_download_tesst_image(
                 "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
-        lip = LI.LoadImagesImageProvider(
+        lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "nikon",
-                T.testimages_directory(),
+                tests.modules.testimages_directory(),
                 "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif",
                 True)
         image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (520, 696))
-        self.assertAlmostEqual(np.sum(image.astype(np.float64)), 2071.93, 0)
+        self.assertAlmostEqual(numpy.sum(image.astype(numpy.float64)), 2071.93, 0)
 
     # With Subimager and the new file_ui framework, you'd load individual
     # planes.
     @unittest.skip
     def test_05_08_load_5channel_tif(self):
         '''Load a 5-channel image'''
-        maybe_download_tesst_image("5channel.tif")
-        path = T.testimages_directory()
+        tests.modules.maybe_download_tesst_image("5channel.tif")
+        path = tests.modules.testimages_directory()
         file_name = "5channel.tif"
-        maybe_download_tesst_image(file_name)
-        module = LI.LoadImages()
+        tests.modules.maybe_download_tesst_image(file_name)
+        module = cellprofiler.modules.loadimages.LoadImages()
         module.module_num = 1
-        module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-        module.match_method.value = LI.MS_EXACT_MATCH
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+        module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.images[0].common_text.value = file_name
 
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, P.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
         self.assertTrue(module.prepare_run(workspace))
         image_numbers = m.get_image_numbers()
         self.assertEqual(len(image_numbers), 1)
@@ -1471,8 +1465,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, grouping, image_numbers)
 
         image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                m, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, cellprofiler.object.ObjectSet(),
+                                                     m, image_set_list)
         module.run(workspace)
         image = image_set.get_image(IMAGE_NAME)
         pixels = image.pixel_data
@@ -1482,16 +1476,16 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def test_05_09_load_C01(self):
         """IMG-457: Test loading of a .c01 file"""
         file_name = "icd002235_090127090001_a01f00d1.c01"
-        maybe_download_tesst_image(file_name)
-        lip = LI.LoadImagesImageProvider(
+        tests.modules.maybe_download_tesst_image(file_name)
+        lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "nikon",
-                T.testimages_directory(),
+                tests.modules.testimages_directory(),
                 file_name,
                 True)
         image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (512, 512))
         m = hashlib.md5()
-        m.update((image * 65535).astype(np.uint16))
+        m.update((image * 65535).astype(numpy.uint16))
         self.assertEqual(m.digest(), 'SER\r\xc4\xd5\x02\x13@P\x12\x99\xe2(e\x85')
 
     def test_06_01_file_metadata(self):
@@ -1500,7 +1494,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """
         directory = tempfile.mkdtemp()
         self.directory = directory
-        data = base64.b64decode(T.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filenames = ["MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s1_w2_[EFBB8532-9A90-4040-8974-477FE1E0F3CA].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s2_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
@@ -1510,11 +1504,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             fd = open(os.path.join(directory, filename), "wb")
             fd.write(data)
             fd.close()
-        load_images = LI.LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.add_imagecb()
-        load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = LI.MS_REGEXP
-        load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
+        load_images.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         load_images.location.custom_path = directory
         load_images.group_by_metadata.value = True
         load_images.images[
@@ -1523,26 +1517,26 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             1].common_text.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
         load_images.images[0].channels[0].image_name.value = "Channel1"
         load_images.images[1].channels[0].image_name.value = "Channel2"
-        load_images.images[0].metadata_choice.value = LI.M_FILE_NAME
-        load_images.images[1].metadata_choice.value = LI.M_FILE_NAME
+        load_images.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
+        load_images.images[1].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
         load_images.images[
             0].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
         load_images.images[
             1].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
         load_images.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, load_images, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, load_images, None, None, m,
+                                                     image_set_list)
         load_images.prepare_run(workspace)
         self.assertEqual(m.image_set_count, 2)
         load_images.prepare_group(workspace, (), [1, 2])
         image_set = image_set_list.get_image_set(0)
-        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(), m,
-                        image_set_list)
+        w = cellprofiler.workspace.Workspace(pipeline, load_images, image_set, cellprofiler.object.ObjectSet(), m,
+                                             image_set_list)
         load_images.run(w)
         self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
                          filenames[0])
@@ -1560,8 +1554,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                          "1")
         image_set = image_set_list.get_image_set(1)
         m.next_image_set(2)
-        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(), m,
-                        image_set_list)
+        w = cellprofiler.workspace.Workspace(pipeline, load_images, image_set, cellprofiler.object.ObjectSet(), m,
+                                             image_set_list)
         load_images.run(w)
         self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
                          filenames[2])
@@ -1580,7 +1574,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """Test recovery of path metadata"""
         directory = tempfile.mkdtemp()
         self.directory = directory
-        data = base64.b64decode(T.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         path_and_file = [("MMD-ControlSet-plateA-2008-08-06_A12_s1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE]", "w1.tif"),
                          ("MMD-ControlSet-plateA-2008-08-06_A12_s1_[EFBB8532-9A90-4040-8974-477FE1E0F3CA]", "w2.tif"),
                          ("MMD-ControlSet-plateA-2008-08-06_A12_s2_[138B5A19-2515-4D46-9AB7-F70CE4D56631]", "w1.tif"),
@@ -1596,16 +1590,16 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """Test expected failure when an image is missing from the set"""
         directory = tempfile.mkdtemp()
         self.directory = directory
-        data = base64.b64decode(T.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filename = "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
         fd = open(os.path.join(directory, filename), "wb")
         fd.write(data)
         fd.close()
-        load_images = LI.LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.add_imagecb()
-        load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = LI.MS_REGEXP
-        load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
+        load_images.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         load_images.location.custom_path = directory
         load_images.group_by_metadata.value = True
         load_images.check_images.value = True
@@ -1615,26 +1609,26 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             1].common_text.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
         load_images.images[0].channels[0].image_name.value = "Channel1"
         load_images.images[1].channels[0].image_name.value = "Channel2"
-        load_images.images[0].metadata_choice.value = LI.M_FILE_NAME
-        load_images.images[1].metadata_choice.value = LI.M_FILE_NAME
+        load_images.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
+        load_images.images[1].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
         load_images.images[
             0].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
         load_images.images[
             1].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
         load_images.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
-        image_set_list = I.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         self.assertFalse(load_images.prepare_run(
-                W.Workspace(pipeline, load_images, None, None,
-                            measurements.Measurements(),
-                            image_set_list)))
+                cellprofiler.workspace.Workspace(pipeline, load_images, None, None,
+                                                 cellprofiler.measurement.Measurements(),
+                                                 image_set_list)))
 
     def test_06_04_conflict(self):
         """Test expected failure when two images have the same metadata"""
         directory = tempfile.mkdtemp()
-        data = base64.b64decode(T.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filenames = ["MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s1_w2_[EFBB8532-9A90-4040-8974-477FE1E0F3CA].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
@@ -1646,11 +1640,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             fd.write(data)
             fd.close()
         try:
-            load_images = LI.LoadImages()
+            load_images = cellprofiler.modules.loadimages.LoadImages()
             load_images.add_imagecb()
-            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-            load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
+            load_images.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
             load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.images[
@@ -1659,23 +1653,23 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 1].common_text.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
             load_images.images[0].channels[0].image_name.value = "Channel1"
             load_images.images[1].channels[0].image_name.value = "Channel2"
-            load_images.images[0].metadata_choice.value = LI.M_FILE_NAME
-            load_images.images[1].metadata_choice.value = LI.M_FILE_NAME
+            load_images.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
+            load_images.images[1].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
             load_images.images[
                 0].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
             load_images.images[
                 1].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
             load_images.module_num = 1
-            pipeline = P.Pipeline()
+            pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
-            image_set_list = I.ImageSetList()
+            image_set_list = cellprofiler.image.ImageSetList()
             self.assertFalse(load_images.prepare_run(
-                    W.Workspace(
+                    cellprofiler.workspace.Workspace(
                             pipeline, load_images, None, None,
-                            measurements.Measurements(), image_set_list)))
+                            cellprofiler.measurement.Measurements(), image_set_list)))
         finally:
-            clear_image_reader_cache()
+            bioformats.formatreader.clear_image_reader_cache()
             for filename in filenames:
                 os.remove(os.path.join(directory, filename))
             os.rmdir(directory)
@@ -1686,7 +1680,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         The bug is documented in IMG-202
         """
         directory = tempfile.mkdtemp()
-        data = base64.b64decode(T.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filenames = ["2008-08-06-run1-plateA_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "2008-08-06-run1-plateA_A12_s2_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "2008-08-07-run1-plateA_A12_s3_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
@@ -1709,19 +1703,19 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             fd.write(data)
             fd.close()
         try:
-            load_images = LI.LoadImages()
+            load_images = cellprofiler.modules.loadimages.LoadImages()
             load_images.add_imagecb()
-            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-            load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
+            load_images.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
             load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.images[0].common_text.value = "_w1_"
             load_images.images[1].common_text.value = "^illum"
             load_images.images[0].channels[0].image_name.value = "Channel1"
             load_images.images[1].channels[0].image_name.value = "Illum"
-            load_images.images[0].metadata_choice.value = LI.M_FILE_NAME
-            load_images.images[1].metadata_choice.value = LI.M_FILE_NAME
+            load_images.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
+            load_images.images[1].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
             load_images.images[0].file_metadata.value = \
                 ("^(?P<Date>[0-9]{4}-[0-9]{2}-[0-9]{2})-"
                  "run(?P<Run>[0-9])-(?P<plate>.*?)_"
@@ -1730,29 +1724,29 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.images[1].file_metadata.value = \
                 "^illum_run(?P<Run>[0-9])-(?P<plate>.*?)\\."
             load_images.module_num = 1
-            pipeline = P.Pipeline()
+            pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
-            image_set_list = I.ImageSetList()
-            m = measurements.Measurements()
+            image_set_list = cellprofiler.image.ImageSetList()
+            m = cellprofiler.measurement.Measurements()
             load_images.prepare_run(
-                    W.Workspace(pipeline, load_images, None, None,
-                                m, image_set_list))
+                    cellprofiler.workspace.Workspace(pipeline, load_images, None, None,
+                                                     m, image_set_list))
             for i in range(12):
                 channel1_filename = m.get_measurement(
-                        measurements.IMAGE,
-                        LI.C_FILE_NAME + "_" + "Channel1", i + 1)
+                        cellprofiler.measurement.IMAGE,
+                    cellprofiler.measurement.C_FILE_NAME + "_" + "Channel1", i + 1)
                 ctags = re.search(load_images.images[0].file_metadata.value,
                                   channel1_filename).groupdict()
                 illum_filename = m.get_measurement(
-                        measurements.IMAGE,
-                        LI.C_FILE_NAME + "_" + "Illum", i + 1)
+                        cellprofiler.measurement.IMAGE,
+                    cellprofiler.measurement.C_FILE_NAME + "_" + "Illum", i + 1)
                 itags = re.search(load_images.images[1].file_metadata.value,
                                   illum_filename).groupdict()
                 self.assertEqual(ctags["Run"], itags["Run"])
                 self.assertEqual(ctags["plate"], itags["plate"])
         finally:
-            clear_image_reader_cache()
+            bioformats.formatreader.clear_image_reader_cache()
             for filename in filenames:
                 os.remove(os.path.join(directory, filename))
             os.rmdir(directory)
@@ -1770,7 +1764,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             # LoadImages should choose the file that was written last
             #
             directory = tempfile.mkdtemp()
-            data = base64.b64decode(T.tif_8_1)
+            data = base64.b64decode(tests.modules.tif_8_1)
             for i in range(len(filenames)):
                 filename = filenames[order[i]]
                 fd = open(os.path.join(directory, filename), "wb")
@@ -1788,11 +1782,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 else:
                     time.sleep(1)
             try:
-                load_images = LI.LoadImages()
+                load_images = cellprofiler.modules.loadimages.LoadImages()
                 load_images.add_imagecb()
-                load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-                load_images.match_method.value = LI.MS_REGEXP
-                load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+                load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+                load_images.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
+                load_images.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
                 load_images.location.custom_path = directory
                 load_images.group_by_metadata.value = True
                 load_images.metadata_fields.value = ["plate", "well_row",
@@ -1804,20 +1798,20 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     1].common_text.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
                 load_images.images[0].channels[0].image_name.value = "Channel1"
                 load_images.images[1].channels[0].image_name.value = "Channel2"
-                load_images.images[0].metadata_choice.value = LI.M_FILE_NAME
-                load_images.images[1].metadata_choice.value = LI.M_FILE_NAME
+                load_images.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
+                load_images.images[1].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
                 load_images.images[
                     0].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
                 load_images.images[
                     1].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
                 load_images.module_num = 1
-                pipeline = P.Pipeline()
+                pipeline = cellprofiler.pipeline.Pipeline()
                 pipeline.add_module(load_images)
                 pipeline.add_listener(self.error_callback)
-                image_set_list = I.ImageSetList()
-                m = measurements.Measurements()
-                workspace = W.Workspace(pipeline, load_images, None, None,
-                                        m, image_set_list)
+                image_set_list = cellprofiler.image.ImageSetList()
+                m = cellprofiler.measurement.Measurements()
+                workspace = cellprofiler.workspace.Workspace(pipeline, load_images, None, None,
+                                                             m, image_set_list)
                 load_images.prepare_run(workspace)
                 d = dict(plate="MMD-ControlSet-plateA-2008-08-06",
                          well_row="A",
@@ -1832,12 +1826,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 self.assertEqual(len(my_groups), 1)
                 load_images.prepare_group(workspace, d, my_groups[0][1])
                 image_set = image_set_list.get_image_set(d)
-                load_images.run(W.Workspace(pipeline, load_images, image_set,
-                                            cpo.ObjectSet(), m, image_set_list))
+                load_images.run(cellprofiler.workspace.Workspace(pipeline, load_images, image_set,
+                                                                 cellprofiler.object.ObjectSet(), m, image_set_list))
                 image = image_set.get_image("Channel1")
                 self.assertEqual(image.file_name, filenames[chosen])
             finally:
-                clear_image_reader_cache()
+                bioformats.formatreader.clear_image_reader_cache()
                 for filename in filenames:
                     p = os.path.join(directory, filename)
                     try:
@@ -1856,7 +1850,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                      ("d1", "foo.tif"),
                      (os.path.join("d2", "d3"), "foo.tif"),
                      (os.path.join("d2", "d4"), "bar.tif")]
-        data = base64.b64decode(T.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         try:
             for path, file_name in filenames:
                 d = os.path.join(directory, path)
@@ -1871,23 +1865,23 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                            os.path.join(directory, filenames[-1][0], filenames[0][0]))
             except Exception, e:
                 print "ignoring symlink exception:", e
-            load_images = LI.LoadImages()
+            load_images = cellprofiler.modules.loadimages.LoadImages()
             load_images.module_num = 1
-            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-            load_images.match_method.value = LI.MS_EXACT_MATCH
-            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-            load_images.descend_subdirectories.value = LI.SUB_ALL
+            load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+            load_images.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            load_images.descend_subdirectories.value = cellprofiler.modules.loadimages.SUB_ALL
             load_images.location.custom_path = directory
             load_images.images[0].common_text.value = ".tif"
             load_images.images[0].channels[0].image_name.value = "my_image"
             load_images.check_images.value = False
-            pipeline = P.Pipeline()
+            pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
-            image_set_list = I.ImageSetList()
-            m = measurements.Measurements()
-            workspace = W.Workspace(pipeline, load_images, None, None, m,
-                                    image_set_list)
+            image_set_list = cellprofiler.image.ImageSetList()
+            m = cellprofiler.measurement.Measurements()
+            workspace = cellprofiler.workspace.Workspace(pipeline, load_images, None, None, m,
+                                                         image_set_list)
             self.assertTrue(load_images.prepare_run(workspace))
             image_numbers = m.get_image_numbers()
             self.assertEqual(len(image_numbers), len(filenames))
@@ -1896,8 +1890,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 if i > 0:
                     m.next_image_set()
                 image_set = image_set_list.get_image_set(i)
-                w = W.Workspace(pipeline, load_images, image_set,
-                                cpo.ObjectSet(), m, image_set_list)
+                w = cellprofiler.workspace.Workspace(pipeline, load_images, image_set,
+                                                     cellprofiler.object.ObjectSet(), m, image_set_list)
                 load_images.run(w)
                 image = image_set.get_image("my_image")
                 self.assertEqual(tuple(image.pixel_data.shape), (48, 32))
@@ -1906,7 +1900,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 p = m.get_current_image_measurement("PathName_my_image")
                 self.assertEqual(os.path.join(directory, path), p)
         finally:
-            clear_image_reader_cache()
+            bioformats.formatreader.clear_image_reader_cache()
             for path, directories, file_names in os.walk(directory, False):
                 for file_name in file_names:
                     p = os.path.join(path, file_name)
@@ -1933,7 +1927,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                       os.path.join("d5", "d6")]
         expected_filenames = filenames[:2] + [filenames[3]]
 
-        data = base64.b64decode(T.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         try:
             for path, file_name in filenames:
                 d = os.path.join(directory, path)
@@ -1942,12 +1936,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 fd = open(os.path.join(directory, path, file_name), "wb")
                 fd.write(data)
                 fd.close()
-            load_images = LI.LoadImages()
+            load_images = cellprofiler.modules.loadimages.LoadImages()
             load_images.module_num = 1
-            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-            load_images.match_method.value = LI.MS_EXACT_MATCH
-            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-            load_images.descend_subdirectories.value = LI.SUB_SOME
+            load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+            load_images.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            load_images.descend_subdirectories.value = cellprofiler.modules.loadimages.SUB_SOME
             load_images.subdirectory_filter.value = \
                 load_images.subdirectory_filter.get_value_string(
                         exclusions)
@@ -1955,13 +1949,13 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.images[0].common_text.value = ".tif"
             load_images.images[0].channels[0].image_name.value = "my_image"
             load_images.check_images.value = False
-            pipeline = P.Pipeline()
+            pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
-            image_set_list = I.ImageSetList()
-            m = measurements.Measurements()
-            workspace = W.Workspace(pipeline, load_images, None, None,
-                                    m, image_set_list)
+            image_set_list = cellprofiler.image.ImageSetList()
+            m = cellprofiler.measurement.Measurements()
+            workspace = cellprofiler.workspace.Workspace(pipeline, load_images, None, None,
+                                                         m, image_set_list)
             self.assertTrue(load_images.prepare_run(workspace))
             image_numbers = m.get_image_numbers()
             self.assertEqual(len(image_numbers), len(expected_filenames))
@@ -1970,8 +1964,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 if i > 0:
                     m.next_image_set()
                 image_set = image_set_list.get_image_set(i)
-                w = W.Workspace(pipeline, load_images, image_set,
-                                cpo.ObjectSet(), m, image_set_list)
+                w = cellprofiler.workspace.Workspace(pipeline, load_images, image_set,
+                                                     cellprofiler.object.ObjectSet(), m, image_set_list)
                 load_images.run(w)
                 image = image_set.get_image("my_image")
                 self.assertEqual(tuple(image.pixel_data.shape), (48, 32))
@@ -1980,7 +1974,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 p = m.get_current_image_measurement("PathName_my_image")
                 self.assertEqual(os.path.join(directory, path), p)
         finally:
-            clear_image_reader_cache()
+            bioformats.formatreader.clear_image_reader_cache()
             for path, directories, file_names in os.walk(directory, False):
                 for file_name in file_names:
                     p = os.path.join(path, file_name)
@@ -2029,8 +2023,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_07_01_get_measurement_columns(self):
         data = self.get_example_pipeline_data()
-        fd = StringIO(data)
-        pipeline = cpp.Pipeline()
+        fd = StringIO.StringIO(data)
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
         expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'),
@@ -2061,7 +2055,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         #
         # Run with file and path metadata
         #
-        module.images[0].metadata_choice.value = LI.M_BOTH
+        module.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_BOTH
         expected_cols += [('Image', 'Metadata_Year', 'varchar(256)'),
                           ('Image', 'Metadata_Month', 'varchar(256)'),
                           ('Image', 'Metadata_Day', 'varchar(256)')]
@@ -2076,8 +2070,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_07_02_get_measurements(self):
         data = self.get_example_pipeline_data()
-        fd = StringIO(data)
-        pipeline = cpp.Pipeline()
+        fd = StringIO.StringIO(data)
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
         categories = {'FileName': ['DNA', 'Cytoplasm'],
@@ -2086,27 +2080,27 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                       'Metadata': ['WellRow', 'WellCol', 'Well']}
         for cat, expected in categories.items():
             assert set(expected) == set(module.get_measurements(pipeline,
-                                                                measurements.IMAGE, cat))
-        module.images[0].metadata_choice.value = LI.M_BOTH
+                                                                cellprofiler.measurement.IMAGE, cat))
+        module.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_BOTH
         categories['Metadata'] += ['Year', 'Month', 'Day']
         for cat, expected in categories.items():
             assert set(expected) == set(module.get_measurements(
-                    pipeline, measurements.IMAGE, cat))
+                    pipeline, cellprofiler.measurement.IMAGE, cat))
 
     def test_07_03_get_categories(self):
         data = self.get_example_pipeline_data()
-        fd = StringIO(data)
-        pipeline = cpp.Pipeline()
+        fd = StringIO.StringIO(data)
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
-        results = module.get_categories(pipeline, measurements.IMAGE)
+        results = module.get_categories(pipeline, cellprofiler.measurement.IMAGE)
         expected = ['FileName', 'PathName', 'URL', 'MD5Digest', 'Metadata',
                     'Scaling', 'Height', 'Width']
         assert set(results) == set(expected)
 
     def test_07_04_get_movie_measurements(self):
         # AVI movies should have time metadata
-        module = LI.LoadImages()
+        module = cellprofiler.modules.loadimages.LoadImages()
         base_expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'),
                               ('Image', 'PathName_DNA', 'varchar(256)'),
                               ('Image', 'URL_DNA', 'varchar(256)'),
@@ -2124,23 +2118,23 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             ('Image', 'Metadata_Year', 'varchar(256)'),
             ('Image', 'Metadata_Month', 'varchar(256)'),
             ('Image', 'Metadata_Day', 'varchar(256)')]
-        for ft in (LI.FF_AVI_MOVIES, LI.FF_STK_MOVIES):
+        for ft in (cellprofiler.modules.loadimages.FF_AVI_MOVIES, cellprofiler.modules.loadimages.FF_STK_MOVIES):
             module.file_types.value = ft
             module.images[0].channels[0].image_name.value = "DNA"
             module.images[0].file_metadata.value = "^.*-(?P<WellRow>.+)-(?P<WellCol>[0-9]{2})"
             module.images[0].path_metadata.value = "(?P<Year>[0-9]{4})-(?P<Month>[0-9]{2})-(?P<Day>[0-9]{2})"
             for metadata_choice, expected_cols in (
-                    (LI.M_NONE, base_expected_cols),
-                    (LI.M_FILE_NAME, base_expected_cols + file_expected_cols),
-                    (LI.M_PATH, base_expected_cols + path_expected_cols),
-                    (LI.M_BOTH, base_expected_cols + file_expected_cols + path_expected_cols)):
+                    (cellprofiler.modules.loadimages.M_NONE, base_expected_cols),
+                    (cellprofiler.modules.loadimages.M_FILE_NAME, base_expected_cols + file_expected_cols),
+                    (cellprofiler.modules.loadimages.M_PATH, base_expected_cols + path_expected_cols),
+                    (cellprofiler.modules.loadimages.M_BOTH, base_expected_cols + file_expected_cols + path_expected_cols)):
                 module.images[0].metadata_choice.value = metadata_choice
                 columns = module.get_measurement_columns(None)
                 self.assertEqual(len(columns), len(set(columns)))
                 self.assertEqual(len(columns), len(expected_cols))
                 for column in columns:
                     self.assertTrue(column in expected_cols)
-                categories = module.get_categories(None, measurements.IMAGE)
+                categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
                 self.assertEqual(len(categories), 9)
                 category_dict = {}
                 for column in expected_cols:
@@ -2151,7 +2145,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 for category in category_dict.keys():
                     self.assertTrue(category in categories)
                     expected_features = category_dict[category]
-                    features = module.get_measurements(None, measurements.IMAGE,
+                    features = module.get_measurements(None, cellprofiler.measurement.IMAGE,
                                                        category)
                     self.assertEqual(len(features), len(expected_features))
                     self.assertEqual(len(features), len(set(features)))
@@ -2160,7 +2154,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_07_05_get_flex_measurements(self):
         # AVI movies should have time metadata
-        module = LI.LoadImages()
+        module = cellprofiler.modules.loadimages.LoadImages()
         base_expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'),
                               ('Image', 'PathName_DNA', 'varchar(256)'),
                               ('Image', 'URL_DNA', 'varchar(256)'),
@@ -2180,22 +2174,22 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             ('Image', 'Metadata_Year', 'varchar(256)'),
             ('Image', 'Metadata_Month', 'varchar(256)'),
             ('Image', 'Metadata_Day', 'varchar(256)')]
-        module.file_types.value = LI.FF_OTHER_MOVIES
+        module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         module.images[0].channels[0].image_name.value = "DNA"
         module.images[0].file_metadata.value = "^.*-(?P<WellRow>.+)-(?P<WellCol>[0-9]{2})"
         module.images[0].path_metadata.value = "(?P<Year>[0-9]{4})-(?P<Month>[0-9]{2})-(?P<Day>[0-9]{2})"
         for metadata_choice, expected_cols in (
-                (LI.M_NONE, base_expected_cols),
-                (LI.M_FILE_NAME, base_expected_cols + file_expected_cols),
-                (LI.M_PATH, base_expected_cols + path_expected_cols),
-                (LI.M_BOTH, base_expected_cols + file_expected_cols + path_expected_cols)):
+                (cellprofiler.modules.loadimages.M_NONE, base_expected_cols),
+                (cellprofiler.modules.loadimages.M_FILE_NAME, base_expected_cols + file_expected_cols),
+                (cellprofiler.modules.loadimages.M_PATH, base_expected_cols + path_expected_cols),
+                (cellprofiler.modules.loadimages.M_BOTH, base_expected_cols + file_expected_cols + path_expected_cols)):
             module.images[0].metadata_choice.value = metadata_choice
             columns = module.get_measurement_columns(None)
             self.assertEqual(len(columns), len(set(columns)))
             self.assertEqual(len(columns), len(expected_cols))
             for column in columns:
                 self.assertTrue(column in expected_cols)
-            categories = module.get_categories(None, measurements.IMAGE)
+            categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
             self.assertEqual(len(categories), 10)
             category_dict = {}
             for column in expected_cols:
@@ -2206,7 +2200,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for category in category_dict.keys():
                 self.assertTrue(category in categories)
                 expected_features = category_dict[category]
-                features = module.get_measurements(None, measurements.IMAGE,
+                features = module.get_measurements(None, cellprofiler.measurement.IMAGE,
                                                    category)
                 self.assertEqual(len(features), len(expected_features))
                 self.assertEqual(len(features), len(set(features)))
@@ -2214,15 +2208,15 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                      for feature in features]))
 
     def test_07_06_get_object_measurement_columns(self):
-        module = LI.LoadImages()
+        module = cellprofiler.modules.loadimages.LoadImages()
         channel = module.images[0].channels[0]
-        channel.image_object_choice.value = LI.IO_OBJECTS
+        channel.image_object_choice.value = cellprofiler.modules.loadimages.IO_OBJECTS
         channel.object_name.value = OBJECTS_NAME
         columns = module.get_measurement_columns(None)
         for object_name, feature in (
-                (measurements.IMAGE, LI.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
-                (measurements.IMAGE, LI.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
-                (measurements.IMAGE, cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME),
+                (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
+                (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
+                (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME),
                 (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
                 (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
                 (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)):
@@ -2231,14 +2225,14 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                  column[1] == feature]))
 
     def test_07_07_get_object_categories(self):
-        module = LI.LoadImages()
+        module = cellprofiler.modules.loadimages.LoadImages()
         channel = module.images[0].channels[0]
-        channel.image_object_choice.value = LI.IO_OBJECTS
+        channel.image_object_choice.value = cellprofiler.modules.loadimages.IO_OBJECTS
         channel.object_name.value = OBJECTS_NAME
         for object_name, expected_categories in (
-                (measurements.IMAGE,
-                 (LI.C_OBJECTS_FILE_NAME, LI.C_OBJECTS_PATH_NAME,
-                  LI.C_OBJECTS_URL, cellprofiler.measurement.C_COUNT)),
+                (cellprofiler.measurement.IMAGE,
+                 (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                  cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.C_COUNT)),
                 (OBJECTS_NAME, (cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER)),
                 ("Foo", [])):
             categories = module.get_categories(None, object_name)
@@ -2248,14 +2242,14 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 self.assertTrue(category in expected_categories)
 
     def test_07_08_get_object_measurements(self):
-        module = LI.LoadImages()
+        module = cellprofiler.modules.loadimages.LoadImages()
         channel = module.images[0].channels[0]
-        channel.image_object_choice.value = LI.IO_OBJECTS
+        channel.image_object_choice.value = cellprofiler.modules.loadimages.IO_OBJECTS
         channel.object_name.value = OBJECTS_NAME
         for object_name, expected in (
-                (measurements.IMAGE, (
-                        (LI.C_OBJECTS_FILE_NAME, [OBJECTS_NAME]),
-                        (LI.C_OBJECTS_PATH_NAME, [OBJECTS_NAME]),
+                (cellprofiler.measurement.IMAGE, (
+                        (cellprofiler.measurement.C_OBJECTS_FILE_NAME, [OBJECTS_NAME]),
+                        (cellprofiler.measurement.C_OBJECTS_PATH_NAME, [OBJECTS_NAME]),
                         (cellprofiler.measurement.C_COUNT, [OBJECTS_NAME]))),
                 (OBJECTS_NAME, (
                         (cellprofiler.measurement.C_LOCATION, [cellprofiler.measurement.FTR_CENTER_X,
@@ -2270,23 +2264,23 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_08_01_get_groupings(self):
         '''Get groupings for the SBS image set'''
-        sbs_path = os.path.join(T.example_images_directory(), 'ExampleSBSImages')
-        module = LI.LoadImages()
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        sbs_path = os.path.join(tests.modules.example_images_directory(), 'ExampleSBSImages')
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = sbs_path
         module.group_by_metadata.value = True
         module.images[0].common_text.value = 'Channel1-'
         module.images[0].channels[0].image_name.value = 'MyImage'
-        module.images[0].metadata_choice.value = LI.M_FILE_NAME
+        module.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_FILE_NAME
         module.images[0].file_metadata.value = '^Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})'
         module.metadata_fields.value = "ROW"
         module.module_num = 1
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(
                 pipeline, None, None, None, m,
                 image_set_list)
         self.assertTrue(pipeline.prepare_run(workspace))
@@ -2301,62 +2295,62 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number - 1)
                 m.next_image_set(image_number)
-                module.run(W.Workspace(pipeline, module, image_set,
-                                       cpo.ObjectSet(), m, image_set_list))
+                module.run(cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                            cellprofiler.object.ObjectSet(), m, image_set_list))
                 provider = image_set.get_image_provider("MyImage")
-                self.assertTrue(isinstance(provider, LI.LoadImagesImageProvider))
+                self.assertTrue(isinstance(provider, cellprofiler.modules.loadimages.LoadImagesImageProvider))
                 match = re.search(module.images[0].file_metadata.value,
                                   provider.get_filename())
                 self.assertTrue(match)
                 self.assertEqual(row, match.group("ROW"))
 
     def test_09_01_load_avi(self):
-        if LI.FF_AVI_MOVIES not in LI.FF:
+        if cellprofiler.modules.loadimages.FF_AVI_MOVIES not in cellprofiler.modules.loadimages.FF:
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
         file_name = 'DrosophilaEmbryo_GFPHistone.avi'
-        avi_path = T.testimages_directory()
-        maybe_download_tesst_image(file_name)
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_AVI_MOVIES
+        avi_path = tests.modules.testimages_directory()
+        tests.modules.maybe_download_tesst_image(file_name)
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'MyImage'
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None,
-                                m, image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None,
+                                                     m, image_set_list)
         module.prepare_run(workspace)
         self.assertEqual(m.image_set_count, 65)
         module.prepare_group(workspace, (), [1, 2, 3])
         image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
-        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        t = m.get_current_image_measurement("_".join((cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)))
         self.assertEqual(t, 0)
         image_set = image_set_list.get_image_set(1)
         m.next_image_set()
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
-        self.assertTrue(np.any(img1 != img2))
-        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertTrue(numpy.any(img1 != img2))
+        t = m.get_current_image_measurement("_".join((cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)))
         self.assertEqual(t, 1)
 
     def test_09_02_load_stk(self):
@@ -2364,32 +2358,32 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             '//iodine/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM',
             '/imaging/analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM',
             '/Volumes/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM',
-            os.path.join(T.example_images_directory(), '09_02_11-OA 10nM')]:
+            os.path.join(tests.modules.example_images_directory(), '09_02_11-OA 10nM')]:
             if os.path.isdir(path):
                 break
         else:
             sys.stderr.write("WARNING: unknown path to stk file. Test not run.\n")
             return
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_STK_MOVIES
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_STK_MOVIES
         module.images[0].common_text.value = 'stk'
         module.images[0].channels[0].image_name.value = 'MyImage'
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
         module.prepare_group(workspace, (), [1, 2, 3])
         image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
@@ -2397,69 +2391,69 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertEqual(tuple(img1.shape), (1040, 1388))
         image_set = image_set_list.get_image_set(1)
         m.next_image_set(2)
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (1040, 1388))
-        self.assertTrue(np.any(img1 != img2))
+        self.assertTrue(numpy.any(img1 != img2))
 
     def test_09_02_01_load_2_stk(self):
         # Regression test of bug 327
-        path = T.testimages_directory()
-        maybe_download_tesst_image("C0.stk")
-        maybe_download_tesst_image("C1.stk")
+        path = tests.modules.testimages_directory()
+        tests.modules.maybe_download_tesst_image("C0.stk")
+        tests.modules.maybe_download_tesst_image("C1.stk")
         files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
         if not all([os.path.exists(f) for f in files]):
             sys.stderr.write("Warning, could not find test files for STK test: %s\n" % str(files))
             return
 
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_STK_MOVIES
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_STK_MOVIES
         module.images[0].common_text.value = 'C0.stk'
         module.images[0].channels[0].image_name.value = 'MyImage'
         module.add_imagecb()
         module.images[1].common_text.value = 'C1.stk'
         module.images[1].channels[0].image_name.value = 'MyOtherImage'
 
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
         self.assertEqual(m.image_set_count, 7)
 
     def test_09_02_02_load_stk(self):
         # Regression test of issue #783 - color STK.
-        path = T.testimages_directory()
-        maybe_download_tesst_image("C0.stk")
-        maybe_download_tesst_image("C1.stk")
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_STK_MOVIES
+        path = tests.modules.testimages_directory()
+        tests.modules.maybe_download_tesst_image("C0.stk")
+        tests.modules.maybe_download_tesst_image("C1.stk")
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_STK_MOVIES
         module.images[0].common_text.value = 'C0.stk'
         module.images[0].channels[0].image_name.value = 'MyImage'
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
-        workspace = W.Workspace(pipeline, module, m, cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         image = m.get_image("MyImage")
         pixel_data = image.pixel_data
@@ -2467,26 +2461,26 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_09_03_load_flex(self):
         file_name = 'RLM1 SSN3 300308 008015000.flex'
-        maybe_download_tesst_image(file_name)
-        flex_path = T.testimages_directory()
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_OTHER_MOVIES
+        tests.modules.maybe_download_tesst_image(file_name)
+        flex_path = tests.modules.testimages_directory()
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'Green'
         module.images[0].channels[0].channel_number.value = "2"
         module.add_channel(module.images[0])
         module.images[0].channels[1].image_name.value = 'Red'
         module.images[0].channels[1].channel_number.value = "1"
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = flex_path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
         keys, groupings = module.get_groupings(workspace)
         self.assertTrue("URL" in keys)
@@ -2496,11 +2490,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             module.prepare_group(workspace, grouping, image_numbers)
             for image_number in image_numbers:
                 image_set = image_set_list.get_image_set(image_number - 1)
-                workspace = W.Workspace(pipeline, module, image_set,
-                                        cpo.ObjectSet(), m,
-                                        image_set_list)
+                workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                             cellprofiler.object.ObjectSet(), m,
+                                                             image_set_list)
                 module.run(workspace)
-                for feature, expected in (("Series_Green", int(grouping[LI.C_SERIES])),
+                for feature, expected in (("Series_Green", int(grouping[cellprofiler.modules.loadimages.C_SERIES])),
                                           ("Metadata_Z", 0),
                                           ("Metadata_T", 0)):
                     value = m.get_current_image_measurement(feature)
@@ -2515,18 +2509,18 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         #
         # Test interleaved grouping by movie frames
         #
-        if LI.FF_AVI_MOVIES not in LI.FF:
+        if cellprofiler.modules.loadimages.FF_AVI_MOVIES not in cellprofiler.modules.loadimages.FF:
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
         file_name = 'DrosophilaEmbryo_GFPHistone.avi'
-        maybe_download_tesst_image(file_name)
-        avi_path = T.testimages_directory()
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_AVI_MOVIES
+        tests.modules.maybe_download_tesst_image(file_name)
+        avi_path = tests.modules.testimages_directory()
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
         image = module.images[0]
         image.common_text.value = file_name
         image.wants_movie_frame_grouping.value = True
-        image.interleaving.value = LI.I_INTERLEAVED
+        image.interleaving.value = cellprofiler.modules.loadimages.I_INTERLEAVED
         image.channels_per_group.value = 5
         channel = image.channels[0]
         channel.image_name.value = 'Channel01'
@@ -2535,49 +2529,49 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         channel = module.images[0].channels[1]
         channel.channel_number.value = "3"
         channel.image_name.value = 'Channel03'
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
         self.assertEqual(m.image_set_count, 13)
-        module.prepare_group(workspace, (), np.arange(1, 16))
+        module.prepare_group(workspace, (), numpy.arange(1, 16))
         image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names)
         image = image_set.get_image('Channel01')
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
-        self.assertAlmostEqual(np.mean(img1), .07897, 3)
+        self.assertAlmostEqual(numpy.mean(img1), .07897, 3)
         self.assertTrue('Channel03' in image_set.names)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 2)
         image = image_set.get_image('Channel03')
         img3 = image.pixel_data
         self.assertEqual(tuple(img3.shape), (264, 542, 3))
-        self.assertAlmostEqual(np.mean(img3), .07781, 3)
-        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertAlmostEqual(numpy.mean(img3), .07781, 3)
+        t = m.get_current_image_measurement("_".join((cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)))
         self.assertEqual(t, 0)
         image_set = image_set_list.get_image_set(1)
         m.next_image_set()
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names)
         image = image_set.get_image('Channel01')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
-        self.assertAlmostEqual(np.mean(img2), .07860, 3)
-        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertAlmostEqual(numpy.mean(img2), .07860, 3)
+        t = m.get_current_image_measurement("_".join((cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)))
         self.assertEqual(t, 1)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 7)
 
@@ -2585,18 +2579,18 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         #
         # Test separated grouping by movie frames
         #
-        if LI.FF_AVI_MOVIES not in LI.FF:
+        if cellprofiler.modules.loadimages.FF_AVI_MOVIES not in cellprofiler.modules.loadimages.FF:
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
         file_name = 'DrosophilaEmbryo_GFPHistone.avi'
-        maybe_download_tesst_image(file_name)
-        avi_path = T.testimages_directory()
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_AVI_MOVIES
+        tests.modules.maybe_download_tesst_image(file_name)
+        avi_path = tests.modules.testimages_directory()
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
         image = module.images[0]
         image.common_text.value = file_name
         image.wants_movie_frame_grouping.value = True
-        image.interleaving.value = LI.I_SEPARATED
+        image.interleaving.value = cellprofiler.modules.loadimages.I_SEPARATED
         image.channels_per_group.value = 5
         channel = image.channels[0]
         channel.image_name.value = 'Channel01'
@@ -2605,58 +2599,58 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         channel = module.images[0].channels[1]
         channel.channel_number.value = "3"
         channel.image_name.value = 'Channel03'
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
         self.assertEqual(m.image_set_count, 13)
-        module.prepare_group(workspace, (), np.arange(1, 16))
+        module.prepare_group(workspace, (), numpy.arange(1, 16))
         image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names)
         image = image_set.get_image('Channel01')
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
-        self.assertAlmostEqual(np.mean(img1), .07897, 3)
+        self.assertAlmostEqual(numpy.mean(img1), .07897, 3)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 26)
         image = image_set.get_image('Channel03')
         img3 = image.pixel_data
         self.assertEqual(tuple(img3.shape), (264, 542, 3))
-        self.assertAlmostEqual(np.mean(img3), .073312, 3)
-        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertAlmostEqual(numpy.mean(img3), .073312, 3)
+        t = m.get_current_image_measurement("_".join((cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)))
         self.assertEqual(t, 0)
         image_set = image_set_list.get_image_set(1)
         m.next_image_set()
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel01"), 1)
         image = image_set.get_image('Channel01')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
-        self.assertAlmostEqual(np.mean(img2), .079923, 3)
-        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertAlmostEqual(numpy.mean(img2), .079923, 3)
+        t = m.get_current_image_measurement("_".join((cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)))
         self.assertEqual(t, 1)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 27)
 
     def test_09_06_load_flex_interleaved(self):
         # needs better test case file
         file_name = 'RLM1 SSN3 300308 008015000.flex'
-        maybe_download_tesst_image(file_name)
-        flex_path = T.testimages_directory()
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_OTHER_MOVIES
+        tests.modules.maybe_download_tesst_image(file_name)
+        flex_path = tests.modules.testimages_directory()
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'Green'
         module.images[0].channels[0].channel_number.value = "2"
@@ -2665,17 +2659,17 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[0].channels[1].channel_number.value = "1"
         module.images[0].wants_movie_frame_grouping.value = True
         module.images[0].channels_per_group.value = 2
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = flex_path
-        module.images[0].interleaving.value = LI.I_INTERLEAVED
+        module.images[0].interleaving.value = cellprofiler.modules.loadimages.I_INTERLEAVED
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
         keys, groupings = module.get_groupings(workspace)
         self.assertTrue("URL" in keys)
@@ -2685,14 +2679,14 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             module.prepare_group(workspace, grouping, image_numbers)
             for group_index, image_number in enumerate(image_numbers):
                 image_set = image_set_list.get_image_set(image_number - 1)
-                m.add_image_measurement(cpp.GROUP_INDEX, group_index)
-                m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
-                workspace = W.Workspace(pipeline, module, image_set,
-                                        cpo.ObjectSet(), m,
-                                        image_set_list)
+                m.add_image_measurement(cellprofiler.pipeline.GROUP_INDEX, group_index)
+                m.add_image_measurement(cellprofiler.pipeline.GROUP_NUMBER, group_number)
+                workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                             cellprofiler.object.ObjectSet(), m,
+                                                             image_set_list)
                 module.run(workspace)
-                for feature, expected in (("Series_Green", int(grouping[LI.C_SERIES])),
-                                          ("Series_Red", int(grouping[LI.C_SERIES])),
+                for feature, expected in (("Series_Green", int(grouping[cellprofiler.modules.loadimages.C_SERIES])),
+                                          ("Series_Red", int(grouping[cellprofiler.modules.loadimages.C_SERIES])),
                                           ("Frame_Red", group_index * 2),
                                           ("Frame_Green", group_index * 2 + 1),
                                           ("Metadata_Z", 0),
@@ -2708,11 +2702,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_09_07_load_flex_separated(self):
         # Needs better test case file
-        flex_path = T.testimages_directory()
+        flex_path = tests.modules.testimages_directory()
         file_name = 'RLM1 SSN3 300308 008015000.flex'
-        maybe_download_tesst_image(file_name)
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_OTHER_MOVIES
+        tests.modules.maybe_download_tesst_image(file_name)
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'Green'
         module.images[0].channels[0].channel_number.value = "2"
@@ -2721,17 +2715,17 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[0].channels[1].channel_number.value = "1"
         module.images[0].wants_movie_frame_grouping.value = True
         module.images[0].channels_per_group.value = 2
-        module.images[0].interleaving.value = LI.I_SEPARATED
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.images[0].interleaving.value = cellprofiler.modules.loadimages.I_SEPARATED
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = flex_path
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
         keys, groupings = module.get_groupings(workspace)
         self.assertTrue("URL" in keys)
@@ -2742,14 +2736,14 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
             for group_index, image_number in enumerate(image_numbers):
                 image_set = image_set_list.get_image_set(image_number - 1)
-                workspace = W.Workspace(pipeline, module, image_set,
-                                        cpo.ObjectSet(), m,
-                                        image_set_list)
-                m.add_image_measurement(cpp.GROUP_INDEX, group_index)
-                m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
+                workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                             cellprofiler.object.ObjectSet(), m,
+                                                             image_set_list)
+                m.add_image_measurement(cellprofiler.pipeline.GROUP_INDEX, group_index)
+                m.add_image_measurement(cellprofiler.pipeline.GROUP_NUMBER, group_number)
                 module.run(workspace)
-                for feature, expected in (("Series_Red", int(grouping[LI.C_SERIES])),
-                                          ("Series_Green", int(grouping[LI.C_SERIES])),
+                for feature, expected in (("Series_Red", int(grouping[cellprofiler.modules.loadimages.C_SERIES])),
+                                          ("Series_Green", int(grouping[cellprofiler.modules.loadimages.C_SERIES])),
                                           ("Frame_Red", 0),
                                           ("Frame_Green", 1),
                                           ("Metadata_Z", 0),
@@ -2821,40 +2815,40 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             fd.write(image)
             fd.close()
         else:
-            write_image(path, image.astype(np.uint8), PT_UINT8)
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            bioformats.formatwriter.write_image(path, image.astype(numpy.uint8), bioformats.omexml.PT_UINT8)
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
         module.images[0].common_text.value = filename
-        module.images[0].channels[0].image_object_choice.value = LI.IO_OBJECTS
+        module.images[0].channels[0].image_object_choice.value = cellprofiler.modules.loadimages.IO_OBJECTS
         module.images[0].channels[0].object_name.value = OBJECTS_NAME
         module.images[0].channels[0].wants_outlines.value = True
         module.images[0].channels[0].outlines_name.value = OUTLINES_NAME
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = directory
         module.module_num = 1
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
         module.prepare_group(workspace, (), [0])
-        workspace = W.Workspace(pipeline, module, image_set_list.get_image_set(0),
-                                cpo.ObjectSet(), m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set_list.get_image_set(0),
+                                                     cellprofiler.object.ObjectSet(), m,
+                                                     image_set_list)
         return workspace, module
 
     def test_12_01_load_empty_objects(self):
-        workspace, module = self.make_objects_workspace(np.zeros((20, 30), int))
+        workspace, module = self.make_objects_workspace(numpy.zeros((20, 30), int))
         module.run(workspace)
-        assert isinstance(module, LI.LoadImages)
+        assert isinstance(module, cellprofiler.modules.loadimages.LoadImages)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(np.all(o.segmented == 0))
+        self.assertTrue(numpy.all(o.segmented == 0))
         columns = module.get_measurement_columns(workspace.pipeline)
         for object_name, measurement in (
-                (measurements.IMAGE, cellprofiler.measurement.FF_COUNT % OBJECTS_NAME),
+                (cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_COUNT % OBJECTS_NAME),
                 (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
                 (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
                 (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)):
@@ -2862,67 +2856,67 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     [True for column in columns
                      if column[0] == object_name and column[1] == measurement]))
         m = workspace.measurements
-        assert isinstance(m, measurements.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         self.assertEqual(m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OBJECTS_NAME), 0)
 
     def test_12_02_load_indexed_objects(self):
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(1202)
         image = r.randint(0, 10, size=(20, 30))
         workspace, module = self.make_objects_workspace(image)
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(np.all(o.segmented == image))
+        self.assertTrue(numpy.all(o.segmented == image))
         m = workspace.measurements
-        assert isinstance(m, measurements.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         self.assertEqual(m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OBJECTS_NAME), 9)
-        i, j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
-        c = np.bincount(image.ravel())[1:].astype(float)
-        x = np.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
-        y = np.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
+        i, j = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
+        c = numpy.bincount(image.ravel())[1:].astype(float)
+        x = numpy.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
+        y = numpy.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
         v = m.get_current_measurement(OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)
-        self.assertTrue(np.all(v == np.arange(1, 10)))
+        self.assertTrue(numpy.all(v == numpy.arange(1, 10)))
         v = m.get_current_measurement(OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X)
-        self.assertTrue(np.all(v == x))
+        self.assertTrue(numpy.all(v == x))
         v = m.get_current_measurement(OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y)
-        self.assertTrue(np.all(v == y))
+        self.assertTrue(numpy.all(v == y))
 
     def test_12_03_load_sparse_objects(self):
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(1203)
         image = r.randint(0, 10, size=(20, 30))
         workspace, module = self.make_objects_workspace(image * 10)
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(np.all(o.segmented == image))
+        self.assertTrue(numpy.all(o.segmented == image))
 
     def test_12_04_load_color_objects(self):
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(1203)
         image = r.randint(0, 10, size=(20, 30))
-        colors = np.array([[0, 0, 0], [1, 4, 2], [1, 5, 0],
-                           [2, 0, 0], [3, 0, 0], [4, 0, 0],
-                           [5, 0, 0], [6, 0, 0], [7, 0, 0],
-                           [8, 0, 0], [9, 0, 0]])
+        colors = numpy.array([[0, 0, 0], [1, 4, 2], [1, 5, 0],
+                              [2, 0, 0], [3, 0, 0], [4, 0, 0],
+                              [5, 0, 0], [6, 0, 0], [7, 0, 0],
+                              [8, 0, 0], [9, 0, 0]])
         cimage = colors[image]
         workspace, module = self.make_objects_workspace(cimage, mode="RGB",
                                                         filename="myimage.png")
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(np.all(o.segmented == image))
+        self.assertTrue(numpy.all(o.segmented == image))
 
     def test_12_05_object_outlines(self):
-        image = np.zeros((30, 40), int)
+        image = numpy.zeros((30, 40), int)
         image[10:15, 20:30] = 1
         workspace, module = self.make_objects_workspace(image)
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(np.all(o.segmented == image))
+        self.assertTrue(numpy.all(o.segmented == image))
         expected_outlines = image != 0
         expected_outlines[11:14, 21:29] = False
         image_set = workspace.get_image_set()
         outlines = image_set.get_image(OUTLINES_NAME)
-        np.testing.assert_equal(outlines.pixel_data, expected_outlines)
+        numpy.testing.assert_equal(outlines.pixel_data, expected_outlines)
 
     def test_12_06_overlapped_objects(self):
         workspace, module = self.make_objects_workspace(
@@ -2935,31 +2929,31 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             object_number = n + 1
             for label, idx in labels_and_indices:
                 if object_number in idx:
-                    np.testing.assert_array_equal(
+                    numpy.testing.assert_array_equal(
                             label, mask.astype(label.dtype) * object_number)
                     break
             else:
                 assert "Object number %d not found" % object_number
 
     def test_13_01_batch_images(self):
-        module = LI.LoadImages()
-        module.match_method.value = LI.MS_REGEXP
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-        orig_path = os.path.join(T.example_images_directory(), "ExampleSBSImages")
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        orig_path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         module.location.custom_path = orig_path
         target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
-        url_path = LI.url2pathname(LI.pathname2url(orig_path))
+        url_path = cellprofiler.modules.loadimages.url2pathname(cellprofiler.modules.loadimages.pathname2url(orig_path))
 
         file_regexp = "^Channel1-[0-9]{2}-[A-P]-[0-9]{2}.tif$"
         module.images[0].common_text.value = file_regexp
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
-        image_set_list = I.ImageSetList()
-        pipeline = P.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
 
         def fn_alter_path(pathname, **varargs):
@@ -2982,44 +2976,44 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertEqual(len(image_numbers), 96)
         module.prepare_group(workspace, group_keys, image_numbers)
         for image_number in image_numbers:
-            path = m.get_measurement(measurements.IMAGE,
-                                     LI.C_PATH_NAME + "_" + IMAGE_NAME,
+            path = m.get_measurement(cellprofiler.measurement.IMAGE,
+                                     cellprofiler.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
                                      image_set_number=image_number)
             self.assertEqual(path, target_path)
-            file_name = m.get_measurement(measurements.IMAGE,
-                                          LI.C_FILE_NAME + "_" + IMAGE_NAME,
+            file_name = m.get_measurement(cellprofiler.measurement.IMAGE,
+                                          cellprofiler.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
                                           image_set_number=image_number)
             self.assertTrue(re.match(file_regexp, file_name) is not None)
-            url = m.get_measurement(measurements.IMAGE,
-                                    LI.C_URL + "_" + IMAGE_NAME,
+            url = m.get_measurement(cellprofiler.measurement.IMAGE,
+                                    cellprofiler.measurement.C_URL + "_" + IMAGE_NAME,
                                     image_set_number=image_number)
-            self.assertEqual(url, LI.pathname2url(
+            self.assertEqual(url, cellprofiler.modules.loadimages.pathname2url(
                     os.path.join(path, file_name)))
 
     def test_13_02_batch_movies(self):
-        module = LI.LoadImages()
-        module.match_method.value = LI.MS_EXACT_MATCH
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-        module.file_types.value = LI.FF_AVI_MOVIES
-        orig_path = T.testimages_directory()
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
+        orig_path = tests.modules.testimages_directory()
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
-        orig_url = LI.pathname2url(orig_path)
+        orig_url = cellprofiler.modules.loadimages.pathname2url(orig_path)
         # Can switch cases in Windows.
-        orig_url_path = LI.url2pathname(orig_url)
+        orig_url_path = cellprofiler.modules.loadimages.url2pathname(orig_url)
 
         file_name = "DrosophilaEmbryo_GFPHistone.avi"
-        maybe_download_tesst_image(file_name)
-        target_url = LI.pathname2url(os.path.join(target_path, file_name))
+        tests.modules.maybe_download_tesst_image(file_name)
+        target_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(target_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
-        image_set_list = I.ImageSetList()
-        pipeline = P.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
 
         def fn_alter_path(pathname, **varargs):
@@ -3048,37 +3042,37 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, group_keys, image_numbers)
         for image_number in image_numbers:
             self.assertEqual(m.get_measurement(
-                    measurements.IMAGE, "PathName_" + IMAGE_NAME,
+                    cellprofiler.measurement.IMAGE, "PathName_" + IMAGE_NAME,
                     image_set_number=image_number), target_path)
             self.assertEqual(m.get_measurement(
-                    measurements.IMAGE, "Metadata_T",
+                    cellprofiler.measurement.IMAGE, "Metadata_T",
                     image_set_number=image_number), image_number - 1)
 
     def test_13_03_batch_flex(self):
-        module = LI.LoadImages()
-        module.match_method.value = LI.MS_EXACT_MATCH
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-        module.file_types.value = LI.FF_OTHER_MOVIES
-        orig_path = T.testimages_directory()
-        orig_url = LI.pathname2url(orig_path)
+        module = cellprofiler.modules.loadimages.LoadImages()
+        module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
+        orig_path = tests.modules.testimages_directory()
+        orig_url = cellprofiler.modules.loadimages.pathname2url(orig_path)
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
         # Can switch cases in Windows.
-        orig_url_path = LI.url2pathname(orig_url)
+        orig_url_path = cellprofiler.modules.loadimages.url2pathname(orig_url)
 
         file_name = "RLM1 SSN3 300308 008015000.flex"
-        maybe_download_tesst_image(file_name)
-        target_url = LI.pathname2url(os.path.join(orig_path, file_name))
+        tests.modules.maybe_download_tesst_image(file_name)
+        target_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(orig_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        pipeline = P.Pipeline()
+        image_set_list = cellprofiler.image.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m,
+                                                     image_set_list)
         module.prepare_run(workspace)
 
         def fn_alter_path(pathname, **varargs):
@@ -3105,10 +3099,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             module.prepare_group(workspace, group_keys, image_numbers)
             for image_number in image_numbers:
                 self.assertEqual(m.get_measurement(
-                        measurements.IMAGE,
+                        cellprofiler.measurement.IMAGE,
                         "PathName_" + IMAGE_NAME, image_number), target_path)
                 self.assertEqual(m.get_measurement(
-                        measurements.IMAGE, LI.C_SERIES + "_" + IMAGE_NAME,
+                        cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_SERIES + "_" + IMAGE_NAME,
                         image_number), i)
 
     # def test_14_01_load_unicode(self):
@@ -3170,37 +3164,37 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         returns tuple of workspace and module
         '''
         self.directory = tempfile.mkdtemp()
-        data = base64.b64decode(T.png_8_1)
+        data = base64.b64decode(tests.modules.png_8_1)
         for file_name in file_names:
             path = os.path.join(self.directory, file_name)
             fd = open(path, "wb")
             fd.write(data)
             fd.close()
 
-        module = LI.LoadImages()
+        module = cellprofiler.modules.loadimages.LoadImages()
         module.module_num = 1
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = self.directory
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
             self.assertFalse(isinstance(event, (
-                cpp.LoadExceptionEvent, cpp.RunExceptionEvent)))
+                cellprofiler.pipeline.LoadExceptionEvent, cellprofiler.pipeline.RunExceptionEvent)))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        m = measurements.Measurements()
-        image_set_list = I.ImageSetList()
-        return (W.Workspace(pipeline, module, None, None, m, image_set_list),
+        m = cellprofiler.measurement.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
+        return (cellprofiler.workspace.Workspace(pipeline, module, None, None, m, image_set_list),
                 module)
 
     def test_15_01_prepare_run_measurements(self):
         filenames = ["channel1-A01.png", "channel2-A01.png",
                      "channel1-A02.png", "channel2-A02.png"]
         workspace, module = self.make_prepare_run_workspace(filenames)
-        self.assertTrue(isinstance(module, LI.LoadImages))
-        module.match_method.value = LI.MS_EXACT_MATCH
+        self.assertTrue(isinstance(module, cellprofiler.modules.loadimages.LoadImages))
+        module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.add_imagecb()
         module.images[0].common_text.value = "channel1-"
         module.images[1].common_text.value = "channel2-"
@@ -3209,17 +3203,17 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertTrue(module.prepare_run(workspace))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, measurements.Measurements))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
         for i in range(1, 3):
             for j, image_name in ((1, IMAGE_NAME), (2, ALT_IMAGE_NAME)):
                 filename = "channel%d-A0%d.png" % (j, i)
                 full_path = os.path.join(self.directory, filename)
                 url = "file:" + urllib.pathname2url(full_path)
                 for category, expected in (
-                        (LI.C_FILE_NAME, filename),
-                        (LI.C_PATH_NAME, self.directory),
-                        (LI.C_URL, url)):
-                    value = m.get_measurement(measurements.IMAGE,
+                        (cellprofiler.measurement.C_FILE_NAME, filename),
+                        (cellprofiler.measurement.C_PATH_NAME, self.directory),
+                        (cellprofiler.measurement.C_URL, url)):
+                    value = m.get_measurement(cellprofiler.measurement.IMAGE,
                                               "_".join((category, image_name)),
                                               i)
                     self.assertEqual(value, expected)
@@ -3228,30 +3222,30 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def test_16_01_00_load_from_url(self):
         from bioformats.formatreader import release_image_reader
 
-        module = LI.LoadImages()
+        module = cellprofiler.modules.loadimages.LoadImages()
         module.module_num = 1
-        module.location.dir_choice = LI.URL_FOLDER_NAME
+        module.location.dir_choice = cellprofiler.modules.loadimages.URL_FOLDER_NAME
         url_base = "http://www.cellprofiler.org/ExampleFlyImages"
         module.location.custom_path = url_base
-        module.match_method.value = LI.MS_EXACT_MATCH
+        module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.add_imagecb()
         module.images[0].common_text.value = "_D.TIF"
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.images[1].common_text.value = "_F.TIF"
         module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
             self.assertFalse(isinstance(event, (
-                cpp.LoadExceptionEvent, cpp.RunExceptionEvent)))
+                cellprofiler.pipeline.LoadExceptionEvent, cellprofiler.pipeline.RunExceptionEvent)))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        m = measurements.Measurements()
-        image_set_list = I.ImageSetList()
-        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        m = cellprofiler.measurement.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
         self.assertTrue(module.prepare_run(workspace))
         image_numbers = m.get_image_numbers()
         self.assertEqual(len(image_numbers), 3)
@@ -3259,19 +3253,19 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                  ("01_POS076_D.TIF", "01_POS076_F.TIF"),
                  ("01_POS218_D.TIF", "01_POS218_F.TIF"))
         for image_number, (filename, alt_filename) in zip(image_numbers, names):
-            url = m.get_measurement(measurements.IMAGE,
-                                    LI.C_URL + "_" + IMAGE_NAME,
+            url = m.get_measurement(cellprofiler.measurement.IMAGE,
+                                    cellprofiler.measurement.C_URL + "_" + IMAGE_NAME,
                                     image_set_number=image_number)
             expected = url_base + "/" + filename
             self.assertEqual(expected, url)
-            url = m.get_measurement(measurements.IMAGE,
-                                    LI.C_URL + "_" + ALT_IMAGE_NAME,
+            url = m.get_measurement(cellprofiler.measurement.IMAGE,
+                                    cellprofiler.measurement.C_URL + "_" + ALT_IMAGE_NAME,
                                     image_set_number=image_number)
             expected = url_base + "/" + alt_filename
             self.assertEqual(expected, url)
         image_set = image_set_list.get_image_set(0)
-        module.run(W.Workspace(pipeline, module, image_set,
-                               cpo.ObjectSet(), m, image_set_list))
+        module.run(cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                    cellprofiler.object.ObjectSet(), m, image_set_list))
         image = image_set.get_image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (1006, 1000))
         #
@@ -3458,8 +3452,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        maybe_download_fly()
-        directory = os.path.join(example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3532,8 +3526,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        maybe_download_fly()
-        directory = os.path.join(example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3606,8 +3600,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        maybe_download_fly()
-        directory = os.path.join(example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3680,8 +3674,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        maybe_download_fly()
-        directory = os.path.join(example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3754,8 +3748,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        maybe_download_fly()
-        directory = os.path.join(example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3812,7 +3806,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        directory = os.path.join(example_images_directory(),
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
 
@@ -3821,7 +3815,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
     def test_provide_volume(self):
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 
-        provider = LI.LoadImagesImageProvider(
+        provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
             name="ball",
             pathname=path,
             filename="ball.tif",
@@ -3839,7 +3833,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
-        self.assertTrue(np.all(expected == image.pixel_data))
+        self.assertTrue(numpy.all(expected == image.pixel_data))
 
     def test_provide_npy(self):
         resource_directory = os.path.realpath(
@@ -3850,7 +3844,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
             )
         )
 
-        provider = LI.LoadImagesImageProvider(
+        provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
             name="neurite",
             pathname=resource_directory,
             filename="neurite.npy",
@@ -3859,9 +3853,9 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         actual = provider.provide_image(None).pixel_data
 
-        expected = np.load(os.path.join(resource_directory, "neurite.npy")) / 255.
+        expected = numpy.load(os.path.join(resource_directory, "neurite.npy")) / 255.
 
-        np.testing.assert_array_almost_equal(actual, expected)
+        numpy.testing.assert_array_almost_equal(actual, expected)
 
     def test_provide_npy_volume(self):
         resource_directory = os.path.realpath(
@@ -3872,7 +3866,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
             )
         )
 
-        provider = LI.LoadImagesImageProvider(
+        provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
             name="volume",
             pathname=resource_directory,
             filename="volume.npy",
@@ -3882,16 +3876,16 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         actual = provider.provide_image(None).pixel_data
 
-        expected = np.load(os.path.join(resource_directory, "volume.npy"))
+        expected = numpy.load(os.path.join(resource_directory, "volume.npy"))
 
-        np.testing.assert_array_equal(actual, expected)
+        numpy.testing.assert_array_equal(actual, expected)
 
 
 class TestLoadImagesImageProviderURL(unittest.TestCase):
     def test_provide_volume(self):
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 
-        provider = LI.LoadImagesImageProviderURL(
+        provider = cellprofiler.modules.loadimages.LoadImagesImageProviderURL(
             name="ball",
             url="file:/" + os.path.join(path, "ball.tif"),
             volume=True,
@@ -3908,16 +3902,16 @@ class TestLoadImagesImageProviderURL(unittest.TestCase):
 
         self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
-        self.assertTrue(np.all(expected == image.pixel_data))
+        self.assertTrue(numpy.all(expected == image.pixel_data))
 
     def test_provide_volume_3_planes(self):
-        data = np.random.rand(3, 256, 256)
+        data = numpy.random.rand(3, 256, 256)
 
         path = tempfile.NamedTemporaryFile(suffix=".tif", delete=False).name
 
         name = os.path.splitext(os.path.basename(path))[0]
 
-        provider = LI.LoadImagesImageProviderURL(
+        provider = cellprofiler.modules.loadimages.LoadImagesImageProviderURL(
             name=name,
             url="file:/" + path,
             volume=True,
@@ -3961,8 +3955,8 @@ overlapped_objects_data = zlib.decompress(base64.b64decode(
 
 '''The two objects that were used to generate the above TIF'''
 overlapped_objects_data_masks = [
-    np.arange(-offi, 20 - offi)[:, np.newaxis] ** 2 +
-    np.arange(-offj, 25 - offj)[np.newaxis, :] ** 2 < 64
+    numpy.arange(-offi, 20 - offi)[:, numpy.newaxis] ** 2 +
+    numpy.arange(-offj, 25 - offj)[numpy.newaxis, :] ** 2 < 64
     for offi, offj in ((10, 10), (10, 15))]
 
 if __name__ == "main":

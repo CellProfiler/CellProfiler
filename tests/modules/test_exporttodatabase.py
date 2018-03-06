@@ -23,7 +23,7 @@ else:
 
 from cellprofiler.preferences import set_headless, DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
     DEFAULT_OUTPUT_SUBFOLDER_NAME
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.measurement import C_FILE_NAME, C_PATH_NAME
 
 set_headless()
 

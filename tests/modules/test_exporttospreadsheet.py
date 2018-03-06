@@ -19,6 +19,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
+import cellprofiler.setting
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E
 from cellprofiler.modules import identifyprimaryobjects
@@ -2261,7 +2262,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd.close()
         csv_path, csv_file = os.path.split(name)
         module = L.LoadText()
-        module.csv_directory.dir_choice = L.ABSOLUTE_FOLDER_NAME
+        module.csv_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.csv_directory.custom_path = csv_path
         module.csv_file_name.value = csv_file
         module.module_num = 1

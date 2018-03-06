@@ -1,4 +1,4 @@
-import cellprofiler.icons 
+import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED
 __doc__ = """
 The <b>Images</b> module specifies the location of image files to be analyzed by your pipeline.
@@ -172,7 +172,7 @@ class Images(cpm.CPModule):
 
     @staticmethod
     def modpath_to_url(modpath):
-        if modpath[0] in ("http", "https", "ftp"):
+        if modpath[0] in ("http", "https", "ftp", "s3"):
             if len(modpath) == 1:
                 return modpath[0] + ":"
             elif len(modpath) == 2:

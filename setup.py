@@ -426,6 +426,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         "numpy<=1.13.0",
+        "boto3",
         "cellh5",
         "centrosome>=1.0.4",
         "h5py<=2.7.0",
@@ -433,8 +434,8 @@ setuptools.setup(
         "javabridge",
         "matplotlib",
         "MySQL-python",
-        "prokaryote",
-        "python-bioformats",
+        "prokaryote==2.3.3",
+        "python-bioformats==1.4.0",
         "pyzmq",
         "scipy"
     ],

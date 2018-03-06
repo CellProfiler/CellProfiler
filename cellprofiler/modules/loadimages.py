@@ -3360,7 +3360,7 @@ def bad_sizes_warning(first_size, first_filename,
     return warning
 
 FILE_SCHEME = "file:"
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
+PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
 def pathname2url(path):
     '''Convert the unicode path to a file: url'''
     utf8_path = path.encode('utf-8')

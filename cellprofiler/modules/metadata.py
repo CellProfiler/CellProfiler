@@ -1,4 +1,4 @@
-import cellprofiler.icons 
+import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
 __doc__ = """
 The <b>Metadata</b> module connects information about the images (i.e., metadata)
@@ -105,6 +105,7 @@ import urlparse
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.misc
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -507,7 +508,8 @@ class Metadata(cpm.CPModule):
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                fd = urllib.urlopen(csv_path)
+                url = cellprofiler.misc.generate_presigned_url(csv_path)
+                fd = urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
@@ -556,10 +558,12 @@ class Metadata(cpm.CPModule):
                 "(Ljava/lang/String;)V",
                 header)
         elif group.csv_location.is_url():
+            url = cellprofiler.misc.generate_presigned_url(group.csv_location.value)
+
             jurl = J.make_instance(
                 "java/net/URL",
                 "(Ljava/lang/String;)V",
-                group.csv_location.value)
+                url)
             stream = J.call(
                 jurl, "openStream",
                 "()Ljava/io/InputStream;")
@@ -714,6 +718,9 @@ class Metadata(cpm.CPModule):
         url_array = env.make_object_array(len(filtered_file_list), scls)
         metadata_array = env.make_object_array(len(filtered_file_list), scls)
         for i, url in enumerate(filtered_file_list):
+            if url.startswith("s3:"):
+                url = url.replace(" ", "+")
+
             if isinstance(url, unicode):
                 ourl = env.new_string(url)
             else:

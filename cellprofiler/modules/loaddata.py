@@ -1,4 +1,4 @@
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and 
+'''<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
 This module loads a file that supplies text or numerical data associated with
@@ -168,6 +168,7 @@ import matplotlib.mlab
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
+import cellprofiler.misc
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
@@ -633,7 +634,8 @@ class LoadData(cpm.CPModule):
                     raise RuntimeError('Need to fetch URL manually.')
                 import urllib2
                 try:
-                    url_fd = urllib2.urlopen(self.csv_path)
+                    url = cellprofiler.misc.generate_presigned_url(self.csv_path)
+                    url_fd = urllib2.urlopen(url)
                 except Exception, e:
                     entry["URLEXCEPTION"] = e
                     raise e

@@ -2633,11 +2633,7 @@ class Pipeline(object):
         for pathname in pathnames:
             if len(pathname) == 0:
                 continue
-            if (pathname.startswith("http:") or
-                    pathname.startswith("https:") or
-                    pathname.startswith("ftp:") or
-                    pathname.startswith("omero:") or
-                    pathname.startswith("file:")):
+            if pathname.startswith("file:"):
                 urls.append(pathname)
             else:
                 urls.append(pathname2url(pathname))

@@ -64,6 +64,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
+import cellprofiler.misc
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
@@ -3101,8 +3102,8 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir = temp_dir)
             self.__cached_file = temppath
             try:
-                self.__cached_file, headers = urllib.urlretrieve(
-                    url, filename=temppath)
+                url = cellprofiler.misc.generate_presigned_url(url)
+                self.__cached_file, headers = urllib.urlretrieve(url, filename=temppath)
             finally:
                 os.close(tempfd)
         else:
@@ -3183,6 +3184,36 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         # files to keep the system from filling up.
         self.release_memory()
 
+
+def loadmat(path):
+    with open(path, "rb") as fd:
+        imgdata = scipy.io.matlab.mio.loadmat(fd, struct_as_record=True)
+        img = imgdata["Image"]
+
+    return img
+
+
+def load_data_file(pathname_or_url, load_fn):
+    ext = os.path.splitext(pathname_or_url)[-1].lower()
+
+    if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
+        url = cellprofiler.misc.generate_presigned_url(path)
+
+        try:
+            src = urllib.urlopen(url)
+            fd, path = tempfile.mkstemp(suffix=ext)
+            with os.fdopen(fd, mode="wb") as dest:
+                shutil.copyfileobj(src, dest)
+            img = load_fn(path)
+        finally:
+            src.close()
+            os.remove(path)
+
+        return img
+
+    return load_fn(pathname_or_url)
+
+
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
@@ -3206,10 +3237,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         else:
             rescale = self.rescale
         if self.is_matlab_file():
-            with open(self.get_full_name(), "rb") as fd:
-                imgdata = scipy.io.matlab.mio.loadmat(
-                    fd, struct_as_record=True)
-            img = imgdata["Image"]
+            img = load_data_file(self.get_full_name(), loadmat)
             # floating point - scale = 1:1
             self.scale = 1.0
             pixel_type_scale = 1.0

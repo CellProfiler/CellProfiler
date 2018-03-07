@@ -45,7 +45,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
+import cellprofiler.utilities.utf16encode
 from bioformats.omexml import OMEXML
 from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
@@ -1009,7 +1009,7 @@ class Pipeline(object):
                     text, setting = line.split(':')
                     setting = setting.decode('string_escape')
                     if do_deprecated_utf16_decode:
-                        setting = utf16decode(setting)
+                        setting = cellprofiler.utilities.utf16encode.utf16decode(setting)
                     elif do_utf16_decode:
                         setting = setting.decode('utf-16')
                     settings.append(setting)

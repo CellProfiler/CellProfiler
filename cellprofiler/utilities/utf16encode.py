@@ -1,37 +1,13 @@
-'''utf16encode.py - encode unicode strings as escaped utf16
-'''
-
-
-def utf16encode(x):
-    '''Encode a unicode string in 7-bit US ascii
-
-    x - unicode string to be encoded
-
-    returns utf8-escape-encoded string
-
-    The escapes:
-
-    \ (backslash) -> \\
-
-    0x20 <= c < 0xff -> c
-
-    all others -> \u####
-    '''
-    y = ''
-    for z in x:
-        t = ord(z)
-        if t < 0x20 or t >= 0x7f:
-            y += "\\u%04x" % t
-        elif z == "\\":
-            y += "\\\\"
-        else:
-            y += str(z)
-    return y
+"""
+/!\ WARNING - DEPRECATED /!\
+utf16encode.py - encode unicode strings as escaped utf16
+This is only used for pipeline version < 3 files
+"""
 
 
 def utf16decode(x):
-    '''Decode an escaped utf8-encoded string
-    '''
+    """Decode an escaped utf8-encoded string
+    """
     y = u""
     state = -1
     for z in x:

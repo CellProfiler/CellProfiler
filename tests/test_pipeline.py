@@ -137,7 +137,7 @@ HasImagePlaneDetails:False"""
     def test_09_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
         x = get_empty_pipeline()
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
         module.module_num = 1
         module.my_variable.value = "foo"
         x.add_module(module)
@@ -152,10 +152,10 @@ HasImagePlaneDetails:False"""
                              column[2] == cpmeas.COLTYPE_INTEGER
                              for column in columns]))
         self.assertTrue(any([column[0] == 'Image' and
-                             column[1] == 'ModuleError_01MyClassForTest0801'
+                             column[1] == 'ModuleError_01TestModuleWithMeasurement'
                              for column in columns]))
         self.assertTrue(any([column[0] == 'Image' and
-                             column[1] == 'ExecutionTime_01MyClassForTest0801'
+                             column[1] == 'ExecutionTime_01TestModuleWithMeasurement'
                              for column in columns]))
         self.assertTrue(any([column[0] == cpmeas.EXPERIMENT and
                              column[1] == cpp.M_PIPELINE
@@ -177,7 +177,7 @@ HasImagePlaneDetails:False"""
         columns = x.get_measurement_columns()
         self.assertEqual(len(columns), 9)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
         module.module_num = 2
         module.my_variable.value = "foo"
         x.add_module(module)
@@ -663,8 +663,10 @@ HasImagePlaneDetails:False"""
 
     def test_14_01_unicode_save(self):
         pipeline = get_empty_pipeline()
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
+        # Little endian utf-16 encoding
         module.my_variable.value = u"\\\u2211"
+        module.other_variable.value = u"\u2222\u0038"
         module.module_num = 1
         module.notes = u"\u03B1\\\u03B2"
         pipeline.add_module(module)
@@ -672,19 +674,28 @@ HasImagePlaneDetails:False"""
         pipeline.savetxt(fd, save_image_plane_details=False)
         result = fd.getvalue()
         lines = result.split("\n")
-        self.assertEqual(len(lines), 10)
-        text, value = lines[-2].split(":")
+        self.assertEqual(len(lines), 11)
+        text, value = lines[-3].split(":")
         #
         # unicode encoding:
-        #     backslash: \\
+        #     backslash: \\ (BOM encoding)
         #     unicode character: \u
         #
         # escape encoding:
-        #     backslash * 2: \\\\
-        #     unicode character: \\
+        #     utf-16 to byte: \xff\xfe\\\x00\x11"
         #
-        # result = \\\\\\u2211
-        self.assertEqual(value, r"\\\\\\u2211")
+        # result = \\xff\\xfe\\\\\\x00\\x11"
+        self.assertEqual(value, '\\xff\\xfe\\\\\\x00\\x11"')
+        text, value = lines[-2].split(":")
+        #
+        # unicode encoding:
+        #     unicode character: \u
+        #
+        # escape encoding:
+        #     utf-16 to byte: \xff\xfe""8\x00
+        #
+        # result = \\xff\\xfe""8\\x00
+        self.assertEqual(value, '\\xff\\xfe""8\\x00')
         mline = lines[7]
         idx0 = mline.find("notes:")
         mline = mline[(idx0 + 6):]
@@ -694,11 +705,11 @@ HasImagePlaneDetails:False"""
 
     def test_14_02_unicode_save_and_load(self):
         #
-        # Put "MyClassForTest0801" into the module list
+        # Put "TestModuleWithMeasurement" into the module list
         #
         cellprofiler.modules.fill_modules()
-        cellprofiler.modules.all_modules[MyClassForTest0801.module_name] = \
-            MyClassForTest0801
+        cellprofiler.modules.all_modules[TestModuleWithMeasurement.module_name] = \
+            TestModuleWithMeasurement
         #
         # Continue with test
         #
@@ -708,7 +719,7 @@ HasImagePlaneDetails:False"""
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
         module.my_variable.value = u"\\\u2211"
         module.module_num = 1
         module.notes = u"\u03B1\\\u03B2"
@@ -719,7 +730,22 @@ HasImagePlaneDetails:False"""
         pipeline.loadtxt(fd)
         self.assertEqual(len(pipeline.modules()), 1)
         result_module = pipeline.modules()[0]
-        self.assertTrue(isinstance(result_module, MyClassForTest0801))
+        self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
+        self.assertEqual(module.notes, result_module.notes)
+        self.assertEqual(module.my_variable.value, result_module.my_variable.value)
+
+    def test_14_03_deprecated_unicode_load(self):
+        pipeline = get_empty_pipeline()
+        deprecated_pipeline_file = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                                 'resources/pipelineV3.cppipe'))
+        pipeline.loadtxt(deprecated_pipeline_file)
+        module = TestModuleWithMeasurement()
+        module.my_variable.value = u"\\\u2211"
+        module.module_num = 1
+        module.notes = u"\u03B1\\\u03B2"
+        self.assertEqual(len(pipeline.modules()), 1)
+        result_module = pipeline.modules()[0]
+        self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
         self.assertEqual(module.notes, result_module.notes)
         self.assertEqual(module.my_variable.value, result_module.my_variable.value)
 
@@ -1271,22 +1297,23 @@ class ATestModule(cpm.Module):
         return list(measurements)
 
 
-class MyClassForTest0801(cpm.Module):
+class TestModuleWithMeasurement(cpm.Module):
     module_name = "Test0801"
     category = "Test"
     variable_revision_number = 1
 
     def create_settings(self):
         self.my_variable = cps.Text('', '')
+        self.other_variable = cps.Text('', '')
 
     def settings(self):
-        return [self.my_variable]
+        return [self.my_variable, self.other_variable]
 
-    module_name = "MyClassForTest0801"
+    module_name = "TestModuleWithMeasurement"
     variable_revision_number = 1
 
     def module_class(self):
-        return "cellprofiler.tests.Test_Pipeline.MyClassForTest0801"
+        return "cellprofiler.tests.Test_Pipeline.TestModuleWithMeasurement"
 
     def get_measurement_columns(self, pipeline):
         return [(cpmeas.IMAGE,

@@ -29,6 +29,7 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.module
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
 
 hiddenimports += [
+    "scipy._lib.messagestream",
     "pywt._extensions._cwt"
 ]
 

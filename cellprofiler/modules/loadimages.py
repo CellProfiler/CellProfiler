@@ -3249,16 +3249,62 @@ def is_movie(filename):
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
-class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
-    '''Base for image providers: handle pathname and filename & URLs'''
+def loadmat(path):
+    imgdata = scipy.io.matlab.mio.loadmat(path, struct_as_record=True)
+    img = imgdata["Image"]
 
-    def __init__(self, name, pathname, filename):
-        '''Initializer
+    return img
 
-        name - name of image to be provided
-        pathname - path to file or base of URL
-        filename - filename of file or last chunk of URL
-        '''
+
+def load_data_file(pathname_or_url, load_fn):
+    ext = os.path.splitext(pathname_or_url)[-1].lower()
+
+    if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
+        url = cellprofiler.misc.generate_presigned_url(pathname_or_url)
+
+        try:
+            src = urllib.urlopen(url)
+            fd, path = tempfile.mkstemp(suffix=ext)
+            with os.fdopen(fd, mode="wb") as dest:
+                shutil.copyfileobj(src, dest)
+            img = load_fn(path)
+        finally:
+            try:
+                src.close()
+                os.remove(path)
+            except NameError:
+                pass
+
+        return img
+
+    return load_fn(pathname_or_url)
+
+
+class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
+    """Base for image providers: handle pathname and filename & URLs"""
+
+    def __init__(self, name, pathname, filename, rescale=True, series=None, index=None,
+                 channel=None, volume=False, spacing=None):
+        """
+        :param name: Name of image to be provided
+        :type name:
+        :param pathname: Path to file or base of URL
+        :type pathname:
+        :param filename: Filename of file or last chunk of URL
+        :type filename:
+        :param rescale:
+        :type rescale:
+        :param series:
+        :type series:
+        :param index:
+        :type index:
+        :param channel:
+        :type channel:
+        :param volume:
+        :type volume:
+        :param spacing:
+        :type spacing:
+        """
         if pathname.startswith(FILE_SCHEME):
             pathname = url2pathname(pathname)
         self.__name = name
@@ -3267,6 +3313,8 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         self.__cached_file = None
         self.__is_cached = False
         self.__cacheing_tried = False
+        self.__image = None
+
         if pathname is None:
             self.__url = filename
         elif any([pathname.startswith(s + ":") for s in PASSTHROUGH_SCHEMES]):
@@ -3278,6 +3326,14 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
             self.__url = pathname2url(pathname)
         else:
             self.__url = pathname2url(os.path.join(pathname, filename))
+
+        self.rescale = rescale
+        self.series = series
+        self.index = index
+        self.channel = channel
+        self.__volume = volume
+        self.__spacing = spacing
+        self.scale = None
 
     def get_name(self):
         return self.__name
@@ -3413,56 +3469,6 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         # using __del__ is all kinds of bad, but we need to remove the
         # files to keep the system from filling up.
         self.release_memory()
-
-
-def loadmat(path):
-    imgdata = scipy.io.matlab.mio.loadmat(path, struct_as_record=True)
-    img = imgdata["Image"]
-
-    return img
-
-
-def load_data_file(pathname_or_url, load_fn):
-    ext = os.path.splitext(pathname_or_url)[-1].lower()
-
-    if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
-        url = cellprofiler.misc.generate_presigned_url(pathname_or_url)
-
-        try:
-            src = urllib.urlopen(url)
-            fd, path = tempfile.mkstemp(suffix=ext)
-            with os.fdopen(fd, mode="wb") as dest:
-                shutil.copyfileobj(src, dest)
-            img = load_fn(path)
-        finally:
-            try:
-                src.close()
-                os.remove(path)
-            except NameError:
-                pass
-
-        return img
-
-    return load_fn(pathname_or_url)
-
-
-class LoadImagesImageProvider(LoadImagesImageProviderBase):
-    """Provide an image by filename, loading the file as it is requested
-    """
-    def __init__(self, name, pathname, filename,
-                 rescale=True,
-                 series=None,
-                 index=None,
-                 channel=None,
-                 volume=False,
-                 spacing=None):
-        super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
-        self.rescale = rescale
-        self.series = series
-        self.index = index
-        self.channel = channel
-        self.__volume = volume
-        self.__spacing = spacing
 
     def provide_image(self, image_set):
         """Load an image from a pathname

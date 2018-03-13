@@ -74,6 +74,7 @@ import sys
 import tempfile
 import urllib
 import urlparse
+import shutil
 
 import _help
 import cellprofiler.image
@@ -3415,9 +3416,8 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
 
 
 def loadmat(path):
-    with open(path, "rb") as fd:
-        imgdata = scipy.io.matlab.mio.loadmat(fd, struct_as_record=True)
-        img = imgdata["Image"]
+    imgdata = scipy.io.matlab.mio.loadmat(path, struct_as_record=True)
+    img = imgdata["Image"]
 
     return img
 
@@ -3426,7 +3426,7 @@ def load_data_file(pathname_or_url, load_fn):
     ext = os.path.splitext(pathname_or_url)[-1].lower()
 
     if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
-        url = cellprofiler.misc.generate_presigned_url(path)
+        url = cellprofiler.misc.generate_presigned_url(pathname_or_url)
 
         try:
             src = urllib.urlopen(url)
@@ -3435,8 +3435,11 @@ def load_data_file(pathname_or_url, load_fn):
                 shutil.copyfileobj(src, dest)
             img = load_fn(path)
         finally:
-            src.close()
-            os.remove(path)
+            try:
+                src.close()
+                os.remove(path)
+            except NameError:
+                pass
 
         return img
 

@@ -679,7 +679,7 @@ HasImagePlaneDetails:False"""
         #
         # unicode encoding:
         #     backslash: \\ (BOM encoding)
-        #     unicode character: \u
+        #     unicode character: \u2211 (n-ary summation)
         #
         # escape encoding:
         #     utf-16 to byte: \xff\xfe\\\x00\x11"

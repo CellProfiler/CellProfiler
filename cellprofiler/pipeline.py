@@ -1031,8 +1031,8 @@ class Pipeline(object):
                 attribute_strings = attribute_string[1:-1].split('|')
                 variable_revision_number = None
                 # make batch_state decodable from text pipelines
-                # NOTE: These variables are **necessary**, even though they aren't used anywhere obvious
-                # Removing them **will*
+                # NOTE, MAGIC HERE: These variables are **necessary**, even though they
+                # aren't used anywhere obvious. Removing them **will** break these unit tests.
                 array = np.array
                 uint8 = np.uint8
                 for a in attribute_strings:

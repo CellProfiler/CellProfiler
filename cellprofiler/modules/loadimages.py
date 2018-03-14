@@ -78,6 +78,7 @@ import urlparse
 import _help
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -3329,8 +3330,8 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
             tempfd, temppath = tempfile.mkstemp(suffix=".npy", dir=temp_dir)
             self.__cached_file = temppath
             try:
-                self.__cached_file, headers = urllib.urlretrieve(
-                        url, filename=temppath)
+                url = cellprofiler.misc.generate_presigned_url(url)
+                self.__cached_file, headers = urllib.urlretrieve(url, filename=temppath)
             finally:
                 os.close(tempfd)
         else:
@@ -3413,6 +3414,35 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         self.release_memory()
 
 
+def loadmat(path):
+    with open(path, "rb") as fd:
+        imgdata = scipy.io.matlab.mio.loadmat(fd, struct_as_record=True)
+        img = imgdata["Image"]
+
+    return img
+
+
+def load_data_file(pathname_or_url, load_fn):
+    ext = os.path.splitext(pathname_or_url)[-1].lower()
+
+    if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
+        url = cellprofiler.misc.generate_presigned_url(path)
+
+        try:
+            src = urllib.urlopen(url)
+            fd, path = tempfile.mkstemp(suffix=ext)
+            with os.fdopen(fd, mode="wb") as dest:
+                shutil.copyfileobj(src, dest)
+            img = load_fn(path)
+        finally:
+            src.close()
+            os.remove(path)
+
+        return img
+
+    return load_fn(pathname_or_url)
+
+
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
@@ -3442,12 +3472,10 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         filename = self.get_filename()
         channel_names = []
         if self.is_matlab_file():
-            with open(self.get_full_name(), "rb") as fd:
-                imgdata = scipy.io.matlab.mio.loadmat(fd, struct_as_record=True)
-                img = imgdata["Image"]
-                self.scale = 1.0
+            img = load_data_file(self.get_full_name(), loadmat)
+            self.scale = 1.0
         elif self.is_numpy_file():
-            img = numpy.load(self.get_full_name())
+            img = load_data_file(self.get_full_name(), numpy.load)
             self.scale = 1.0
         else:
             url = self.get_url()

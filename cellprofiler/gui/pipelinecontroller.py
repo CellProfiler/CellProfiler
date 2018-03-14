@@ -3104,8 +3104,8 @@ class PipelineController(object):
             #
             # Put metadata first.
             #
-            file_md_order = (cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME,
-                             cellprofiler.modules.loadimages.C_FRAME)
+            file_md_order = (cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME,
+                             cellprofiler.measurement.C_FRAME)
             cx_is_file_md, cy_is_file_md = \
                 [cz in file_md_order for cz in (cx, cy)]
             if cx_is_file_md:
@@ -3125,8 +3125,8 @@ class PipelineController(object):
         m = self.__debug_measurements
         features = sorted(
             [f for f in m.get_feature_names(cellprofiler.measurement.IMAGE) if f.split("_")[0] in
-             (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.C_FILE_NAME,
-              cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FRAME)],
+             (cellprofiler.measurement.C_METADATA, cellprofiler.measurement.C_FILE_NAME,
+              cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_FRAME)],
             cmp=feature_cmp)
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
         columns = dict([

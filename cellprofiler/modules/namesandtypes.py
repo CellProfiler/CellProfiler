@@ -1858,11 +1858,7 @@ requests an object selection.
                            otherwise cpmeas.OBJECT if it provides objects
         '''
         name = provider.get_name()
-        if name in m.get_names():
-            # Get the image with cacheing.
-            img = m.get_image(name)
-        else:
-            img = provider.provide_image(m)
+        img = provider.provide_image(m)
         m[cellprofiler.measurement.IMAGE, loadimages.C_MD5_DIGEST + "_" + name] = \
             NamesAndTypes.get_file_hash(provider, m)
         m[cellprofiler.measurement.IMAGE, loadimages.C_WIDTH + "_" + name] = img.pixel_data.shape[1]

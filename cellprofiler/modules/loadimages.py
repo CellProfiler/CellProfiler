@@ -74,6 +74,7 @@ import sys
 import tempfile
 import urllib
 import urlparse
+import shutil
 
 import _help
 import cellprofiler.image
@@ -3248,16 +3249,70 @@ def is_movie(filename):
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
-class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
-    '''Base for image providers: handle pathname and filename & URLs'''
+def is_numpy_file(filename):
+    return os.path.splitext(filename)[-1].lower() == ".npy"
 
-    def __init__(self, name, pathname, filename):
-        '''Initializer
 
-        name - name of image to be provided
-        pathname - path to file or base of URL
-        filename - filename of file or last chunk of URL
-        '''
+def is_matlab_file(filename):
+    return os.path.splitext(filename)[-1].lower() == ".mat"
+
+
+def loadmat(path):
+    imgdata = scipy.io.matlab.mio.loadmat(path, struct_as_record=True)
+    img = imgdata["Image"]
+
+    return img
+
+
+def load_data_file(pathname_or_url, load_fn):
+    ext = os.path.splitext(pathname_or_url)[-1].lower()
+
+    if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
+        url = cellprofiler.misc.generate_presigned_url(pathname_or_url)
+
+        try:
+            src = urllib.urlopen(url)
+            fd, path = tempfile.mkstemp(suffix=ext)
+            with os.fdopen(fd, mode="wb") as dest:
+                shutil.copyfileobj(src, dest)
+            img = load_fn(path)
+        finally:
+            try:
+                src.close()
+                os.remove(path)
+            except NameError:
+                pass
+
+        return img
+
+    return load_fn(pathname_or_url)
+
+
+class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
+    """Base for image providers: handle pathname and filename & URLs"""
+
+    def __init__(self, name, pathname, filename, rescale=True, series=None, index=None,
+                 channel=None, volume=False, spacing=None):
+        """
+        :param name: Name of image to be provided
+        :type name:
+        :param pathname: Path to file or base of URL
+        :type pathname:
+        :param filename: Filename of file or last chunk of URL
+        :type filename:
+        :param rescale:
+        :type rescale:
+        :param series:
+        :type series:
+        :param index:
+        :type index:
+        :param channel:
+        :type channel:
+        :param volume:
+        :type volume:
+        :param spacing:
+        :type spacing:
+        """
         if pathname.startswith(FILE_SCHEME):
             pathname = url2pathname(pathname)
         self.__name = name
@@ -3266,6 +3321,8 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         self.__cached_file = None
         self.__is_cached = False
         self.__cacheing_tried = False
+        self.__image = None
+
         if pathname is None:
             self.__url = filename
         elif any([pathname.startswith(s + ":") for s in PASSTHROUGH_SCHEMES]):
@@ -3277,6 +3334,44 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
             self.__url = pathname2url(pathname)
         else:
             self.__url = pathname2url(os.path.join(pathname, filename))
+
+        self.rescale = rescale
+        self.__series = series
+        self.__channel = channel
+        self.__index = index
+        self.__volume = volume
+        self.__spacing = spacing
+        self.scale = None
+
+    @property
+    def series(self):
+        return self.__series
+
+    @series.setter
+    def series(self, series):
+        # Invalidate the cached image
+        self.__image = None
+        self.__series = series
+
+    @property
+    def channel(self):
+        return self.__channel
+
+    @channel.setter
+    def channel(self, index):
+        # Invalidate the cached image
+        self.__image = None
+        self.__channel = index
+
+    @property
+    def index(self):
+        return self.__index
+
+    @index.setter
+    def index(self, index):
+        # Invalidate the cached image
+        self.__image = None
+        self.__index = index
 
     def get_name(self):
         return self.__name
@@ -3321,7 +3416,7 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
                 raise IOError("Test for access to directory failed. Directory: %s" % path)
         if parsed_path.scheme == 'file':
             self.__cached_file = url2pathname(path)
-        elif self.is_numpy_file():
+        elif is_numpy_file(self.__filename):
             #
             # urlretrieve uses the suffix of the path component of the URL
             # to name the temporary file, so we replicate that behavior
@@ -3351,12 +3446,6 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         '''Get the URL representation of the file location'''
         return self.__url
 
-    def is_numpy_file(self):
-        return os.path.splitext(self.__filename)[-1].lower() == ".npy"
-
-    def is_matlab_file(self):
-        return os.path.splitext(self.__filename)[-1].lower() == ".mat"
-
     def get_md5_hash(self, measurements):
         '''Compute the MD5 hash of the underlying file or use cached value
 
@@ -3366,7 +3455,7 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         #
         # Cache the MD5 hash on the image reader
         #
-        if self.is_matlab_file() or self.is_numpy_file():
+        if is_matlab_file(self.__filename) or is_numpy_file(self.__filename):
             rdr = None
         else:
             from bioformats.formatreader import get_image_reader
@@ -3395,7 +3484,7 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
 
         Possibly delete the temporary file'''
         if self.__is_cached:
-            if self.is_matlab_file() or self.is_numpy_file():
+            if is_matlab_file(self.__filename) or is_numpy_file(self.__filename):
                 try:
                     os.remove(self.__cached_file)
                 except:
@@ -3407,74 +3496,25 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
             self.__is_cached = False
             self.__cacheing_tried = False
             self.__cached_file = None
+        self.__image = None
 
     def __del__(self):
         # using __del__ is all kinds of bad, but we need to remove the
         # files to keep the system from filling up.
         self.release_memory()
 
-
-def loadmat(path):
-    with open(path, "rb") as fd:
-        imgdata = scipy.io.matlab.mio.loadmat(fd, struct_as_record=True)
-        img = imgdata["Image"]
-
-    return img
-
-
-def load_data_file(pathname_or_url, load_fn):
-    ext = os.path.splitext(pathname_or_url)[-1].lower()
-
-    if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
-        url = cellprofiler.misc.generate_presigned_url(path)
-
-        try:
-            src = urllib.urlopen(url)
-            fd, path = tempfile.mkstemp(suffix=ext)
-            with os.fdopen(fd, mode="wb") as dest:
-                shutil.copyfileobj(src, dest)
-            img = load_fn(path)
-        finally:
-            src.close()
-            os.remove(path)
-
-        return img
-
-    return load_fn(pathname_or_url)
-
-
-class LoadImagesImageProvider(LoadImagesImageProviderBase):
-    """Provide an image by filename, loading the file as it is requested
-    """
-    def __init__(self, name, pathname, filename,
-                 rescale=True,
-                 series=None,
-                 index=None,
-                 channel=None,
-                 volume=False,
-                 spacing=None):
-        super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
-        self.rescale = rescale
-        self.series = series
-        self.index = index
-        self.channel = channel
-        self.__volume = volume
-        self.__spacing = spacing
-
-    def provide_image(self, image_set):
-        """Load an image from a pathname
-        """
+    def __set_image(self):
         if self.__volume:
-            return self.__provide_volume()
+            self.__set_image_volume()
+            return
 
         from bioformats.formatreader import get_image_reader
         self.cache_file()
-        filename = self.get_filename()
         channel_names = []
-        if self.is_matlab_file():
+        if is_matlab_file(self.__filename):
             img = load_data_file(self.get_full_name(), loadmat)
             self.scale = 1.0
-        elif self.is_numpy_file():
+        elif is_numpy_file(self.__filename):
             img = load_data_file(self.get_full_name(), numpy.load)
             self.scale = 1.0
         else:
@@ -3483,15 +3523,15 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                 rdr = get_image_reader(self.get_name(), url=url)
             else:
                 rdr = get_image_reader(
-                        self.get_name(), url=self.get_url())
+                    self.get_name(), url=self.get_url())
             if numpy.isscalar(self.index) or self.index is None:
                 img, self.scale = rdr.read(
-                        c=self.channel,
-                        series=self.series,
-                        index=self.index,
-                        rescale=self.rescale,
-                        wants_max_intensity=True,
-                        channel_names=channel_names)
+                    c=self.channel,
+                    series=self.series,
+                    index=self.index,
+                    rescale=self.rescale,
+                    wants_max_intensity=True,
+                    channel_names=channel_names)
             else:
                 # It's a stack
                 stack = []
@@ -3506,29 +3546,36 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                 for series, index, channel in zip(
                         series_list, self.index, channel_list):
                     img, self.scale = rdr.read(
-                            c=channel,
-                            series=series,
-                            index=index,
-                            rescale=self.rescale,
-                            wants_max_intensity=True,
-                            channel_names=channel_names)
+                        c=channel,
+                        series=series,
+                        index=index,
+                        rescale=self.rescale,
+                        wants_max_intensity=True,
+                        channel_names=channel_names)
                     stack.append(img)
                 img = numpy.dstack(stack)
         if isinstance(self.rescale, float):
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
-        image = cellprofiler.image.Image(img,
-                                         path_name=self.get_pathname(),
-                                         file_name=self.get_filename(),
-                                         scale=self.scale)
+        self.__image = cellprofiler.image.Image(img,
+                                                path_name=self.get_pathname(),
+                                                file_name=self.get_filename(),
+                                                scale=self.scale)
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
-            image.channel_names = list(channel_names)
-        return image
+            self.__image.channel_names = list(channel_names)
 
-    def __provide_volume(self):
+    def provide_image(self, image_set):
+        """Load an image from a pathname
+        """
+        if self.__image is None or image_set is not None:
+            self.__set_image()
+        return self.__image
+
+    def __set_image_volume(self):
         pathname = url2pathname(self.get_url())
 
-        if self.is_numpy_file():
+        # Volume loading is currently limited to tiffs/numpy files only
+        if is_numpy_file(self.__filename):
             data = numpy.load(pathname)
         else:
             data = skimage.external.tifffile.imread(pathname)
@@ -3545,7 +3592,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         else:
             self.scale = 1
 
-        return cellprofiler.image.Image(
+        self.__image = cellprofiler.image.Image(
             image=data,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),

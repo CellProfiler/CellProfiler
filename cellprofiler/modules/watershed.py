@@ -39,6 +39,10 @@ import cellprofiler.object
 import cellprofiler.setting
 
 
+O_DISTANCE = "Distance"
+O_MARKERS = "Markers"
+
+
 class Watershed(cellprofiler.module.ImageSegmentation):
     category = "Advanced"
 
@@ -50,25 +54,28 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         super(Watershed, self).create_settings()
 
         self.operation = cellprofiler.setting.Choice(
-            "Generate from",
-            [
-                "Distance",
-                "Markers"
+            text="Generate from",
+            choices=[
+                O_DISTANCE,
+                O_MARKERS
             ],
-            "Distance",
+            value=O_DISTANCE,
             doc="""\
 Select a method of inputs for the watershed algorithm:
 
--  *Distance* (default): This is classical nuclei segmentation using
+-  *{O_DISTANCE}* (default): This is classical nuclei segmentation using
    watershed. Your “Input” image should be a binary image. Markers and
    other inputs for the watershed algorithm will be automatically
    generated.
--  *Markers*: Use manually generated markers and supply an optional mask
+-  *{O_MARKERS}*: Use manually generated markers and supply an optional mask
    for watershed. Watershed works best when the “Input” image has high
    intensity surrounding regions of interest and low intensity inside
    regions of interest. Refer to the documentation for the other
    available options for more information.
-"""
+""".format(**{
+                "O_DISTANCE": O_DISTANCE,
+                "O_MARKERS": O_MARKERS
+            })
         )
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
@@ -82,7 +89,38 @@ Select a method of inputs for the watershed algorithm:
             doc="Optional. Only regions not blocked by the mask will be segmented."
         )
 
-        self.connectivity = cellprofiler.setting.Integer(
+        self.s_connectivity = cellprofiler.setting.Integer(
+            doc="""\
+Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. 
+Accepted values are ranging from 1 to the number of dimensions.
+
+Two pixels are connected when they are neighbors and have the same value. 
+In 2D, they can be neighbors either in a 1- or 2-connected sense. The value 
+refers to the maximum number of orthogonal hops to consider a pixel/voxel a neighbor.
+
+See `skimage label`_ for more information.
+
+.. _skimage label: http://scikit-image.org/docs/dev/api/skimage.measure.html#label
+""",
+            minval=1,
+            text="Connectivity",
+            value=1,
+        )
+
+        self.compactness = cellprofiler.setting.Float(
+            text="Compactness",
+            minval=0.,
+            value=0.,
+            doc="""\
+Use `compact watershed`_ with given compactness parameter. 
+Higher values result in more regularly-shaped watershed basins.
+
+
+.. _compact watershed: http://scikit-image.org/docs/dev/api/skimage.morphology.html#r371
+"""
+        )
+
+        self.m_connectivity = cellprofiler.setting.Integer(
             doc="""\
 The connectivity defines the dimensions of the footprint used to scan
 the input image for local maximum. The footprint can be interpreted as a
@@ -120,7 +158,9 @@ the image is not downsampled.
             self.operation,
             self.markers_name,
             self.mask_name,
-            self.connectivity,
+            self.s_connectivity,
+            self.compactness,
+            self.m_connectivity,
             self.downsample
         ]
 
@@ -131,15 +171,17 @@ the image is not downsampled.
             self.operation
         ]
 
-        if self.operation.value == "Distance":
+        if self.operation.value == O_DISTANCE:
             __settings__ = __settings__ + [
-                self.connectivity,
+                self.m_connectivity,
                 self.downsample
             ]
         else:
             __settings__ = __settings__ + [
                 self.markers_name,
-                self.mask_name
+                self.mask_name,
+                self.s_connectivity,
+                self.compactness
             ]
 
         return __settings__
@@ -157,7 +199,7 @@ the image is not downsampled.
 
         x_data = x.pixel_data
 
-        if self.operation.value == "Distance":
+        if self.operation.value == O_DISTANCE:
             original_shape = x_data.shape
 
             factor = self.downsample.value
@@ -186,16 +228,16 @@ the image is not downsampled.
             if x.volumetric:
                 footprint = numpy.ones(
                     (
-                        self.connectivity.value,
-                        self.connectivity.value,
-                        self.connectivity.value
+                        self.m_connectivity.value,
+                        self.m_connectivity.value,
+                        self.m_connectivity.value
                     )
                 )
             else:
                 footprint = numpy.ones(
                     (
-                        self.connectivity.value,
-                        self.connectivity.value
+                        self.m_connectivity.value,
+                        self.m_connectivity.value
                     )
                 )
 
@@ -245,7 +287,9 @@ the image is not downsampled.
             y_data = skimage.morphology.watershed(
                 image=x_data,
                 markers=markers_data,
-                mask=mask_data
+                mask=mask_data,
+                connectivity=self.s_connectivity,
+                compactness=self.compactness
             )
 
         y_data = skimage.measure.label(y_data)

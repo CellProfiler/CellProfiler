@@ -45,7 +45,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
+import cellprofiler.utilities.utf16encode
 from bioformats.omexml import OMEXML
 from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
@@ -138,7 +138,7 @@ FMT_MATLAB = "Matlab"
 FMT_NATIVE = "Native"
 
 '''The current pipeline file format version'''
-NATIVE_VERSION = 3
+NATIVE_VERSION = 4
 
 '''The version of the image plane descriptor section'''
 IMAGE_PLANE_DESCRIPTOR_VERSION = 1
@@ -880,6 +880,7 @@ class Pipeline(object):
             raise NotImplementedError('Invalid header: "%s"' % header)
         version = NATIVE_VERSION
         from_matlab = False
+        do_deprecated_utf16_decode = False
         do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
@@ -898,7 +899,9 @@ class Pipeline(object):
                 version = int(value)
                 if version > NATIVE_VERSION:
                     raise ValueError("Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(version, NATIVE_VERSION))
-                elif version > 1:
+                elif version > 1 and version < 4:
+                    do_deprecated_utf16_decode = True
+                elif version >= 4:
                     do_utf16_decode = True
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
@@ -1005,8 +1008,10 @@ class Pipeline(object):
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(':')
                     setting = setting.decode('string_escape')
-                    if do_utf16_decode:
-                        setting = utf16decode(setting)
+                    if do_deprecated_utf16_decode:
+                        setting = cellprofiler.utilities.utf16encode.utf16decode(setting)
+                    elif do_utf16_decode:
+                        setting = setting.decode('utf-16')
                     settings.append(setting)
                 #
                 # Set up the module
@@ -1026,6 +1031,8 @@ class Pipeline(object):
                 attribute_strings = attribute_string[1:-1].split('|')
                 variable_revision_number = None
                 # make batch_state decodable from text pipelines
+                # NOTE, MAGIC HERE: These variables are **necessary**, even though they
+                # aren't used anywhere obvious. Removing them **will** break these unit tests.
                 array = np.array
                 uint8 = np.uint8
                 for a in attribute_strings:
@@ -1188,12 +1195,14 @@ class Pipeline(object):
             for setting in module.settings():
                 setting_text = setting.text
                 if isinstance(setting_text, unicode):
+                    # setting_text = setting_text.encode('utf-16')
                     setting_text = setting_text.encode('utf-8')
                 else:
                     setting_text = str(setting_text)
                 fd.write('    %s:%s\n' % (
                     self.encode_txt(setting_text),
-                    self.encode_txt(utf16encode(setting.unicode_value))))
+                    # self.encode_txt(utf16encode(setting.unicode_value))))
+                    self.encode_txt(setting.unicode_value.encode('utf-16'))))
         if save_image_plane_details:
             fd.write("\n")
             write_file_list(fd, self.__file_list)

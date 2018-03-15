@@ -17,13 +17,12 @@ import traceback
 import uuid
 import weakref
 
-import pkg_resources
 import sys
 import time
 
 import cellprofiler
 import cellprofiler.gui.help.content
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
+import cellprofiler.utilities.utf16encode
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +51,6 @@ class HeadlessConfig(object):
 
     def Write(self, kwd, value):
         self.__preferences[kwd] = value
-
-    WriteInt = Write
-    WriteBool = Write
 
     def Exists(self, kwd):
         return self.__preferences.has_key(kwd)
@@ -178,8 +174,6 @@ def config_read(key):
     Only read from the registry once. This is both technically efficient
     and keeps parallel running instances of CellProfiler from overwriting
     each other's values for things like the current output directory.
-
-    Decode escaped config sequences too.
     '''
     global __cached_values
     if not __is_headless:
@@ -204,21 +198,12 @@ def config_read(key):
         value = get_config().Read(key)
     else:
         value = None
-    if value is not None:
-        try:
-            value = utf16decode(value)
-        except:
-            logger.warning(
-                    "Failed to decode preference (%s=%s), assuming 2.0" %
-                    (key, value))
     __cached_values[key] = value
     return value
 
 
 def config_write(key, value):
     '''Write the given configuration value
-
-    Encode escaped config sequences.
     '''
     if not __is_headless:
         #
@@ -227,8 +212,6 @@ def config_write(key, value):
         import wx
         shutup = wx.LogNull()
     __cached_values[key] = value
-    if value is not None:
-        value = utf16encode(value)
     get_config().Write(key, value)
 
 
@@ -1041,7 +1024,7 @@ def get_show_sampling():
 
 def set_show_sampling(value):
     global __show_sampling
-    get_config().WriteBool(SHOW_SAMPLING, bool(value))
+    get_config().Write(SHOW_SAMPLING, bool(value))
     __show_sampling = bool(value)
 
 
@@ -1202,7 +1185,7 @@ def get_telemetry():
 
 
 def set_telemetry(val):
-    get_config().WriteBool(TELEMETRY, val)
+    get_config().Write(TELEMETRY, val)
 
 
 def get_telemetry_prompt():
@@ -1213,7 +1196,7 @@ def get_telemetry_prompt():
 
 
 def set_telemetry_prompt(val):
-    get_config().WriteBool(TELEMETRY_PROMPT, val)
+    get_config().Write(TELEMETRY_PROMPT, val)
 
 
 def get_startup_blurb():
@@ -1223,7 +1206,7 @@ def get_startup_blurb():
 
 
 def set_startup_blurb(val):
-    get_config().WriteBool(STARTUPBLURB, val)
+    get_config().Write(STARTUPBLURB, val)
 
 
 def get_primary_outline_color():
@@ -1547,7 +1530,7 @@ def get_max_workers():
 def set_max_workers(value):
     '''Set the maximum number of worker processes allowed during analysis'''
     global __max_workers
-    get_config().WriteInt(MAX_WORKERS, value)
+    get_config().Write(MAX_WORKERS, value)
     __max_workers = value
 
 

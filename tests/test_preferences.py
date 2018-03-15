@@ -62,6 +62,14 @@ class TestPreferences(unittest.TestCase):
         result = cpprefs.config_read("test_preferences")
         self.assertEqual(result, gotcha)
 
+    def test_01_05_unicode_value(self):
+        # If the item is already in unicode, don't re-decode
+        gotcha = u"c:\\users\\default"
+        cpprefs.set_preferences_from_dict({})  # clear cache
+        cpprefs.get_config().Write("test_preferences", gotcha)
+        result = cpprefs.config_read("test_preferences")
+        self.assertEqual(result, gotcha)
+
 
 class TestPreferences_02(unittest.TestCase):
     def setUp(self):

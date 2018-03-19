@@ -288,8 +288,8 @@ the image is not downsampled.
                 image=x_data,
                 markers=markers_data,
                 mask=mask_data,
-                connectivity=self.s_connectivity,
-                compactness=self.compactness
+                connectivity=self.s_connectivity.value,
+                compactness=self.compactness.value
             )
 
         y_data = skimage.measure.label(y_data)

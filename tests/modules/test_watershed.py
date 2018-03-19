@@ -96,7 +96,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.connectivity.value = 3
+    module.m_connectivity.value = 3
 
     data = image.pixel_data
 

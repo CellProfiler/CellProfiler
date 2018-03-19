@@ -11,6 +11,7 @@ import skimage.morphology
 import skimage.segmentation
 import skimage.transform
 import skimage.util
+import pytest
 
 import cellprofiler.image
 import cellprofiler.modules.watershed
@@ -18,7 +19,25 @@ import cellprofiler.modules.watershed
 instance = cellprofiler.modules.watershed.Watershed()
 
 
-def test_run_markers(image, module, image_set, workspace):
+@pytest.fixture(
+    scope="module",
+    params=[1, 2],
+    ids=["1connectivity", "2connectivity"]
+)
+def s_connectivity(request):
+    return request.param
+
+
+@pytest.fixture(
+    scope="module",
+    params=[0., 1., 2.],
+    ids=["0compactness", "1compactness", "2compactness"]
+)
+def compactness(request):
+    return request.param
+
+
+def test_run_markers(image, module, image_set, workspace, s_connectivity, compactness):
     module.operation.value = "Markers"
 
     module.x_name.value = "gradient"
@@ -26,6 +45,10 @@ def test_run_markers(image, module, image_set, workspace):
     module.y_name.value = "watershed"
 
     module.markers_name.value = "markers"
+
+    module.s_connectivity.value = s_connectivity
+
+    module.compactness.value = compactness
 
     if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
@@ -80,7 +103,10 @@ def test_run_markers(image, module, image_set, workspace):
 
         markers = skimage.color.rgb2gray(markers)
 
-    expected = skimage.morphology.watershed(gradient, markers)
+    expected = skimage.morphology.watershed(gradient,
+                                            markers,
+                                            connectivity=s_connectivity,
+                                            compactness=compactness)
 
     expected = skimage.measure.label(expected)
 

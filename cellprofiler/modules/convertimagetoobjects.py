@@ -5,6 +5,7 @@ import skimage.measure
 import cellprofiler.module
 import cellprofiler.setting
 
+
 HELP_BINARY_IMAGE = """\
 This module can also convert a grayscale image to binary before converting it to an object.
 Connected components of the binary image are assigned to the same object. This feature is 
@@ -39,7 +40,6 @@ YES          YES          NO
 """.format(**{
     "HELP_BINARY_IMAGE": HELP_BINARY_IMAGE
 })
-
 
 
 class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):

@@ -97,7 +97,7 @@ VARIABLE_SETTING_COUNT = 1
 class RelateObjects(cellprofiler.module.ObjectProcessing):
     module_name = "RelateObjects"
 
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
         super(RelateObjects, self).create_settings()
@@ -265,8 +265,11 @@ parents or children of the parent object."""
     def settings(self):
         __settings__ = super(RelateObjects, self).settings()
 
+        # Because we're subscribing to multiple objects and we still want to have a provider,
+        # we insert the child subscriber before the output provider
+        __settings__.insert(1, self.x_child_name)
+
         __settings__ += [
-            self.x_child_name,
             self.find_parent_child_distances,
             self.wants_per_parent_means,
             self.wants_step_parent_distances
@@ -280,8 +283,7 @@ parents or children of the parent object."""
 
         __settings__ = super(RelateObjects, self).visible_settings()
 
-        # Because we're subscribing to multiple objects and we still want to have a provider,
-        # we insert the child subscriber before the output provider
+        # See settings for insert rationale
         __settings__.insert(1, self.x_child_name)
 
         __settings__ += [
@@ -876,6 +878,12 @@ parents or children of the parent object."""
             setting_values = [setting_values[1], setting_values[0]] + setting_values[2:]
 
             variable_revision_number = 3
+
+        if variable_revision_number == 3:
+            # Added an output provider after the parent/child selection
+            setting_values.insert(2, module_name)
+
+            variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab
 

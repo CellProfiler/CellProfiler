@@ -1,7 +1,6 @@
 import unittest
 
 import numpy
-import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -36,7 +35,7 @@ class TestRelateObjects(unittest.TestCase):
             pipeline.add_module(module)
         module = cellprofiler.modules.relateobjects.Relate()
         module.x_name.value = PARENT_OBJECTS
-        module.y_name.value = CHILD_OBJECTS
+        module.x_child_name.value = CHILD_OBJECTS
         module.find_parent_child_distances.value = cellprofiler.modules.relateobjects.D_NONE
         module.module_num = 2 if fake_measurement else 1
         pipeline.add_module(module)

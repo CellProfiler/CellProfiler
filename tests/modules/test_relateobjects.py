@@ -146,8 +146,8 @@ class TestRelateObjects(unittest.TestCase):
     def test_02_03_relate_ijv(self):
         '''Regression test of IMG-1317: relating objects in ijv form'''
 
-        child_ijv = numpy.array([[5, 5, 1], [5, 5, 2], [20, 15, 3]])
-        parent_ijv = numpy.array([[5, 5, 1], [20, 15, 2]])
+        child_ijv = numpy.array([[5, 5, 1], [5, 6, 2], [20, 15, 3]])
+        parent_ijv = numpy.array([[5, 5, 1], [5, 6, 1], [20, 15, 2]])
         workspace, module = self.make_workspace(parent_ijv, child_ijv)
         module.wants_per_parent_means.value = False
         module.run(workspace)

@@ -1,7 +1,6 @@
 import unittest
 
 import numpy
-import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -36,7 +35,7 @@ class TestRelateObjects(unittest.TestCase):
             pipeline.add_module(module)
         module = cellprofiler.modules.relateobjects.Relate()
         module.x_name.value = PARENT_OBJECTS
-        module.y_name.value = CHILD_OBJECTS
+        module.x_child_name.value = CHILD_OBJECTS
         module.find_parent_child_distances.value = cellprofiler.modules.relateobjects.D_NONE
         module.module_num = 2 if fake_measurement else 1
         pipeline.add_module(module)
@@ -147,8 +146,8 @@ class TestRelateObjects(unittest.TestCase):
     def test_02_03_relate_ijv(self):
         '''Regression test of IMG-1317: relating objects in ijv form'''
 
-        child_ijv = numpy.array([[5, 5, 1], [5, 5, 2], [20, 15, 3]])
-        parent_ijv = numpy.array([[5, 5, 1], [20, 15, 2]])
+        child_ijv = numpy.array([[5, 5, 1], [5, 6, 2], [20, 15, 3]])
+        parent_ijv = numpy.array([[5, 5, 1], [5, 6, 1], [20, 15, 2]])
         workspace, module = self.make_workspace(parent_ijv, child_ijv)
         module.wants_per_parent_means.value = False
         module.run(workspace)

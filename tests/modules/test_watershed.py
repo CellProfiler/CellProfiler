@@ -24,7 +24,7 @@ instance = cellprofiler.modules.watershed.Watershed()
     params=[1, 2],
     ids=["1connectivity", "2connectivity"]
 )
-def s_connectivity(request):
+def connectivity(request):
     return request.param
 
 
@@ -37,7 +37,7 @@ def compactness(request):
     return request.param
 
 
-def test_run_markers(image, module, image_set, workspace, s_connectivity, compactness):
+def test_run_markers(image, module, image_set, workspace, connectivity, compactness):
     module.operation.value = "Markers"
 
     module.x_name.value = "gradient"
@@ -46,7 +46,7 @@ def test_run_markers(image, module, image_set, workspace, s_connectivity, compac
 
     module.markers_name.value = "markers"
 
-    module.s_connectivity.value = s_connectivity
+    module.connectivity.value = connectivity
 
     module.compactness.value = compactness
 
@@ -105,7 +105,7 @@ def test_run_markers(image, module, image_set, workspace, s_connectivity, compac
 
     expected = skimage.morphology.watershed(gradient,
                                             markers,
-                                            connectivity=s_connectivity,
+                                            connectivity=connectivity,
                                             compactness=compactness)
 
     expected = skimage.measure.label(expected)
@@ -122,7 +122,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.m_connectivity.value = 3
+    module.footprint.value = 3
 
     data = image.pixel_data
 

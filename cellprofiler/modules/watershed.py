@@ -48,7 +48,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
     module_name = "Watershed"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         super(Watershed, self).create_settings()
@@ -89,7 +89,7 @@ Select a method of inputs for the watershed algorithm:
             doc="Optional. Only regions not blocked by the mask will be segmented."
         )
 
-        self.s_connectivity = cellprofiler.setting.Integer(
+        self.connectivity = cellprofiler.setting.Integer(
             doc="""\
 Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. 
 Accepted values are ranging from 1 to the number of dimensions.
@@ -120,7 +120,7 @@ Higher values result in more regularly-shaped watershed basins.
 """
         )
 
-        self.m_connectivity = cellprofiler.setting.Integer(
+        self.footprint = cellprofiler.setting.Integer(
             doc="""\
 The connectivity defines the dimensions of the footprint used to scan
 the input image for local maximum. The footprint can be interpreted as a
@@ -137,7 +137,7 @@ information.
 .. _mahotas regmax: http://mahotas.readthedocs.io/en/latest/api.html?highlight=regmax#mahotas.regmax
 """,
             minval=1,
-            text="Connectivity",
+            text="Footprint",
             value=8,
         )
 
@@ -158,9 +158,9 @@ the image is not downsampled.
             self.operation,
             self.markers_name,
             self.mask_name,
-            self.s_connectivity,
+            self.connectivity,
             self.compactness,
-            self.m_connectivity,
+            self.footprint,
             self.downsample
         ]
 
@@ -173,14 +173,14 @@ the image is not downsampled.
 
         if self.operation.value == O_DISTANCE:
             __settings__ = __settings__ + [
-                self.m_connectivity,
+                self.footprint,
                 self.downsample
             ]
         else:
             __settings__ = __settings__ + [
                 self.markers_name,
                 self.mask_name,
-                self.s_connectivity,
+                self.connectivity,
                 self.compactness
             ]
 
@@ -228,16 +228,16 @@ the image is not downsampled.
             if x.volumetric:
                 footprint = numpy.ones(
                     (
-                        self.m_connectivity.value,
-                        self.m_connectivity.value,
-                        self.m_connectivity.value
+                        self.footprint.value,
+                        self.footprint.value,
+                        self.footprint.value
                     )
                 )
             else:
                 footprint = numpy.ones(
                     (
-                        self.m_connectivity.value,
-                        self.m_connectivity.value
+                        self.footprint.value,
+                        self.footprint.value
                     )
                 )
 
@@ -288,7 +288,7 @@ the image is not downsampled.
                 image=x_data,
                 markers=markers_data,
                 mask=mask_data,
-                connectivity=self.s_connectivity.value,
+                connectivity=self.connectivity.value,
                 compactness=self.compactness.value
             )
 
@@ -310,3 +310,20 @@ the image is not downsampled.
             workspace.display_data.y_data = y_data
 
             workspace.display_data.dimensions = dimensions
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+
+        if variable_revision_number == 1:
+            # Last two items were moved down to add more options for seeded watershed
+            __settings__ = setting_values[:-2]
+
+            # Add default connectivity and compactness
+            __settings__ += [1, 0.]
+
+            # Add the rest of the settings
+            __settings__ += setting_values[-2:]
+
+            variable_revision_number = 2
+
+        return setting_values, variable_revision_number, from_matlab

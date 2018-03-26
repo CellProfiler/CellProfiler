@@ -744,7 +744,7 @@ image is not flagged.
                 wants_maximum = cps.YES
             if new_or_append == "Append existing flag":
                 logger.warning(
-                        "CellProfiler 3.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0 and 2.0")
+                        "CellProfiler 3 can't combine flags from multiple FlagImageForQC modules imported from version 1.0 and 2.0")
 
             new_name_split = new_name.find('_')
             if new_name_split == -1:

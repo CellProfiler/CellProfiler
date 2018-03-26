@@ -236,7 +236,7 @@ The following operations are available:
 Upgrading:
 ~~~~~~~~~~
 
-The following **Morph** operations have been extracted to separate modules in CellProfiler 3.0.
+The following **Morph** operations have been extracted to separate modules in CellProfiler 3.
 Use the table below to update your pipeline to use the corresponding module and, where appropriate,
 setting and value.
 

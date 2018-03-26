@@ -485,7 +485,7 @@ segmentation.""")
             raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
 
         if variable_revision_number < 9:
-            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
+            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.")
 
         if variable_revision_number == 9:
             setting_values = setting_values[:6] + setting_values[8:11] + setting_values[13:]

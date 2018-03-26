@@ -828,7 +828,7 @@ If "*{NO}*" is selected, the following settings are used:
             raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
 
         if variable_revision_number < 10:
-            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
+            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.")
 
         if variable_revision_number == 10:
             setting_values = list(setting_values)

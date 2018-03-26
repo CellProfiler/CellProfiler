@@ -166,3 +166,18 @@ $ python setup.py test
 ```
 
 You can run individual tests by providing the option `-a PATH_TO_TEST_FILE`.
+
+## Releasing a new version
+
+Releasing a new version of CellProfiler requires two steps: 
+
+1. Update the version numbers in `cellprofiler/__init__.py` and `docs/source/conf.py` to reflect the new version
+
+1. Release the version on GitHub 
+   (for more information see [here](https://help.github.com/articles/creating-releases/), GitHub will automatically attached the compressed source code)
+
+Once the repository is tagged with the new version, a new version will need to be built. See below for more details.
+
+## Building CellProfiler
+
+

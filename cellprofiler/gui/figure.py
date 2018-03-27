@@ -629,7 +629,7 @@ class Figure(wx.Frame):
             image = image.astype(numpy.float32) / 255.0
 
         if image.ndim == 2:
-            fields += ["Intensity: %.4f" % (image[y, x])]
+            fields += ["Intensity: %.4f" % (image[y, x] or 0)]
         elif image.ndim == 3 and image.shape[2] == 3:
             fields += ["Red: %.4f" % (image[y, x, 0]),
                        "Green: %.4f" % (image[y, x, 1]),
@@ -1570,7 +1570,7 @@ class Figure(wx.Frame):
             seed=None
     ):
         """
-        Show a labels matrix using the default color map
+        Show a labels matrix using a custom colormap which better showcases the individual label values
 
         :param x: the subplot's row coordinate
         :param y: the subplot's column coordinate
@@ -1588,19 +1588,21 @@ class Figure(wx.Frame):
                      consistent label colors in multiple displays)
         :return:
         """
-        if background_image is None:
-            background_image = numpy.zeros_like(image, dtype=numpy.float32)
-            opacity = 1.0
-        else:
+        if background_image is not None:
             opacity = 0.7
-
-        label_image = cellprofiler.object.overlay_labels(
-            labels=image,
-            opacity=opacity,
-            pixel_data=background_image,
-            max_label=max_label,
-            seed=seed
-        )
+            label_image = cellprofiler.object.overlay_labels(
+                labels=image,
+                opacity=opacity,
+                pixel_data=background_image,
+                max_label=max_label,
+                seed=seed
+            )
+            colormap = None
+        else:
+            # Create a custom colormap
+            label_image = numpy.ma.masked_where(image == 0, image)
+            colormap = matplotlib.cm.prism
+            colormap.set_bad(color='black')
 
         return self.subplot_imshow(
             x,
@@ -1613,7 +1615,8 @@ class Figure(wx.Frame):
             vmax=None,
             sharex=sharex,
             sharey=sharey,
-            use_imshow=use_imshow
+            use_imshow=use_imshow,
+            colormap=colormap
         )
 
     @allow_sharexy

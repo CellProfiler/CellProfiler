@@ -1599,9 +1599,17 @@ class Figure(wx.Frame):
             )
             colormap = None
         else:
-            # Create a custom colormap
+            # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
-            colormap = matplotlib.cm.prism
+            # Create a custom colormap
+            # Based off of the prism color map (with higher frequency):
+            # https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/_cm.py#L53-L57
+            new_prism = {
+                'red': lambda x: 0.75 * numpy.sin((x * 42 + 0.25) * numpy.pi) + 0.67,
+                'green': lambda x: 0.75 * numpy.sin((x * 42 - 0.25) * numpy.pi) + 0.33,
+                'blue': lambda x: -1.1 * numpy.sin((x * 42) * numpy.pi),
+            }
+            colormap = matplotlib.colors.LinearSegmentedColormap('lower_frequency_prism', new_prism)
             colormap.set_bad(color='black')
 
         return self.subplot_imshow(

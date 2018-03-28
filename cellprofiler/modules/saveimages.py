@@ -632,6 +632,13 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
                 pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
 
+            # skimage will save out color images (M,N,3) or (M,N,4) appropriately
+            # but any more than that will need to be transposed so they conform to the
+            # CYX convention rather than YXC
+            # http://scikit-image.org/docs/dev/api/skimage.io.html#skimage.io.imsave
+            if not image.volumetric and len(pixels.shape) > 2 and  pixels.shape[2] > 4:
+                pixels = numpy.transpose(pixels, (2, 0, 1))
+
             skimage.io.imsave(filename, pixels)
 
         if self.show_window:

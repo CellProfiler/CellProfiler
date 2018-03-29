@@ -37,6 +37,11 @@ __cp_root = os.path.split(__python_root)[0]
 
 
 class HeadlessConfig(object):
+    """
+    This class functions as a configuration set for headless runs.
+    The default config class is wx-based, which means we have to replace it
+    here with this psuedo-replacement that has the same interface
+    """
     def __init__(self):
         self.__preferences = {}
 
@@ -51,6 +56,12 @@ class HeadlessConfig(object):
 
     def Write(self, kwd, value):
         self.__preferences[kwd] = value
+
+    # wx implements these for their own version of the "Config" object
+    # Because this class is a mock config object without wx, we need to
+    # make its interface the same
+    WriteInt = Write
+    WriteBool = Write
 
     def Exists(self, kwd):
         return self.__preferences.has_key(kwd)
@@ -1024,7 +1035,7 @@ def get_show_sampling():
 
 def set_show_sampling(value):
     global __show_sampling
-    get_config().Write(SHOW_SAMPLING, bool(value))
+    get_config().WriteBool(SHOW_SAMPLING, bool(value))
     __show_sampling = bool(value)
 
 
@@ -1185,7 +1196,7 @@ def get_telemetry():
 
 
 def set_telemetry(val):
-    get_config().Write(TELEMETRY, val)
+    get_config().WriteBool(TELEMETRY, val)
 
 
 def get_telemetry_prompt():
@@ -1196,7 +1207,7 @@ def get_telemetry_prompt():
 
 
 def set_telemetry_prompt(val):
-    get_config().Write(TELEMETRY_PROMPT, val)
+    get_config().WriteBool(TELEMETRY_PROMPT, val)
 
 
 def get_startup_blurb():
@@ -1206,7 +1217,7 @@ def get_startup_blurb():
 
 
 def set_startup_blurb(val):
-    get_config().Write(STARTUPBLURB, val)
+    get_config().WriteBool(STARTUPBLURB, val)
 
 
 def get_primary_outline_color():
@@ -1530,7 +1541,7 @@ def get_max_workers():
 def set_max_workers(value):
     '''Set the maximum number of worker processes allowed during analysis'''
     global __max_workers
-    get_config().Write(MAX_WORKERS, value)
+    get_config().WriteInt(MAX_WORKERS, value)
     __max_workers = value
 
 

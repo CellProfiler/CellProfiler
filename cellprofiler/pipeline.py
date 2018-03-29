@@ -1117,6 +1117,40 @@ class Pipeline(object):
         s = s.replace('[', '\\x5B').replace(']', '\\x5D')
         return s
 
+    def to_dictionary(self):
+        pipeline_dictionary = {
+            "cookie": COOKIE,
+            "modules": [],
+            "version": cellprofiler.__version__
+        }
+
+        for module in self.__modules:
+            module_dictionary = {
+                "name": module.module_name,
+                "settings": {},
+                "batch_state": str(getattr(module, "batch_state")),
+                "enabled": getattr(module, "enabled"),
+                "module_num": getattr(module, "module_num"),
+                "notes": getattr(module, "notes"),
+                "show_window": getattr(module, "show_window"),
+                "svn_version": getattr(module, "svn_version"),
+                "variable_revision_number": getattr(module, "variable_revision_number"),
+                "wants_pause": getattr(module, "wants_pause"),
+            }
+
+            for setting in module.settings():
+                module_dictionary["settings"][setting.text] = setting.unicode_value
+
+            pipeline_dictionary["modules"] += [module_dictionary]
+
+        return pipeline_dictionary
+
+    def export_json(self, pathname):
+        dictionary = self.to_dictionary()
+
+        with open(pathname, "w") as stream:
+            json.dump(dictionary, stream)
+
     def savetxt(self, fd_or_filename,
                 modules_to_save=None,
                 save_image_plane_details=True):

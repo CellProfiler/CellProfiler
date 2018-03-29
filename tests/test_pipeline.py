@@ -95,6 +95,15 @@ class TestPipeline(unittest.TestCase):
             sys.stderr.write("Failed to remove temporary %s directory" % subdir)
             traceback.print_exc()
 
+    def test_to_dictionary(self):
+        pass
+
+    def test_import_json(self):
+        pass
+
+    def test_export_json(self):
+        pass
+
     def test_00_00_init(self):
         x = cpp.Pipeline()
 

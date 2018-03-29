@@ -1146,10 +1146,52 @@ class Pipeline(object):
         return pipeline_dictionary
 
     def export_json(self, pathname):
+        """
+
+        """
         dictionary = self.to_dictionary()
 
         with open(pathname, "w") as stream:
             json.dump(dictionary, stream)
+
+    def import_json(self, pathname):
+        """
+
+        """
+        # TODO: Use a schema to validate pipeline
+        with open(pathname, "r") as stream:
+            dictionary = json.load(stream)
+
+        for module_dictionary in dictionary["modules"]:
+            instantiated_module = self.instantiate_module(module_dictionary["name"])
+
+            instantiated_module.module_num = module_dictionary["name"]
+
+            instantiated_module.set_settings_from_values(
+                module_dictionary["settings"],
+                module_dictionary["variable_revision_number"],
+                module_dictionary["name"]
+            )
+
+            # FIXME: Can we remove this?
+            if module_dictionary["name"] == "NamesAndTypes":
+                self.__volumetric = instantiated_module.process_as_3d.value
+
+            self.__modules += [instantiated_module]
+
+        # FIXME: Can we combine the following two loops?
+        for module in self.modules(False):
+            self.__settings += [self.capture_module_settings(module)]
+
+        for module in self.modules(False):
+            module.post_pipeline_load(self)
+
+        self.notify_listeners(PipelineLoadedEvent())
+
+        self.__undo_stack = []
+
+        # TODO: Can we remove second element from the returned pair?
+        return dictionary["version"], None
 
     def savetxt(self, fd_or_filename,
                 modules_to_save=None,

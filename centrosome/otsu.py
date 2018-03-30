@@ -247,6 +247,6 @@ def running_variance(x):
     x_minus_m = x[1:]-m[1:]
     # s for i=1...
     s = (x_minus_mprev*x_minus_m).cumsum()
-    var = s / np.arange(2,n+1)
+    var = s / np.arange(1,n)
     # Prepend Inf so we have a variance for x[0]
     return np.hstack(([0],var))

@@ -1,0 +1,452 @@
+{
+    "modules": [
+        {
+            "variable_revision_number": 2,
+            "show_window": false,
+            "svn_version": "Unknown",
+            "name": "Images",
+            "settings": {
+                "": "",
+                "Filter images?": "Images only",
+                "Select the rule criteria": "and (extension does isimage) (directory doesnot containregexp \"[\\\\\\\\/]\\\\.\")"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders."
+            ],
+            "module_num": 1,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 5,
+            "show_window": false,
+            "svn_version": "Unknown",
+            "name": "Metadata",
+            "settings": {
+                "Extract metadata?": "No",
+                "Extraction method count": "1",
+                "Use case insensitive matching?": "No",
+                "Metadata source": "File name",
+                "Regular expression to extract from file name": "^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])",
+                "Metadata types": "{}",
+                "Metadata extraction method": "Extract from image file headers",
+                "Select the filtering criteria": "and (file does contain \"\")",
+                "Regular expression to extract from folder name": "(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$",
+                "Metadata file name": "",
+                "Metadata file location": "Elsewhere...|",
+                "Metadata data type": "Text",
+                "Match file and image metadata": "[]",
+                "Extract metadata from": "All images"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file."
+            ],
+            "module_num": 2,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 8,
+            "show_window": false,
+            "svn_version": "Unknown",
+            "name": "NamesAndTypes",
+            "settings": {
+                "Single images count": "0",
+                "Process as 3D?": "No",
+                "Select the rule criteria": "and (file does contain \"R.TIF\")",
+                "Relative pixel spacing in Y": "1.0",
+                "Name to assign these images": "OrigRed",
+                "Set intensity range from": "Image metadata",
+                "Relative pixel spacing in Z": "1.0",
+                "Assign a name to": "Images matching rules",
+                "Relative pixel spacing in X": "1.0",
+                "Match metadata": "[]",
+                "Name to assign these objects": "Cytoplasm",
+                "Maximum intensity": "255.0",
+                "Image set matching method": "Order",
+                "Select the image type": "Grayscale image",
+                "Assignments count": "3"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it."
+            ],
+            "module_num": 3,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 2,
+            "show_window": false,
+            "svn_version": "Unknown",
+            "name": "Groups",
+            "settings": {
+                "grouping metadata count": "1",
+                "Metadata category": "None",
+                "Do you want to group your images?": "No"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc."
+            ],
+            "module_num": 4,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 3,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "Crop",
+            "settings": {
+                "Ellipse radius, X direction": "400",
+                "Apply which cycle's cropping pattern?": "First",
+                "Top and bottom rectangle positions": "251,450",
+                "Name the output image": "CropBlue",
+                "Select the cropping method": "Coordinates",
+                "Select the cropping shape": "Rectangle",
+                "Left and right rectangle positions": "501,700",
+                "Select the input image": "OrigBlue",
+                "Remove empty rows and columns?": "Edges",
+                "Select the image with a cropping mask": "None",
+                "Ellipse radius, Y direction": "200",
+                "Select the objects": "None",
+                "Coordinates of ellipse center": "200,500",
+                "Select the masking image": "None"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Crop the DAPI image down to a 200 x 200 rectangle by entering specific coordinates."
+            ],
+            "module_num": 5,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 3,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "Crop",
+            "settings": {
+                "Ellipse radius, X direction": "400",
+                "Apply which cycle's cropping pattern?": "First",
+                "Top and bottom rectangle positions": "300,600",
+                "Name the output image": "CropGreen",
+                "Select the cropping method": "Coordinates",
+                "Select the cropping shape": "Previous cropping",
+                "Left and right rectangle positions": "300,600",
+                "Select the input image": "OrigGreen",
+                "Remove empty rows and columns?": "Edges",
+                "Select the image with a cropping mask": "CropBlue",
+                "Ellipse radius, Y direction": "200",
+                "Select the objects": "None",
+                "Coordinates of ellipse center": "500,500",
+                "Select the masking image": "None"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Use the same cropping from the DAPI image for FITC image."
+            ],
+            "module_num": 6,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 3,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "Crop",
+            "settings": {
+                "Ellipse radius, X direction": "400",
+                "Apply which cycle's cropping pattern?": "First",
+                "Top and bottom rectangle positions": "300,600",
+                "Name the output image": "CropRed",
+                "Select the cropping method": "Coordinates",
+                "Select the cropping shape": "Previous cropping",
+                "Left and right rectangle positions": "300,600",
+                "Select the input image": "OrigRed",
+                "Remove empty rows and columns?": "Edges",
+                "Select the image with a cropping mask": "CropBlue",
+                "Ellipse radius, Y direction": "200",
+                "Select the objects": "None",
+                "Coordinates of ellipse center": "500,500",
+                "Select the masking image": "None"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Use the same cropping from the DAPI image for the rhodamine image."
+            ],
+            "module_num": 7,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 13,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "IdentifyPrimaryObjects",
+            "settings": {
+                "Threshold correction factor": "1.0",
+                "Upper outlier fraction": "0.05",
+                "Suppress local maxima that are closer than this minimum allowed distance": "5",
+                "Method to distinguish clumped objects": "Intensity",
+                "Method to draw dividing lines between clumped objects": "Intensity",
+                "Speed up by using lower-resolution image to find local maxima?": "Yes",
+                "Averaging method": "Mean",
+                "Discard objects outside the diameter range?": "Yes",
+                "Select the input image": "CropBlue",
+                "Maximum number of objects": "500",
+                "# of deviations": "2",
+                "Size of smoothing filter": "10",
+                "Two-class or three-class thresholding?": "Three classes",
+                "Use advanced settings?": "Yes",
+                "Name the primary objects to be identified": "Nuclei",
+                "Lower and upper bounds on threshold": "0,1",
+                "Typical diameter of objects, in pixel units (Min,Max)": "10,40",
+                "Automatically calculate minimum allowed distance between local maxima?": "Yes",
+                "Fill holes in identified objects?": "After both thresholding and declumping",
+                "Threshold strategy": "Global",
+                "Variance method": "Standard deviation",
+                "Threshold setting version": "9",
+                "Automatically calculate size of smoothing filter for declumping?": "Yes",
+                "Select the measurement to threshold with": "None",
+                "Threshold smoothing scale": "1.3488",
+                "Lower outlier fraction": "0.05",
+                "Thresholding method": "Otsu",
+                "Manual threshold": "0.0",
+                "Size of adaptive window": "10",
+                "Assign pixels in the middle intensity class to the foreground or the background?": "Background",
+                "Handling of objects if excessive number of objects identified": "Continue",
+                "Discard objects touching the border of the image?": "Yes"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Identify the nuclei from the DAPI image. Three-class thresholding performs better than the default two-class thresholding in this case."
+            ],
+            "module_num": 8,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 10,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "IdentifySecondaryObjects",
+            "settings": {
+                "Threshold correction factor": "1",
+                "Upper outlier fraction": "0.05",
+                "Fill holes in identified objects?": "Yes",
+                "Number of pixels by which to expand the primary objects": "10",
+                "Discard secondary objects touching the border of the image?": "No",
+                "Regularization factor": "0.05",
+                "Averaging method": "Mean",
+                "Select the input image": "CropGreen",
+                "# of deviations": "2",
+                "Lower outlier fraction": "0.05",
+                "Size of adaptive window": "10",
+                "Select the method to identify the secondary objects": "Propagation",
+                "Discard the associated primary objects?": "No",
+                "Lower and upper bounds on threshold": "0,1",
+                "Name the new primary objects": "FilteredNuclei",
+                "Threshold strategy": "Global",
+                "Variance method": "Standard deviation",
+                "Threshold setting version": "9",
+                "Name the objects to be identified": "Cells",
+                "Select the measurement to threshold with": "None",
+                "Threshold smoothing scale": "0",
+                "Thresholding method": "Otsu",
+                "Manual threshold": "0",
+                "Select the input objects": "Nuclei",
+                "Two-class or three-class thresholding?": "Two classes",
+                "Assign pixels in the middle intensity class to the foreground or the background?": "Foreground"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Identify the cells by using the nuclei as a \"seed\" region, then growing outwards until stopped by the image threshold or by a neighbor. The Propagation method is used to delineate the boundary between neighboring cells."
+            ],
+            "module_num": 9,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 3,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "IdentifyTertiaryObjects",
+            "settings": {
+                "Name the tertiary objects to be identified": "Cytoplasm",
+                "Shrink smaller object prior to subtraction?": "Yes",
+                "Select the larger identified objects": "Cells",
+                "Select the smaller identified objects": "Nuclei"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Identify the cytoplasm by \"subtracting\" the nuclei objects from the cell objects."
+            ],
+            "module_num": 10,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 1,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "MeasureObjectSizeShape",
+            "settings": {
+                "Calculate the Zernike features?": "No",
+                "Select objects to measure": "Cytoplasm"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Measure morphological features from the cell, nuclei and cytoplasm objects."
+            ],
+            "module_num": 11,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 3,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "MeasureObjectIntensity",
+            "settings": {
+                "Hidden": "1",
+                "Select an image to measure": "CropBlue",
+                "Select objects to measure": "Cytoplasm"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Measure intensity features from nuclei and cell objects against the cropped DAPI image."
+            ],
+            "module_num": 12,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 5,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "MeasureTexture",
+            "settings": {
+                "Measure images or objects?": "Both",
+                "Hidden": "1",
+                "Select an image to measure": "CropBlue",
+                "Texture scale to measure": "3",
+                "Select objects to measure": "Cytoplasm"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Measure texture features of the nuclei, cells and cytoplasm from the cropped DAPI image."
+            ],
+            "module_num": 13,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 3,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "GrayToColor",
+            "settings": {
+                "Select the image to be colored green": "CropGreen",
+                "Weight": "1.0",
+                "Relative weight for the blue image": "1",
+                "Image name": "None",
+                "Select the image to be colored magenta": "None",
+                "Select the image to be colored cyan": "None",
+                "Name the output image": "RGBImage",
+                "Select the image to be colored yellow": "None",
+                "Select a color scheme": "RGB",
+                "Select the image to be colored blue": "CropBlue",
+                "Select the image to be colored red": "CropRed",
+                "Relative weight for the green image": "1",
+                "Select the image that determines brightness": "None",
+                "Relative weight for the cyan image": "1",
+                "Relative weight for the brightness image": "1",
+                "Relative weight for the red image": "1",
+                "Relative weight for the yellow image": "1",
+                "Hidden": "1",
+                "Color": "#ff0000",
+                "Relative weight for the magenta image": "1"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Combine the cropped grayscale channels into a color RGB image."
+            ],
+            "module_num": 14,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 13,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "SaveImages",
+            "settings": {
+                "Append a suffix to the image file name?": "Yes",
+                "Select the type of image to save": "Image",
+                "Saved file format": "tiff",
+                "Record the file and path information to the saved image?": "No",
+                "Image bit depth": "8-bit integer",
+                "Overwrite existing files without warning?": "No",
+                "Number of digits": "4",
+                "Select image name for file prefix": "OrigBlue",
+                "Enter single file name": "CroppedFlyImage",
+                "Output file location": "Default Output Folder|None",
+                "Select method for constructing file names": "Sequential numbers",
+                "When to save": "Every cycle",
+                "Select the image to save": "RGBImage",
+                "Base image folder": "Default Input Folder",
+                "Create subfolders in the output folder?": "No",
+                "Text to append to the image name": "RGB"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Save the color image as an 8-bit TIF, appending the text RBG to the original filename of the DAPI image."
+            ],
+            "module_num": 15,
+            "enabled": true,
+            "wants_pause": false
+        },
+        {
+            "variable_revision_number": 12,
+            "show_window": true,
+            "svn_version": "Unknown",
+            "name": "ExportToSpreadsheet",
+            "settings": {
+                "Filename prefix": "MyExpt_",
+                "Select source of sample row name": "Metadata",
+                "Calculate the per-image median values for object measurements?": "No",
+                "Select the image to use as the identifier": "None",
+                "Use the object name for the file name?": "No",
+                "Export all measurement types?": "No",
+                "Overwrite existing files without warning?": "Yes",
+                "Select the column delimiter": "Comma (\",\")",
+                "Press button to select measurements": "None|None",
+                "Calculate the per-image mean values for object measurements?": "Yes",
+                "Data to export": "Cytoplasm",
+                "Output file location": "Default Output Folder|.",
+                "Representation of Nan/Inf": "NaN",
+                "Combine these object measurements with those of the previous object?": "No",
+                "Select the metadata to use as the identifier": "None",
+                "Add image metadata columns to your object data file?": "No",
+                "Calculate the per-image standard deviation values for object measurements?": "No",
+                "Create a GenePattern GCT file?": "No",
+                "File name": "Cytoplasm.csv",
+                "Select the measurements to export": "No",
+                "Add a prefix to file names?": "No"
+            },
+            "batch_state": "[]",
+            "notes": [
+                "Export any measurements to a comma-delimited file (.csv). The measurements made for the nuclei, cell and cytoplasm objects will be saved to separate .csv files, in addition to the per-image .csv's."
+            ],
+            "module_num": 16,
+            "enabled": true,
+            "wants_pause": false
+        }
+    ],
+    "version": "3.0.0",
+    "cookie": "CellProfiler Pipeline: http://www.cellprofiler.org"
+}

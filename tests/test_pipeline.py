@@ -96,7 +96,36 @@ class TestPipeline(unittest.TestCase):
             traceback.print_exc()
 
     def test_to_dictionary(self):
-        pass
+        pathname = os.path.realpath(os.path.join(os.path.dirname(__file__), "resources/example.pipeline"))
+
+        pipeline = cellprofiler.pipeline.Pipeline()
+
+        pipeline.loadtxt(pathname)
+
+        dictionary = pipeline.to_dictionary()
+
+        assert dictionary == {
+            "cookie": "CellProfiler Pipeline: http://www.cellprofiler.org",
+            "modules": [
+                {
+                    "batch_state": "[]",
+                    "enabled": True,
+                    "module_num": 1,
+                    "name": "Images",
+                    "notes": ["To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders."],
+                    "settings": {
+                        "": u"",
+                        "Filter images?": u"Images only",
+                        "Select the rule criteria": 'and (extension does isimage) (directory doesnot containregexp "\\x5B\\\\\\\\\\\\\\\\/\\x5D\\\\\\\\.")'
+                    },
+                    "show_window": False,
+                    "svn_version": "Unknown",
+                    "variable_revision_number": 2,
+                    "wants_pause": False
+                }
+            ],
+            "version": "3.0.0"
+        }
 
     def test_import_json(self):
         pass

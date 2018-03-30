@@ -1139,7 +1139,7 @@ class Pipeline(object):
             }
 
             for setting in module.settings():
-                module_dictionary["settings"][setting.text] = setting.unicode_value
+                module_dictionary["settings"][setting.text] = self.encode_txt(setting.unicode_value.encode('utf-8'))
 
             pipeline_dictionary["modules"] += [module_dictionary]
 
@@ -1170,7 +1170,8 @@ class Pipeline(object):
             instantiated_module.set_settings_from_values(
                 module_dictionary["settings"],
                 module_dictionary["variable_revision_number"],
-                module_dictionary["name"]
+                module_dictionary["name"],
+                from_matlab=False
             )
 
             # FIXME: Can we remove this?

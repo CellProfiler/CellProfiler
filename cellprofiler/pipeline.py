@@ -1126,16 +1126,14 @@ class Pipeline(object):
 
         for module in self.__modules:
             module_dictionary = {
-                "name": module.module_name,
-                "settings": {},
                 "batch_state": str(getattr(module, "batch_state")),
+                "displayed": getattr(module, "show_window"),
                 "enabled": getattr(module, "enabled"),
-                "module_num": getattr(module, "module_num"),
+                "name": module.module_name,
                 "notes": getattr(module, "notes"),
-                "show_window": getattr(module, "show_window"),
-                "svn_version": getattr(module, "svn_version"),
-                "variable_revision_number": getattr(module, "variable_revision_number"),
-                "wants_pause": getattr(module, "wants_pause"),
+                "paused": getattr(module, "wants_pause"),
+                "settings": {},
+                "version": getattr(module, "variable_revision_number")
             }
 
             for setting in module.settings():

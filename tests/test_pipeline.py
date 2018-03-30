@@ -110,17 +110,15 @@ class TestPipeline(unittest.TestCase):
                 {
                     "batch_state": "[]",
                     "enabled": True,
-                    "module_num": 1,
                     "name": "Images",
                     "notes": ["To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders."],
                     "settings": {
-                        "Filter images?": u"Images only",
+                        "Filter images?": "Images only",
                         "Select the rule criteria": 'and (extension does isimage) (directory doesnot containregexp "\\x5B\\\\\\\\\\\\\\\\/\\x5D\\\\\\\\.")'
                     },
-                    "show_window": False,
-                    "svn_version": "Unknown",
-                    "variable_revision_number": 2,
-                    "wants_pause": False
+                    "displayed": False,
+                    "version": 2,
+                    "paused": False
                 }
             ],
             "version": "3.0.0"

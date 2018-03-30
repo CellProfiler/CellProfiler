@@ -114,7 +114,6 @@ class TestPipeline(unittest.TestCase):
                     "name": "Images",
                     "notes": ["To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders."],
                     "settings": {
-                        "": u"",
                         "Filter images?": u"Images only",
                         "Select the rule criteria": 'and (extension does isimage) (directory doesnot containregexp "\\x5B\\\\\\\\\\\\\\\\/\\x5D\\\\\\\\.")'
                     },

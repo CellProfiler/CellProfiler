@@ -216,7 +216,7 @@ class HiddenCount(Setting):
 
     def set_value(self, value):
         if not value.isdigit():
-            raise ValueError("The value must be an integer")
+            raise ValueError("The value, {}, must be an integer".format(value))
         count = int(value)
         if count == len(self.__sequence):
             # The value was "inadvertantly" set, but is correct

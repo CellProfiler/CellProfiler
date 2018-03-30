@@ -1139,7 +1139,13 @@ class Pipeline(object):
             }
 
             for setting in module.settings():
-                module_dictionary["settings"][setting.text] = self.encode_txt(setting.unicode_value.encode('utf-8'))
+                # FIXME: Why does CellProfiler have hidden settings?
+                if not setting.text:
+                    continue
+
+                v = self.encode_txt(setting.unicode_value.encode('utf-8'))
+
+                module_dictionary["settings"][setting.text] = v
 
             pipeline_dictionary["modules"] += [module_dictionary]
 

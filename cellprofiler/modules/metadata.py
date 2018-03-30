@@ -1156,7 +1156,11 @@ not being applied, your choice on this setting may be the culprit.
         # Set the number of extraction methods based on the extraction method
         # count.
         #
-        n_extraction_methods = int(setting_values[IDX_EXTRACTION_METHOD_COUNT])
+        if type(setting_values) is dict:
+            n_extraction_methods = int(setting_values["Extraction method count"])
+        else:
+            n_extraction_methods = int(setting_values[IDX_EXTRACTION_METHOD_COUNT])
+
         if len(self.extraction_methods) > n_extraction_methods:
             del self.extraction_methods[n_extraction_methods:]
 

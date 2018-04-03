@@ -13,6 +13,7 @@ import sys
 import zlib
 
 import numpy
+import skimage.exposure
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,15 @@ class Image(object):
                  scale=None,
                  dimensions=2,
                  spacing=None):
+        # FIXME: a quick hack to fix intensity scaling with volumes
+        if dimensions == 3:
+            image = skimage.exposure.rescale_intensity(
+                image,
+                out_range=(0.0, 1.0)
+            )
+
+            scale = 1
+
         self.__image = None
 
         self.__mask = None

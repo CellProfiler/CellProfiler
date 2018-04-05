@@ -78,7 +78,7 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
             filename = os.path.join(
                 directory,
-                "{}_{:04d}_{}.tiff".format(self.objects_name.value, label, int(time.time()))
+                "{}_{:04d}_{}.png".format(self.objects_name.value, label, int(time.time()))
             )
 
             skimage.io.imsave(filename, skimage.img_as_ubyte(mask))

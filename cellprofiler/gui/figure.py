@@ -696,11 +696,16 @@ class Figure(wx.Frame):
             else:  # self.dimensions == 3
                 axes = event.inaxes
 
-                axes_image = axes.get_images()[0]
+                axes_image_list = axes.get_images()
 
-                fields += ["Z: {}".format(axes.get_label())]
+                if len(axes_image_list):
+                    axes_image = axes_image_list[0]
 
-                im = axes_image.get_array().data
+                    fields += ["Z: {}".format(axes.get_label())]
+
+                    im = axes_image.get_array().data
+                else:
+                    im = None
 
             if im is not None:
                 fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
@@ -1901,13 +1906,25 @@ class Figure(wx.Frame):
         """
         xvals = numpy.array(xvals).flatten()
         yvals = numpy.array(yvals).flatten()
-        if clear:
-            self.clear_subplot(x, y)
+        if self.dimensions == 2:
+            if clear:
+                self.clear_subplot(x, y)
 
-        self.figure.set_facecolor((1, 1, 1))
-        self.figure.set_edgecolor((1, 1, 1))
+            self.figure.set_facecolor((1, 1, 1))
+            self.figure.set_edgecolor((1, 1, 1))
 
-        axes = self.subplot(x, y)
+            axes = self.subplot(x, y)
+        else:
+            gx, gy = self.__gridspec.get_geometry()
+
+            gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
+                ncols=1,
+                nrows=1,
+                subplot_spec=self.__gridspec[gy * y + x],
+            )
+
+            axes = matplotlib.pyplot.Subplot(self.figure, gridspec[0])
+
         plot = axes.scatter(xvals, yvals,
                             facecolor=(0.0, 0.62, 1.0),
                             edgecolor='none',
@@ -1917,6 +1934,9 @@ class Figure(wx.Frame):
         axes.set_ylabel(ylabel)
         axes.set_xscale(xscale)
         axes.set_yscale(yscale)
+
+        if self.dimensions == 3:
+            self.figure.add_subplot(axes)
 
         return plot
 

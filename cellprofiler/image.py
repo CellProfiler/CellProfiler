@@ -68,7 +68,7 @@ class Image(object):
         # FIXME: a quick hack to fix intensity scaling with volumes
         if dimensions == 3:
             image = skimage.exposure.rescale_intensity(
-                image,
+                skimage.img_as_float(image),
                 out_range=(0.0, 1.0)
             )
 

@@ -1,11 +1,9 @@
-import StringIO
-import base64
 import unittest
-import zlib
 
 import numpy
 import pytest
 import scipy.sparse.coo
+import skimage.exposure
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -134,7 +132,7 @@ def test_run_grayscale(workspace, module):
 
         expected = numpy.reshape(expected, (3, 16, 16))
 
-    assert numpy.all(pixel_data == expected)
+    numpy.testing.assert_array_equal(pixel_data, expected)
 
 
 def test_run_color(workspace, module):
@@ -205,7 +203,9 @@ def test_run_uint16(workspace, module):
 
         expected = numpy.reshape(expected, (3, 16, 16))
 
-    assert numpy.all(pixel_data == expected)
+        expected = expected.astype(float) / 255
+
+    numpy.testing.assert_array_equal(pixel_data, expected)
 
 
 class TestConvertObjectsToImage(unittest.TestCase):

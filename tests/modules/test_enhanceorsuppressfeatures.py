@@ -824,9 +824,11 @@ def test_enhance_texture_volume(image, module, workspace):
 
     expected = squared_gaussian - gaussian ** 2
 
+    expected_image = cellprofiler.image.Image(image=expected, dimensions=image.dimensions)
+
     actual = workspace.image_set.get_image("output").pixel_data
 
-    numpy.testing.assert_almost_equal(expected, actual)
+    numpy.testing.assert_array_almost_equal(expected_image.pixel_data, actual)
 
 
 def test_enhance_texture_masked_volume(image, module, workspace):
@@ -870,7 +872,7 @@ def test_enhance_texture_masked_volume(image, module, workspace):
 
     actual = workspace.image_set.get_image("output").pixel_data
 
-    numpy.testing.assert_almost_equal(actual[mask], expected[mask])
+    numpy.testing.assert_array_almost_equal(actual[mask], expected[mask], decimal=3)
 
 
 def test_enhance_dic(image, module, workspace):

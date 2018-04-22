@@ -1,6 +1,7 @@
 import cellprofiler.modules.reducenoise
 import numpy.testing
 import skimage.restoration
+import cellprofiler.image
 
 instance = cellprofiler.modules.reducenoise.ReduceNoise()
 
@@ -28,5 +29,8 @@ def test_run(image, module, image_set, workspace):
         patch_distance=11,
         patch_size=7
     )
+
+    if image.dimensions == 3:
+        desired = cellprofiler.image.Image(desired, dimensions=3).pixel_data
 
     numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)

@@ -37,7 +37,9 @@ def test_run(image, module, image_set, workspace):
 
     if image.volumetric:
         desired = skimage.morphology.skeletonize_3d(image.pixel_data)
+
+        desired = cellprofiler.image.Image(desired, dimensions=3).pixel_data
     else:
         desired = skimage.morphology.skeletonize(image.pixel_data)
 
-    numpy.testing.assert_array_equal(actual.pixel_data, desired)
+    numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)

@@ -1,4 +1,5 @@
 import cellprofiler.modules.closing
+import cellprofiler.image
 import numpy
 import numpy.testing
 import skimage.morphology
@@ -23,7 +24,10 @@ def test_run(image, module, image_set, workspace):
 
         desired = skimage.morphology.closing(image.pixel_data, selem)
 
-        numpy.testing.assert_array_equal(actual.pixel_data, desired)
+        if image.dimensions == 3:
+            desired = cellprofiler.image.Image(desired, dimensions=3).pixel_data
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)
 
         # test planewise
         selem = skimage.morphology.disk(1)
@@ -40,7 +44,10 @@ def test_run(image, module, image_set, workspace):
 
             desired[index] = skimage.morphology.closing(plane, selem)
 
-        numpy.testing.assert_array_equal(actual.pixel_data, desired)
+        if image.dimensions == 3:
+            desired = cellprofiler.image.Image(desired, dimensions=3).pixel_data
+
+        numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)
 
     else:
         selem = skimage.morphology.disk(1)

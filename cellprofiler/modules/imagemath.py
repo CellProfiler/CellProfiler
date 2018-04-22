@@ -403,6 +403,11 @@ is applied before other operations."""))
                 if opval == O_EQUALS:
                     output_pixel_data = output_pixel_data & (comparitor == pd)
                 else:
+                    # FIXME: Is there a better way to add to float arrays but keep them in
+                    # FIXME: the bounds of 0..1?
+                    if opval == O_ADD and output_pixel_data.ndim == 3:
+                        output_pixel_data /= 2
+                        pd /= 2
                     output_pixel_data = op(output_pixel_data, pd)
                 if self.ignore_mask:
                     continue

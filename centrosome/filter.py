@@ -6,9 +6,9 @@ from scipy.ndimage import convolve, gaussian_filter
 from scipy.ndimage import binary_erosion
 from scipy.ndimage import generate_binary_structure
 
-import _filter
-from centrosome.rankorder import rank_order
-from centrosome.smooth import smooth_with_function_and_mask
+from . import _filter
+from .rankorder import rank_order
+from .smooth import smooth_with_function_and_mask
 from .cpmorphology import fixup_scipy_ndimage_result as fix
 from .cpmorphology import centers_of_labels
 from .cpmorphology import grey_erosion, grey_reconstruction

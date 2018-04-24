@@ -9,9 +9,9 @@ import scipy.ndimage
 import scipy.sparse
 import scipy.interpolate
 
-from centrosome.otsu import otsu, entropy, otsu3, entropy3
-from centrosome.smooth import smooth_with_noise
-from centrosome.filter import stretch, unstretch
+from .otsu import otsu, entropy, otsu3, entropy3
+from .smooth import smooth_with_noise
+from .filter import stretch, unstretch
 from six.moves import range
 from six.moves import zip
 

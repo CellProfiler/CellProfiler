@@ -9,7 +9,7 @@ import unittest
 import time
 
 import centrosome.propagate
-import _propagate
+from centrosome import _propagate
 
 # class Test_Propagate(unittest.TestCase):
 #     def test_01_01_test_convert_to_ints(self):

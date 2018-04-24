@@ -5,24 +5,24 @@ import numpy as np
 import scipy.ndimage as scind
 import scipy.sparse
 
-import _cpmorphology
+from . import _cpmorphology
 from .outline import outline
-from centrosome.rankorder import rank_order
+from .rankorder import rank_order
 from .index import Indexes
-from _cpmorphology2 import skeletonize_loop, table_lookup_index
-from _cpmorphology2 import grey_reconstruction_loop
-from _cpmorphology2 import _all_connected_components
-from _cpmorphology2 import index_lookup, prepare_for_index_lookup
-from _cpmorphology2 import extract_from_image_lookup, fill_labeled_holes_loop
-from _cpmorphology2 import trace_outlines
+from ._cpmorphology2 import skeletonize_loop, table_lookup_index
+from ._cpmorphology2 import grey_reconstruction_loop
+from ._cpmorphology2 import _all_connected_components
+from ._cpmorphology2 import index_lookup, prepare_for_index_lookup
+from ._cpmorphology2 import extract_from_image_lookup, fill_labeled_holes_loop
+from ._cpmorphology2 import trace_outlines
 from six.moves import range
 from six.moves import zip
 
 try:
-    from _cpmorphology2 import ptrsize
+    from ._cpmorphology2 import ptrsize
 except:
     pass
-import _convex_hull
+from . import _convex_hull
 
 logger = logging.getLogger(__name__)
 '''A structuring element for eight-connecting a neigborhood'''

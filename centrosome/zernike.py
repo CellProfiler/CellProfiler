@@ -3,8 +3,8 @@ import numpy as np
 import scipy.sparse
 import scipy.ndimage
 
-from centrosome.cpmorphology import minimum_enclosing_circle,fixup_scipy_ndimage_result
-from centrosome.cpmorphology import fill_labeled_holes,draw_line
+from .cpmorphology import minimum_enclosing_circle,fixup_scipy_ndimage_result
+from .cpmorphology import fill_labeled_holes,draw_line
 from six.moves import range
 from six.moves import zip
 

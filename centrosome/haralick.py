@@ -3,7 +3,7 @@ import numpy as np
 import scipy.ndimage as scind
 from scipy.linalg import toeplitz
 
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from .cpmorphology import fixup_scipy_ndimage_result as fix
 from six.moves import range
 
 

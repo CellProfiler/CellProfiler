@@ -3,7 +3,7 @@ import math
 import copy
 import numpy
 import scipy.ndimage.measurements
-import centrosome.lapjv
+from . import lapjv
 import six
 from six.moves import range
 from six.moves import zip

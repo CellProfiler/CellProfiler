@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 import base64
 import numpy as np
 from scipy.ndimage import binary_dilation, binary_erosion, convolve
@@ -134,8 +135,8 @@ class TestMedianFilter(unittest.TestCase):
         result = F.median_filter(img, np.ones((21,21),bool), radius)
         sorted = img[octagon]
         sorted.sort()
-        min_acceptable = sorted[len(sorted)/2-1]
-        max_acceptable = sorted[len(sorted)/2+1]
+        min_acceptable = sorted[len(sorted)//2-1]
+        max_acceptable = sorted[len(sorted)//2+1]
         self.assertTrue(result[10,10] >= min_acceptable)
         self.assertTrue(result[10,10] <= max_acceptable)
 

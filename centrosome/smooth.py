@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 import numpy as np
 import scipy.linalg
+from six.moves import zip
 
 def smooth_with_noise(image, bits):
     """Smooth the image with a per-pixel random multiplier

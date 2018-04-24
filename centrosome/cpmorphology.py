@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import logging
 
 import numpy as np
@@ -5,15 +6,17 @@ import scipy.ndimage as scind
 import scipy.sparse
 
 import _cpmorphology
-from outline import outline
+from .outline import outline
 from centrosome.rankorder import rank_order
-from index import Indexes
+from .index import Indexes
 from _cpmorphology2 import skeletonize_loop, table_lookup_index
 from _cpmorphology2 import grey_reconstruction_loop
 from _cpmorphology2 import _all_connected_components
 from _cpmorphology2 import index_lookup, prepare_for_index_lookup
 from _cpmorphology2 import extract_from_image_lookup, fill_labeled_holes_loop
 from _cpmorphology2 import trace_outlines
+from six.moves import range
+from six.moves import zip
 
 try:
     from _cpmorphology2 import ptrsize
@@ -529,7 +532,7 @@ def strel_periodicline(xoff, yoff, n):
     (k * yoff, k * xoff)
     for k in range(-n, n+1)
     """
-    xoff, yoff, n = [int(t) for t in xoff, yoff, n]
+    xoff, yoff, n = [int(t) for t in (xoff, yoff, n)]
     center_x, center_y = abs(n * xoff), abs(n * yoff)
     result = np.zeros((center_y * 2 + 1, center_x * 2 + 1), bool)
     k = np.arange(-n, n+1)
@@ -545,7 +548,7 @@ def strel_rectangle(width, height):
     height = the height of the structuring element (in the i direction). The
             height will be rounded down to the nearest multiple of 2*n+1
     """
-    return np.ones([int((hw - 1) / 2) * 2 + 1 for hw in height, width], bool)
+    return np.ones([int((hw - 1) / 2) * 2 + 1 for hw in (height, width)], bool)
 
 def strel_square(s):
     """Create a square structuring element
@@ -664,7 +667,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
     #
     # An array that converts from label # to index in "indexes"
     anti_indexes = np.zeros((np.max(indexes)+1,),int)
-    anti_indexes[indexes] = range(len(indexes))
+    anti_indexes[indexes] = list(range(len(indexes)))
 
     coords = pixel_labels[:,:2]
     i = coords[:, 0]
@@ -767,7 +770,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
             # Map label #s to the index into indexes_to_finish of that label #
             #
             anti_indexes_to_finish = np.zeros((len(indexes),), np.int32)
-            anti_indexes_to_finish[indexes_to_finish] = range(len(indexes_to_finish))
+            anti_indexes_to_finish[indexes_to_finish] = list(range(len(indexes_to_finish)))
             #
             # Figure out the indices of each point in a label to be finished.
             # We figure out how much to subtract for each label, then
@@ -779,7 +782,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
             finish_idx_base = np.zeros((len(indexes_to_finish),), np.int32)
             finish_idx_base[1:]=np.cumsum(new_counts[indexes_to_finish])[:-1]
             finish_idx_bases = finish_idx_base[anti_indexes_to_finish[atf_indexes]]
-            finish_idx = (np.array(range(a_to_finish.shape[0]))-
+            finish_idx = (np.array(list(range(a_to_finish.shape[0])))-
                           finish_idx_bases)
             finish_idx = finish_idx + result_index[atf_indexes]
             result[finish_idx,1:] = a_to_finish[:,1:]
@@ -803,12 +806,12 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
         # to address those situations.
         #
         anti_indexes_to_keep = np.zeros((len(indexes),), np.int32)
-        anti_indexes_to_keep[indexes_to_keep] = range(len(indexes_to_keep))
+        anti_indexes_to_keep[indexes_to_keep] = list(range(len(indexes_to_keep)))
         idx_base = np.zeros((len(indexes_to_keep),), np.int32)
         idx_base[1:]=np.cumsum(counts[keep_me])[0:-1]
         idx_bases = idx_base[anti_indexes_to_keep[a[:,0]]]
         counts_per_pt = counts[a[:,0]]
-        idx = np.array(range(a.shape[0]), np.int32)-idx_bases
+        idx = np.array(list(range(a.shape[0])), np.int32)-idx_bases
         n_minus_one = np.mod(idx+counts_per_pt-1,counts_per_pt)+idx_bases
         n_plus_one  = np.mod(idx+1,counts_per_pt)+idx_bases
         #
@@ -874,7 +877,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
     # points for a label, then only keep those whose indexes are
     # less than the count for their label.
     #
-    within_label_index = np.array(range(result.shape[0]), np.int32)
+    within_label_index = np.array(list(range(result.shape[0])), np.int32)
     counts_per_point = result_counts[r_anti_indexes_per_point]
     result_indexes_per_point = result_index[r_anti_indexes_per_point] 
     within_label_index = (within_label_index - result_indexes_per_point)
@@ -946,7 +949,7 @@ def fill_convex_hulls(ch_pts, ch_counts):
         i_horiz = l_horiz = j_first_horiz = j_last_horiz = np.zeros(0, int)
     
     if (np.any(~ horizontal)):
-        ch_pts, ch_pts1, n_i = [x[~horizontal] for x in ch_pts, ch_pts1, n_i]
+        ch_pts, ch_pts1, n_i = [x[~horizontal] for x in (ch_pts, ch_pts1, n_i)]
         indexer = Indexes(n_i)
         l = ch_pts[indexer.rev_idx, 0]
         sign = np.sign(ch_pts1[:, 0] - ch_pts[:, 1])
@@ -1394,7 +1397,7 @@ def minimum_enclosing_circle(labels, indexes = None,
             indexes = np.array(np.unique(hull_and_point_count[0][:,0]),dtype=np.int32)
         else:
             max_label = np.max(labels)
-            indexes = np.array(range(1,max_label+1),dtype=np.int32)
+            indexes = np.array(list(range(1,max_label+1)),dtype=np.int32)
     else:
         indexes = np.array(indexes,dtype=np.int32)
     if indexes.shape[0] == 0:
@@ -1435,7 +1438,7 @@ def minimum_enclosing_circle(labels, indexes = None,
     # anti_indexes_per_point gives the label index of any vertex
     #
     anti_indexes=np.zeros((np.max(indexes)+1,),int)
-    anti_indexes[indexes] = range(indexes.shape[0])
+    anti_indexes[indexes] = list(range(indexes.shape[0]))
     anti_indexes_per_point = anti_indexes[hull[:,0]]
     #
     # Start out by eliminating the degenerate cases: 0, 1 and 2
@@ -1467,7 +1470,7 @@ def minimum_enclosing_circle(labels, indexes = None,
     # the order in which we'll get their angles. We use this to pick out
     # points # 2 to N which are the candidate vertices to S
     # 
-    within_label_indexes = (np.array(range(hull.shape[0]),int) -
+    within_label_indexes = (np.array(list(range(hull.shape[0])),int) -
                             point_index[anti_indexes_per_point])
     
     while(np.any(keep_me)):
@@ -1487,7 +1490,7 @@ def minimum_enclosing_circle(labels, indexes = None,
         anti_indexes_to_consider =\
             np.zeros((np.max(labels_to_consider)+1,),int)
         anti_indexes_to_consider[labels_to_consider] = \
-            np.array(range(labels_to_consider.shape[0]))
+            np.array(list(range(labels_to_consider.shape[0])))
         ##############################################################
         # Vertex indexing for active vertexes other than S0 and S1
         ##############################################################
@@ -2370,7 +2373,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     # Given a label number "index_of_label" indexes into the result
     #
     index_of_label = np.zeros((hull[:,0].max()+1),int)
-    index_of_label[indexes] = np.array(range(indexes.shape[0]))
+    index_of_label[indexes] = np.array(list(range(indexes.shape[0])))
     #
     # hull_index is the index into hull of the first point on the hull
     # per label
@@ -2396,7 +2399,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     counts_nd = counts[counts>=3]
     indexes_nd = indexes[counts>=3]
     index_of_label_nd = np.zeros((index_of_label.shape[0],),int)
-    index_of_label_nd[indexes_nd] = np.array(range(indexes_nd.shape[0]))
+    index_of_label_nd[indexes_nd] = np.array(list(range(indexes_nd.shape[0])))
     #
     # Figure out the within-label index of each point in a label. This is
     # so we can do modulo arithmetic when pairing a point with the next
@@ -2407,7 +2410,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
         hull_index_nd[1:] = np.cumsum(counts_nd[:-1])
     index_of_label_per_pixel_nd = index_of_label_nd[hull_nd[:,0]]
     hull_index_per_pixel_nd = hull_index_nd[index_of_label_per_pixel_nd] 
-    within_label_index = (np.array(range(hull_nd.shape[0])) -
+    within_label_index = (np.array(list(range(hull_nd.shape[0]))) -
                           hull_index_per_pixel_nd)
     #
     # Find some point within each convex hull.
@@ -2446,7 +2449,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     # from point n to point n+1 (modulo count) to the point within
     # the hull.
     #
-    plus_one_idx = np.array(range(hull_nd.shape[0]))+1
+    plus_one_idx = np.array(list(range(hull_nd.shape[0])))+1
     modulo_mask = within_label_index+1 == counts_nd[index_of_label_per_pixel_nd]
     plus_one_idx[modulo_mask] = hull_index_per_pixel_nd[modulo_mask]
     area_per_pt_nd = triangle_areas(hull_nd[:,1:],
@@ -2613,7 +2616,7 @@ def block(shape, block_shape):
     i = (i * multiplier[0]).astype(int)
     j = (j * multiplier[1]).astype(int)
     labels = i * ijmax[1] + j
-    indexes = np.array(range(np.product(ijmax)))
+    indexes = np.array(list(range(np.product(ijmax))))
     return labels, indexes
 
 def white_tophat(image, radius=None, mask=None, footprint=None):
@@ -3878,7 +3881,7 @@ def skeleton_length(labels, indices=None):
                     for adjacent_i, adjacent_j in (
                         (ii-1, jj), (ii, jj-1), (ii+1, jj), (ii, jj+1)):
                         if any([_ < -1 or _ > 1 
-                                for _ in adjacent_i, adjacent_j]):
+                                for _ in (adjacent_i, adjacent_j)]):
                             continue
                         aidx = 2 ** (adjacent_i+1 + (adjacent_j + 1) * 3)
                         mask = mask & ((np.arange(512) & aidx) != aidx)

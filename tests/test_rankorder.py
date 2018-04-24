@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 import numpy as np
 from centrosome.rankorder import rank_order

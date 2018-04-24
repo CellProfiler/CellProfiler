@@ -1,8 +1,10 @@
+from __future__ import absolute_import
 import numpy as np
 import scipy.ndimage as scind
 import unittest
 import centrosome.zernike as z
 from centrosome.cpmorphology import fill_labeled_holes, draw_line
+from six.moves import range
 
 class TestZernike(unittest.TestCase):
     def make_zernike_indexes(self):

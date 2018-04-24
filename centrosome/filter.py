@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import numpy as np
 import scipy.ndimage as scind
 from scipy.ndimage import map_coordinates, label
@@ -8,10 +9,11 @@ from scipy.ndimage import generate_binary_structure
 import _filter
 from centrosome.rankorder import rank_order
 from centrosome.smooth import smooth_with_function_and_mask
-from cpmorphology import fixup_scipy_ndimage_result as fix
-from cpmorphology import centers_of_labels
-from cpmorphology import grey_erosion, grey_reconstruction
-from cpmorphology import convex_hull_ijv, get_line_pts
+from .cpmorphology import fixup_scipy_ndimage_result as fix
+from .cpmorphology import centers_of_labels
+from .cpmorphology import grey_erosion, grey_reconstruction
+from .cpmorphology import convex_hull_ijv, get_line_pts
+from six.moves import range
 
 '''# of points handled in the first pass of the convex hull code'''
 CONVEX_HULL_CHUNKSIZE = 250000
@@ -1196,7 +1198,7 @@ def line_integration(image, angle, decay, sigma):
     for i in range(1,result_fwd.shape[0]):
         result_fwd[i] += result_fwd[i-1] * decay
     result_rev = smoothed.copy()
-    for i in reversed(range(result_rev.shape[0]-1)):
+    for i in reversed(list(range(result_rev.shape[0]-1))):
         result_rev[i] += result_rev[i+1] * decay
     result = (result_fwd - result_rev) / 2
     #

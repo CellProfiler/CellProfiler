@@ -1,8 +1,11 @@
+from __future__ import absolute_import
 import numpy as np
 import unittest
 
 import centrosome.lapjv as LAPJV
 from centrosome.filter import permutations
+from six.moves import range
+from six.moves import zip
 
 class TestLAPJVPYX(unittest.TestCase):
     def test_01_01_reduction_transfer(self):

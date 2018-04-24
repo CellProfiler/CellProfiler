@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import base64
 import numpy as np
 from scipy.ndimage import binary_dilation, binary_erosion, convolve
 import unittest
 
 import centrosome.filter as F
+from six.moves import range
 
 '''Perform line-integration per-column of the image'''
 VERTICAL = 'vertical'

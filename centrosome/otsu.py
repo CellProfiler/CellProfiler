@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import numpy as np
 
 def otsu(data, min_threshold=None, max_threshold=None,bins=256):

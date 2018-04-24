@@ -37,5 +37,6 @@ booktitle = {ICCV},
 year = {2009}
 }
 """
+from __future__ import absolute_import
 from _fastemd import EMD_NO_FLOW, EMD_WITHOUT_TRANSHIPMENT_FLOW,\
      EMD_WITHOUT_EXTRA_MASS_FLOW, emd_hat_int32

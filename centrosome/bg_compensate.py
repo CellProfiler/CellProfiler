@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import warnings
 
 import numpy as np
 from scipy import linspace
 from scipy.ndimage import affine_transform
+from six.moves import range
 
 '''Automatically determine whether background is darker than foreground'''
 MODE_AUTO = "auto"
@@ -375,7 +378,7 @@ def bg_compensate(img, sigma, splinepoints, scale):
         img_size.reverse()
         new_img = imgdata.reshape(img_size)
         # The magic # for maximum sample value is 281
-        if img.tag.has_key(281):
+        if 281 in img.tag:
             img = new_img.astype(np.float32) / img.tag[281][0]
         elif np.max(new_img) < 4096:
             img = new_img.astype(np.float32) / 4095.
@@ -403,7 +406,7 @@ def bg_compensate(img, sigma, splinepoints, scale):
     import time
     t0 = time.clock()
     bg = backgr(img, mask, MODE_AUTO, sigma, splinepoints=splinepoints, scale=scale)
-    print ("Executed in %f sec" % (time.clock() - t0))
+    print(("Executed in %f sec" % (time.clock() - t0)))
     bg[~mask] = img[~mask]
 
     pylab.subplot(1,3,2).imshow(img - bg, cmap=matplotlib.cm.Greys_r)

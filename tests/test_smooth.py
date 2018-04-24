@@ -1,7 +1,9 @@
+from __future__ import absolute_import
 import unittest
 import numpy as np
 import scipy.ndimage
 import centrosome.smooth as cpms
+from six.moves import range
 
 class TestSmoothWithNoise(unittest.TestCase):
     def test_01_smooth_zero(self):

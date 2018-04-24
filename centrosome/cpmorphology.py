@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 import logging
 
 import numpy as np
@@ -547,7 +548,7 @@ def strel_rectangle(width, height):
     height = the height of the structuring element (in the i direction). The
             height will be rounded down to the nearest multiple of 2*n+1
     """
-    return np.ones([int((hw - 1) / 2) * 2 + 1 for hw in (height, width)], bool)
+    return np.ones([int((hw - 1) // 2) * 2 + 1 for hw in (height, width)], bool)
 
 def strel_square(s):
     """Create a square structuring element
@@ -1357,7 +1358,7 @@ def median_of_labels(image, labels, indices):
     counts = np.bincount(labels)
     last = np.cumsum(counts)
     first = np.hstack(([0], last[:-1]))
-    middle_low = first + ((counts-1) / 2).astype(int)
+    middle_low = first + ((counts-1) // 2).astype(int)
     
     median = np.zeros(len(indices))
     odds = (counts % 2) == 1
@@ -2671,7 +2672,7 @@ def grey_erosion(image, radius=None, mask=None, footprint=None):
         else:
             footprint = strel_disk(radius)==1
     else:
-        radius = max(1, np.max(np.array(footprint.shape) / 2))
+        radius = max(1, np.max(np.array(footprint.shape) // 2))
     iradius = int(np.ceil(radius))
     #
     # Do a grey_erosion with masked pixels = 1 so they don't participate
@@ -2699,7 +2700,7 @@ def grey_dilation(image, radius=None, mask=None, footprint=None):
             footprint_size = (radius*2+1,radius*2+1)
     else:
         footprint_size = footprint.shape
-        radius = max(np.max(np.array(footprint.shape) / 2),1)
+        radius = max(np.max(np.array(footprint.shape) // 2),1)
     iradius = int(np.ceil(radius))
     #
     # Do a grey_dilation with masked pixels = 0 so they don't participate
@@ -2739,7 +2740,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     if offset is None:
         assert all([d % 2 == 1 for d in footprint.shape]),\
                "Footprint dimensions must all be odd"
-        offset = np.array([d/2 for d in footprint.shape])
+        offset = np.array([d//2 for d in footprint.shape])
     # Cross out the center of the footprint
     footprint[[slice(d,d+1) for d in offset]] = False
     #
@@ -2747,7 +2748,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     # The array is a dstack of the image and the mask; this lets us interleave
     # image and mask pixels when sorting which makes list manipulations easier
     #
-    padding = (np.array(footprint.shape)/2).astype(int)
+    padding = (np.array(footprint.shape)//2).astype(int)
     dims = np.zeros(image.ndim+1,int)
     dims[1:] = np.array(image.shape)+2*padding
     dims[0] = 2
@@ -2759,8 +2760,8 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     # Create a list of strides across the array to get the neighbors
     # within a flattened array
     #
-    value_stride = np.array(values.strides[1:]) / values.dtype.itemsize
-    image_stride = values.strides[0] / values.dtype.itemsize
+    value_stride = np.array(values.strides[1:]) // values.dtype.itemsize
+    image_stride = values.strides[0] // values.dtype.itemsize
     footprint_mgrid = np.mgrid[[slice(-o,d - o) 
                                 for d,o in zip(footprint.shape,offset)]]
     footprint_offsets = footprint_mgrid[:,footprint].transpose()
@@ -2868,7 +2869,7 @@ def openlines(image, linelength=10, dAngle=10, mask=None):
     angluar_resolution - angle step for the rotating lines
     mask - if present, only use unmasked pixels for operations
     """
-    nAngles = 180/dAngle
+    nAngles = 180//dAngle
     openingstack = np.zeros((nAngles,image.shape[0],image.shape[1]),image.dtype)
 
     for iAngle in range(nAngles):
@@ -3974,10 +3975,10 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
     # points. Construct a big mask that represents the edges.
     #
     big_mask = np.zeros(np.array(image.shape) + np.array(structure.shape), bool)
-    structure_half_shape = np.array(structure.shape)/2
+    structure_half_shape = np.array(structure.shape)//2
     big_mask[structure_half_shape[0]:structure_half_shape[0]+image.shape[0],
              structure_half_shape[1]:structure_half_shape[1]+image.shape[1]]=\
-        mask if not mask is None else True
+        mask if mask is not None else True
     for i in range(structure.shape[0]):
         off_i = i-structure_half_shape[0]
         for j in range(structure.shape[1]):
@@ -4103,7 +4104,7 @@ def pairwise_permutations(i, j):
     # The sizes of each destination item: n * (n - 1) / 2
     # This is the number of permutations of n items against themselves.
     #
-    dest_count = src_count * (src_count - 1) / 2
+    dest_count = src_count * (src_count - 1) // 2
     #
     # The indexes of the starts of each destination item (+ total sum at end)
     #
@@ -4138,7 +4139,7 @@ def pairwise_permutations(i, j):
     # So here, we make a sparse array for the unique values of src_count
     #
     unique_src_count = np.unique(src_count)
-    unique_dest_len = (unique_src_count * (unique_src_count - 1) / 2).astype(int)
+    unique_dest_len = (unique_src_count * (unique_src_count - 1) // 2).astype(int)
     #
     # src_count repeated once per permutation
     #
@@ -4195,7 +4196,7 @@ def is_local_maximum(image, labels, footprint):
     '''
     assert((np.all(footprint.shape) & 1) == 1)
     footprint = (footprint != 0)
-    footprint_extent = (np.array(footprint.shape)-1) / 2
+    footprint_extent = (np.array(footprint.shape)-1) // 2
     if np.all(footprint_extent == 0):
         return labels > 0
     result = (labels > 0).copy()
@@ -4209,9 +4210,9 @@ def is_local_maximum(image, labels, footprint):
     #
     # Find the relative indexes of each footprint element
     #
-    image_strides = np.array(image.strides) / image.dtype.itemsize
-    big_strides = np.array(big_labels.strides) / big_labels.dtype.itemsize
-    result_strides = np.array(result.strides) / result.dtype.itemsize
+    image_strides = np.array(image.strides) // image.dtype.itemsize
+    big_strides = np.array(big_labels.strides) // big_labels.dtype.itemsize
+    result_strides = np.array(result.strides) // result.dtype.itemsize
     footprint_offsets = np.mgrid[[slice(-fe,fe+1) for fe in footprint_extent]]
     footprint_offsets = footprint_offsets[:, footprint]
     #
@@ -4272,7 +4273,7 @@ def angular_distribution(labels, resolution=100, weights=None):
 
     The ChordRatio of an object can be approximated by 
     >>> angdist = angular_distribution(labels, resolution)
-    >>> angdist2 = angdist[:, :resolution/2] + angdist[:, resolution/2] # map to widths, rather than radii
+    >>> angdist2 = angdist[:, :resolution//2] + angdist[:, resolution//2] # map to widths, rather than radii
     >>> chord_ratio = np.sqrt(angdist2.max(axis=1) / angdist2.min(axis=1)) # sqrt because these are sectors, not triangles
     '''
     if weights is None:
@@ -4631,7 +4632,7 @@ def get_outline_pts(labels, idxs):
         labels = np.ascontiguousarray(labels, np.uint32)
         offset = np.zeros(2, int)
     assert isinstance(labels, np.ndarray)
-    strides = np.array(labels.strides) / labels.dtype.itemsize
+    strides = np.array(labels.strides) // labels.dtype.itemsize
     assert strides[1] == 1, "Last stride must be 1 for modulo unravel to work"
     stride_table = np.ascontiguousarray(
         np.sum(traversal_order[:, :2] * strides, 1), np.int32)
@@ -4687,6 +4688,6 @@ def get_outline_pts(labels, idxs):
         coord_offsets[mapper[idx_of_first[1:]]] = np.cumsum(output_count[:-1],
                                                             dtype=output_count.dtype)
     coords = np.column_stack((
-        output / strides[0] - offset[0],
+        output // strides[0] - offset[0],
         output % strides[0] - offset[1]))
     return coords, coord_offsets, coord_counts

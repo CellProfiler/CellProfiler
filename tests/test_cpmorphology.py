@@ -1,3 +1,4 @@
+from __future__ import division
 from __future__ import absolute_import
 import base64
 import unittest
@@ -678,7 +679,7 @@ class TestConvexHull(unittest.TestCase):
         np.random.seed(0)
         s = 10 # divide each image into this many mini-squares with a shape in each
         side = 250
-        mini_side = side / s
+        mini_side = side // s
         ct = 20
         labels = np.zeros((side,side),int)
         pts = np.zeros((s*s*ct,2),int)
@@ -696,7 +697,7 @@ class TestConvexHull(unittest.TestCase):
                     if pu.shape[0] == ct+1:
                         break
                     p[:pu.shape[0],0] = np.mod(pu,mini_side).astype(int)
-                    p[:pu.shape[0],1] = (pu / mini_side).astype(int)
+                    p[:pu.shape[0],1] = (pu // mini_side).astype(int)
                     p_size = (ct+1-pu.shape[0],2)
                     p[pu.shape[0],:] = np.random.uniform(low=0,
                                                             high=mini_side,
@@ -962,7 +963,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
         np.random.seed(0)
         s = 10 # divide each image into this many mini-squares with a shape in each
         side = 250
-        mini_side = side / s
+        mini_side = side // s
         ct = 20
         #
         # We keep going until we get at least 10 multi-edge cases -
@@ -986,7 +987,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
                         if pu.shape[0] == ct+1:
                             break
                         p[:pu.shape[0],0] = np.mod(pu,mini_side).astype(int)
-                        p[:pu.shape[0],1] = (pu / mini_side).astype(int)
+                        p[:pu.shape[0],1] = (pu // mini_side).astype(int)
                         p_size = (ct+1-pu.shape[0],2)
                         p[pu.shape[0],:] = np.random.uniform(low=0,
                                                                 high=mini_side,
@@ -2860,7 +2861,7 @@ class TestBlock(unittest.TestCase):
         self.assertEqual(len(indexes),6)
         self.assertEqual(labels.shape, (10,15))
         i,j = np.mgrid[0:10,0:15]
-        self.assertTrue(np.all(labels == (i / 5).astype(int)*3 + (j/5).astype(int)))
+        self.assertTrue(np.all(labels == (i // 5).astype(int)*3 + (j//5).astype(int)))
 
     def test_01_03_big_blocks(self):
         labels, indexes = morph.block((10,10),(20,20))
@@ -2873,8 +2874,8 @@ class TestBlock(unittest.TestCase):
         labels, indexes = morph.block((100,100),(2,4))
         self.assertEqual(len(indexes), 1250)
         i,j = np.mgrid[0:100,0:100]
-        i = (i / 2).astype(int)
-        j = (j / 4).astype(int)
+        i = (i // 2).astype(int)
+        j = (j // 4).astype(int)
         expected = i * 25 + j
         self.assertTrue(np.all(labels == expected))
 
@@ -5091,7 +5092,7 @@ class TestAngularDistribution(unittest.TestCase):
         assert np.all(angdist[9, :] == 0.0)
         # check approximation to chord ratio of filled rectangle (roughly 3.16)
         resolution = angdist.shape[1]
-        angdist2 = angdist[-1, :resolution/2] + angdist[-1, resolution/2:]
+        angdist2 = angdist[-1, :resolution//2] + angdist[-1, resolution//2:]
         assert np.abs(3.16 - np.sqrt(angdist2.max() / angdist2.min())) < 0.05
 
 class TestFeretDiameter(unittest.TestCase):

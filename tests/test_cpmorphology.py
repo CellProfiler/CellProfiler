@@ -1169,7 +1169,7 @@ class TestCalculateExtents(unittest.TestCase):
         labels = np.zeros((1001,1001),int)
         y,x = np.mgrid[-500:501,-500:501]
         labels[x*x+y*y<=250000] = 1
-        extents = morph.calculate_extents(labels,[1])
+        extents = morph.calculate_extents(labels,[1])[0]
         self.assertAlmostEqual(extents,np.pi/4,2)
         
     def test_01_03_two_objects(self):

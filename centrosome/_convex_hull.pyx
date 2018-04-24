@@ -1,3 +1,4 @@
+from __future__ import print_function
 import cython
 import numpy as np
 cimport numpy as np
@@ -80,9 +81,9 @@ def convex_hull_ijv(in_labels_ijv,
                 lower[cur_pix_j] = cur_pix_i
         pixidx = start_idx + num_vertices
         if DEBUG:
-            print "STARTJ/END_J", start_j, end_j
-            print "LOWER", lower[start_j:end_j + 1]
-            print "UPPER", upper[start_j:end_j + 1]
+            print("STARTJ/END_J", start_j, end_j)
+            print("LOWER", lower[start_j:end_j + 1])
+            print("UPPER", upper[start_j:end_j + 1])
 
         # At this point, the upper and lower buffers have the extreme high/low
         # points, so we just need to convexify them.  We have copied them out
@@ -110,10 +111,10 @@ def convex_hull_ijv(in_labels_ijv,
         #     while (nemitted >= 2) and not CONVEX(pt_i, pt_j, nemitted):
         #         # The point we emitted just before this one created a
         #         # concavity (or is co-linear).  Prune it.
-        #         #XXX print "BACKUP"
+        #         #XXX print("BACKUP")
         #         nemitted -= 1
         #     # The point is convex or we haven't emitted enough points to check.
-        #     #XXX print "writing point", nemitted, pt_i, pt_j
+        #     #XXX print("writing point", nemitted, pt_i, pt_j)
         #     out[out_base_idx + nemitted, :] = (pt_i, pt_j, cur_label)
         #     return nemitted + 1
 
@@ -127,12 +128,12 @@ def convex_hull_ijv(in_labels_ijv,
                                                         lower[envelope_j], envelope_j):
                     # The point we emitted just before this one created a concavity (or is co-linear).  Prune it.
                     if DEBUG:
-                        print "PRUNE"
+                        print("PRUNE")
                     num_emitted -= 1
                 labels_ijv[outidx + num_emitted, 0] = lower[envelope_j]
                 labels_ijv[outidx + num_emitted, 1] = envelope_j
                 if DEBUG:
-                    print "ADD", (lower[envelope_j], envelope_j, cur_label)
+                    print("ADD", (lower[envelope_j], envelope_j, cur_label))
                 num_emitted += 1
                 # END MACRO
                 lower[envelope_j] = max_i + 1
@@ -144,7 +145,7 @@ def convex_hull_ijv(in_labels_ijv,
                                                         upper[envelope_j], envelope_j):
                     # The point we emitted just before this one created a concavity (or is co-linear).  Prune it.
                     if DEBUG:
-                        print "PRUNE"
+                        print("PRUNE")
                     num_emitted -= 1
                 if pixidx > outidx+num_emitted:
                     # The last point can get temporarily pushed on the list
@@ -153,7 +154,8 @@ def convex_hull_ijv(in_labels_ijv,
                     labels_ijv[outidx + num_emitted, 0] = upper[envelope_j]
                     labels_ijv[outidx + num_emitted, 1] = envelope_j
                     if DEBUG:
-                        print "ADD", (upper[envelope_j], envelope_j, cur_label)
+                        print("ADD",
+                              (upper[envelope_j], envelope_j, cur_label))
                     num_emitted += 1
                 # END MACRO
                 upper[envelope_j] = -1
@@ -164,13 +166,13 @@ def convex_hull_ijv(in_labels_ijv,
                                                 upper[start_j], start_j):
             # The point we emitted just before this one created a concavity (or is co-linear).  Prune it.
             if DEBUG:
-                print "PRUNE"
+                print("PRUNE")
             num_emitted -= 1
         if need_last_upper_point:
             labels_ijv[outidx + num_emitted, 0] = upper[start_j]
             labels_ijv[outidx + num_emitted, 1] = start_j
             if DEBUG:
-                print "ADD", (upper[start_j], start_j, cur_label)
+                print("ADD", (upper[start_j], start_j, cur_label))
             num_emitted += 1
             # END MACRO
         upper[start_j] = -1
@@ -184,17 +186,17 @@ def convex_hull_ijv(in_labels_ijv,
     cdef int reordered_idx, reordered_num, count, src_start, dest_start, tmpidx
     reordered_idx = 0
     if DEBUG:
-        print "indexes", indexes
-        print "reorder", indexes_reorder
-        print "unreorder", indexes_unreorder
-        print "Hull offsets", hull_offsets
+        print("indexes", indexes)
+        print("reorder", indexes_reorder)
+        print("unreorder", indexes_unreorder)
+        print("Hull offsets", hull_offsets)
     # Output in the order that the indices were passed in
     for reordered_num in range(num_indexes):
         cur_label = indexes[reordered_num]
         count = vertex_counts[indexes_unreorder[reordered_num]]
         src_start = hull_offsets[indexes_unreorder[reordered_num]]
         if DEBUG:
-            print "writing index", cur_label, count, src_start
+            print("writing index", cur_label, count, src_start)
         dest_start = reordered_idx
         for tmpidx in range(count):
             # Reorder columns to match what CellProfiler expects.

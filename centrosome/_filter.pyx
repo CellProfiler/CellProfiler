@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 cimport numpy as np
 cimport cython
@@ -230,7 +231,7 @@ cdef Histograms *allocate_histograms(np.int32_t   rows,
     # corners
     #
     a = <int>(<np.float64_t>radius * 2.0 / 2.414213)
-    a_2 = a / 2
+    a_2 = a // 2
     if a_2 == 0:
         a_2 = 1
     ph.a_2 = a_2
@@ -535,7 +536,7 @@ cdef inline void update_histogram(Histograms *ph,
         value = ph.data[stride]
         pixel_count[0] -= 1
         hist_piece.fine[value] -= 1
-        hist_piece.coarse[value / 16] -= 1
+        hist_piece.coarse[value // 16] -= 1
 
     x      = coord.x + current_column
     y      = coord.y + current_row
@@ -547,7 +548,7 @@ cdef inline void update_histogram(Histograms *ph,
         value = ph.data[stride]
         pixel_count[0] += 1
         hist_piece.fine[value] += 1
-        hist_piece.coarse[value / 16] += 1
+        hist_piece.coarse[value // 16] += 1
 
 ############################################################################    
 #
@@ -613,7 +614,7 @@ cdef inline np.uint8_t find_median(Histograms *ph):
 
     if ph.accumulator_count == 0:
         return 0
-    pixels_below = (ph.accumulator_count * ph.percent + 50) / 100 # +50 for roundoff
+    pixels_below = (ph.accumulator_count * ph.percent + 50) // 100 # +50 for roundoff
     if pixels_below > 0:
         pixels_below -= 1
     accumulator = 0
@@ -799,7 +800,7 @@ def masked_convolution(np.ndarray[dtype=np.float64_t, ndim=2, negative_indices=F
     assert mask.shape[0]==data.shape[0]
     assert mask.shape[1]==data.shape[1]
     kernel_width = kernel.shape[0]
-    kernel_half_width = kernel_width / 2
+    kernel_half_width = kernel_width // 2
     big_mask = np.zeros((data.shape[0]+kernel_width, data.shape[1]+kernel_width), np.uint8)
     output   = np.zeros((data.shape[0],data.shape[1]), data.dtype)
     big_mask[kernel_half_width:kernel_half_width+data.shape[0],
@@ -807,9 +808,9 @@ def masked_convolution(np.ndarray[dtype=np.float64_t, ndim=2, negative_indices=F
     #
     # stride in number of elements across the i direction
     #
-    istride = data.strides[0] / PyArray_ITEMSIZE(data)
-    mstride = big_mask.strides[0] / PyArray_ITEMSIZE(big_mask)
-    kstride = kernel.strides[0] / PyArray_ITEMSIZE(kernel)
+    istride = data.strides[0] // PyArray_ITEMSIZE(data)
+    mstride = big_mask.strides[0] // PyArray_ITEMSIZE(big_mask)
+    kstride = kernel.strides[0] // PyArray_ITEMSIZE(kernel)
     #
     # pointers to data. pmask is offset to point at the 0,0 element
     # pkernel is offset to point at the middle of the kernel

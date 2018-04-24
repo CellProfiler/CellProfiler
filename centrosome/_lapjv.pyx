@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 cimport numpy as np
 cimport cython
@@ -473,7 +474,7 @@ cdef int bsearch(int *ptr, int count, int val) nogil:
         int high = count-1
         int mid
     while low <= high:
-        mid = (low + high) / 2
+        mid = (low + high) // 2
         if val == ptr[mid]:
             return mid
         if val > ptr[mid]:

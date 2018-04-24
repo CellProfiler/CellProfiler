@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 import numpy as np
 import scipy.ndimage as scind
 from scipy.ndimage import map_coordinates, label
@@ -249,7 +250,7 @@ def laplacian_of_gaussian(image, mask, size, sigma):
     size  - length of side of square kernel to use
     sigma - standard deviation of the Gaussian
     '''
-    half_size = size/2
+    half_size = size//2
     i,j = np.mgrid[-half_size:half_size+1,
                    -half_size:half_size+1].astype(float) / float(sigma)
     distance = (i**2 + j**2)/2

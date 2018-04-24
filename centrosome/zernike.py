@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 import numpy as np
 import scipy.sparse
 import scipy.ndimage
@@ -19,12 +20,12 @@ def construct_zernike_lookuptable(zernike_indexes):
     n_max = np.max(zernike_indexes[:,0])
     factorial = np.ones((1 + n_max,), dtype=float)
     factorial[1:] = np.cumproduct(np.arange(1, 1 + n_max, dtype=float))
-    width = int(n_max/2 + 1)
+    width = int(n_max//2 + 1)
     lut = np.zeros((zernike_indexes.shape[0],width), dtype=float)
-    for idx,(n,m) in zip(list(range(zernike_indexes.shape[0])),zernike_indexes):
+    for idx,(n,m) in zip(range(zernike_indexes.shape[0]), zernike_indexes):
         alt = 1
-        npmh = (n+m)/2
-        nmmh = (n-m)/2
+        npmh = (n+m)//2
+        nmmh = (n-m)//2
         for k in range(0,nmmh+1):
             lut[idx,k] = \
                 (alt * factorial[n-k] /
@@ -81,7 +82,7 @@ def construct_zernike_polynomials(x, y, zernike_indexes, mask=None, weight=None)
                 z_pows[m] = z if m == 1 else (z ** m)
         z_pow = z_pows[m]
         # use Horner scheme
-        for k in range((n-m)/2+1):
+        for k in range((n-m)//2+1):
             s *= r_square
             s += lut[idx, k]
         s[r_square>1]=0

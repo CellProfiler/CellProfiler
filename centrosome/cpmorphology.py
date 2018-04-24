@@ -2300,10 +2300,10 @@ def __calculate_perimeter_scoring():
     score = np.zeros((512,))
     i = np.zeros((prashker.shape[0]),int)
     for j in range(4): # 1,2,4,8
-        i = i+((prashker[:,0].astype(int) / 2**j)%2)*2**j
+        i = i+((prashker[:,0].astype(int) // 2**j)%2)*2**j
     i = i+16
     for j in range(4,8):
-        i = i+((prashker[:,0].astype(int) / 2**j)%2)*2**(j+1)
+        i = i+((prashker[:,0].astype(int) // 2**j)%2)*2**(j+1)
     score[i.astype(int)] = prashker[:,1]
     return score
 

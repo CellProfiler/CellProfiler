@@ -2,6 +2,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import inspect
 import math
 import numpy as np
@@ -192,7 +193,7 @@ def get_adaptive_threshold(threshold_method, image, threshold,
     # for the X and Y direction, find the # of blocks, given the
     # size constraints
     image_size = np.array(image.shape[:2],dtype=int)
-    nblocks = image_size / adaptive_window_size
+    nblocks = image_size // adaptive_window_size
     #
     # Use a floating point block size to apportion the roundoff
     # roughly equally to each block
@@ -348,7 +349,7 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     # in case there are any quantization effects that have resulted in
     # unnaturally many 0:s or 1:s in the image.
     cropped_image.sort()
-    one_percent = (np.product(cropped_image.shape) + 99)/100
+    one_percent = (np.product(cropped_image.shape) + 99)//100
     cropped_image=cropped_image[one_percent:-one_percent]
     pixel_count = np.product(cropped_image.shape)
     # Guess at the class means for the 3 classes: background,
@@ -375,7 +376,7 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     r = np.random.RandomState()
     r.seed(np.frombuffer(cropped_image[:100].data, np.uint8).tolist())
     for data in (
-        r.permutation(cropped_image)[0:(len(cropped_image) / 10)],
+        r.permutation(cropped_image)[0:(len(cropped_image) // 10)],
         cropped_image):
         delta = 1
         pixel_count = len(data)

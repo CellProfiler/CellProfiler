@@ -5,7 +5,6 @@ import numpy as np
 import scipy.ndimage as scind
 import scipy.sparse
 
-from . import _cpmorphology
 from .outline import outline
 from .rankorder import rank_order
 from .index import Indexes
@@ -566,10 +565,12 @@ def cpmaximum(image, structure=np.ones((3,3),dtype=bool),offset=None):
                 local elements should be sampled
     offset - the offset to the center of the structuring element
     """
-    if not offset:
-        offset = (structure.shape[0]/2,structure.shape[1]/2)
-    offset = tuple(offset)
-    return _cpmorphology.cpmaximum(image,structure,offset)
+    center = np.array(structure.shape) // 2
+    if offset is None:
+        offset = center
+    origin = np.array(offset) - center
+    return scind.maximum_filter(image, footprint=structure, origin=origin,
+                                mode='constant', cval=np.min(image))
 
 def relabel(image):
     """Given a labeled image, relabel each of the objects consecutively

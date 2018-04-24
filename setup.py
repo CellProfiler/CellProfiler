@@ -63,12 +63,6 @@ else:
 
 __extensions = [
     setuptools.Extension(
-        name="centrosome._cpmorphology",
-        sources=[
-            "centrosome/src/_cpmorphology.c"
-        ]
-    ),
-    setuptools.Extension(
         name="centrosome._propagate",
         sources=[
             "centrosome/_propagate.{}".format("c" if __suffix == "cpp" else __suffix)

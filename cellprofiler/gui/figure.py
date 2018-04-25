@@ -619,17 +619,26 @@ class Figure(wx.Frame):
 
     def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
         fields = []
+        is_float = True
 
         x, y = [int(round(xy)) for xy in xi, yi]
 
         if not self.in_bounds(image, x, y):
             return fields
 
+        if numpy.issubdtype(image.dtype, numpy.integer):
+            is_float = False
+
         if image.dtype.type == numpy.uint8:
             image = image.astype(numpy.float32) / 255.0
 
         if image.ndim == 2:
-            fields += ["Intensity: %.4f" % (image[y, x] or 0)]
+            if is_float:
+                fields += ["Intensity: {:.4f}".format(image[y, x] or 0)]
+            # This is to allow intensity values to be displayed more intuitively
+            else:
+                fields += ["Intensity: {:d}".format(image[y, x] or 0)]
+
         elif image.ndim == 3 and image.shape[2] == 3:
             fields += ["Red: %.4f" % (image[y, x, 0]),
                        "Green: %.4f" % (image[y, x, 1]),
@@ -1601,15 +1610,8 @@ class Figure(wx.Frame):
         else:
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
-            # Create a custom colormap
-            # Based off of the prism color map (with higher frequency):
-            # https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/_cm.py#L53-L57
-            new_prism = {
-                'red': lambda x: 0.75 * numpy.sin((x * 42 + 0.25) * numpy.pi) + 0.67,
-                'green': lambda x: 0.75 * numpy.sin((x * 42 - 0.25) * numpy.pi) + 0.33,
-                'blue': lambda x: -1.1 * numpy.sin((x * 42) * numpy.pi),
-            }
-            colormap = matplotlib.colors.LinearSegmentedColormap('lower_frequency_prism', new_prism)
+
+            colormap = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
             colormap.set_bad(color='black')
 
         return self.subplot_imshow(

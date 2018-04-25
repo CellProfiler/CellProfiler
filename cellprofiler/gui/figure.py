@@ -1219,7 +1219,7 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False):
+    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False, normalize=True):
         gx, gy = self.__gridspec.get_geometry()
 
         gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
@@ -1255,10 +1255,12 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
+            norm = matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax) if normalize else None
+
             ax.imshow(
                 image[position * (z - 1) / 8],
                 cmap=cmap,
-                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+                norm=norm
             )
 
             ax.set_label("{:d}".format(position * (z - 1) / 8))
@@ -1528,7 +1530,7 @@ class Figure(wx.Frame):
 
             return subplot
         else:
-            self.gridshow(x, y, image, title, colormap, colorbar)
+            self.gridshow(x, y, image, title, colormap, colorbar, normalize)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
@@ -1615,8 +1617,21 @@ class Figure(wx.Frame):
         else:
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
-
+            # Get the colormap from the user preferences
             colormap = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+            # Initialize the colormap so we have access to the LUT
+            colormap._init()
+            # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
+            # I think because there are "under" and "over" values. Regardless, we only one this
+            # part of the LUT
+            n = colormap.N
+            # Get the LUT (only the part we care about)
+            lut = colormap._lut[:n].copy()
+            # Shuffle the colors so adjacently labeled objects are different colors
+            numpy.random.shuffle(lut)
+            # Set the LUT
+            colormap._lut[:n] = lut
+            # Make sure the background is black
             colormap.set_bad(color='black')
 
         return self.subplot_imshow(

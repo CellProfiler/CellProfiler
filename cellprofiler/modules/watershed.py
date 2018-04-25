@@ -326,4 +326,4 @@ the image is not downsampled.
 
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return __settings__, variable_revision_number, from_matlab

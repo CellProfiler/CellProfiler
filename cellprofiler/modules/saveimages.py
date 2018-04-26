@@ -639,7 +639,12 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             if not image.volumetric and len(pixels.shape) > 2 and  pixels.shape[2] > 4:
                 pixels = numpy.transpose(pixels, (2, 0, 1))
 
-            skimage.io.imsave(filename, pixels)
+            save_kwargs = {}
+
+            if image.volumetric and self.file_format.value == FF_TIFF:
+                save_kwargs.update({'compress': 6})
+
+            skimage.io.imsave(filename, pixels, **save_kwargs)
 
         if self.show_window:
             workspace.display_data.wrote_image = True

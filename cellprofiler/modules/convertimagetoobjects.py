@@ -138,7 +138,7 @@ If set to 0, a full connectivity of the input dimension is used.
             y=0
         )
 
-        figure.subplot_imshow(
+        figure.subplot_imshow_labels(
             image=workspace.display_data.y_data,
             sharexy=figure.subplot(0, 0),
             title=self.y_name.value,

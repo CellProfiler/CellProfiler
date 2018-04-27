@@ -619,17 +619,26 @@ class Figure(wx.Frame):
 
     def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
         fields = []
+        is_float = True
 
         x, y = [int(round(xy)) for xy in xi, yi]
 
         if not self.in_bounds(image, x, y):
             return fields
 
+        if numpy.issubdtype(image.dtype, numpy.integer):
+            is_float = False
+
         if image.dtype.type == numpy.uint8:
             image = image.astype(numpy.float32) / 255.0
 
         if image.ndim == 2:
-            fields += ["Intensity: %.4f" % (image[y, x])]
+            if is_float:
+                fields += ["Intensity: {:.4f}".format(image[y, x] or 0)]
+            # This is to allow intensity values to be displayed more intuitively
+            else:
+                fields += ["Intensity: {:d}".format(image[y, x] or 0)]
+
         elif image.ndim == 3 and image.shape[2] == 3:
             fields += ["Red: %.4f" % (image[y, x, 0]),
                        "Green: %.4f" % (image[y, x, 1]),
@@ -1210,7 +1219,7 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False):
+    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False, normalize=True):
         gx, gy = self.__gridspec.get_geometry()
 
         gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
@@ -1246,10 +1255,12 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
+            norm = matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax) if normalize else None
+
             ax.imshow(
                 image[position * (z - 1) / 8],
                 cmap=cmap,
-                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+                norm=norm
             )
 
             ax.set_label("{:d}".format(position * (z - 1) / 8))
@@ -1519,7 +1530,7 @@ class Figure(wx.Frame):
 
             return subplot
         else:
-            self.gridshow(x, y, image, title, colormap, colorbar)
+            self.gridshow(x, y, image, title, colormap, colorbar, normalize)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
@@ -1575,7 +1586,7 @@ class Figure(wx.Frame):
             seed=None
     ):
         """
-        Show a labels matrix using the default color map
+        Show a labels matrix using a custom colormap which better showcases the individual label values
 
         :param x: the subplot's row coordinate
         :param y: the subplot's column coordinate
@@ -1593,19 +1604,35 @@ class Figure(wx.Frame):
                      consistent label colors in multiple displays)
         :return:
         """
-        if background_image is None:
-            background_image = numpy.zeros_like(image, dtype=numpy.float32)
-            opacity = 1.0
-        else:
+        if background_image is not None:
             opacity = 0.7
-
-        label_image = cellprofiler.object.overlay_labels(
-            labels=image,
-            opacity=opacity,
-            pixel_data=background_image,
-            max_label=max_label,
-            seed=seed
-        )
+            label_image = cellprofiler.object.overlay_labels(
+                labels=image,
+                opacity=opacity,
+                pixel_data=background_image,
+                max_label=max_label,
+                seed=seed
+            )
+            colormap = None
+        else:
+            # Mask the original labels
+            label_image = numpy.ma.masked_where(image == 0, image)
+            # Get the colormap from the user preferences
+            colormap = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+            # Initialize the colormap so we have access to the LUT
+            colormap._init()
+            # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
+            # I think because there are "under" and "over" values. Regardless, we only one this
+            # part of the LUT
+            n = colormap.N
+            # Get the LUT (only the part we care about)
+            lut = colormap._lut[:n].copy()
+            # Shuffle the colors so adjacently labeled objects are different colors
+            numpy.random.shuffle(lut)
+            # Set the LUT
+            colormap._lut[:n] = lut
+            # Make sure the background is black
+            colormap.set_bad(color='black')
 
         return self.subplot_imshow(
             x,
@@ -1618,7 +1645,8 @@ class Figure(wx.Frame):
             vmax=None,
             sharex=sharex,
             sharey=sharey,
-            use_imshow=use_imshow
+            use_imshow=use_imshow,
+            colormap=colormap
         )
 
     @allow_sharexy

@@ -49,7 +49,7 @@ class TestFillLabeledHoles(unittest.TestCase):
                    ((0,10),(15,25),(0,3),(18,22)),
                    ((15,25),(30,39),(18,22),(36,39)),
                    ((30,39),(15,25),(36,39),(18,22)))
-        for idx,x in zip(list(range(1,len(objects)+1)),objects):
+        for idx, x in enumerate(objects, start=1):
             image[x[0][0]:x[0][1],x[1][0]:x[1][1]] = idx
             image[x[2][0]:x[2][1],x[3][0]:x[3][1]] = 0
         output = morph.fill_labeled_holes(image)
@@ -412,7 +412,8 @@ class TestBinaryShrink(unittest.TestCase):
         filled_labels = morph.fill_labeled_holes(labels)
         input = filled_labels > 0
         result = morph.binary_shrink(input)
-        my_sum = scind.sum(result.astype(int),filled_labels,np.array(list(range(nlabels+1)),dtype=np.int32))
+        my_sum = scind.sum(result.astype(int), filled_labels,
+                           np.arange(nlabels + 1, dtype=np.int32))
         my_sum = np.array(my_sum)
         self.assertTrue(np.all(my_sum[1:] == 1))
         
@@ -683,7 +684,7 @@ class TestConvexHull(unittest.TestCase):
         ct = 20
         labels = np.zeros((side,side),int)
         pts = np.zeros((s*s*ct,2),int)
-        index = np.array(list(range(pts.shape[0]))).astype(float)/float(ct)
+        index = np.arange(pts.shape[0], dtype=float) / ct
         index = index.astype(int)
         idx = 0
         for i in range(0,side,mini_side):
@@ -719,7 +720,7 @@ class TestConvexHull(unittest.TestCase):
                 for k in range(ct):
                     morph.draw_line(labels, p[k,:], p[(k+1)%ct,:], idx)
         self.assertTrue(labels[5,106]==5)
-        result,counts = morph.convex_hull(labels,np.array(list(range(100)))+1)
+        result,counts = morph.convex_hull(labels, np.arange(1, 101))
         self.assertFalse(np.any(np.logical_and(result[:,1]==5,
                                                      result[:,2]==106)))
     
@@ -973,7 +974,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
         while n_multi_edge < 10:
             labels = np.zeros((side,side),int)
             pts = np.zeros((s*s*ct,2),int)
-            index = np.array(list(range(pts.shape[0]))).astype(float)/float(ct)
+            index = np.arange(pts.shape[0], dtype=float) / ct
             index = index.astype(int)
             idx = 0
             for i in range(0,side,mini_side):
@@ -1009,7 +1010,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
                     for k in range(ct):
                         morph.draw_line(labels, p[k,:], p[(k+1)%ct,:], idx)
             center,radius = morph.minimum_enclosing_circle(labels, 
-                                                           np.array(list(range(s**2)))+1)
+                                                           np.arange(s**2)+1)
             epsilon = .000001
             center_per_pt = center[index]
             radius_per_pt = radius[index]
@@ -1020,9 +1021,8 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
             #
             self.assertTrue(np.all(distance_from_center - epsilon < radius_per_pt))
             pt_on_edge = np.abs(distance_from_center - radius_per_pt)<epsilon
-            count_pt_on_edge = scind.sum(pt_on_edge,
-                                                 index,
-                                                 np.array(list(range(s**2)),dtype=np.int32))
+            count_pt_on_edge = scind.sum(pt_on_edge, index,
+                                         np.arange(s**2, dtype=np.int32))
             count_pt_on_edge = np.array(count_pt_on_edge)
             #
             # Every dodecagon must have at least 2 points on the edge.

@@ -22,7 +22,7 @@ def construct_zernike_lookuptable(zernike_indexes):
     factorial[1:] = np.cumproduct(np.arange(1, 1 + n_max, dtype=float))
     width = int(n_max//2 + 1)
     lut = np.zeros((zernike_indexes.shape[0],width), dtype=float)
-    for idx,(n,m) in zip(range(zernike_indexes.shape[0]), zernike_indexes):
+    for idx, (n, m) in enumerate(zernike_indexes):
         alt = 1
         npmh = (n+m)//2
         nmmh = (n-m)//2
@@ -73,7 +73,7 @@ def construct_zernike_polynomials(x, y, zernike_indexes, mask=None, weight=None)
     s = np.empty_like(x)
     zf = np.zeros((nzernikes,) + x.shape, np.complex)
     z_pows = {}
-    for idx,(n,m) in zip(list(range(nzernikes)), zernike_indexes):
+    for idx, (n, m) in enumerate(zernike_indexes):
         s[:]=0
         if not m in z_pows:
             if m == 0:

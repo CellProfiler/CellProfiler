@@ -11,9 +11,28 @@ from six.moves import zip
 invalid_match = 1000000  # limiting the choices of the algorithms
 
 
-def euclidean_dist(xxx_todo_changeme, xxx_todo_changeme1):
-    (x1, y1) = xxx_todo_changeme
-    (x2, y2) = xxx_todo_changeme1
+def euclidean_dist(point1, point2):
+    """Compute the Euclidean distance between two points.
+
+    Parameters
+    ----------
+    point1, point2 : 2-tuples of float
+        The input points.
+
+    Returns
+    -------
+    d : float
+        The distance between the input points.
+
+    Examples
+    --------
+    >>> point1 = (1.0, 2.0)
+    >>> point2 = (4.0, 6.0)  # (3., 4.) away, simplest Pythagorean triangle
+    >>> euclidean_dist(point1, point2)
+    5.0
+    """
+    (x1, y1) = point1
+    (x2, y2) = point2
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 

@@ -406,7 +406,7 @@ def bg_compensate(img, sigma, splinepoints, scale):
     import time
     t0 = time.clock()
     bg = backgr(img, mask, MODE_AUTO, sigma, splinepoints=splinepoints, scale=scale)
-    print(("Executed in %f sec" % (time.clock() - t0)))
+    print("Executed in %f sec" % (time.clock() - t0))
     bg[~mask] = img[~mask]
 
     pylab.subplot(1,3,2).imshow(img - bg, cmap=matplotlib.cm.Greys_r)

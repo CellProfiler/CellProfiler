@@ -118,9 +118,10 @@ class CellFeatures(object):
 
         existing_centers = scipy.ndimage.measurements.center_of_mass(labels != 0, labels, existing_labels)
 
-        zipped = (list(zip(existing_labels, existing_centers, existing_areas)))
+        zipped = zip(existing_labels, existing_centers, existing_areas)
 
-        features = [CellFeatures(c, a, i, labels.shape) for i, c, a in zipped if a != 0]
+        features = [CellFeatures(c, a, i, labels.shape)
+                    for i, c, a in zipped if a != 0]
 
         return features
 

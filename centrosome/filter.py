@@ -1199,7 +1199,7 @@ def line_integration(image, angle, decay, sigma):
     for i in range(1,result_fwd.shape[0]):
         result_fwd[i] += result_fwd[i-1] * decay
     result_rev = smoothed.copy()
-    for i in reversed(list(range(result_rev.shape[0]-1))):
+    for i in reversed(range(result_rev.shape[0]-1)):
         result_rev[i] += result_rev[i+1] * decay
     result = (result_fwd - result_rev) / 2
     #

@@ -412,7 +412,12 @@ class Objects(object):
     @property
     def count(self):
         """The number of objects labeled"""
-        return len(numpy.unique(self.segmented)) - 1
+        unique = numpy.unique(self.segmented)
+        count = len(unique)
+        # Don't count the background
+        if 0 in unique:
+            count -= 1
+        return count
 
     @property
     def areas(self):

@@ -280,11 +280,20 @@ color map.
             values = measurements.get_current_measurement(
                     self.objects_name.value,
                     self.measurement.value)
-            if objects is not None and len(values) < objects.count:
-                temp = np.zeros(objects.count, values.dtype)
-                temp[:len(values)] = values
-                temp[len(values):] = np.nan
-                values = temp
+            if objects is not None:
+                if len(values) < objects.count:
+                    temp = np.zeros(objects.count, values.dtype)
+                    temp[:len(values)] = values
+                    temp[len(values):] = np.nan
+                    values = temp
+                elif len(values) > objects.count:
+                    # If the values for something (say, object number) are greater
+                    # than the actual number of objects we have, some might have been
+                    # filtered out/removed. We'll need to diff the arrays to figure out
+                    # what objects to remove
+                    indices = objects.indices
+                    diff = np.setdiff1d(indices, np.unique(objects.segmented))
+                    values = np.delete(values, diff)
             x = measurements.get_current_measurement(
                     self.objects_name.value, M_LOCATION_CENTER_X)
             x_offset = np.random.uniform(high=1.0, low=-1.0, size=x.shape)

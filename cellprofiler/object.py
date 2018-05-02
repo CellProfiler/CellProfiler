@@ -412,7 +412,7 @@ class Objects(object):
     @property
     def count(self):
         """The number of objects labeled"""
-        return len(self.indices)
+        return len(numpy.unique(self.segmented)) - 1
 
     @property
     def areas(self):

@@ -121,7 +121,13 @@ class Objects(object):
     @property
     def count(self):
         """The number of objects labeled"""
-        return len(self.indices)
+        sparse_labels = self.__segmented.sparse['label']
+        unique = numpy.unique(sparse_labels)
+        count = len(unique)
+        # Don't count the background
+        if 0 in unique:
+            count -= 1
+        return count
 
     @property
     def areas(self):
@@ -421,36 +427,6 @@ class Objects(object):
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
-
-    @property
-    def indices(self):
-        """Get the indices for a scipy.ndimage-style function from the segmented labels
-
-        """
-        if len(self.ijv) == 0:
-            return numpy.zeros(0, numpy.int32)
-        max_label = numpy.max(self.ijv[:, 2])
-
-        return numpy.arange(max_label).astype(numpy.int32) + 1
-
-    @property
-    def count(self):
-        """The number of objects labeled"""
-        sparse_labels = self.__segmented.sparse['label']
-        unique = numpy.unique(sparse_labels)
-        count = len(unique)
-        # Don't count the background
-        if 0 in unique:
-            count -= 1
-        return count
-
-    @property
-    def areas(self):
-        """The area of each object"""
-        if len(self.indices) == 0:
-            return numpy.zeros(0, int)
-
-        return numpy.bincount(self.ijv[:, 2])[self.indices]
 
     def fn_of_label_and_index(self, func):
         """Call a function taking a label matrix with the segmented labels

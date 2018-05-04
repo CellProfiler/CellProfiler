@@ -37,7 +37,16 @@ def compactness(request):
     return request.param
 
 
-def test_run_markers(image, module, image_set, workspace, connectivity, compactness):
+@pytest.fixture(
+    scope="module",
+    params=[False, True],
+    ids=["noborder", "yesborder"]
+)
+def watershed_line(request):
+    return request.param
+
+
+def test_run_markers(image, module, image_set, workspace, connectivity, compactness, watershed_line):
     module.operation.value = "Markers"
 
     module.x_name.value = "gradient"
@@ -49,6 +58,8 @@ def test_run_markers(image, module, image_set, workspace, connectivity, compactn
     module.connectivity.value = connectivity
 
     module.compactness.value = compactness
+
+    module.watershed_line.value = watershed_line
 
     if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
@@ -106,7 +117,8 @@ def test_run_markers(image, module, image_set, workspace, connectivity, compactn
     expected = skimage.morphology.watershed(gradient,
                                             markers,
                                             connectivity=connectivity,
-                                            compactness=compactness)
+                                            compactness=compactness,
+                                            watershed_line=watershed_line)
 
     expected = skimage.measure.label(expected)
 

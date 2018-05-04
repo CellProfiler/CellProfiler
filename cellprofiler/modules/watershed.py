@@ -116,7 +116,17 @@ Use `compact watershed`_ with given compactness parameter.
 Higher values result in more regularly-shaped watershed basins.
 
 
-.. _compact watershed: http://scikit-image.org/docs/dev/api/skimage.morphology.html#r371
+.. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
+"""
+        )
+
+        self.watershed_line = cellprofiler.setting.Binary(
+            text="Separate watershed labels",
+            value=False,
+            doc="""\
+Create a 1 pixel wide line around the watershed labels. This effectively separates
+the different objects identified by the watershed algorithm, rather than allowing them 
+to touch. The line has the same label as the background.
 """
         )
 
@@ -161,7 +171,8 @@ the image is not downsampled.
             self.connectivity,
             self.compactness,
             self.footprint,
-            self.downsample
+            self.downsample,
+            self.watershed_line
         ]
 
     def visible_settings(self):
@@ -181,7 +192,8 @@ the image is not downsampled.
                 self.markers_name,
                 self.mask_name,
                 self.connectivity,
-                self.compactness
+                self.compactness,
+                self.watershed_line
             ]
 
         return __settings__
@@ -289,7 +301,8 @@ the image is not downsampled.
                 markers=markers_data,
                 mask=mask_data,
                 connectivity=self.connectivity.value,
-                compactness=self.compactness.value
+                compactness=self.compactness.value,
+                watershed_line=self.watershed_line.value
             )
 
         y_data = skimage.measure.label(y_data)
@@ -325,5 +338,8 @@ the image is not downsampled.
             __settings__ += setting_values[-2:]
 
             variable_revision_number = 2
+
+        else:
+            __settings__ = setting_values
 
         return __settings__, variable_revision_number, from_matlab

@@ -8,10 +8,9 @@ SaveCroppedObjects
 the value 255. All other pixels (i.e., background pixels and pixels corresponding to other objects) are assigned the
 value 0. The dimensions of each image are the same as the original image.
 
-The filename for an exported image is formatted as "{object name}_{label index}_{timestamp}.tiff", where *object name*
+The filename for an exported image is formatted as "{object name}_{label index}.{image_format}", where *object name*
 is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting
-from 1), and *timestamp* is the time at which the image was saved (this prevents accidentally overwriting a previously
-exported image).
+from 1).
 
 |
 
@@ -31,6 +30,8 @@ import time
 import cellprofiler.module
 import cellprofiler.setting
 
+O_PNG = "png"
+O_TIFF = "tiff"
 
 class SaveCroppedObjects(cellprofiler.module.Module):
     category = "File Processing"
@@ -49,6 +50,17 @@ class SaveCroppedObjects(cellprofiler.module.Module):
             "Directory",
             doc="Enter the directory where object crops are saved.",
             value=cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+        )
+
+        self.file_format = cellprofiler.setting.Choice(
+            "Saved file format",
+            [
+                O_PNG,
+                O_TIFF
+            ],
+            value=O_TIFF,
+            doc="""\
+**%(O_PNG)** files do not support 3D. **%(O_TIFF)** files use zlib compression level 6."""
         )
 
     def display(self, workspace, figure):
@@ -76,12 +88,21 @@ class SaveCroppedObjects(cellprofiler.module.Module):
         for label in unique_labels:
             mask = labels == label
 
-            filename = os.path.join(
-                directory,
-                "{}_{:04d}_{}.tiff".format(self.objects_name.value, label, int(time.time()))
-            )
+            if self.file_format.value == O_PNG:
+                filename = os.path.join(
+                    directory,
+                    "{}_{}.{}".format(self.objects_name.value, label, O_PNG)
+                    )
 
-            skimage.io.imsave(filename, skimage.img_as_ubyte(mask))
+                skimage.io.imsave(filename, skimage.img_as_ubyte(mask))
+
+            elif self.file_format.value == O_TIFF:
+                filename = os.path.join(
+                    directory,
+                    "{}_{}.{}".format(self.objects_name.value, label, O_TIFF)
+                    )
+
+                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6)
 
             filenames.append(filename)
 
@@ -91,7 +112,8 @@ class SaveCroppedObjects(cellprofiler.module.Module):
     def settings(self):
         settings = [
             self.objects_name,
-            self.directory
+            self.directory,
+            self.file_format
         ]
 
         return settings

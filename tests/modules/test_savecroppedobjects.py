@@ -43,7 +43,7 @@ def test_run(image, module, image_set, workspace, object_set, tmpdir):
 
         mask = skimage.img_as_ubyte(mask)
 
-        filename = glob.glob(os.path.join(directory, "example_{:04d}_*.tiff".format(label)))[0]
+        filename = glob.glob(os.path.join(directory, "example_{}.tiff".format(label)))[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
 
@@ -95,7 +95,7 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
 
         mask = skimage.img_as_ubyte(mask)
 
-        filename = glob.glob(os.path.join(directory, "subdirectory", "example_{:04d}_*.tiff".format(label)))[0]
+        filename = glob.glob(os.path.join(directory, "subdirectory", "example_{}.tiff".format(label)))[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
 
@@ -147,6 +147,6 @@ def test_create_subfolders_from_metadata(image, module, image_set, workspace, ob
 
         mask = skimage.img_as_ubyte(mask)
 
-        filename = glob.glob(os.path.join(directory, "002", "D", "example_{:04d}_*.tiff".format(label)))[0]
+        filename = glob.glob(os.path.join(directory, "002", "D", "example_{}.tiff".format(label)))[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)

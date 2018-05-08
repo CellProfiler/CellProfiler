@@ -23,6 +23,8 @@ between the following:
 -  The blue and green, red and green, and red and blue images.
 -  The nuclei in each of the above image pairs.
 
+A good primer on colocalization theory can be found on the `SVI website`_.
+
 |
 
 ============ ============ ===============
@@ -63,6 +65,8 @@ Measurements made by this module
    G) and Ri_coloc = Ri when Gi > 0, 0 otherwise and Gi_coloc = Gi
    when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics
    12:407).
+   
+.. _SVI website: http://svi.nl/ColocalizationTheory   
 """
 
 import numpy as np

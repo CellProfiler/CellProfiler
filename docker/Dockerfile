@@ -30,6 +30,10 @@ WORKDIR /usr/local/src/CellProfiler
 
 ARG version=3.0.0
 
+RUN git fetch -a
+
+RUN git pull
+
 RUN git checkout tags/v$version
 
 RUN pip install --editable .

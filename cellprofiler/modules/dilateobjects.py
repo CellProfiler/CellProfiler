@@ -19,7 +19,7 @@ with two major distinctions-
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          YES           NO
+YES          YES          NO
 ============ ============ ===============
 
 """

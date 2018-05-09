@@ -13,7 +13,7 @@ See `this tutorial`_ for more information.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          YES           NO
+YES          YES          NO
 ============ ============ ===============
 
 .. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/xx_applications/plot_morphology.html#opening

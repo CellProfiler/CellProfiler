@@ -37,7 +37,6 @@ import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
 from cellprofiler.setting import YES, NO
-import skimage.restoration
 
 FIT_POLYNOMIAL = 'Fit Polynomial'
 MEDIAN_FILTER = 'Median Filter'

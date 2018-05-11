@@ -45,8 +45,8 @@ while a background pixel in the test image that overlaps with foreground
 in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
-For 3D images, the image is turned into a long 2D image and the overlap is
-be computed on the transformed image. 
+For 3D images, all image planes are concatenated into one large XY image and 
+the overlap is computed on the transformed image. 
 
 |
 

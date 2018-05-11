@@ -262,7 +262,7 @@ available colormaps can be seen `here`_.
         touching_border[0] = False
         touching_border_mask = touching_border[unedited_segmented]
         nobjects = np.max(labels)
-        nkept_objects = objects.count
+        nkept_objects = len(objects.indices)
         nneighbors = np.max(neighbor_labels)
         if np.any(touching_border) and \
                 np.all(~ touching_border_mask[neighbor_labels != 0]):

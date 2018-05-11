@@ -121,7 +121,13 @@ class Objects(object):
     @property
     def count(self):
         """The number of objects labeled"""
-        return len(self.indices)
+        sparse_labels = self.__segmented.sparse['label']
+        unique = numpy.unique(sparse_labels)
+        count = len(unique)
+        # Don't count the background
+        if 0 in unique:
+            count -= 1
+        return count
 
     @property
     def areas(self):

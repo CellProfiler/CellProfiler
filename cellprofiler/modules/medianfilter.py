@@ -36,8 +36,8 @@ class MedianFilter(cellprofiler.module.ImageProcessing):
             value=3,
             minval=0,
             doc="""
-                Dimension in each diameter for computing the median filter. Must be odd. Use a window with a small size to
-                remove small scales of noise. A larger window will remove larger scales of noise at the
+                Dimension in each direction for computing the median filter. Must be odd. Use a window with a small size to
+                remove noise that's small in size. A larger window will remove larger scales of noise at the
                 risk of blurring other features.
                 """
         )

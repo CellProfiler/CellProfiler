@@ -1,5 +1,6 @@
 # coding=utf-8
 
+# noinspection PyInterpreter
 """
 Smooth
 ======
@@ -30,12 +31,14 @@ from centrosome.filter import median_filter, bilateral_filter, circular_average_
 from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
+import skimage.restoration
 
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
 from cellprofiler.setting import YES, NO
+import skimage.restoration
 
 FIT_POLYNOMIAL = 'Fit Polynomial'
 MEDIAN_FILTER = 'Median Filter'
@@ -197,8 +200,13 @@ the output image.
                                           object_size / 2 + 1)
         elif self.smoothing_method.value == SMOOTH_KEEPING_EDGES:
             sigma_range = float(self.sigma_range.value)
-            output_pixels = bilateral_filter(pixel_data, image.mask,
-                                             sigma, sigma_range)
+
+            output_pixels = skimage.restoration.denoise_bilateral(
+                image=pixel_data,
+                multichannel=image.multichannel,
+                sigma_color=sigma_range,
+                sigma_spatial=sigma
+            )
         elif self.smoothing_method.value == FIT_POLYNOMIAL:
             output_pixels = fit_polynomial(pixel_data, image.mask,
                                            self.clip.value)

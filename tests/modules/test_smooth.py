@@ -22,6 +22,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
 from centrosome.smooth import fit_polynomial, smooth_with_function_and_mask
 from centrosome.filter import median_filter, bilateral_filter
+import skimage.restoration
 
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'
@@ -224,7 +225,12 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         image = np.random.uniform(size=(100, 100)).astype(np.float32)
         mask = np.ones(image.shape, bool)
         mask[40:60, 45:65] = False
-        expected = bilateral_filter(image, mask, sigma, sigma_range)
+        expected = skimage.restoration.denoise_bilateral(
+            image=image,
+            multichannel=False,
+            sigma_color=sigma_range,
+            sigma_spatial=sigma,
+        )
         workspace, module = self.make_workspace(image, mask)
         module.smoothing_method.value = S.SMOOTH_KEEPING_EDGES
         module.sigma_range.value = sigma_range

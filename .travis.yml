@@ -4,6 +4,7 @@ addons:
       - libhdf5-serial-dev
       - python-mysqldb
       - python-pip
+cache:
   apt: true
   directories: $HOME/.cache/pip
 dist: trusty

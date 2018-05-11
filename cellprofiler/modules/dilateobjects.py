@@ -10,7 +10,7 @@ with two major distinctions-
 
 1. **DilateObjects** supports 3D objects, unlike **ExpandOrShrinkObjects**. 
 2. In **ExpandOrShrinkObjects**, two objects closer than the expansion distance
-   will expand until they meet and then stop there.  In this module, the object with
+   will expand until they meet and then stop there. In this module, the object with
    the larger object number (the object that is lower in the image) will be expanded
    on top of the object with the smaller object number.
 

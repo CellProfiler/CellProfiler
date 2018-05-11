@@ -10,7 +10,7 @@ multi-channel two-dimensional image. The output of the module is an
 image where each pixel corresponds to the `Pearson product-moment
 correlation coefficient`_ between the image and the template. Practically, this 
 allows you to crop a single object of interest (i.e., a cell) and predict where
-other such objects are in the image.  Note that this is not rotation invariant, so
+other such objects are in the image. Note that this is not rotation invariant, so
 this module will perform best when objects are approximately round or are angled
 in a relatively unified direction.
 

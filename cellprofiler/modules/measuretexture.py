@@ -22,7 +22,7 @@ Note also that CellProfiler in all 2.X versions increased speed by binning
 the image into only 8 greyscale levels before calculating Haralick features; 
 this is not done in CellProfiler versions 3.0.0 and after. Values calculated in 
 MeasureTexture in CellProfiler 2 versions will therefore not directly correspond 
-to those in CellProfiler 3 and after.   
+to those in CellProfiler 3 and after. 
 
 |
 

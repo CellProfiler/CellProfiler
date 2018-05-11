@@ -219,9 +219,9 @@ The resulting image can also be saved with the **SaveImages** module.
 
 HELP_FOR_STREL = """\
 The structuring element is the shape that will be applied in any morphological
-operation.  The structuring element is centered on each pixel and the shape and size
+operation. The structuring element is centered on each pixel and the shape and size
 selected will determine what neighborhood around that pixel will be affected by
-that operation.  
+that operation. 
 """
 
 

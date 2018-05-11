@@ -173,7 +173,7 @@ There are a number of methods for finding thresholds automatically:
    While in most cases the calculated threshold is very similar, pipelines that 
    are adapted from CellProfiler 2 and use two-class Otsu thresholding should be 
    checked when converting to CellProfiler 3 and beyond to make sure that method
-   is still the most appropriate.   
+   is still the most appropriate. 
 
 -  *{TM_ROBUST_BACKGROUND}:* This method assumes that the background
    distribution approximates a Gaussian by trimming the brightest and
@@ -291,7 +291,7 @@ threshold value.
    While in most cases the calculated threshold is very similar, pipelines that 
    are adapted from CellProfiler 2 and use two-class Otsu thresholding should be 
    checked when converting to CellProfiler 3 and beyond to make sure that method
-   is still the most appropriate.   
+   is still the most appropriate. 
 
 .. |image2| image:: {PROTIP_RECOMMEND_ICON}
 .. |image3| image:: {TECH_NOTE_ICON}

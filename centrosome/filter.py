@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
+import deprecation
 import numpy as np
 import scipy.ndimage as scind
 from scipy.ndimage import map_coordinates, label
@@ -106,6 +107,13 @@ def median_filter(data, mask, radius, percent=50):
         result = output
     return result
 
+
+@deprecation.deprecated(
+    current_version="2.0.0",
+    deprecated_in="2.0.0",
+    details="replaced by the `skimage.restoration.denoise_bilateral` function from `scikit-image` instead",
+    removed_in="2.1.0"
+)
 def bilateral_filter(image, mask, sigma_spatial, sigma_range,
                      sampling_spatial = None, sampling_range = None):
     """Bilateral filter of an image

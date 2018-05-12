@@ -138,5 +138,5 @@ setuptools.setup(
         "pytest",
     ],
     url="https://github.com/CellProfiler/centrosome",
-    version="1.1.0-dev",
+    version="2.0.0",
 )

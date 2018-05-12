@@ -1,9 +1,12 @@
 from __future__ import absolute_import
 from __future__ import division
 import base64
+import sys
+
 import numpy as np
 from scipy.ndimage import binary_dilation, binary_erosion, convolve
 import unittest
+import pytest
 
 import centrosome.filter as F
 from six.moves import range
@@ -154,6 +157,7 @@ class TestMedianFilter(unittest.TestCase):
         self.assertTrue(np.all(result[15:, :] == np.min(img[mask])))
 
 
+@pytest.mark.skipif(sys.version_info > (3, 0), reason="requires Python 2.7")
 class TestBilateralFilter(unittest.TestCase):
     def test_00_00_zeros(self):
         '''Test the bilateral filter of an array of all zeros'''

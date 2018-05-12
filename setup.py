@@ -115,6 +115,7 @@ setuptools.setup(
     description="An open source image processing library",
     ext_modules=__extensions,
     install_requires=[
+        "deprecation",
         "matplotlib",
         "numpy",
         "pillow",

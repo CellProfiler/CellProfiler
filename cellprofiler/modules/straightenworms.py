@@ -418,9 +418,9 @@ of the straightened worms.'''))
         half_width = self.width.value / 2
         width = 2 * half_width + 1
         if nworms == 0:
-            shape = (2 * half_width + 1, width)
+            shape = (width, width)
         else:
-            shape = (int(np.max(lengths)) + 2 * half_width + 1,
+            shape = (int(np.max(lengths)) + width,
                      nworms * width)
         labels = np.zeros(shape, int)
         #

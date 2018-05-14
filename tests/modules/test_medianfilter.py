@@ -1,6 +1,7 @@
 import cellprofiler.modules.medianfilter
 import numpy.testing
 import scipy.signal
+import cellprofiler.image
 
 instance = cellprofiler.modules.medianfilter.MedianFilter()
 
@@ -17,5 +18,8 @@ def test_run(image, module, image_set, workspace):
     actual = image_set.get_image("MedianFilter")
 
     desired = scipy.signal.medfilt(image.pixel_data, 3)
+
+    if image.dimensions == 3:
+        desired = cellprofiler.image.Image(desired, dimensions=3).pixel_data
 
     numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)

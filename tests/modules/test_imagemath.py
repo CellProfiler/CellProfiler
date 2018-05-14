@@ -62,7 +62,11 @@ def run_operation(operation, expected, module, workspace):
     module.run(workspace)
     output = workspace.image_set.get_image("output")
     actual = output.pixel_data
-    numpy.testing.assert_array_equal(actual, expected)
+
+    if output.dimensions == 3:
+        expected = cellprofiler.image.Image(expected, dimensions=3).pixel_data
+
+    numpy.testing.assert_array_almost_equal(actual, expected)
 
 
 class TestVolumes(object):
@@ -95,7 +99,14 @@ class TestVolumes(object):
     @staticmethod
     def test_add(image_a, image_b, module, workspace):
         operation = "Add"
-        expected = image_a.pixel_data + image_b.pixel_data
+        # FIXME: Need to do this to keep them within the range 0..1
+        if image_a.dimensions == 3:
+            a = image_a.pixel_data / 2
+            b = image_b.pixel_data / 2
+        else:
+            a = image_a.pixel_data
+            b = image_b.pixel_data
+        expected = numpy.add(a, b)
         run_operation(operation, expected, module, workspace)
 
     @staticmethod

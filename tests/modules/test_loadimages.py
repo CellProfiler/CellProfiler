@@ -2595,13 +2595,15 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         expected = skimage.io.imread(os.path.join(path, "ball.tif"))
 
+        expected = cellprofiler.image.Image(expected, dimensions=3).pixel_data
+
         self.assertEqual(3, image.dimensions)
 
         self.assertEqual((9, 9, 9), image.pixel_data.shape)
 
         self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
-        self.assertTrue(numpy.all(expected == image.pixel_data))
+        self.assertIsNone(numpy.testing.assert_array_almost_equal(expected, image.pixel_data))
 
     def test_provide_npy(self):
         resource_directory = os.path.realpath(
@@ -2646,7 +2648,9 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         expected = numpy.load(os.path.join(resource_directory, "volume.npy"))
 
-        numpy.testing.assert_array_equal(actual, expected)
+        expected = cellprofiler.image.Image(expected, dimensions=3).pixel_data
+
+        numpy.testing.assert_array_almost_equal(actual, expected)
 
 
 class TestLoadImagesImageProviderURL(unittest.TestCase):
@@ -2664,13 +2668,15 @@ class TestLoadImagesImageProviderURL(unittest.TestCase):
 
         expected = skimage.io.imread(os.path.join(path, "ball.tif"))
 
+        expected = cellprofiler.image.Image(expected, dimensions=3).pixel_data
+
         self.assertEqual(3, image.dimensions)
 
         self.assertEqual((9, 9, 9), image.pixel_data.shape)
 
         self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
-        self.assertTrue(numpy.all(expected == image.pixel_data))
+        self.assertIsNone(numpy.testing.assert_array_almost_equal(expected, image.pixel_data))
 
     def test_provide_volume_3_planes(self):
         data = numpy.random.rand(3, 256, 256)

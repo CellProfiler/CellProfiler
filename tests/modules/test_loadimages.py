@@ -2580,7 +2580,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
 
 
 class TestLoadImagesImageProvider(unittest.TestCase):
-    def test_provide_volume(self):
+    def test_provide_volumeg(self):
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 
         provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
@@ -2644,7 +2644,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         actual = provider.provide_image(None).pixel_data
 
-        expected = numpy.load(os.path.join(resource_directory, "volume.npy"))
+        expected = numpy.load(os.path.join(resource_directory, "volume.npy")) / 255.
 
         numpy.testing.assert_array_equal(actual, expected)
 

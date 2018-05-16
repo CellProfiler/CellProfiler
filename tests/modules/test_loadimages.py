@@ -2601,7 +2601,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
-        self.assertTrue(numpy.all(expected == image.pixel_data))
+        numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
     def test_provide_npy(self):
         resource_directory = os.path.realpath(
@@ -2646,7 +2646,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         expected = numpy.load(os.path.join(resource_directory, "volume.npy")) / 255.
 
-        numpy.testing.assert_array_equal(actual, expected)
+        numpy.testing.assert_array_almost_equal(actual, expected)
 
 
 class TestLoadImagesImageProviderURL(unittest.TestCase):
@@ -2670,7 +2670,7 @@ class TestLoadImagesImageProviderURL(unittest.TestCase):
 
         self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
 
-        self.assertTrue(numpy.all(expected == image.pixel_data))
+        numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
     def test_provide_volume_3_planes(self):
         data = numpy.random.rand(3, 256, 256)

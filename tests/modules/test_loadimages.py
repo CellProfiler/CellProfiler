@@ -2580,7 +2580,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
 
 
 class TestLoadImagesImageProvider(unittest.TestCase):
-    def test_provide_volumeg(self):
+    def test_provide_volume(self):
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 
         provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(

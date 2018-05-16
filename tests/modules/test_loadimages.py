@@ -2593,7 +2593,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
 
         image = provider.provide_image(None)
 
-        expected = skimage.io.imread(os.path.join(path, "ball.tif"))
+        expected = skimage.io.imread(os.path.join(path, "ball.tif")) / 65535.
 
         self.assertEqual(3, image.dimensions)
 
@@ -2662,7 +2662,6 @@ class TestLoadImagesImageProviderURL(unittest.TestCase):
 
         image = provider.provide_image(None)
 
-        expected = skimage.io.imread(os.path.join(path, "ball.tif"))
 
         self.assertEqual(3, image.dimensions)
 

@@ -112,6 +112,8 @@ ellipse with the same second-moments as each object.
    angles). The minimum and maximum Feret diameters are the smallest and
    largest possible diameters, rotating the calipers along all possible
    angles.
+-  *BoundingBoxMinX, BoundingBoxMinY, BoundingBoxMaxX, BoundingBoxMaxY:* *(2D only)* The
+   bounding box coordinates for an object. X corresponds to rows and Y corresponds to columns.
 -  *Zernike shape features:* *(2D only)* These metrics of shape describe a binary object
    (or more precisely, a patch with background and an object in the
    center) in a basis of Zernike polynomials, using the coefficients as

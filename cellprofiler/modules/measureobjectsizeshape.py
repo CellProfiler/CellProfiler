@@ -167,6 +167,10 @@ AREA_SHAPE = 'AreaShape'
 ZERNIKE_N = 9
 
 F_AREA = 'Area'
+F_BOUNDING_BOX_MIN_X = 'BoundingBoxMinX'
+F_BOUNDING_BOX_MIN_Y = 'BoundingBoxMinY'
+F_BOUNDING_BOX_MAX_X = 'BoundingBoxMaxX'
+F_BOUNDING_BOX_MAX_Y = 'BoundingBoxMaxY'
 F_PERIMETER = 'Perimeter'
 F_VOLUME = 'Volume'
 F_SURFACE_AREA = 'SurfaceArea'
@@ -189,7 +193,7 @@ F_MIN_FERET_DIAMETER = 'MinFeretDiameter'
 F_MAX_FERET_DIAMETER = 'MaxFeretDiameter'
 
 """The non-Zernike features"""
-F_STD_2D = [F_AREA, F_PERIMETER]
+F_STD_2D = [F_AREA, F_PERIMETER, F_BOUNDING_BOX_MIN_X, F_BOUNDING_BOX_MIN_Y, F_BOUNDING_BOX_MAX_X, F_BOUNDING_BOX_MAX_Y]
 F_STD_3D = [F_VOLUME, F_SURFACE_AREA]
 F_STANDARD = [F_ECCENTRICITY, F_SOLIDITY, F_EXTENT, F_EULER_NUMBER,
               F_FORM_FACTOR, F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
@@ -367,6 +371,13 @@ module.""".format(**{
                 nobjects = 0
             else:
                 nobjects = numpy.max(objects.indices)
+
+            props = skimage.measure.regionprops(objects.segmented)
+            bounding_box_min_x = [int(prop.bbox[0]) for prop in props]
+            bounding_box_min_y = [int(prop.bbox[1]) for prop in props]
+            bounding_box_max_x = [int(prop.bbox[2]) for prop in props]
+            bounding_box_max_y = [int(prop.bbox[3]) for prop in props]
+
             mcenter_x = numpy.zeros(nobjects)
             mcenter_y = numpy.zeros(nobjects)
             mextent = numpy.zeros(nobjects)
@@ -432,6 +443,10 @@ module.""".format(**{
                 ff = numpy.zeros(0)
 
             for f, m in ([(F_AREA, objects.areas),
+                          (F_BOUNDING_BOX_MIN_X, bounding_box_min_x),
+                          (F_BOUNDING_BOX_MIN_Y, bounding_box_min_y),
+                          (F_BOUNDING_BOX_MAX_X, bounding_box_max_x),
+                          (F_BOUNDING_BOX_MAX_Y, bounding_box_max_y),
                           (F_CENTER_X, mcenter_x),
                           (F_CENTER_Y, mcenter_y),
                           (F_CENTER_Z, numpy.ones_like(mcenter_x)),

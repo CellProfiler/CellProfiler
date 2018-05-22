@@ -376,6 +376,32 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.assertEqual(max_radius[0], 2)
         self.assertEqual(max_radius[1], 3)
 
+    def test_06_01_bounding_box(self):
+        labels = numpy.zeros((20, 10), int)
+        labels[3:8, 3:6] = 1
+        labels[11:19, 2:7] = 2
+        workspace, module = self.make_workspace(labels)
+        module.run(workspace)
+        m = workspace.measurements
+        bounding_box_min_x = m.get_current_measurement(
+                OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + cellprofiler.modules.measureobjectsizeshape.F_BOUNDING_BOX_MIN_X)
+        bounding_box_min_y = m.get_current_measurement(
+                OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + cellprofiler.modules.measureobjectsizeshape.F_BOUNDING_BOX_MIN_Y)
+        bounding_box_max_x = m.get_current_measurement(
+                OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + cellprofiler.modules.measureobjectsizeshape.F_BOUNDING_BOX_MAX_X)
+        bounding_box_max_y = m.get_current_measurement(
+                OBJECTS_NAME, cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + cellprofiler.modules.measureobjectsizeshape.F_BOUNDING_BOX_MAX_Y)
+        self.assertEqual(len(bounding_box_min_x), 2)
+        self.assertEqual(bounding_box_min_x[0], 3)
+        self.assertEqual(bounding_box_min_x[1], 11)
+        self.assertEqual(bounding_box_min_y[0], 3)
+        self.assertEqual(bounding_box_min_y[1], 2)
+        self.assertEqual(bounding_box_max_x[0], 8)
+        self.assertEqual(bounding_box_max_x[1], 19)
+        self.assertEqual(bounding_box_max_y[0], 6)
+        self.assertEqual(bounding_box_max_y[1], 7)
+
+
     def features_and_columns_match(self, measurements, module, pipeline):
         self.assertEqual(len(measurements.get_object_names()), 3)
         self.assertTrue('SomeObjects' in measurements.get_object_names())

@@ -374,11 +374,17 @@ module.""".format(**{
             else:
                 nobjects = numpy.max(objects.indices)
 
-            props = skimage.measure.regionprops(objects.segmented)
-            bounding_box_min_x = [int(prop.bbox[0]) for prop in props]
-            bounding_box_min_y = [int(prop.bbox[1]) for prop in props]
-            bounding_box_max_x = [int(prop.bbox[2]) for prop in props]
-            bounding_box_max_y = [int(prop.bbox[3]) for prop in props]
+            bounding_box_min_x = []
+            bounding_box_min_y = []
+            bounding_box_max_x = []
+            bounding_box_max_y = []
+
+            for label, index in objects.get_labels():
+                props = skimage.measure.regionprops(label)
+                bounding_box_min_x += [int(prop.bbox[0]) for prop in props]
+                bounding_box_min_y += [int(prop.bbox[1]) for prop in props]
+                bounding_box_max_x += [int(prop.bbox[2]) for prop in props]
+                bounding_box_max_y += [int(prop.bbox[3]) for prop in props]
 
             mcenter_x = numpy.zeros(nobjects)
             mcenter_y = numpy.zeros(nobjects)
@@ -444,26 +450,31 @@ module.""".format(**{
             else:
                 ff = numpy.zeros(0)
 
-            for f, m in ([(F_AREA, objects.areas),
-                          (F_BOUNDING_BOX_MIN_X, bounding_box_min_x),
-                          (F_BOUNDING_BOX_MIN_Y, bounding_box_min_y),
-                          (F_BOUNDING_BOX_MAX_X, bounding_box_max_x),
-                          (F_BOUNDING_BOX_MAX_Y, bounding_box_max_y),
-                          (F_CENTER_X, mcenter_x),
-                          (F_CENTER_Y, mcenter_y),
-                          (F_CENTER_Z, numpy.ones_like(mcenter_x)),
-                          (F_EXTENT, mextent),
-                          (F_PERIMETER, mperimeters),
-                          (F_SOLIDITY, msolidity),
-                          (F_FORM_FACTOR, ff),
-                          (F_EULER_NUMBER, euler),
-                          (F_MAXIMUM_RADIUS, max_radius),
-                          (F_MEAN_RADIUS, mean_radius),
-                          (F_MEDIAN_RADIUS, median_radius),
-                          (F_MIN_FERET_DIAMETER, min_feret_diameter),
-                          (F_MAX_FERET_DIAMETER, max_feret_diameter)] +
-                             [(self.get_zernike_name((n, m)), zf[(n, m)])
-                              for n, m in zernike_numbers]):
+            x = [
+                (F_AREA, objects.areas),
+                (F_BOUNDING_BOX_MIN_X, bounding_box_min_x),
+                (F_BOUNDING_BOX_MIN_Y, bounding_box_min_y),
+                (F_BOUNDING_BOX_MAX_X, bounding_box_max_x),
+                (F_BOUNDING_BOX_MAX_Y, bounding_box_max_y),
+                (F_CENTER_X, mcenter_x),
+                (F_CENTER_Y, mcenter_y),
+                (F_CENTER_Z, numpy.ones_like(mcenter_x)),
+                (F_EXTENT, mextent),
+                (F_PERIMETER, mperimeters),
+                (F_SOLIDITY, msolidity),
+                (F_FORM_FACTOR, ff),
+                (F_EULER_NUMBER, euler),
+                (F_MAXIMUM_RADIUS, max_radius),
+                (F_MEAN_RADIUS, mean_radius),
+                (F_MEDIAN_RADIUS, median_radius),
+                (F_MIN_FERET_DIAMETER, min_feret_diameter),
+                (F_MAX_FERET_DIAMETER, max_feret_diameter)
+            ]
+
+            # if bounding_box_max_x and bounding_box_max_y and bounding_box_min_x and bounding_box_min_y:
+            #     x += []
+
+            for f, m in (x + [(self.get_zernike_name((n, m)), zf[(n, m)]) for n, m in zernike_numbers]):
                 self.record_measurement(workspace, object_name, f, m)
         else:
             labels = objects.segmented
@@ -502,7 +513,7 @@ module.""".format(**{
 
                 volume[labels == label] = True
 
-                verts, faces, _, _ = skimage.measure.marching_cubes(
+                verts, faces = skimage.measure.marching_cubes_classic(
                     volume,
                     spacing=objects.parent_image.spacing if objects.has_parent_image else (1.0,) * labels.ndim,
                     level=0

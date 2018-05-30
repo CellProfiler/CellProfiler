@@ -123,23 +123,27 @@ IO_IMAGES = "Images"
 IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
+
 def haralick_2d(image, distances, levels):
-    angles = [0, numpy.pi / 4, numpy.pi / 2, 3 * numpy.pi / 4]
+    angles = [
+        0,
+        1 * numpy.pi / 4,
+        1 * numpy.pi / 2,
+        3 * numpy.pi / 4
+    ]
 
     greycomatrix = skimage.feature.greycomatrix(image, distances, angles, levels, symmetric=True)
 
     greycomatrices = numpy.split(greycomatrix, len(angles), -1)
     greycomatrices = [greycomatrix.reshape((levels, levels)) for greycomatrix in greycomatrices]
 
-    haralick_features = mahotas.features.texture.haralick_features(greycomatrices)
-
-    return greycomatrices
+    return mahotas.features.texture.haralick_features(greycomatrices)
 
 
 class MeasureTexture(cellprofiler.module.Module):
     module_name = "MeasureTexture"
 
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     category = "Measurement"
 
@@ -210,6 +214,14 @@ measurements, per-object measurements or both.
             })
         )
 
+        self.levels_setting = cellprofiler.setting.Choice(
+            choices=[256, 8],
+            text="Grayscale levels",
+            value=256
+        )
+
+
+
     def settings(self):
         settings = [
             self.image_count,
@@ -279,6 +291,10 @@ measurements, per-object measurements or both.
 
             if groups == self.image_groups:
                 visible_settings += [self.images_or_objects]
+
+        visible_settings += [
+            self.levels_setting
+        ]
 
         return visible_settings
 
@@ -622,10 +638,9 @@ measured and will result in a undefined value in the output file.
             label_data[labels == label] = pixel_data[labels == label]
 
             try:
-                features[:, :, index] = mahotas.features.haralick(
+                features[:, :, index] = haralick_2d(
                     label_data,
-                    distance=scale,
-                    ignore_zeros=True
+                    distances=[scale]
                 )
             except ValueError:
                 features[:, :, index] = numpy.nan

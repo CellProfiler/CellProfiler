@@ -105,6 +105,7 @@ References
 
 import mahotas.features
 import numpy
+import skimage.feature
 import skimage.util
 
 import cellprofiler.measurement
@@ -121,6 +122,18 @@ DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
 IO_IMAGES = "Images"
 IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
+
+def haralick_2d(image, distances, levels):
+    angles = [0, numpy.pi / 4, numpy.pi / 2, 3 * numpy.pi / 4]
+
+    greycomatrix = skimage.feature.greycomatrix(image, distances, angles, levels, symmetric=True)
+
+    greycomatrices = numpy.split(greycomatrix, len(angles), -1)
+    greycomatrices = [greycomatrix.reshape((levels, levels)) for greycomatrix in greycomatrices]
+
+    haralick_features = mahotas.features.texture.haralick_features(greycomatrices)
+
+    return greycomatrices
 
 
 class MeasureTexture(cellprofiler.module.Module):

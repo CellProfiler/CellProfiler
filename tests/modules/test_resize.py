@@ -1013,7 +1013,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
     # https://github.com/CellProfiler/CellProfiler/issues/3531
     def test_resize_float(self):
         data = numpy.ones((10,10), dtype=numpy.float32)*2
-        out_data = numpy.ones((5,5), dtype=numpy.float32)*2
+        expected = numpy.ones((5,5), dtype=numpy.float32)*2
         workspace, module = self.make_workspace(
             data,
             cellprofiler.modules.resize.R_BY_FACTOR,
@@ -1024,5 +1024,5 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         module.run(workspace)
 
-        out_pixels = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        assert numpy.all(out_pixels == out_data)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        numpy.testing.assert_allclose(result, expected)

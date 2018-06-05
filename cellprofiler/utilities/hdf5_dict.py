@@ -1916,7 +1916,7 @@ class HDF5Lock:
             h5py.phil.acquire()
 
     def __exit__(self, t, v, tb):
-        if hasattr(h5py "phil"):
+        if hasattr(h5py, "phil"):
             h5py.phil.release()
         self.lock.release()
 

@@ -40,25 +40,25 @@ class ReduceNoise(cellprofiler.module.ImageProcessing):
         super(ReduceNoise, self).create_settings()
 
         self.size = cellprofiler.setting.Integer(
-            doc="Size of the patches to use for noise reduction.",
             text="Size",
-            value=7
+            value=7,
+            doc="Size of the patches to use for noise reduction."
         )
 
         self.distance = cellprofiler.setting.Integer(
-            doc="Maximal distance in pixels to search for patches to use for denoising.",
             text="Distance",
-            value=11
+            value=11,
+            doc="Maximal distance in pixels to search for patches to use for denoising."
         )
 
         self.cutoff_distance = cellprofiler.setting.Float(
+            text="Cut-off distance",
+            value=0.1,
             doc="""\
 The permissiveness in accepting patches. Increasing the cut-off distance increases
 the smoothness of the image. Likewise, decreasing the cut-off distance decreases the smoothness of the
 image.
             """,
-            text="Cut-off distance",
-            value=0.1
         )
 
     def settings(self):

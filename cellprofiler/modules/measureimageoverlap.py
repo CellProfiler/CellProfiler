@@ -45,12 +45,15 @@ while a background pixel in the test image that overlaps with foreground
 in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
+For 3D images, all image planes are concatenated into one large XY image and 
+the overlap is computed on the transformed image. 
+
 |
 
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           YES
+YES          YES          YES
 ============ ============ ===============
 
 Measurements made by this module
@@ -81,7 +84,7 @@ Measurements made by this module
 References
 ^^^^^^^^^^
 
--  Collins LM, Dent CW (1998) “Omega: A general formulation of the Rand
+-  Collins LM, Dent CW (1988) “Omega: A general formulation of the Rand
    Index of cluster recovery suitable for non-disjoint solutions”,
    *Multivariate Behavioral Research*, 23, 231-242. `(link) <https://doi.org/10.1207/s15327906mbr2302_6>`__
 -  Pele O, Werman M (2009) “Fast and Robust Earth Mover’s Distances”,

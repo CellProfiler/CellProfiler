@@ -51,7 +51,7 @@ class MatchTemplate(cellprofiler.module.Module):
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
             "Output",
-             doc="Enter the name you want to call the image produced by this module.",
+            doc="Enter the name you want to call the image produced by this module.",
         )
 
     def settings(self):

@@ -11,10 +11,7 @@ This module performs a series of morphological operations on a binary
 image or grayscale image, resulting in an image of the same type. Many
 require some image processing knowledge to understand how best to use
 these morphological filters in order to achieve the desired result. Note
-that the algorithms minimize the interference of masked pixels; for
-instance, the dilate operation will only consider unmasked pixels in the
-neighborhood of a pixel when determining the maximum within that
-neighborhood.
+that the algorithms minimize the interference of masked pixels.
 
 |
 
@@ -240,19 +237,19 @@ The following **Morph** operations have been extracted to separate modules in Ce
 Use the table below to update your pipeline to use the corresponding module and, where appropriate,
 setting and value.
 
-=================  ======================  ===========  =======================
-Morph operation    Module                  Setting      Value
-=================  ======================  ===========  =======================
-bothat             TopHatTransform*        *Operation*  Black top-hat transform
+=================  =========================  ===========  =======================
+Morph operation    Module                     Setting      Value
+=================  =========================  ===========  =======================
+bothat             TopHatTransform*           *Operation*  Black top-hat transform
 close              Closing
 dilate             Dilation
 erode              Erosion
 fill small holes   RemoveHoles
-invert             ImageMath               *Operation*  Invert
+invert             ImageMath                  *Operation*  Invert
 open               Opening
 skel               MorphologicalSkeleton
-tophat             TopHatTransform*        *Operation*  White top-hat transform
-=================  ======================  ===========  =======================
+tophat             EnhanceOrSuppressFeatures  *Operation*  Enhance -> Speckles
+=================  =========================  ===========  =======================
 
 \* Available as a `CellProfiler plugin <http://github.com/CellProfiler/CellProfiler-plugins>`_.
 """

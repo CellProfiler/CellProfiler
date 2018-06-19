@@ -43,9 +43,10 @@ class RemoveHoles(cellprofiler.module.ImageProcessing):
         super(RemoveHoles, self).create_settings()
 
         self.size = cellprofiler.setting.Float(
-            text="Size",
+            text="Size of holes to fill",
             value=1.0,
-            doc="Holes smaller than this diameter will be filled."
+            doc="Holes smaller than this diameter will be filled. Note that for 3D\
+            images this module operates volumetrically so diameters should be given in voxels"
         )
 
     def settings(self):

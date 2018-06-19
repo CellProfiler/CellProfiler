@@ -511,8 +511,8 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         returns a tuple of the Rand Index and the adjusted Rand Index
         """
-        ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint64)
-        test_labels = test_labels[mask].astype(numpy.uint64)
+        ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint32)
+        test_labels = test_labels[mask].astype(numpy.uint32)
         if len(test_labels) > 0:
             #
             # Create a sparse matrix of the pixel labels in each of the sets

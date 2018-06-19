@@ -77,7 +77,7 @@ setuptools.setup(
         "requests",
         "scikit-image",
         "scikit-learn",
-        "scipy<1.1"
+        "scipy"
     ],
     license="BSD",
     name="CellProfiler",

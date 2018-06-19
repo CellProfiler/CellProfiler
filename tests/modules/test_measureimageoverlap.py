@@ -3,6 +3,7 @@ import unittest
 
 import numpy
 import numpy.random
+import numpy.testing
 import scipy.ndimage
 
 import cellprofiler.image
@@ -841,7 +842,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         ftr_adj_rand_index = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX)
         ftr_adj_rand_index_measurement = measurements.get_current_image_measurement(ftr_adj_rand_index)
-        self.assertAlmostEqual(ftr_adj_rand_index_measurement, -0.16204090353044784, 2)
+        numpy.testing.assert_almost_equal(ftr_adj_rand_index_measurement, 0, 2)
 
     def test_3D_half_overlap(self):
         ground_truth_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
@@ -906,4 +907,4 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         ftr_adj_rand_index = module.measurement_name(cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX)
         ftr_adj_rand_index_measurement = measurements.get_current_image_measurement(ftr_adj_rand_index)
-        self.assertAlmostEqual(ftr_adj_rand_index_measurement, -0.14721497938368325, 2)
+        numpy.testing.assert_almost_equal(ftr_adj_rand_index_measurement, 0.5, 2)

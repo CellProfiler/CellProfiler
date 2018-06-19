@@ -518,7 +518,7 @@ the two images. Set this setting to “No” to assess no penalty."""
             # labeled with label I in the ground truth and label J in the
             # test set.
             #
-            N_ij = scipy.sparse.coo_matrix((numpy.ones(len(test_labels), dtype=numpy.uint32),
+            N_ij = scipy.sparse.coo_matrix((numpy.ones(len(test_labels)),
                                             (ground_truth_labels, test_labels))).toarray()
 
             def choose2(x):

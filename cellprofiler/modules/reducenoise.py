@@ -9,6 +9,7 @@ using a neighborhood of pixels around a central pixel for denoising, such
 as in **GaussianFilter**, multiple neighborhoods are pooled together. The
 neighborhood pool is determined by scanning the image for regions similar to
 the area around the central pixel using a correlation metric and a cutoff value.
+See `this tutorial`_ for more information.
 
 |
 
@@ -17,6 +18,8 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          YES          NO
 ============ ============ ===============
+
+.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/filters/plot_nonlocal_means.html
 """
 
 import cellprofiler.image
@@ -37,25 +40,25 @@ class ReduceNoise(cellprofiler.module.ImageProcessing):
         super(ReduceNoise, self).create_settings()
 
         self.size = cellprofiler.setting.Integer(
-            doc="Size is the size of patches used for noise reduction.",
             text="Size",
-            value=7
+            value=7,
+            doc="Size of the patches to use for noise reduction."
         )
 
         self.distance = cellprofiler.setting.Integer(
-            doc="Distance is the maximum distance where to search patches used for noise reduction.",
             text="Distance",
-            value=11
+            value=11,
+            doc="Maximal distance in pixels to search for patches to use for denoising."
         )
 
         self.cutoff_distance = cellprofiler.setting.Float(
+            text="Cut-off distance",
+            value=0.1,
             doc="""\
-Cut-off distance is the permissiveness in accepting patches. Increasing the cut-off distance increases
+The permissiveness in accepting patches. Increasing the cut-off distance increases
 the smoothness of the image. Likewise, decreasing the cut-off distance decreases the smoothness of the
 image.
             """,
-            text="Cut-off distance",
-            value=0.1
         )
 
     def settings(self):

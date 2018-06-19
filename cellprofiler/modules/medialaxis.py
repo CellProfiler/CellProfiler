@@ -4,9 +4,10 @@
 MedialAxis
 ==========
 
-**MedialAxis** computes the medial axis of a binary image. A medial axis is a
-grayscale rather than binary morphological skeleton where each pixel’s
-intensity corresponds to a distance to a boundary.
+**MedialAxis** computes the medial axis or topological skeleton of a binary image. Rather than by sequentially
+removing pixels as in **MorphologicalSkeleton**, the medial axis is computed based on the 
+distance transform of the thresholded image (i.e., the distance each foreground pixel is 
+from a background pixel). See `this tutorial`_ for more information. 
 
 |
 
@@ -15,6 +16,8 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          YES          NO
 ============ ============ ===============
+
+.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/edges/plot_skeleton.html
 """
 
 import cellprofiler.image

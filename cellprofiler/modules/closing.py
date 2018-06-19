@@ -5,7 +5,8 @@ Closing
 =======
 
 **Closing** is the erosion of the dilation of an image. It’s used to
-remove pepper noise.
+remove pepper noise (small dark spots) and connect small bright cracks. 
+See `this tutorial`_ for more information.
 
 |
 
@@ -15,6 +16,8 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES           NO
 ============ ============ ===============
 
+.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/xx_applications/plot_morphology.html#closing
+
 """
 
 import numpy
@@ -23,6 +26,7 @@ import skimage.morphology
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
+from cellprofiler.modules._help import HELP_FOR_STREL
 
 
 class Closing(cellprofiler.module.ImageProcessing):
@@ -35,7 +39,8 @@ class Closing(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Closing, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
+        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True,
+                                                                           doc=HELP_FOR_STREL)
 
     def settings(self):
         __settings__ = super(Closing, self).settings()

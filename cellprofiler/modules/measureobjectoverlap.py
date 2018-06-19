@@ -47,7 +47,7 @@ Measurements made by this module
 References
 ^^^^^^^^^^
 
--  Collins LM, Dent CW (1998) “Omega: A general formulation of the Rand
+-  Collins LM, Dent CW (1988) “Omega: A general formulation of the Rand
    Index of cluster recovery suitable for non-disjoint solutions”,
    *Multivariate Behavioral Research*, 23, 231-242 `(link)`_
 

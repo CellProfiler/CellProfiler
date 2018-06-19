@@ -1391,7 +1391,7 @@ class ModuleView(object):
                     value=v.value,
                     name=edit_name)
             else:
-                edit_control = wx.TextCtrl(control, -1, str(v),
+                edit_control = wx.TextCtrl(control, -1, str(v.value),
                                            name=edit_name)
             sizer.Add(edit_control, 1, wx.ALIGN_LEFT | wx.ALIGN_TOP)
 

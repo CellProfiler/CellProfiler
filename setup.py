@@ -62,7 +62,7 @@ setuptools.setup(
         "boto3",
         "centrosome",
         "docutils",
-        "h5py<2.8.0",
+        "h5py",
         "inflect",
         "javabridge",
         "joblib",

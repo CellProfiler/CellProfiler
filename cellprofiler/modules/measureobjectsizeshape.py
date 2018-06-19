@@ -485,7 +485,7 @@ module.""".format(**{
 
                 volume[labels == label] = True
 
-                verts, faces, _, _ = skimage.measure.marching_cubes(
+                verts, faces = skimage.measure.marching_cubes_classic(
                     volume,
                     spacing=objects.parent_image.spacing if objects.has_parent_image else (1.0,) * labels.ndim,
                     level=0

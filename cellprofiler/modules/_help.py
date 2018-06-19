@@ -217,6 +217,21 @@ overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
 """
 
+StrelImage = cellprofiler.gui.help.content.image_resource('structuringelement.png')
+
+HELP_FOR_STREL = """\
+The structuring element is the shape that will be applied in any morphological
+operation. The structuring element is centered on each pixel and the shape and size
+selected will determine what neighborhood around that pixel will be affected by
+that operation. See image below for an example of dilating a starting square of 11
+pixel diameter with various structuring elements.
+
+|StrelImage|
+
+.. |StrelImage| image:: {StrelImage}
+""".format(**{
+    "StrelImage": StrelImage}
+    )
 
 PROTIP_RECOMMEND_ICON = cellprofiler.gui.help.content.image_resource("thumb-up.png")
 

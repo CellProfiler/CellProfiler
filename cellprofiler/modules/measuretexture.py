@@ -18,6 +18,12 @@ texture combinations that are unnecessary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
+Note also that CellProfiler in all 2.X versions increased speed by binning 
+the image into only 8 greyscale levels before calculating Haralick features; 
+this is not done in CellProfiler versions 3.0.0 and after. Values calculated in 
+MeasureTexture in CellProfiler 2 versions will therefore not directly correspond 
+to those in CellProfiler 3 and after. 
+
 |
 
 ============ ============ ===============
@@ -37,11 +43,6 @@ Measurements made by this module
    co-occurrence matrix is constructed. For example, if you choose a
    scale of 2, each pixel in the image (excluding some border pixels)
    will be compared against the one that is two pixels to the right.
-   **MeasureTexture** quantizes the image into eight intensity levels.
-   There are then 8x8 possible ways to categorize a pixel with its
-   scale-neighbor. **MeasureTexture** forms the 8x8 co-occurrence matrix
-   by counting how many pixels and neighbors have each of the 8x8
-   intensity combinations.
 
    Thirteen measurements are then calculated for the image by performing
    mathematical operations on the co-occurrence matrix (the formulas can

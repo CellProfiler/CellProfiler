@@ -63,7 +63,6 @@ import numpy
 import scipy
 import scipy.ndimage
 import scipy.sparse
-import skimage.morphology
 import skimage.segmentation
 
 import cellprofiler.gui.help
@@ -881,7 +880,7 @@ value will be retained.""".format(**{
         '''
         labels = src_objects.segmented
 
-        interior_pixels = skimage.morphology.binary_erosion(numpy.ones_like(labels))
+        interior_pixels = scipy.ndimage.binary_erosion(numpy.ones_like(labels))
 
         border_pixels = numpy.logical_not(interior_pixels)
 
@@ -897,7 +896,7 @@ value will be retained.""".format(**{
             # is the border + formerly masked-out pixels.
             mask = src_objects.parent_image.mask
 
-            interior_pixels = skimage.morphology.binary_erosion(mask)
+            interior_pixels = scipy.ndimage.binary_erosion(mask)
 
             border_pixels = numpy.logical_not(interior_pixels)
 

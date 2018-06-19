@@ -3596,7 +3596,6 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
             image=data,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
-            convert=False,
             dimensions=3,
             scale=self.scale,
             spacing=self.__spacing

@@ -4,7 +4,15 @@
 DilateObjects
 =============
 
-**DilateObjects** removes objects smaller or larger than the specified diameter.
+**DilateObjects** expands objects based on the structuring element provided.
+This function is similar to the "Expand" function of **ExpandOrShrinkObjects**,
+with two major distinctions-
+
+1. **DilateObjects** supports 3D objects, unlike **ExpandOrShrinkObjects**. 
+2. In **ExpandOrShrinkObjects**, two objects closer than the expansion distance
+   will expand until they meet and then stop there. In this module, the object with
+   the larger object number (the object that is lower in the image) will be expanded
+   on top of the object with the smaller object number.
 
 |
 
@@ -20,6 +28,7 @@ import cellprofiler.object
 import cellprofiler.module
 import cellprofiler.setting
 import cellprofiler.utilities.morphology
+from cellprofiler.modules._help import HELP_FOR_STREL
 
 
 class DilateObjects(cellprofiler.module.ObjectProcessing):
@@ -32,7 +41,8 @@ class DilateObjects(cellprofiler.module.ObjectProcessing):
     def create_settings(self):
         super(DilateObjects, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
+        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True,
+                                                                           doc=HELP_FOR_STREL)
 
     def settings(self):
         __settings__ = super(DilateObjects, self).settings()

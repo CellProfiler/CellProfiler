@@ -70,14 +70,14 @@ setuptools.setup(
         "matplotlib>=2.0.0, !=2.1.0",
         "MySQL-python",
         "numpy",
-        "prokaryote==2.3.3",
+        "prokaryote==2.4.0",
         "python-bioformats==1.4.0",
         "pyzmq==15.3.0",
         "raven",
         "requests",
         "scikit-image",
         "scikit-learn",
-        "scipy<1.1"
+        "scipy"
     ],
     license="BSD",
     name="CellProfiler",

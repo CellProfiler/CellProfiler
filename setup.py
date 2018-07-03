@@ -78,7 +78,8 @@ setuptools.setup(
         "scikit-image",
         "scikit-learn",
         "scipy",
-        "six"
+        "six",
+        "wxPython==4.0.3"
     ],
     license="BSD",
     name="CellProfiler",

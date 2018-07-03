@@ -167,10 +167,10 @@ class CPFrame(wx.Frame):
         # Crappy splitters leave crud on the screen because they want custom
         # background painting but fail to do it. Here, we have a fight with
         # them and beat them.
-        self.__splitter.BackgroundStyle = 0
+        self.__splitter.SetBackgroundStyle(0)
 
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
-        self.__right_win.AutoLayout = True
+        self.__right_win.SetAutoLayout(True)
 
         self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         # bottom left will be the file browser
@@ -200,16 +200,14 @@ class CPFrame(wx.Frame):
         #        image_set_list_sash
         #            image_set_list_ctrl
         #
-        self.__right_win.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.__right_win.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self.__notes_panel = wx.Panel(self.__right_win)
-        self.__right_win.Sizer.Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
-        self.__right_win.Sizer.AddSpacer(4)
+        self.__right_win.GetSizer().Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
+        self.__right_win.GetSizer().AddSpacer(4)
         self.__path_module_imageset_panel = wx.Panel(self.__right_win)
-        self.__right_win.Sizer.Add(self.__path_module_imageset_panel, 1,
-                                   wx.EXPAND | wx.ALL)
+        self.__right_win.GetSizer().Add(self.__path_module_imageset_panel, 1, wx.EXPAND | wx.ALL)
         self.__pmi_layout_in_progress = False
-        self.__path_module_imageset_panel.Bind(
-                wx.EVT_SIZE, self.__on_path_module_imageset_panel_size)
+        self.__path_module_imageset_panel.Bind(wx.EVT_SIZE, self.__on_path_module_imageset_panel_size)
 
         ########################################################################
         #
@@ -221,22 +219,20 @@ class CPFrame(wx.Frame):
         #
         # Path list sash controls path list sizing
         #
-        self.__path_list_sash = wx.adv.SashLayoutWindow(
-                self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        self.__path_list_sash.Bind(wx.adv.EVT_SASH_DRAGGED,
-                                   self.__on_sash_drag)
+        self.__path_list_sash = wx.adv.SashLayoutWindow(self.__path_module_imageset_panel, style=wx.NO_BORDER)
+        self.__path_list_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
         self.__path_list_sash.SetAlignment(wx.adv.LAYOUT_TOP)
         self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.adv.SASH_BOTTOM, True)
-        self.__path_list_sash.AutoLayout = True
+        self.__path_list_sash.SetAutoLayout(True)
         self.__path_list_sash.Hide()
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.__path_list_sash.Sizer = wx.BoxSizer(wx.VERTICAL)
-        self.__path_list_sash.Sizer.Add(sizer, 1, wx.EXPAND)
+        self.__path_list_sash.SetSizer(wx.BoxSizer(wx.VERTICAL))
+        self.__path_list_sash.GetSizer().Add(sizer, 1, wx.EXPAND)
         # Add spacer so that group box doesn't cover sash's handle
-        self.__path_list_sash.Sizer.AddSpacer(6)
+        self.__path_list_sash.GetSizer().AddSpacer(6)
         #
         # Path list control
         #
@@ -253,14 +249,11 @@ class CPFrame(wx.Frame):
         # Path list show/hide filtered files checkbox
         #
         hsizer.AddSpacer(5)
-        self.__path_list_filter_checkbox = wx.CheckBox(
-                self.__path_list_sash,
-                label = "Show files excluded by filters")
+        self.__path_list_filter_checkbox = wx.CheckBox(self.__path_list_sash, label="Show files excluded by filters")
         hsizer.Add(self.__path_list_filter_checkbox, 0, wx.EXPAND)
 
         def show_disabled(event):
-            self.__path_list_ctrl.set_show_disabled(
-                    self.__path_list_filter_checkbox.GetValue())
+            self.__path_list_ctrl.set_show_disabled(self.__path_list_filter_checkbox.GetValue())
 
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
         hsizer.AddStretchSpacer()
@@ -268,8 +261,7 @@ class CPFrame(wx.Frame):
         # Help
         #
         hsizer.AddSpacer(5)
-        self.__path_list_help_button = wx.Button(
-                self.__path_list_sash, label="?", style=wx.BU_EXACTFIT)
+        self.__path_list_help_button = wx.Button(self.__path_list_sash, label="?", style=wx.BU_EXACTFIT)
         self.__path_list_help_button.Bind(wx.EVT_BUTTON, self.__on_help_path_list)
         hsizer.Add(self.__path_list_help_button, 0, wx.EXPAND)
 
@@ -287,44 +279,38 @@ class CPFrame(wx.Frame):
         #
         ######################################################################
 
-        self.__imageset_sash = wx.adv.SashLayoutWindow(
-                self.__path_module_imageset_panel, style=wx.NO_BORDER)
+        self.__imageset_sash = wx.adv.SashLayoutWindow(self.__path_module_imageset_panel, style=wx.NO_BORDER)
         self.__imageset_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
         self.__imageset_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__imageset_sash.SetDefaultBorderSize(4)
         self.__imageset_sash.SetExtraBorderSize(2)
         self.__imageset_sash.SetSashVisible(wx.adv.SASH_TOP, True)
-        self.__imageset_sash.Bind(wx.adv.EVT_SASH_DRAGGED,
-                                  self.__on_sash_drag)
+        self.__imageset_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__imageset_sash.Hide()
         self.__imageset_panel = wx.Panel(self.__imageset_sash)
-        self.__imageset_panel.Sizer = wx.BoxSizer()
+        self.__imageset_panel.SetSizer(wx.BoxSizer())
         self.__imageset_panel.SetAutoLayout(True)
-        self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(
-                self.__workspace, self.__imageset_panel, read_only=True)
-        self.__imageset_panel.Sizer.Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(
-                self.__imageset_panel)
-        self.__imageset_panel.Sizer.Add(self.__grid_ctrl, 1, wx.EXPAND)
-
-        self.__right_win.Sizer.AddSpacer(4)
+        self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(self.__workspace, self.__imageset_panel, read_only=True)
+        self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
+        self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(self.__imageset_panel)
+        self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
+        self.__right_win.GetSizer().AddSpacer(4)
         #
         # Preferences panel
         #
         self.__preferences_panel = wx.Panel(self.__right_win, -1)
-        self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
-        self.__preferences_panel.SetToolTip(
-                "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
+        self.__right_win.GetSizer().Add(self.__preferences_panel, 1, wx.EXPAND)
+        self.__preferences_panel.SetToolTip("The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
         #
         # Progress and status panels
         #
         self.__progress_panel = wx.Panel(self.__right_win)
-        self.__progress_panel.AutoLayout = True
-        self.__right_win.Sizer.Add(self.__progress_panel, 0, wx.EXPAND)
+        self.__progress_panel.SetAutoLayout(True)
+        self.__right_win.GetSizer().Add(self.__progress_panel, 0, wx.EXPAND)
         self.__status_panel = wx.Panel(self.__right_win)
-        self.__status_panel.AutoLayout = True
-        self.__right_win.Sizer.Add(self.__status_panel, 0, wx.EXPAND)
+        self.__status_panel.SetAutoLayout(True)
+        self.__right_win.GetSizer().Add(self.__status_panel, 0, wx.EXPAND)
         self.__add_menu()
         self.__attach_views()
         self.__set_properties()
@@ -382,7 +368,7 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.Layout()
 
     def show_imageset_ctrl(self):
-        sizer = self.__imageset_panel.Sizer
+        sizer = self.__imageset_panel.GetSizer()
         assert isinstance(sizer, wx.Sizer)
         if sizer.IsShown(self.__imageset_ctrl) is False or self.__imageset_sash.IsShown() is False:
             sizer.Show(self.__imageset_ctrl, True)
@@ -393,7 +379,7 @@ class CPFrame(wx.Frame):
     def show_grid_ctrl(self, table=None):
         if table is not None:
             self.__grid_ctrl.SetTable(table)
-        sizer = self.__imageset_panel.Sizer
+        sizer = self.__imageset_panel.GetSizer()
         if sizer.IsShown(self.__imageset_ctrl) or self.__imageset_sash.IsShown() is False:
             sizer.Show(self.__imageset_ctrl, False)
             sizer.Show(self.__grid_ctrl, True)
@@ -412,10 +398,9 @@ class CPFrame(wx.Frame):
 
     def show_module_ui(self, show):
         """Show or hide the module and notes panel"""
-        if (show == self.__path_module_imageset_panel.IsShownOnScreen() and
-                    show == self.__notes_panel.IsShownOnScreen()):
+        if show == self.__path_module_imageset_panel.IsShownOnScreen() and show == self.__notes_panel.IsShownOnScreen():
             return
-        right_sizer = self.__right_win.Sizer
+        right_sizer = self.__right_win.GetSizer()
         assert isinstance(right_sizer, wx.Sizer)
         right_sizer.Show(self.__notes_panel, show)
         right_sizer.Show(self.__path_module_imageset_panel, show)
@@ -425,10 +410,7 @@ class CPFrame(wx.Frame):
             self.layout_pmi_panel()
             self.__path_list_sash.Layout()
             self.__module_panel.Layout()
-            self.__module_view.module_panel.SetupScrolling(
-                    scroll_x=True,
-                    scroll_y=True,
-                    scrollToTop=False)
+            self.__module_view.module_panel.SetupScrolling(scroll_x=True, scroll_y=True, scrollToTop=False)
             self.__imageset_sash.Layout()
 
     def show_welcome_screen(self, show):
@@ -452,7 +434,7 @@ class CPFrame(wx.Frame):
             self.show_module_ui(False)
             self.show_welcome_screen(False)
             self.__preferences_panel.Layout()
-            self.__preferences_panel.Parent.Layout()
+            self.__preferences_panel.GetParent().Layout()
 
     def __on_sash_drag(self, event):
         sash = event.GetEventObject()
@@ -473,8 +455,7 @@ class CPFrame(wx.Frame):
         """Run the sash layout algorithm on the path/module/imageset panel"""
         self.__pmi_layout_in_progress = True
         try:
-            wx.adv.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
-                                              self.__module_panel)
+            wx.adv.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel, self.__module_panel)
             self.__right_win.Layout()
         finally:
             self.__pmi_layout_in_progress = False
@@ -521,8 +502,7 @@ class CPFrame(wx.Frame):
         wx.ID_DELETE
         wx.ID_SELECTALL
         """
-        d = dict([(x, False) for x in
-                  (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
+        d = dict([(x, False) for x in (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
         for eyedee in ids:
             d[eyedee] = True
         for k, v in d.iteritems():
@@ -1121,10 +1101,7 @@ class CPFrame(wx.Frame):
                 fd.write(help_text)
 
     def on_open_image(self, event):
-        dlg = wx.FileDialog(self,
-                            message="Open an image file",
-                            wildcard="Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
-                            style=wx.FD_OPEN)
+        dlg = wx.FileDialog(self, message="Open an image file", wildcard="Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*", style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler.modules.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.figure import Figure
@@ -1143,21 +1120,11 @@ class CPFrame(wx.Frame):
         self.__pipeline_list_view.attach_to_pipeline(self.__pipeline, self.__pipeline_controller)
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
-        self.__pipeline_controller.attach_to_path_list_ctrl(
-                self.__path_list_ctrl,
-                self.__path_list_filter_checkbox)
-        self.__module_view = cellprofiler.gui.moduleview.ModuleView(
-                self.__module_panel,
-                self.__workspace,
-                frame = self,
-                notes_panel = self.__notes_panel)
+        self.__pipeline_controller.attach_to_path_list_ctrl(self.__path_list_ctrl, self.__path_list_filter_checkbox)
+        self.__module_view = cellprofiler.gui.moduleview.ModuleView(self.__module_panel, self.__workspace, frame=self, notes_panel=self.__notes_panel)
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)
-        self.__preferences_view = cellprofiler.gui.preferencesview.PreferencesView(
-                self.__right_win.Sizer,
-                self.__preferences_panel,
-                self.__progress_panel,
-                self.__status_panel)
+        self.__preferences_view = cellprofiler.gui.preferencesview.PreferencesView(self.__right_win.GetSizer(), self.__preferences_panel, self.__progress_panel, self.__status_panel)
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
 
     def __do_layout(self):
@@ -1198,14 +1165,9 @@ class CPFrame(wx.Frame):
             #
             module.run_as_data_tool()
             return
-        dlg = wx.FileDialog(
-                self, "Choose data output file for %s data tool" %
-                      tool_name, wildcard="Measurements file(*.mat,*.h5)|*.mat;*.h5",
-                style=(wx.FD_OPEN | wx.FD_FILE_MUST_EXIST))
+        dlg = wx.FileDialog(self, "Choose data output file for %s data tool" % tool_name, wildcard="Measurements file(*.mat,*.h5)|*.mat;*.h5", style=(wx.FD_OPEN | wx.FD_FILE_MUST_EXIST))
         if dlg.ShowModal() == wx.ID_OK:
-            cellprofiler.gui.datatoolframe.DataToolFrame(self,
-                                                         module_name=tool_name,
-                                                         measurements_file_name=dlg.GetPath())
+            cellprofiler.gui.datatoolframe.DataToolFrame(self, module_name=tool_name, measurements_file_name=dlg.GetPath())
 
     def __on_data_tool_help(self, event, tool_name):
         module = cellprofiler.modules.instantiate_module(tool_name)

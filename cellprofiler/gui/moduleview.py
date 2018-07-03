@@ -1148,11 +1148,10 @@ class ModuleView(object):
     def make_color_control(self, v, control_name, control):
         try:
             color = wx.Colour()
-            color.SetFromName(v.value)
+            color.Set(v.value)
         except:
             color = wx.BLACK
-            if (not hasattr(control, "bad_color_name") or
-                        control.bad_color_name != v.value):
+            if not hasattr(control, "bad_color_name") or control.bad_color_name != v.value:
                 logger.warn("Failed to set color to %s" % v.value)
                 control.bad_color_name = v.value
         if control is None:
@@ -1162,10 +1161,8 @@ class ModuleView(object):
             control.SetName(control_name)
 
             def on_press(event, v=v, control=control):
-                proposed_value = control.GetColour().GetAsString(
-                    wx.C2S_NAME | wx.C2S_HTML_SYNTAX)
-                setting_edited_event = SettingEditedEvent(
-                    v, self.__module, proposed_value, event)
+                proposed_value = control.GetColour().GetAsString(wx.C2S_NAME | wx.C2S_HTML_SYNTAX)
+                setting_edited_event = SettingEditedEvent(v, self.__module, proposed_value, event)
                 self.notify(setting_edited_event)
                 self.reset_view()
 
@@ -1195,12 +1192,11 @@ class ModuleView(object):
             height = max(text_height, drop_height) + 4
             bitmap = wx.EmptyBitmap(width, height)
             dc = wx.MemoryDC(bitmap)
-            dc.Font = control.Font
-            brush = wx.Brush(control.BackgroundColour)
-            dc.Background = brush
+            dc.SetFont(control.GetFont())
+            brush = wx.Brush(control.GetBackgroundColour())
+            dc.SetBackground(brush)
             dc.Clear()
-            wx.RendererNative.Get().DrawComboBox(
-                control, dc, wx.Rect(0, 0, width, height), flags)
+            wx.RendererNative.Get().DrawComboBox(control, dc, wx.Rect(0, 0, width, height), flags)
             dc.DrawText(new_label, 2, 2)
             return bitmap
 
@@ -1283,18 +1279,16 @@ class ModuleView(object):
         assert isinstance(v, cellprofiler.setting.DoThings)
         if not control:
             control = wx.Panel(self.module_panel, name=control_name)
-            control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+            control.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
             for i in range(v.count):
                 if i != 0:
                     control.Sizer.AddSpacer(2)
-                button = wx.Button(control,
-                                   name=button_control_name(v, i))
+                button = wx.Button(control, name=button_control_name(v, i))
                 control.Sizer.Add(button, 0, wx.ALIGN_LEFT)
 
                 def callback(event, index=i):
                     v.on_event_fired(index)
-                    setting_edited_event = SettingEditedEvent(
-                        v, self.__module, None, event)
+                    setting_edited_event = SettingEditedEvent(v, self.__module, None, event)
                     self.notify(setting_edited_event)
                     self.__module.on_setting_changed(v, self.__pipeline)
                     self.reset_view()
@@ -1349,9 +1343,9 @@ class ModuleView(object):
                 else:
                     guesses = regexp_editor.RE_FILENAME_GUESSES
 
-                new_value = regexp_editor.edit_regexp(panel, control.Value, filename, guesses)
+                new_value = regexp_editor.edit_regexp(panel, control.GetValue(), filename, guesses)
                 if new_value:
-                    control.Value = new_value
+                    control.SetValue(new_value)
                     self.__on_cell_change(event, setting, control)
 
             def on_kill_focus(event, setting=v, control=text_ctrl):
@@ -1415,13 +1409,13 @@ class ModuleView(object):
                     mode = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
                 dlg = wx.FileDialog(control, v.browse_msg, style=mode)
                 if v.get_directory_fn is not None:
-                    dlg.Directory = v.get_directory_fn()
+                    dlg.SetDirectory(v.get_directory_fn())
                 if v.exts is not None:
-                    dlg.Wildcard = "|".join(["|".join(tuple(x)) for x in v.exts])
+                    dlg.SetWildcard("|".join(["|".join(tuple(x)) for x in v.exts]))
                 if dlg.ShowModal() == wx.ID_OK:
                     if v.set_directory_fn is not None:
-                        v.set_directory_fn(dlg.Directory)
-                    v.value = dlg.Filename
+                        v.set_directory_fn(dlg.GetDirectory())
+                    v.value = dlg.GetFilename()
                     setting_edited_event = SettingEditedEvent(
                         v, self.__module, v.value, event)
                     self.notify(setting_edited_event)
@@ -1485,7 +1479,7 @@ class ModuleView(object):
                 """Handle a change to the directory choice combobox"""
                 if not self.__handle_change:
                     return
-                proposed_value = v.join_string(dir_choice=dir_ctrl.StringSelection)
+                proposed_value = v.join_string(dir_choice=dir_ctrl.GetStringSelection())
                 setting_edited_event = SettingEditedEvent(
                     v, self.__module, proposed_value, event)
                 self.notify(setting_edited_event)
@@ -1571,7 +1565,7 @@ class ModuleView(object):
         if control is None:
             control = wx.Panel(self.module_panel, -1,
                                name=edit_control_name(v))
-            control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+            control.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
             text_control = wx.TextCtrl(control, -1,
                                        name=subedit_control_name(v))
             text_control.Bind(
@@ -1582,17 +1576,17 @@ class ModuleView(object):
                                                      (16, 16))
             browse_ctrl = wx.BitmapButton(control, bitmap=browse_bitmap,
                                           name=button_control_name(v))
-            control.Sizer.Add(text_control, 1, wx.EXPAND)
-            control.Sizer.AddSpacer((3, 0))
-            control.Sizer.Add(browse_ctrl, 0, wx.EXPAND)
+            control.GetSizer().Add(text_control, 1, wx.EXPAND)
+            control.GetSizer().AddSpacer((3, 0))
+            control.GetSizer().Add(browse_ctrl, 0, wx.EXPAND)
 
             def on_browse(event):
                 dlg = wx.FileDialog(self.module_panel)
                 try:
-                    dlg.Title = "Browse for metadata file"
-                    dlg.Wildcard = v.wildcard
+                    dlg.SetTitle("Browse for metadata file")
+                    dlg.SetWildcard(v.wildcard)
                     if dlg.ShowModal() == wx.ID_OK:
-                        self.on_value_change(v, control, dlg.Path, event)
+                        self.on_value_change(v, control, dlg.GetPath(), event)
                 finally:
                     dlg.Destroy()
 
@@ -1609,18 +1603,13 @@ class ModuleView(object):
 
         assert isinstance(v, cellprofiler.setting.ImagePlane)
         if not control:
-            control = wx.Panel(self.module_panel,
-                               name=edit_control_name(v))
-            control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
-            url_control = wx.TextCtrl(
-                control,
-                style=wx.TE_READONLY,
-                name=text_control_name(v))
-            control.Sizer.Add(url_control, 1, wx.EXPAND)
-            control.Sizer.AddSpacer(2)
-            browse_button = wx.Button(control, label="Browse",
-                                      name=button_control_name(v))
-            control.Sizer.Add(browse_button, 0, wx.EXPAND)
+            control = wx.Panel(self.module_panel, name=edit_control_name(v))
+            control.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
+            url_control = wx.TextCtrl(control, style=wx.TE_READONLY, name=text_control_name(v))
+            control.GetSizer().Add(url_control, 1, wx.EXPAND)
+            control.GetSizer().AddSpacer(2)
+            browse_button = wx.Button(control, label="Browse", name=button_control_name(v))
+            control.GetSizer().Add(browse_button, 0, wx.EXPAND)
 
             def on_button(event):
                 url = self.__frame.pipeline_controller.pick_from_pathlist(
@@ -1757,7 +1746,7 @@ class ModuleView(object):
             def on_min_change(event, setting=v, control=min_ctrl):
                 if not self.__handle_change:
                     return
-                proposed_value = setting.compose_min_text(control.Value)
+                proposed_value = setting.compose_min_text(control.GetValue())
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
                 self.notify(setting_edited_event)
@@ -4412,7 +4401,7 @@ class ModuleSizer(wx.PySizer):
                     third_width = (text_width + edit_width - 2 * border) / 3
                     item_location = wx.Point(text_width - third_width / 2,
                                              height + border + item_height / 2)
-                    item_size = wx.Size(third_width, edit_item.Size[1])
+                    item_size = wx.Size(third_width, edit_item.GetSize()[1])
                     item_location = panel.CalcScrolledPosition(item_location)
                     edit_item.SetDimension(item_location, item_size)
                 else:

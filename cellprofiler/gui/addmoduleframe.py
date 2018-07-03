@@ -176,7 +176,7 @@ class AddModuleFrame(wx.Frame):
                 wx.MessageBox(help_text)
 
     def __on_search_help(self, event):
-        if len(self.search_text.Value) == 0:
+        if len(self.search_text.GetValue()) == 0:
             wx.MessageBox(
                     "Please enter the search text to be found.",
                     caption="No text to search",
@@ -185,14 +185,14 @@ class AddModuleFrame(wx.Frame):
             self.search_text.SetFocus()
             return
 
-        html = cellprofiler.gui.help.search.search_module_help(self.search_text.Value)
+        html = cellprofiler.gui.help.search.search_module_help(self.search_text.GetValue())
         if html is None:
-            wx.MessageBox('No references found for "%s".' % self.search_text.Value,
+            wx.MessageBox('No references found for "%s".' % self.search_text.GetValue(),
                           caption="Text not found",
                           parent=self,
                           style=wx.OK | wx.CENTRE | wx.ICON_INFORMATION)
         else:
-            self.display_helpframe(html, 'Help matching "%s"' % self.search_text.Value)
+            self.display_helpframe(html, 'Help matching "%s"' % self.search_text.GetValue())
 
     def __on_getting_started(self, event):
         import cellprofiler.gui.help.content

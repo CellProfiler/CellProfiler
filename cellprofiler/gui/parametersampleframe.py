@@ -7,27 +7,29 @@ Author: AJ Pretorius
 """
 from __future__ import print_function
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.object
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.gui.workspace
-import numpy
 import os
-import skimage.io
 import traceback
+
+import numpy
+import skimage.io
 import wx
 import wx.lib.agw.floatspin
 
-PARAM_CLASS_TEXT_LABEL = 'Input text label'
-PARAM_CLASS_BOUNDED_DISCRETE = 'Bounded, discrete'
-PARAM_CLASS_UNBOUNDED = 'Unbounded'
-PARAM_CLASS_DECORATION = 'Decoration'
+import cellprofiler.gui.workspace
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.preferences
+import cellprofiler.setting
 
-PARAM_CLASS_UNBOUNDED_INT = 'Unbounded int'
-PARAM_CLASS_UNBOUNDED_FLOAT = 'Unbounded float'
+PARAM_CLASS_TEXT_LABEL = "Input text label"
+PARAM_CLASS_BOUNDED_DISCRETE = "Bounded, discrete"
+PARAM_CLASS_UNBOUNDED = "Unbounded"
+PARAM_CLASS_DECORATION = "Decoration"
+
+PARAM_CLASS_UNBOUNDED_INT = "Unbounded int"
+PARAM_CLASS_UNBOUNDED_FLOAT = "Unbounded float"
 
 INT_LOWER_BOUND = 1
 INT_UPPER_BOUND = 10000
@@ -72,9 +74,17 @@ class ParameterSampleFrame(wx.Frame):
             [[s_11, None, s_31], [s_12, None, s_32], ...].
     """
 
-    def __init__(self, parent, module, pipeline, identifier=-1,
-                 pos=wx.DefaultPosition, size=wx.DefaultSize,
-                 style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr):
+    def __init__(
+        self,
+        parent,
+        module,
+        pipeline,
+        identifier=-1,
+        pos=wx.DefaultPosition,
+        size=wx.DefaultSize,
+        style=wx.DEFAULT_FRAME_STYLE,
+        name=wx.FrameNameStr,
+    ):
         # Flag to check during event handling: widgets generate events as they
         # are created leading to referencing errors before all data structs
         # have been initialized.
@@ -96,8 +106,10 @@ class ParameterSampleFrame(wx.Frame):
         self.__outlines = None
         self.__grids = None
 
-        frame_title = 'Sampling settings for module, ' + self.__module.module_name
-        wx.Frame.__init__(self, self.__frame, identifier, frame_title, pos, size, style, name)
+        frame_title = "Sampling settings for module, " + self.__module.module_name
+        wx.Frame.__init__(
+            self, self.__frame, identifier, frame_title, pos, size, style, name
+        )
         self.__frame_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSize(wx.Size(700, 350))
         self.SetSizer(self.__frame_sizer)
@@ -106,10 +118,11 @@ class ParameterSampleFrame(wx.Frame):
         self.__parameters_list = self.get_parameters_list()
         if len(self.__parameters_list) == 0:
             dialog = wx.MessageDialog(
-                    self,
-                    self.__module.module_name + ' has no unbounded parameters.',
-                    caption='No unbounded parameters',
-                    style=wx.OK)
+                self,
+                self.__module.module_name + " has no unbounded parameters.",
+                caption="No unbounded parameters",
+                style=wx.OK,
+            )
             dialog.ShowModal()
             self.Close(True)
 
@@ -124,32 +137,48 @@ class ParameterSampleFrame(wx.Frame):
         self.__settings_scrolled_window.SetScrollRate(20, 20)
         self.__settings_scrolled_window.EnableScrolling(True, True)
         self.__settings_scrolled_window_sizer = wx.FlexGridSizer(rows=0, cols=5)
-        self.__settings_scrolled_window.SetSizer(
-                self.__settings_scrolled_window_sizer)
+        self.__settings_scrolled_window.SetSizer(self.__settings_scrolled_window_sizer)
         self.__settings_scrolled_window_sizer.AddGrowableCol(0)
         self.__settings_panel_sizer.Add(
-                self.__settings_scrolled_window, 1, wx.EXPAND | wx.ALL, 5)
+            self.__settings_scrolled_window, 1, wx.EXPAND | wx.ALL, 5
+        )
 
         # Headings
         self.__settings_scrolled_window_sizer.Add(
-                wx.StaticText(self.__settings_scrolled_window, -1, 'Parameter'),
-                0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP, 5)
+            wx.StaticText(self.__settings_scrolled_window, -1, "Parameter"),
+            0,
+            wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP,
+            5,
+        )
         self.__settings_scrolled_window_sizer.Add(
-                wx.StaticText(self.__settings_scrolled_window, -1, 'Current value'),
-                0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP, 5)
+            wx.StaticText(self.__settings_scrolled_window, -1, "Current value"),
+            0,
+            wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP,
+            5,
+        )
         self.__settings_scrolled_window_sizer.Add(
-                wx.StaticText(self.__settings_scrolled_window, -1, 'Lower bound'),
-                0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP, 5)
+            wx.StaticText(self.__settings_scrolled_window, -1, "Lower bound"),
+            0,
+            wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP,
+            5,
+        )
         self.__settings_scrolled_window_sizer.Add(
-                wx.StaticText(self.__settings_scrolled_window, -1, 'Upper bound'),
-                0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP, 5)
+            wx.StaticText(self.__settings_scrolled_window, -1, "Upper bound"),
+            0,
+            wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP,
+            5,
+        )
         self.__settings_scrolled_window_sizer.Add(
-                wx.StaticText(self.__settings_scrolled_window, -1, 'Number samples'),
-                0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.RIGHT, 5)
+            wx.StaticText(self.__settings_scrolled_window, -1, "Number samples"),
+            0,
+            wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.RIGHT,
+            5,
+        )
 
         # Init dynamic widgets based on parameters
         self.__parameters_to_widgets_list = self.get_parameters_to_widgets_list(
-                self.__parameters_list)
+            self.__parameters_list
+        )
 
         self.__check_box_list = []
         self.__current_static_text_list = []
@@ -167,11 +196,16 @@ class ParameterSampleFrame(wx.Frame):
                     check_box = wx.CheckBox(self.__settings_scrolled_window, -1, label)
                     check_box.Bind(wx.EVT_CHECKBOX, self.on_check_box)
                     self.__settings_scrolled_window_sizer.Add(
-                            check_box, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP, 5)
+                        check_box,
+                        0,
+                        wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP,
+                        5,
+                    )
                     self.__check_box_list.append(check_box)
                 else:
                     self.__settings_scrolled_window_sizer.Add(
-                            wx.Panel(self.__settings_scrolled_window, -1))
+                        wx.Panel(self.__settings_scrolled_window, -1)
+                    )
 
                 # Current value
                 if self.is_parameter_int(setting):
@@ -185,47 +219,64 @@ class ParameterSampleFrame(wx.Frame):
                     elif self.get_parameter_input_size(setting) == 2:
                         cur_value = str(round(value[j], FLOAT_DIGITS_TO_ROUND_TO))
                 current_static_text = wx.StaticText(
-                        self.__settings_scrolled_window, -1, cur_value)
+                    self.__settings_scrolled_window, -1, cur_value
+                )
                 self.__settings_scrolled_window_sizer.Add(
-                        current_static_text, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.RIGHT, 5)
+                    current_static_text,
+                    0,
+                    wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.RIGHT,
+                    5,
+                )
                 self.__current_static_text_list.append(current_static_text)
 
                 # Lower and upper bounds
                 if self.is_parameter_int(setting):
                     # Integer
                     lower_spin_ctrl = wx.SpinCtrl(
-                            self.__settings_scrolled_window, wx.NewId())
+                        self.__settings_scrolled_window, wx.NewId()
+                    )
                     lower_spin_ctrl.SetRange(INT_LOWER_BOUND, INT_UPPER_BOUND)
                     lower_spin_ctrl.Bind(wx.EVT_SPINCTRL, self.on_lower_spin_ctrl)
 
                     upper_spin_ctrl = wx.SpinCtrl(
-                            self.__settings_scrolled_window, wx.NewId())
+                        self.__settings_scrolled_window, wx.NewId()
+                    )
                     upper_spin_ctrl.SetRange(INT_LOWER_BOUND, INT_UPPER_BOUND)
                     upper_spin_ctrl.Bind(wx.EVT_SPINCTRL, self.on_upper_spin_ctrl)
 
-                    interval = DEFAULT_NUMBER_SAMPLES - 1  # Used later to set upper bound
+                    interval = (
+                        DEFAULT_NUMBER_SAMPLES - 1
+                    )  # Used later to set upper bound
                 elif self.is_parameter_float(setting):
                     # Float
                     lower_spin_ctrl = wx.lib.agw.floatspin.FloatSpin(
-                            self.__settings_scrolled_window, wx.NewId(),
-                            size=wx.DefaultSize)  # NB: if not set, spin buttons are hidden
+                        self.__settings_scrolled_window, wx.NewId(), size=wx.DefaultSize
+                    )  # NB: if not set, spin buttons are hidden
                     lower_spin_ctrl.SetDigits(FLOAT_DIGITS_TO_ROUND_TO)
                     lower_spin_ctrl.SetIncrement(10 ** -FLOAT_DIGITS_TO_ROUND_TO)
                     lower_spin_ctrl.SetRange(FLOAT_LOWER_BOUND, FLOAT_UPPER_BOUND)
-                    lower_spin_ctrl.Bind(wx.lib.agw.floatspin.EVT_FLOATSPIN, self.on_lower_float_spin)
+                    lower_spin_ctrl.Bind(
+                        wx.lib.agw.floatspin.EVT_FLOATSPIN, self.on_lower_float_spin
+                    )
 
                     upper_spin_ctrl = wx.lib.agw.floatspin.FloatSpin(
-                            self.__settings_scrolled_window, wx.NewId(),
-                            size=wx.DefaultSize)  # NB: if not set, spin buttons are hidden
+                        self.__settings_scrolled_window, wx.NewId(), size=wx.DefaultSize
+                    )  # NB: if not set, spin buttons are hidden
                     upper_spin_ctrl.SetDigits(FLOAT_DIGITS_TO_ROUND_TO)
                     upper_spin_ctrl.SetIncrement(10 ** -FLOAT_DIGITS_TO_ROUND_TO)
                     upper_spin_ctrl.SetRange(FLOAT_LOWER_BOUND, FLOAT_UPPER_BOUND)
-                    upper_spin_ctrl.Bind(wx.lib.agw.floatspin.EVT_FLOATSPIN, self.on_upper_float_spin)
+                    upper_spin_ctrl.Bind(
+                        wx.lib.agw.floatspin.EVT_FLOATSPIN, self.on_upper_float_spin
+                    )
 
-                    interval = upper_spin_ctrl.GetIncrement()  # Used later to set upper bound
+                    interval = (
+                        upper_spin_ctrl.GetIncrement()
+                    )  # Used later to set upper bound
 
                 if self.get_parameter_input_size(setting) == 1:
-                    lower_spin_ctrl.SetValue(value)  # Set value after range to avoid rounding
+                    lower_spin_ctrl.SetValue(
+                        value
+                    )  # Set value after range to avoid rounding
                     upper_spin_ctrl.SetValue(value + interval)
                 elif self.get_parameter_input_size(setting) == 2:
                     lower_spin_ctrl.SetValue(value[j])
@@ -233,30 +284,32 @@ class ParameterSampleFrame(wx.Frame):
 
                 lower_spin_ctrl.Enable(False)
                 self.__settings_scrolled_window_sizer.Add(
-                        lower_spin_ctrl, 0, wx.EXPAND | wx.ALIGN_LEFT | wx.LEFT | wx.TOP, 5)
+                    lower_spin_ctrl, 0, wx.EXPAND | wx.ALIGN_LEFT | wx.LEFT | wx.TOP, 5
+                )
                 self.__lower_bound_spin_ctrl_list.append(lower_spin_ctrl)
 
                 upper_spin_ctrl.Enable(False)
                 self.__settings_scrolled_window_sizer.Add(
-                        upper_spin_ctrl, 0, wx.LEFT | wx.TOP, 5)
+                    upper_spin_ctrl, 0, wx.LEFT | wx.TOP, 5
+                )
                 self.__upper_bound_spin_ctrl_list.append(upper_spin_ctrl)
 
                 # Number samples
-                num_spin_ctrl = wx.SpinCtrl(
-                        self.__settings_scrolled_window, wx.NewId())
+                num_spin_ctrl = wx.SpinCtrl(self.__settings_scrolled_window, wx.NewId())
                 num_spin_ctrl.Enable(False)
                 num_spin_ctrl.SetRange(1, 100)
                 num_spin_ctrl.SetValue(10)
                 num_spin_ctrl.Bind(wx.EVT_SPINCTRL, self.on_number_spin_ctrl)
                 self.__settings_scrolled_window_sizer.Add(
-                        num_spin_ctrl, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
+                    num_spin_ctrl, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5
+                )
                 self.__number_spin_ctrl_list.append(num_spin_ctrl)
 
         self.__settings_scrolled_window.Layout()
         self.__settings_panel.Layout()
 
         # Add button
-        self.sample_button = wx.Button(self, ID_SAMPLE_BUTTON, 'Sample')
+        self.sample_button = wx.Button(self, ID_SAMPLE_BUTTON, "Sample")
         self.sample_button.Bind(wx.EVT_BUTTON, self.on_button)
         self.sample_button.Enable(False)
         self.__frame_sizer.Add(self.sample_button, 0, wx.ALIGN_RIGHT | wx.ALL, 5)
@@ -279,8 +332,10 @@ class ParameterSampleFrame(wx.Frame):
         # Update dictionary of visible, unbounded parameters:
         #   0-based index in 'parameters_list' -> (label, 1-based module number)
         for i, setting in enumerate(self.__module.settings()):
-            if (setting.key() in visible_settings_keys and
-                        self.get_parameter_type(setting) == PARAM_CLASS_UNBOUNDED):
+            if (
+                setting.key() in visible_settings_keys
+                and self.get_parameter_type(setting) == PARAM_CLASS_UNBOUNDED
+            ):
                 parameters_list.append((setting.get_text(), i + 1))
         return parameters_list
 
@@ -333,7 +388,7 @@ class ParameterSampleFrame(wx.Frame):
             return PARAM_CLASS_UNBOUNDED
         elif isinstance(setting, cellprofiler.setting.Measurement):
             # NB: Not sure what to do with 'Measurement' yet
-            return 'not sure'
+            return "not sure"
         elif isinstance(setting, cellprofiler.setting.NameProvider):
             return PARAM_CLASS_TEXT_LABEL
         elif isinstance(setting, cellprofiler.setting.NameSubscriber):
@@ -343,7 +398,7 @@ class ParameterSampleFrame(wx.Frame):
         elif isinstance(setting, cellprofiler.setting.Text):
             return PARAM_CLASS_TEXT_LABEL
         else:
-            return 'whatever is left'
+            return "whatever is left"
 
     @staticmethod
     def get_parameter_input_size(setting):
@@ -384,45 +439,66 @@ class ParameterSampleFrame(wx.Frame):
         violations as well as the error message received back from CellProfiler.
         """
         # First, test whether selected parameters are valid
-        message = ''
+        message = ""
         for i, checkbox in enumerate(self.__check_box_list):
             if checkbox.IsChecked():
                 setting = self.__module.setting(self.__parameters_list[i][1])
                 input_size = self.get_parameter_input_size(setting)
                 if input_size == 1:
                     widget_idx = self.__parameters_to_widgets_list[i][0]
-                    lower_value = self.__lower_bound_spin_ctrl_list[widget_idx].GetValue()
-                    upper_value = self.__upper_bound_spin_ctrl_list[widget_idx].GetValue()
+                    lower_value = self.__lower_bound_spin_ctrl_list[
+                        widget_idx
+                    ].GetValue()
+                    upper_value = self.__upper_bound_spin_ctrl_list[
+                        widget_idx
+                    ].GetValue()
                 elif input_size == 2:
                     widget_idx = self.__parameters_to_widgets_list[i][0]
-                    lower_value = (self.__lower_bound_spin_ctrl_list[widget_idx].GetValue(),
-                                   self.__lower_bound_spin_ctrl_list[widget_idx + 1].GetValue())
-                    upper_value = (self.__upper_bound_spin_ctrl_list[widget_idx].GetValue(),
-                                   self.__upper_bound_spin_ctrl_list[widget_idx + 1].GetValue())
+                    lower_value = (
+                        self.__lower_bound_spin_ctrl_list[widget_idx].GetValue(),
+                        self.__lower_bound_spin_ctrl_list[widget_idx + 1].GetValue(),
+                    )
+                    upper_value = (
+                        self.__upper_bound_spin_ctrl_list[widget_idx].GetValue(),
+                        self.__upper_bound_spin_ctrl_list[widget_idx + 1].GetValue(),
+                    )
 
                 old_value = setting.get_value()
                 try:
                     setting.set_value(lower_value)
                     setting.test_valid(self.__pipeline)
                 except cellprofiler.setting.ValidationError as instance:
-                    message += '\'' + str(setting.get_text()) + \
-                               '\': lower bound invalid, ' + \
-                               '\n\t' + str(instance.message) + '\n'
+                    message += (
+                        "'"
+                        + str(setting.get_text())
+                        + "': lower bound invalid, "
+                        + "\n\t"
+                        + str(instance.message)
+                        + "\n"
+                    )
                 try:
                     setting.set_value(upper_value)
                     setting.test_valid(self.__pipeline)
                 except cellprofiler.setting.ValidationError as instance:
-                    message += '\'' + str(setting.get_text()) + \
-                               '\': upper bound invalid, ' + \
-                               '\n\t' + str(instance.message) + '\n'
+                    message += (
+                        "'"
+                        + str(setting.get_text())
+                        + "': upper bound invalid, "
+                        + "\n\t"
+                        + str(instance.message)
+                        + "\n"
+                    )
                 setting.set_value(old_value)
 
         # Second, if there are invalid parameters, tell the user
         if len(message) > 0:
-            message = 'Invalid sample settings:\n\n' + message
+            message = "Invalid sample settings:\n\n" + message
             dialog = wx.MessageDialog(
-                    self, message, caption='Sample settings error',
-                    style=wx.ICON_ERROR | wx.OK)
+                self,
+                message,
+                caption="Sample settings error",
+                style=wx.ICON_ERROR | wx.OK,
+            )
             dialog.ShowModal()
             raise Exception(message)
 
@@ -458,8 +534,11 @@ class ParameterSampleFrame(wx.Frame):
                     upper_bound = self.__upper_bound_spin_ctrl_list[index].GetValue()
                     number_samples = self.__number_spin_ctrl_list[index].GetValue()
                     samples = self.compute_samples(
-                            lower_bound, upper_bound, number_samples,
-                            self.is_parameter_int(setting))
+                        lower_bound,
+                        upper_bound,
+                        number_samples,
+                        self.is_parameter_int(setting),
+                    )
                 else:
                     # Parameters with tuple values
                     samples_temp = []
@@ -467,9 +546,14 @@ class ParameterSampleFrame(wx.Frame):
                         lower_bound = self.__lower_bound_spin_ctrl_list[j].GetValue()
                         upper_bound = self.__upper_bound_spin_ctrl_list[j].GetValue()
                         number_samples = self.__number_spin_ctrl_list[j].GetValue()
-                        samples_temp.append(self.compute_samples(
-                                lower_bound, upper_bound, number_samples,
-                                self.is_parameter_int(setting)))
+                        samples_temp.append(
+                            self.compute_samples(
+                                lower_bound,
+                                upper_bound,
+                                number_samples,
+                                self.is_parameter_int(setting),
+                            )
+                        )
 
                     samples_temp = list(self.cartesian_product(samples_temp))
                     tuples = []
@@ -556,23 +640,29 @@ class ParameterSampleFrame(wx.Frame):
         self.__measurements = cellprofiler.measurement.Measurements(can_overwrite=True)
         self.__object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__image_set_list = cellprofiler.image.ImageSetList()
-        workspace = cellprofiler.gui.workspace.Workspace(self.__pipeline, None, None, None,
-                                                     self.__measurements, self.__image_set_list,
-                                                     self.__frame)
+        workspace = cellprofiler.gui.workspace.Workspace(
+            self.__pipeline,
+            None,
+            None,
+            None,
+            self.__measurements,
+            self.__image_set_list,
+            self.__frame,
+        )
         try:
             if not self.__pipeline.prepare_run(workspace):
-                print('Error: failed to get image sets')
-            self.__keys, self.__groupings = self.__pipeline.get_groupings(
-                    workspace)
+                print("Error: failed to get image sets")
+            self.__keys, self.__groupings = self.__pipeline.get_groupings(workspace)
         except ValueError as v:
             message = "Error while preparing for run:\n%s" % v
-            wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
+            wx.MessageBox(
+                message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame
+            )
         self.__grouping_index = 0
         self.__within_group_index = 0
         self.__pipeline.prepare_group(
-                workspace,
-                self.__groupings[0][0],
-                self.__groupings[0][1])
+            workspace, self.__groupings[0][0], self.__groupings[0][1]
+        )
         self.__outlines = {}
 
     def run_module(self, module):
@@ -596,12 +686,17 @@ class ParameterSampleFrame(wx.Frame):
             #    None,
             #    outlines = self.__outlines)
             self.__workspace = cellprofiler.gui.workspace.Workspace(
-                    self.__pipeline, module, self.__measurements, self.__object_set,
-                    self.__measurements, self.__image_set_list,
-                    # Uncomment next line to display results in UI
-                    # self.__frame if module.show_window else None,
-                    None,
-                    outlines=self.__outlines)
+                self.__pipeline,
+                module,
+                self.__measurements,
+                self.__object_set,
+                self.__measurements,
+                self.__image_set_list,
+                # Uncomment next line to display results in UI
+                # self.__frame if module.show_window else None,
+                None,
+                outlines=self.__outlines,
+            )
             # self.__grids = workspace.set_grids(self.__grids)
             self.__grids = self.__workspace.set_grids(self.__grids)
             # ~^~
@@ -620,30 +715,35 @@ class ParameterSampleFrame(wx.Frame):
             event = cellprofiler.pipeline.RunExceptionEvent(instance, module)
             self.__pipeline.notify_listeners(event)
             failure = 1
-        if ((module.module_name != 'Restart' or failure == -1) and
-                    self.__measurements is not None):
-            module_error_measurement = 'ModuleError_%02d%s' % (module.module_num, module.module_name)
+        if (
+            module.module_name != "Restart" or failure == -1
+        ) and self.__measurements is not None:
+            module_error_measurement = "ModuleError_%02d%s" % (
+                module.module_num,
+                module.module_name,
+            )
             self.__measurements.add_measurement(
-                    'Image', module_error_measurement, failure)
+                "Image", module_error_measurement, failure
+            )
         return failure == 0
 
     def save_run_output(self, sample_num, directory_path, output_file):
         """Save the parameter settings and images for the current run of
         'self.__module'."""
         for i, setting in enumerate(self.__module.visible_settings()):
-            value_to_write = ''
+            value_to_write = ""
 
             # Do not write settings without values, ie, buttons etc
-            if setting.get_text() != '':
+            if setting.get_text() != "":
                 value_to_write = str(setting.get_value())
                 if isinstance(setting, cellprofiler.setting.ImageNameProvider):
                     # Save image
-                    image = \
-                        self.__measurements.get_image(value_to_write)
-                    path = \
-                        os.path.join(directory_path, value_to_write + '_' + str(sample_num))
+                    image = self.__measurements.get_image(value_to_write)
+                    path = os.path.join(
+                        directory_path, value_to_write + "_" + str(sample_num)
+                    )
                     self.save_image(image, path)
-                    value_to_write += '_' + str(sample_num) + '.jpg'
+                    value_to_write += "_" + str(sample_num) + ".jpg"
                     # ~*~
                     # elif isinstance(setting, settings.ObjectNameProvider):
                     #    print 'Bingo! ' + str(value_to_write)
@@ -651,13 +751,13 @@ class ParameterSampleFrame(wx.Frame):
                     #        self.__workspace.get_object_set().get_objects(setting.get_value())
                     #    value_to_write = str(len(objects.indices))
                     # ~^~
-            if i < len(self.__module.visible_settings()) - 1 and value_to_write != '':
-                value_to_write += '\t'
+            if i < len(self.__module.visible_settings()) - 1 and value_to_write != "":
+                value_to_write += "\t"
             if i == len(self.__module.visible_settings()) - 1:
-                value_to_write += '\n'
+                value_to_write += "\n"
 
             # Write line to 'open_file'
-            if value_to_write != '':
+            if value_to_write != "":
                 output_file.write(value_to_write)
 
                 # ~*~
@@ -734,7 +834,8 @@ class ParameterSampleFrame(wx.Frame):
                         increment = self.__number_spin_ctrl_list[j].GetValue() - 1
                         if upper_bound < lower_bound + increment:
                             self.__upper_bound_spin_ctrl_list[j].SetValue(
-                                    lower_bound + increment)
+                                lower_bound + increment
+                            )
 
     def on_upper_spin_ctrl(self, event):
         if self.__initialized:
@@ -746,7 +847,8 @@ class ParameterSampleFrame(wx.Frame):
                         increment = self.__number_spin_ctrl_list[j].GetValue() - 1
                         if upper_bound < lower_bound + increment:
                             self.__lower_bound_spin_ctrl_list[j].SetValue(
-                                    upper_bound - increment)
+                                upper_bound - increment
+                            )
 
     def on_lower_float_spin(self, event):
         if self.__initialized:
@@ -758,7 +860,8 @@ class ParameterSampleFrame(wx.Frame):
                         increment = self.__upper_bound_spin_ctrl_list[j].GetIncrement()
                         if upper_bound < lower_bound + increment:
                             self.__upper_bound_spin_ctrl_list[j].SetValue(
-                                    lower_bound + increment)
+                                lower_bound + increment
+                            )
 
     def on_upper_float_spin(self, event):
         if self.__initialized:
@@ -770,7 +873,8 @@ class ParameterSampleFrame(wx.Frame):
                         increment = self.__upper_bound_spin_ctrl_list[j].GetIncrement()
                         if upper_bound < lower_bound + increment:
                             self.__lower_bound_spin_ctrl_list[j].SetValue(
-                                    upper_bound - increment)
+                                upper_bound - increment
+                            )
 
     def on_number_spin_ctrl(self, event):
         if self.__initialized:
@@ -779,13 +883,18 @@ class ParameterSampleFrame(wx.Frame):
                 if self.is_parameter_int(setting):
                     for j in self.__parameters_to_widgets_list[i]:
                         if event.GetId() == self.__number_spin_ctrl_list[j].GetId():
-                            lower_bound = self.__lower_bound_spin_ctrl_list[j].GetValue()
-                            upper_bound = self.__upper_bound_spin_ctrl_list[j].GetValue()
+                            lower_bound = self.__lower_bound_spin_ctrl_list[
+                                j
+                            ].GetValue()
+                            upper_bound = self.__upper_bound_spin_ctrl_list[
+                                j
+                            ].GetValue()
                             number = self.__number_spin_ctrl_list[j].GetValue()
                             diff = upper_bound - lower_bound
                             if diff < number:
                                 self.__upper_bound_spin_ctrl_list[j].SetValue(
-                                        lower_bound + (number - 1))
+                                    lower_bound + (number - 1)
+                                )
 
     def on_button(self, event):
         if event.GetId() == ID_SAMPLE_BUTTON:
@@ -794,17 +903,19 @@ class ParameterSampleFrame(wx.Frame):
             number = self.calc_number_samples()
 
             sample_dialog = wx.MessageDialog(
-                    self,
-                    'Proceed with calculating ' + str(number) + ' samples?',
-                    caption='Confirm sample size',
-                    style=wx.ICON_QUESTION | wx.OK | wx.CANCEL)
+                self,
+                "Proceed with calculating " + str(number) + " samples?",
+                caption="Confirm sample size",
+                style=wx.ICON_QUESTION | wx.OK | wx.CANCEL,
+            )
             if sample_dialog.ShowModal() == wx.ID_OK:
 
                 save_dialog = wx.FileDialog(
-                        event.GetEventObject(),
-                        message='Save sampled output',
-                        wildcard='Tab separated values (*.tsv)|*.tsv',
-                        style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+                    event.GetEventObject(),
+                    message="Save sampled output",
+                    wildcard="Tab separated values (*.tsv)|*.tsv",
+                    style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                )
                 if save_dialog.ShowModal() == wx.ID_OK:
                     # 1. Copy original parameter values
                     original_values = []
@@ -815,16 +926,15 @@ class ParameterSampleFrame(wx.Frame):
                     self.__sample_list = self.generate_parameter_samples()
 
                     # 3. Open output file and write headers
-                    output_file = \
-                        open(save_dialog.GetPath(), 'w')
-                    headers = ''
+                    output_file = open(save_dialog.GetPath(), "w")
+                    headers = ""
                     for i, setting in enumerate(self.__module.visible_settings()):
                         # Do not write settings without values, ie, buttons etc
-                        if setting.get_text() != '':
+                        if setting.get_text() != "":
                             headers += setting.get_text()
                             if i < len(self.__module.visible_settings()) - 1:
-                                headers += '\t'
-                    headers += '\n'
+                                headers += "\t"
+                    headers += "\n"
                     output_file.write(headers)
 
                     # 4. Run pipeline once for each sample
@@ -832,8 +942,11 @@ class ParameterSampleFrame(wx.Frame):
                     # ~*~
                     self.Show(False)
                     progressDialog = wx.ProgressDialog(
-                            parent=self, title='Sampling parameters',
-                            message='Run 1', maximum=len(self.__sample_list))
+                        parent=self,
+                        title="Sampling parameters",
+                        message="Run 1",
+                        maximum=len(self.__sample_list),
+                    )
                     size = progressDialog.GetSize()
                     size.SetWidth(2 * size.GetWidth())
                     progressDialog.SetSize(size)
@@ -851,11 +964,13 @@ class ParameterSampleFrame(wx.Frame):
 
                         # ~*~
                         progressDialog.Update(
-                                i + 1,
-                                newmsg='Executing run ' + str(i + 1) + \
-                                       ' of ' + str(len(self.__sample_list)))
+                            i + 1,
+                            newmsg="Executing run "
+                            + str(i + 1)
+                            + " of "
+                            + str(len(self.__sample_list)),
+                        )
                         # ~^~
-
 
                         # It's not very efficient to run the complete pipeline
                         # when only the last module's parameter values are
@@ -870,7 +985,10 @@ class ParameterSampleFrame(wx.Frame):
                         self.prepare_for_run()
                         # 4.2 Run modules
                         for module in self.__pipeline.modules():
-                            if module.get_module_num() <= self.__module.get_module_num():
+                            if (
+                                module.get_module_num()
+                                <= self.__module.get_module_num()
+                            ):
                                 self.run_module(module)
                         # 4.3 Save output
                         self.save_run_output(i, save_dialog.GetDirectory(), output_file)

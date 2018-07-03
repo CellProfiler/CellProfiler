@@ -22,11 +22,12 @@ YES          YES          NO
 .. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/filters/plot_nonlocal_means.html
 """
 
+import skimage.restoration
+import skimage.util
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.restoration
-import skimage.util
 
 
 class ReduceNoise(cellprofiler.module.ImageProcessing):
@@ -40,15 +41,13 @@ class ReduceNoise(cellprofiler.module.ImageProcessing):
         super(ReduceNoise, self).create_settings()
 
         self.size = cellprofiler.setting.Integer(
-            text="Size",
-            value=7,
-            doc="Size of the patches to use for noise reduction."
+            text="Size", value=7, doc="Size of the patches to use for noise reduction."
         )
 
         self.distance = cellprofiler.setting.Integer(
             text="Distance",
             value=11,
-            doc="Maximal distance in pixels to search for patches to use for denoising."
+            doc="Maximal distance in pixels to search for patches to use for denoising.",
         )
 
         self.cutoff_distance = cellprofiler.setting.Float(
@@ -64,20 +63,12 @@ image.
     def settings(self):
         __settings__ = super(ReduceNoise, self).settings()
 
-        return __settings__ + [
-            self.size,
-            self.distance,
-            self.cutoff_distance
-        ]
+        return __settings__ + [self.size, self.distance, self.cutoff_distance]
 
     def visible_settings(self):
         __settings__ = super(ReduceNoise, self).visible_settings()
 
-        return __settings__ + [
-            self.size,
-            self.distance,
-            self.cutoff_distance
-        ]
+        return __settings__ + [self.size, self.distance, self.cutoff_distance]
 
     def run(self, workspace):
         x_name = self.x_name.value
@@ -98,13 +89,11 @@ image.
             image=x_data,
             multichannel=x.multichannel,
             patch_distance=self.distance.value,
-            patch_size=self.size.value
+            patch_size=self.size.value,
         )
 
         y = cellprofiler.image.Image(
-            dimensions=dimensions,
-            image=y_data,
-            parent_image=x
+            dimensions=dimensions, image=y_data, parent_image=x
         )
 
         images.add(y_name, y)

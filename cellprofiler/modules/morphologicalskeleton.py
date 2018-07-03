@@ -18,9 +18,10 @@ YES          YES          NO
 
 """
 
+import skimage.morphology
+
 import cellprofiler.image
 import cellprofiler.module
-import skimage.morphology
 
 
 class MorphologicalSkeleton(cellprofiler.module.ImageProcessing):
@@ -52,9 +53,7 @@ class MorphologicalSkeleton(cellprofiler.module.ImageProcessing):
             y_data = skimage.morphology.skeletonize(x_data)
 
         y = cellprofiler.image.Image(
-            dimensions=dimensions,
-            image=y_data,
-            parent_image=x
+            dimensions=dimensions, image=y_data, parent_image=x
         )
 
         images.add(y_name, y)

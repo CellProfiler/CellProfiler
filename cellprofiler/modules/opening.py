@@ -39,22 +39,19 @@ class Opening(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Opening, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True,
-                                                                           doc=HELP_FOR_STREL)
+        self.structuring_element = cellprofiler.setting.StructuringElement(
+            allow_planewise=True, doc=HELP_FOR_STREL
+        )
 
     def settings(self):
         __settings__ = super(Opening, self).settings()
 
-        return __settings__ + [
-            self.structuring_element
-        ]
+        return __settings__ + [self.structuring_element]
 
     def visible_settings(self):
         __settings__ = super(Opening, self).settings()
 
-        return __settings__ + [
-            self.structuring_element
-        ]
+        return __settings__ + [self.structuring_element]
 
     def run(self, workspace):
 
@@ -70,7 +67,9 @@ class Opening(cellprofiler.module.ImageProcessing):
 
         elif not is_strel_2d and is_img_2d:
 
-            raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
+            raise NotImplementedError(
+                "A 3D structuring element cannot be applied to a 2D image."
+            )
 
         else:
 

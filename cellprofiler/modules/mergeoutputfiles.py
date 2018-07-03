@@ -64,8 +64,8 @@ import sys
 import h5py
 import numpy as np
 
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.utilities.legacy
 from cellprofiler.preferences import get_headless
@@ -77,26 +77,35 @@ class MergeOutputFiles(cpm.Module):
     do_not_check = True
 
     def run_as_data_tool(self):
-        '''Run the module as a data tool'''
+        """Run the module as a data tool"""
         import wx
         from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
         from cellprofiler.gui import get_cp_icon
+
         #
         # Portions of this were cribbed from the wx listctrl demo code
         # which is part of the wx source distribution
         #
         class AWListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
-            '''A list control with autosizing of the last column'''
+            """A list control with autosizing of the last column"""
 
-            def __init__(self, parent, ID=wx.ID_ANY, pos=wx.DefaultPosition,
-                         size=wx.DefaultSize, style=0):
+            def __init__(
+                self,
+                parent,
+                ID=wx.ID_ANY,
+                pos=wx.DefaultPosition,
+                size=wx.DefaultSize,
+                style=0,
+            ):
                 wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
                 ListCtrlAutoWidthMixin.__init__(self)
 
-        dlg = wx.Dialog(None, title="Merge output files",
-                        size=(640, 480),
-                        style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |
-                              wx.THICK_FRAME)
+        dlg = wx.Dialog(
+            None,
+            title="Merge output files",
+            size=(640, 480),
+            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME,
+        )
         dlg.SetIcon(get_cp_icon())
         #
         # Layout:
@@ -115,14 +124,18 @@ class MergeOutputFiles(cpm.Module):
         dlg.Sizer = sizer = wx.BoxSizer(wx.VERTICAL)
         subsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
-        subsizer.Add(wx.StaticText(dlg, -1, "Destination file:"), 0,
-                     wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 3)
+        subsizer.Add(
+            wx.StaticText(dlg, -1, "Destination file:"),
+            0,
+            wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+            3,
+        )
         dest_file_ctrl = wx.TextCtrl(dlg)
         subsizer.Add(dest_file_ctrl, 1, wx.EXPAND | wx.LEFT, 3)
         browse_button = wx.Button(dlg, -1, "Browse...")
         subsizer.Add(browse_button, 0, wx.EXPAND)
         list_control = AWListCtrl(dlg, style=wx.LC_REPORT)
-        if sys.platform == 'darwin':
+        if sys.platform == "darwin":
             list_control.InsertColumn(0, "Folder", width=200)
             list_control.InsertColumn(1, "File", width=-1)
         else:
@@ -154,19 +167,22 @@ class MergeOutputFiles(cpm.Module):
         #
         order = {}
 
-        add_button.Bind(wx.EVT_BUTTON,
-                        lambda event: self.on_add(event, list_control, order))
-        remove_button.Bind(wx.EVT_BUTTON,
-                           lambda event: self.on_remove(event, list_control,
-                                                        order))
-        browse_button.Bind(wx.EVT_BUTTON,
-                           lambda event: self.on_browse(event, dest_file_ctrl))
-        up_button.Bind(wx.EVT_BUTTON,
-                       lambda event: self.on_up(event, list_control, order))
-        down_button.Bind(wx.EVT_BUTTON,
-                         lambda event: self.on_down(event, list_control, order))
-        help_button.Bind(wx.EVT_BUTTON,
-                         lambda event: self.on_help(event, list_control))
+        add_button.Bind(
+            wx.EVT_BUTTON, lambda event: self.on_add(event, list_control, order)
+        )
+        remove_button.Bind(
+            wx.EVT_BUTTON, lambda event: self.on_remove(event, list_control, order)
+        )
+        browse_button.Bind(
+            wx.EVT_BUTTON, lambda event: self.on_browse(event, dest_file_ctrl)
+        )
+        up_button.Bind(
+            wx.EVT_BUTTON, lambda event: self.on_up(event, list_control, order)
+        )
+        down_button.Bind(
+            wx.EVT_BUTTON, lambda event: self.on_down(event, list_control, order)
+        )
+        help_button.Bind(wx.EVT_BUTTON, lambda event: self.on_help(event, list_control))
 
         if dlg.ShowModal() == wx.ID_OK:
             sources = []
@@ -180,27 +196,30 @@ class MergeOutputFiles(cpm.Module):
 
     @staticmethod
     def on_help(event, list_control):
-        import cellprofiler.modules
         from cellprofiler.gui.htmldialog import HTMLDialog
         import cellprofiler.gui.html.utils
+
         dlg = HTMLDialog(
             list_control,
             'Help on module,"%s"' % MergeOutputFiles.module_name,
-            cellprofiler.gui.html.utils.rst_to_html_fragment(__doc__)
+            cellprofiler.gui.html.utils.rst_to_html_fragment(__doc__),
         )
         dlg.Show()
 
     @staticmethod
     def on_add(event, list_control, order):
-        '''Handle the add button being pressed'''
+        """Handle the add button being pressed"""
         import wx
+
         assert isinstance(list_control, wx.ListCtrl)
-        dlg = wx.FileDialog(list_control.Parent,
-                            message="Select data files to merge",
-                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST)
+        dlg = wx.FileDialog(
+            list_control.Parent,
+            message="Select data files to merge",
+            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST,
+        )
         dlg.Wildcard = (
-            "CellProfiler data (*.h5,*.mat)|*.h5;*.mat|"
-            "All files (*.*)|*.*")
+            "CellProfiler data (*.h5,*.mat)|*.h5;*.mat|" "All files (*.*)|*.*"
+        )
         if dlg.ShowModal() == wx.ID_OK:
             for path in sorted(dlg.Paths):
                 folder, filename = os.path.split(path)
@@ -211,8 +230,9 @@ class MergeOutputFiles(cpm.Module):
 
     @staticmethod
     def on_remove(event, list_control, order):
-        '''Remove the selected items for the list control'''
+        """Remove the selected items for the list control"""
         import wx
+
         assert isinstance(list_control, wx.ListCtrl)
 
         def selections():
@@ -233,7 +253,7 @@ class MergeOutputFiles(cpm.Module):
 
     @staticmethod
     def get_anti_order(order):
-        '''Return a dictionary whose values are the keys of the input and vice versa'''
+        """Return a dictionary whose values are the keys of the input and vice versa"""
         anti_order = {}
         for key in order.keys():
             anti_order[order[key]] = key
@@ -242,13 +262,17 @@ class MergeOutputFiles(cpm.Module):
     @staticmethod
     def on_browse(event, ctrl):
         import wx
+
         assert isinstance(ctrl, wx.TextCtrl)
-        dlg = wx.FileDialog(ctrl.Parent,
-                            message="Merged output file name",
-                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        dlg = wx.FileDialog(
+            ctrl.Parent,
+            message="Merged output file name",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+        )
         dlg.Wildcard = (
             "HDF5 CellProfiler data (*.h5)|*.h5|"
-            "Matlab CellProfiler data (*.mat)|*.mat")
+            "Matlab CellProfiler data (*.mat)|*.mat"
+        )
         if len(ctrl.Value) > 0:
             dlg.Path = ctrl.Value
         if dlg.ShowModal() == wx.ID_OK:
@@ -257,6 +281,7 @@ class MergeOutputFiles(cpm.Module):
     @staticmethod
     def on_up(event, list_ctrl, order):
         import wx
+
         assert isinstance(list_ctrl, wx.ListCtrl)
         anti_order = MergeOutputFiles.get_anti_order(order)
         last = None
@@ -279,6 +304,7 @@ class MergeOutputFiles(cpm.Module):
     @staticmethod
     def on_down(event, list_ctrl, order):
         import wx
+
         assert isinstance(list_ctrl, wx.ListCtrl)
         anti_order = MergeOutputFiles.get_anti_order(order)
         last = None
@@ -299,14 +325,14 @@ class MergeOutputFiles(cpm.Module):
 
     @staticmethod
     def sort(list_ctrl, order):
-        '''Sort the items in the list control according to the order
+        """Sort the items in the list control according to the order
 
         list_ctrl - list control with items indicated by order's keys
 
         order - a dictionary where the keys are the item ids
                 and the values are the relative order of those ids
                 with respect to each other
-        '''
+        """
 
         def sortfn(item1, item2):
             return cellprofiler.utilities.legacy.cmp(order[item1], order[item2])
@@ -321,13 +347,15 @@ class MergeOutputFiles(cpm.Module):
         if len(sources) == 0:
             return
         if not is_headless:
-            progress = wx.ProgressDialog("Writing " + destination,
-                                         "Loading " + sources[0],
-                                         maximum=len(sources) * 4 + 1,
-                                         style=wx.PD_CAN_ABORT |
-                                               wx.PD_APP_MODAL |
-                                               wx.PD_ELAPSED_TIME |
-                                               wx.PD_REMAINING_TIME)
+            progress = wx.ProgressDialog(
+                "Writing " + destination,
+                "Loading " + sources[0],
+                maximum=len(sources) * 4 + 1,
+                style=wx.PD_CAN_ABORT
+                | wx.PD_APP_MODAL
+                | wx.PD_ELAPSED_TIME
+                | wx.PD_REMAINING_TIME,
+            )
         count = 0
         try:
             pipeline = cpp.Pipeline()
@@ -337,9 +365,9 @@ class MergeOutputFiles(cpm.Module):
                 if isinstance(event, cpp.LoadExceptionEvent):
                     has_error = True
                     wx.MessageBox(
-                            message="Could not load %s: %s" % (
-                                sources[0], event.error),
-                            caption="Failed to load %s" % sources[0])
+                        message="Could not load %s: %s" % (sources[0], event.error),
+                        caption="Failed to load %s" % sources[0],
+                    )
                     has_error[0] = True
 
             pipeline.add_listener(callback)
@@ -348,8 +376,7 @@ class MergeOutputFiles(cpm.Module):
             if has_error[0]:
                 return
             if destination.lower().endswith(".h5"):
-                mdest = cpmeas.Measurements(filename=destination,
-                                            multithread=False)
+                mdest = cpmeas.Measurements(filename=destination, multithread=False)
                 h5_dest = True
             else:
                 mdest = cpmeas.Measurements(multithread=False)
@@ -361,20 +388,22 @@ class MergeOutputFiles(cpm.Module):
                     if not keep_going:
                         return
                 if h5py.is_hdf5(source):
-                    msource = cpmeas.Measurements(filename=source,
-                                                  mode="r",
-                                                  multithread=False)
+                    msource = cpmeas.Measurements(
+                        filename=source, mode="r", multithread=False
+                    )
                 else:
                     msource = cpmeas.load_measurements(source)
                 dest_image_numbers = mdest.get_image_numbers()
                 source_image_numbers = msource.get_image_numbers()
-                if (len(dest_image_numbers) == 0 or
-                            len(source_image_numbers) == 0):
+                if len(dest_image_numbers) == 0 or len(source_image_numbers) == 0:
                     offset_source_image_numbers = source_image_numbers
                 else:
                     offset_source_image_numbers = (
-                        np.max(dest_image_numbers) -
-                        np.min(source_image_numbers) + source_image_numbers + 1)
+                        np.max(dest_image_numbers)
+                        - np.min(source_image_numbers)
+                        + source_image_numbers
+                        + 1
+                    )
                 for object_name in msource.get_object_names():
                     if object_name in mdest.get_object_names():
                         destfeatures = mdest.get_feature_names(object_name)
@@ -383,21 +412,20 @@ class MergeOutputFiles(cpm.Module):
                     for feature in msource.get_feature_names(object_name):
                         if object_name == cpmeas.EXPERIMENT:
                             if not mdest.has_feature(object_name, feature):
-                                src_value = msource.get_experiment_measurement(
-                                        feature)
-                                mdest.add_experiment_measurement(feature,
-                                                                 src_value)
+                                src_value = msource.get_experiment_measurement(feature)
+                                mdest.add_experiment_measurement(feature, src_value)
                             continue
                         src_values = msource.get_measurement(
-                                object_name,
-                                feature,
-                                image_set_number=source_image_numbers)
-                        mdest[object_name,
-                              feature,
-                              offset_source_image_numbers] = src_values
+                            object_name, feature, image_set_number=source_image_numbers
+                        )
+                        mdest[
+                            object_name, feature, offset_source_image_numbers
+                        ] = src_values
                     destset = set(destfeatures)
             if not is_headless:
-                keep_going, skip = progress.Update(count + 1, "Saving to " + destination)
+                keep_going, skip = progress.Update(
+                    count + 1, "Saving to " + destination
+                )
                 if not keep_going:
                     return
             if not h5_dest:

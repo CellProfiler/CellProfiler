@@ -1,19 +1,14 @@
 # coding=utf-8
 
-import cellprofiler.measurement
-import matplotlib
-import matplotlib.cm
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
+import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.modules import _help, identify as cpmi
-from cellprofiler.setting import YES, NO
 
 __doc__ = """\
 IdentifyTertiaryObjects
@@ -101,14 +96,16 @@ Measurements made by this module
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified tertiary objects.
 
-""".format(**{
-    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{
+        "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+        "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS,
+    }
+)
 
-'''The parent object relationship points to the secondary / larger objects'''
+"""The parent object relationship points to the secondary / larger objects"""
 R_PARENT = "Parent"
-'''The removed object relationship points to the primary / smaller objects'''
+"""The removed object relationship points to the primary / smaller objects"""
 R_REMOVED = "Removed"
 
 
@@ -123,42 +120,55 @@ class IdentifyTertiaryObjects(cpm.Module):
         Create the settings for the module during initialization.
         """
         self.secondary_objects_name = cps.ObjectNameSubscriber(
-                "Select the larger identified objects", cps.NONE, doc="""\
+            "Select the larger identified objects",
+            cps.NONE,
+            doc="""\
 Select the larger identified objects. This will usually be an object
-previously identified by an **IdentifySecondaryObjects** module.""")
+previously identified by an **IdentifySecondaryObjects** module.""",
+        )
 
         self.primary_objects_name = cps.ObjectNameSubscriber(
-                "Select the smaller identified objects", cps.NONE, doc="""\
+            "Select the smaller identified objects",
+            cps.NONE,
+            doc="""\
 Select the smaller identified objects. This will usually be an object
-previously identified by an **IdentifyPrimaryObjects** module.""")
+previously identified by an **IdentifyPrimaryObjects** module.""",
+        )
 
         self.subregion_objects_name = cps.ObjectNameProvider(
-                "Name the tertiary objects to be identified", "Cytoplasm", doc="""\
+            "Name the tertiary objects to be identified",
+            "Cytoplasm",
+            doc="""\
 Enter a name for the new tertiary objects. The tertiary objects
-will consist of the smaller object subtracted from the larger object.""")
+will consist of the smaller object subtracted from the larger object.""",
+        )
 
         self.shrink_primary = cps.Binary(
-                "Shrink smaller object prior to subtraction?", True, doc="""\
-Select *%(YES)s* to shrink the smaller objects by 1 pixel before
+            "Shrink smaller object prior to subtraction?",
+            True,
+            doc="""\
+Select *Yes* to shrink the smaller objects by 1 pixel before
 subtracting them from the larger objects. this approach will ensure that
 there is always a tertiary object produced, even if it is only 1 pixel wide.
 If you need alternate amounts of shrinking, use the **ExpandOrShrink**
 module prior to **IdentifyTertiaryObjects**.
 
-Select *%(NO)s* to subtract the objects directly, which will ensure that
+Select *No* to subtract the objects directly, which will ensure that
 no pixels are shared between the primary/secondary/tertiary objects and
 hence measurements for all three sets of objects will not use the same
 pixels multiple times. However, this may result in the creation of
 objects with no area. Measurements can still be made on such objects,
 but the results will be zero or not-a-number (NaN).
-""" % globals())
+"""
+            % globals(),
+        )
 
     def settings(self):
         return [
             self.secondary_objects_name,
             self.primary_objects_name,
             self.subregion_objects_name,
-            self.shrink_primary
+            self.shrink_primary,
         ]
 
     def visible_settings(self):
@@ -166,7 +176,7 @@ but the results will be zero or not-a-number (NaN).
             self.secondary_objects_name,
             self.primary_objects_name,
             self.subregion_objects_name,
-            self.shrink_primary
+            self.shrink_primary,
         ]
 
     def run(self, workspace):
@@ -200,18 +210,30 @@ but the results will be zero or not-a-number (NaN).
         # try to find the cropping mask and we apply that mask to the larger
         #
         try:
-            if any([p_size < s_size
-                    for p_size, s_size
-                    in zip(primary_labels.shape, secondary_labels.shape)]):
+            if any(
+                [
+                    p_size < s_size
+                    for p_size, s_size in zip(
+                        primary_labels.shape, secondary_labels.shape
+                    )
+                ]
+            ):
                 #
                 # Look for a cropping mask associated with the primary_labels
                 # and apply that mask to resize the secondary labels
                 #
-                secondary_labels = primary_objects.crop_image_similarly(secondary_labels)
+                secondary_labels = primary_objects.crop_image_similarly(
+                    secondary_labels
+                )
                 tertiary_image = primary_objects.parent_image
-            elif any([p_size > s_size
-                      for p_size, s_size
-                      in zip(primary_labels.shape, secondary_labels.shape)]):
+            elif any(
+                [
+                    p_size > s_size
+                    for p_size, s_size in zip(
+                        primary_labels.shape, secondary_labels.shape
+                    )
+                ]
+            ):
                 primary_labels = secondary_objects.crop_image_similarly(primary_labels)
                 tertiary_image = secondary_objects.parent_image
             elif secondary_objects.parent_image is not None:
@@ -228,7 +250,9 @@ but the results will be zero or not-a-number (NaN).
             else:
                 tertiary_image = primary_objects.parent_image
                 if tertiary_image is not None:
-                    tertiary_image, _ = cpo.size_similarly(secondary_labels, tertiary_image)
+                    tertiary_image, _ = cpo.size_similarly(
+                        secondary_labels, tertiary_image
+                    )
         #
         # Find the outlines of the primary image and use this to shrink the
         # primary image by one. This guarantees that there is something left
@@ -237,8 +261,7 @@ but the results will be zero or not-a-number (NaN).
         primary_outline = outline(primary_labels)
         tertiary_labels = secondary_labels.copy()
         if self.shrink_primary:
-            primary_mask = np.logical_or(primary_labels == 0,
-                                         primary_outline)
+            primary_mask = np.logical_or(primary_labels == 0, primary_outline)
         else:
             primary_mask = primary_labels == 0
         tertiary_labels[primary_mask == False] = 0
@@ -255,32 +278,35 @@ but the results will be zero or not-a-number (NaN).
         #
         # Relate tertiary objects to their parents & record
         #
-        child_count_of_secondary, secondary_parents = \
-            secondary_objects.relate_children(tertiary_objects)
+        child_count_of_secondary, secondary_parents = secondary_objects.relate_children(
+            tertiary_objects
+        )
         if self.shrink_primary:
-            child_count_of_primary, primary_parents = \
-                primary_objects.relate_children(tertiary_objects)
+            child_count_of_primary, primary_parents = primary_objects.relate_children(
+                tertiary_objects
+            )
         else:
             # Primary and tertiary don't overlap.
             # Establish overlap between primary and secondary and commute
-            _, secondary_of_primary = \
-                secondary_objects.relate_children(primary_objects)
+            _, secondary_of_primary = secondary_objects.relate_children(primary_objects)
             mask = secondary_of_primary != 0
             child_count_of_primary = np.zeros(mask.shape, int)
             child_count_of_primary[mask] = child_count_of_secondary[
-                secondary_of_primary[mask] - 1]
-            primary_parents = np.zeros(secondary_parents.shape,
-                                       secondary_parents.dtype)
+                secondary_of_primary[mask] - 1
+            ]
+            primary_parents = np.zeros(secondary_parents.shape, secondary_parents.dtype)
             primary_of_secondary = np.zeros(secondary_objects.count + 1, int)
-            primary_of_secondary[secondary_of_primary] = \
-                np.arange(1, len(secondary_of_primary) + 1)
+            primary_of_secondary[secondary_of_primary] = np.arange(
+                1, len(secondary_of_primary) + 1
+            )
             primary_of_secondary[0] = 0
             primary_parents = primary_of_secondary[secondary_parents]
         #
         # Write out the objects
         #
-        workspace.object_set.add_objects(tertiary_objects,
-                                         self.subregion_objects_name.value)
+        workspace.object_set.add_objects(
+            tertiary_objects, self.subregion_objects_name.value
+        )
         #
         # Write out the measurements
         #
@@ -289,39 +315,58 @@ but the results will be zero or not-a-number (NaN).
         # The parent/child associations
         #
         for parent_objects_name, parents_of, child_count, relationship in (
-                (self.primary_objects_name, primary_parents,
-                 child_count_of_primary, R_REMOVED),
-                (self.secondary_objects_name, secondary_parents,
-                 child_count_of_secondary, R_PARENT)):
-            m.add_measurement(self.subregion_objects_name.value,
-                              cellprofiler.measurement.FF_PARENT % parent_objects_name.value,
-                              parents_of)
-            m.add_measurement(parent_objects_name.value,
-                              cellprofiler.measurement.FF_CHILDREN_COUNT % self.subregion_objects_name.value,
-                              child_count)
+            (
+                self.primary_objects_name,
+                primary_parents,
+                child_count_of_primary,
+                R_REMOVED,
+            ),
+            (
+                self.secondary_objects_name,
+                secondary_parents,
+                child_count_of_secondary,
+                R_PARENT,
+            ),
+        ):
+            m.add_measurement(
+                self.subregion_objects_name.value,
+                cellprofiler.measurement.FF_PARENT % parent_objects_name.value,
+                parents_of,
+            )
+            m.add_measurement(
+                parent_objects_name.value,
+                cellprofiler.measurement.FF_CHILDREN_COUNT
+                % self.subregion_objects_name.value,
+                child_count,
+            )
             mask = parents_of != 0
             image_number = np.ones(np.sum(mask), int) * m.image_set_number
             child_object_number = np.argwhere(mask).flatten() + 1
             parent_object_number = parents_of[mask]
             m.add_relate_measurement(
-                    self.module_num, relationship,
-                    parent_objects_name.value, self.subregion_objects_name.value,
-                    image_number, parent_object_number,
-                    image_number, child_object_number)
+                self.module_num,
+                relationship,
+                parent_objects_name.value,
+                self.subregion_objects_name.value,
+                image_number,
+                parent_object_number,
+                image_number,
+                child_object_number,
+            )
 
         object_count = tertiary_objects.count
         #
         # The object count
         #
-        cpmi.add_object_count_measurements(workspace.measurements,
-                                           self.subregion_objects_name.value,
-                                           object_count)
+        cpmi.add_object_count_measurements(
+            workspace.measurements, self.subregion_objects_name.value, object_count
+        )
         #
         # The object locations
         #
-        cpmi.add_object_location_measurements(workspace.measurements,
-                                              self.subregion_objects_name.value,
-                                              tertiary_labels)
+        cpmi.add_object_location_measurements(
+            workspace.measurements, self.subregion_objects_name.value, tertiary_labels
+        )
 
         if self.show_window:
             workspace.display_data.primary_labels = primary_labels
@@ -340,41 +385,56 @@ but the results will be zero or not-a-number (NaN).
         #
         figure.set_subplots((2, 2))
 
-        figure.subplot_imshow_labels(0, 0, primary_labels,
-                                     self.primary_objects_name.value)
-        figure.subplot_imshow_labels(1, 0, secondary_labels,
-                                     self.secondary_objects_name.value,
-                                     sharexy=figure.subplot(0, 0))
-        figure.subplot_imshow_labels(0, 1, tertiary_labels,
-                                     self.subregion_objects_name.value,
-                                     sharexy=figure.subplot(0, 0))
-        figure.subplot_imshow_bw(1, 1, tertiary_outlines,
-                                 "Outlines",
-                                 sharexy=figure.subplot(0, 0))
+        figure.subplot_imshow_labels(
+            0, 0, primary_labels, self.primary_objects_name.value
+        )
+        figure.subplot_imshow_labels(
+            1,
+            0,
+            secondary_labels,
+            self.secondary_objects_name.value,
+            sharexy=figure.subplot(0, 0),
+        )
+        figure.subplot_imshow_labels(
+            0,
+            1,
+            tertiary_labels,
+            self.subregion_objects_name.value,
+            sharexy=figure.subplot(0, 0),
+        )
+        figure.subplot_imshow_bw(
+            1, 1, tertiary_outlines, "Outlines", sharexy=figure.subplot(0, 0)
+        )
 
     def is_object_identification_module(self):
-        '''IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module'''
+        """IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         subregion_name = self.subregion_objects_name.value
         columns = cpmi.get_object_measurement_columns(subregion_name)
-        for parent in (self.primary_objects_name.value,
-                       self.secondary_objects_name.value):
-            columns += [(parent,
-                         cellprofiler.measurement.FF_CHILDREN_COUNT % subregion_name,
-                         cpmeas.COLTYPE_INTEGER),
-                        (subregion_name,
-                         cellprofiler.measurement.FF_PARENT % parent,
-                         cpmeas.COLTYPE_INTEGER)]
+        for parent in (
+            self.primary_objects_name.value,
+            self.secondary_objects_name.value,
+        ):
+            columns += [
+                (
+                    parent,
+                    cellprofiler.measurement.FF_CHILDREN_COUNT % subregion_name,
+                    cpmeas.COLTYPE_INTEGER,
+                ),
+                (
+                    subregion_name,
+                    cellprofiler.measurement.FF_PARENT % parent,
+                    cpmeas.COLTYPE_INTEGER,
+                ),
+            ]
         return columns
 
-    def upgrade_settings(self,
-                         setting_values,
-                         variable_revision_number,
-                         module_name,
-                         from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         """Adjust the setting values to make old pipelines compatible with new
 
         This function allows the caller to adjust the setting_values
@@ -431,8 +491,10 @@ but the results will be zero or not-a-number (NaN).
         categories = []
         if object_name == cpmeas.IMAGE:
             categories += ["Count"]
-        elif (object_name == self.primary_objects_name or
-                      object_name == self.secondary_objects_name):
+        elif (
+            object_name == self.primary_objects_name
+            or object_name == self.secondary_objects_name
+        ):
             categories.append("Children")
         if object_name == self.subregion_objects_name:
             categories += ("Parent", "Location", "Number")
@@ -449,16 +511,20 @@ but the results will be zero or not-a-number (NaN).
         if object_name == cpmeas.IMAGE:
             if category == "Count":
                 result += [self.subregion_objects_name.value]
-        if (object_name in
-                (self.primary_objects_name.value, self.secondary_objects_name.value)
-            and category == "Children"):
+        if (
+            object_name
+            in (self.primary_objects_name.value, self.secondary_objects_name.value)
+            and category == "Children"
+        ):
             result += ["%s_Count" % self.subregion_objects_name.value]
         if object_name == self.subregion_objects_name:
             if category == "Location":
                 result += ["Center_X", "Center_Y"]
             elif category == "Parent":
-                result += [self.primary_objects_name.value,
-                           self.secondary_objects_name.value]
+                result += [
+                    self.primary_objects_name.value,
+                    self.secondary_objects_name.value,
+                ]
             elif category == "Number":
                 result += ["Object_Number"]
         return result

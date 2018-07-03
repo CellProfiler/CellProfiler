@@ -4,6 +4,8 @@ addons:
       - libhdf5-serial-dev
       - python-mysqldb
       - python-pip
+      - libgtk-3-dev
+      - libgstreamer-plugins-base1.0-dev
 cache:
   apt: true
   directories: $HOME/.cache/pip
@@ -13,9 +15,11 @@ env:
     - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
 matrix:
   allow_failures:
-    - python: 3.8
+    - env: REQUIREMENTS_FILE="unpinned_requirements.txt"
+    - python: 3.6
 install:
-  - pip install -e .[test]
+  - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04/
+  - pip install .[test]
   - pip freeze
 language: python
 notifications:
@@ -25,8 +29,7 @@ notifications:
     on_failure: always
     on_success: change
 python:
-  - "2.7"
-  - "3.8"
+  - "3.7"
 before_script:
   - pip install flake8
   # stop the build if there are Python syntax errors or undefined names

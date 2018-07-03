@@ -268,22 +268,22 @@ class PipelineController(object):
         self.__help_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_HELP_MODULE,
             "?", (0, 0), (30, -1))
-        self.__help_button.SetToolTipString("Get Help for selected module")
+        self.__help_button.SetToolTip("Get Help for selected module")
         self.__mcp_text = wx.StaticText(self.__module_controls_panel, -1, "Adjust modules:")
         self.__mcp_add_module_button = wx.Button(self.__module_controls_panel, -1, "+", (0, 0), (30, -1))
-        self.__mcp_add_module_button.SetToolTipString("Add a module")
+        self.__mcp_add_module_button.SetToolTip("Add a module")
         self.__mcp_remove_module_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_EDIT_DELETE,
             "-", (0, 0), (30, -1))
-        self.__mcp_remove_module_button.SetToolTipString("Remove selected module")
+        self.__mcp_remove_module_button.SetToolTip("Remove selected module")
         self.__mcp_module_up_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_EDIT_MOVE_UP,
             "^", (0, 0), (30, -1))
-        self.__mcp_module_up_button.SetToolTipString("Move selected module up")
+        self.__mcp_module_up_button.SetToolTip("Move selected module up")
         self.__mcp_module_down_button = wx.Button(
             self.__module_controls_panel, cpframe.ID_EDIT_MOVE_DOWN,
             "v", (0, 0), (30, -1))
-        self.__mcp_module_down_button.SetToolTipString("Move selected module down")
+        self.__mcp_module_down_button.SetToolTip("Move selected module down")
         mcp_sizer.AddMany([(self.__help_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
                            ((1, 3), 3),
                            (self.__mcp_text, 0, wx.ALIGN_CENTER | wx.ALL, 3),
@@ -338,7 +338,7 @@ class PipelineController(object):
         self.__test_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_TEST"))
         self.__test_mode_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=self.__test_bmp,label=self.ENTER_TEST_MODE)
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
-        self.__test_mode_button.SetToolTipString(self.ENTER_TEST_MODE_HELP)
+        self.__test_mode_button.SetToolTip(self.ENTER_TEST_MODE_HELP)
 
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
 
@@ -346,7 +346,7 @@ class PipelineController(object):
         self.__analyze_images_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=analyze_bmp,
                                                                           label=self.ANALYZE_IMAGES)
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
-        self.__analyze_images_button.SetToolTipString(self.ANALYZE_IMAGES_HELP)
+        self.__analyze_images_button.SetToolTip(self.ANALYZE_IMAGES_HELP)
 
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
 
@@ -357,17 +357,17 @@ class PipelineController(object):
         pause_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("pause"))
         self.__pause_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=pause_bmp, label=self.PAUSE)
         self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
-        self.__pause_button.SetToolTipString(self.PAUSE_HELP)
+        self.__pause_button.SetToolTip(self.PAUSE_HELP)
         self.__tcp_analysis_sizer.Add(self.__pause_button, 1, wx.EXPAND)
 
         self.__resume_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=analyze_bmp, label=self.RESUME)
         self.__resume_button.Bind(wx.EVT_BUTTON, self.on_resume)
-        self.__resume_button.SetToolTipString(self.RESUME_HELP)
+        self.__resume_button.SetToolTip(self.RESUME_HELP)
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
 
         self.__stop_analysis_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=stop_bmp, label='Stop Analysis')
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
-        self.__stop_analysis_button.SetToolTipString(
+        self.__stop_analysis_button.SetToolTip(
             "Cancel the analysis run")
         self.__tcp_analysis_sizer.Add(self.__stop_analysis_button, 1, wx.EXPAND)
         #

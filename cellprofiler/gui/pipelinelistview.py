@@ -245,7 +245,7 @@ class PipelineListView(object):
             event.Skip()
 
         input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
-        transparent_window.SetToolTipString(
+        transparent_window.SetToolTip(
                 "The current pipeline is a legacy pipeline that does not use these modules")
         self.transparent_window = transparent_window
 
@@ -1401,7 +1401,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         x0 = self.slider_width + self.column_width * 3 + self.text_gap
         return wx.Rect(x0 + self.gap,
                        index * self.line_height,
-                       self.GetSizeTuple()[0] - x0 - self.gap,
+                       self.GetSize()[0] - x0 - self.gap,
                        self.line_height)
 
     def get_slider_rect(self):
@@ -1498,7 +1498,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
 
             dc.SetPen(wx.BLACK_PEN)
 
-            dc.DrawLine(0, y, self.GetSizeTuple()[0], y)
+            dc.DrawLine(0, y, self.GetSize()[0], y)
 
     def make_event(self, py_event_binder, index=None):
         event = wx.NotifyEvent(py_event_binder.evtType[0])
@@ -1586,7 +1586,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
             self.Select(index, True)
             if anchoring:
                 self.anchor = index
-        window_height = int(self.GetSizeTuple()[1] / self.line_height)
+        window_height = int(self.GetSize()[1] / self.line_height)
         #
         # Always keep the active item in view
         #
@@ -1661,7 +1661,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
                     elif not item.module.is_input_module():
                         tooltip_text = "Click to enable the %s module" % item.module.module_name
             if tooltip_text is not None:
-                self.SetToolTipString(tooltip_text)
+                self.SetToolTip(tooltip_text)
             else:
                 self.SetToolTip(None)
 

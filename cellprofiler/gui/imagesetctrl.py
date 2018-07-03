@@ -586,19 +586,19 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         pb_col, pb_hit_code, pb_show = self.pressed_button
         if pb_hit_code is None:
             if hit_code == self.HIT_CHANNEL_TYPE_BUTTON:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                         "Change the channel's type (monochrome, color, objects, etc)")
             elif hit_code == self.HIT_FILTER_BUTTON:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                         "Select items in this channel using a filter")
             elif hit_code == self.HIT_PLUS:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                         "Add an image column to the image set")
             elif hit_code == self.HIT_MINUS:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                         "Remove this image column from the image set.")
             elif col is not None:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                         'Image column, "%s"' % self.GetTable().columns[col].channel)
             event.Skip(True)
             return
@@ -1505,7 +1505,7 @@ class FilterPanelDlg(wx.Dialog):
 
         for button_text, fn, help_text in function_list:
             button = wx.Button(self, label=button_text)
-            button.SetToolTipString(help_text)
+            button.SetToolTip(help_text)
 
             def on_button(event, fn=fn):
                 current_channel = self.channel_choice.GetStringSelection()

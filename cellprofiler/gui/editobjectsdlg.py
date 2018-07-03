@@ -427,11 +427,11 @@ class EditObjectsDialog(wx.Dialog):
                                   "Reverse selection")
         sub_sizer.Add(toggle_button, 0, wx.ALIGN_CENTER)
         self.undo_button = wx.Button(self, wx.ID_UNDO)
-        self.undo_button.SetToolTipString("Undo last edit")
+        self.undo_button.SetToolTip("Undo last edit")
         self.undo_button.Enable(False)
         sub_sizer.Add(self.undo_button)
         reset_button = wx.Button(self, -1, "Reset")
-        reset_button.SetToolTipString(
+        reset_button.SetToolTip(
                 "Undo all editing and restore the original objects")
         sub_sizer.Add(reset_button)
         self.display_image_button = \

@@ -123,9 +123,9 @@ class CornerButtonMixin(object):
         hit_code = self.corner_hit_test(event.X, event.Y)
         if self.corner_hitcode == self.CORNER_HIT_NONE:
             if hit_code == self.CORNER_HIT_NONE:
-                corner.SetToolTipString("")
+                corner.SetToolTip("")
             elif hit_code == self.CORNER_HIT_UPDATE:
-                corner.SetToolTipString(self.tooltip)
+                corner.SetToolTip(self.tooltip)
         else:
             was_pressed = self.corner_button_pressed
             self.corner_button_pressed = (

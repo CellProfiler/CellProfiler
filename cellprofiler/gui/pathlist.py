@@ -561,7 +561,7 @@ class PathListCtrl(wx.ScrolledWindow):
         paint_dc = wx.BufferedPaintDC(self)
         if self.schmutzy:
             self.recalc()
-        width, height = self.GetSizeTuple()
+        width, height = self.GetSize()
         rn = wx.RendererNative.Get()
         background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
         background_brush = wx.Brush(background_color)

@@ -260,7 +260,7 @@ class CPFrame(wx.Frame):
 
         def show_disabled(event):
             self.__path_list_ctrl.set_show_disabled(
-                    self.__path_list_filter_checkbox.Value)
+                    self.__path_list_filter_checkbox.GetValue())
 
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
         hsizer.AddStretchSpacer()
@@ -384,8 +384,7 @@ class CPFrame(wx.Frame):
     def show_imageset_ctrl(self):
         sizer = self.__imageset_panel.Sizer
         assert isinstance(sizer, wx.Sizer)
-        if (sizer.IsShown(self.__imageset_ctrl) == False or
-                    self.__imageset_sash.IsShown() == False):
+        if sizer.IsShown(self.__imageset_ctrl) is False or self.__imageset_sash.IsShown() is False:
             sizer.Show(self.__imageset_ctrl, True)
             sizer.Show(self.__grid_ctrl, False)
             self.show_imageset_sash(True)
@@ -395,8 +394,7 @@ class CPFrame(wx.Frame):
         if table is not None:
             self.__grid_ctrl.SetTable(table)
         sizer = self.__imageset_panel.Sizer
-        if (sizer.IsShown(self.__imageset_ctrl) == True or
-                    self.__imageset_sash.IsShown() == False):
+        if sizer.IsShown(self.__imageset_ctrl) or self.__imageset_sash.IsShown() is False:
             sizer.Show(self.__imageset_ctrl, False)
             sizer.Show(self.__grid_ctrl, True)
             self.show_imageset_sash(True)
@@ -475,7 +473,7 @@ class CPFrame(wx.Frame):
         """Run the sash layout algorithm on the path/module/imageset panel"""
         self.__pmi_layout_in_progress = True
         try:
-            wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
+            wx.adv.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
                                               self.__module_panel)
             self.__right_win.Layout()
         finally:
@@ -904,8 +902,8 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
 
         assert isinstance(startstop, wx.MenuItem)
-        startstop.Text = '&Exit Test Mode\tF5'
-        startstop.Help = 'Stop testing your pipeline'
+        startstop.SetText('&Exit Test Mode\tF5')
+        startstop.SetHelp('Stop testing your pipeline')
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, True)
 
@@ -969,7 +967,7 @@ class CPFrame(wx.Frame):
     def about(event):
         info = cellprofiler.gui.dialog.AboutDialogInfo()
 
-        wx.AboutBox(info)
+        wx.adv.AboutBox(info)
 
     def __on_help_welcome(self, event):
         self.show_welcome_screen(True)
@@ -1130,13 +1128,13 @@ class CPFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler.modules.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.figure import Figure
-            lip = LoadImagesImageProvider("dummy", "", dlg.Path)
+            lip = LoadImagesImageProvider("dummy", "", dlg.GetPath())
             image = lip.provide_image(None).pixel_data
-            frame = Figure(self, title=dlg.Path, subplots=(1, 1))
+            frame = Figure(self, title=dlg.GetPath(), subplots=(1, 1))
             if image.ndim == 3:
-                frame.subplot_imshow_color(0, 0, image, title=dlg.Path)
+                frame.subplot_imshow_color(0, 0, image, title=dlg.GetPath())
             else:
-                frame.subplot_imshow_grayscale(0, 0, image, title=dlg.Path)
+                frame.subplot_imshow_grayscale(0, 0, image, title=dlg.GetPath())
             frame.panel.draw()
 
     def __attach_views(self):
@@ -1173,7 +1171,7 @@ class CPFrame(wx.Frame):
         self.__splitter.SetMinimumPaneSize(120)
         self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
         self.__splitter.BorderSize = 0
-        self.__splitter.SashSize = 5
+        self.__splitter.SetSashSize(5)
 
         top_left_sizer = wx.BoxSizer(wx.VERTICAL)
         top_left_sizer.Add(self.__module_list_panel, 1, wx.EXPAND | wx.ALL, 1)
@@ -1203,11 +1201,11 @@ class CPFrame(wx.Frame):
         dlg = wx.FileDialog(
                 self, "Choose data output file for %s data tool" %
                       tool_name, wildcard="Measurements file(*.mat,*.h5)|*.mat;*.h5",
-                style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
+                style=(wx.FD_OPEN | wx.FD_FILE_MUST_EXIST))
         if dlg.ShowModal() == wx.ID_OK:
             cellprofiler.gui.datatoolframe.DataToolFrame(self,
                                                          module_name=tool_name,
-                                                         measurements_file_name=dlg.Path)
+                                                         measurements_file_name=dlg.GetPath())
 
     def __on_data_tool_help(self, event, tool_name):
         module = cellprofiler.modules.instantiate_module(tool_name)

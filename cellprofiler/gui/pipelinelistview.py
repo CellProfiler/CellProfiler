@@ -126,7 +126,7 @@ class PipelineListView(object):
         self.__module_controls_panel = None
         assert isinstance(panel, wx.Window)
         top_sizer = wx.BoxSizer(orient=wx.VERTICAL)
-        panel.Sizer = top_sizer
+        panel.SetSizer(top_sizer)
         self.__input_controls = []
         self.__input_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
@@ -137,17 +137,17 @@ class PipelineListView(object):
         top_sizer.Add(outputs_sizer, 0, wx.EXPAND)
         self.outputs_panel = wx.Panel(panel)
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
-        self.outputs_panel.Sizer = wx.BoxSizer()
+        self.outputs_panel.SetSizer(wx.BoxSizer())
         if wx.VERSION < (2, 9):
-            self.outputs_panel.BackgroundStyle = wx.SOLID
+            self.outputs_panel.SetBackgroundStyle(wx.SOLID)
         else:
-            self.outputs_panel.BackgroundStyle = wx.BG_STYLE_COLOUR
+            self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
         self.outputs_button = wx.Button(self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT)
-        self.outputs_panel.Sizer.AddStretchSpacer(1)
-        self.outputs_panel.Sizer.Add(self.outputs_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 2)
-        self.outputs_panel.Sizer.AddStretchSpacer(1)
+        self.outputs_panel.GetSizer().AddStretchSpacer(1)
+        self.outputs_panel.GetSizer().Add(self.outputs_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 2)
+        self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_button.Bind(wx.EVT_BUTTON, self.on_outputs_button)
-        self.outputs_panel.AutoLayout = True
+        self.outputs_panel.SetAutoLayout(True)
         self.__panel.Layout()
         self.outputs_panel.Layout()
         self.__panel.SetAutoLayout(True)
@@ -234,14 +234,14 @@ class PipelineListView(object):
 
         def on_fake_size(event):
             assert isinstance(event, wx.SizeEvent)
-            transparent_window.SetSize(event.Size)
+            transparent_window.SetSize(event.GetSize())
             event.Skip()
 
         input_list_ctrl.Bind(wx.EVT_SIZE, on_fake_size)
 
         def on_fake_move(event):
             assert isinstance(event, wx.MoveEvent)
-            transparent_window.Move(event.Position)
+            transparent_window.Move(event.GetPosition())
             event.Skip()
 
         input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
@@ -307,7 +307,7 @@ class PipelineListView(object):
                 cellprofiler.gui.moduleview.request_module_validation(validation_request)
 
     def set_debug_mode(self, mode):
-        if (mode == True) and (self.__pipeline is not None):
+        if (mode is True) and (self.__pipeline is not None):
             modules = filter((lambda m: not m.is_input_module()),
                              self.__pipeline.modules())
             if len(modules) > 0:
@@ -976,18 +976,18 @@ class PipelineDropTarget(wx.PyDropTarget):
 
     def OnData(self, x, y, action):
         if self.GetData():
-            if self.data_object.ReceivedFormat.GetType() == \
-                    self.pipeline_data_object.Format.GetType():
+            if self.data_object.GetReceivedFormat().GetType() == \
+                    self.pipeline_data_object.GetFormat().GetType():
                 pipeline_data = self.pipeline_data_object.GetDataHere()
                 if pipeline_data is not None:
                     self.window.on_data(x, y, action, pipeline_data)
-            elif self.data_object.ReceivedFormat.GetType() == wx.DF_FILENAME:
+            elif self.data_object.GetReceivedFormat().GetType() == wx.DF_FILENAME:
                 self.window.on_filelist_data(
-                        x, y, action, self.file_data_object.Filenames)
+                        x, y, action, self.file_data_object.GetFilenames())
         return action
 
 
-class PipelineListCtrl(wx.PyScrolledWindow):
+class PipelineListCtrl(wx.ScrolledWindow):
     """A custom widget for the pipeline module list"""
 
     class PipelineListCtrlItem(object):
@@ -1283,7 +1283,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         if self.running_item >= index:
             self.running_item += 1
         self.AdjustScrollbars()
-        self.SetBestSize(self.GetVirtualSize())
+
+        self.SetInitialSize(self.GetVirtualSize())
         self.Refresh(eraseBackground=False)
 
     def get_insert_index(self, position):
@@ -1420,9 +1421,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
         self.PrepareDC(dc)
 
-        dc.BeginDrawing()
-
-        dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
+        dc.SetBackground(wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)))
 
         dc.Clear()
 
@@ -1439,20 +1438,20 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 rectangle = self.get_go_pause_rect(index)
                 bitmap = self.bmp_pause if item.is_paused() else self.bmp_go
 
-                dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)
+                dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
 
             if self.show_show_frame_column:
                 rectangle = self.get_eye_rect(index)
 
                 bitmap = self.bmp_eye if item.is_shown() else self.bmp_closed_eye
 
-                dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)
+                dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
 
             rectangle = self.get_error_rect(index)
 
             bitmap = (self.bmp_unavailable if item.is_unavailable() else self.bmp_disabled if not item.enabled else self.bmp_error if item.error_state == ERROR else BMP_WARNING if item.error_state == WARNING else self.bmp_ok)
 
-            dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)
+            dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
 
             rectangle = self.get_text_rect(index)
 
@@ -1492,7 +1491,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
             dc.SetTextForeground(item_text_color)
 
-            dc.DrawText(item.module_name, rectangle.left + self.text_gap, rectangle.top)
+            dc.DrawText(item.module_name, rectangle.GetLeft() + self.text_gap, rectangle.GetTop())
 
         if self.drop_insert_point is not None:
             y = self.line_height * self.drop_insert_point
@@ -1501,11 +1500,9 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
             dc.DrawLine(0, y, self.GetSizeTuple()[0], y)
 
-        dc.EndDrawing()
-
     def make_event(self, py_event_binder, index=None):
         event = wx.NotifyEvent(py_event_binder.evtType[0])
-        event.EventObject = self
+        event.SetEventObject(self)
         if index is not None:
             event.SetInt(index)
         return event
@@ -1513,7 +1510,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
     def on_left_down(self, event):
         assert isinstance(event, wx.MouseEvent)
         self.SetFocus()
-        index, hit_test, column = self.HitTestSubItem(event.Position)
+        index, hit_test, column = self.HitTestSubItem(event.GetPosition())
         if hit_test == PLV_HITTEST_SLIDER:
             self.active_slider = True
             self.CaptureMouse()
@@ -1679,7 +1676,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         if self.GetItemCount() > 0 and self.active_item is not None:
             multiple_selection = event.ControlDown() or event.ShiftDown()
             anchoring_selection = not event.ShiftDown()
-            if (event.KeyCode in (wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN) and
+            if (event.GetKeyCode() in (wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN) and
                         self.active_item < self.GetItemCount() - 1):
                 self.cancel_capture()
                 # Retreating from a previous shift select
@@ -1688,7 +1685,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 self.activate_item(
                         self.active_item + 1, False, multiple_selection,
                         anchoring=anchoring_selection)
-            elif (event.KeyCode in (wx.WXK_UP, wx.WXK_NUMPAD_UP) and
+            elif (event.GetKeyCode() in (wx.WXK_UP, wx.WXK_NUMPAD_UP) and
                           self.active_item > 0):
                 self.cancel_capture()
                 if not anchoring_selection and self.anchor < self.active_item:
@@ -1696,7 +1693,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 self.activate_item(
                         self.active_item - 1, False, multiple_selection,
                         anchoring_selection)
-            elif event.KeyCode in (wx.WXK_HOME, wx.WXK_NUMPAD_HOME):
+            elif event.GetKeyCode() in (wx.WXK_HOME, wx.WXK_NUMPAD_HOME):
                 self.cancel_capture()
                 if not anchoring_selection:
                     # Extend selection to anchor / remove selection beyond anchor
@@ -1706,7 +1703,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                         self.Select(i, True)
                 self.activate_item(
                         0, False, multiple_selection, anchoring=anchoring_selection)
-            elif event.KeyCode in (wx.WXK_END, wx.WXK_NUMPAD_END):
+            elif event.GetKeyCode() in (wx.WXK_END, wx.WXK_NUMPAD_END):
                 self.cancel_capture()
                 if not anchoring_selection:
                     # Extend selection from current to end / remove

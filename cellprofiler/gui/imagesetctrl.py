@@ -626,16 +626,16 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.SetTitle("Change image type for %s" % (self.GetTable().GetColLabelValue(col)))
             dlg.SetSizer(wx.BoxSizer(wx.VERTICAL))
             choices = [
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
                  self.monochrome_channel_image,
                  "Treat the image as monochrome, averaging colors if needed"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
                  self.color_channel_image,
                  "Treat the image as color. Use ColorToGray to get individual colors"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_MASK,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
                  self.mask_image,
                  "Treat the image as a binary mask"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
                  self.objects_image,
                  "Treat the image as objects"),
                 (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
@@ -931,7 +931,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     def recompute(self):
         """Recompute the layout after a change to the image set"""
 
-        n_rows_added, n_columns_added = self.GetTable().recompute()
+        n_rows_added, n_columns_added = self.GetTable().GetValue()
 
         need_column_layout = False
         if n_columns_added < 0:

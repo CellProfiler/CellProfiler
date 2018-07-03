@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 from cellprofiler.preferences import set_headless
@@ -54,50 +54,6 @@ class TestAlign(unittest.TestCase):
                 ai.input_image_name.value = input_name
                 ai.output_image_name.value = output_name
         return workspace, module
-
-    def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1PwTy5RMDBVMLCwMjWyMjRQMDIwsFQgGTAwevryMzAwlDIx'
-                'MFTMeRvhmH/ZQKTs9pbXyzJLdh9gXCazM8AhxoKPV0XNcea1TCH39YXG3n4y'
-                'queufDT+Ib+76NnyD8Zlc+Za5T5K3ZpuFNUZtWnR8z3f9763vf2xu5yB4V0w'
-                'g9Wfm0/3ci5bq/vUbSF3ZYfE4YXztzQyzzv58f6e+QclDhc3nVPwDGRK05W3'
-                '5zr+5YvWrL2/vPZOWcDI03VqD++lBzJHT24vzNOIl3/MqeT8h7mx6PRVvwuq'
-                'fga8S/ceCXdPr9MM/vPuw7+06nntbZPaxd5XtxYurGd49svP9V4V6995b5Zn'
-                'HIqrnXVAsJj5hJv4zHhev9Utl5keZs/4Wb9+4+umTf/zntl3cKScOLI+eFO5'
-                'w/yHGztjF6dcZ6g9XGMb+IPrJ/PBuo49c7YF3slldT/hzvhl4pOPkcn7V994'
-                'L/Zp2sMviy9Mf//6weLTp6cl6T/pv8KrWXyZZebnC2vZZftzj8adKKr7VJDV'
-                'm977uf6RTHbBPG0LJ7kLFg0t8/nnVUtcVinkz5RR3rfp5/X60Mcxj3WOVb6w'
-                '/Jzn+niDpfwNVv3IJbV3a3LO2ctU/RCq1lTRE7v/a09VFU/drsr8aQWzat7r'
-                'tx+vLfW7a1NiMZurb8JfiThVZY9PVZWSPwNfX3tfc1Wk8sa5z/fX8Uf/q7y7'
-                '9tEXM7H/5iKvb2n9ZubtX/XzhNlC+csmm46v/WU/8/GumtOLV/jNOd5VfvVR'
-                'zPPsnT+jwvYs+xxQvmd1V3j4vivpdz/OerTup13Pe94d/2NCzoffrtgXYLG3'
-                'xuNM4ap3M1nOCbTbzbz3IeL625u1HDui40tMPprv3LL96uZV1vejfmVbz7Uu'
-                'fPVGZuXn10e//jv/d+V9+4SPNuLHW/+dZv1V+Xv6L7Xz0euv10cCALr4bf0=')
-        fd = StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.load(fd)
-        #
-        # The pipeline has three modules and Align is the third. It has
-        # the following settings:
-        # input image name = Template
-        # output image name = AlignedTemplate
-        # second input name = Image
-        # second output name = AlignedImage
-        # use normalized correlation
-        #
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, A.Align))
-        self.assertEqual(module.first_input_image.value, "Template")
-        self.assertEqual(module.first_output_image.value, "AlignedTemplate")
-        self.assertEqual(module.second_input_image.value, "Image")
-        self.assertEqual(module.second_output_image.value, "AlignedImage")
-        self.assertEqual(module.alignment_method.value, A.M_CROSS_CORRELATION)
-        self.assertEqual(module.crop_mode, A.C_SAME_SIZE)
 
     def test_01_02_load_v1(self):
         '''Load a version 1 pipeline'''

@@ -3,8 +3,9 @@
 """
 
 import bioformats.formatreader
-import cellprofiler.preferences
 import wx
+
+import cellprofiler.preferences
 
 
 class OmeroLoginDlg(wx.Dialog):
@@ -28,15 +29,22 @@ class OmeroLoginDlg(wx.Dialog):
 
         max_width = 0
         max_height = 0
-        for label in (self.SERVER_LABEL, self.PORT_LABEL,
-                      self.USER_LABEL, self.PASSWORD_LABEL):
-            w, h = self.GetTextExtent(label)
+        for label in (
+            self.SERVER_LABEL,
+            self.PORT_LABEL,
+            self.USER_LABEL,
+            self.PASSWORD_LABEL,
+        ):
+            w, h, _, _ = self.GetFullTextExtent(label)
             max_width = max(w, max_width)
             max_height = max(h, max_height)
 
         lsize = wx.Size(max_width, max_height)
-        sub_sizer.Add(wx.StaticText(self, label="Server:", size=lsize), 0,
-                      wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
+        sub_sizer.Add(
+            wx.StaticText(self, label="Server:", size=lsize),
+            0,
+            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
+        )
         sub_sizer.AddSpacer(2)
         self.omero_server_ctrl = wx.TextCtrl(self, value=self.server)
         sub_sizer.Add(self.omero_server_ctrl, 1, wx.EXPAND)
@@ -44,26 +52,34 @@ class OmeroLoginDlg(wx.Dialog):
         sizer.AddSpacer(2)
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(sub_sizer, 0, wx.EXPAND)
-        sub_sizer.Add(wx.StaticText(self, label="Port:", size=lsize), 0,
-                      wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
+        sub_sizer.Add(
+            wx.StaticText(self, label="Port:", size=lsize),
+            0,
+            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
+        )
         self.omero_port_ctrl = wx.TextCtrl(self, value=str(self.port))
         sub_sizer.Add(self.omero_port_ctrl, 1, wx.EXPAND)
 
         sizer.AddSpacer(5)
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(sub_sizer, 0, wx.EXPAND)
-        sub_sizer.Add(wx.StaticText(self, label="User:", size=lsize), 0,
-                      wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
+        sub_sizer.Add(
+            wx.StaticText(self, label="User:", size=lsize),
+            0,
+            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
+        )
         self.omero_user_ctrl = wx.TextCtrl(self, value=self.user)
         sub_sizer.Add(self.omero_user_ctrl, 1, wx.EXPAND)
 
         sizer.AddSpacer(5)
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(sub_sizer, 0, wx.EXPAND)
-        sub_sizer.Add(wx.StaticText(self, label="Password:", size=lsize), 0,
-                      wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
-        self.omero_password_ctrl = wx.TextCtrl(self, value="",
-                                               style=wx.TE_PASSWORD)
+        sub_sizer.Add(
+            wx.StaticText(self, label="Password:", size=lsize),
+            0,
+            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
+        )
+        self.omero_password_ctrl = wx.TextCtrl(self, value="", style=wx.TE_PASSWORD)
         sub_sizer.Add(self.omero_password_ctrl, 1, wx.EXPAND)
 
         sizer.AddSpacer(5)
@@ -107,20 +123,20 @@ class OmeroLoginDlg(wx.Dialog):
 
     def connect(self):
         try:
-            server = self.omero_server_ctrl.Value
-            port = int(self.omero_port_ctrl.Value)
-            user = self.omero_user_ctrl.Value
+            server = self.omero_server_ctrl.GetValue()
+            port = int(self.omero_port_ctrl.GetValue())
+            user = self.omero_user_ctrl.GetValue()
         except:
-            self.message_ctrl.Label = "The port number must be an integer between 0 and 65535 (try 4064)"
+            self.message_ctrl.Label = (
+                "The port number must be an integer between 0 and 65535 (try 4064)"
+            )
             self.message_ctrl.ForegroundColour = "red"
             self.message_ctrl.Refresh()
             return False
         try:
             self.session_id = bioformats.formatreader.set_omero_credentials(
-                    server,
-                    port,
-                    user,
-                    self.omero_password_ctrl.Value)
+                server, port, user, self.omero_password_ctrl.GetValue()
+            )
             self.message_ctrl.Label = "Connected"
             self.message_ctrl.ForegroundColour = "green"
             self.message_ctrl.Refresh()

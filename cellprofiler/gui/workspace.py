@@ -15,15 +15,14 @@ class Workspace(cellprofiler.workspace.Workspace):
 
         if self.__create_new_window:
             figure = cellprofiler.gui.figure.Figure(
-                parent=self,
-                title=title,
-                name=window_name,
-                subplots=subplots
+                parent=self, title=title, name=window_name, subplots=subplots
             )
         else:
-            figure = cellprofiler.gui.figure.create_or_find(self.__frame, title=title, name=window_name, subplots=subplots)
+            figure = cellprofiler.gui.figure.create_or_find(
+                self.__frame, title=title, name=window_name, subplots=subplots
+            )
 
-        if not figure in self.__windows_used:
+        if figure not in self.__windows_used:
             self.__windows_used.append(figure)
 
         return figure
@@ -35,18 +34,18 @@ class Workspace(cellprofiler.workspace.Workspace):
 
         if self.measurements.has_feature(
             cellprofiler.measurement.EXPERIMENT,
-            cellprofiler.measurement.M_GROUPING_TAGS
+            cellprofiler.measurement.M_GROUPING_TAGS,
         ):
             group_number = self.measurements[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.GROUP_NUMBER,
-                image_set_number
+                image_set_number,
             ]
 
             group_index = self.measurements[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.GROUP_INDEX,
-                image_set_number
+                image_set_number,
             ]
 
             title = "{} #{}, image cycle #{}, group #{}, group index #{}".format(
@@ -54,26 +53,20 @@ class Workspace(cellprofiler.workspace.Workspace):
                 module.module_num,
                 image_set_number,
                 group_number,
-                group_index
+                group_index,
             )
         else:
             title = "{} #{}, image cycle #{}".format(
-                module.module_name,
-                module.module_num,
-                image_set_number
+                module.module_name, module.module_num, image_set_number
             )
 
         if self.__create_new_window:
             figure = cellprofiler.gui.figure.Figure(
-                parent=parent or self.__frame,
-                name=window_name,
-                title=title
+                parent=parent or self.__frame, name=window_name, title=title
             )
         else:
             figure = cellprofiler.gui.figure.create_or_find(
-                parent=parent or self.__frame,
-                name=window_name,
-                title=title
+                parent=parent or self.__frame, name=window_name, title=title
             )
 
         if figure not in self.__windows_used:

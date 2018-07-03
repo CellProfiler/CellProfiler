@@ -2,7 +2,7 @@ import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import cellprofiler.measurement
 import numpy as np

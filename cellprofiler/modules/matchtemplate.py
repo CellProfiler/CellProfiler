@@ -26,11 +26,12 @@ YES          NO           NO
 .. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 """
 
+import skimage.feature
+import skimage.io
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.feature
-import skimage.io
 
 
 class MatchTemplate(cellprofiler.module.Module):
@@ -40,13 +41,12 @@ class MatchTemplate(cellprofiler.module.Module):
 
     def create_settings(self):
         self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
-            "Image",
-            doc="Select the image you want to use."
+            "Image", doc="Select the image you want to use."
         )
 
         self.template_name = cellprofiler.setting.Pathname(
             "Template",
-            doc="Specify the location of the cropped image you want to use as a template."
+            doc="Specify the location of the cropped image you want to use as a template.",
         )
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
@@ -55,18 +55,10 @@ class MatchTemplate(cellprofiler.module.Module):
         )
 
     def settings(self):
-        return [
-            self.input_image_name,
-            self.template_name,
-            self.output_image_name,
-        ]
+        return [self.input_image_name, self.template_name, self.output_image_name]
 
     def visible_settings(self):
-        return [
-            self.input_image_name,
-            self.template_name,
-            self.output_image_name,
-        ]
+        return [self.input_image_name, self.template_name, self.output_image_name]
 
     def run(self, workspace):
         input_image_name = self.input_image_name.value
@@ -84,9 +76,7 @@ class MatchTemplate(cellprofiler.module.Module):
         template = skimage.io.imread(template_name)
 
         output_pixels = skimage.feature.match_template(
-            image=input_pixels,
-            template=template,
-            pad_input=True
+            image=input_pixels, template=template, pad_input=True
         )
 
         output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
@@ -105,17 +95,12 @@ class MatchTemplate(cellprofiler.module.Module):
 
         figure.set_subplots(dimensions)
 
-        figure.subplot_imshow(
-            0,
-            0,
-            workspace.display_data.input_pixels,
-            "Image"
-        )
+        figure.subplot_imshow(0, 0, workspace.display_data.input_pixels, "Image")
 
         figure.subplot_imshow(
             1,
             0,
             workspace.display_data.output_pixels,
             "Correlation coefficient",
-            sharexy=figure.subplot(0, 0)
+            sharexy=figure.subplot(0, 0),
         )

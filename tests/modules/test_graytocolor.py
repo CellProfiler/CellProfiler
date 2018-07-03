@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 import numpy as np
@@ -78,46 +78,6 @@ class TestGrayToColor(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   cpmeas.Measurements(), image_set_list)
         return workspace, module
-
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1PwTSxSMDZQMLC0MjW3MjRWMDIwsFQgGTAwevryMzAwrGFi'
-                'YKiY8zTCN/+WgYSZ4oKNK3u+hnR69+3uYbwa0jfV6opSaYnUilt+kz15Posk'
-                'TeFnsf46/037m032QHj5kZniMeXipDMJs1S1q3rvP6+dp142J4CVYY894wKZ'
-                'OPnWWGb+tSJHWZddrmiokbcWXs9SUiDUW8//W7fEUObmC7FbjJ8OrDr62Dbd'
-                'p+30zVfLzY9w5VxpDy4ruvHrYElLzPs0GXU3+/1HuVP4P4izXIu2eSs7K5lf'
-                'WP1U/4efF0NjHxWXrk7cb+1Vo1Fg9yLRPu3Yyz/FE85cN/8Rlvzs+iI7F+7/'
-                'ruWMvvdnON3/41JoxTTHqN35sbS4/5o0M7n+nTVS8QKzd+zVnLPApb/DvfPw'
-                'wkIexdWHs8xqbKad3/994d7Uf2J2+9TanGuUPxT90HikOPf+pPP/My6xbqyX'
-                'XxO2SS7kYwZXQVe2hasD55vb7N/qTn24sWW/q53ItQKuBYx8CbZbJn+dML3e'
-                'O6j8OUPJ5vNbY18+u/63/YNPyMpo0b41dYF/1WNqpcqfn4iVenZpy8Qi2d/f'
-                'lPPvlR6zydX1Z65VCn9vsmp6aHpU7NW69KeL1z98mfDokOrsetUT9cc+LjQs'
-                '07E5HsaQy3x5+c7jD956Lz/xPfb58rnBq151/1lTUHdpxr3s8y1mSQWbPj2c'
-                'f/ic94oQ/zi72w+mWu7ZcbRCavL0srdT/v+RPfZr/1u7HfdDhKezbN7fv/nl'
-                'H8XF5098EV7w33E+R/rl8pJDxznkJ2YsC5qeVRv58dtR/5bFp/6vsVj1dWks'
-                '/9n9sR9/h389PU87vPXL5+Z6/8l3p19nibJ91upz7fzpD3sTPfTk/tXcbDrP'
-                'cC4wzs5dhq93d7dk4V/Fl3o+Kcwfax/8vXLoxY5PWyY93T19r/1WjTwzv/it'
-                '589ZGZV6H1117Lro05cXf1z/tf1X/6/zuzL+vnjw/etnmSXn+28rnr//9Kv4'
-                'klCPFAAYV4Td')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, G.GrayToColor))
-        self.assertEqual(module.scheme_choice, G.SCHEME_RGB)
-        self.assertEqual(module.red_image_name, "Origd0")
-        self.assertEqual(module.green_image_name, "Origd2")
-        self.assertEqual(module.blue_image_name, "Origd1")
-        self.assertEqual(module.rgb_image_name, "ColorImage")
-        for adjustment_factor in (module.red_adjustment_factor,
-                                  module.green_adjustment_factor,
-                                  module.blue_adjustment_factor):
-            self.assertEqual(adjustment_factor.value, 1)
 
     def test_01_02_load_v2(self):
         data = ('eJztWUFv2jAUdmiK1k2b2Gm7VPNxmtoooZrUcRlQtg6p0KqgnucSQy2FGBmn'

@@ -1,4 +1,3 @@
-
 # coding=utf-8
 
 """
@@ -69,33 +68,36 @@ import centrosome.propagate as propagate
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
+from scipy.ndimage import grey_dilation, grey_erosion
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 
-'''The measurement category'''
+"""The measurement category"""
 C_OBJSKELETON = "ObjectSkeleton"
 
-'''The trunk count feature'''
+"""The trunk count feature"""
 F_NUMBER_TRUNKS = "NumberTrunks"
 
-'''The branch feature'''
+"""The branch feature"""
 F_NUMBER_NON_TRUNK_BRANCHES = "NumberNonTrunkBranches"
 
-'''The endpoint feature'''
+"""The endpoint feature"""
 F_NUMBER_BRANCH_ENDS = "NumberBranchEnds"
 
-'''The neurite length feature'''
+"""The neurite length feature"""
 F_TOTAL_OBJSKELETON_LENGTH = "TotalObjectSkeletonLength"
 
-F_ALL = [F_NUMBER_TRUNKS, F_NUMBER_NON_TRUNK_BRANCHES, F_NUMBER_BRANCH_ENDS,
-         F_TOTAL_OBJSKELETON_LENGTH]
+F_ALL = [
+    F_NUMBER_TRUNKS,
+    F_NUMBER_NON_TRUNK_BRANCHES,
+    F_NUMBER_BRANCH_ENDS,
+    F_TOTAL_OBJSKELETON_LENGTH,
+]
 
 
 class MeasureObjectSkeleton(cpm.Module):
@@ -104,66 +106,101 @@ class MeasureObjectSkeleton(cpm.Module):
     variable_revision_number = 3
 
     def create_settings(self):
-        '''Create the UI settings for the module'''
+        """Create the UI settings for the module"""
         self.seed_objects_name = cps.ObjectNameSubscriber(
-                "Select the seed objects", cps.NONE, doc="""\
+            "Select the seed objects",
+            cps.NONE,
+            doc="""\
 Select the previously identified objects that you want to use as the
 seeds for measuring branches and distances. Branches and trunks are assigned
 per seed object. Seed objects are typically not single points/pixels but
-instead are usually objects of varying sizes.""")
+instead are usually objects of varying sizes.""",
+        )
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the skeletonized image", cps.NONE, doc="""\
+            "Select the skeletonized image",
+            cps.NONE,
+            doc="""\
 Select the skeletonized image of the dendrites and/or axons as produced
-by the **Morph** module’s *Skel* operation.""")
+by the **Morph** module’s *Skel* operation.""",
+        )
 
         self.wants_branchpoint_image = cps.Binary(
-                "Retain the branchpoint image?", False, doc="""\
-Select "*%(YES)s*" if you want to save the color image of branchpoints and
+            "Retain the branchpoint image?",
+            False,
+            doc="""\
+Select "*Yes*" if you want to save the color image of branchpoints and
 trunks. This is the image that is displayed in the output window for
-this module.""" % globals())
+this module."""
+            % globals(),
+        )
 
         self.branchpoint_image_name = cps.ImageNameProvider(
-                "Name the branchpoint image", "BranchpointImage", doc="""\
+            "Name the branchpoint image",
+            "BranchpointImage",
+            doc="""\
 *(Used only if a branchpoint image is to be retained)*
 
 Enter a name for the branchpoint image here. You can then use this image
-in a later module, such as **SaveImages**.""")
+in a later module, such as **SaveImages**.""",
+        )
 
         self.wants_to_fill_holes = cps.Binary(
-                "Fill small holes?", True, doc="""\
+            "Fill small holes?",
+            True,
+            doc="""\
 The algorithm reskeletonizes the image and this can leave artifacts
 caused by small holes in the image prior to skeletonizing. These holes
-result in false trunks and branchpoints. Select "*%(YES)s*" to fill in
-these small holes prior to skeletonizing.""" % globals())
+result in false trunks and branchpoints. Select "*Yes*" to fill in
+these small holes prior to skeletonizing."""
+            % globals(),
+        )
 
         self.maximum_hole_size = cps.Integer(
-                "Maximum hole size", 10, minval=1, doc="""\
+            "Maximum hole size",
+            10,
+            minval=1,
+            doc="""\
 *(Used only when filling small holes)*
 
 This is the area of the largest hole to fill, measured in pixels. The
-algorithm will fill in any hole whose area is this size or smaller.""")
+algorithm will fill in any hole whose area is this size or smaller.""",
+        )
 
         self.wants_objskeleton_graph = cps.Binary(
-                "Export the skeleton graph relationships?", False, doc="""\
-Select "*%(YES)s*" to produce an edge file and a vertex file that gives the
-relationships between vertices (trunks, branchpoints and endpoints).""" % globals())
+            "Export the skeleton graph relationships?",
+            False,
+            doc="""\
+Select "*Yes*" to produce an edge file and a vertex file that gives the
+relationships between vertices (trunks, branchpoints and endpoints)."""
+            % globals(),
+        )
 
         self.intensity_image_name = cps.ImageNameSubscriber(
-                "Intensity image", cps.NONE, doc="""\
+            "Intensity image",
+            cps.NONE,
+            doc="""\
 Select the image to be used to calculate
-the total intensity along the edges between the vertices (trunks, branchpoints, and endpoints).""")
+the total intensity along the edges between the vertices (trunks, branchpoints, and endpoints).""",
+        )
 
         self.directory = cps.DirectoryPath(
-                "File output directory", doc='Select the directory you want to save the graph relationships to.',
-                dir_choices=[
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
-                    cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cps.DEFAULT_INPUT_SUBFOLDER_NAME])
+            "File output directory",
+            doc="Select the directory you want to save the graph relationships to.",
+            dir_choices=[
+                cps.DEFAULT_OUTPUT_FOLDER_NAME,
+                cps.DEFAULT_INPUT_FOLDER_NAME,
+                cps.ABSOLUTE_FOLDER_NAME,
+                cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cps.DEFAULT_INPUT_SUBFOLDER_NAME,
+            ],
+        )
         self.directory.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
 
         self.vertex_file_name = cps.Text(
-                "Vertex file name", "vertices.csv", doc="""\
+            "Vertex file name",
+            "vertices.csv",
+            doc="""\
 *(Used only when exporting graph relationships)*
 
 Enter the name of the file that will hold the edge information. You can
@@ -184,10 +221,13 @@ branchpoint or an endpoint. The file has the following columns:
    -  **T:** Trunk
    -  **B:** Branchpoint
    -  **E:** Endpoint
-""")
+""",
+        )
 
         self.edge_file_name = cps.Text(
-                "Edge file name", "edges.csv", doc="""\
+            "Edge file name",
+            "edges.csv",
+            doc="""\
 *(Used only when exporting graph relationships)*
 
 Enter the name of the file that will hold the edge information. You can
@@ -208,20 +248,28 @@ The file has the following columns:
    vertices, including both vertex pixels.
 -  *total\_intensity:* The sum of the intensities of the pixels in the
    edge, including both vertex pixel intensities.
-""")
+""",
+        )
 
     def settings(self):
-        '''The settings, in the order that they are saved in the pipeline'''
-        return [self.seed_objects_name, self.image_name,
-                self.wants_branchpoint_image, self.branchpoint_image_name,
-                self.wants_to_fill_holes, self.maximum_hole_size,
-                self.wants_objskeleton_graph, self.intensity_image_name,
-                self.directory, self.vertex_file_name, self.edge_file_name]
+        """The settings, in the order that they are saved in the pipeline"""
+        return [
+            self.seed_objects_name,
+            self.image_name,
+            self.wants_branchpoint_image,
+            self.branchpoint_image_name,
+            self.wants_to_fill_holes,
+            self.maximum_hole_size,
+            self.wants_objskeleton_graph,
+            self.intensity_image_name,
+            self.directory,
+            self.vertex_file_name,
+            self.edge_file_name,
+        ]
 
     def visible_settings(self):
-        '''The settings that are displayed in the GUI'''
-        result = [self.seed_objects_name, self.image_name,
-                  self.wants_branchpoint_image]
+        """The settings that are displayed in the GUI"""
+        result = [self.seed_objects_name, self.image_name, self.wants_branchpoint_image]
         if self.wants_branchpoint_image:
             result += [self.branchpoint_image_name]
         result += [self.wants_to_fill_holes]
@@ -229,12 +277,16 @@ The file has the following columns:
             result += [self.maximum_hole_size]
         result += [self.wants_objskeleton_graph]
         if self.wants_objskeleton_graph:
-            result += [self.intensity_image_name, self.directory,
-                       self.vertex_file_name, self.edge_file_name]
+            result += [
+                self.intensity_image_name,
+                self.directory,
+                self.vertex_file_name,
+                self.edge_file_name,
+            ]
         return result
 
     def get_graph_file_paths(self, m, image_number):
-        '''Get the paths to the graph files for the given image set
+        """Get the paths to the graph files for the given image set
 
         Apply metadata tokens to the graph file names to get the graph files
         for the given image set.
@@ -244,7 +296,7 @@ The file has the following columns:
         image_number - the image # for the current image set
 
         Returns the edge file's path and vertex file's path
-        '''
+        """
         path = self.directory.get_absolute_path(m)
         edge_file = m.apply_metadata(self.edge_file_name.value, image_number)
         edge_path = os.path.abspath(os.path.join(path, edge_file))
@@ -258,19 +310,23 @@ The file has the following columns:
     VF_J = "j"
     VF_LABELS = "labels"
     VF_KIND = "kind"
-    vertex_file_columns = (VF_IMAGE_NUMBER, VF_VERTEX_NUMBER,
-                           VF_I, VF_J, VF_LABELS,
-                           VF_KIND)
+    vertex_file_columns = (
+        VF_IMAGE_NUMBER,
+        VF_VERTEX_NUMBER,
+        VF_I,
+        VF_J,
+        VF_LABELS,
+        VF_KIND,
+    )
     EF_IMAGE_NUMBER = "image_number"
     EF_V1 = "v1"
     EF_V2 = "v2"
     EF_LENGTH = "length"
     EF_TOTAL_INTENSITY = "total_intensity"
-    edge_file_columns = (EF_IMAGE_NUMBER, EF_V1, EF_V2, EF_LENGTH,
-                         EF_TOTAL_INTENSITY)
+    edge_file_columns = (EF_IMAGE_NUMBER, EF_V1, EF_V2, EF_LENGTH, EF_TOTAL_INTENSITY)
 
     def prepare_run(self, workspace):
-        '''Initialize graph files'''
+        """Initialize graph files"""
         if not self.wants_objskeleton_graph:
             return True
         edge_files = set()
@@ -282,25 +338,32 @@ The file has the following columns:
             edge_files.add(edge_path)
             vertex_files.add(vertex_path)
 
-        for file_path, header in ((edge_path, self.edge_file_columns),
-                                  (vertex_path, self.vertex_file_columns)):
+        for file_path, header in (
+            (edge_path, self.edge_file_columns),
+            (vertex_path, self.vertex_file_columns),
+        ):
             if os.path.exists(file_path):
                 import wx
-                if wx.MessageBox(
-                                "%s already exists. Do you want to overwrite it?" %
-                                file_path, "Warning: overwriting file",
+
+                if (
+                    wx.MessageBox(
+                        "%s already exists. Do you want to overwrite it?" % file_path,
+                        "Warning: overwriting file",
                         style=wx.YES_NO,
-                        parent=workspace.frame) != wx.YES:
+                        parent=workspace.frame,
+                    )
+                    != wx.YES
+                ):
                     return False
                 os.remove(file_path)
-            fd = open(file_path, 'wt')
-            header = ','.join(header)
-            fd.write(header + '\n')
+            fd = open(file_path, "wt")
+            header = ",".join(header)
+            fd.write(header + "\n")
             fd.close()
         return True
 
     def run(self, workspace):
-        '''Run the module on the image set'''
+        """Run the module on the image set"""
         seed_objects_name = self.seed_objects_name.value
         skeleton_name = self.image_name.value
         seed_objects = workspace.object_set.get_objects(seed_objects_name)
@@ -309,7 +372,8 @@ The file has the following columns:
         label_range = np.arange(labels_count, dtype=np.int32) + 1
 
         skeleton_image = workspace.image_set.get_image(
-                skeleton_name, must_be_binary=True)
+            skeleton_name, must_be_binary=True
+        )
         skeleton = skeleton_image.pixel_data
         if skeleton_image.has_mask:
             skeleton = skeleton & skeleton_image.mask
@@ -337,8 +401,7 @@ The file has the following columns:
         seed_mask = dilated_labels > 0
         combined_skel = skeleton | seed_mask
 
-        closed_labels = grey_erosion(dilated_labels,
-                                     footprint=my_disk)
+        closed_labels = grey_erosion(dilated_labels, footprint=my_disk)
         seed_center = closed_labels > 0
         combined_skel = combined_skel & (~seed_center)
         #
@@ -346,11 +409,13 @@ The file has the following columns:
         # a one-pixel image)
         #
         if self.wants_to_fill_holes:
+
             def size_fn(area, is_object):
-                return (~ is_object) and (area <= self.maximum_hole_size.value)
+                return (~is_object) and (area <= self.maximum_hole_size.value)
 
             combined_skel = morph.fill_labeled_holes(
-                    combined_skel, ~seed_center, size_fn)
+                combined_skel, ~seed_center, size_fn
+            )
         #
         # Reskeletonize to make true branchpoints at the ring boundaries
         #
@@ -362,9 +427,9 @@ The file has the following columns:
         #
         # Associate all skeleton points with seed objects
         #
-        dlabels, distance_map = propagate.propagate(np.zeros(labels.shape),
-                                                    dilated_labels,
-                                                    combined_skel, 1)
+        dlabels, distance_map = propagate.propagate(
+            np.zeros(labels.shape), dilated_labels, combined_skel, 1
+        )
         #
         # Get rid of any branchpoints not connected to seeds
         #
@@ -382,8 +447,12 @@ The file has the following columns:
         #  .B
         # .  .
         #
-        odd_case = (combined_skel[:-1, :-1] & combined_skel[1:, :-1] &
-                    combined_skel[:-1, 1:] & combined_skel[1, 1])
+        odd_case = (
+            combined_skel[:-1, :-1]
+            & combined_skel[1:, :-1]
+            & combined_skel[:-1, 1:]
+            & combined_skel[1, 1]
+        )
         branch_points[:-1, :-1][odd_case] = True
         branch_points[1:, 1:][odd_case] = True
         #
@@ -416,16 +485,16 @@ The file has the following columns:
         # the dilated image.
         #
         if labels_count > 0:
-            trunk_counts = fix(scind.sum(branching_counts, nearby_labels,
-                                         label_range)).astype(int)
+            trunk_counts = fix(
+                scind.sum(branching_counts, nearby_labels, label_range)
+            ).astype(int)
         else:
             trunk_counts = np.zeros((0,), int)
         #
         # The branches are the branchpoints that lie outside the seed objects
         #
         if labels_count > 0:
-            branch_counts = fix(scind.sum(branch_points, outside_labels,
-                                          label_range))
+            branch_counts = fix(scind.sum(branch_points, outside_labels, label_range))
         else:
             branch_counts = np.zeros((0,), int)
         #
@@ -438,8 +507,7 @@ The file has the following columns:
         #
         # Calculate the distances
         #
-        total_distance = morph.skeleton_length(
-                dlabels * outside_skel, label_range)
+        total_distance = morph.skeleton_length(dlabels * outside_skel, label_range)
         #
         # Save measurements
         #
@@ -447,8 +515,7 @@ The file has the following columns:
         assert isinstance(m, cpmeas.Measurements)
         feature = "_".join((C_OBJSKELETON, F_NUMBER_TRUNKS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, trunk_counts)
-        feature = "_".join((C_OBJSKELETON, F_NUMBER_NON_TRUNK_BRANCHES,
-                            skeleton_name))
+        feature = "_".join((C_OBJSKELETON, F_NUMBER_NON_TRUNK_BRANCHES, skeleton_name))
         m.add_measurement(seed_objects_name, feature, branch_counts)
         feature = "_".join((C_OBJSKELETON, F_NUMBER_BRANCH_ENDS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, end_counts)
@@ -460,20 +527,29 @@ The file has the following columns:
         if self.wants_objskeleton_graph:
             trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
             intensity_image = workspace.image_set.get_image(
-                    self.intensity_image_name.value)
+                self.intensity_image_name.value
+            )
             edge_graph, vertex_graph = self.make_objskeleton_graph(
-                    combined_skel, dlabels,
-                    trunk_mask,
-                    branch_points & ~trunk_mask,
-                    end_points,
-                    intensity_image.pixel_data)
+                combined_skel,
+                dlabels,
+                trunk_mask,
+                branch_points & ~trunk_mask,
+                end_points,
+                intensity_image.pixel_data,
+            )
 
             image_number = workspace.measurements.image_set_number
 
             edge_path, vertex_path = self.get_graph_file_paths(m, m.image_number)
             workspace.interaction_request(
-                    self, m.image_number, edge_path, edge_graph,
-                    vertex_path, vertex_graph, headless_ok=True)
+                self,
+                m.image_number,
+                edge_path,
+                edge_graph,
+                vertex_path,
+                vertex_graph,
+                headless_ok=True,
+            )
 
             if self.show_window:
                 workspace.display_data.edge_graph = edge_graph
@@ -483,9 +559,7 @@ The file has the following columns:
         # Make the display image
         #
         if self.show_window or self.wants_branchpoint_image:
-            branchpoint_image = np.zeros((skeleton.shape[0],
-                                          skeleton.shape[1],
-                                          3))
+            branchpoint_image = np.zeros((skeleton.shape[0], skeleton.shape[1], 3))
             trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
             branch_mask = branch_points & (outside_labels != 0)
             end_mask = end_points & (outside_labels != 0)
@@ -494,33 +568,35 @@ The file has the following columns:
             branchpoint_image[trunk_mask, 0] = 1
             branchpoint_image[branch_mask, 1] = 1
             branchpoint_image[end_mask, 2] = 1
-            branchpoint_image[dilated_labels != 0, :] *= .875
-            branchpoint_image[dilated_labels != 0, :] += .1
+            branchpoint_image[dilated_labels != 0, :] *= 0.875
+            branchpoint_image[dilated_labels != 0, :] += 0.1
             if self.show_window:
                 workspace.display_data.branchpoint_image = branchpoint_image
             if self.wants_branchpoint_image:
-                bi = cpi.Image(branchpoint_image,
-                               parent_image=skeleton_image)
+                bi = cpi.Image(branchpoint_image, parent_image=skeleton_image)
                 workspace.image_set.add(self.branchpoint_image_name.value, bi)
 
-    def handle_interaction(self, image_number, edge_path, edge_graph,
-                           vertex_path, vertex_graph):
-        columns = tuple([vertex_graph[f].tolist()
-                         for f in self.vertex_file_columns[2:]])
+    def handle_interaction(
+        self, image_number, edge_path, edge_graph, vertex_path, vertex_graph
+    ):
+        columns = tuple(
+            [vertex_graph[f].tolist() for f in self.vertex_file_columns[2:]]
+        )
         with open(vertex_path, "at") as fd:
             for vertex_number, fields in enumerate(zip(*columns)):
-                fd.write(("%d,%d," % (image_number, vertex_number + 1)) +
-                         ("%d,%d,%d,%s\n" % fields))
+                fd.write(
+                    ("%d,%d," % (image_number, vertex_number + 1))
+                    + ("%d,%d,%d,%s\n" % fields)
+                )
 
-        columns = tuple([edge_graph[f].tolist()
-                         for f in self.edge_file_columns[1:]])
+        columns = tuple([edge_graph[f].tolist() for f in self.edge_file_columns[1:]])
         with open(edge_path, "at") as fd:
             line_format = "%d,%%d,%%d,%%d,%%.4f\n" % image_number
             for fields in zip(*columns):
                 fd.write(line_format % fields)
 
     def display(self, workspace, figure):
-        '''Display a visualization of the results'''
+        """Display a visualization of the results"""
         from matplotlib.axes import Axes
         from matplotlib.lines import Line2D
         import matplotlib.cm
@@ -529,15 +605,16 @@ The file has the following columns:
             figure.set_subplots((2, 1))
         else:
             figure.set_subplots((1, 1))
-        title = ("Branchpoints of %s and %s\nTrunks are red\nBranches are green\nEndpoints are blue" %
-                 (self.seed_objects_name.value, self.image_name.value))
-        figure.subplot_imshow(0, 0, workspace.display_data.branchpoint_image,
-                              title)
+        title = (
+            "Branchpoints of %s and %s\nTrunks are red\nBranches are green\nEndpoints are blue"
+            % (self.seed_objects_name.value, self.image_name.value)
+        )
+        figure.subplot_imshow(0, 0, workspace.display_data.branchpoint_image, title)
         if self.wants_objskeleton_graph:
             image = workspace.display_data.intensity_image
-            figure.subplot_imshow_grayscale(1, 0, image,
-                                            title="ObjectSkeleton graph",
-                                            sharexy=figure.subplot(0, 0))
+            figure.subplot_imshow_grayscale(
+                1, 0, image, title="ObjectSkeleton graph", sharexy=figure.subplot(0, 0)
+            )
             axes = figure.subplot(1, 0)
             assert isinstance(axes, Axes)
             edge_graph = workspace.display_data.edge_graph
@@ -546,73 +623,76 @@ The file has the following columns:
             j = vertex_graph["j"]
             kind = vertex_graph["kind"]
             brightness = edge_graph["total_intensity"] / edge_graph["length"]
-            brightness = ((brightness - np.min(brightness)) /
-                          (np.max(brightness) - np.min(brightness) + .000001))
+            brightness = (brightness - np.min(brightness)) / (
+                np.max(brightness) - np.min(brightness) + 0.000001
+            )
             cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
             cmap = matplotlib.cm.ScalarMappable(cmap=cm)
             edge_color = cmap.to_rgba(brightness)
             for idx in range(len(edge_graph["v1"])):
-                v = np.array([edge_graph["v1"][idx] - 1,
-                              edge_graph["v2"][idx] - 1])
+                v = np.array([edge_graph["v1"][idx] - 1, edge_graph["v2"][idx] - 1])
                 line = Line2D(j[v], i[v], color=edge_color[idx])
                 axes.add_line(line)
 
     def get_measurement_columns(self, pipeline):
-        '''Return database column definitions for measurements made here'''
+        """Return database column definitions for measurements made here"""
         return [
-            (self.seed_objects_name.value,
-             "_".join((C_OBJSKELETON, feature, self.image_name.value)),
-             cpmeas.COLTYPE_FLOAT if feature == F_TOTAL_OBJSKELETON_LENGTH
-             else cpmeas.COLTYPE_INTEGER)
-            for feature in F_ALL]
+            (
+                self.seed_objects_name.value,
+                "_".join((C_OBJSKELETON, feature, self.image_name.value)),
+                cpmeas.COLTYPE_FLOAT
+                if feature == F_TOTAL_OBJSKELETON_LENGTH
+                else cpmeas.COLTYPE_INTEGER,
+            )
+            for feature in F_ALL
+        ]
 
     def get_categories(self, pipeline, object_name):
-        '''Get the measurement categories generated by this module
+        """Get the measurement categories generated by this module
 
         pipeline - pipeline being run
         object_name - name of seed object
-        '''
+        """
         if object_name == self.seed_objects_name:
             return [C_OBJSKELETON]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return the measurement features generated by this module
+        """Return the measurement features generated by this module
 
         pipeline - pipeline being run
         object_name - object being measured (must be the seed object)
         category - category of measurement (must be C_OBJSKELETON)
-        '''
+        """
         if category == C_OBJSKELETON and object_name == self.seed_objects_name:
             return F_ALL
         else:
             return []
 
-    def get_measurement_images(self, pipeline, object_name, category,
-                               measurement):
-        '''Return the images measured by this module
+    def get_measurement_images(self, pipeline, object_name, category, measurement):
+        """Return the images measured by this module
 
         pipeline - pipeline being run
         object_name - object being measured (must be the seed object)
         category - category of measurement (must be C_OBJSKELETON)
         measurement - one of the object skeleton measurements
-        '''
-        if measurement in self.get_measurements(pipeline, object_name,
-                                                category):
+        """
+        if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.image_name.value]
         else:
             return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Provide backwards compatibility for old pipelines
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
+        """Provide backwards compatibility for old pipelines
 
         setting_values - the strings to be fed to settings
         variable_revision_number - the version number at time of saving
         module_name - name of original module
         from_matlab - true if a matlab pipeline, false if pyCP
-        '''
+        """
         if from_matlab and variable_revision_number == 1:
             #
             # Added "Wants branchpoint image" and branchpoint image name
@@ -631,15 +711,21 @@ The file has the following columns:
             # Added graph stuff
             #
             setting_values = setting_values + [
-                cps.NO, cps.NONE,
-                cps.DirectoryPath.static_join_string(cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.NONE),
-                cps.NONE, cps.NONE]
+                cps.NO,
+                cps.NONE,
+                cps.DirectoryPath.static_join_string(
+                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.NONE
+                ),
+                cps.NONE,
+                cps.NONE,
+            ]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
-    def make_objskeleton_graph(self, skeleton, skeleton_labels,
-                          trunks, branchpoints, endpoints, image):
-        '''Make a table that captures the graph relationship of the skeleton
+    def make_objskeleton_graph(
+        self, skeleton, skeleton_labels, trunks, branchpoints, endpoints, image
+    ):
+        """Make a table that captures the graph relationship of the skeleton
 
         skeleton - binary skeleton image + outline of seed objects
         skeleton_labels - labels matrix of skeleton
@@ -663,8 +749,8 @@ The file has the following columns:
         j: J coordinate of the vertex
         label: the vertex's label
         kind: kind of vertex = "T" for trunk, "B" for branchpoint or "E" for endpoint.
-        '''
-        i, j = np.mgrid[0:skeleton.shape[0], 0:skeleton.shape[1]]
+        """
+        i, j = np.mgrid[0 : skeleton.shape[0], 0 : skeleton.shape[1]]
         #
         # Give each point of interest a unique number
         #
@@ -673,10 +759,10 @@ The file has the following columns:
         #
         # Make up the vertex table
         #
-        tbe = np.zeros(points_of_interest.shape, '|S1')
-        tbe[trunks] = 'T'
-        tbe[branchpoints] = 'B'
-        tbe[endpoints] = 'E'
+        tbe = np.zeros(points_of_interest.shape, "|S1")
+        tbe[trunks] = "T"
+        tbe[branchpoints] = "B"
+        tbe[endpoints] = "E"
         i_idx = i[points_of_interest]
         j_idx = j[points_of_interest]
         poe_labels = skeleton_labels[points_of_interest]
@@ -685,7 +771,8 @@ The file has the following columns:
             self.VF_I: i_idx,
             self.VF_J: j_idx,
             self.VF_LABELS: poe_labels,
-            self.VF_KIND: tbe}
+            self.VF_KIND: tbe,
+        }
         #
         # First, break the skeleton by removing the branchpoints, endpoints
         # and trunks
@@ -708,9 +795,16 @@ The file has the following columns:
             #
             # find magnitudes and lengths for all edges
             #
-            magnitudes = fix(scind.sum(image, edge_labels, np.arange(1, nlabels + 1, dtype=np.int32)))
-            lengths = fix(scind.sum(np.ones(edge_labels.shape),
-                                    edge_labels, np.arange(1, nlabels + 1, dtype=np.int32))).astype(int)
+            magnitudes = fix(
+                scind.sum(image, edge_labels, np.arange(1, nlabels + 1, dtype=np.int32))
+            )
+            lengths = fix(
+                scind.sum(
+                    np.ones(edge_labels.shape),
+                    edge_labels,
+                    np.arange(1, nlabels + 1, dtype=np.int32),
+                )
+            ).astype(int)
         else:
             magnitudes = np.zeros(0)
             lengths = np.zeros(0, int)
@@ -726,9 +820,16 @@ The file has the following columns:
         #
         p1 = np.zeros(0, int)
         p2 = np.zeros(0, int)
-        for i_off, j_off in ((0, 0), (0, 1), (0, 2),
-                             (1, 0), (1, 2),
-                             (2, 0), (2, 1), (2, 2)):
+        for i_off, j_off in (
+            (0, 0),
+            (0, 1),
+            (0, 2),
+            (1, 0),
+            (1, 2),
+            (2, 0),
+            (2, 1),
+            (2, 2),
+        ):
             p1 = np.hstack((p1, np.arange(1, number_of_points + 1)))
             p2 = np.hstack((p2, all_labels[i_idx + i_off, j_idx + j_off]))
         #
@@ -744,8 +845,10 @@ The file has the following columns:
         #
         # Make sure matches are labeled the same
         #
-        same_labels = (skeleton_labels[i_idx[p1_poi - 1], j_idx[p1_poi - 1]] ==
-                       skeleton_labels[i_idx[p2_poi - 1], j_idx[p2_poi - 1]])
+        same_labels = (
+            skeleton_labels[i_idx[p1_poi - 1], j_idx[p1_poi - 1]]
+            == skeleton_labels[i_idx[p2_poi - 1], j_idx[p2_poi - 1]]
+        )
         p1_poi = p1_poi[same_labels]
         p2_poi = p2_poi[same_labels]
         #
@@ -769,15 +872,19 @@ The file has the following columns:
         # magnitude = magnitude at each point
         #
         poi_length = np.ones(len(p1_poi)) * 2
-        poi_magnitude = (image[i_idx[p1_poi - 1], j_idx[p1_poi - 1]] +
-                         image[i_idx[p2_poi - 1], j_idx[p2_poi - 1]])
+        poi_magnitude = (
+            image[i_idx[p1_poi - 1], j_idx[p1_poi - 1]]
+            + image[i_idx[p2_poi - 1], j_idx[p2_poi - 1]]
+        )
         #
         # Now the edges...
         #
         poi_edge_length = lengths + 2
-        poi_edge_magnitude = (image[i_idx[p1_edge - 1], j_idx[p1_edge - 1]] +
-                              image[i_idx[p2_edge - 1], j_idx[p2_edge - 1]] +
-                              magnitudes)
+        poi_edge_magnitude = (
+            image[i_idx[p1_edge - 1], j_idx[p1_edge - 1]]
+            + image[i_idx[p2_edge - 1], j_idx[p2_edge - 1]]
+            + magnitudes
+        )
         #
         # Put together the columns
         #
@@ -794,9 +901,7 @@ The file has the following columns:
         lengths = lengths[indexer]
         magnitudes = magnitudes[indexer]
         if len(v1) > 0:
-            to_keep = np.hstack(([True],
-                                 (v1[1:] != v1[:-1]) |
-                                 (v2[1:] != v2[:-1])))
+            to_keep = np.hstack(([True], (v1[1:] != v1[:-1]) | (v2[1:] != v2[:-1])))
             v1 = v1[to_keep]
             v2 = v2[to_keep]
             lengths = lengths[to_keep]
@@ -808,6 +913,6 @@ The file has the following columns:
             self.EF_V1: v1,
             self.EF_V2: v2,
             self.EF_LENGTH: lengths,
-            self.EF_TOTAL_INTENSITY: magnitudes
+            self.EF_TOTAL_INTENSITY: magnitudes,
         }
         return edge_table, vertex_table

@@ -1,7 +1,7 @@
 """test_analysisworker.py - test the analysis client framework"""
 
-import Queue
-import cStringIO
+import six.moves.queue
+import six.moves
 import os
 import tempfile
 import threading
@@ -84,12 +84,12 @@ class TestAnalysisWorker(unittest.TestCase):
         def start(self):
             self.setDaemon(True)
             self.setName("Analysis worker thread")
-            self.up_queue = Queue.Queue()
+            self.up_queue = six.moves.queue.Queue()
             self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.up_queue_recv_socket = cellprofiler.worker.the_zmq_context.socket(zmq.SUB)
             self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, "")
             self.up_queue_recv_socket.bind(self.notify_addr)
-            self.down_queue = Queue.Queue()
+            self.down_queue = six.moves.queue.Queue()
             threading.Thread.start(self)
             self.up_queue.get()
 
@@ -120,7 +120,7 @@ class TestAnalysisWorker(unittest.TestCase):
 
             work_socket - receive a request on this socket
 
-            timeout - if request isn't received by the timeout, raise Queue.Empty
+            timeout - if request isn't received by the timeout, raise six.moves.queue.Empty
                       default = blocks forever
 
             This polls on both the worker and up_queue sockets and
@@ -139,7 +139,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         raise cellprofiler.pipeline.CancelledException("Unexpected exit during recv")
                 if socket == work_socket and state == zmq.POLLIN:
                     return cellprofiler.utilities.zmqrequest.Communicable.recv(work_socket)
-            raise Queue.Empty
+            raise six.moves.queue.Empty
 
         def join(self, timeout=None):
             if self.isAlive():
@@ -202,7 +202,7 @@ class TestAnalysisWorker(unittest.TestCase):
                     ((self.analysis_id, self.work_addr),))
             try:
                 return self.awthread.recv(self.work_socket, 250)
-            except Queue.Empty:
+            except six.moves.queue.Empty:
                 continue
 
     def test_01_01_get_announcement(self):
@@ -214,7 +214,7 @@ class TestAnalysisWorker(unittest.TestCase):
             try:
                 result, exception = self.awthread.up_queue.get_nowait()
                 break
-            except Queue.Empty:
+            except six.moves.queue.Empty:
                 continue
 
         self.assertIsNone(exception)
@@ -841,7 +841,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #             self.assertEqual(req.analysis_id, self.analysis_id)
     #             m = get_measurements_for_good_pipeline()
     #             pipeline = cellprofiler.pipeline.Pipeline()
-    #             pipeline.loadtxt(cStringIO.StringIO(data))
+    #             pipeline.loadtxt(six.moves.StringIO(data))
     #             pipeline.write_pipeline_measurement(m)
     #
     #             try:
@@ -1025,6 +1025,6 @@ def get_measurements_for_good_pipeline(nimages=1,
         blob = javabridge.get_env().get_byte_array_elements(jblob)
         m[cellprofiler.measurement.IMAGE, cellprofiler.modules.namesandtypes.M_IMAGE_SET, i, blob.dtype] = blob
     pipeline = cellprofiler.pipeline.Pipeline()
-    pipeline.loadtxt(cStringIO.StringIO(GOOD_PIPELINE))
+    pipeline.loadtxt(six.moves.StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)
     return m

@@ -1,8 +1,8 @@
 '''test_knime_bridge.py - test the Knime bridge'''
 
-from cStringIO import StringIO
+from six.moves import StringIO
 import json
-import numpy as np
+import numpy
 import unittest
 import uuid
 import zmq
@@ -13,8 +13,8 @@ from cellprofiler.knime_bridge import KnimeBridgeServer, \
     PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1, PIPELINE_EXCEPTION_1, \
     RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1, CELLPROFILER_EXCEPTION_1, \
     CLEAN_PIPELINE_REQ_1, CLEAN_PIPELINE_REPLY_1
-import cellprofiler.pipeline as cpp
-import cellprofiler.measurement as cpmeas
+import cellprofiler.pipeline
+import cellprofiler.measurement
 from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
 from cellprofiler.modules.threshold import TS_GLOBAL, TM_MANUAL
 from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
@@ -59,7 +59,7 @@ class TestKnimeBridge(unittest.TestCase):
         self.assertEqual(reply.pop(0), CONNECT_REPLY_1)
 
     def test_02_01_pipeline_info(self):
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         load_images = LoadImages()
         load_images.module_num = 1
         load_images.add_imagecb()
@@ -113,7 +113,7 @@ class TestKnimeBridge(unittest.TestCase):
         self.assertEqual(message.pop(0), PIPELINE_EXCEPTION_1)
 
     def test_02_03_clean_pipeline(self):
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         load_images = LoadImages()
         load_images.module_num = 1
         load_images.add_imagecb()
@@ -148,7 +148,7 @@ class TestKnimeBridge(unittest.TestCase):
         self.assertEqual(message.pop(0), "")
         self.assertEqual(message.pop(0), CLEAN_PIPELINE_REPLY_1)
         pipeline_txt = message.pop(0)
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(StringIO(pipeline_txt))
         self.assertEqual(len(pipeline.modules()), 3)
         self.assertIsInstance(pipeline.modules()[0], LoadImages)
@@ -156,7 +156,7 @@ class TestKnimeBridge(unittest.TestCase):
         self.assertIsInstance(pipeline.modules()[2], MeasureObjectSizeShape)
 
     def test_03_01_run_something(self):
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         load_images = LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
@@ -175,7 +175,7 @@ class TestKnimeBridge(unittest.TestCase):
         pipeline_txt = StringIO()
         pipeline.savetxt(pipeline_txt)
 
-        image = np.zeros((11, 17))
+        image = numpy.zeros((11, 17))
         image[2:-2, 2:-2] = 1
 
         image_metadata = [
@@ -197,11 +197,11 @@ class TestKnimeBridge(unittest.TestCase):
         metadata = json.loads(response.pop(0))
         data = response.pop(0)
         measurements = self.decode_measurements(metadata, data)
-        self.assertEqual(measurements[cpmeas.IMAGE]["Count_dizzy"][0], 1)
+        self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
         self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
 
     def test_03_02_bad_cellprofiler(self):
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         load_images = LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
@@ -219,7 +219,7 @@ class TestKnimeBridge(unittest.TestCase):
         pipeline_txt = StringIO()
         pipeline.savetxt(pipeline_txt)
 
-        image = np.zeros((11, 17))
+        image = numpy.zeros((11, 17))
         image[2:-2, 2:-2] = 1
 
         # Get the strides wrong (I broke it accidentally this way before...)
@@ -245,7 +245,7 @@ class TestKnimeBridge(unittest.TestCase):
         #
         # Missing measurement causes exception
         #
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         load_images = LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
@@ -280,7 +280,7 @@ class TestKnimeBridge(unittest.TestCase):
         pipeline_txt = StringIO()
         pipeline.savetxt(pipeline_txt)
 
-        image = np.zeros((11, 17))
+        image = numpy.zeros((11, 17))
         image[2:-2, 2:-2] = 1
 
         image_metadata = [
@@ -302,12 +302,12 @@ class TestKnimeBridge(unittest.TestCase):
         metadata = json.loads(response.pop(0))
         data = response.pop(0)
         measurements = self.decode_measurements(metadata, data)
-        self.assertEqual(measurements[cpmeas.IMAGE]["Count_dizzy"][0], 1)
+        self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
         self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
         self.assertEqual(len(measurements["dizzy"]["AreaShape_Area"]), 0)
 
     def test_04_01_run_group(self):
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         load_images = LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
@@ -326,7 +326,7 @@ class TestKnimeBridge(unittest.TestCase):
         pipeline_txt = StringIO()
         pipeline.savetxt(pipeline_txt)
 
-        image = np.zeros((2, 11, 17))
+        image = numpy.zeros((2, 11, 17))
         image[0, 2:-2, 2:-2] = 1
         image[1, 2:-2, 2:7] = 1
         image[1, 2:-2, 10:-2] = 1
@@ -351,13 +351,13 @@ class TestKnimeBridge(unittest.TestCase):
         metadata = json.loads(response.pop(0))
         data = response.pop(0)
         measurements = self.decode_measurements(metadata, data)
-        self.assertEqual(len(measurements[cpmeas.IMAGE][cpmeas.IMAGE_NUMBER]), 2)
-        self.assertEqual(measurements[cpmeas.IMAGE]["Count_dizzy"][0], 1)
-        self.assertEqual(measurements[cpmeas.IMAGE]["Count_dizzy"][1], 2)
+        self.assertEqual(len(measurements[cellprofiler.measurement.IMAGE][cellprofiler.measurement.IMAGE_NUMBER]), 2)
+        self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
+        self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][1], 2)
         self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
 
     def test_04_02_bad_cellprofiler(self):
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         load_images = LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
@@ -375,7 +375,7 @@ class TestKnimeBridge(unittest.TestCase):
         pipeline_txt = StringIO()
         pipeline.savetxt(pipeline_txt)
 
-        image = np.zeros((11, 17))
+        image = numpy.zeros((11, 17))
         image[2:-2, 2:-2] = 1
 
         # Get the strides wrong (I broke it accidentally this way before...)
@@ -406,8 +406,8 @@ class TestKnimeBridge(unittest.TestCase):
             ddata[object_name] = items
             for feature, count in md:
                 next_offset = offset + count * 8
-                items[feature] = np.frombuffer(
-                        data[offset:next_offset], np.float64)
+                items[feature] = numpy.frombuffer(
+                        data[offset:next_offset], numpy.float64)
                 offset = next_offset
         for object_name, md in metadata[1]:
             if object_name not in ddata:
@@ -417,8 +417,8 @@ class TestKnimeBridge(unittest.TestCase):
                 items = ddata[object_name]
             for feature, count in md:
                 next_offset = offset + count * 4
-                items[feature] = np.frombuffer(
-                        data[offset:next_offset], np.float32)
+                items[feature] = numpy.frombuffer(
+                        data[offset:next_offset], numpy.float32)
                 offset = next_offset
         for object_name, md in metadata[2]:
             if object_name not in ddata:
@@ -428,7 +428,7 @@ class TestKnimeBridge(unittest.TestCase):
                 items = ddata[object_name]
             for feature, count in md:
                 next_offset = offset + count * 4
-                items[feature] = np.frombuffer(
-                        data[offset:next_offset], np.int32)
+                items[feature] = numpy.frombuffer(
+                        data[offset:next_offset], numpy.int32)
                 offset = next_offset
         return ddata

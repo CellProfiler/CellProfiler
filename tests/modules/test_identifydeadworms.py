@@ -2,7 +2,7 @@
 '''
 
 import unittest
-from StringIO import StringIO
+from six.moves import StringIO
 
 import cellprofiler.measurement
 import numpy as np

@@ -1,20 +1,17 @@
 # coding=utf-8
 
 import logging
-import os.path
 import platform
-import sys
 
 import raven
 import raven.conf
 import raven.handlers.logging
 import raven.transport.threaded_requests
 import wx
+import wx.lib.inspection
 
-import cellprofiler
-import cellprofiler.preferences
-import cellprofiler.utilities.cpjvm
 import cellprofiler.gui.dialog
+import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
 
 logger = logging.getLogger(__name__)
@@ -23,21 +20,19 @@ transport = raven.transport.threaded_requests.ThreadedRequestsHTTPTransport
 
 dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 
-sentry = raven.Client(
-    dsn=dsn,
-    transport=transport,
-    install_sys_hook=False
-)
+sentry = raven.Client(dsn=dsn, transport=transport, install_sys_hook=False)
 
-sentry.user_context({
-    "machine": platform.machine(),
-    "processor": platform.processor(),
-    "python_implementation": platform.python_implementation(),
-    "python_version": platform.python_version(),
-    "release": platform.release(),
-    "system": platform.system(),
-    "version": platform.version()
-})
+sentry.user_context(
+    {
+        "machine": platform.machine(),
+        "processor": platform.processor(),
+        "python_implementation": platform.python_implementation(),
+        "python_version": platform.python_version(),
+        "release": platform.release(),
+        "system": platform.system(),
+        "version": platform.version(),
+    }
+)
 
 
 class App(wx.App):
@@ -56,6 +51,8 @@ class App(wx.App):
 
     def OnInit(self):
         import cellprofiler.gui.cpframe
+
+        # wx.lib.inspection.InspectionTool().Show()
 
         self.SetAppName("CellProfiler{0:s}".format(cellprofiler.__version__))
 
@@ -94,6 +91,8 @@ class App(wx.App):
 
     def OnExit(self):
         cellprofiler.utilities.cpjvm.cp_stop_vm()
+
+        return 0
 
 
 if __name__ == "__main__":

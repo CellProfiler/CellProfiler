@@ -4,13 +4,14 @@ import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import PIL.Image as PILImage
 import cellprofiler.measurement
 import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
+import six.moves
 
 from cellprofiler.preferences import set_headless
 
@@ -31,44 +32,6 @@ OBJECT = ["object%d" % i for i in range(2)]
 
 
 class TestCalculateMath(unittest.TestCase):
-    def test_01_000_load_calculate_ratios(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
-    What do you want to call the ratio calculated by this module?  The prefix 'Ratio_' will be applied to your entry, or simply leave as 'Automatic' and a sensible name will be generated:MyRatio
-    Which object would you like to use for the numerator?:MyNumeratorObject
-    Which category of measurements would you like to use?:AreaShape
-    Which feature do you want to use?:Perimeter
-    For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?:
-    For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?:
-    Which object would you like to use for the denominator?:Image
-    Which category of measurements would you like to use?:Texture
-    Which feature do you want to use?:Fuzziness
-    For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?:MyImage
-    For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?:10
-    Do you want the log (base 10) of the ratio?:No
-"""
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, C.CalculateMath))
-        self.assertEqual(module.operation, C.O_DIVIDE)
-        self.assertEqual(module.operands[0].operand_choice, C.MC_OBJECT)
-        self.assertEqual(module.operands[1].operand_choice, C.MC_IMAGE)
-        self.assertEqual(module.operands[0].operand_objects, "MyNumeratorObject")
-        self.assertEqual(module.operands[0].operand_measurement, "AreaShape_Perimeter")
-        self.assertEqual(module.operands[1].operand_measurement, "Texture_Fuzziness_MyImage_10")
-        self.assertFalse(module.wants_log)
-
     def run_workspace(self, operation, m1_is_image_measurement, m1_data,
                       m2_is_image_measurement, m2_data,
                       setup_fn=None):

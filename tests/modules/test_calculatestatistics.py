@@ -6,7 +6,7 @@ import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 from cellprofiler.preferences import set_headless
@@ -28,94 +28,6 @@ FIGURE_NAME = "figname"
 
 
 class TestCalculateStatistics(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUnArylTwyy9TMDBTMLCwMjKzMrZQMDIwsFQgGTAwevryMzAwZDEy'
-                'MFTM2Rp00Ouwg8DcJZmhE7Y9WMru2D+v654Nl5ZGhtayL/t81VIVz057tyzE'
-                'X+6vSn9d2/zH6/IunY3yjSqYljjz5vd7PMa32Rr61Ry87+2+FPtj27I+2cOh'
-                'MgsETOZ+UKu4cPln+Utlo+Upcx50qEgWaeicv7/MUNrubNfyarFUzl8pWU1L'
-                'f94s6Sm26yheVFe3wNuH6VdPwDaZbx3cpzS9TeNf3765SE847O62L+LppuzH'
-                'ZzXP8j58QvuP5ZoP92btfCvxY11f8rFfivE1H/21f8R1vj8o+vjHfJvtR4oP'
-                'pges9l9+pHgB/9cK+18yLNe7rt8u4P9ZGxiYz3/qd0ChC8vMM5Fmtx2WJ78s'
-                '8ZmbPMvNQvtraPj27Jday4ONHJ0jXu45+P7zxu8Rz+fPsoqVvW8oxFuoKfJ/'
-                'WVN9wsfQGs9JBt4dBxwEHHcuUNT/ZfjfdfWi+vB5bsm76yu2pdqW++7VmqfO'
-                'L/dWXuueds62+ZPtP+zM7f7Pstg39TAAo3nSDA==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.CalculateStatistics))
-        self.assertEqual(module.grouping_values.value, "Dose")
-        self.assertEqual(len(module.dose_values), 1)
-        self.assertEqual(module.dose_values[0].measurement, "Dose")
-        self.assertFalse(module.dose_values[0].log_transform)
-        self.assertTrue(module.dose_values[0].wants_save_figure)
-        self.assertEqual(module.dose_values[0].figure_name, "DOSE")
-        self.assertEqual(module.dose_values[0].pathname.dir_choice,
-                         cps.DEFAULT_OUTPUT_FOLDER_NAME)
-
-    def test_01_02_load_v1(self):
-        data = ('eJztWNFu2jAUdWhA7SYmtJfx6KdpD12Wom5qUaUN6KohAasW1G5PlZuYNpKD'
-                'Uewwui/Y5+1xn9FPmN0mJHGhIQX2RFCU3Ot7zrn32kpiuo1+p9GE7w0Tdhv9'
-                'twOXYHhKEB9Q36vDId+FLR8jjh1Ih3V44ruwR8fQ/ADNg/q+Wa8dwJppHoKn'
-                'HVq7+0Jc/lQAKInrtjgL4VAxtLXEKW0Lc+4Or1gR6KAa+m/FeYZ8F10SfIZI'
-                'gFksEfnbwwHt34ymQ13qBAT3kJcMFkcv8C6xz74OImA4fOpOMLHcX1gpIQr7'
-                'hscuc+kwxIf8qneqS7mia13Tnye+SEfhbyJuX1tczEDaL/s2KcV905S+yT6W'
-                'E34Z/wXE8fqMPr9KxFdC+xgPUEA4bHvoCsNj18c2p/7NQnwvFT5pdzFHDuLo'
-                'wmpaFw5lURskn5nBp6X4NGAsWFfePA4y+LYVPmnvmfuHhs3Gi9RRSOELoEcX'
-                'q38rhdsCP0TSy+itej0k8ygpfNER8e2AuN/rmvcqSOdfTeRPAz4KOHSiAtbZ'
-                '/3n559Xb263d4T5l4MogXbe0p+v9HBOyoP461+kq18f/1tNTejo4/9zpLKOX'
-                '9bwpgfR8SrsVME69h/muW9d4J6u9x/8t5nv/rGI+NrgNboPb4Da49eOkc97z'
-                'Xf0+kPHfEzqz3ievE/GV0LbF58jIp3Lf6Rve3eaIGYQih+MJNzripi9u7vlH'
-                'GfxHCv/RPH4bETsQm1zMxMbKZdy1mdGKfNbUN6t/OzN0k30oiN+z8uN9V/sd'
-                'z8Ptx6foFbSHes8zcHrYQYn7DfLN85tH4qPalonPW7+mLV9HrKNPcwIg/j8i'
-                'b/w/eRPZpA==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        #
-        # The CalculateStatistics module has the following settings:
-        #
-        # grouping measurement: Metadata_SBS_doses
-        # dose_values[0]:
-        #    measurement: Metadata_SBS_doses
-        #    log transform: False
-        #    wants_save_figure: False
-        #
-        # dose_values[1]:
-        #    measurement: Metadata_Well
-        #    log transform: True
-        #    wants_save_figure: True
-        #    pathname_choice: PC_DEFAULT
-        #    pathname: ./WELL
-        #
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.CalculateStatistics))
-        self.assertEqual(module.grouping_values, "Metadata_SBS_doses")
-        self.assertEqual(len(module.dose_values), 2)
-        dose_value = module.dose_values[0]
-        self.assertEqual(dose_value.measurement, "Metadata_SBS_doses")
-        self.assertFalse(dose_value.log_transform)
-        self.assertFalse(dose_value.wants_save_figure)
-
-        dose_value = module.dose_values[1]
-        self.assertEqual(dose_value.measurement, "Metadata_Well")
-        self.assertTrue(dose_value.log_transform)
-        self.assertTrue(dose_value.wants_save_figure)
-        self.assertEqual(dose_value.pathname.dir_choice,
-                         cps.DEFAULT_OUTPUT_SUBFOLDER_NAME)
-        self.assertEqual(dose_value.pathname.custom_path, './WELL')
-
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

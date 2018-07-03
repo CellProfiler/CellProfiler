@@ -176,13 +176,13 @@ class CPFrame(wx.Frame):
         # bottom left will be the file browser
 
         self.__module_list_panel = wx.Panel(self.__left_win)
-        self.__module_list_panel.SetToolTipString(
+        self.__module_list_panel.SetToolTip(
                 "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
-        self.__pipeline_test_panel.SetToolTipString(
+        self.__pipeline_test_panel.SetToolTip(
                 "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
         self.__module_controls_panel = wx.Panel(self.__left_win, -1, style=wx.BORDER_NONE)
-        self.__module_controls_panel.SetToolTipString(
+        self.__module_controls_panel.SetToolTip(
                 "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
         #
         # The right window has the following structure:
@@ -314,7 +314,7 @@ class CPFrame(wx.Frame):
         #
         self.__preferences_panel = wx.Panel(self.__right_win, -1)
         self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
-        self.__preferences_panel.SetToolTipString(
+        self.__preferences_panel.SetToolTip(
                 "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
         #
         # Progress and status panels

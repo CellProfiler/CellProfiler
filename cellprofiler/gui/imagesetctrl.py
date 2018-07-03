@@ -120,7 +120,7 @@ class ImageSetCache(object):
 
 
 class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
-    class ImageSetGridTable(wx.grid.PyGridTableBase):
+    class ImageSetGridTable(wx.grid.GridTableBase):
         DEFAULT_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR.TextColour = ERROR_COLOR
@@ -991,7 +991,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 self.SetColSize(i, width)
 
 
-class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
+class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
     """Renders a grid cell with ellipsis in the middle if can't fit
 
     """

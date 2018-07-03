@@ -21,7 +21,7 @@ OMERO_SCHEME = "omero:"
 EVT_PLC_SELECTION_CHANGED = wx.PyEventBinder(wx.NewEventType())
 
 
-class PathListCtrl(wx.PyScrolledWindow):
+class PathListCtrl(wx.ScrolledWindow):
     #
     # The width of the expander image (seems like all code samples have this
     # hardcoded)

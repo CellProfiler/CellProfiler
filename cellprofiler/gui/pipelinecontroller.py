@@ -325,7 +325,7 @@ class PipelineController(object):
         # * tcp_test_sizer - when in test mode
         #
         tcp_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.__test_controls_panel.Sizer = tcp_sizer
+        self.__test_controls_panel.SetSizer(tcp_sizer)
         self.__tcp_launch_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_analysis_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_test_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -407,22 +407,22 @@ class PipelineController(object):
 
     def show_launch_controls(self):
         """Show the "Analyze images" and "Enter test mode" buttons"""
-        self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
-        self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
-        self.__test_controls_panel.Sizer.Show(self.__tcp_launch_sizer)
+        self.__test_controls_panel.GetSizer().Hide(self.__tcp_test_sizer)
+        self.__test_controls_panel.GetSizer().Hide(self.__tcp_analysis_sizer)
+        self.__test_controls_panel.GetSizer().Show(self.__tcp_launch_sizer)
         self.__test_controls_panel.Layout()
-        self.__test_controls_panel.Parent.Layout()
+        self.__test_controls_panel.GetParent().Layout()
         self.__frame.enable_launch_commands()
 
     def show_analysis_controls(self):
         """Show the controls that stop and pause analysis"""
-        self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
-        self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
-        self.__test_controls_panel.Sizer.Show(self.__tcp_analysis_sizer)
+        self.__test_controls_panel.GetSizer().Hide(self.__tcp_test_sizer)
+        self.__test_controls_panel.GetSizer().Hide(self.__tcp_launch_sizer)
+        self.__test_controls_panel.GetSizer().Show(self.__tcp_analysis_sizer)
         self.__stop_analysis_button.Enable()
         self.show_pause_button()
         self.__test_controls_panel.Layout()
-        self.__test_controls_panel.Parent.Layout()
+        self.__test_controls_panel.GetParent().Layout()
         self.__frame.enable_analysis_commands()
 
     def show_pause_button(self):
@@ -439,11 +439,11 @@ class PipelineController(object):
 
     def show_test_controls(self):
         """Show the controls for dealing with test mode"""
-        self.__test_controls_panel.Sizer.Show(self.__tcp_test_sizer)
-        self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
-        self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
+        self.__test_controls_panel.GetSizer().Show(self.__tcp_test_sizer)
+        self.__test_controls_panel.GetSizer().Hide(self.__tcp_launch_sizer)
+        self.__test_controls_panel.GetSizer().Hide(self.__tcp_analysis_sizer)
         self.__test_controls_panel.Layout()
-        self.__test_controls_panel.Parent.Layout()
+        self.__test_controls_panel.GetParent().Layout()
         self.__frame.enable_debug_commands()
 
     def omero_login(self):
@@ -590,23 +590,20 @@ class PipelineController(object):
 
     def display_pipeline_message_for_user(self):
         if self.__pipeline.message_for_user is not None:
-            frame = wx.Frame(self.
-                             __frame,
-                             title=self.__pipeline.caption_for_user)
-            frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+            frame = wx.Frame(self.__frame, title=self.__pipeline.caption_for_user)
+            frame.SetSizer(wx.BoxSizer(wx.VERTICAL))
             panel = wx.Panel(frame)
-            frame.Sizer.Add(panel, 1, wx.EXPAND)
-            panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+            frame.GetSizer().Add(panel, 1, wx.EXPAND)
+            panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
             subpanel = wx.Panel(panel)
-            panel.Sizer.Add(subpanel, 1, wx.EXPAND)
-            subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
-            subpanel.Sizer.AddSpacer(15)
+            panel.GetSizer().Add(subpanel, 1, wx.EXPAND)
+            subpanel.SetSizer(wx.BoxSizer(wx.VERTICAL))
+            subpanel.GetSizer().AddSpacer(15)
             message_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            subpanel.Sizer.Add(
-                message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
-            subpanel.Sizer.AddSpacer(15)
+            subpanel.GetSizer().Add(message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
+            subpanel.GetSizer().AddSpacer(15)
             button_bar = wx.StdDialogButtonSizer()
-            panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
+            panel.GetSizer().Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
             info_bitmap = wx.ArtProvider.GetBitmap(
                 wx.ART_INFORMATION,
@@ -765,10 +762,10 @@ class PipelineController(object):
                 wildcard=wildcard) as dlg:
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
-                if dlg.FilterIndex == 0:
-                    self.do_import_csv_file_list(dlg.Path)
+                if dlg.GetFilterIndex() == 0:
+                    self.do_import_csv_file_list(dlg.GetPath())
                 else:
-                    self.do_import_text_file_list(dlg.Path)
+                    self.do_import_text_file_list(dlg.GetPath())
 
     def do_import_csv_file_list(self, path):
         """Import path names from a CSV file
@@ -875,23 +872,17 @@ class PipelineController(object):
                     #     Convert button
                     #     Don't convert button
                     #
-                    dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+                    dlg.SetSizer(wx.BoxSizer(wx.VERTICAL))
                     sizer = wx.BoxSizer(wx.HORIZONTAL)
-                    dlg.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
-                    bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION,
-                                                   wx.ART_CMN_DIALOG)
-                    sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp), 0,
-                              wx.ALIGN_LEFT | wx.ALIGN_TOP)
+                    dlg.GetSizer().Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
+                    bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION, wx.ART_CMN_DIALOG)
+                    sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp), 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     sizer.AddSpacer(8)
                     vsizer = wx.BoxSizer(wx.VERTICAL)
                     sizer.Add(vsizer, 1, wx.EXPAND | wx.ALL)
-                    vsizer.Add(wx.StaticText(dlg, label=text),
-                               0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
+                    vsizer.Add(wx.StaticText(dlg, label=text), 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     vsizer.AddSpacer(8)
-                    dir_ctrl = filebrowse.DirBrowseButton(
-                        dlg, labelText="Folder",
-                        dialogTitle="Browse for default input folder",
-                        startDirectory=cellprofiler.preferences.get_default_image_directory())
+                    dir_ctrl = filebrowse.DirBrowseButton(dlg, labelText="Folder", dialogTitle="Browse for default input folder", startDirectory=cellprofiler.preferences.get_default_image_directory())
                     dir_ctrl.SetValue(cellprofiler.preferences.get_default_image_directory())
                     vsizer.Add(dir_ctrl, 1, wx.EXPAND)
                     dlg.Sizer.AddSpacer(8)
@@ -1039,7 +1030,7 @@ class PipelineController(object):
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             assert isinstance(dlg, wx.FileDialog)
             if default_path is not None:
-                dlg.Path = os.path.join(default_path, default_filename)
+                dlg.SetPath(os.path.join(default_path, default_filename))
             if dlg.ShowModal() == wx.ID_OK:
                 save_image_plane_details = (dlg.GetFilterIndex() == 1)
                 file_name = dlg.GetFilename()
@@ -1075,22 +1066,20 @@ class PipelineController(object):
             dlg.Destroy()
 
         # Show helpful message to guide in proper use (GithHub issue #688)
-        frame = wx.Frame(self.__frame,
-                         title="Image set listing saved")
-        frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+        frame = wx.Frame(self.__frame, title="Image set listing saved")
+        frame.SetSizer(wx.BoxSizer(wx.VERTICAL))
         panel = wx.Panel(frame)
-        frame.Sizer.Add(panel, 1, wx.EXPAND)
-        panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+        frame.GetSizer().Add(panel, 1, wx.EXPAND)
+        panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
         subpanel = wx.Panel(panel)
-        panel.Sizer.Add(subpanel, 1, wx.EXPAND)
-        subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
-        subpanel.Sizer.AddSpacer(15)
+        panel.GetSizer().Add(subpanel, 1, wx.EXPAND)
+        subpanel.SetSizer(wx.BoxSizer(wx.VERTICAL))
+        subpanel.GetSizer().AddSpacer(15)
         message_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        subpanel.Sizer.Add(
-            message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
-        subpanel.Sizer.AddSpacer(15)
+        subpanel.GetSizer().Add(message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
+        subpanel.GetSizer().AddSpacer(15)
         button_bar = wx.StdDialogButtonSizer()
-        panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
+        panel.GetSizer().Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
         info_bitmap = wx.ArtProvider.GetBitmap(
             wx.ART_INFORMATION,
@@ -1208,9 +1197,9 @@ class PipelineController(object):
         message += "\n\nPress ""Help"" for the plate viewer manual page."
         with wx.Dialog(self.__frame, title=caption) as dlg:
             assert isinstance(dlg, wx.Dialog)
-            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            dlg.SetSizer(wx.BoxSizer(wx.VERTICAL))
             message_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            dlg.Sizer.Add(message_sizer, 0, wx.EXPAND | wx.ALL, 15)
+            dlg.GetSizer().Add(message_sizer, 0, wx.EXPAND | wx.ALL, 15)
             bmpInfo = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, wx.ART_CMN_DIALOG)
             message_sizer.Add(wx.StaticBitmap(dlg, bitmap=bmpInfo), 0,
                               wx.ALIGN_TOP | wx.ALIGN_LEFT)
@@ -1218,7 +1207,7 @@ class PipelineController(object):
             message_sizer.Add(wx.StaticText(dlg, label=message), 0,
                               wx.ALIGN_TOP | wx.ALIGN_LEFT)
             button_sizer = wx.StdDialogButtonSizer()
-            dlg.Sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 8)
+            dlg.GetSizer().Add(button_sizer, 0, wx.EXPAND | wx.ALL, 8)
             ok_button = wx.Button(dlg, wx.ID_OK)
             help_button = wx.Button(dlg, wx.ID_HELP)
             button_sizer.AddButton(ok_button)
@@ -1257,9 +1246,9 @@ class PipelineController(object):
                  cellprofiler.preferences.get_recent_files(cellprofiler.preferences.WORKSPACE_FILE),
                  self.do_open_workspace)):
             assert isinstance(menu, wx.Menu)
-            while len(menu.MenuItems) > 0:
-                self.__frame.Unbind(wx.EVT_MENU, id=menu.MenuItems[0].Id)
-                menu.RemoveItem(menu.MenuItems[0])
+            while len(menu.GetMenuItems()) > 0:
+                self.__frame.Unbind(wx.EVT_MENU, id=menu.GetMenuItems()[0].Id)
+                menu.RemoveItem(menu.GetMenuItems()[0])
             for index, file_name in enumerate(file_names):
                 menu.Append(ids[index], file_name)
                 self.__frame.Bind(
@@ -1366,7 +1355,7 @@ class PipelineController(object):
         self.__workspace.close()
 
     def __on_pipeline_event(self, caller, event):
-        if not wx.Thread_IsMain():
+        if not wx.IsMainThread():
             wx.CallAfter(self.__on_pipeline_event, caller, event)
         if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             error_msg = None
@@ -1500,10 +1489,10 @@ class PipelineController(object):
         event.Enable(True)
         if not self.__path_list_ctrl.IsShownOnScreen():
             event.Enable(False)
-        elif event.Id == cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST:
+        elif event.GetId() == cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST:
             if not self.__path_list_ctrl.has_selections():
                 event.Enable(False)
-        elif event.Id == cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE:
+        elif event.GetId() == cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE:
             if not self.__path_list_ctrl.has_focus_item():
                 event.Enable(False)
 
@@ -1958,8 +1947,8 @@ class PipelineController(object):
         ids = []
         for item in menu.GetMenuItems():
             assert isinstance(item, wx.MenuItem)
-            self.__frame.Unbind(wx.EVT_MENU, id=item.Id)
-            ids.append(item.Id)
+            self.__frame.Unbind(wx.EVT_MENU, id=item.GetId())
+            ids.append(item.GetId())
         for item_id in ids:
             menu.Delete(item_id)
         modules = self.__pipeline.modules(exclude_disabled=False)
@@ -1982,8 +1971,8 @@ class PipelineController(object):
         from cellprofiler.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
         assert isinstance(event, wx.CommandEvent)
-        if self.menu_id_to_module_name.has_key(event.Id):
-            module_name = self.menu_id_to_module_name[event.Id]
+        if self.menu_id_to_module_name.has_key(event.GetId()):
+            module_name = self.menu_id_to_module_name[event.GetId()]
 
             def loader(module_num, module_name=module_name):
                 module = instantiate_module(module_name)
@@ -1994,7 +1983,7 @@ class PipelineController(object):
                 self, AddToPipelineEvent(module_name, loader))
         else:
             logger.warn("Could not find module associated with ID = %d, module = %s" % (
-                event.Id, event.GetString()))
+                event.GetId(), event.GetString()))
 
     def __get_selected_modules(self):
         """Get the modules selected in the GUI, but not input modules"""
@@ -2462,7 +2451,7 @@ class PipelineController(object):
     def module_display_request(self, evt):
         """
         """
-        assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
         if module_num <= 0 or \
@@ -2499,7 +2488,7 @@ class PipelineController(object):
             evt.reply(cellprofiler.analysis.Ack())
 
     def module_display_post_run_request(self, evt):
-        assert wx.Thread_IsMain(), "PipelineController.module_post_run_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_post_run_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
@@ -2523,7 +2512,7 @@ class PipelineController(object):
                 cellprofiler.preferences.cancel_progress()
 
     def module_display_post_group_request(self, evt):
-        assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_post_group_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data)
@@ -2586,7 +2575,7 @@ class PipelineController(object):
         """Report an error in analysis to the user, giving options for
         skipping, aborting, and debugging."""
 
-        assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.analysis_exception() must be called from main thread!"
 
         self.debug_request_queue = Queue.Queue()
 
@@ -2661,7 +2650,7 @@ class PipelineController(object):
         try:
             if dlg.ShowModal() != wx.ID_OK:
                 return
-            path = dlg.Path
+            path = dlg.GetPath()
         finally:
             dlg.Destroy()
 
@@ -3086,7 +3075,7 @@ class PipelineController(object):
         dialog.CenterOnParent()
         try:
             if dialog.ShowModal() == wx.ID_OK:
-                self.debug_choose_group(lb.Selection)
+                self.debug_choose_group(lb.GetSelection())
         finally:
             dialog.Destroy()
 
@@ -3206,7 +3195,7 @@ class PipelineController(object):
                           [unicode(x) for x in choices[image_number]]
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
-                wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
+                wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(self, self.list_ctrl.GetCol)
                 super_sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 10)
                 super_sizer.Add(wx.StaticLine(self), 0, wx.EXPAND | wx.ALL, 5)
                 btnsizer = wx.StdDialogButtonSizer()
@@ -3334,7 +3323,7 @@ class PipelineController(object):
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
                       wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
-        dont_show_again.Value = False
+        dont_show_again.SetValue(False)
         sizer.Add(dont_show_again, 0,
                   wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10)
         button_sizer = wx.StdDialogButtonSizer()
@@ -3377,7 +3366,7 @@ class PipelineController(object):
         dlg.CenterOnParent()
         try:
             dlg.ShowModal()
-            if dont_show_again.Value:
+            if dont_show_again.GetValue():
                 cellprofiler.preferences.set_show_analysis_complete_dlg(False)
         finally:
             dlg.Destroy()
@@ -3402,7 +3391,7 @@ class PipelineController(object):
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
                       wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
-        dont_show_again.Value = False
+        dont_show_again.SetValue(False)
         sizer.Add(dont_show_again, 0,
                   wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10)
         button_sizer = wx.StdDialogButtonSizer()
@@ -3414,7 +3403,7 @@ class PipelineController(object):
         dlg.CenterOnParent()
         try:
             dlg.ShowModal()
-            if dont_show_again.Value:
+            if dont_show_again.GetValue():
                 cellprofiler.preferences.set_show_exiting_test_mode_dlg(False)
         finally:
             dlg.Destroy()

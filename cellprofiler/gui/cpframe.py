@@ -291,11 +291,14 @@ class CPFrame(wx.Frame):
         self.__imageset_panel = wx.Panel(self.__imageset_sash)
         self.__imageset_panel.SetSizer(wx.BoxSizer())
         self.__imageset_panel.SetAutoLayout(True)
-        self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(self.__workspace, self.__imageset_panel, read_only=True)
 
         print("foo")
 
-        self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
+        # self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(self.__workspace, self.__imageset_panel, read_only=True)
+
+        print("foo")
+
+        # self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
         self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(self.__imageset_panel)
         self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
         self.__right_win.GetSizer().AddSpacer(4)
@@ -523,11 +526,11 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
                 wx.ID_NEW,
                 "New Project",
-                help="Create an empty project")
+                helpString="Create an empty project")
         self.__menu_file.Append(
                 wx.ID_OPEN,
                 "Open Project...\tctrl+O",
-                help='Open a project from a .%s project file' % cellprofiler.preferences.EXT_PROJECT)
+                helpString='Open a project from a .{} project file'.format(cellprofiler.preferences.EXT_PROJECT))
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(
                 self.recent_workspace_files,
@@ -535,15 +538,15 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
                 wx.ID_SAVE,
                 "Save Project\tctrl+S",
-                help='Save the project to the current project file')
+                helpString='Save the project to the current project file')
         self.__menu_file.Append(
                 wx.ID_SAVEAS,
                 "Save Project As...",
-                help='Save the project to a file of your choice')
+                helpString='Save the project to a file of your choice')
         self.__menu_file.Append(
                 ID_FILE_REVERT_TO_SAVED,
                 "Revert to Saved",
-                help="Reload the project file, discarding changes")
+                helpString="Reload the project file, discarding changes")
         submenu = wx.Menu()
         submenu.Append(
                 ID_FILE_LOAD_PIPELINE,
@@ -599,7 +602,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_EXIT, 'E&xit\tctrl+Q', 'Quit the application')
 
         self.menu_edit = wx.Menu()
-        self.menu_edit.Append(wx.ID_UNDO, help="Undo last action")
+        self.menu_edit.Append(wx.ID_UNDO, helpString="Undo last action")
         self.menu_edit.AppendSeparator()
 
         self.menu_edit.Append(wx.ID_CUT)

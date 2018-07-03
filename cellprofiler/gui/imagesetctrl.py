@@ -936,7 +936,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     def recompute(self):
         """Recompute the layout after a change to the image set"""
 
-        n_rows_added, n_columns_added = self.GetTable().recompute()
+        n_rows_added, n_columns_added = self.GetTable().GetValue()
 
         need_column_layout = False
         if n_columns_added < 0:

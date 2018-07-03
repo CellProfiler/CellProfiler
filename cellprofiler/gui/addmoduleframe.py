@@ -24,8 +24,7 @@ class AddModuleFrame(wx.Frame):
         # Module categories (in left panel)
         module_categories_text = wx.StaticText(left_panel, -1, 'Module Categories', style=wx.ALIGN_CENTER)
         font = module_categories_text.GetFont()
-        module_categories_text.SetFont(
-                wx.Font(font.GetPointSize() * 1.2, font.GetFamily(), font.GetStyle(), wx.FONTWEIGHT_BOLD))
+        module_categories_text.SetFont(wx.Font(font.GetPointSize() * 1.2, font.GetFamily(), font.GetStyle(), wx.FONTWEIGHT_BOLD))
         self.__module_categories_list_box = wx.ListBox(left_panel, -1)
         # Control panel for the selected module
         selected_module_panel = wx.Panel(left_panel, -1)
@@ -40,27 +39,25 @@ class AddModuleFrame(wx.Frame):
         w, h = self.__module_list_box.GetTextExtent("CorrectIllumination_Calculate_Plus")
         self.__module_list_box.SetMinSize(wx.Size(w, h * 30))
         # Sizers
-        self.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         search_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.Sizer.Add(search_sizer, 0, wx.EXPAND | wx.ALL, 2)
-        search_sizer.Add(wx.StaticText(self, label="Search:"), 0,
-                         wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+        self.GetSizer().Add(search_sizer, 0, wx.EXPAND | wx.ALL, 2)
+        search_sizer.Add(wx.StaticText(self, label="Search:"), 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
         self.search_text = wx.TextCtrl(self)
         search_sizer.Add(self.search_text, 1, wx.EXPAND)
         self.search_button = wx.Button(self, label="Search")
         search_sizer.Add(self.search_button, 0, wx.EXPAND)
-        self.Sizer.AddSpacer(2)
+        self.GetSizer().AddSpacer(2)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        top_sizer.AddMany([(left_panel, 0, wx.EXPAND | wx.LEFT, 5),
-                           (right_panel, 1, wx.EXPAND)])
-        self.Sizer.Add(top_sizer, 1, wx.EXPAND)
+        top_sizer.AddMany([(left_panel, 0, wx.EXPAND | wx.LEFT, 5), (right_panel, 1, wx.EXPAND)])
+        self.GetSizer().Add(top_sizer, 1, wx.EXPAND)
         left_sizer = wx.BoxSizer(wx.VERTICAL)
         left_sizer.Add(module_categories_text, 0, wx.EXPAND)
         left_sizer.AddSpacer(4)
         left_sizer.Add(self.__module_categories_list_box, 1, wx.EXPAND)
-        left_sizer.AddSpacer((-1, 10))
+        left_sizer.Add((-1, 10))
         left_sizer.Add(selected_module_panel, 0, wx.EXPAND)
-        left_sizer.AddSpacer((-1, 10))
+        left_sizer.Add((-1, 10))
         left_sizer.Add(getting_started_button, 0, wx.EXPAND)
         left_sizer.AddSpacer(2)
         left_sizer.Add(done_button, 0, wx.EXPAND | wx.BOTTOM, 5)
@@ -77,8 +74,7 @@ class AddModuleFrame(wx.Frame):
         selected_module_panel.SetSizer(selected_module_panel_sizer)
 
         self.__set_icon()
-        accelerators = wx.AcceleratorTable(
-                [(wx.ACCEL_CMD, ord('W'), cellprofiler.gui.cpframe.ID_FILE_EXIT)])
+        accelerators = wx.AcceleratorTable([(wx.ACCEL_CMD, ord('W'), cpframe.ID_FILE_EXIT)])
         self.SetAcceleratorTable(accelerators)
 
         self.Bind(wx.EVT_CLOSE, self.__on_close, self)
@@ -169,8 +165,8 @@ class AddModuleFrame(wx.Frame):
             filename = self.__module_list_box.GetItems()[idx]
             loader = self.__module_dict[category][filename]
             module = loader(0)
-            if isinstance(self.Parent, cellprofiler.gui.cpframe.CPFrame):
-                self.Parent.do_help_module(module.module_name, module.get_help())
+            if isinstance(self.GetParent(), cpframe.CPFrame):
+                self.GetParent().do_help_module(module.module_name, module.get_help())
             else:
                 help_text = module.get_help()
                 wx.MessageBox(help_text)

@@ -2,9 +2,10 @@
 
 import raven
 import wx
+import wx.adv
 
 
-class AboutDialogInfo(wx.AboutDialogInfo):
+class AboutDialogInfo(wx.adv.AboutDialogInfo):
     def __init__(self):
         super(AboutDialogInfo, self).__init__()
 

@@ -67,8 +67,7 @@ class PreferencesDlg(wx.Dialog):
 
     def __init__(self, parent=None, ID=-1, title="CellProfiler preferences",
                  size=wx.DefaultSize, pos=wx.DefaultPosition,
-                 style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |
-                       wx.THICK_FRAME,
+                 style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER, 
                  name=wx.DialogNameStr):
         wx.Dialog.__init__(self, parent, ID, title, pos, size, style, name)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)

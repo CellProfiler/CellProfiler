@@ -457,7 +457,7 @@ class Welcome(wx.Frame):
             title="Welcome to CellProfiler",
         )
 
-        self.Sizer = wx.BoxSizer()
+        self.SetSizer(wx.BoxSizer())
 
         self.SetIcon(cellprofiler.gui.get_cp_icon())
 
@@ -467,7 +467,7 @@ class Welcome(wx.Frame):
 
         self.content.SetPage(WELCOME_MAIN)
 
-        self.Sizer.Add(self.content, 1, wx.EXPAND)
+        self.GetSizer().Add(self.content, 1, wx.EXPAND)
 
         self.Layout()
 
@@ -544,7 +544,9 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
 
     def __set_startup_blurb(self):
         cellprofiler.preferences.set_startup_blurb(False)
-        parent = self.Parent
+
+        parent = self.GetParent()
+
         while parent is not None:
             if parent.Name == "WelcomeScreenFrame":
                 parent.Close()

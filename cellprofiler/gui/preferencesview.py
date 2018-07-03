@@ -39,7 +39,7 @@ class PreferencesView(object):
         panel.Sizer.Add(static_box_sizer, 1, wx.EXPAND)
         self.__sizer = static_box_sizer
         self.__image_folder_panel = wx.Panel(panel)
-        self.__image_folder_panel.AutoLayout = True
+        self.__image_folder_panel.SetAutoLayout(True)
         self.__image_edit_box = self.__make_folder_panel(
             self.__image_folder_panel,
             cellprofiler.preferences.get_default_image_directory(),
@@ -50,7 +50,7 @@ class PreferencesView(object):
              self.__notify_pipeline_list_view_directory_change],
             refresh_action=self.refresh_input_directory)
         self.__output_folder_panel = wx.Panel(panel)
-        self.__output_folder_panel.AutoLayout = True
+        self.__output_folder_panel.SetAutoLayout(True)
         self.__output_edit_box = self.__make_folder_panel(
             self.__output_folder_panel,
             cellprofiler.preferences.get_default_output_directory(),
@@ -60,7 +60,7 @@ class PreferencesView(object):
             [cellprofiler.preferences.set_default_output_directory,
              self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel)
-        self.__odds_and_ends_panel.AutoLayout = True
+        self.__odds_and_ends_panel.SetAutoLayout(True)
         self.__make_odds_and_ends_panel()
         self.__status_panel = status_panel
         status_panel.Sizer = wx.BoxSizer()
@@ -154,22 +154,19 @@ class PreferencesView(object):
         panel.SetSizer(sizer)
 
         def on_new_folder(event):
-            if os.path.exists(edit_box.Value):
+            if os.path.exists(edit_box.GetValue()):
                 return
-            if wx.MessageBox("Do you really want to create the %s folder?" %
-                                     edit_box.Value, style=wx.YES_NO) == wx.YES:
-                os.makedirs(edit_box.Value)
+            if wx.MessageBox("Do you really want to create the %s folder?" % edit_box.GetValue(), style=wx.YES_NO) == wx.YES:
+                os.makedirs(edit_box.GetValue())
                 self.__on_edit_box_change(event, edit_box, text, actions)
 
         def on_edit_box_change(event):
-            if os.path.isdir(edit_box.Value):
+            if os.path.isdir(edit_box.GetValue()):
                 new_button.Disable()
-                new_button.SetToolTipString("%s is a directory" %
-                                            edit_box.Value)
+                new_button.SetToolTipString("%s is a directory" % edit_box.GetValue())
             else:
                 new_button.Enable()
-                new_button.SetToolTipString("Press button to create the %s folder" %
-                                            edit_box.Value)
+                new_button.SetToolTipString("Press button to create the %s folder" % edit_box.GetValue())
             self.__on_edit_box_change(event, edit_box, text, actions)
             event.Skip()
 
@@ -188,8 +185,7 @@ class PreferencesView(object):
         self.__output_filename_edit_box = output_filename_edit_box
         allow_output_filename_overwrite_check_box = \
             wx.CheckBox(panel, label="Allow overwrite?")
-        allow_output_filename_overwrite_check_box.Value = \
-            cellprofiler.preferences.get_allow_output_file_overwrite()
+        allow_output_filename_overwrite_check_box.SetValue(cellprofiler.preferences.get_allow_output_file_overwrite())
         write_measurements_combo_box = wx.Choice(
             panel, choices=
             [WRITE_HDF_FILE_TEXT, WRITE_MAT_FILE_TEXT,
@@ -214,18 +210,17 @@ class PreferencesView(object):
             self.__hold_a_reference_to_progress_callback)
 
         def on_output_filename_changed(event):
-            cellprofiler.preferences.set_output_file_name(output_filename_edit_box.Value)
+            cellprofiler.preferences.set_output_file_name(output_filename_edit_box.GetValue())
 
         def on_allow_checkbox(event):
-            cellprofiler.preferences.set_allow_output_file_overwrite(
-                allow_output_filename_overwrite_check_box.Value)
+            cellprofiler.preferences.set_allow_output_file_overwrite(allow_output_filename_overwrite_check_box.GetValue())
 
         def on_write_MAT_files_combo_box(event):
             #
             # Update the state to reflect the new measurement choice
             #
             sel = write_measurements_combo_box.GetStringSelection()
-            output_filename = output_filename_edit_box.Value
+            output_filename = output_filename_edit_box.GetValue()
             if sel == WRITE_HDF_FILE_TEXT:
                 cellprofiler.preferences.set_write_MAT_files(cellprofiler.preferences.WRITE_HDF5)
                 if output_filename.lower().endswith('.mat'):
@@ -237,10 +232,9 @@ class PreferencesView(object):
             else:
                 cellprofiler.preferences.set_write_MAT_files(False)
 
-            if output_filename != output_filename_edit_box.Value:
-                output_filename_edit_box.Value = output_filename
-                cellprofiler.preferences.set_output_file_name(
-                    output_filename_edit_box.Value)
+            if output_filename != output_filename_edit_box.GetValue():
+                output_filename_edit_box.SetValue(output_filename)
+                cellprofiler.preferences.set_output_file_name(output_filename_edit_box.Value)
             #
             # Reconstruct the sizers depending on whether we have one or two rows
             #
@@ -276,7 +270,7 @@ class PreferencesView(object):
                          allow_output_filename_overwrite_check_box):
                 ctrl.Show(show)
 
-            panel.Parent.Layout()
+            panel.GetParent().Layout()
             panel.Layout()
 
         write_measurements_combo_box.Bind(
@@ -299,14 +293,14 @@ class PreferencesView(object):
             label = "Running 1 worker."
         else:
             label = "Running %d workers." % n_workers
-        self.__worker_count_ctrl.Label = label
+        self.__worker_count_ctrl.SetLabel(label)
 
     def __make_progress_panel(self):
         panel = self.__progress_panel
         self.__progress_msg_ctrl = wx.StaticText(panel)
         self.__worker_count_ctrl = wx.StaticText(panel)
         self.__progress_bar = wx.Gauge(panel, -1, size=(100, -1))
-        self.__progress_bar.Value = 25
+        self.__progress_bar.SetValue(25)
         self.__timer = wx.StaticText(panel)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([((1, 1), 1),
@@ -382,7 +376,7 @@ class PreferencesView(object):
 
     def check_preferences(self):
         """Return True if preferences are OK (e.g., directories exist)"""
-        path = self.__image_edit_box.Value
+        path = self.__image_edit_box.GetValue()
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Input Folder is "%s", but '
                               'the directory does not exist. Do you want to '
@@ -392,7 +386,7 @@ class PreferencesView(object):
                 return False, "Image directory does not exist"
             os.makedirs(path)
             cellprofiler.preferences.set_default_image_directory(path)
-        path = self.__output_edit_box.Value
+        path = self.__output_edit_box.GetValue()
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Output Folder is "%s", but '
                               'the directory does not exist. Do you want to '
@@ -445,10 +439,9 @@ class PreferencesView(object):
                     self.__progress_bar.Show(False)
                     return
         self.__progress_bar.Show(True)
-        self.__progress_msg_ctrl.Label = message
+        self.__progress_msg_ctrl.SetLabel(message)
         if remaining_time is not None:
-            self.__progress_bar.Value = \
-                (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
+            self.__progress_bar.SetValue((100 * elapsed_time) / (elapsed_time + remaining_time + .00001))
             timestr = 'Time %s/%s' % (
                 secs_to_timestr(elapsed_time),
                 secs_to_timestr(elapsed_time + remaining_time))
@@ -465,7 +458,7 @@ class PreferencesView(object):
         self.show_status_text()
 
     def set_message_text(self, text):
-        if self.__status_text.Label != text:
+        if self.__status_text.GetLabel() != text:
             saved_size = self.__status_text.GetSize()
             self.__status_text.SetLabel(text)
             self.__status_text.SetSize(saved_size)
@@ -488,8 +481,8 @@ class PreferencesView(object):
         if dir_dialog.ShowModal() == wx.ID_OK:
             edit_box.SetValue(dir_dialog.GetPath())
             fake_event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED)
-            fake_event.EventObject = edit_box
-            fake_event.Id = edit_box.Id
+            fake_event.SetEventObject(edit_box)
+            fake_event.SetId(edit_box.Id)
             edit_box.GetEventHandler().ProcessEvent(fake_event)
 
     def __on_edit_box_change(self, event, edit_box, text, actions):

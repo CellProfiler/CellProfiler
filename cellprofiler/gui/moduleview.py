@@ -304,7 +304,7 @@ class ModuleView(object):
         self.__module_panel.SetupScrolling()
         module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)
         self.__sizer = ModuleSizer(0, 3)
-        self.module_panel.Sizer = self.__sizer
+        self.module_panel.SetSizer(self.__sizer)
         self.module_panel.Bind(wx.EVT_CHILD_FOCUS, self.skip_event)
         if notes_panel is not None:
             self.make_notes_gui()

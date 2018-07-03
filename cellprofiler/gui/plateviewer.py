@@ -288,18 +288,18 @@ class PlateViewer(object):
         x, y = event.GetPositionTuple()
         hit = self.plate_hit_test(x, y)
         if hit is None or self.plate_data is None:
-            self.plate_panel.SetToolTipString("")
+            self.plate_panel.SetToolTip("")
         else:
             row, col = hit
             well_name = "%s%02d" % (well_row_name(row), col + 1)
             well = self.plate_data[row, col]
             if well is None:
-                self.plate_panel.SetToolTipString("%s: no data" % well_name)
+                self.plate_panel.SetToolTip("%s: no data" % well_name)
             else:
                 text = "%s: %d files" % (
                     well_name,
                     sum([len(v) for v in well.values()]))
-                self.plate_panel.SetToolTipString(text)
+                self.plate_panel.SetToolTip(text)
 
     def on_update(self):
         if (tuple(sorted(self.plate_choice.GetItems())) !=

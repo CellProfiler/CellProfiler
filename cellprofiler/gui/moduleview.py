@@ -1558,7 +1558,7 @@ class ModuleView(object):
                 "( %s )" % cellprofiler.preferences.get_default_output_directory()
         else:
             folder_label.Label = wx.EmptyString
-        dir_ctrl.SetToolTipString(folder_label.Label)
+        dir_ctrl.SetToolTip(folder_label.Label)
         return control
 
     def make_pathname_control(self, v, control):
@@ -2280,7 +2280,7 @@ class ModuleView(object):
                 ctrl.SetToolTip(None)
         else:
             def set_tool_tip(ctrl, message=message):
-                ctrl.SetToolTipString(message)
+                ctrl.SetToolTip(message)
         if control is not None:
             set_tool_tip(control)
             for child in control.GetChildren():
@@ -2724,7 +2724,7 @@ class FilterPanelController(object):
 
         if anyall.GetStringSelection() != structure[0].display_name:
             anyall.SetStringSelection(structure[0].display_name)
-            anyall.SetToolTipString(structure[0].doc)
+            anyall.SetToolTip(structure[0].doc)
         #
         # Now each subelement should be a list.
         #
@@ -2748,7 +2748,7 @@ class FilterPanelController(object):
                         if choice_ctrl.GetStringSelection() != token.display_name:
                             choice_ctrl.SetStringSelection(token.display_name)
                         if token.doc is not None:
-                            choice_ctrl.SetToolTipString(token.doc)
+                            choice_ctrl.SetToolTip(token.doc)
                         predicates = token.subpredicates
                 i = len(substructure)
                 while len(predicates) > 0:
@@ -4145,7 +4145,7 @@ class TableController(wx.grid.PyGridTableBase):
                 s = ''
             elif not isinstance(s, six.string_types):
                 s = str(s)
-            self.grid.GetGridWindow().SetToolTipString(s)
+            self.grid.GetGridWindow().SetToolTip(s)
         event.Skip()
 
     def on_column_resize(self, event):

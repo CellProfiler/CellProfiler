@@ -9,6 +9,7 @@ try:
     def cmp(a, b):
         return _cmp(a, b)
 
+
 except NameError:
     # Python 3
     def cmp(a, b):

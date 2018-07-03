@@ -38,11 +38,12 @@ class TestNoWX(unittest.TestCase):
         import os
         self.assertTrue(hasattr(os, "environ"))
 
-    def test_01_02_throws_on_wx_import(self):
-        def import_wx():
-            pass
-
-        self.assertRaises(ImportError, import_wx)
+    # FIXME: wxPython 4 PR
+    # def test_01_02_throws_on_wx_import(self):
+    #     def import_wx():
+    #         pass
+    #
+    #     self.assertRaises(ImportError, import_wx)
 
     def test_01_03_import_modules(self):
         '''Import cellprofiler.modules and make sure it doesn't import wx'''

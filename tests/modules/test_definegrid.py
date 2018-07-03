@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 
@@ -29,69 +29,6 @@ OBJECTS_NAME = "objects"
 
 
 class TestDefineGrid(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        # What would you like to call the grid that you define in this module?    GridBlue
-        # How many rows and columns are in the grid (not counting control spots outside the grid itself)?    9,13
-        # For numbering purposes, is the first spot at the left or right?    Right
-        # For numbering purposes, is the first spot on the top or bottom?    Top
-        # Would you like to count across first (by rows) or up/down first (by columns)?    Columns
-        # Would you like to define a new grid for each image cycle, or define a grid once and use it for all images?    Once
-        # Would you like to define the grid automatically, based on objects you have identified in a previous module?    Manual
-        # For AUTOMATIC, what are the previously identified objects you want to use to define the grid?
-        # For MANUAL, how would you like to specify where the control spot is?    Coordinates
-        # For MANUAL or if you are saving an RGB image, what is the original image on which to mark/display the grid?    OrigBlue
-        # For MANUAL + MOUSE, what is the distance from the control spot to the top left spot in the grid? (X,Y: specify spot units or pixels below)    0,0
-        # For MANUAL + MOUSE, did you specify the distance to the control spot (above) in spot units or pixels?    Spot Units
-        # For MANUAL + ONCE or MANUAL + MOUSE, what is the spacing, in pixels, between columns (horizontal = X) and rows (vertical = Y)?    40,50
-        # For MANUAL + ONCE + COORDINATES, where is the center of the control spot (X,Y pixel location)?    15,23
-        # What would you like to call an RGB image with R = the image, G = grid lines, and B = text?    Grid
-        # If the gridding fails, would you like to use a previous grid that worked?    Any Previous
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwyy9TMLRUMDS2MjS1MrZQMDIwsFQgGTAwevryMzAwlDIx'
-                'MFTMuRrmn3/ZQKT89hbt+i2l1m8bXPpkTnlIOhcwszV5rpl7zahz8ewdMwOT'
-                '3DuNt9Yw2Qmw98n8jLgRe8kqbNeOsNAWZe2qc7//3pO3t08XZ0h4z3jh0Xuz'
-                '+aUF1rNmxkxeNqG9w9DnzxJOnYIZa/8/+8x1TKKPuYS1WUQ1wfDTV2OjhYsj'
-                't/wo8dtr4lArcepUzZfLBT2PUgxONt58zm3jelCg3n2BRdFW75JmYR/PtvM/'
-                'rl5tjT0lsnt3zb9M/c8BwZ8UPhUprOX+a56wMn/qk7XKL8s3WToFf/tyWGTX'
-                'GT7F4vWs51dzzdt2SPlJv+G3ex9DXj+I5oo7EfdeQ+lfrowf6z2tB7ofdt22'
-                'NvtaLZAcf/39sibxT6rf1s9M+/deu0Jx/3KzhWf8Jq+ZUPIoX6RCKsFlce+t'
-                '9acO9wFNC5Zaoui5bRb7Vj62I663zzhHys53nnQoofrrBP6Z6sdzT9WJnmdu'
-                'dT+xfMoxOTWD99lWvyO1P1w5YHjhdvuq4r0rbdZU681dZ3y8dtWBt9rfWns6'
-                '2/M3HM8+eUzxi/j25kybwx3un1sTpr04Hqz/4Yrj/Fdv3SPn1zws8Zfx3Z0l'
-                'K8NYvHvv5Hef9/St+lTmf5D7Zv9DncLECfc/q9V63ulV+/pZ9OXXy+1d953q'
-                'vNO+uZ6pN8+Y9eLX3qz9pR9X/X8iqfOAX7r8//k3nq+N1mnVSV4/mTL/+Z3+'
-                'TKmbf1QWrjiw/HT0t/0m9j1ChZLv/5+LPxp97f3LH9JFN+f8mP87/Nr/aXtW'
-                'f878dS9kzv4Drz4vnOd/2aZm2QXryXoij38L+ho4LtqsW/nk34VVH/afm9/c'
-                'd7P2gvGW6zlr+jf/+Pzp43l3pu/Ma7bb+7+7cL595b/4uKKHnAA6FG1I')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertEqual(module.grid_image, "GridBlue")
-        self.assertEqual(module.grid_rows, 9)
-        self.assertEqual(module.grid_columns, 13)
-        self.assertEqual(module.origin, D.NUM_TOP_RIGHT)
-        self.assertEqual(module.ordering, D.NUM_BY_COLUMNS)
-        self.assertEqual(module.each_or_once, D.EO_ONCE)
-        self.assertEqual(module.auto_or_manual, D.AM_MANUAL)
-        self.assertEqual(module.object_name, "")
-        self.assertEqual(module.manual_choice, D.MAN_COORDINATES)
-        self.assertEqual(module.first_spot_coordinates.x, 15)
-        self.assertEqual(module.first_spot_coordinates.y, 23)
-        self.assertEqual(module.first_spot_row, 1)
-        self.assertEqual(module.first_spot_col, 1)
-        self.assertEqual(module.second_spot_coordinates.x, 15 + 40 * 12)
-        self.assertEqual(module.second_spot_coordinates.y, 23 + 50 * 8)
-        self.assertTrue(module.wants_image)
-        self.assertEqual(module.save_image_name, "Grid")
-        self.assertEqual(module.failed_grid_choice, D.FAIL_ANY_PREVIOUS)
-
     def test_01_02_load_v1(self):
         data = ('eJztWN1P2lAUvyi6ocumi4l7vA97UCOMj+mALAoOnSTCiBC3RZ2r9AJ3Kb2k'
                 'vfVjy9735/q4x/VAS8tdY6FoposlTTm353d/5/zuR09bytf28lt4LRbHpXwt'

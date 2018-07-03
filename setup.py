@@ -25,7 +25,10 @@ def find_version(*pathnames):
 def find_resources(directory, subdirectory):
     resources = []
     for root, _, filenames in os.walk(os.path.join(directory, subdirectory)):
-        resources += [os.path.relpath(os.path.join(root, filename), directory) for filename in filenames]
+        resources += [
+            os.path.relpath(os.path.join(root, filename), directory)
+            for filename in filenames
+        ]
 
     return resources
 
@@ -42,58 +45,41 @@ setuptools.setup(
         "Programming Language :: Python :: 2.7",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Scientific/Engineering :: Image Recognition",
-        "Topic :: Scientific/Engineering"
+        "Topic :: Scientific/Engineering",
     ],
-    entry_points={
-        "console_scripts": [
-            "cellprofiler=cellprofiler.__main__:main"
-        ]
-    },
-    extras_require={
-        "build": [
-            "pyinstaller",
-            "twine"
-        ],
-        "test": [
-            "pytest>=3.3.2,<4"
-        ]
-    },
+    entry_points={"console_scripts": ["cellprofiler=cellprofiler.__main__:main"]},
+    extras_require={"build": ["pyinstaller", "twine"], "test": ["pytest>=3.3.2,<4"]},
     install_requires=[
         "boto3",
         "centrosome",
         "docutils",
-        "h5py",
-        "inflect",
-        "javabridge",
-        "joblib",
-        "mahotas",
+        "h5py>=2.9",
+        "imageio>=2.5",
+        "inflect>=2.1",
+        "javabridge>=1.0",
+        "joblib>=0.13",
+        "mahotas>=1.4",
         "matplotlib>=2.0.0, !=2.1.0",
-        "mysqlclient==1.4.2",
-        "numpy",
+        "mysqlclient==1.3.13",
+        "numpy>=1.16",
         "prokaryote==2.4.1",
         "python-bioformats==1.5.2",
         "pyzmq==15.3.0",
-        "raven",
-        "requests",
-        "scikit-image",
-        "scikit-learn",
-        "scipy",
-        "six"
+        "raven>=6.10",
+        "requests>=2.22",
+        "scikit-image>=0.14",
+        "scikit-learn>=0.20",
+        "scipy>=1.2",
+        "six",
+        "wxPython>=4.0.6",
     ],
     license="BSD",
     name="CellProfiler",
-    package_data={
-        "cellprofiler": find_resources("cellprofiler", "data")
-    },
+    package_data={"cellprofiler": find_resources("cellprofiler", "data")},
     include_package_data=True,
-    packages=setuptools.find_packages(exclude=[
-        "tests*"
-    ]),
-    # Allow experimentation with Travis' Python 3.6.3 but not many other Py3s
-    python_requires=">=2.7, !=3.0, !=3.1, !=3.2, !=3.3, !=3.4, !=3.5, <=3.6.3",
-    setup_requires=[
-        "pytest"
-    ],
+    packages=setuptools.find_packages(exclude=["tests*"]),
+    python_requires=">=2.7",
+    setup_requires=["pytest"],
     url="https://github.com/CellProfiler/CellProfiler",
-    version=find_version("cellprofiler", "__init__.py")
+    version=find_version("cellprofiler", "__init__.py"),
 )

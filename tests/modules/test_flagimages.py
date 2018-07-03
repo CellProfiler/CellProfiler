@@ -7,7 +7,7 @@ import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -46,104 +46,6 @@ MEASUREMENT_NAME = '_'.join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
 class TestFlagImages(unittest.TestCase):
-    def test_01_01_00_load_matlab_v1(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUnArylRwLE1XMDJUMDSwMjWzMrZQMDIwsFQgGTAwevryMzAwxDMx'
-                'MFTMeTvdP/+ygciBuSZzrVpubRSe1fJEWXyBsNOjE9cCAzNfh1n5Pmq5J2W+'
-                'ecqR0Ec5uup2bPNZCp8kF9xoPxg32cwwU3bTmpgNKa7nK99//3elzm82x8J4'
-                '3ZZtRzYrLut8tljutFuWV6WHxfJ9wtcmts479tr+6J6GhkNLvfUO9Hp0iClH'
-                'vv+ZXGY3WyduroF1kaf8ni2bJP6e2K3iWGHlx/P4enqJ1x3Fv04BZSpZ8idN'
-                'eTU/J/+esX6d3h+jdT9yu37mVkeyO6909j1z98quK/Xt036F+d0tC/pl/dFG'
-                'Pfjfo78ibjLVB9zDJ30OO5ypIaM5n+2KpcjSdYf2rd243eibmJWVxWvRk/XR'
-                'H7WfNjcc+MCldvJ9RMvniIceO583OrMJ7phyXujcstcKxZpC/5WPrp/Sf5Pj'
-                'jp60a+JHqyeFfRLfJI8HekyTiZVLa0te9Les8n9tm+2rYP1Pq84vzrExOHts'
-                '8Wp33cMrF5q/LVtaWXOhYB7Q+vIj9x6xMH87ySu3+8GC9sehU5f3Tb7O78/B'
-                'Lm1RY5dm7no+2PvhlktzHJdrb779pDLodxPPA7uy0KNr7Uo/qhSfM73wWnRO'
-                'e9f6M/uW7fNdv1JXj8nn6VSBZwXdz9Z/O2q3elmfvvc1w/f/SphmtD56pWC5'
-                'Z9HHlX/fTV5xa/+a6VL9/7mKLOPPfr2f/rLqbvn+e7lq6gkXl1SdW7W8b/51'
-                '++k1On1MM9c8/v89fKJ98le7kO/FP987b6he2RbWcjnEImha+SnZ5aebHJdH'
-                '+f2Kyc98lcCVuf2ixlX774GW9aWHfzyubzx3rqt0n/3uu7vvzv79t/Hfu+91'
-                '+9zsJWdf+s9r7/LJDgCl2lmX')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, F.FlagImage))
-        self.assertEqual(len(module.flags), 1)
-        flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
-        self.assertEqual(len(flag.measurement_settings), 1)
-        ms = flag.measurement_settings[0]
-        self.assertTrue(isinstance(ms, cps.SettingsGroup))
-        self.assertEqual(ms.measurement.value, "AreaShape_Area_OrigBlue")
-        self.assertEqual(ms.source_choice, F.S_IMAGE)
-        self.assertTrue(ms.wants_minimum.value)
-        self.assertEqual(ms.minimum_value, 10)
-        self.assertFalse(ms.wants_maximum.value)
-        self.assertEqual(flag.category, "Metadata")
-        self.assertEqual(flag.feature_name, "LowArea")
-
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, F.FlagImage))
-        self.assertEqual(len(module.flags), 1)
-        flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
-        self.assertEqual(len(flag.measurement_settings), 1)
-        ms = flag.measurement_settings[0]
-        self.assertTrue(isinstance(ms, cps.SettingsGroup))
-        self.assertEqual(ms.measurement.value, "ImageQuality_LocalFocus_OrigBlue")
-        self.assertEqual(ms.source_choice, F.S_IMAGE)
-        self.assertFalse(ms.wants_minimum.value)
-        self.assertTrue(ms.wants_maximum.value)
-        self.assertEqual(ms.maximum_value.value, 500)
-        self.assertEqual(flag.category, "Metadata")
-        self.assertEqual(flag.feature_name, "QCFlag")
-
-    def test_01_01_02_load_matlab_v2(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1PwSsxTMDBRMLC0MjW0MjJVMDIwNFAgGTAwevryMzAw5DAx'
-                'MFTMeRvmmH/ZQKTsUskWmVVGnJyKKkVPDt1wWCArqSs6NWPXxiwh9/WFzUuP'
-                'rBNKz7b4ONui8En7B+Yfkjcib6nF3bKIvGGRcHLTvM/3vt/7nbN/Dx9Dwn7u'
-                'A3zx0TWvHmSZCEd6+yrOVzpmUNikZnBgccp/9fnpF45/uOOafoE3kCEseae9'
-                'irFV57PV/spZ7XqbFkwPe3aYa2/xE/bHNy8Z/KzpET9hezRe8ETf0lvqJY3M'
-                'Pp5J8x+c3q29f4pnnXXNv7z1lRdU5KRq3i371vovesM186KK18u+7D45ZwFr'
-                '9b86xuVnvijMrhO0+M1q0cvjx/xl7eIb/xMbY7lT/nJXvkl+LmuvJLrf7dg9'
-                'hr+LHy/smjtt4+WkWtF9t4L2OMkJtXk0RE55tFcrPvWxXUDPbuWjuk84Uy/4'
-                'sq5vKo4/JFg0f1aLkTHPhKp/s3/ob7psXGZlURGZfye0QCerakaC/pcrn6d/'
-                'vlH9N/8Jo/hNm3dC6vrr+Vkt+FVkFL/XsEgaLfS8sNSyeCHzP7m42Eqxq2er'
-                'hfom6JZYClwMWbt78Ysl6gx5m/lOfI2+Wh8nK+eafF0u5fziHNmqqTcYM9d2'
-                '81euLfpvsPEj6zbnF7NuNJ9b5X3isH50u04Ur/uzwvVK/ZXPX/0w4Fp2wdWy'
-                'YtXHk/9vn5+zdfcT7772PQ07Le5/efs3btb62feu/zCytON9/vVxTlT3h8+/'
-                'LpvuOzmfaVb+4f/v18vV6+Z+tp3yvvhq9eeJTtUztDK0vn5c2KL8RLDJ8cVi'
-                'Ca27s8PfTj6qr8omHfB/Sfnf2vciHxYWZ17PuL9iv/7r9StfX//VoGStfLHy'
-                '85ffk+P71//5x/D03N+bYn+f7tD9a7/C4c00AGyvW4A=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, F.FlagImage))
-        self.assertEqual(len(module.flags), 1)
-        flags = module.flags[0]
-        self.assertEqual(len(flags.measurement_settings), 1)
-        ms = flags.measurement_settings[0]
-        self.assertEqual(ms.measurement.value, "Intensity_TotalIntensity_OrigBlue_12")
-        self.assertEqual(ms.source_choice, F.S_IMAGE)
-        self.assertTrue(ms.wants_minimum.value)
-        self.assertFalse(ms.wants_maximum.value)
-        self.assertEqual(ms.minimum_value.value, .5)
-        self.assertEqual(flags.category, "Metadata")
-        self.assertEqual(flags.feature_name, "MyQCFlag")
-
     def test_01_02_load_v1(self):
         data = ('eJztW0Fv2zYUphInaFZgyC5r1124Q4FkqwXJXVAnGFJ59ooYqzOvCboVRdcx'
                 'Nm1zoCRDorp4Q4H+rB33k3bccaIiWxIrW7IrK3YmAYT9KH7vfXx8fKREqFU7'

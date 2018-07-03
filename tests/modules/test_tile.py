@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 
@@ -29,79 +29,6 @@ def input_image_name(index):
 
 
 class TestTile(unittest.TestCase):
-    def test_01_01_load_matlab_tile(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggH0l6JeQpGBgqGhlbG5lYmJkC2oYECyYCB0dOXn4GBIYyJgaFi'
-                'zt3ws3mXHQTk1P2iilZcmmcR8FCZnYOT44pyo4JpkGGoVOijHZ3m77y2mW+6'
-                'nhulV6vTZ8PXf/Hukc63a4P/XzHtmOp2bU36vpk/08r33mNuWFzboFb/rmjl'
-                'wSwTptjOjgvnDZKPGO5lW/HBZsb/s09ldrL46tT06chXb5B8/XOh8eLHr38+'
-                'u2qe9UPs2kRZ02fO399ylu19v3lr8odfU3Q2lLrlGRw5fiunRb/TfYXwD/Yf'
-                'n96o6aUG3bHVext2olnpY8DzIoGZ4t/mK2wJF67Idn9zu7HnY9Pen7scgpfd'
-                '7PDVZ/EzZ10ud3jlYYf3h4N/rTS0F2X7ezlxWlV00F4n+cR+87MCC40/TxNd'
-                'rnXP6r2dzt++oD9livO2Xzh+JCotdss7xqsyp0zuH068m1n5xsPC6X3p7vU7'
-                'Ux79n/lE/8u+8xrxG1K4EuVSr05um7ylv6Qn5o2h7/Eje2YEfI9fo73W35fT'
-                '/UX8iqe3/TZ+tV0UvvTZfPN/M85xX/870+heR9HP89Xn5j6QrO6JD628nmRh'
-                'euHl5V+ahvas98TPbL5cPSc+8s+p849F7tRyhr84YnhC1bAmJfOI27NnZhNb'
-                '4rfoVxY+sSvd9mTyseRLlpm7XtyarcSt/iD1rL+dfl3BtX9q8UV256KndBRH'
-                '1/+Ik3iqzX/e83Xpzhk+0399/lS46ZFqbb6zTa9+rc36Tfs2fVop5f5s75uq'
-                '7Q//r//478C3Wo33zxe9/tyilCxheaH7XnrYf+2j7xQfzXf8lr3sSvTjW46L'
-                'Q19YX2z+XZnWeT1gSvWfJT9XNp49Pt0+PkZ23aN/TTW1tV8b/laFpNazz4v4'
-                'LAIAXZRb/Q==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertEqual(module.input_image.value, "DNA")
-        self.assertEqual(module.output_image.value, "TiledDNA")
-        self.assertEqual(module.tile_method, T.T_ACROSS_CYCLES)
-        self.assertEqual(module.place_first, T.P_BOTTOM_LEFT)
-        self.assertFalse(module.meander)
-        self.assertTrue(module.wants_automatic_rows)
-        self.assertTrue(module.wants_automatic_columns)
-
-    def test_01_02_load_matlab_place_adjacent(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggH0l6JeQpGBgqGxlYGZlYmZkC2oYECyYCB0dOXn4GB4QcjA0PF'
-                'nLeh3n6HDQTmbtOMb+TSLnNZc+ODsFCS50KPkKagwJCDl0yWSVgWilqHnua0'
-                'EPLmO9i4QTFTOHgW/1LuIy5+Juf2mBvr9+3lYVia2iD5c85kZf75YV/+xmRo'
-                '7G9sVfCbLX6wwbT+X2ifWhHnrsU7Ole0W/LozFhv9f3NrvuSe3YlTHMv5L35'
-                'MCHT9Py+w3r79/A3/Htt9TLxloK/xCKxltiHeg9bLO3uPb+ezl4588InL84H'
-                'aWUrnP0uO77cJDUr/KO7QY+524swrqPT/xT2Vie93tIedWjLxAxbjXl3JeY5'
-                'tSxnmBolOelBD8e5Bq+dcb5B3/eEbf/k/6upVONR2Yr/a0qPP42/8El7/yGf'
-                'ds7Ljy0q6/b+T+6SU5tZH2Tlt3re/lObV3zU2O8XyB0dKr3145HXlj0PZ16u'
-                'mHL/yDoFXZflO/99FpxncyXCKEav6fTBffPzL1mxnd8ssU+01//nkY0e0yPk'
-                'FqkFys88HH5vzS+Vo6+tcpdfybzy70JZ4PzTpU3ONp6vL36/Hb3ylMnXC5+t'
-                'rTWa3osem78+0bZu1z07MdfbqXHPv/94VOE297+zXLBe4p2f79+//z59inru'
-                '/MzK+Ae///v//7/5Vc25C89Xnp78WSfT5tR/i/2nry3eY8207529seHX50+3'
-                'Ws3Plb9/esb6CI9+4yelG/5tW1hwfsK73zl9nfw62X+sK03uuQIAEwIjcg==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertEqual(module.input_image, "DNA")
-        self.assertEqual(module.output_image, "PlacedImage")
-        self.assertEqual(len(module.additional_images), 1)
-        self.assertEqual(module.additional_images[0].input_image_name, "Cytoplasm")
-        self.assertEqual(module.tile_method, T.T_WITHIN_CYCLES)
-        self.assertEqual(module.tile_style, T.S_COL)
-        self.assertFalse(module.meander)
-        self.assertFalse(module.wants_automatic_columns)
-        self.assertFalse(module.wants_automatic_rows)
-        self.assertEqual(module.rows, 2)
-        self.assertEqual(module.columns, 1)
-
     def test_01_03_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

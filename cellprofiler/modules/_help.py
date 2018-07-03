@@ -1,11 +1,11 @@
 # coding:utf-8
 
-import os.path
-
-import pkg_resources
-
 import cellprofiler.gui.help.content
-from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler.preferences import (
+    ABSOLUTE_FOLDER_NAME,
+    DEFAULT_INPUT_SUBFOLDER_NAME,
+    DEFAULT_OUTPUT_SUBFOLDER_NAME,
+)
 
 DEFINITION_OBJECT = """\
 In CellProfiler, we use the term *object* as a generic term to refer to
@@ -88,10 +88,14 @@ the above steps to add more rules to the filter until you have all the
 conditions you want to include.
 
 {REGEXP_HELP_REF}
-""".format(**{
-    "IMAGES_USING_RULES_ICON": cellprofiler.gui.help.content.image_resource("Images_UsingRules.png"),
-    "REGEXP_HELP_REF": REGEXP_HELP_REF
-})
+""".format(
+    **{
+        "IMAGES_USING_RULES_ICON": cellprofiler.gui.help.content.image_resource(
+            "Images_UsingRules.png"
+        ),
+        "REGEXP_HELP_REF": REGEXP_HELP_REF,
+    }
+)
 
 HELP_ON_MEASURING_DISTANCES = """\
 To measure distances in an open image, use the “Measure length” tool
@@ -200,13 +204,15 @@ substitute the metadata values for the current image set for any
 metadata tags in the folder name.
 
 {USING_METADATA_HELP_REF}
-""".format(**{
-    "ABSOLUTE_FOLDER_NAME": ABSOLUTE_FOLDER_NAME,
-    "DEFAULT_INPUT_SUBFOLDER_NAME": DEFAULT_INPUT_SUBFOLDER_NAME,
-    "DEFAULT_OUTPUT_SUBFOLDER_NAME": DEFAULT_OUTPUT_SUBFOLDER_NAME,
-    "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF,
-    "USING_METADATA_TAGS_REF": USING_METADATA_TAGS_REF,
-})
+""".format(
+    **{
+        "ABSOLUTE_FOLDER_NAME": ABSOLUTE_FOLDER_NAME,
+        "DEFAULT_INPUT_SUBFOLDER_NAME": DEFAULT_INPUT_SUBFOLDER_NAME,
+        "DEFAULT_OUTPUT_SUBFOLDER_NAME": DEFAULT_OUTPUT_SUBFOLDER_NAME,
+        "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF,
+        "USING_METADATA_TAGS_REF": USING_METADATA_TAGS_REF,
+    }
+)
 
 HELP_ON_SAVING_OBJECTS = """\
 *Note on saving images:* You can pass the objects along to the
@@ -217,7 +223,7 @@ overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
 """
 
-StrelImage = cellprofiler.gui.help.content.image_resource('structuringelement.png')
+StrelImage = cellprofiler.gui.help.content.image_resource("structuringelement.png")
 
 HELP_FOR_STREL = """\
 The structuring element is the shape that will be applied in any morphological
@@ -229,9 +235,9 @@ pixel diameter with various structuring elements.
 |StrelImage|
 
 .. |StrelImage| image:: {StrelImage}
-""".format(**{
-    "StrelImage": StrelImage}
-    )
+""".format(
+    **{"StrelImage": StrelImage}
+)
 
 PROTIP_RECOMMEND_ICON = cellprofiler.gui.help.content.image_resource("thumb-up.png")
 

@@ -2,7 +2,7 @@
 
 import numpy
 import scipy.ndimage
-import skimage.transform
+
 import cellprofiler.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
@@ -34,9 +34,10 @@ See also
 
 {HELP_ON_SAVING_OBJECTS}
 
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
+)
+
 
 class ResizeObjects(cellprofiler.module.ObjectProcessing):
     module_name = "ResizeObjects"
@@ -48,16 +49,13 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
 
         self.method = cellprofiler.setting.Choice(
             "Method",
-            [
-                "Dimensions",
-                "Factor"
-            ],
+            ["Dimensions", "Factor"],
             doc="""\
 The following options are available:
 
 -  *Dimensions:* Enter the new height and width of the resized objects.
 -  *Factor:* Enter a single value which specifies the scaling.""",
-            value="Factor"
+            value="Factor",
         )
 
         self.factor = cellprofiler.setting.Float(
@@ -68,7 +66,8 @@ The following options are available:
 *(Used only if resizing by "Factor")*
 
 Numbers less than 1 will shrink the objects; numbers greater than 1 will
-enlarge the objects.""")
+enlarge the objects.""",
+        )
 
         self.width = cellprofiler.setting.Integer(
             "Width",
@@ -77,7 +76,8 @@ enlarge the objects.""")
             doc="""\
 *(Used only if resizing by "Dimensions")*
 
-Enter the desired width of the final objects, in pixels.""")
+Enter the desired width of the final objects, in pixels.""",
+        )
 
         self.height = cellprofiler.setting.Integer(
             "Height",
@@ -86,47 +86,43 @@ Enter the desired width of the final objects, in pixels.""")
             doc="""\
 *(Used only if resizing by "Dimensions")*
 
-Enter the desired height of the final objects, in pixels.""")
+Enter the desired height of the final objects, in pixels.""",
+        )
 
     def settings(self):
         settings = super(ResizeObjects, self).settings()
 
-        settings += [
-            self.method,
-            self.factor,
-            self.width,
-            self.height
-        ]
+        settings += [self.method, self.factor, self.width, self.height]
 
         return settings
 
     def visible_settings(self):
         visible_settings = super(ResizeObjects, self).visible_settings()
 
-        visible_settings += [
-            self.method
-        ]
+        visible_settings += [self.method]
 
         if self.method.value == "Dimensions":
-            visible_settings += [
-                self.width,
-                self.height
-            ]
+            visible_settings += [self.width, self.height]
         else:
-            visible_settings += [
-                self.factor
-            ]
+            visible_settings += [self.factor]
 
         return visible_settings
 
     def run(self, workspace):
-        self.function = lambda data, method, factor, width, height: \
-            resize(data, (height, width)) if method == "Dimensions" else rescale(data, factor)
+        self.function = (
+            lambda data, method, factor, width, height: resize(data, (height, width))
+            if method == "Dimensions"
+            else rescale(data, factor)
+        )
 
         super(ResizeObjects, self).run(workspace)
 
-    def add_measurements(self, workspace, input_object_name=None, output_object_name=None):
-        super(cellprofiler.module.ObjectProcessing, self).add_measurements(workspace, self.y_name.value)
+    def add_measurements(
+        self, workspace, input_object_name=None, output_object_name=None
+    ):
+        super(cellprofiler.module.ObjectProcessing, self).add_measurements(
+            workspace, self.y_name.value
+        )
 
         labels = workspace.object_set.get_objects(self.y_name.value).segmented
 
@@ -138,13 +134,13 @@ Enter the desired height of the final objects, in pixels.""")
         workspace.measurements.add_measurement(
             self.x_name.value,
             cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-            [1] * len(unique_labels)
+            [1] * len(unique_labels),
         )
 
         workspace.measurements.add_measurement(
             self.y_name.value,
             cellprofiler.measurement.FF_PARENT % self.x_name.value,
-            unique_labels
+            unique_labels,
         )
 
 
@@ -156,7 +152,7 @@ def resize(data, size):
         data,
         numpy.divide(numpy.multiply(1.0, size), data.shape),
         order=0,
-        mode="nearest"
+        mode="nearest",
     )
 
 
@@ -167,9 +163,4 @@ def rescale(data, factor):
     if data.ndim == 3:
         factor = (1,) + factor
 
-    return scipy.ndimage.zoom(
-        data,
-        factor,
-        order=0,
-        mode="nearest"
-    )
+    return scipy.ndimage.zoom(data, factor, order=0, mode="nearest")

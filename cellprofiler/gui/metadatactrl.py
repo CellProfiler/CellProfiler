@@ -2,12 +2,12 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
-import cellprofiler.measurement
-import cellprofiler.preferences
+import six
 import wx
 import wx.lib.masked
 
-import six
+import cellprofiler.measurement
+import cellprofiler.preferences
 
 __choice_ids = []
 
@@ -19,7 +19,7 @@ def get_choice_id(index):
     return __choice_ids[index]
 
 
-class MetadataControl(wx.PyControl):
+class MetadataControl(wx.Control):
     class MetadataToken(object):
         def __init__(self):
             self.value = u""
@@ -40,7 +40,7 @@ class MetadataControl(wx.PyControl):
         if (style & wx.BORDER_MASK) == wx.BORDER_DEFAULT:
             self.native_border = True
             self.padding += 2
-            style = (style & ~ wx.BORDER_MASK) | wx.BORDER_NONE
+            style = (style & ~wx.BORDER_MASK) | wx.BORDER_NONE
         else:
             self.native_border = False
         kwargs["style"] = style | wx.WANTS_CHARS
@@ -50,9 +50,10 @@ class MetadataControl(wx.PyControl):
         choices = [cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.measurement.C_METADATA) + 1):]
-            if (object_name == cellprofiler.measurement.IMAGE and
-                    feature.startswith(cellprofiler.measurement.C_METADATA)):
+            choice = feature[(len(cellprofiler.measurement.C_METADATA) + 1) :]
+            if object_name == cellprofiler.measurement.IMAGE and feature.startswith(
+                cellprofiler.measurement.C_METADATA
+            ):
                 choices.append(choice)
         self.__metadata_choices = choices
         self.SetValue(value)
@@ -80,7 +81,7 @@ class MetadataControl(wx.PyControl):
                 self.__caret = None
 
         def on_show(event):
-            if event.GetShow():
+            if event:
                 self.make_caret()
             else:
                 del self.__caret
@@ -120,34 +121,34 @@ class MetadataControl(wx.PyControl):
         index = 0
         while index < len(value):
             if state == STATE_INITIAL:
-                if value[index] == '\\':
+                if value[index] == "\\":
                     state = STATE_BACKSLASH
                 else:
                     self.__tokens.append(value[index])
             elif state == STATE_BACKSLASH:
-                if value[index] in ('g', '?'):
+                if value[index] in ("g", "?"):
                     state = STATE_PRE
                 else:
                     self.__tokens.append(six.text_type(value[index]))
                     state = STATE_INITIAL
             elif state == STATE_PRE:
-                if value[index] != '<':
+                if value[index] != "<":
                     # WTF? bad input, output last 3 tokens
-                    self.__tokens += value[(index - 2):(index + 1)]
+                    self.__tokens += value[(index - 2) : (index + 1)]
                     state = STATE_INITIAL
                 else:
                     self.__tokens += [self.MetadataToken()]
                     state = STATE_INSIDE
             else:
                 assert state == STATE_INSIDE
-                if value[index] != '>':
+                if value[index] != ">":
                     self.__tokens[-1].value += value[index]
                 else:
                     state = STATE_INITIAL
             index += 1
         self.SetMinSize(self.DoGetBestSize())
         self.__cursor_pos = len(self.__tokens)
-        self.Cursor = wx.StockCursor(wx.CURSOR_IBEAM)
+        self.Cursor = wx.Cursor(wx.CURSOR_IBEAM)
 
     def GetValue(self):
         """The setting value underlying the text representation"""
@@ -169,13 +170,13 @@ class MetadataControl(wx.PyControl):
 
         rawpos = 0
         for i in range(self.__cursor_pos):
-            rawpos += self.GetTextExtent(self.get_text(i, i + 1))[0]
+            rawpos += self.GetFullTextExtent(self.get_text(i, i + 1))[0]
         xsize = self.Size[0] - self.padding * 2
 
         pos = self.xoffset + rawpos
         slop = pos - xsize
         if slop > 0:
-            slop += self.GetTextExtent("M")[0]
+            slop += self.GetFullTextExtent("M")[0]
             self.offset -= slop
             pos -= slop
             self.Refresh()
@@ -183,16 +184,15 @@ class MetadataControl(wx.PyControl):
             self.offset = rawpos
             pos = self.padding
             self.Refresh()
-        elif rawpos + self.GetTextExtent("M")[0] < xsize:
+        elif rawpos + self.GetFullTextExtent("M")[0] < xsize:
             self.offset = 0
             self.Refresh()
         if self.__caret is not None:
             pos = rawpos + self.xoffset
-            self.__caret.MoveXY(pos, self.padding)
+            self.__caret.Move(pos, self.padding)
 
     def show_caret(self):
-        if (self.__caret is not None and
-                    self.FindFocus() == self):
+        if self.__caret is not None and self.FindFocus() == self:
             self.adjust_scroll()
             self.__caret.Show()
 
@@ -223,8 +223,9 @@ class MetadataControl(wx.PyControl):
         ################
         elif keycode in (wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN):
             pos = self.__cursor_pos
-            if (pos < len(self.__tokens) and
-                    isinstance(self.__tokens[pos], self.MetadataToken)):
+            if pos < len(self.__tokens) and isinstance(
+                self.__tokens[pos], self.MetadataToken
+            ):
                 token = self.__tokens[pos]
                 try:
                     idx = self.__metadata_choices.index(token.value) + 1
@@ -241,7 +242,9 @@ class MetadataControl(wx.PyControl):
         #################
         elif keycode in (wx.WXK_UP, wx.WXK_NUMPAD_UP):
             pos = self.__cursor_pos
-            if pos < len(self.__tokens) and isinstance(self.__tokens[pos], self.MetadataToken):
+            if pos < len(self.__tokens) and isinstance(
+                self.__tokens[pos], self.MetadataToken
+            ):
                 token = self.__tokens[pos]
                 try:
                     idx = self.__metadata_choices.index(token.value) - 1
@@ -336,7 +339,7 @@ class MetadataControl(wx.PyControl):
         # Paste
         #
         ##################
-        elif (keycode == ord('V')) and cmd_down:
+        elif (keycode == ord("V")) and cmd_down:
             # Cribbed from the WX drag and drop demo
             if wx.TheClipboard.Open():
                 try:
@@ -347,18 +350,18 @@ class MetadataControl(wx.PyControl):
                 if success:
                     self.delete_selection()
                     self.__tokens = (
-                        self.__tokens[0:self.__cursor_pos] +
-                        list(data_object.GetText()) +
-                        self.__tokens[self.__cursor_pos:])
-                    self.move_cursor_pos(
-                            self.__cursor_pos + len(data_object.GetText()))
+                        self.__tokens[0 : self.__cursor_pos]
+                        + list(data_object.GetText())
+                        + self.__tokens[self.__cursor_pos :]
+                    )
+                    self.move_cursor_pos(self.__cursor_pos + len(data_object.GetText()))
                     self.on_token_change()
         ################
         #
         # Cut / copy
         #
         ################
-        elif (keycode in (ord('C'), ord('X'))) and cmd_down:
+        elif (keycode in (ord("C"), ord("X"))) and cmd_down:
             if self.selection[0] == self.selection[1]:
                 return
             selection = list(self.selection)
@@ -371,7 +374,7 @@ class MetadataControl(wx.PyControl):
                     wx.TheClipboard.SetData(self.__clipboard_text)
                 finally:
                     wx.TheClipboard.Close()
-            if keycode == ord('X'):
+            if keycode == ord("X"):
                 self.delete_selection()
         else:
             event.Skip()
@@ -380,7 +383,7 @@ class MetadataControl(wx.PyControl):
         if self.selection[0] != self.selection[1]:
             selection = list(self.selection)
             selection.sort()
-            del self.__tokens[selection[0]:selection[1]]
+            del self.__tokens[selection[0] : selection[1]]
             self.move_cursor_pos(selection[0])
             self.on_token_change()
 
@@ -432,9 +435,8 @@ class MetadataControl(wx.PyControl):
         return True
 
     def DoGetBestSize(self):
-        size = self.GetTextExtent(self.get_text() + "M")
-        size = wx.Size(size[0] + self.padding * 2,
-                       size[1] + self.padding * 2)
+        size = self.GetFullTextExtent(self.get_text() + "M")
+        size = wx.Size(size[0] + self.padding * 2, size[1] + self.padding * 2)
         return self.ClientToWindowSize(size)
 
     def OnSize(self, event):
@@ -445,7 +447,7 @@ class MetadataControl(wx.PyControl):
     def hit_test(self, pos):
         text = self.get_text(0, len(self.__tokens))
         dc = wx.ClientDC(self)
-        dc.Font = self.Font
+        dc.SetFont(self.Font)
         positions = self.get_positions(dc)
         del dc
         for i in range(len(self.__tokens)):
@@ -455,7 +457,7 @@ class MetadataControl(wx.PyControl):
 
     def OnLeftDown(self, event):
         if self.HitTest(event.GetPosition()) == wx.HT_WINDOW_INSIDE:
-            self.__cursor_pos = self.hit_test(event.GetPositionTuple()[0])
+            self.__cursor_pos = self.hit_test(event.GetPosition()[0])
             if self.FindFocus() == self:
                 self.show_caret()
             else:
@@ -470,7 +472,7 @@ class MetadataControl(wx.PyControl):
             event.Skip()
             return
         if self.HitTest(event.GetPosition()) == wx.HT_WINDOW_INSIDE:
-            self.move_cursor_pos(self.hit_test(event.GetPositionTuple()[0]), False)
+            self.move_cursor_pos(self.hit_test(event.GetPosition()[0]), False)
 
     def OnLeftUp(self, event):
         if not self.HasCapture():
@@ -479,7 +481,7 @@ class MetadataControl(wx.PyControl):
 
     def on_right_down(self, event):
         if self.HitTest(event.GetPosition()) == wx.HT_WINDOW_INSIDE:
-            index = self.hit_test(event.GetPositionTuple()[0])
+            index = self.hit_test(event.GetPosition()[0])
             self.__cursor_pos = index
             self.SetFocus()
             self.show_caret()
@@ -488,8 +490,9 @@ class MetadataControl(wx.PyControl):
     def on_context_menu(self, event):
         menu = wx.Menu()
         index = self.__cursor_pos
-        if (index < len(self.__tokens) and
-                isinstance(self.__tokens[index], self.MetadataToken)):
+        if index < len(self.__tokens) and isinstance(
+            self.__tokens[index], self.MetadataToken
+        ):
             heading = "Change tag"
         else:
             heading = "Insert tag"
@@ -503,8 +506,9 @@ class MetadataControl(wx.PyControl):
     def select_value(self, event):
         choice = self.__metadata_choice_ids[event.GetId()]
         index = self.__cursor_pos
-        if (index < len(self.__tokens) and
-                isinstance(self.__tokens[index], self.MetadataToken)):
+        if index < len(self.__tokens) and isinstance(
+            self.__tokens[index], self.MetadataToken
+        ):
             self.__tokens[index].value = choice
         else:
             token = self.MetadataToken()
@@ -531,14 +535,16 @@ class MetadataControl(wx.PyControl):
     def OnPaint(self, event):
         dc = wx.BufferedPaintDC(self)
         try:
-            dc.BackgroundMode = wx.SOLID
-            background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
+            dc.SetBackgroundMode(wx.PENSTYLE_SOLID)
+            background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
             metadata_color = cellprofiler.preferences.get_primary_outline_color()
-            selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
-            selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
-            text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)
-            dc.Background = wx.Brush(background_color)
-            dc.Font = self.Font
+            selected_background_color = wx.SystemSettings.GetColour(
+                wx.SYS_COLOUR_HIGHLIGHT
+            )
+            selected_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+            text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
+            dc.SetBackground(wx.Brush(background_color))
+            dc.SetFont(self.Font)
             dc.Clear()
             if self.native_border:
                 renderer = wx.RendererNative.Get()
@@ -547,13 +553,17 @@ class MetadataControl(wx.PyControl):
                     style |= wx.CONTROL_FOCUSED | wx.CONTROL_CURRENT
                 if not self.Enabled:
                     style |= wx.CONTROL_DISABLED
-                renderer.DrawTextCtrl(self, dc, (0, 0,
-                                                 self.ClientSize[0],
-                                                 self.ClientSize[1]),
-                                      style)
-                dc.SetClippingRect((self.padding, self.padding,
-                                    self.ClientSize[0] - 2 * self.padding,
-                                    self.ClientSize[1] - 2 * self.padding))
+                renderer.DrawTextCtrl(
+                    self, dc, (0, 0, self.ClientSize[0], self.ClientSize[1]), style
+                )
+                dc.SetClippingRegion(
+                    (
+                        self.padding,
+                        self.padding,
+                        self.ClientSize[0] - 2 * self.padding,
+                        self.ClientSize[1] - 2 * self.padding,
+                    )
+                )
             text = self.get_text(0, len(self.__tokens))
             positions = self.get_positions(dc)
 
@@ -581,13 +591,14 @@ class MetadataControl(wx.PyControl):
             colors = {
                 "boring": (background_color, text_color),
                 "selection": (selected_background_color, selected_color),
-                "metadata": (metadata_color, text_color)
+                "metadata": (metadata_color, text_color),
             }
             background_color = [colors[state][0] for state in state_list]
             foreground_color = [colors[state][1] for state in state_list]
-            dc.BackgroundMode = wx.SOLID
+            dc.SetBackgroundMode(wx.PENSTYLE_SOLID)
             for text, position, background, foreground in zip(
-                    text_list, position_list, background_color, foreground_color):
+                text_list, position_list, background_color, foreground_color
+            ):
                 dc.SetTextBackground(background)
                 dc.SetTextForeground(foreground)
                 dc.DrawText(text, position[0], position[1])

@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 
@@ -25,134 +25,6 @@ OUTPUT_IMAGE = 'my_output_image'
 
 
 class TestFlipAndRotate(unittest.TestCase):
-    def test_01_000_load_matlab_flip(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-Flip:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
-    What did you call the image you want to flip?:MyImage
-    What do you want to call the flipped image?:MyFlippedImage
-    Do you want to flip from left to right?:Yes
-    Do you want to flip from top to bottom?:Yes
-
-Flip:[module_num:2|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
-    What did you call the image you want to flip?:MyImage
-    What do you want to call the flipped image?:MyFlippedImage
-    Do you want to flip from left to right?:Yes
-    Do you want to flip from top to bottom?:No
-
-Flip:[module_num:3|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
-    What did you call the image you want to flip?:MyImage
-    What do you want to call the flipped image?:MyFlippedImage
-    Do you want to flip from left to right?:No
-    Do you want to flip from top to bottom?:Yes
-"""
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
-        for module, flip_choice in zip(pipeline.modules(),
-                                       (F.FLIP_BOTH, F.FLIP_LEFT_TO_RIGHT,
-                                        F.FLIP_TOP_TO_BOTTOM)):
-            self.assertTrue(isinstance(module, F.FlipAndRotate))
-            self.assertEqual(module.image_name, "MyImage")
-            self.assertEqual(module.output_name, "MyFlippedImage")
-            self.assertEqual(module.flip_choice, flip_choice)
-            self.assertEqual(module.rotate_choice, F.ROTATE_NONE)
-
-    def test_01_001_matlab_rotate(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-    What did you call the image to be rotated?:MyImage
-    What do you want to call the rotated image?:MyRotatedImage
-    Choose rotation method\x3A:Angle
-    Would you like to crop away the rotated edges?:Yes
-    Do you want to determine the amount of rotation for each image individually as you cycle through, or do you want to define it only once (on the first image) and then apply it to all images?:Individually
-    For COORDINATES or MOUSE, do you want to click on points that are aligned horizontally or vertically?:horizontally
-    For COORDINATES and ONLY ONCE, what are the coordinates of one point (X,Y)?:1,10
-    For COORDINATES and ONLY ONCE, what are the coordinates of the other point (X,Y)?:121,144
-    For ANGLE and ONLY ONCE, by what angle would you like to rotate the image (in degrees, positive = counterclockwise and negative = clockwise)?:45
-"""
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, F.FlipAndRotate))
-        self.assertEqual(module.image_name, "MyImage")
-        self.assertEqual(module.output_name, "MyRotatedImage")
-        self.assertEqual(module.rotate_choice, F.ROTATE_ANGLE)
-        self.assertTrue(module.wants_crop)
-        self.assertEqual(module.how_often.value, F.IO_INDIVIDUALLY)
-        self.assertEqual(module.first_pixel.x, 1)
-        self.assertEqual(module.first_pixel.y, 10)
-        self.assertEqual(module.second_pixel.x, 121)
-        self.assertEqual(module.second_pixel.y, 144)
-        self.assertEqual(module.angle, 45)
-
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1MITi1QMLJQMLC0AiIjIwUjAwNLBZIBA6OnLz8DA4MgEwND'
-                'xZy7Yd7+jw0E5rVMM39a+GiDh2XRg1A5IfcbrVfDmpoYFAtNej11d5ZNsVjx'
-                'VPxDd5jM9+WJ+p6vIlptQiweZIj0Gt83f6wvbM3LcCOSYcaU75mZZnt6q95E'
-                'z9L8L8XtOEP82kK21R//2Gdu11B4Me9RtIuyjJPVpJ9i1Q/Mme1rS87d7Xhk'
-                '9urlwaIti+/Z8h3qbmeRsN+nUuuz/qRw2xuPQ+s+KHNyphvaPTNPv7wnRqJS'
-                '+lLcsjariDY+r+miuXFH5Q8a7DNz2q6qW6e5TfqO+OzltVcE/fg7/cI/yjz7'
-                '4CNtc2o/R8f3YK/YJX2SzOv/xMcekVh29qzQ60iTiin/ZwvdP54XxNeTbGtt'
-                'WWHdvH3h2e6r9tlPQv9xlkuI+4k8WshX+VPdyEa4QL06c87Pz19WA42zf54v'
-                'ct+z3WZeZbP7T91nk9wfuXVccgycd37N8tPMn47M/NFTdWrf/GfH8hTnTD0Y'
-                'uSHc8P69Y/+mr7u+5rfCsb8nD+pK/5zqf8muyIO/8mXmxQvvQr+vXPX6ptGn'
-                '5y+tsu5/ZzLhsO5I6l2eYfu+9n380vaZ83MX8/y78O/Hn2tfNRY/XvHvz32R'
-                'uAPK+23ur/jfpDhfOZr/9+Mnhq+ly+feb/3Peu+9/Ob61d/OSrrned8O6Pqg'
-                'I2FzKvx/7PEzex8xdT65c33//JNzfuVWrj0Tert9lujnq2s/7Zi159+6r/Ua'
-                'd4ynVNu/lj+ivjjrj3bcoTPHAOAKLXI=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        #
-        # Flip module (#2):
-        # image name = OrigBlue
-        # output image = FlippedOrigBlue
-        # No flip left/right
-        # Flip top/bottom
-        # Rotate with mouse
-        # Crop
-        # Rotate images individually
-        # Coordinates: horizontally, pt1 = 1,2 pt2 = 3,4
-        # Angle: 5
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, F.FlipAndRotate))
-        self.assertEqual(module.image_name, 'OrigBlue')
-        self.assertEqual(module.output_name, 'FlippedOrigBlue')
-        self.assertEqual(module.flip_choice, F.FLIP_TOP_TO_BOTTOM)
-        self.assertEqual(module.rotate_choice, F.ROTATE_MOUSE)
-        self.assertTrue(module.wants_crop.value)
-        self.assertEqual(module.how_often, F.IO_INDIVIDUALLY)
-        self.assertEqual(module.first_pixel.x, 1)
-        self.assertEqual(module.first_pixel.y, 2)
-        self.assertEqual(module.second_pixel.x, 3)
-        self.assertEqual(module.second_pixel.y, 4)
-        self.assertEqual(module.angle.value, 5)
-
     def test_01_02_load_v1(self):
         '''Load a variable_revision_number = 1 module'''
         data = ('eJztWM9PGkEUXhCtP5pWkyb1OEdpgSyojZJGRakpqSARYmOMbUd2gElmZ8iw'

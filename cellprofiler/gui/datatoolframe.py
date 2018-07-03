@@ -15,6 +15,7 @@ import cellprofiler.preferences
 import cellprofiler.gui.workspace
 import h5py
 import wx
+import wx.adv
 import wx.lib.scrolledpanel
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
@@ -86,10 +87,10 @@ class DataToolFrame(wx.Frame):
         self.sizer.Add(panel, 0, wx.EXPAND)
 
         panel_sizer.AddStretchSpacer()
-        panel_sizer.Add(button, 0, wx.RIGHT, button.Size[1])
+        panel_sizer.Add(button, 0, wx.RIGHT, button.GetSize()[1])
         panel.SetSizer(panel_sizer)
 
-        wx.EVT_BUTTON(self, button.Id, self.on_run)
+        wx.EVT_BUTTON(self, button.GetId(), self.on_run)
         #
         # Add a file menu
         #
@@ -97,8 +98,8 @@ class DataToolFrame(wx.Frame):
         file_menu.Append(ID_FILE_LOAD_MEASUREMENTS, "&Load measurements")
         file_menu.Append(ID_FILE_SAVE_MEASUREMENTS, "&Save measurements")
         file_menu.Append(ID_FILE_EXIT, "E&xit")
-        self.MenuBar = wx.MenuBar()
-        self.MenuBar.Append(file_menu, "&File")
+        self.SetMenuBar(wx.MenuBar())
+        self.GetMenuBar().Append(file_menu, "&File")
         self.Bind(wx.EVT_MENU, self.on_load_measurements, id=ID_FILE_LOAD_MEASUREMENTS)
         self.Bind(wx.EVT_MENU, self.on_save_measurements, id=ID_FILE_SAVE_MEASUREMENTS)
         self.Bind(wx.EVT_MENU, self.on_exit, id=ID_FILE_EXIT)
@@ -112,14 +113,14 @@ class DataToolFrame(wx.Frame):
         #
         image_menu = wx.Menu()
         image_menu.Append(ID_IMAGE_CHOOSE, "&Choose")
-        self.MenuBar.Append(image_menu, "&Image")
+        self.GetMenuBar().Append(image_menu, "&Image")
         self.Bind(wx.EVT_MENU, self.on_image_choose, id=ID_IMAGE_CHOOSE)
 
         self.SetSizer(self.sizer)
-        self.Size = (self.module_view.get_max_width(), self.Size[1])
+        self.SetSize((self.module_view.get_max_width(), self.GetSize()[1]))
         module_panel.Layout()
         self.Show()
-        self.tbicon = wx.TaskBarIcon()
+        self.tbicon = wx.adv.TaskBarIcon()
         self.tbicon.SetIcon(cellprofiler.gui.get_cp_icon(), "CellProfiler2.0")
         self.SetIcon(cellprofiler.gui.get_cp_icon())
 
@@ -139,7 +140,7 @@ class DataToolFrame(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.GetFilterIndex() == 0:
                     new_measurements = cellprofiler.measurement.Measurements(
-                            filename=dlg.Path,
+                            filename=dlg.GetPath(),
                             copy=self.measurements)
                     new_measurements.flush()
                     new_measurements.close()
@@ -153,7 +154,7 @@ class DataToolFrame(wx.Frame):
     def on_image_choose(self, event):
         """Choose an image from the image set"""
         dlg = wx.Dialog(self)
-        dlg.Title = "Choose an image set"
+        dlg.SetTitle("Choose an image set")
         sizer = wx.BoxSizer(wx.VERTICAL)
         dlg.SetSizer(sizer)
         choose_sizer = wx.BoxSizer(wx.HORIZONTAL)

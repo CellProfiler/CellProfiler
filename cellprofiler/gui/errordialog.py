@@ -122,9 +122,9 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
         qc_msg = ("Encountered error while processing. "
                   "Do you want to stop processing?")
     question_control = wx.StaticText(dialog, -1, qc_msg)
-    question_control.Font = wx.Font(int(dialog.Font.GetPointSize() * 5 / 4),
-                                    dialog.Font.GetFamily(),
-                                    dialog.Font.GetStyle(),
+    question_control.Font = wx.Font(int(dialog.GetFont().GetPointSize() * 5 / 4),
+                                    dialog.GetFont().GetFamily(),
+                                    dialog.GetFont().GetStyle(),
                                     wx.FONTWEIGHT_BOLD)
     sizer.Add(question_control, 0,
               wx.EXPAND | wx.ALL, 5)
@@ -147,16 +147,16 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
     def on_details(event):
         if not details_on[0]:
-            message_control.Label = "%s\n%s" % (message, traceback_text)
+            message_control.SetLabel("%s\n%s" % (message, traceback_text))
             message_control.Refresh()
-            details_button.Label = "Hide details..."
+            details_button.SetLabel("Hide details...")
             details_button.Refresh()
             dialog.Fit()
             details_on[0] = True
         else:
-            message_control.Label = message
+            message_control.SetLabel(message)
             message_control.Refresh()
-            details_button.Label = "Details..."
+            details_button.SetLabel("Details...")
             details_button.Refresh()
             dialog.Fit()
             details_on[0] = False
@@ -214,7 +214,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
         dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
     dont_show_exception_checkbox = \
         wx.CheckBox(dialog, label="Don't show this error again")
-    dont_show_exception_checkbox.Value = False
+    dont_show_exception_checkbox.SetValue(False)
     sizer.Add(dont_show_exception_checkbox, 0, wx.ALIGN_LEFT | wx.ALL, 5)
     #
     # Handle the "stop" button being pressed
@@ -366,7 +366,7 @@ def show_warning(title, message, get_preference, set_preference):
         sizer.Add(buttons_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
         dlg.Fit()
         dlg.ShowModal()
-        if dont_show.Value:
+        if dont_show.GetValue():
             set_preference(False)
 
 
@@ -392,10 +392,10 @@ def display_error_message(parent, message, title, buttons=None,
     with wx.Dialog(parent, title=title, size=size,
                    style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
         assert isinstance(dlg, wx.Dialog)
-        dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+        dlg.SetSizer(wx.BoxSizer(wx.VERTICAL))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        dlg.Sizer.AddSpacer(20)
-        dlg.Sizer.Add(sizer, 1, wx.EXPAND)
+        dlg.GetSizer().AddSpacer(20)
+        dlg.GetSizer().Add(sizer, 1, wx.EXPAND)
 
         sizer.AddSpacer(10)
         icon = wx.ArtProvider.GetBitmap(wx.ART_ERROR)
@@ -415,9 +415,9 @@ def display_error_message(parent, message, title, buttons=None,
         sizer.Add(message_ctrl, 1, wx.EXPAND)
         sizer.AddSpacer(10)
 
-        dlg.Sizer.AddSpacer(10)
+        dlg.GetSizer().AddSpacer(10)
         button_sizer = wx.StdDialogButtonSizer()
-        dlg.Sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
+        dlg.GetSizer().Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
 
         def on_button(event):
             id2code = {
@@ -426,7 +426,7 @@ def display_error_message(parent, message, title, buttons=None,
                 wx.ID_CANCEL: wx.CANCEL,
                 wx.ID_OK: wx.OK}
             assert isinstance(event, wx.Event)
-            dlg.EndModal(id2code[event.Id])
+            dlg.EndModal(id2code[event.GetId()])
 
         for button in buttons:
             button_ctl = wx.Button(dlg, button)

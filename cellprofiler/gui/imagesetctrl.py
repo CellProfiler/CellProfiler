@@ -16,7 +16,7 @@ import numpy
 import re
 import urllib
 import wx
-import wx.combo
+import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
 import six
@@ -658,7 +658,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 10)
             sub_sizer.Add(wx.StaticText(dlg, label="Image type:"))
             channel_type = self.Table.columns[col].channel_type
-            choice = wx.combo.BitmapComboBox(dlg, value=channel_type,
+            choice = wx.adv.BitmapComboBox(dlg, value=channel_type,
                                              style=wx.CB_DROPDOWN)
             sub_sizer.Add(choice)
             selection = None

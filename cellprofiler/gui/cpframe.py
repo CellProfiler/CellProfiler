@@ -36,6 +36,7 @@ import pdb
 import sys
 import traceback
 import wx
+import wx.adv
 import wx.html
 import wx.lib.scrolledpanel
 
@@ -220,15 +221,15 @@ class CPFrame(wx.Frame):
         #
         # Path list sash controls path list sizing
         #
-        self.__path_list_sash = wx.SashLayoutWindow(
+        self.__path_list_sash = wx.adv.SashLayoutWindow(
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        self.__path_list_sash.Bind(wx.EVT_SASH_DRAGGED,
+        self.__path_list_sash.Bind(wx.adv.EVT_SASH_DRAGGED,
                                    self.__on_sash_drag)
-        self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
-        self.__path_list_sash.SetAlignment(wx.LAYOUT_TOP)
+        self.__path_list_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
+        self.__path_list_sash.SetAlignment(wx.adv.LAYOUT_TOP)
         self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__path_list_sash.SetDefaultBorderSize(4)
-        self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
+        self.__path_list_sash.SetSashVisible(wx.adv.SASH_BOTTOM, True)
         self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -286,15 +287,15 @@ class CPFrame(wx.Frame):
         #
         ######################################################################
 
-        self.__imageset_sash = wx.SashLayoutWindow(
+        self.__imageset_sash = wx.adv.SashLayoutWindow(
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
-        self.__imageset_sash.SetAlignment(wx.LAYOUT_BOTTOM)
+        self.__imageset_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
+        self.__imageset_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
         self.__imageset_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__imageset_sash.SetDefaultBorderSize(4)
         self.__imageset_sash.SetExtraBorderSize(2)
-        self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
-        self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
+        self.__imageset_sash.SetSashVisible(wx.adv.SASH_TOP, True)
+        self.__imageset_sash.Bind(wx.adv.EVT_SASH_DRAGGED,
                                   self.__on_sash_drag)
         self.__imageset_sash.Hide()
         self.__imageset_panel = wx.Panel(self.__imageset_sash)

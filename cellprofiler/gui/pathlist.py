@@ -36,11 +36,9 @@ class PathListCtrl(wx.ScrolledWindow):
     class FolderItem(object):
         def __init__(self, ctrl, folder_name):
             self.folder_name = folder_name
-            self.folder_display_name = PathListCtrl.get_folder_display_name(
-                    folder_name)
+            self.folder_display_name = PathListCtrl.get_folder_display_name(folder_name)
             self.display_width, _ = ctrl.GetTextExtent(self.folder_display_name)
-            self.display_width += \
-                PathListCtrl.TREEITEM_WIDTH + PathListCtrl.TREEITEM_GAP
+            self.display_width += PathListCtrl.TREEITEM_WIDTH + PathListCtrl.TREEITEM_GAP
             self.widths = []
             self.filenames = []
             self.file_display_names = []
@@ -56,7 +54,7 @@ class PathListCtrl(wx.ScrolledWindow):
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
-        self.Font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+        self.SetFont(wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT))
         self.SetDoubleBuffered(True)
         self.selections = set()
         self.notify_selection_changed()
@@ -108,17 +106,15 @@ class PathListCtrl(wx.ScrolledWindow):
         #
         # Compute the size of the message to display when empty
         #
-        tmp = self.Font
+        tmp = self.GetFont()
         try:
-            self.Font = self.DROP_FILES_AND_FOLDERS_FONT
-            self.drop_files_and_folders_text_extent = \
-                self.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
+            self.SetFont(self.DROP_FILES_AND_FOLDERS_FONT)
+            self.drop_files_and_folders_text_extent = self.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
         except:
-            logger.warn("Failed to get text extend for \"%s\" message" %
-                        self.DROP_FILES_AND_FOLDERS_HERE, exc_info=True)
+            logger.warn("Failed to get text extend for \"%s\" message" % self.DROP_FILES_AND_FOLDERS_HERE, exc_info=True)
             self.drop_files_and_folders_text_extent = (200, 30)
         finally:
-            self.Font = tmp
+            self.SetFont(tmp)
 
     def AcceptsFocus(self):
         """Tell the scrollpanel that we can accept the focus"""
@@ -469,7 +465,7 @@ class PathListCtrl(wx.ScrolledWindow):
     def notify_selection_changed(self):
         """Publish a WX event that tells the world that the selection changed"""
         event = wx.NotifyEvent(EVT_PLC_SELECTION_CHANGED.evtType[0])
-        event.EventObject = self
+        event.SetEventObject(self)
         self.GetEventHandler().ProcessEvent(event)
 
     def has_focus_item(self):
@@ -568,12 +564,11 @@ class PathListCtrl(wx.ScrolledWindow):
             self.recalc()
         width, height = self.GetSizeTuple()
         rn = wx.RendererNative.Get()
-        paint_dc.BeginDrawing()
-        background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
+        background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
         background_brush = wx.Brush(background_color)
         paint_dc.SetBrush(background_brush)
         paint_dc.Clear()
-        paint_dc.SetFont(self.Font)
+        paint_dc.SetFont(self.GetFont())
         paint_dc.SetBackgroundMode(wx.TRANSPARENT)
         has_focus = self.FindFocus() == self
         if has_focus:
@@ -592,7 +587,7 @@ class PathListCtrl(wx.ScrolledWindow):
             paint_dc.DrawText(text,
                               (width - text_width) / 2,
                               (height - text_height) / 2)
-            paint_dc.SetFont(self.Font)
+            paint_dc.SetFont(self.GetFont())
 
         selected_text = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
         try:
@@ -662,7 +657,6 @@ class PathListCtrl(wx.ScrolledWindow):
             paint_dc.SetBrush(wx.NullBrush)
             paint_dc.SetFont(wx.NullFont)
             background_brush.Destroy()
-            paint_dc.EndDrawing()
             paint_dc.Destroy()
 
     def refresh_item(self, idx):
@@ -864,15 +858,15 @@ class PathListCtrl(wx.ScrolledWindow):
     def on_key_down(self, event):
         """Handle a key press"""
         assert isinstance(event, wx.KeyEvent)
-        if event.KeyCode == wx.WXK_DELETE and self.fn_delete is not None:
+        if event.GetKeyCode() == wx.WXK_DELETE and self.fn_delete is not None:
             paths = self.get_paths(self.FLAG_SELECTED_ONLY)
             self.fn_delete(paths)
             return
-        elif (event.KeyCode == wx.WXK_UP and self.focus_item is not None
+        elif (event.GetKeyCode() == wx.WXK_UP and self.focus_item is not None
               and self.focus_item > 1):
             self.on_up_down(event, -1)
             return
-        elif (event.KeyCode == wx.WXK_DOWN and self.focus_item is not None
+        elif (event.GetKeyCode() == wx.WXK_DOWN and self.focus_item is not None
               and self.focus_item < len(self)):
             self.on_up_down(event, 1)
             return

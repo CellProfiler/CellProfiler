@@ -6,6 +6,7 @@
 .eggs/
 .idea/
 .python-version
+*.swp
 build/
 dist/
 frozen_version.py

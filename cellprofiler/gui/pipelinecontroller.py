@@ -1061,64 +1061,65 @@ class PipelineController(object):
                             wildcard="Image set file (*.csv)|*.csv",
                             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         try:
-            if dlg.ShowModal() == wx.ID_OK:
-                try:
-                    self.__workspace.refresh_image_set()
-                    self.__workspace.measurements.write_image_sets(dlg.Path)
-                except Exception as e:
-                    error = cellprofiler.gui.dialog.Error("Error", e.message)
-
-                    if error.status is wx.ID_CANCEL:
-                        cellprofiler.preferences.cancel_progress()
-
+            dialog_response = dlg.ShowModal()
         finally:
             dlg.Destroy()
 
-        # Show helpful message to guide in proper use (GithHub issue #688)
-        frame = wx.Frame(self.__frame,
-                         title="Image set listing saved")
-        frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-        panel = wx.Panel(frame)
-        frame.Sizer.Add(panel, 1, wx.EXPAND)
-        panel.Sizer = wx.BoxSizer(wx.VERTICAL)
-        subpanel = wx.Panel(panel)
-        panel.Sizer.Add(subpanel, 1, wx.EXPAND)
-        subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
-        subpanel.Sizer.AddSpacer(15)
-        message_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        subpanel.Sizer.Add(
-            message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
-        subpanel.Sizer.AddSpacer(15)
-        button_bar = wx.StdDialogButtonSizer()
-        panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
+        if dialog_response == wx.ID_OK:
+            try:
+                self.__workspace.refresh_image_set()
+                self.__workspace.measurements.write_image_sets(dlg.Path)
+                
+                # Show helpful message to guide in proper use (GithHub issue #688)
+                frame = wx.Frame(self.__frame,
+                                 title="Image set listing saved")
+                frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+                panel = wx.Panel(frame)
+                frame.Sizer.Add(panel, 1, wx.EXPAND)
+                panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+                subpanel = wx.Panel(panel)
+                panel.Sizer.Add(subpanel, 1, wx.EXPAND)
+                subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
+                subpanel.Sizer.AddSpacer(15)
+                message_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                subpanel.Sizer.Add(
+                    message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
+                subpanel.Sizer.AddSpacer(15)
+                button_bar = wx.StdDialogButtonSizer()
+                panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
-        info_bitmap = wx.ArtProvider.GetBitmap(
-            wx.ART_INFORMATION,
-            client=wx.ART_CMN_DIALOG)
-        message_sizer.Add(
-            wx.StaticBitmap(subpanel, bitmap=info_bitmap),
-            0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
-        message_sizer.AddSpacer(12)
-        help_text = (
-            "Your image set listing has been saved as a comma-delimited file (CSV). This file can be loaded \n"
-            "into CellProfiler using the LoadData module (located in the File Processing category). In the\n"
-            "module, specify the CSV in the input data file location, and set the base image location to 'None'.\n"
-            "\n"
-            "If you are running CellProfiler from the command line without the UI (i.e., 'headless'), you can use\n"
-            "the '--data-file' switch to use an alternate CSV file as input to LoadData rather than the one specified\n"
-            "in the LoadData module itself.\n")
-        text = wx.StaticText(
-            subpanel, label=help_text)
-        message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
+                info_bitmap = wx.ArtProvider.GetBitmap(
+                    wx.ART_INFORMATION,
+                    client=wx.ART_CMN_DIALOG)
+                message_sizer.Add(
+                    wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+                    0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
+                message_sizer.AddSpacer(12)
+                help_text = (
+                    "Your image set listing has been saved as a comma-delimited file (CSV). This file can be loaded \n"
+                    "into CellProfiler using the LoadData module (located in the File Processing category). In the\n"
+                    "module, specify the CSV in the input data file location, and set the base image location to 'None'.\n"
+                    "\n"
+                    "If you are running CellProfiler from the command line without the UI (i.e., 'headless'), you can use\n"
+                    "the '--data-file' switch to use an alternate CSV file as input to LoadData rather than the one specified\n"
+                    "in the LoadData module itself.\n")
+                text = wx.StaticText(
+                    subpanel, label=help_text)
+                message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
 
-        ok_button = wx.Button(panel, wx.ID_OK)
-        button_bar.AddButton(ok_button)
-        button_bar.Realize()
-        ok_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event: frame.Close())
-        frame.Fit()
-        frame.Show()
+                ok_button = wx.Button(panel, wx.ID_OK)
+                button_bar.AddButton(ok_button)
+                button_bar.Realize()
+                ok_button.Bind(
+                    wx.EVT_BUTTON,
+                    lambda event: frame.Close())
+                frame.Fit()
+                frame.Show()
+            except Exception as e:
+                error = cellprofiler.gui.dialog.Error("Error", e.message)
+
+                if error.status is wx.ID_CANCEL:
+                    cellprofiler.preferences.cancel_progress()
 
     def __on_export_pipeline_notes(self, event):
         default_filename = cellprofiler.preferences.get_current_workspace_path()

@@ -1009,7 +1009,7 @@ class EditObjectsDialog(wx.Dialog):
             contrast_menu.AppendRadioItem(mid, state, help_text)
             if self.scaling_mode == state:
                 contrast_menu.Check(mid, True)
-        menu.AppendMenu(-1, "Contrast", contrast_menu)
+        menu.Append(-1, "Contrast", contrast_menu)
 
         interpolation_menu = wx.Menu("Interpolation")
         for mid, state, help_text in (
@@ -1022,7 +1022,7 @@ class EditObjectsDialog(wx.Dialog):
             interpolation_menu.AppendRadioItem(mid, state, help_text)
             if self.interpolation_mode == state:
                 interpolation_menu.Check(mid, True)
-        menu.AppendMenu(-1, "Interpolation", interpolation_menu)
+        menu.Append(-1, "Interpolation", interpolation_menu)
 
         label_menu = wx.Menu("Label appearance")
         for mid, label, help_text in (
@@ -1030,7 +1030,7 @@ class EditObjectsDialog(wx.Dialog):
                 (self.ID_LABELS_FILL, "Fill", "Show objects with a solid fill color")):
             label_menu.AppendRadioItem(mid, label, help_text)
         label_menu.Check(self.label_display_mode, True)
-        menu.AppendMenu(-1, "Label appearance", label_menu)
+        menu.Append(-1, "Label appearance", label_menu)
 
         mode_menu = wx.Menu("Mode")
         mode_menu.Append(self.ID_MODE_FREEHAND,
@@ -1042,7 +1042,7 @@ class EditObjectsDialog(wx.Dialog):
         mode_menu.Append(self.ID_MODE_DELETE,
                          "Delete mode",
                          "Select points to delete")
-        menu.AppendMenu(-1, "Mode", mode_menu)
+        menu.Append(-1, "Mode", mode_menu)
 
         actions_menu = wx.Menu("Actions")
         actions_menu.Append(
@@ -1064,7 +1064,7 @@ class EditObjectsDialog(wx.Dialog):
         actions_menu.Append(
                 self.ID_ACTION_CONVEX_HULL, "Convex hull",
                 "Merge all objects being edited into an object which is the smallest convex hull around them all (can be done to a single object).")
-        menu.AppendMenu(-1, "Actions", actions_menu)
+        menu.Append(-1, "Actions", actions_menu)
         menu.Append(wx.ID_HELP)
         self.PopupMenu(menu)
 

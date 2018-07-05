@@ -113,7 +113,7 @@ class TreeCheckboxDialog(wx.Dialog):
                     d1 = d[key]
                     if hasattr(d1, "__call__"):
                         # call function to get real value
-                        self.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+                        self.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
                         d1 = d1()
                         d[key] = d1
                     image_index, selected_index = self.img_idx(d1)

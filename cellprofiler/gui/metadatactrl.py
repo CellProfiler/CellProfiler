@@ -17,7 +17,7 @@ def get_choice_id(index):
     return __choice_ids[index]
 
 
-class MetadataControl(wx.PyControl):
+class MetadataControl(wx.Control):
     class MetadataToken(object):
         def __init__(self):
             self.value = u""
@@ -145,7 +145,7 @@ class MetadataControl(wx.PyControl):
             index += 1
         self.SetMinSize(self.DoGetBestSize())
         self.__cursor_pos = len(self.__tokens)
-        self.Cursor = wx.StockCursor(wx.CURSOR_IBEAM)
+        self.Cursor = wx.Cursor(wx.CURSOR_IBEAM)
 
     def GetValue(self):
         """The setting value underlying the text representation"""
@@ -530,11 +530,11 @@ class MetadataControl(wx.PyControl):
         dc = wx.BufferedPaintDC(self)
         try:
             dc.BackgroundMode = wx.SOLID
-            background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
+            background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
             metadata_color = cellprofiler.preferences.get_primary_outline_color()
-            selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
-            selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
-            text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)
+            selected_background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+            selected_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+            text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
             dc.Background = wx.Brush(background_color)
             dc.Font = self.Font
             dc.Clear()

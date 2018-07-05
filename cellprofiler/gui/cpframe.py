@@ -698,30 +698,32 @@ class CPFrame(wx.Frame):
         self.SetMenuBar(self.__menu_bar)
         self.enable_edit_commands([])
 
-        wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
-        wx.EVT_MENU(self, ID_FILE_EXIT, lambda event: self.Close())
-        wx.EVT_MENU(self, ID_FILE_WIDGET_INSPECTOR, self.__on_widget_inspector)
-        wx.EVT_MENU(self, ID_FILE_NEW_CP, self.__on_new_cp)
+        self.Bind(wx.EVT_MENU, self.on_open_image, id=ID_FILE_OPEN_IMAGE)
+        self.Bind(wx.EVT_MENU, lambda event: self.Close(), id=ID_FILE_EXIT)
+        self.Bind(wx.EVT_MENU, self.__on_widget_inspector, id=ID_FILE_WIDGET_INSPECTOR)
+        self.Bind(wx.EVT_MENU, self.__on_new_cp, id=ID_FILE_NEW_CP)
 
-        wx.EVT_MENU(self, wx.ID_CUT, self.on_cut)
+        self.Bind(wx.EVT_MENU, self.on_cut, id=wx.ID_CUT)
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_cut_ui, id=wx.ID_CUT)
-        wx.EVT_MENU(self, wx.ID_COPY, self.on_copy)
+
+        self.Bind(wx.EVT_MENU, self.on_copy, id=wx.ID_COPY)
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_copy_ui, id=wx.ID_COPY)
-        wx.EVT_MENU(self, wx.ID_PASTE, self.on_paste)
+
+        self.Bind(wx.EVT_MENU, self.on_paste, id=wx.ID_PASTE)
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_paste_ui, id=wx.ID_PASTE)
-        wx.EVT_MENU(self, wx.ID_SELECTALL, self.on_select_all)
-        self.Bind(wx.EVT_UPDATE_UI, self.on_update_select_all_ui,
-                  id=wx.ID_SELECTALL)
+
+        self.Bind(wx.EVT_MENU, self.on_select_all, id=wx.ID_SELECTALL)
+        self.Bind(wx.EVT_UPDATE_UI, self.on_update_select_all_ui, id=wx.ID_SELECTALL)
 
         # ID_HELP_MODULE is used in _both_ button contexts and menu contexts,
         # so it needs event bindings for either type
-        wx.EVT_BUTTON(self, ID_HELP_MODULE, self.__on_help_module)
-        wx.EVT_MENU(self, ID_HELP_MODULE, self.__on_help_module)
+        self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_HELP_MODULE)
 
-        wx.EVT_MENU(self, ID_HELP_ABOUT, self.about)
-        wx.EVT_MENU(self, ID_OPTIONS_PREFERENCES, self.__on_preferences)
-        wx.EVT_MENU(self, ID_WINDOW_CLOSE_ALL, self.__on_close_all)
-        wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
+        self.Bind(wx.EVT_MENU, self.about, id=ID_HELP_ABOUT)
+        self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
+        self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
+        self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
+
         accelerator_table = wx.AcceleratorTable(
                 [(wx.ACCEL_CMD, ord('N'), ID_FILE_ANALYZE_IMAGES),
                  (wx.ACCEL_CMD, ord('O'), ID_FILE_LOAD),

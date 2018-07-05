@@ -206,16 +206,25 @@ Enter a name for the resulting grayscale image coming from the value.""")
 
         self.channel_count = cps.HiddenCount(self.channels, "Channel count")
 
-    channel_names = (["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"] +
-                     [str(x) for x in range(5, 20)])
+    channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
+
+    def _get_next_channel(self):
+        while True:
+            channel = str(len(self.channel_names) + 1)
+            yield channel
 
     def add_channel(self, can_remove=True):
         '''Add another channel to the channels list'''
         group = cps.SettingsGroup()
         group.can_remove = can_remove
+        if len(self.channels) == len(self.channel_names):
+            ch = next(self._get_next_channel())
+            self.channel_names.append(ch)
         group.append("channel_choice", cps.Choice(
-                "Channel number", self.channel_names,
-                self.channel_names[len(self.channels) % len(self.channel_names)], doc="""\
+            text="Channel number",
+            choices=self.channel_names,
+            value=self.channel_names[len(self.channels)],
+            doc="""\
 *(Used only when splitting images)*
 
 This setting chooses a channel to be processed. For example, *Red: 1*

@@ -37,7 +37,7 @@ PADDING = 1
 
 
 def plv_get_bitmap(data):
-    return wx.BitmapFromImage(data)
+    return wx.Bitmap(data)
 
 
 PAUSE_COLUMN = 0
@@ -950,10 +950,10 @@ PIPELINE_DATA_FORMAT = "CellProfiler.Pipeline"
 class PipelineDataObject(wx.CustomDataObject):
     def __init__(self):
         super(PipelineDataObject, self).__init__(
-                wx.CustomDataFormat(PIPELINE_DATA_FORMAT))
+                wx.DataFormat(PIPELINE_DATA_FORMAT))
 
 
-class PipelineDropTarget(wx.PyDropTarget):
+class PipelineDropTarget(wx.DropTarget):
     def __init__(self, window):
         super(PipelineDropTarget, self).__init__()
         self.window = window

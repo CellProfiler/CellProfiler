@@ -39,7 +39,7 @@ def get_cp_bitmap(size=None):
     img = get_cp_image()
     if size is not None:
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
-    return wx.BitmapFromImage(img)
+    return wx.Bitmap(img)
 
 
 def get_cp_icon(size=None):
@@ -50,7 +50,7 @@ def get_cp_icon(size=None):
         icon = wx.EmptyIcon()
         icon.LoadFile(path, wx.BITMAP_TYPE_ICO)
         return icon
-    icon = wx.EmptyIcon()
+    icon = wx.Icon()
     icon.CopyFromBitmap(get_cp_bitmap(size))
     return icon
 

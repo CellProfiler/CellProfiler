@@ -4231,7 +4231,7 @@ class ModuleSizer(wx.PySizer):
     """
 
     def __init__(self, rows, cols=2):
-        wx.PySizer.__init__(self)
+        wx.Sizer.__init__(self)
         self.__rows = rows
         self.__cols = cols
         self.__min_text_width = 150

@@ -965,7 +965,7 @@ class ModuleView(object):
                 assert isinstance(v, cellprofiler.setting.SubdirectoryFilter)
 
                 root = v.directory_path.get_absolute_path()
-                self.module_panel.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+                self.module_panel.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
                 try:
                     def fn_populate(root):
                         d = {None: True}
@@ -1227,7 +1227,7 @@ class ModuleView(object):
                                 wx.EVT_MENU(menu, item.GetId(), on_event)
                         if subtree is not None and len(subtree) > 0:
                             submenu = make_menu(subtree, path=subpath)
-                            menu.AppendMenu(-1, text, submenu)
+                            menu.Append(-1, text, submenu)
                     return menu
 
                 menu = make_menu(v.get_tree())

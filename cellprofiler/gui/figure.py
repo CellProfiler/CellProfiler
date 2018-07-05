@@ -974,7 +974,7 @@ class Figure(wx.Frame):
             item_normalized.Check()
         else:
             item_raw.Check()
-        popup.AppendMenu(-1, 'Image contrast', submenu)
+        popup.Append(-1, 'Image contrast', submenu)
 
         submenu = wx.Menu()
         item_nearest = submenu.Append(
@@ -998,7 +998,7 @@ class Figure(wx.Frame):
                 "displaying screen pixels at sub-pixel resolution. This produces "
                 "the most visually appealing image but is the least faithful to "
                 "the image pixel values.", wx.ITEM_RADIO)
-        popup.AppendMenu(-1, "Interpolation", submenu)
+        popup.Append(-1, "Interpolation", submenu)
         save_subplot_id = get_menu_id(MENU_SAVE_SUBPLOT, (x, y))
         popup.Append(save_subplot_id,
                      "Save subplot",
@@ -1114,7 +1114,7 @@ class Figure(wx.Frame):
                 item = submenu.Append(identifier, name, 'Show/Hide the %s channel' % name, wx.ITEM_CHECK)
                 if value != 0:
                     item.Check()
-            popup.AppendMenu(-1, 'Channels', submenu)
+            popup.Append(-1, 'Channels', submenu)
 
             def toggle_channels(evt):
                 """Callback for channel menu items."""
@@ -1172,7 +1172,7 @@ class Figure(wx.Frame):
                               lambda event, cplabels=cplabels:
                               self.on_adjust_labels_alpha(cplabels),
                               id=menu_id)
-                popup.AppendMenu(-1, name, submenu)
+                popup.Append(-1, name, submenu)
 
         self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
         self.Bind(wx.EVT_MENU, show_hist, show_hist_item)

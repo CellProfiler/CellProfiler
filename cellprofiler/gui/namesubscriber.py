@@ -117,10 +117,10 @@ class NameSubscriberComboBox(wx.Panel):
             if key not in submenus:
                 submenus[key] = wx.Menu()
             submenus[key].Append(choiceid, name)
-        menu.AppendMenu(wx.ID_ANY, "All", all_menu)
+        menu.Append(wx.ID_ANY, "All", all_menu)
         sorted_submenus = sorted(submenus.items())
         for (num, annotation, is_input_module), submenu in sorted_submenus:
-            menu.AppendMenu(wx.ID_ANY, "filler", submenu)
+            menu.Append(wx.ID_ANY, "filler", submenu)
         align_twosided_items(
                 self.combo_dlg,
                 menu.MenuItems,

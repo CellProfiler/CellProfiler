@@ -2938,7 +2938,7 @@ class PipelineController(object):
         """
         failure = 1
         old_cursor = self.__frame.GetCursor()
-        self.__frame.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        self.__frame.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
         try:
             image_set_number = self.__debug_measurements.image_set_number
             self.__debug_measurements.add_image_measurement(

@@ -14,7 +14,8 @@ addons:
       - libsdl2-dev
       - libsm-dev
       - libsm6
-      - libtiff4-dev
+      - libtiff5
+      - libtiff5-dev
       - libwebkitgtk-3.0-dev
       - python-dev
       - python-mysqldb

@@ -274,7 +274,7 @@ class PlateViewer(object):
 
     def on_plate_click(self, event):
         assert isinstance(event, wx.MouseEvent)
-        x, y = event.GetPositionTuple()
+        x, y = event.GetPosition()
         hit = self.plate_hit_test(x, y)
         if hit is None or self.plate_data is None:
             return
@@ -285,7 +285,7 @@ class PlateViewer(object):
 
     def on_plate_motion(self, event):
         assert isinstance(event, wx.MouseEvent)
-        x, y = event.GetPositionTuple()
+        x, y = event.GetPosition()
         hit = self.plate_hit_test(x, y)
         if hit is None or self.plate_data is None:
             self.plate_panel.SetToolTip("")

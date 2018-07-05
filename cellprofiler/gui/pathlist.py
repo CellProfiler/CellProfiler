@@ -673,7 +673,7 @@ class PathListCtrl(wx.ScrolledWindow):
         """Return the line index at the event's mouse coordinate"""
         if len(self.folder_items) == 0:
             return -1
-        x, y = event.GetPositionTuple()
+        x, y = event.GetPosition()
         line_height = self.line_height + self.leading
         idx = int(y / line_height) + self.GetScrollPos(wx.SB_VERTICAL)
         idx = max(0, min(len(self) - 1, idx))

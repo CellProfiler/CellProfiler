@@ -455,7 +455,7 @@ class MetadataControl(wx.Control):
 
     def OnLeftDown(self, event):
         if self.HitTest(event.GetPosition()) == wx.HT_WINDOW_INSIDE:
-            self.__cursor_pos = self.hit_test(event.GetPositionTuple()[0])
+            self.__cursor_pos = self.hit_test(event.GetPosition()[0])
             if self.FindFocus() == self:
                 self.show_caret()
             else:
@@ -470,7 +470,7 @@ class MetadataControl(wx.Control):
             event.Skip()
             return
         if self.HitTest(event.GetPosition()) == wx.HT_WINDOW_INSIDE:
-            self.move_cursor_pos(self.hit_test(event.GetPositionTuple()[0]), False)
+            self.move_cursor_pos(self.hit_test(event.GetPosition()[0]), False)
 
     def OnLeftUp(self, event):
         if not self.HasCapture():
@@ -479,7 +479,7 @@ class MetadataControl(wx.Control):
 
     def on_right_down(self, event):
         if self.HitTest(event.GetPosition()) == wx.HT_WINDOW_INSIDE:
-            index = self.hit_test(event.GetPositionTuple()[0])
+            index = self.hit_test(event.GetPosition()[0])
             self.__cursor_pos = index
             self.SetFocus()
             self.show_caret()
@@ -551,7 +551,7 @@ class MetadataControl(wx.Control):
                                                  self.ClientSize[0],
                                                  self.ClientSize[1]),
                                       style)
-                dc.SetClippingRect((self.padding, self.padding,
+                dc.SetClippingRegion((self.padding, self.padding,
                                     self.ClientSize[0] - 2 * self.padding,
                                     self.ClientSize[1] - 2 * self.padding))
             text = self.get_text(0, len(self.__tokens))

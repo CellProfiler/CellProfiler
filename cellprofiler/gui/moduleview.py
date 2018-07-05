@@ -2155,7 +2155,7 @@ class ModuleView(object):
     def fit_ctrl(ctrl):
         """Fit the control to its text size"""
         width, height = ctrl.GetTextExtent(ctrl.Value + "MM")
-        ctrl.SetSizeHintsSz(wx.Size(width, -1))
+        ctrl.SetSizeHints(wx.Size(width, -1))
         ctrl.Parent.Fit()
 
     def __on_min_change(self, event, setting, control):

@@ -1931,13 +1931,13 @@ class EditObjectsDialog(wx.Dialog):
             self.help_sash.Show(False)
         else:
             self.help_sash.Show(True)
-            w, h = self.GetClientSizeTuple()
+            w, h = self.GetClientSize()
             self.help_sash.SetDefaultSize((w, h / 3))
         self.layout_sash()
 
     def on_help_sash_drag(self, event):
         height = event.GetDragRect().height
-        w, h = self.GetClientSizeTuple()
+        w, h = self.GetClientSize()
         self.help_sash.SetDefaultSize((w, height))
         self.layout_sash()
 

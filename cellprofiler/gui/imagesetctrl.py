@@ -119,245 +119,247 @@ class ImageSetCache(object):
         self.cache = dict(cache_kv[-int(self.max_size / 2):])
 
 
-class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
-    class ImageSetGridTable(wx.grid.GridTableBase):
-        DEFAULT_ATTR = wx.grid.GridCellAttr()
-        ERROR_ATTR = wx.grid.GridCellAttr()
-        ERROR_ATTR.SetTextColour(ERROR_COLOR)
+class ImageSetColumn(object):
+    def __init__(self, name, channel, feature, column_type, channel_type, is_key=False):
+        """Initialize ImageSetColumn
 
-        class ImageSetColumn(object):
-            def __init__(self, name, channel, feature, column_type,
-                         channel_type, is_key=False):
-                """Initialize ImageSetColumn
+        name - display name of the column
 
-                name - display name of the column
+        feature - the measurement feature name
 
-                feature - the measurement feature name
+        column_type - one of COL_* indicating what it means
 
-                column_type - one of COL_* indicating what it means
+        channel_type - the channel type from the channel descriptor
 
-                channel_type - the channel type from the channel descriptor
+        is_key - if metadata, it's part of the unique key for the
+                 image set
+        """
+        self.name = name
+        self.feature = feature
+        self.channel = channel
+        self.column_type = column_type
+        self.channel_type = channel_type
+        self.is_key = is_key
 
-                is_key - if metadata, it's part of the unique key for the
-                         image set
-                """
-                self.name = name
-                self.feature = feature
-                self.channel = channel
-                self.column_type = column_type
-                self.channel_type = channel_type
-                self.is_key = is_key
 
-        def __init__(self, workspace, display_mode=DISPLAY_MODE_SIMPLE):
-            super(self.__class__, self).__init__()
-            self.workspace = workspace
-            self.columns = []
-            self.n_rows = 0
-            self.display_mode = display_mode
-            self.controller = None
-            self.cache = ImageSetCache(workspace.measurements)
+class ImageSetGridTable(wx.grid.GridTableBase):
+    DEFAULT_ATTR = wx.grid.GridCellAttr()
+    ERROR_ATTR = wx.grid.GridCellAttr()
+    ERROR_ATTR.SetTextColour(ERROR_COLOR)
 
-        def recompute(self):
-            """Recompute the layout
+    def __init__(self, workspace, display_mode=DISPLAY_MODE_SIMPLE):
+        super(self.__class__, self).__init__()
+        self.workspace = workspace
+        self.columns = []
+        self.n_rows = 0
+        self.display_mode = display_mode
+        self.controller = None
+        self.cache = ImageSetCache(workspace.measurements)
 
-            returns the number of rows and columns added or removed
-            """
-            self.cache = ImageSetCache(self.measurements)
-            old_row_count = self.n_rows
-            old_column_count = len(self.columns)
-            self.columns = self.get_columns()
-            self.n_rows = len(self.cache)
-            if self.n_rows > 0:
-                self.image_numbers = self.measurements.get_image_numbers().copy()
-                self.metadata_tags = self.measurements.get_metadata_tags()
-            return (self.n_rows - old_row_count,
-                    len(self.columns) - old_column_count)
+    def recompute(self):
+        """Recompute the layout
 
-        @property
-        def measurements(self):
-            m = self.workspace.measurements
-            return m
+        returns the number of rows and columns added or removed
+        """
+        self.cache = ImageSetCache(self.measurements)
+        old_row_count = self.n_rows
+        old_column_count = len(self.columns)
+        self.columns = self.get_columns()
+        self.n_rows = len(self.cache)
+        if self.n_rows > 0:
+            self.image_numbers = self.measurements.get_image_numbers().copy()
+            self.metadata_tags = self.measurements.get_metadata_tags()
+        return (self.n_rows - old_row_count,
+                len(self.columns) - old_column_count)
 
-        def get_columns(self):
-            columns = []
-            m = self.measurements
-            if m is None or len(self.cache) == 0:
-                return columns
-            assert isinstance(m, cellprofiler.measurement.Measurements)
-            metadata_tags = m.get_metadata_tags()
-            for feature in m.get_feature_names(cellprofiler.measurement.IMAGE):
-                is_key = False
-                channel = None
-                if self.display_mode == DISPLAY_MODE_COMPLEX:
-                    if feature.startswith(cellprofiler.measurement.C_METADATA):
-                        column_type = COL_METADATA
-                        name = feature.split("_", 1)[1]
-                        if feature in metadata_tags:
-                            is_key = True
-                    elif (feature.startswith(cellprofiler.measurement.C_FILE_NAME) or
-                              feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME)):
-                        column_type = COL_FILENAME
-                        channel = feature.split("_", 1)[1]
-                        name = "%s File Name" % channel
-                    elif (feature.startswith(cellprofiler.measurement.C_PATH_NAME) or
-                              feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)):
-                        column_type = COL_PATHNAME
-                        channel = feature.split("_", 1)[1]
-                        name = "%s Path Name" % channel
-                    elif (feature.startswith(cellprofiler.measurement.C_URL) or
-                              feature.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
-                        column_type = COL_URL
-                        channel = feature.split("_", 1)[1]
-                        name = "%s URL" % channel
-                    elif feature.startswith(cellprofiler.measurement.C_SERIES):
-                        column_type = COL_SERIES
-                        channel = feature.split("_", 1)[1]
-                        name = "%s Series" % channel
-                    elif feature.startswith(cellprofiler.measurement.C_FRAME):
-                        column_type = COL_FRAME
-                        channel = feature.split("_", 1)[1]
-                        name = "%s Frame" % channel
-                    else:
-                        continue
+    @property
+    def measurements(self):
+        m = self.workspace.measurements
+        return m
+
+    def get_columns(self):
+        columns = []
+        m = self.measurements
+        if m is None or len(self.cache) == 0:
+            return columns
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        metadata_tags = m.get_metadata_tags()
+        for feature in m.get_feature_names(cellprofiler.measurement.IMAGE):
+            is_key = False
+            channel = None
+            if self.display_mode == DISPLAY_MODE_COMPLEX:
+                if feature.startswith(cellprofiler.measurement.C_METADATA):
+                    column_type = COL_METADATA
+                    name = feature.split("_", 1)[1]
+                    if feature in metadata_tags:
+                        is_key = True
+                elif (feature.startswith(cellprofiler.measurement.C_FILE_NAME) or
+                      feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME)):
+                    column_type = COL_FILENAME
+                    channel = feature.split("_", 1)[1]
+                    name = "%s File Name" % channel
+                elif (feature.startswith(cellprofiler.measurement.C_PATH_NAME) or
+                      feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)):
+                    column_type = COL_PATHNAME
+                    channel = feature.split("_", 1)[1]
+                    name = "%s Path Name" % channel
                 elif (feature.startswith(cellprofiler.measurement.C_URL) or
-                          feature.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
+                      feature.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
                     column_type = COL_URL
                     channel = feature.split("_", 1)[1]
-                    name = channel
+                    name = "%s URL" % channel
+                elif feature.startswith(cellprofiler.measurement.C_SERIES):
+                    column_type = COL_SERIES
+                    channel = feature.split("_", 1)[1]
+                    name = "%s Series" % channel
+                elif feature.startswith(cellprofiler.measurement.C_FRAME):
+                    column_type = COL_FRAME
+                    channel = feature.split("_", 1)[1]
+                    name = "%s Frame" % channel
                 else:
                     continue
-                iscd = m.get_channel_descriptor(channel)
-
-                columns.append(self.ImageSetColumn(
-                        name, channel, feature,
-                        column_type, None if iscd is None else iscd.channel_type, is_key))
-
-            def ordering_fn(a, b):
-                """Put keys first, then sort by channel name"""
-                #
-                # If either is a key, put the one that is a key first
-                #
-                if a.is_key:
-                    if b.is_key:
-                        return cellprofiler.utilities.legacy.cmp(a.name, b.name)
-                    return -1
-                elif b.is_key:
-                    return 1
-                #
-                # If either is metadata, put the metadata last
-                #
-                if a.column_type == COL_METADATA:
-                    if b.column_type == COL_METADATA:
-                        return cellprofiler.utilities.legacy.cmp(a.name, b.name)
-                    return 1
-                elif b.column_type == COL_METADATA:
-                    return -1
-                #
-                # If different channels, order by channel
-                #
-                if a.channel != b.channel:
-                    return cellprofiler.utilities.legacy.cmp(a.channel, b.channel)
-                #
-                # Otherwise, the order is given by COL_ORDER
-                #
-                return cellprofiler.utilities.legacy.cmp(COL_ORDER.index(a.column_type),
-                                                         COL_ORDER.index(b.column_type))
-
-            columns.sort(cmp=ordering_fn)
-
-            return columns
-
-        def GetAttr(self, row, col, kind):
-            attr = self.DEFAULT_ATTR
-            attr.IncRef()  # OH so bogus, don't refcount = bus error
-            return attr
-
-        def CanHaveAttributes(self):
-            return True
-
-        def GetNumberRows(self):
-            return self.n_rows
-
-        def GetNumberCols(self):
-            return len(self.columns)
-
-        def IsEmptyCell(self, row, col):
-            return row >= self.GetNumberRows() or col >= self.GetNumberCols()
-
-        def GetValue(self, row, col):
-            if (row >= self.n_rows or col >= len(self.columns) or
-                        row >= len(self.image_numbers)):
-                return u""
-            image_set = self.image_numbers[row]
-            column = self.columns[col]
-            value = self.cache[column.feature, image_set]
-            if (column.column_type == COL_URL and
-                        self.display_mode == DISPLAY_MODE_SIMPLE and
-                        value is not None):
-                last_slash = value.rfind("/")
-                return urllib.unquote(value[(last_slash + 1):])
-            return value
-
-        def get_url(self, row, col):
-            """Get the URL for a cell"""
-            image_set = self.image_numbers[row]
-            column = self.columns[col]
-            if column.channel_type == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
-                feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + column.channel
+            elif (feature.startswith(cellprofiler.measurement.C_URL) or
+                  feature.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
+                column_type = COL_URL
+                channel = feature.split("_", 1)[1]
+                name = channel
             else:
-                feature = cellprofiler.measurement.C_URL + "_" + column.channel
-            value = self.cache[feature, image_set]
-            if value is not None:
-                return value.encode()
+                continue
+            iscd = m.get_channel_descriptor(channel)
 
-        def GetRowLabelValue(self, row):
-            if row >= len(self.image_numbers):
-                return ""
-            image_number = self.image_numbers[row]
-            metadata_tags = self.metadata_tags
-            if len(metadata_tags) > 0:
-                key = [six.text_type(self.cache[tag, image_number])
-                       for tag in metadata_tags]
-                return " : ".join(key)
+            columns.append(ImageSetColumn(
+                name, channel, feature,
+                column_type, None if iscd is None else iscd.channel_type, is_key))
 
-            return str(image_number)
+        def ordering_fn(a, b):
+            """Put keys first, then sort by channel name"""
+            #
+            # If either is a key, put the one that is a key first
+            #
+            if a.is_key:
+                if b.is_key:
+                    return cmp(a.name, b.name)
+                return -1
+            elif b.is_key:
+                return 1
+            #
+            # If either is metadata, put the metadata last
+            #
+            if a.column_type == COL_METADATA:
+                if b.column_type == COL_METADATA:
+                    return cmp(a.name, b.name)
+                return 1
+            elif b.column_type == COL_METADATA:
+                return -1
+            #
+            # If different channels, order by channel
+            #
+            if a.channel != b.channel:
+                return cmp(a.channel, b.channel)
+            #
+            # Otherwise, the order is given by COL_ORDER
+            #
+            return cmp(COL_ORDER.index(a.column_type),
+                       COL_ORDER.index(b.column_type))
 
-        def GetColLabelValue(self, col):
-            if col >= len(self.columns):
-                return ""
-            return self.columns[col].name
+        columns.sort(cmp=ordering_fn)
 
-        def AppendCols(self, numCols):
-            if self.controller is None:
-                return False
-            for i in range(numCols):
-                self.controller.append_channel()
-            return True
+        return columns
 
-        def AppendRows(self, numRows):
-            return True
+    def GetAttr(self, row, col, kind):
+        attr = self.DEFAULT_ATTR
+        attr.IncRef()  # OH so bogus, don't refcount = bus error
+        return attr
 
-        def InsertCols(self, index, numCols):
-            return True
+    def CanHaveAttributes(self):
+        return True
 
-        def InsertRows(self, index, numRows):
-            return True
+    def GetNumberRows(self):
+        return self.n_rows
 
-        def DeleteCols(self, index, numCols):
-            if self.controller is None:
-                return False
-            channels = [x.channel for x in self.columns[index:(index + numCols)]]
-            for channel in channels:
-                self.controller.remove_channel(channel)
-            return True
+    def GetNumberCols(self):
+        return len(self.columns)
 
-        def DeleteRows(self, index, numRows):
-            return True
+    def IsEmptyCell(self, row, col):
+        return row >= self.GetNumberRows() or col >= self.GetNumberCols()
 
-        def SetColLabelValue(self, index, value):
-            if self.controller is not None:
-                self.controller.change_channel_name(
-                        self.columns[index].channel, value)
+    def GetValue(self, row, col):
+        if (row >= self.n_rows or col >= len(self.columns) or
+                row >= len(self.image_numbers)):
+            return u""
+        image_set = self.image_numbers[row]
+        column = self.columns[col]
+        value = self.cache[column.feature, image_set]
+        if (column.column_type == COL_URL and
+                self.display_mode == DISPLAY_MODE_SIMPLE and
+                value is not None):
+            last_slash = value.rfind("/")
+            return urllib.unquote(value[(last_slash + 1):])
+        return value
+
+    def get_url(self, row, col):
+        """Get the URL for a cell"""
+        image_set = self.image_numbers[row]
+        column = self.columns[col]
+        if column.channel_type == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
+            feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + column.channel
+        else:
+            feature = cellprofiler.measurement.C_URL + "_" + column.channel
+        value = self.cache[feature, image_set]
+        if value is not None:
+            return value.encode()
+
+    def GetRowLabelValue(self, row):
+        if row >= len(self.image_numbers):
+            return ""
+        image_number = self.image_numbers[row]
+        metadata_tags = self.metadata_tags
+        if len(metadata_tags) > 0:
+            key = [unicode(self.cache[tag, image_number])
+                   for tag in metadata_tags]
+            return " : ".join(key)
+
+        return str(image_number)
+
+    def GetColLabelValue(self, col):
+        if col >= len(self.columns):
+            return ""
+        return self.columns[col].name
+
+    def AppendCols(self, numCols=1):
+        if self.controller is None:
+            return False
+        for i in range(numCols):
+            self.controller.append_channel()
+        return True
+
+    def AppendRows(self, numRows=1):
+        return True
+
+    def InsertCols(self, pos=0, numCols=1):
+        return True
+
+    def InsertRows(self, pos=0, numRows=1):
+        return True
+
+    def DeleteCols(self, pos=0, numCols=1):
+        if self.controller is None:
+            return False
+        channels = [x.channel for x in self.columns[pos:(pos + numCols)]]
+        for channel in channels:
+            self.controller.remove_channel(channel)
+        return True
+
+    def DeleteRows(self, pos=0, numRows=1):
+        return True
+
+    def SetColLabelValue(self, index, value):
+        if self.controller is not None:
+            self.controller.change_channel_name(
+                self.columns[index].channel, value)
+
+
+class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
 
     def __init__(self, workspace, *args, **kwargs):
         """Initialize the ImageSetCtrl
@@ -383,7 +385,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         wx.grid.Grid.__init__(self, *args, **kwargs)
         cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update, tooltip="Update and display the image set")
         gclw = self.GetGridColLabelWindow()
-        self.SetTable(self.ImageSetGridTable(workspace, display_mode))
+        self.SetTable(ImageSetGridTable(workspace, display_mode))
         self.AutoSize()
         self.EnableEditing(False)
         self.SetDefaultCellOverflow(False)
@@ -406,7 +408,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         from cellprofiler.icons import get_builtin_image
 
         def get_builtin_bitmap(name):
-            return wx.BitmapFromImage(get_builtin_image(name))
+            return wx.Bitmap(get_builtin_image(name))
 
         self.color_channel_image = get_builtin_bitmap("color")
         self.monochrome_channel_image = get_builtin_bitmap("monochrome")
@@ -462,7 +464,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     #######
 
     def get_column_rect(self, col):
-        _, height = self.GetGridColLabelWindow().GetClientSizeTuple()
+        _, height = self.GetGridColLabelWindow().GetClientSize()
         widths = [self.GetColSize(i) for i in range(col + 1)]
         x = 0 if col == 0 else sum(widths[:col])
         width = widths[-1]
@@ -609,20 +611,16 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             return
         if (col != pb_col or hit_code != pb_hit_code) and pb_show:
             self.pressed_button = (pb_col, pb_hit_code, False)
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
-                                                eraseBackground=False)
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col), eraseBackground=False)
         elif col == pb_col and hit_code == pb_hit_code and not pb_show:
             self.pressed_button = (pb_col, pb_hit_code, True)
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
-                                                eraseBackground=False)
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col), eraseBackground=False)
 
     def on_gclw_mouse_capture_lost(self, event):
         pb_col, pb_hit_code, pb_show = self.pressed_button
         self.pressed_button = (-1, None, False)
-        if pb_hit_code in (self.HIT_CHANNEL_TYPE_BUTTON, self.HIT_PLUS,
-                           self.HIT_FILTER_BUTTON, self.HIT_MINUS):
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(pb_col),
-                                                eraseBackground=False)
+        if pb_hit_code in (self.HIT_CHANNEL_TYPE_BUTTON, self.HIT_PLUS, self.HIT_FILTER_BUTTON, self.HIT_MINUS):
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(pb_col), eraseBackground=False)
 
     def on_channel_type_pressed(self, col):
         with wx.Dialog(self) as dlg:
@@ -1116,7 +1114,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         assert isinstance(grid, ImageSetCtrl)
         assert isinstance(dc, wx.DC)
         window = grid.GetGridColLabelWindow()
-        bitmap = wx.EmptyBitmap(rect.Width, rect.Height)
+        bitmap = wx.Bitmap(rect.Width, rect.Height)
         last = col == grid.GetTable().GetNumberCols() - 1
         only = grid.GetTable().GetNumberCols() == 1
         try:

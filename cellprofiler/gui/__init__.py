@@ -47,7 +47,7 @@ def get_cp_icon(size=None):
     import wx
     if sys.platform.startswith('win'):
         path = pkg_resources.resource_filename("cellprofiler", os.path.join("data", "icons", "CellProfiler.ico"))
-        icon = wx.EmptyIcon()
+        icon = wx.Icon()
         icon.LoadFile(path, wx.BITMAP_TYPE_ICO)
         return icon
     icon = wx.Icon()

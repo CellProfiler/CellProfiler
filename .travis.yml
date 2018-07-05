@@ -46,6 +46,7 @@ notifications:
     on_failure: always
     on_success: change
 python: 2.7.12
-script: pytest
+script:
+  - "echo 'foo!'"
 services: mysql
 sudo: required

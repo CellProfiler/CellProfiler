@@ -288,7 +288,7 @@ def get_crosshair_cursor():
             image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
             image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
             image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            __crosshair_cursor = wx.CursorFromImage(image)
+            __crosshair_cursor = wx.Cursor(image)
         else:
             __crosshair_cursor = wx.CROSS_CURSOR
     return __crosshair_cursor

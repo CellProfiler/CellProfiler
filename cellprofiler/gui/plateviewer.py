@@ -367,7 +367,7 @@ class PlateViewer(object):
                                 str(255 if j == 3 or i == j else 0))
 
     def get_well_side(self):
-        size = self.plate_panel.GetClientSizeTuple()
+        size = self.plate_panel.GetClientSize()
         size = (size[0] - self.get_border_width(),
                 size[1] - self.get_border_height())
         w = size[0] / self.data.plate_layout[1]
@@ -424,7 +424,7 @@ class PlateViewer(object):
             self.plate_bitmap = None
         self.plate_panel.Refresh()
         width, height = [max(x, 1) for x in self.plate_panel.GetClientSize()]
-        self.plate_bitmap = wx.EmptyBitmap(width, height, 32)
+        self.plate_bitmap = wx.Bitmap(width, height, 32)
         dc = wx.MemoryDC(self.plate_bitmap)
         dc.SetBackground(wx.Brush(self.plate_panel.GetBackgroundColour()))
         dc.Clear()

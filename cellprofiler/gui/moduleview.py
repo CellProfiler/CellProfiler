@@ -1190,7 +1190,7 @@ class ModuleView(object):
             drop_height = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_ARROW_Y)
             width = text_width + 2 * gap + drop_width
             height = max(text_height, drop_height) + 4
-            bitmap = wx.EmptyBitmap(width, height)
+            bitmap = wx.Bitmap(width, height)
             dc = wx.MemoryDC(bitmap)
             dc.SetFont(control.GetFont())
             brush = wx.Brush(control.GetBackgroundColour())
@@ -1234,7 +1234,7 @@ class ModuleView(object):
                 assert isinstance(control, wx.Window)
                 if wx.VERSION < (2, 9) or sys.platform == 'win32':
                     menu.Bind(wx.EVT_MENU, on_event)
-                control.PopupMenuXY(menu, 0, control.GetSize()[1])
+                control.PopupMenu(menu, 0, control.GetSize()[1])
                 menu.Destroy()
 
             control.Bind(wx.EVT_BUTTON, on_press)

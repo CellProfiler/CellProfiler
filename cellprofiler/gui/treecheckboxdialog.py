@@ -199,7 +199,7 @@ class TreeCheckboxDialog(wx.Dialog):
         width, height - size of bitmap to return
         """
         dc = wx.MemoryDC()
-        bitmap = wx.EmptyBitmap(width, height)
+        bitmap = wx.Bitmap(width, height)
         dc.SelectObject(bitmap)
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.SetTextForeground(wx.BLACK)

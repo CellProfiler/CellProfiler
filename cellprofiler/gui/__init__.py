@@ -94,7 +94,7 @@ def draw_item_selection_rect(window, dc, rect, flags):
         new_brush = wx.Brush(color)
         dc.Brush = new_brush
         dc.Pen = wx.TRANSPARENT_PEN
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
         dc.Brush = old_brush
         new_brush.Destroy()
     elif flags & wx.CONTROL_CURRENT:

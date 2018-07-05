@@ -1158,7 +1158,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         if self.test_mode:
             if x < x0:
                 r = self.get_slider_rect()
-                if r.ContainsXY(x, y):
+                if r.Contains(x, y):
                     return None, PLV_HITTEST_SLIDER, None
                 return None, wx.LIST_HITTEST_NOWHERE, None
         elif x < x0:

@@ -99,81 +99,73 @@ class PipelineController(object):
         self.menu_id_to_module_name = {}
         self.module_name_to_menu_id = {}
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
+
         assert isinstance(frame, wx.Frame)
-        frame.Bind(wx.EVT_MENU, self.__on_new_workspace,
-                   id=cpframe.ID_FILE_NEW_WORKSPACE)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD,
-                    self.__on_open_workspace)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE,
-                    self.__on_save_workspace)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_AS,
-                    self.__on_save_as_workspace)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,
-                    self.__on_load_pipeline)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_IMPORT_FILE_LIST, self.__on_import_file_list)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE, self.__on_save_as_pipeline)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_IMAGE_SETS,
-                    self.__on_export_image_sets)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_PIPELINE_NOTES,
-                    self.__on_export_pipeline_notes)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_REVERT_TO_SAVED,
-                    self.__on_revert_workspace)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE, self.__on_clear_pipeline)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_PLATEVIEWER, self.__on_plateviewer)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_ANALYZE_IMAGES, self.on_analyze_images)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_STOP_ANALYSIS, self.on_stop_running)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_RESTART, self.on_restart)
 
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_UNDO, self.on_undo)
+        frame.Bind(wx.EVT_MENU, self.__on_new_workspace, id=cpframe.ID_FILE_NEW_WORKSPACE)
+
+        frame.Bind(wx.EVT_MENU, self.__on_open_workspace, id=cpframe.ID_FILE_LOAD)
+        frame.Bind(wx.EVT_MENU, self.__on_save_workspace, id=cpframe.ID_FILE_SAVE)
+        frame.Bind(wx.EVT_MENU, self.__on_save_as_workspace, id=cpframe.ID_FILE_SAVE_AS)
+        frame.Bind(wx.EVT_MENU, self.__on_load_pipeline, id=cpframe.ID_FILE_LOAD_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_url_load_pipeline, id=cpframe.ID_FILE_URL_LOAD_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_import_file_list, id=cpframe.ID_FILE_IMPORT_FILE_LIST)
+        frame.Bind(wx.EVT_MENU, self.__on_save_as_pipeline, id=cpframe.ID_FILE_SAVE_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_export_image_sets, id=cpframe.ID_FILE_EXPORT_IMAGE_SETS)
+        frame.Bind(wx.EVT_MENU, self.__on_export_pipeline_notes, id=cpframe.ID_FILE_EXPORT_PIPELINE_NOTES)
+        frame.Bind(wx.EVT_MENU, self.__on_revert_workspace, id=cpframe.ID_FILE_REVERT_TO_SAVED)
+        frame.Bind(wx.EVT_MENU, self.__on_clear_pipeline, id=cpframe.ID_FILE_CLEAR_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_plateviewer, id=cpframe.ID_FILE_PLATEVIEWER)
+        frame.Bind(wx.EVT_MENU, self.on_analyze_images, id=cpframe.ID_FILE_ANALYZE_IMAGES)
+        frame.Bind(wx.EVT_MENU, self.on_stop_running, id=cpframe.ID_FILE_STOP_ANALYSIS)
+        frame.Bind(wx.EVT_MENU, self.on_run_multiple_pipelines, id=cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES)
+        frame.Bind(wx.EVT_MENU, self.on_restart, id=cpframe.ID_FILE_RESTART)
+
+        frame.Bind(wx.EVT_MENU, self.on_undo, id=cpframe.ID_EDIT_UNDO)
+
         frame.Bind(wx.EVT_UPDATE_UI, self.on_update_undo_ui, id=cpframe.ID_EDIT_UNDO)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_UP, self.on_module_up)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_DOWN, self.on_module_down)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_DELETE, self.on_remove_module)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_DUPLICATE, self.on_duplicate_module)
 
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_BROWSE_FOR_FILES,
-                    self.on_pathlist_browse)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_CLEAR_FILE_LIST,
-                    self.on_pathlist_clear)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_COLLAPSE_ALL,
-                    self.on_pathlist_collapse_all)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_EXPAND_ALL,
-                    self.on_pathlist_expand_all)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
-                    self.on_pathlist_remove)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE,
-                    self.on_pathlist_show)
-        for menu_id in (cpframe.ID_EDIT_BROWSE_FOR_FILES,
-                        cpframe.ID_EDIT_CLEAR_FILE_LIST,
-                        cpframe.ID_EDIT_COLLAPSE_ALL,
-                        cpframe.ID_EDIT_EXPAND_ALL,
-                        cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
-                        cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE):
-            frame.Bind(wx.EVT_UPDATE_UI, self.on_update_pathlist_ui,
-                       id=menu_id)
-        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_module_enable,
-                   id=cpframe.ID_EDIT_ENABLE_MODULE)
-        frame.Bind(wx.EVT_MENU, self.on_module_enable,
-                   id=cpframe.ID_EDIT_ENABLE_MODULE)
+        frame.Bind(wx.EVT_MENU, self.on_module_up, id=cpframe.ID_EDIT_MOVE_UP)
+        frame.Bind(wx.EVT_MENU, self.on_module_down, id=cpframe.ID_EDIT_MOVE_DOWN)
+        frame.Bind(wx.EVT_MENU, self.on_remove_module, id=cpframe.ID_EDIT_DELETE)
+        frame.Bind(wx.EVT_MENU, self.on_duplicate_module, id=cpframe.ID_EDIT_DUPLICATE)
 
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_TOGGLE, self.on_debug_toggle)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_STEP, self.on_debug_step)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_NEXT_IMAGE_SET, self.on_debug_next_image_set)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_GROUP, self.on_debug_choose_group)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_RUN_FROM_THIS_MODULE, self.on_run_from_this_module)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_browse, id=cpframe.ID_EDIT_BROWSE_FOR_FILES)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_clear, id=cpframe.ID_EDIT_CLEAR_FILE_LIST)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_collapse_all, id=cpframe.ID_EDIT_COLLAPSE_ALL)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_expand_all, id=cpframe.ID_EDIT_EXPAND_ALL)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_remove, id=cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_show, id=cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE)
 
-        # ~*~
-        wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)
-        # ~^~
+        menu_identifiers = [
+            cpframe.ID_EDIT_BROWSE_FOR_FILES,
+            cpframe.ID_EDIT_CLEAR_FILE_LIST,
+            cpframe.ID_EDIT_COLLAPSE_ALL,
+            cpframe.ID_EDIT_EXPAND_ALL,
+            cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
+            cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE
+        ]
 
-        wx.EVT_MENU(frame, cpframe.ID_WINDOW_SHOW_ALL_WINDOWS, self.on_show_all_windows)
-        wx.EVT_MENU(frame, cpframe.ID_WINDOW_HIDE_ALL_WINDOWS, self.on_hide_all_windows)
+        for menu_id in menu_identifiers:
+            frame.Bind(wx.EVT_UPDATE_UI, self.on_update_pathlist_ui, id=menu_id)
+
+        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_module_enable, id=cpframe.ID_EDIT_ENABLE_MODULE)
+        frame.Bind(wx.EVT_MENU, self.on_module_enable, id=cpframe.ID_EDIT_ENABLE_MODULE)
+
+        frame.Bind(wx.EVT_MENU, self.on_debug_toggle, id=cpframe.ID_DEBUG_TOGGLE)
+        frame.Bind(wx.EVT_MENU, self.on_debug_step, id=cpframe.ID_DEBUG_STEP)
+        frame.Bind(wx.EVT_MENU, self.on_debug_next_image_set, id=cpframe.ID_DEBUG_NEXT_IMAGE_SET)
+        frame.Bind(wx.EVT_MENU, self.on_debug_next_group, id=cpframe.ID_DEBUG_NEXT_GROUP)
+        frame.Bind(wx.EVT_MENU, self.on_debug_choose_group, id=cpframe.ID_DEBUG_CHOOSE_GROUP)
+        frame.Bind(wx.EVT_MENU, self.on_debug_choose_image_set, id=cpframe.ID_DEBUG_CHOOSE_IMAGE_SET)
+        frame.Bind(wx.EVT_MENU, self.on_debug_random_image_set, id=cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET)
+        frame.Bind(wx.EVT_MENU, self.on_debug_reload, id=cpframe.ID_DEBUG_RELOAD)
+        frame.Bind(wx.EVT_MENU, self.on_run_from_this_module, id=cpframe.ID_DEBUG_RUN_FROM_THIS_MODULE)
+
+        frame.Bind(wx.EVT_MENU, self.on_sample_init, id=cpframe.ID_SAMPLE_INIT)
+
+        frame.Bind(wx.EVT_MENU, self.on_show_all_windows, id=cpframe.ID_WINDOW_SHOW_ALL_WINDOWS)
+        frame.Bind(wx.EVT_MENU, self.on_hide_all_windows, id=cpframe.ID_WINDOW_HIDE_ALL_WINDOWS)
 
         from bioformats.formatreader import set_omero_login_hook
         set_omero_login_hook(self.omero_login)

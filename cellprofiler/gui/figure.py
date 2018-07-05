@@ -485,7 +485,7 @@ class Figure(wx.Frame):
         width = width * canvas_width
         height = height * canvas_height
 
-        best_width, best_height = ctrl.GetBestSizeTuple()
+        best_width, best_height = ctrl.GetBestSize()
         vscroll_x = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         hscroll_y = wx.SystemSettings.GetMetric(wx.SYS_HSCROLL_Y)
         if height < best_height:
@@ -935,9 +935,9 @@ class Figure(wx.Frame):
         self.popup_menus[(x, y)] = popup
         open_in_new_figure_item = wx.MenuItem(popup, -1,
                                               'Open image in new window')
-        popup.AppendItem(open_in_new_figure_item)
+        popup.Append(open_in_new_figure_item)
         show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
-        popup.AppendItem(show_hist_item)
+        popup.Append(show_hist_item)
 
         submenu = wx.Menu()
         item_raw = submenu.Append(MENU_CONTRAST_RAW, 'Raw',
@@ -1513,7 +1513,7 @@ class Figure(wx.Frame):
                     if (xx, yy) in self.images:
                         menu_pos += 1
 
-            self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(
+            self.subplot_menus[(x, y)] = self.menu_subplots.Insert(
                 menu_pos,
                 -1,
                 (title or 'Subplot (%s,%s)' % (x, y)),
@@ -1869,7 +1869,7 @@ class Figure(wx.Frame):
         ystart = float(y) / float(ny)
         width = float(n_cols) / float(nx)
         height = float(n_rows) / float(ny)
-        cw, ch = self.figure.canvas.GetSizeTuple()
+        cw, ch = self.figure.canvas.GetSize()
         ctrl = wx.grid.Grid(self.figure.canvas)
         self.widgets.append(
                 (xstart, ystart, width, height,

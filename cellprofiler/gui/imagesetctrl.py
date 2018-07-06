@@ -478,9 +478,9 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     def on_paint_gclw(self, event):
         dc = wx.BufferedPaintDC(self.GridColLabelWindow)
         bkgnd_brush = wx.Brush(self.GridColLabelWindow.BackgroundColour)
-        dc.Background = bkgnd_brush
+        dc.SetBackground(bkgnd_brush)
         dc.Clear()
-        dc.Background = wx.NullBrush
+        dc.SetBackground(wx.NullBrush)
         bkgnd_brush.Destroy()
         if self.table.GetNumberCols() == 0:
             return
@@ -506,7 +506,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         """Return a tuple of column # and hit test code for mouse event"""
         assert isinstance(event, wx.MouseEvent)
 
-        x, y = self.CalcUnscrolledPosition(event.X, event.Y)
+        x, y = self.CalcUnscrolledPosition(event.GetX(), event.GetY())
         if not self.read_only:
             r = self.get_add_button_rect()
             assert isinstance(r, wx.Rect)
@@ -629,7 +629,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         with wx.Dialog(self) as dlg:
             assert isinstance(dlg, wx.Dialog)
             channel_name = self.table.columns[col].channel
-            dlg.Title = "Change image type for %s" % (self.table.GetColLabelValue(col))
+            dlg.SetTitle("Change image type for %s" % (self.table.GetColLabelValue(col)))
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
                 (cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
@@ -801,7 +801,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         if rename and self.column_label_editor.Validate():
             self.table.SetColLabelValue(
                 self.editor_column,
-                self.column_label_editor.Value)
+                self.column_label_editor.GetValue())
         rect = self.column_label_editor.GetRect()
         self.column_label_editor.Hide()
         self.editor_column = None
@@ -816,7 +816,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         rect = self.col_label_renderer.get_edit_rect(rect, last, only)
         self.column_label_editor.SetRect(rect)
         self.column_label_editor.Show()
-        self.column_label_editor.Value = self.table.GetColLabelValue(col)
+        self.column_label_editor.SetValue(self.table.GetColLabelValue(col))
         self.column_label_editor.SetFocus()
 
     ##################
@@ -1013,11 +1013,11 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
             if attr.HasBackgroundColour():
                 brush = wx.Brush(attr.BackgroundColour)
                 dc.SetBrush(brush)
-            if dc.Brush.IsNull():
+            if dc.GetBrush().IsNull():
                 brush = wx.Brush(grid.GetGridWindow().BackgroundColour)
                 dc.SetBrush(brush)
             dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height)
+            dc.DrawRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
             flags = 0
             if grid.IsInSelection(row, col):
                 flags += wx.CONTROL_SELECTED
@@ -1033,7 +1033,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
             else:
                 dc.SetTextForeground(grid.GetGridWindow().ForegroundColour)
 
-            text_width = rect.width - self.padding * 2
+            text_width = rect.GetWidth() - self.padding * 2
             if dc.GetTextExtent(s)[0] <= text_width:
                 sdisplay = s
             else:
@@ -1055,30 +1055,30 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
                     if increment == 1:
                         break
 
-            dc.DrawText(sdisplay, rect.X + self.padding, rect.Y)
+            dc.DrawText(sdisplay, rect.GetX() + self.padding, rect.GetY())
             if grid.drop_location is not None:
                 drop_row, drop_col = grid.drop_location
                 for do_once in range(1):
                     if drop_row == row and drop_col == col:
-                        y = rect.Y
+                        y = rect.GetY()
                     elif drop_row == row + 1 and drop_col == col:
-                        y = rect.Y + rect.Height - 1
+                        y = rect.GetY() + rect.GetHeight() - 1
                     else:
                         break
 
-                    dc.Pen = wx.TRANSPARENT_PEN
-                    dc.Brush = wx.BLACK_BRUSH
+                    dc.SetPen(wx.TRANSPARENT_PEN)
+                    dc.SetBrush(wx.BLACK_BRUSH)
                     half_height = int(grid.DROP_HEIGHT) / 2
                     dc.DrawPolygon([
-                        (rect.X, y - half_height - 1),
-                        (rect.X + half_height + 1, y),
-                        (rect.X + rect.Width - half_height - 1, y),
-                        (rect.X + rect.Width, y - half_height - 1),
-                        (rect.X + rect.Width, y + half_height + 1),
-                        (rect.X + rect.Width - half_height, y + 1),
-                        (rect.X + half_height, y + 1),
-                        (rect.X, y + half_height + 1),
-                        (rect.X, y - half_height)])
+                        (rect.GetX(), y - half_height - 1),
+                        (rect.GetX() + half_height + 1, y),
+                        (rect.GetX() + rect.GetWidth() - half_height - 1, y),
+                        (rect.GetX() + rect.GetWidth(), y - half_height - 1),
+                        (rect.GetX() + rect.GetWidth(), y + half_height + 1),
+                        (rect.GetX() + rect.GetWidth() - half_height, y + 1),
+                        (rect.GetX() + half_height, y + 1),
+                        (rect.GetX(), y + half_height + 1),
+                        (rect.GetX(), y - half_height)])
         finally:
             dc.SetFont(old_font)
             dc.SetBrush(old_brush)
@@ -1121,8 +1121,8 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         only = grid.Table.GetNumberCols() == 1
         try:
             mdc = wx.MemoryDC(bitmap)
-            mdc.Font = window.Font
-            mdc.Brush = wx.Brush(window.BackgroundColour)
+            mdc.SetFont(window.Font)
+            mdc.SetBrush(wx.Brush(window.BackgroundColour))
             mdc.Clear()
             b_rect = wx.Rect(0, 0, rect.width, rect.height)
             self.DrawBorder(grid, mdc, b_rect)
@@ -1237,7 +1237,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         height = rect.Height - self.gap_size * 2
         first_icon_rect = self.get_icon_rect(
             rect, wx.Size(0, height), 0, last, only)
-        width = first_icon_rect.X - self.gap_size - x
+        width = first_icon_rect.GetX() - self.gap_size - x
         return wx.Rect(x, y, width, height)
 
     def draw_button(self, window, dc, rect, bitmap, flags):
@@ -1252,13 +1252,13 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
         elif isinstance(bitmap, basestring):
-            dc.Font = window.Font
-            dc.BackgroundMode = wx.TRANSPARENT
+            dc.SetFont(window.Font)
+            dc.SetBackgroundMode(wx.TRANSPARENT)
             width, height = dc.GetTextExtent(bitmap)
-            x = rect.X + (rect.Width - width) / 2
-            y = rect.Y + (rect.Height - height) / 2
+            x = rect.GetX() + (rect.GetWidth() - width) / 2
+            y = rect.GetY() + (rect.GetHeight() - height) / 2
             dc.DrawText(bitmap, x, y)
-            dc.Font = wx.NullFont
+            dc.SetFont(wx.NullFont)
 
     def label_rect(self, rect, label_size, last, only):
         """The position of the label
@@ -1272,7 +1272,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
             available_width = rect.width
         else:
             first_button_rect = self.get_icon_rect(rect, label_size, 0, last, only)
-            available_width = first_button_rect.X - self.gap_size - rect.X
+            available_width = first_button_rect.GetX() - self.gap_size - rect.X
         x = rect.x + self.gap_size + (available_width - label_width) / 2
         y = self.icon_padding + self.gap_size
         return wx.Rect(x, y, label_width, max(self.icon_size, label_height))
@@ -1300,14 +1300,14 @@ class ColumnNameValidator(wx.Validator):
         return ColumnNameValidator(self.table)
 
     def Validate(self, win):
-        value = self.Window.Value
+        value = self.GetWindow().GetValue()
         if any([value.lower() == column.channel for column in self.table.columns]):
             return False
         pattern = "^[A-Za-z_]\\w*$"
         return re.match(pattern, value) is not None
 
     def on_char(self, event):
-        ctrl = self.Window
+        ctrl = self.GetWindow()
         assert isinstance(ctrl, wx.TextCtrl)
         key = event.GetKeyCode()
         if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
@@ -1451,7 +1451,7 @@ class FilterPanelDlg(wx.Dialog):
                         False if it doesn't.
                         """
         super(self.__class__, self).__init__(parent, size=(640, 480))
-        self.Title = "Select images using a filter"
+        self.SetTitle("Select images using a filter")
         from cellprofiler.modules.images import FilePredicate, DirectoryPredicate
         from cellprofiler.modules.images import ExtensionPredicate
 

@@ -101,7 +101,7 @@ class PreferencesDlg(wx.Dialog):
                 ctl.BackgroundColour = getter()
             elif ui_info == CHOICE:
                 ctl = wx.CheckBox(scrollpanel, -1)
-                ctl.Value = getter()
+                ctl.SetValue(getter())
             elif isinstance(ui_info, IntegerPreference):
                 minval = (-sys.maxint if ui_info.minval is None
                           else ui_info.minval)
@@ -125,22 +125,29 @@ class PreferencesDlg(wx.Dialog):
                 ctl.SetMinSize((min_width, min_height))
             controls.append(ctl)
             sizer.Add(ctl, (index, 1), flag=wx.EXPAND)
+
             if ui_info == DIRBROWSE:
                 def on_press(event, ctl=ctl, parent=self):
                     dlg = wx.DirDialog(parent)
-                    dlg.Path = ctl.Value
+
+                    dlg.SetPath(ctl.Value)
+
                     if dlg.ShowModal() == wx.ID_OK:
-                        ctl.Value = dlg.Path
+                        ctl.SetValue(dlg.GetPath())
+
                         dlg.Destroy()
-            elif (isinstance(ui_info, basestring) and
-                      ui_info.startswith(FILEBROWSE)):
+            elif (isinstance(ui_info, basestring) and ui_info.startswith(FILEBROWSE)):
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)
-                    dlg.Path = ctl.Value
+
+                    dlg.SetPath(ctl.Value)
+
                     if len(ui_info) > len(FILEBROWSE) + 1:
-                        dlg.Wildcard = ui_info[(len(FILEBROWSE) + 1):]
+                        dlg.SetWildcard(ui_info[(len(FILEBROWSE) + 1):])
+
                     if dlg.ShowModal() == wx.ID_OK:
-                        ctl.Value = dlg.Path
+                        ctl.SetValue(dlg.GetPath())
+
                     dlg.Destroy()
 
                 ui_info = "Browse"
@@ -148,9 +155,7 @@ class PreferencesDlg(wx.Dialog):
                 def on_press(event, ctl=ctl, parent=self):
                     name, size = ctl.Value.split(",")
                     fd = wx.FontData()
-                    fd.SetInitialFont(wx.FFont(float(size),
-                                               wx.FONTFAMILY_DEFAULT,
-                                               face=name))
+                    fd.SetInitialFont(wx.FFont(float(size), wx.FONTFAMILY_DEFAULT, face=name))
                     dlg = wx.FontDialog(parent, fd)
                     if dlg.ShowModal() == wx.ID_OK:
                         fd = dlg.GetFontData()

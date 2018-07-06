@@ -50,7 +50,7 @@ class App(wx.App):
 
         self.workspace_path = kwargs.pop("workspace_path", None)
 
-        # cellprofiler.utilities.cpjvm.cp_start_vm()
+        cellprofiler.utilities.cpjvm.cp_start_vm()
 
         super(App, self).__init__(*args, **kwargs)
 
@@ -93,8 +93,7 @@ class App(wx.App):
         return True
 
     def OnExit(self):
-        return 0
-        # cellprofiler.utilities.cpjvm.cp_stop_vm()
+        cellprofiler.utilities.cpjvm.cp_stop_vm()
 
 
 if __name__ == "__main__":

@@ -3837,7 +3837,7 @@ class BinaryMatrixController(object):
         j = int((x - ex) / (2 * ex + dx + bx))
         h, w = self.setting.get_size()
         if (i < 0 or j < 0 or i >= h or j >= w or
-                not self.get_matrix_element_rect(i, j).ContainsXY(x, y)):
+                not self.get_matrix_element_rect(i, j).Contains(x, y)):
             return None, None
         return i, j
 
@@ -4055,7 +4055,7 @@ class DataTypeController(object):
             return control
 
 
-class TableController(wx.grid.PyGridTableBase):
+class TableController(wx.grid.GridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR.TextColour = cellprofiler.preferences.get_error_color()

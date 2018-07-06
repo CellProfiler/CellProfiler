@@ -151,10 +151,12 @@ class CPFrame(wx.Frame):
 
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, *args, **kwds)
+
         self.__pipeline = cellprofiler.gui.pipeline.Pipeline()
-        self.__workspace = cellprofiler.gui.workspace.Workspace(
-                self.__pipeline, None, None, None, None, None)
+        self.__workspace = cellprofiler.gui.workspace.Workspace(self.__pipeline, None, None, None, None, None)
+
+        super(CPFrame, self).__init__(*args, **kwds)
+
         # background_color = cellprofiler.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         #
@@ -298,8 +300,8 @@ class CPFrame(wx.Frame):
         print("foo")
 
         # self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(self.__imageset_panel)
-        self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
+        # self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(self.__imageset_panel)
+        # self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
         self.__right_win.GetSizer().AddSpacer(4)
 
         print("foo")
@@ -755,7 +757,7 @@ class CPFrame(wx.Frame):
 
             new_id = wx.NewId()
             self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
-            wx.EVT_MENU(self, new_id, on_plate_viewer_help)
+            self.Bind(wx.EVT_MENU, on_plate_viewer_help, id=new_id)
 
             for data_tool_name in cellprofiler.modules.get_data_tool_names():
                 new_id = wx.NewId()
@@ -764,7 +766,7 @@ class CPFrame(wx.Frame):
                 def on_data_tool_help(event, data_tool_name=data_tool_name):
                     self.__on_data_tool_help(event, data_tool_name)
 
-                wx.EVT_MENU(self, new_id, on_data_tool_help)
+                self.Bind(wx.EVT_MENU, on_data_tool_help, id=new_id)
         return self.__menu_data_tools_help_menu
 
     def data_tools_menu(self):
@@ -789,7 +791,7 @@ class CPFrame(wx.Frame):
             new_id = wx.NewId()
             self.__data_tools_menu.Append(
                     new_id, 'Data Tool Overview', 'Overview of the Data Tools')
-            wx.EVT_MENU(self, new_id, on_data_tool_overview)
+            self.Bind(wx.EVT_MENU, on_data_tool_overview, id=new_id)
 
             self.__data_tools_menu.AppendSeparator()
 
@@ -806,7 +808,7 @@ class CPFrame(wx.Frame):
                 def on_data_tool(event, data_tool_name=data_tool_name):
                     self.__on_data_tool(event, data_tool_name)
 
-                wx.EVT_MENU(self, new_id, on_data_tool)
+                self.Bind(wx.EVT_MENU, on_data_tool, id=new_id)
 
             self.__data_tools_menu.AppendSeparator()
 

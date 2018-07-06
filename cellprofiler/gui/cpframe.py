@@ -293,18 +293,12 @@ class CPFrame(wx.Frame):
         self.__imageset_panel.SetSizer(wx.BoxSizer())
         self.__imageset_panel.SetAutoLayout(True)
 
-        print("foo")
+        self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(self.__workspace, self.__imageset_panel, read_only=True)
 
-        # self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(self.__workspace, self.__imageset_panel, read_only=True)
-
-        print("foo")
-
-        # self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        # self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(self.__imageset_panel)
-        # self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
+        self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
+        self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(self.__imageset_panel)
+        self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
         self.__right_win.GetSizer().AddSpacer(4)
-
-        print("foo")
 
         #
         # Preferences panel
@@ -1001,9 +995,8 @@ class CPFrame(wx.Frame):
             self.do_help_module(module.module_name, module.get_help())
 
     def do_help_module(self, module_name, help_text):
-        helpframe = wx.Frame(self, -1, 'Help for module, "%s"' %
-                             module_name, size=(640, 480))
-        helpframe.MenuBar = wx.MenuBar()
+        helpframe = wx.Frame(self, -1, 'Help for module, "%s"' % module_name, size=(640, 480))
+        helpframe.SetMenuBar(wx.MenuBar())
         ####################################################
         #
         # Add the HTML window

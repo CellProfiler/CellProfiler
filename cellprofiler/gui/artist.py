@@ -844,7 +844,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             # Remove excess menu items
             #
             while len(menu_items) < idx and menu_items[idx].IsEnabled():
-                menu.RemoveItem(item)
+                menu.Remove(item)
                 del menu_items[idx]
 
     def __initialize_sub_menu(self, event, sub_menu, data):

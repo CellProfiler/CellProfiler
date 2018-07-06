@@ -444,7 +444,7 @@ class Figure(wx.Frame):
             self.subplots[:, :] = None
         # Remove the subplot menus
         for (x, y) in self.subplot_menus:
-            self.menu_subplots.RemoveItem(self.subplot_menus[(x, y)])
+            self.menu_subplots.Remove(self.subplot_menus[(x, y)])
         for (x, y) in self.event_bindings:
             [self.figure.canvas.mpl_disconnect(b) for b in self.event_bindings[(x, y)]]
         self.subplot_menus = {}
@@ -1502,7 +1502,7 @@ class Figure(wx.Frame):
             # Also add this menu to the main menu
             if (x, y) in self.subplot_menus:
                 # First trash the existing menu if there is one
-                self.menu_subplots.RemoveItem(self.subplot_menus[(x, y)])
+                self.menu_subplots.Remove(self.subplot_menus[(x, y)])
 
             menu_pos = 0
 

@@ -23,6 +23,7 @@ import scipy.ndimage
 import scipy.ndimage
 import sys
 import wx
+import wx.adv
 import wx.html
 
 logger = logging.getLogger(__name__)
@@ -296,7 +297,7 @@ class EditObjectsDialog(wx.Dialog):
         # The help sash
         #
         ########################################
-        self.help_sash = wx.SashLayoutWindow(self.sash_parent)
+        self.help_sash = wx.adv.SashLayoutWindow(self.sash_parent)
         self.help_sash.Bind(wx.EVT_SASH_DRAGGED, self.on_help_sash_drag)
         self.help_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.help_sash.SetAlignment(wx.LAYOUT_BOTTOM)

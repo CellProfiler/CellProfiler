@@ -1028,7 +1028,7 @@ class CPFrame(wx.Frame):
         def on_exit(event):
             helpframe.Close()
 
-        helpframe.MenuBar.Append(menu, '&File')
+        helpframe.GetMenuBar().Append(menu, '&File')
         helpframe.Bind(wx.EVT_MENU, on_save, id=ID_FILE_SAVE_PIPELINE)
         helpframe.Bind(wx.EVT_MENU, on_print, id=ID_FILE_PRINT)
         helpframe.Bind(wx.EVT_MENU, on_exit, id=ID_FILE_EXIT)
@@ -1061,7 +1061,7 @@ class CPFrame(wx.Frame):
                 wx.MessageBox("Failed to copy to the clipboard", "Error",
                               wx.OK | wx.ICON_ERROR)
 
-        helpframe.MenuBar.Append(menu, '&Edit')
+        helpframe.GetMenuBar().Append(menu, '&Edit')
         helpframe.Bind(wx.EVT_MENU, on_copy, id=ID_EDIT_COPY)
         helpframe.Bind(wx.EVT_MENU, on_edit_select_all, id=ID_EDIT_SELECT_ALL)
         helpframe.Bind(wx.EVT_IDLE, on_idle)

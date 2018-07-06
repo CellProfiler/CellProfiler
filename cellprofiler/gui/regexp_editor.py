@@ -258,9 +258,9 @@ class RegexpDialog(wx.Dialog):
         except:
             self.test_display.Text = "Regular expression is not valid"
             self.test_display.StartStyling(0, 0xff)
-            self.test_display.SetStyling(len(self.test_display.Text),
+            self.test_display.SetStyling(len(self.test_display.GetText()),
                                          STYLE_ERROR)
-        self.test_display.ReadOnly = True
+        self.test_display.SetReadOnly(True)
 
     def refresh_bitmap(self):
         self.feedback.SetBitmap(self.get_bitmap())
@@ -271,7 +271,7 @@ class RegexpDialog(wx.Dialog):
 
     def set_value(self, value):
         self.__value = value
-        self.regexp_display.Text = value
+        self.regexp_display.SetText(value)
         self.refresh_regexp()
         self.refresh_text()
 
@@ -282,8 +282,8 @@ class RegexpDialog(wx.Dialog):
 
     def set_test_text(self, test_text):
         self.__test_text = test_text
-        self.test_text_ctl.Value = test_text
-        self.test_display.Text = test_text
+        self.test_text_ctl.SetValue(test_text)
+        self.test_display.SetText(test_text)
         self.refresh_text()
 
     test_text = property(get_test_text, set_test_text)

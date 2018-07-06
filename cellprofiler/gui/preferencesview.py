@@ -515,7 +515,7 @@ class PreferencesView(object):
 
     def __on_pixel_size_changed(self, event):
         error_text = 'Pixel size must be a number'
-        text = self.__pixel_size_edit_box.Value
+        text = self.__pixel_size_edit_box.GetValue()
         if text.isdigit():
             cellprofiler.preferences.set_pixel_size(int(text))
             self.pop_error_text(error_text)
@@ -523,17 +523,17 @@ class PreferencesView(object):
             self.set_error_text(error_text)
 
     def __on_preferences_output_filename_event(self, event):
-        if self.__output_filename_edit_box.Value != cellprofiler.preferences.get_output_file_name():
-            self.__output_filename_edit_box.Value = cellprofiler.preferences.get_output_file_name()
+        if self.__output_filename_edit_box.GetValue() != cellprofiler.preferences.get_output_file_name():
+            self.__output_filename_edit_box.SetValue(cellprofiler.preferences.get_output_file_name())
 
     def __on_preferences_output_directory_event(self, event):
-        old_selection = self.__output_edit_box.Selection
-        if self.__output_edit_box.Value != cellprofiler.preferences.get_default_output_directory():
-            self.__output_edit_box.Value = cellprofiler.preferences.get_default_output_directory()
+        old_selection = self.__output_edit_box.GetSelection()
+        if self.__output_edit_box.GetValue() != cellprofiler.preferences.get_default_output_directory():
+            self.__output_edit_box.SetValue(cellprofiler.preferences.get_default_output_directory())
 
     def __on_preferences_image_directory_event(self, event):
-        if self.__image_edit_box.Value != cellprofiler.preferences.get_default_image_directory():
-            self.__image_edit_box.Value = cellprofiler.preferences.get_default_image_directory()
+        if self.__image_edit_box.GetValue() != cellprofiler.preferences.get_default_image_directory():
+            self.__image_edit_box.SetValue(cellprofiler.preferences.get_default_image_directory())
 
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation

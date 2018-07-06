@@ -114,7 +114,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
 
     def hookup_events(self):
         self.Bind(wx.EVT_DIRPICKER_CHANGED, self.on_path_changed, self.directory_picker)
-        self.Bind(wx.EVT_TEXT, self.on_path_changed, self.directory_picker.TextCtrl)
+        self.Bind(wx.EVT_TEXT, self.on_path_changed, self.directory_picker.GetTextCtrl())
         self.Bind(wx.EVT_BUTTON, self.on_add, self.file_add_button)
         self.Bind(wx.EVT_BUTTON, self.on_select_all, self.file_select_all_button)
         self.Bind(wx.EVT_BUTTON, self.on_deselect_all, self.file_deselect_all_button)
@@ -125,7 +125,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 child.Bind(wx.EVT_LEFT_DOWN, self.on_pipeline_list_down)
 
     def set_path(self, path):
-        self.directory_picker.Path = path
+        self.directory_picker.SetPath(path)
         self.set_file_chooser_path(path)
 
     def on_path_changed(self, event):
@@ -177,7 +177,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
         for i in range(self.file_chooser.ItemCount):
             if self.file_chooser.IsSelected(i):
                 path = os.path.join(
-                        self.directory_picker.Path,
+                        self.directory_picker.GetPath(),
                         self.file_chooser.GetItemText(i))
                 index = self.pipeline_list_view.InsertStringItem(
                         sys.maxint, path)
@@ -216,26 +216,26 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 self.pipeline_list_view.DeleteItem(item)
             elif subitem == P_FILENAME_COLUMN:
                 dlg = wx.FileDialog(self, "Choose a pipeline file", style=wx.FD_OPEN)
-                dlg.Path = self.pipeline_list_view.GetItemText(item)
-                dlg.Wildcard = "CellProfiler pipeline (*.cp)|*.cp|Measurements file (*.mat)|*.mat"
+                dlg.SetPath(self.pipeline_list_view.GetItemText(item))
+                dlg.SetWildcard("CellProfiler pipeline (*.cp)|*.cp|Measurements file (*.mat)|*.mat")
                 result = dlg.ShowModal()
                 if result == wx.ID_OK:
-                    self.pipeline_list_view.SetItemText(item, dlg.Path)
+                    self.pipeline_list_view.SetItemText(item, dlg.GetPath())
             elif subitem in (P_INPUT_DIRECTORY_COLUMN, P_OUTPUT_DIRECTORY_COLUMN):
                 dest = "input" if subitem == P_INPUT_DIRECTORY_COLUMN else "output"
                 dlg = wx.DirDialog(self, "Choose the default %s folder to use for the pipeline")
                 list_item = self.pipeline_list_view.GetItem(item, subitem)
-                dlg.Path = list_item.GetText()
+                dlg.SetPath(list_item.GetText())
                 if dlg.ShowModal() == wx.ID_OK:
-                    self.pipeline_list_view.SetStringItem(item, subitem, dlg.Path)
+                    self.pipeline_list_view.SetStringItem(item, subitem, dlg.GetPath())
             elif subitem == P_OUTPUT_FILE_COLUMN:
                 dlg = wx.FileDialog(self, "Choose an output measurements file",
                                     style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
                 list_item = self.pipeline_list_view.GetItem(item, subitem)
-                dlg.Path = list_item.GetText()
-                dlg.Wildcard = "Measurements file (*.mat)|*.mat"
+                dlg.SetPath(list_item.GetText())
+                dlg.SetWildcard("Measurements file (*.mat)|*.mat")
                 if dlg.ShowModal() == wx.ID_OK:
-                    self.pipeline_list_view.SetStringItem(item, subitem, dlg.Filename)
+                    self.pipeline_list_view.SetStringItem(item, subitem, dlg.GetFilename())
 
     def on_help(self, event):
         import cellprofiler.gui.help.content

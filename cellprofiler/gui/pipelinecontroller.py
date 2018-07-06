@@ -1051,7 +1051,7 @@ class PipelineController(object):
         if dialog_response == wx.ID_OK:
             try:
                 self.__workspace.refresh_image_set()
-                self.__workspace.measurements.write_image_sets(dlg.Path)
+                self.__workspace.measurements.write_image_sets(dlg.GetPath())
                 
                 # Show helpful message to guide in proper use (GithHub issue #688)
                 frame = wx.Frame(self.__frame, title="Image set listing saved")

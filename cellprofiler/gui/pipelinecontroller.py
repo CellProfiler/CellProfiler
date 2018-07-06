@@ -1241,7 +1241,7 @@ class PipelineController(object):
             assert isinstance(menu, wx.Menu)
             while len(menu.GetMenuItems()) > 0:
                 self.__frame.Unbind(wx.EVT_MENU, id=menu.GetMenuItems()[0].Id)
-                menu.RemoveItem(menu.GetMenuItems()[0])
+                menu.Remove(menu.GetMenuItems()[0])
             for index, file_name in enumerate(file_names):
                 menu.Append(ids[index], file_name)
                 self.__frame.Bind(

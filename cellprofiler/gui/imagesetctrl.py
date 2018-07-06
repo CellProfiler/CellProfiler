@@ -359,8 +359,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                 self.columns[index].channel, value)
 
 
-class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
-
+class ImageSetCtrl(wx.grid.Grid):
     def __init__(self, workspace, *args, **kwargs):
         """Initialize the ImageSetCtrl
 
@@ -383,7 +382,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             display_mode = DISPLAY_MODE_SIMPLE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update, tooltip="Update and display the image set")
+
+        super(ImageSetCtrl, self).__init__()
+
+        # cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update, tooltip="Update and display the image set")
+
         gclw = self.GetGridColLabelWindow()
         self.SetTable(ImageSetGridTable(workspace, display_mode))
         self.AutoSize()

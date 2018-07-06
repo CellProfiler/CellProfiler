@@ -15,9 +15,9 @@ class Menu(wx.Menu):
         self.Append(id, title)
 
         if event_fn:
-            wx.EVT_MENU(self, id, event_fn)
+            self.Bind(wx.EVT_MENU, event_fn, id=id)
         elif contents:
-            wx.EVT_MENU(self, id, lambda _: self.__show_dialog(title, contents))
+            self.Bind(wx.EVT_MENU, lambda _: self.__show_dialog(title, contents), id=id)
 
     def __show_dialog(self, title, contents):
         help_dialog = cellprofiler.gui.htmldialog.HTMLDialog(

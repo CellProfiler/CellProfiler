@@ -179,6 +179,8 @@ def test_01_04_split_channels():
     module.rgb_or_channels.value = cellprofiler.modules.colortogray.CH_CHANNELS
     module.add_channel()
     module.add_channel()
+    module.add_channel()
+    module.add_channel()
 
     channel_indexes = numpy.array([1, 4, 2])
     for i, channel_index in enumerate(channel_indexes):

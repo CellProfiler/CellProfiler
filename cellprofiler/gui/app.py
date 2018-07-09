@@ -10,6 +10,7 @@ import raven.conf
 import raven.handlers.logging
 import raven.transport.threaded_requests
 import wx
+import wx.lib.inspection
 
 import cellprofiler
 import cellprofiler.preferences
@@ -56,6 +57,8 @@ class App(wx.App):
 
     def OnInit(self):
         import cellprofiler.gui.cpframe
+
+        wx.lib.inspection.InspectionTool().Show()
 
         self.SetAppName("CellProfiler{0:s}".format(cellprofiler.__version__))
 

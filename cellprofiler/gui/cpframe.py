@@ -2,11 +2,24 @@
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
 
+import codecs
+import inspect
+import logging
+import os
+import pdb
+import sys
+
+import wx
+import wx.adv
+import wx.html
+import wx.lib.inspection
+import wx.lib.scrolledpanel
+
 import cellprofiler
 import cellprofiler.gui
-import cellprofiler.gui.figure
 import cellprofiler.gui.datatoolframe
 import cellprofiler.gui.dialog
+import cellprofiler.gui.figure
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.menu
 import cellprofiler.gui.html
@@ -28,17 +41,6 @@ import cellprofiler.modules
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-import codecs
-import inspect
-import logging
-import os
-import pdb
-import sys
-import traceback
-import wx
-import wx.adv
-import wx.html
-import wx.lib.scrolledpanel
 
 logger = logging.getLogger(__name__)
 
@@ -921,7 +923,6 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_widget_inspector(evt):
         try:
-            import wx.lib.inspection
             wx.lib.inspection.InspectionTool().Show()
         except:
             wx.MessageBox("Inspection tool is not available on this platform")
@@ -944,11 +945,7 @@ class CPFrame(wx.Frame):
 
     def __on_help_path_list(self, event):
         import cellprofiler.gui.htmldialog
-        dlg = cellprofiler.gui.htmldialog.HTMLDialog(
-            self,
-            "Help on file list",
-            cellprofiler.gui.html.utils.rst_to_html_fragment(cellprofiler.gui.cpframe.HELP_ON_FILE_LIST)
-        )
+        dlg = cellprofiler.gui.htmldialog.HTMLDialog(self, "Help on file list", cellprofiler.gui.html.utils.rst_to_html_fragment(HELP_ON_FILE_LIST))
         dlg.Show()
 
     @staticmethod
@@ -969,9 +966,7 @@ class CPFrame(wx.Frame):
             self.do_help_module(active_module.module_name,
                                 active_module.get_help())
         else:
-            wx.MessageBox(cellprofiler.gui.cpframe.HELP_ON_MODULE_BUT_NONE_SELECTED,
-                          "No module selected",
-                          style=wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED, "No module selected", style=wx.OK | wx.ICON_INFORMATION)
 
     @staticmethod
     def __debug_pdb(event):

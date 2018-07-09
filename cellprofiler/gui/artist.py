@@ -7,7 +7,10 @@ import centrosome.cpmorphology
 import centrosome.outline
 import matplotlib
 import matplotlib.artist
+import matplotlib.cm
 import matplotlib.collections
+import matplotlib.colors
+import matplotlib.image
 import numpy
 import scipy.ndimage
 

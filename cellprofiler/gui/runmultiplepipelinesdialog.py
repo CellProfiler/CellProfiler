@@ -164,17 +164,17 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.file_chooser.SetColumnWidth(FC_DATE_COLUMN, wx.LIST_AUTOSIZE)
 
     def on_select_all(self, event):
-        for i in range(self.file_chooser.ItemCount):
+        for i in range(self.file_chooser.GetItemCount()):
             self.file_chooser.Select(i, True)
             self.file_chooser.SetFocus()
 
     def on_deselect_all(self, event):
-        for i in range(self.file_chooser.ItemCount):
+        for i in range(self.file_chooser.GetItemCount()):
             self.file_chooser.Select(i, False)
         self.file_chooser.SetFocus()
 
     def on_add(self, event):
-        for i in range(self.file_chooser.ItemCount):
+        for i in range(self.file_chooser.GetItemCount()):
             if self.file_chooser.IsSelected(i):
                 path = os.path.join(
                         self.directory_picker.GetPath(),
@@ -211,7 +211,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 if event.Position[0] < start + widths[subitem]:
                     break
                 start += widths[subitem]
-        if 0 <= item < self.pipeline_list_view.ItemCount and (hit_code & wx.LIST_HITTEST_ONITEM):
+        if 0 <= item < self.pipeline_list_view.GetItemCount() and (hit_code & wx.LIST_HITTEST_ONITEM):
             if subitem == P_REMOVE_BUTTON_COLUMN:
                 self.pipeline_list_view.DeleteItem(item)
             elif subitem == P_FILENAME_COLUMN:
@@ -268,7 +268,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 self.default_output_folder = default_output_folder
                 self.measurements_file = measurements_file
 
-        for i in range(self.pipeline_list_view.ItemCount):
+        for i in range(self.pipeline_list_view.GetItemCount()):
             path, default_input_folder, default_output_folder, measurements_file = \
                 [self.pipeline_list_view.GetItem(i, j).GetText()
                  for j in (P_FILENAME_COLUMN, P_INPUT_DIRECTORY_COLUMN,

@@ -1,9 +1,7 @@
 # coding=utf-8
 
 import logging
-import os.path
 import platform
-import sys
 
 import raven
 import raven.conf
@@ -13,9 +11,9 @@ import wx
 import wx.lib.inspection
 
 import cellprofiler
+import cellprofiler.gui.dialog
 import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
-import cellprofiler.gui.dialog
 import cellprofiler.utilities.cpjvm
 
 logger = logging.getLogger(__name__)

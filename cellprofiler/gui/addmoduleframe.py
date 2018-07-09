@@ -36,7 +36,7 @@ class AddModuleFrame(wx.Frame):
         done_button = wx.Button(left_panel, -1, 'Done')
         # Right-side panel
         self.__module_list_box = wx.ListBox(right_panel, -1)
-        w, h = self.__module_list_box.GetTextExtent("CorrectIllumination_Calculate_Plus")
+        w, h = self.__module_list_box.GetTextExtent("MeasureObjectIntensityDistribution")
         self.__module_list_box.SetMinSize(wx.Size(w, h * 30))
         # Sizers
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))

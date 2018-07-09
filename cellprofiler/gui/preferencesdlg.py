@@ -136,7 +136,7 @@ class PreferencesDlg(wx.Dialog):
                         ctl.SetValue(dlg.GetPath())
 
                         dlg.Destroy()
-            elif (isinstance(ui_info, basestring) and ui_info.startswith(FILEBROWSE)):
+            elif isinstance(ui_info, basestring) and ui_info.startswith(FILEBROWSE):
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)
 

@@ -742,7 +742,7 @@ class PipelineController(object):
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
             import cellprofiler.misc
-            url = cellprofiler.misc.generate_presigned_url(dlg.Value)
+            url = cellprofiler.misc.generate_presigned_url(dlg.GetValue())
             filename, headers = urllib.urlretrieve(url)
             try:
                 self.do_load_pipeline(filename)
@@ -979,7 +979,7 @@ class PipelineController(object):
                     btn_sizer.Realize()
                     dlg.Fit()
                     if dlg.ShowModal() == wx.ID_OK:
-                        ftr = (cellprofiler.pipeline.M_USER_PIPELINE if rb_user.Value else
+                        ftr = (cellprofiler.pipeline.M_USER_PIPELINE if rb_user.GetValue() else
                                cellprofiler.pipeline.M_PIPELINE)
                     else:
                         return False

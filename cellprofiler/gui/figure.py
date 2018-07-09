@@ -1285,7 +1285,7 @@ class Figure(wx.Frame):
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1,
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow=False, interpolation=None, cplabels=None, normalize_args={}):
+                       use_imshow=False, interpolation=None, cplabels=None, normalize_args=None):
         """Show an image in a subplot
 
         x, y  - show image in this subplot
@@ -1310,6 +1310,9 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
+        if normalize_args is None:
+            normalize_args = {}
+
         if self.dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax

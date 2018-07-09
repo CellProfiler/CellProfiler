@@ -4222,7 +4222,7 @@ class TableController(wx.grid.GridTableBase):
         return True
 
 
-class ModuleSizer(wx.PySizer):
+class ModuleSizer(wx.Sizer):
     """The module sizer uses the maximum best width of the setting
     edit controls to compute the column widths, then it sets the text
     controls to wrap within the remaining space, then it uses the best
@@ -4230,7 +4230,7 @@ class ModuleSizer(wx.PySizer):
     """
 
     def __init__(self, rows, cols=2):
-        wx.Sizer.__init__(self)
+        super(ModuleSizer, self).__init__()
         self.__rows = rows
         self.__cols = cols
         self.__min_text_width = 150

@@ -779,7 +779,7 @@ class Figure(wx.Frame):
         self.Refresh()
 
     def on_file_save(self, event):
-        with wx.FileDialog(self, "Save figure", wildcard=("PDF file (*.pdf)|*.pdf|PNG image (*.png)|*.png"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+        with wx.FileDialog(self, "Save figure", wildcard="PDF file (*.pdf)|*.pdf|PNG image (*.png)|*.png", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
 
@@ -825,7 +825,7 @@ class Figure(wx.Frame):
 
         extent = ax.get_window_extent().transformed(self.figure.dpi_scale_trans.inverted())
 
-        with wx.FileDialog(self, "Save axes", wildcard=("PDF file (*.pdf)|*.pdf|Png image (*.png)|*.png|Postscript file (*.ps)|*.ps"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+        with wx.FileDialog(self, "Save axes", wildcard="PDF file (*.pdf)|*.pdf|Png image (*.png)|*.png|Postscript file (*.ps)|*.ps", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
 

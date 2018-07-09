@@ -321,7 +321,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 return ""
             return self.columns[col].name
 
-        def AppendCols(self, numCols):
+        def AppendCols(self, numCols=1):
             if self.controller is None:
                 return False
             for i in range(numCols):

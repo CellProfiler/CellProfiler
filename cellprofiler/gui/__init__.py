@@ -56,7 +56,7 @@ def get_cp_icon(size=None):
 
 
 BV_DOWN = "down"
-BV_UP   = "up"
+BV_UP = "up"
 
 
 def draw_item_selection_rect(window, dc, rect, flags):

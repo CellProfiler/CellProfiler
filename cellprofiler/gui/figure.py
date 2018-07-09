@@ -1581,6 +1581,7 @@ class Figure(wx.Frame):
             sharex=None,
             sharey=None,
             use_imshow=False,
+            dimensions=2,
             background_image=None,
             max_label=None,
             seed=None

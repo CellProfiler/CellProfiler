@@ -67,7 +67,7 @@ class NameSubscriberComboBox(wx.Panel):
         self.callbacks = []
 
     def choice_made(self, evt):
-        choice = self.orig_choices[self.combo_dlg.Selection]
+        choice = self.orig_choices[self.combo_dlg.GetSelection()]
         self.update_annotation()
         for cb in self.callbacks:
             cb(evt)
@@ -88,7 +88,7 @@ class NameSubscriberComboBox(wx.Panel):
     def update_annotation(self):
         self.annotation_dlg.Label = ''
         if self.orig_choices:
-            ch = self.orig_choices[self.combo_dlg.Selection]
+            ch = self.orig_choices[self.combo_dlg.GetSelection()]
             self.annotation_dlg.Label = self.get_choice_label(ch)
 
     def right_menu(self, evt):
@@ -138,7 +138,7 @@ class NameSubscriberComboBox(wx.Panel):
     def SetItems(self, choices):
         self.orig_choices = choices
         current = self.Value
-        self.combo_dlg.Items = [name for name, _, _, _ in choices]
+        self.combo_dlg.SetItems([name for name, _, _, _ in choices])
         # on Mac, changing the items clears the current selection
         self.SetValue(current)
         self.update_annotation()
@@ -147,10 +147,10 @@ class NameSubscriberComboBox(wx.Panel):
     Items = property(GetItems, SetItems)
 
     def GetValue(self):
-        return self.combo_dlg.Value
+        return self.combo_dlg.GetValue()
 
     def SetValue(self, value):
-        self.combo_dlg.Value = value
+        self.combo_dlg.SetValue(value)
         self.update_annotation()
         self.Refresh()
 

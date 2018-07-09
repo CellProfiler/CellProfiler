@@ -234,7 +234,7 @@ class PreferencesView(object):
 
             if output_filename != output_filename_edit_box.GetValue():
                 output_filename_edit_box.SetValue(output_filename)
-                cellprofiler.preferences.set_output_file_name(output_filename_edit_box.Value)
+                cellprofiler.preferences.set_output_file_name(output_filename_edit_box.GetValue())
             #
             # Reconstruct the sizers depending on whether we have one or two rows
             #

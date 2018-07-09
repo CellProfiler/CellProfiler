@@ -1207,13 +1207,13 @@ class Figure(wx.Frame):
 
             def on_slider(event, cplabels=cplabels,
                           draw_fn=self.figure.canvas.draw_idle):
-                cplabels[CPLD_ALPHA_VALUE] = float(slider.Value) / 100.
+                cplabels[CPLD_ALPHA_VALUE] = float(slider.GetValue()) / 100.
                 draw_fn()
 
             dlg.Layout()
             slider.Bind(wx.EVT_SLIDER, on_slider)
             if dlg.ShowModal() != wx.ID_OK:
-                slider.Value = orig_alpha
+                slider.SetValue(orig_alpha)
                 on_slider(None)
 
     def set_grids(self, shape):
@@ -1883,7 +1883,7 @@ class Figure(wx.Frame):
         else:
             ctrl.SetColLabelSize(0)
         if row_labels is not None:
-            ctrl.GridRowLabelWindow.Font = ctrl.GetLabelFont()
+            ctrl.GetGridRowLabelWindow().Font = ctrl.GetLabelFont()
             ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
             max_width = 0
             for i, value in enumerate(row_labels):
@@ -1891,7 +1891,7 @@ class Figure(wx.Frame):
                 ctrl.SetRowLabelValue(i, value)
                 max_width = max(
                         max_width,
-                        ctrl.GridRowLabelWindow.GetTextExtent(value + "M")[0])
+                        ctrl.GetGridRowLabelWindow().GetTextExtent(value + "M")[0])
             ctrl.SetRowLabelSize(max_width)
         else:
             ctrl.SetRowLabelSize(0)

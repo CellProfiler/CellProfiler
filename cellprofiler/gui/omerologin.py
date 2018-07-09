@@ -107,9 +107,9 @@ class OmeroLoginDlg(wx.Dialog):
 
     def connect(self):
         try:
-            server = self.omero_server_ctrl.Value
-            port = int(self.omero_port_ctrl.Value)
-            user = self.omero_user_ctrl.Value
+            server = self.omero_server_ctrl.GetValue()
+            port = int(self.omero_port_ctrl.GetValue())
+            user = self.omero_user_ctrl.GetValue()
         except:
             self.message_ctrl.Label = "The port number must be an integer between 0 and 65535 (try 4064)"
             self.message_ctrl.ForegroundColour = "red"
@@ -120,7 +120,7 @@ class OmeroLoginDlg(wx.Dialog):
                     server,
                     port,
                     user,
-                    self.omero_password_ctrl.Value)
+                    self.omero_password_ctrl.GetValue())
             self.message_ctrl.Label = "Connected"
             self.message_ctrl.ForegroundColour = "green"
             self.message_ctrl.Refresh()

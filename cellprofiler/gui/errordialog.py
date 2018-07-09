@@ -80,7 +80,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     """
 
     import wx
-    assert wx.Thread_IsMain(), "Can only display errors from WX thread."
+    assert wx.IsMainThread(), "Can only display errors from WX thread."
 
     if remote_exc_info:
         from_subprocess = True

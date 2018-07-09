@@ -84,7 +84,7 @@ class Search(wx.Frame):
 
     def __create_search_panel(self):
         def __on_search(results_view):
-            search_text = search_text_ctrl.Value
+            search_text = search_text_ctrl.GetValue()
 
             html = search_module_help(search_text)
 

@@ -9,12 +9,11 @@ class AboutDialogInfo(wx.adv.AboutDialogInfo):
     def __init__(self):
         super(AboutDialogInfo, self).__init__()
 
-        self.Copyright = u"Copyright © 2003 - 2019 Broad Institute, Inc." \
-                         u"\nAll rights reserved."
+        self.SetCopyright(u"Copyright © 2003 - 2018 Broad Institute, Inc.\nAll rights reserved.")
 
-        self.Name = "CellProfiler"
+        self.SetName("CellProfiler")
 
-        self.Version = raven.fetch_package_version("cellprofiler")
+        self.SetVersion(raven.fetch_package_version("cellprofiler"))
 
 
 class Error(wx.MessageDialog):

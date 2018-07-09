@@ -122,7 +122,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     class ImageSetGridTable(wx.grid.GridTableBase):
         DEFAULT_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR = wx.grid.GridCellAttr()
-        ERROR_ATTR.TextColour = ERROR_COLOR
+        ERROR_ATTR.SetTextColour(ERROR_COLOR)
 
         class ImageSetColumn(object):
             def __init__(self, name, channel, feature, column_type,
@@ -422,7 +422,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
 
         self.drop_location = None
         self.drop_target = ImageSetCtrlDropTarget(self)
-        self.GridWindow.SetDropTarget(self.drop_target)
+        self.GetGridWindow().SetDropTarget(self.drop_target)
 
         self.EnableDragCell(True)
         self.Bind(wx.grid.EVT_GRID_CELL_BEGIN_DRAG, self.on_grid_begin_drag)
@@ -461,7 +461,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     #######
 
     def get_column_rect(self, col):
-        _, height = self.GridColLabelWindow.GetClientSizeTuple()
+        _, height = self.GetGridColLabelWindow().GetClientSizeTuple()
         widths = [self.GetColSize(i) for i in range(col + 1)]
         x = 0 if col == 0 else sum(widths[:col])
         width = widths[-1]
@@ -470,14 +470,14 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     def get_add_button_rect(self):
         last_column = self.table.GetNumberCols() - 1
         only = self.table.GetNumberCols() == 1
-        label_size = self.GridColLabelWindow.GetTextExtent(
+        label_size = self.GetGridColLabelWindow()().GetTextExtent(
             self.table.GetColLabelValue(last_column))
         return self.col_label_renderer.add_button_rect(
             self.get_column_rect(last_column), label_size, only)
 
     def on_paint_gclw(self, event):
-        dc = wx.BufferedPaintDC(self.GridColLabelWindow)
-        bkgnd_brush = wx.Brush(self.GridColLabelWindow.BackgroundColour)
+        dc = wx.BufferedPaintDC(self.GetGridColLabelWindow())
+        bkgnd_brush = wx.Brush(self.GetGridColLabelWindow().BackgroundColour)
         dc.SetBackground(bkgnd_brush)
         dc.Clear()
         dc.SetBackground(wx.NullBrush)
@@ -486,7 +486,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             return
         selected_col, hit_code, pressed = self.pressed_button
         cols = self.CalcColLabelsExposed(
-            self.GridColLabelWindow.GetUpdateRegion())
+            self.GetGridColLabelWindow().GetUpdateRegion())
         x, y = self.CalcUnscrolledPosition((0, 0))
         pt = dc.GetDeviceOrigin()
         dc.SetDeviceOrigin(pt.x - x, pt.y)
@@ -554,9 +554,9 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                         self.HIT_PLUS,
                         self.HIT_MINUS):
             self.pressed_button = (col, hit_code, True)
-            self.GridColLabelWindow.RefreshRect(self.get_column_rect(col),
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
                                                 eraseBackground=False)
-            self.GridColLabelWindow.CaptureMouse()
+            self.GetGridColLabelWindow().CaptureMouse()
         elif hit_code == self.HIT_LABEL:
             self.activate_col_label_editor(col)
         else:
@@ -571,12 +571,12 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         col, hit_code = self.gclw_hit_test(event)
         self.pressed_button = (-1, None, False)
         if pb_hit_code is not None:
-            self.GridColLabelWindow.ReleaseMouse()
+            self.GetGridColLabelWindow().ReleaseMouse()
         else:
             event.Skip(True)
             return
         if col == pb_col and hit_code == pb_hit_code:
-            self.GridColLabelWindow.RefreshRect(self.get_column_rect(col),
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
                                                 eraseBackground=False)
             if hit_code == self.HIT_CHANNEL_TYPE_BUTTON:
                 self.on_channel_type_pressed(col)
@@ -592,29 +592,29 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         pb_col, pb_hit_code, pb_show = self.pressed_button
         if pb_hit_code is None:
             if hit_code == self.HIT_CHANNEL_TYPE_BUTTON:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTipString(
                     "Change the channel's type (monochrome, color, objects, etc)")
             elif hit_code == self.HIT_FILTER_BUTTON:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTipString(
                     "Select items in this channel using a filter")
             elif hit_code == self.HIT_PLUS:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTipString(
                     "Add an image column to the image set")
             elif hit_code == self.HIT_MINUS:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTipString(
                     "Remove this image column from the image set.")
             elif col is not None:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTipString(
                     'Image column, "%s"' % self.table.columns[col].channel)
             event.Skip(True)
             return
         if (col != pb_col or hit_code != pb_hit_code) and pb_show:
             self.pressed_button = (pb_col, pb_hit_code, False)
-            self.GridColLabelWindow.RefreshRect(self.get_column_rect(col),
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
                                                 eraseBackground=False)
         elif col == pb_col and hit_code == pb_hit_code and not pb_show:
             self.pressed_button = (pb_col, pb_hit_code, True)
-            self.GridColLabelWindow.RefreshRect(self.get_column_rect(col),
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
                                                 eraseBackground=False)
 
     def on_gclw_mouse_capture_lost(self, event):
@@ -622,7 +622,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.pressed_button = (-1, None, False)
         if pb_hit_code in (self.HIT_CHANNEL_TYPE_BUTTON, self.HIT_PLUS,
                            self.HIT_FILTER_BUTTON, self.HIT_MINUS):
-            self.GridColLabelWindow.RefreshRect(self.get_column_rect(pb_col),
+            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(pb_col),
                                                 eraseBackground=False)
 
     def on_channel_type_pressed(self, col):
@@ -805,14 +805,14 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         rect = self.column_label_editor.GetRect()
         self.column_label_editor.Hide()
         self.editor_column = None
-        self.GridColLabelWindow.RefreshRect(rect, eraseBackground=False)
+        self.GetGridColLabelWindow().RefreshRect(rect, eraseBackground=False)
 
     def activate_col_label_editor(self, col):
         last = col == self.table.GetNumberCols() - 1
         only = self.table.GetNumberCols() == 1
         self.editor_column = col
         rect = self.get_column_rect(col)
-        self.GridColLabelWindow.RefreshRect(rect)
+        self.GetGridColLabelWindow().RefreshRect(rect)
         rect = self.col_label_renderer.get_edit_rect(rect, last, only)
         self.column_label_editor.SetRect(rect)
         self.column_label_editor.Show()
@@ -844,7 +844,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             col = self.XToCol(x)
             if col == wx.NOT_FOUND:
                 col = None
-        bottom = self.GridWindow.GetVirtualSize()[1]
+        bottom = self.GetGridWindow().GetVirtualSize()[1]
         if y <= self.GetRowSize(0) / 2:
             row = 0
         elif y >= bottom - self.GetRowSize(self.GetNumberRows() - 1):
@@ -900,7 +900,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 rect.Y -= int(self.DROP_HEIGHT / 2) + 1
                 rect.Height = self.DROP_HEIGHT + 1
             rect.X, rect.Y = self.CalcScrolledPosition(rect.X, rect.Y)
-            self.GridWindow.RefreshRect(rect, eraseBackground=False)
+            self.GetGridWindow().RefreshRect(rect, eraseBackground=False)
 
     ###############################
     #
@@ -969,13 +969,13 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         only = self.table.GetNumberCols() == 1
         for i in range(self.table.GetNumberCols()):
             last = i == self.table.GetNumberCols() - 1
-            label_size = self.GridColLabelWindow.GetTextExtent(
+            label_size = self.GetGridColLabelWindow().GetTextExtent(
                 self.table.GetColLabelValue(i))
             min_width = self.col_label_renderer.minimum_width(label_size, last, only)
             self.SetColMinimalWidth(i, min_width)
             if need_column_layout:
                 if self.table.GetNumberRows() > 0:
-                    first_width, _ = self.GridWindow.GetTextExtent(
+                    first_width, _ = self.GetGridWindow().GetTextExtent(
                         unicode(self.table.GetValue(0, i)))
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
@@ -999,7 +999,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = unicode(grid.GetTable().GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1011,7 +1011,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
             else:
                 dc.SetFont(grid.GetGridWindow().GetFont())
             if attr.HasBackgroundColour():
-                brush = wx.Brush(attr.BackgroundColour)
+                brush = wx.Brush(attr.GetBackgroundColour())
                 dc.SetBrush(brush)
             if dc.GetBrush().IsNull():
                 brush = wx.Brush(grid.GetGridWindow().BackgroundColour)
@@ -1029,7 +1029,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
                 grid.GetGridWindow(), dc, rect, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             if attr.HasTextColour():
-                dc.SetTextForeground(attr.TextColour)
+                dc.SetTextForeground(attr.GetTextColour())
             else:
                 dc.SetTextForeground(grid.GetGridWindow().ForegroundColour)
 
@@ -1089,7 +1089,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = unicode(grid.GetTable().GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1117,8 +1117,8 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         assert isinstance(dc, wx.DC)
         window = grid.GetGridColLabelWindow()
         bitmap = wx.EmptyBitmap(rect.Width, rect.Height)
-        last = col == grid.Table.GetNumberCols() - 1
-        only = grid.Table.GetNumberCols() == 1
+        last = col == grid.GetTable().GetNumberCols() - 1
+        only = grid.GetTable().GetNumberCols() == 1
         try:
             mdc = wx.MemoryDC(bitmap)
             mdc.SetFont(window.Font)
@@ -1126,12 +1126,12 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
             mdc.Clear()
             b_rect = wx.Rect(0, 0, rect.width, rect.height)
             self.DrawBorder(grid, mdc, b_rect)
-            label = grid.Table.GetColLabelValue(col)
+            label = grid.GetTable().GetColLabelValue(col)
             label_size = mdc.GetTextExtent(label)
             draw_simple = False
-            if grid.Table.display_mode == DISPLAY_MODE_SIMPLE and not self.read_only:
-                column = grid.Table.columns[col]
-                m = grid.Table.measurements
+            if grid.GetTable().display_mode == DISPLAY_MODE_SIMPLE and not self.read_only:
+                column = grid.GetTable().columns[col]
+                m = grid.GetTable().measurements
                 channel_descriptors = m.get_channel_descriptors()
                 for channel_descriptor in channel_descriptors:
                     if channel_descriptor.name == column.channel:

@@ -178,7 +178,7 @@ class RegexpDialog(wx.Dialog):
         return color_db
 
     def on_guess(self, event):
-        sample = self.test_text_ctl.Value
+        sample = self.test_text_ctl.GetValue()
         for guess in self.guesses:
             m = re.match(guess, sample)
             if m is not None:
@@ -206,7 +206,7 @@ class RegexpDialog(wx.Dialog):
         self.refresh_regexp()
 
     def on_test_text_text_change(self, event):
-        self.__test_text = self.test_text_ctl.Value
+        self.__test_text = self.test_text_ctl.GetValue()
         self.refresh_text()
 
     def refresh_regexp(self):

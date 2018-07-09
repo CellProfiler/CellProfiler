@@ -823,9 +823,9 @@ class MeasurementRow(object):
                 self.font = font_picker.GetSelectedFont()
                 self.foreground_color = foreground_color.GetColour()
                 self.background_color = background_color.GetColour()
-                self.background_alpha = float(alpha.Value) / 100
+                self.background_alpha = float(alpha.GetValue()) / 100
                 self.box_style = box_style.GetStringSelection()
-                self.precision = precision.Value
+                self.precision = precision.GetValue()
                 self.on_change(event)
 
     def on_change(self, event):

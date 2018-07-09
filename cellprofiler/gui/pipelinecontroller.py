@@ -2450,7 +2450,7 @@ class PipelineController(object):
         opened, which can overwhelm the user and cause UI hangs.
         """
         # just in case.
-        assert wx.Thread_IsMain(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
 
         # only one window at a time
         if self.interaction_pending:

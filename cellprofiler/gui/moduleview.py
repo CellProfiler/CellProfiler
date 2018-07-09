@@ -431,8 +431,7 @@ class ModuleView(object):
             #
             #################################
             if self.notes_panel is not None:
-                self.module_notes_control.Value = u"\n".join(
-                    [_.decode("utf-8") for _ in self.__module.notes])
+                self.module_notes_control.SetValue(u"\n".join([_.decode("utf-8") for _ in self.__module.notes]))
 
             #################################
             #
@@ -758,7 +757,7 @@ class ModuleView(object):
             if not self.__handle_change:
                 return
             if self.__module is not None:
-                notes = self.module_notes_control.Value.encode('utf-8')
+                notes = self.module_notes_control.GetValue().encode('utf-8')
                 self.__module.notes = notes.split('\n')
 
         self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed,
@@ -1502,7 +1501,7 @@ class ModuleView(object):
                                    v.text,
                                    v.get_absolute_path())
                 if dlg.ShowModal() == wx.ID_OK:
-                    dir_choice, custom_path = v.get_parts_from_path(dlg.Path)
+                    dir_choice, custom_path = v.get_parts_from_path(dlg.GetPath())
                     proposed_value = v.join_string(dir_choice, custom_path)
                     if v.allow_metadata:
                         # Do escapes on backslashes
@@ -1758,7 +1757,7 @@ class ModuleView(object):
                               absrel_ctrl=absrel_ctrl):
                 if not self.__handle_change:
                     return
-                proposed_value = setting.compose_display_max_text(control.Value)
+                proposed_value = setting.compose_display_max_text(control.GetValue())
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
                 self.notify(setting_edited_event)
@@ -1770,7 +1769,7 @@ class ModuleView(object):
                 if not self.__handle_change:
                     return
 
-                if control.Value == ABSOLUTE:
+                if control.GetValue() == ABSOLUTE:
                     proposed_value = setting.compose_abs()
                 else:
                     proposed_value = setting.compose_rel()
@@ -1817,7 +1816,7 @@ class ModuleView(object):
                 if not self.__handle_change:
                     return
                 old_value = str(setting)
-                proposed_value = "%s,%s" % (str(control.Value), str(setting.y))
+                proposed_value = "%s,%s" % (str(control.GetValue()), str(setting.y))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
                 self.notify(setting_edited_event)
@@ -1828,7 +1827,7 @@ class ModuleView(object):
                 if not self.__handle_change:
                     return
                 old_value = str(setting)
-                proposed_value = "%s,%s" % (str(setting.x), str(control.Value))
+                proposed_value = "%s,%s" % (str(setting.x), str(control.GetValue()))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
                 self.notify(setting_edited_event)
@@ -1910,10 +1909,10 @@ class ModuleView(object):
             max_width = 0
             for sub_sizer_item in sizer.GetChildren():
                 static = sub_sizer_item.Sizer.GetChildren()[0].Window
-                max_width = max(max_width, static.Size.width)
+                max_width = max(max_width, static.Size.GetWidth())
             for sub_sizer_item in sizer.GetChildren():
                 static = sub_sizer_item.Sizer.GetChildren()[0].Window
-                static.Size = wx.Size(max_width, static.Size.height)
+                static.Size = wx.Size(max_width, static.Size.GetHeight())
                 static.SetSizeHints(max_width, -1, max_width)
 
             #
@@ -2998,7 +2997,7 @@ class FileCollectionDisplayController(object):
         dlg = wx.DirDialog(self.panel, "Select a directory to add")
         try:
             if dlg.ShowModal() == wx.ID_OK:
-                self.v.fn_on_drop([dlg.Path], True)
+                self.v.fn_on_drop([dlg.GetPath()], True)
         finally:
             dlg.Destroy()
 
@@ -3755,11 +3754,11 @@ class BinaryMatrixController(object):
 
     def update(self):
         h, w = self.setting.get_size()
-        hh, ww = [(x - 1) / 2 for x in (h, w)]
-        if self.height_ctrl.Value != hh:
-            self.height_ctrl.Value = hh
-        if self.width_ctrl.Value != ww:
-            self.width_ctrl.Value = ww
+        hh, ww = [(x - 1) / 2 for x in h, w]
+        if self.height_ctrl.GetValue() != hh:
+            self.height_ctrl.SetValue(hh)
+        if self.width_ctrl.GetValue() != ww:
+            self.width_ctrl.SetValue(ww)
         r = self.get_matrix_element_rect(h - 1, w - 1)
         b = wx.SystemSettings.GetMetric(wx.SYS_EDGE_X)
         self.matrix_ctrl.SetMinSize(wx.Size(r.GetRight() + b, r.GetBottom() + b))
@@ -3844,7 +3843,7 @@ class BinaryMatrixController(object):
     def on_width_changed(self, event):
         matrix = self.setting.get_matrix()
         h, w = self.setting.get_size()
-        d = self.width_ctrl.Value * 2 + 1 - w
+        d = self.width_ctrl.GetValue() * 2 + 1 - w
         n = abs(int(d / 2))
         if d < 0:
             matrix = [row[n:-n] for row in matrix]
@@ -3859,7 +3858,7 @@ class BinaryMatrixController(object):
     def on_height_changed(self, event):
         matrix = self.setting.get_matrix()
         h, w = self.setting.get_size()
-        d = self.height_ctrl.Value * 2 + 1 - h
+        d = self.height_ctrl.GetValue() * 2 + 1 - h
         n = abs(int(d / 2))
         if d < 0:
             matrix = matrix[n:-n]
@@ -4058,7 +4057,7 @@ class DataTypeController(object):
 class TableController(wx.grid.GridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
-    ERROR_ATTR.TextColour = cellprofiler.preferences.get_error_color()
+    ERROR_ATTR.SetTextColour(cellprofiler.preferences.get_error_color())
 
     def __init__(self, v):
         super(self.__class__, self).__init__()

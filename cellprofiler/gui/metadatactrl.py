@@ -188,7 +188,7 @@ class MetadataControl(wx.Control):
             self.Refresh()
         if self.__caret is not None:
             pos = rawpos + self.xoffset
-            self.__caret.MoveXY(pos, self.padding)
+            self.__caret.Move(pos, self.padding)
 
     def show_caret(self):
         if (self.__caret is not None and

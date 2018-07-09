@@ -1132,7 +1132,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             button_sizer.Realize()
 
             def on_slider(event, data=data):
-                data.alpha = float(slider.Value) / 255
+                data.alpha = float(slider.GetValue()) / 255
                 self.refresh()
 
             slider.Bind(wx.EVT_SLIDER, on_slider)

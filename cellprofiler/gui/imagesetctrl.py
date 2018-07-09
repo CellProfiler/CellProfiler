@@ -281,7 +281,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                 self.columns[index].channel, value)
 
 
-class ImageSetCache(object):
+class ImageSetCache:
     """A cache for image set features
 
     This cache is optimized for display of pages of image sets.
@@ -629,19 +629,19 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.SetTitle("Change image type for %s" % (self.table.GetColLabelValue(col)))
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
                  self.monochrome_channel_image,
                  "Treat the image as monochrome, averaging colors if needed"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
                  self.color_channel_image,
                  "Treat the image as color. Use ColorToGray to get individual colors"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_MASK,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
                  self.mask_image,
                  "Treat the image as a binary mask"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
                  self.objects_image,
                  "Treat the image as objects"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
                  self.illumination_function_image,
                  "Use the image for illumination correction")]
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1341,7 +1341,7 @@ class ImageSetCtrlDropTarget(wx.FileDropTarget):
         return self.grid.on_drop_files(x, y, filenames)
 
 
-class ImageSetController(object):
+class ImageSetController:
     """Modifies the image set according to GUI notifications"""
 
     def __init__(self):

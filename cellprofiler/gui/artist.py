@@ -326,22 +326,22 @@ class ObjectsData(OutlinesMixin):
         if self.__overlay is not None:
             return self.__overlay
         sm = matplotlib.cm.ScalarMappable(cmap=self.colormap)
-        sm.set_clim(vmin=1, vmax=numpy.max([numpy.max(l) for l in self.labels]) + 1)
+        sm.set_clim(vmin=1, vmax=numpy.max([numpy.max(label) for label in self.labels]) + 1)
 
         img = None
         lmin = 0
-        for l in self.labels:
-            if numpy.all(l == 0):
+        for label in self.labels:
+            if numpy.all(label == 0):
                 continue
             if self.scramble:
-                lmin = numpy.min(l[l != 0])
-            l[l != 0] = cellprofiler.gui.tools.renumber_labels_for_display(l)[l != 0] + lmin
-            lmin = numpy.max(l)
+                lmin = numpy.min(label[label != 0])
+            label[label != 0] = cellprofiler.gui.tools.renumber_labels_for_display(label)[label != 0] + lmin
+            lmin = numpy.max(label)
             if img is None:
-                img = sm.to_rgba(l)
-                img[l == 0, :] = 0
+                img = sm.to_rgba(label)
+                img[label == 0, :] = 0
             else:
-                img[l != 0, :] = sm.to_rgba(l[l != 0])
+                img[label != 0, :] = sm.to_rgba(label[label != 0])
         self.__overlay = img
         return img
 

@@ -130,6 +130,7 @@ class PipelineListView(object):
         self.__input_controls = []
         self.__input_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
+        self.input_list_ctrl = None
         self.make_input_panel()
         self.__sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
@@ -138,10 +139,7 @@ class PipelineListView(object):
         self.outputs_panel = wx.Panel(panel)
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
         self.outputs_panel.SetSizer(wx.BoxSizer())
-        if wx.VERSION < (2, 9):
-            self.outputs_panel.SetBackgroundStyle(wx.SOLID)
-        else:
-            self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
+        self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
         self.outputs_button = wx.Button(self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT)
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_panel.GetSizer().Add(self.outputs_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 2)
@@ -1284,7 +1282,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
             self.running_item += 1
         self.AdjustScrollbars()
 
-        self.SetInitialSize(self.GetVirtualSize())
+        self.SetInitialSize(self.GetBestSize())
         self.Refresh(eraseBackground=False)
 
     def get_insert_index(self, position):

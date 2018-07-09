@@ -59,6 +59,7 @@ ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
 
+
 class PipelineController(object):
     """Controls the pipeline through the UI
 
@@ -1427,7 +1428,8 @@ class PipelineController(object):
             self.on_image_set_modification()
             self.__dirty_workspace = True
 
-    def on_load_exception_event(self, event):
+    @staticmethod
+    def on_load_exception_event(event):
         """Handle a pipeline load exception"""
         if event.module is None:
             module_name = event.module_name

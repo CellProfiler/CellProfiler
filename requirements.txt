@@ -17,3 +17,4 @@ requests
 scikit-image
 scikit-learn
 scipy
+wxPython==4.0.3

@@ -37,6 +37,7 @@ matrix:
     - env: REQUIREMENTS_FILE="unpinned_requirements.txt"
     - python: 3.6
 install:
+  - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04 wxPython
   - pip install -r $REQUIREMENTS_FILE
   - pip install .[test]
   - pip freeze

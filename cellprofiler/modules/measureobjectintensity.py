@@ -273,7 +273,7 @@ Select the objects whose intensities you want to measure."""))
                         (cellprofiler.measurement.C_LOCATION, ALL_LOCATION_MEASUREMENTS)):
                     for feature in features:
                         columns.append((object_name.value,
-                                        "%s_%s_%s" % (category, feature,
+                                        "{}_{}_{}".format(category, feature,
                                                       image_name.value),
                                         cellprofiler.measurement.COLTYPE_FLOAT))
 

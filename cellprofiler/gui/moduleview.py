@@ -373,14 +373,14 @@ class ModuleView(object):
         try:
             assert len(settings) > 0
         except:
-            wx.MessageBox("Module %s.visible_settings() did not return a list!\n  value: %s" % (module_name, settings),
+            wx.MessageBox("Module {}.visible_settings() did not return a list!\n  value: {}".format(module_name, settings),
                           "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
             settings = []
         try:
             assert all([isinstance(s, cellprofiler.setting.Setting) for s in settings])
         except:
             wx.MessageBox(
-                "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s" % (
+                "Module {}.visible_settings() returned something other than a list of Settings!\n  value: {}".format(
                     module_name, settings),
                 "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
             settings = []
@@ -1828,7 +1828,7 @@ class ModuleView(object):
                 if not self.__handle_change:
                     return
                 old_value = str(setting)
-                proposed_value = "%s,%s" % (str(control.Value), str(setting.y))
+                proposed_value = "{},{}".format(str(control.Value), str(setting.y))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
                 self.notify(setting_edited_event)
@@ -1839,7 +1839,7 @@ class ModuleView(object):
                 if not self.__handle_change:
                     return
                 old_value = str(setting)
-                proposed_value = "%s,%s" % (str(setting.x), str(control.Value))
+                proposed_value = "{},{}".format(str(setting.x), str(control.Value))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
                 self.notify(setting_edited_event)
@@ -2793,7 +2793,7 @@ class FilterPanelController(object):
         return "_".join([str(x) for x in address])
 
     def anyall_choice_name(self, address):
-        return "%s_filter_anyall_%s" % (self.key, self.saddress(address))
+        return "{}_filter_anyall_{}".format(self.key, self.saddress(address))
 
     def choice_name(self, index, address):
         return "%s_choice_%d_%s" % (self.key, index, self.saddress(address))
@@ -2802,16 +2802,16 @@ class FilterPanelController(object):
         return "%s_literal_%d_%s" % (self.key, index, self.saddress(address))
 
     def remove_button_name(self, address):
-        return "%s_remove_%s" % (self.key, self.saddress(address))
+        return "{}_remove_{}".format(self.key, self.saddress(address))
 
     def add_button_name(self, address):
-        return "%s_add_%s" % (self.key, self.saddress(address))
+        return "{}_add_{}".format(self.key, self.saddress(address))
 
     def add_group_button_name(self, address):
-        return "%s_group_%s" % (self.key, self.saddress(address))
+        return "{}_group_{}".format(self.key, self.saddress(address))
 
     def line_name(self, address):
-        return "%s_line_%s" % (self.key, self.saddress(address))
+        return "{}_line_{}".format(self.key, self.saddress(address))
 
     def static_text_name(self, index, address):
         return "%s_static_text_%d_%s" % (self.key, index, self.saddress(address))
@@ -3571,7 +3571,7 @@ class JoinerController(object):
         column_names = self.column_names
         joins = self.joins
         if len(joins) == 0:
-            joins = [dict([(cn, "") for cn in column_names])]
+            joins = [{cn: "" for cn in column_names}]
 
         all_subcontrols = {}
         self.panel.Sizer.Clear()
@@ -3687,7 +3687,7 @@ class JoinerController(object):
             new_value = None
         joins = list(self.joins)
         while len(joins) <= row:
-            joins.append(dict([(cn, "") for cn in self.column_names]))
+            joins.append({cn: "" for cn in self.column_names})
         join = joins[row].copy()
         join[self.column_names[column]] = new_value
         joins[row] = join
@@ -3696,7 +3696,7 @@ class JoinerController(object):
 
     def on_insert_row(self, event, position):
         joins = list(self.joins)
-        new_join = dict([(column_name, None) for column_name in self.column_names])
+        new_join = {column_name: None for column_name in self.column_names}
         joins.insert(position, new_join)
         self.module_view.on_value_change(self.v, self.panel,
                                          self.v.build_string(joins), event)

@@ -806,7 +806,7 @@ segmentation.""")
                  labels=[primary_labels]),
             dict(name=self.y_name.value,
                  labels=[segmented_out])]
-        title = "%s and %s outlines" % (
+        title = "{} and {} outlines".format(
             self.x_name.value, self.y_name.value)
         figure.subplot_imshow_grayscale(
                 0, 1, img, title=title, cplabels=cplabels,

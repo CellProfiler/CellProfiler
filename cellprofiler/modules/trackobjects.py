@@ -1123,14 +1123,14 @@ Enter a name to give the color-coded image of tracked labels.''')
     def measurement_name(self, feature):
         '''Return a measurement name for the given feature'''
         if self.tracking_method == "LAP":
-            return "%s_%s" % (F_PREFIX, feature)
-        return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
+            return "{}_{}".format(F_PREFIX, feature)
+        return "{}_{}_{}".format(F_PREFIX, feature, str(self.pixel_radius.value))
 
     def image_measurement_name(self, feature):
         '''Return a measurement name for an image measurement'''
         if self.tracking_method == "LAP":
-            return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
-        return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
+            return "{}_{}_{}".format(F_PREFIX, feature, self.object_name.value)
+        return "{}_{}_{}_{}".format(F_PREFIX, feature, self.object_name.value,
                                 str(self.pixel_radius.value))
 
     def add_measurement(self, workspace, feature, values):

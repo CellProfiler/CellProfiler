@@ -336,7 +336,7 @@ class MergeOutputFiles(cpm.Module):
                 if isinstance(event, cpp.LoadExceptionEvent):
                     has_error = True
                     wx.MessageBox(
-                            message="Could not load %s: %s" % (
+                            message="Could not load {}: {}".format(
                                 sources[0], event.error),
                             caption="Failed to load %s" % sources[0])
                     has_error[0] = True

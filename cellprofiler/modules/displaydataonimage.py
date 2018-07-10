@@ -383,7 +383,7 @@ color map.
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         ax = figure.subplot(0, 0)
-        title = "%s_%s" % (self.objects_name.value if self.objects_or_image == OI_OBJECTS else cpmeas.IMAGE,
+        title = "{}_{}".format(self.objects_name.value if self.objects_or_image == OI_OBJECTS else cpmeas.IMAGE,
                            self.measurement.value)
 
         def imshow_fn(pixel_data):

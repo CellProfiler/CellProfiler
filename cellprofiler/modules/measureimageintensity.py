@@ -157,7 +157,7 @@ objects."""))
                             group.image_name)
                 else:
                     raise cps.ValidationError(
-                            "%s has already been selected with %s" % (group.object_name.value, group.image_name.value),
+                            "{} has already been selected with {}".format(group.object_name.value, group.image_name.value),
                             group.object_name)
             settings[(group.image_name.value, group.wants_objects.value, group.object_name.value)] = True
 

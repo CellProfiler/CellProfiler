@@ -166,7 +166,7 @@ class DataToolFrame(wx.Frame):
             if x.startswith('Metadata')]
         sel = None
         for i in self.measurements.get_image_numbers():
-            metadata_key = ','.join(['%s=%s' % (
+            metadata_key = ','.join(['{}={}'.format(
                 feature,
                 self.measurements.get_measurement(cellprofiler.measurement.IMAGE, feature, i))
                                      for feature in metadata_features])

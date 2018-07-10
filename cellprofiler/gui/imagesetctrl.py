@@ -724,8 +724,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
 
     def on_filter_pressed(self, col):
         channel_name = self.Table.columns[col].channel
-        channel_name_dict = dict(
-                [(x.channel, (i, x)) for i, x in enumerate(self.Table.columns)])
+        channel_name_dict = {
+                x.channel: (i, x) for i, x in enumerate(self.Table.columns)}
 
         def on_select_all(channel_name, fn_filter):
             idx, column = channel_name_dict[channel_name]

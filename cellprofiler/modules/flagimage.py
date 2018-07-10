@@ -640,7 +640,7 @@ image is not flagged.
                 if min_value == max_value:
                     display_value = str(min_value)
                 else:
-                    display_value = "%.3f - %.3f" % (min_value, max_value)
+                    display_value = "{:.3f} - {:.3f}".format(min_value, max_value)
         elif ms.source_choice == S_RULES:
             rules = self.get_rules(ms)
             scores = rules.score(workspace.measurements)

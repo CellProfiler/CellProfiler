@@ -1814,7 +1814,7 @@ available:
                     ("You will have to merge the separate object tables in order\n"
                      "to use CellProfiler Analyst fully, or you will be restricted\n"
                      "to only one object's data at a time in CPA. Choose\n"
-                     "%s to write a single object table.") % ("'%s' or '%s'" % (OT_COMBINE, OT_VIEW)),
+                     "%s to write a single object table.") % ("'{}' or '{}'".format(OT_COMBINE, OT_VIEW)),
                     self.separate_object_tables)
 
         '''Warn user re: bad characters in object used for center, filter/group names and class_table name'''
@@ -1976,7 +1976,7 @@ available:
                     if len(tables_that_exist) == 1:
                         table_msg = "%s table" % tables_that_exist[0]
                     else:
-                        table_msg = "%s and %s tables" % (
+                        table_msg = "{} and {} tables".format(
                             ", ".join(tables_that_exist[:-1]),
                             tables_that_exist[-1])
                     if cellprofiler.preferences.get_headless():
@@ -2212,7 +2212,7 @@ available:
                       which has been dumbed-down for json and which json
                       has likely turned tuples to lists
         '''
-        return dict([(tuple(k), v) for k, v in json_struct])
+        return {tuple(k): v for k, v in json_struct}
 
     def get_relationship_types(self, cursor):
         '''Get the relationship types from the database
@@ -2222,14 +2222,14 @@ available:
         whose value is the relationship type ID for that relationship.
         '''
         relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
-        statement = "SELECT %s, %s, %s, %s, %s FROM %s" % (
+        statement = "SELECT {}, {}, {}, {}, {} FROM {}".format(
             COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP, COL_MODULE_NUMBER,
             COL_OBJECT_NAME1, COL_OBJECT_NAME2, relationship_type_table)
 
-        return dict(
-                [((int(mn), r, o1, o2), int(rt_id))
+        return {
+                (int(mn), r, o1, o2): int(rt_id)
                  for rt_id, r, mn, o1, o2 in
-                 execute(cursor, statement)])
+                 execute(cursor, statement)}
 
     def handle_interaction_add_relationship_type(
             self, module_num, relationship, object_name1, object_name2):
@@ -2275,7 +2275,7 @@ available:
         # ORDER BY relationship_type_id desc LIMIT 1
         #
         statement = \
-            "INSERT INTO %s (%s, %s, %s, %s, %s) " % (
+            "INSERT INTO {} ({}, {}, {}, {}, {}) ".format(
                 relationship_type_table,
                 COL_RELATIONSHIP_TYPE_ID, COL_MODULE_NUMBER,
                 COL_RELATIONSHIP, COL_OBJECT_NAME1, COL_OBJECT_NAME2)
@@ -2290,9 +2290,9 @@ available:
         statement += " AS mytable WHERE NOT EXISTS "
         statement += "(SELECT 'x' FROM %s WHERE " % relationship_type_table
         statement += "%s = %d AND " % (COL_MODULE_NUMBER, module_num)
-        statement += "%s = '%s' AND " % (COL_RELATIONSHIP, relationship)
-        statement += "%s = '%s' AND " % (COL_OBJECT_NAME1, object_name1)
-        statement += "%s = '%s')" % (COL_OBJECT_NAME2, object_name2)
+        statement += "{} = '{}' AND ".format(COL_RELATIONSHIP, relationship)
+        statement += "{} = '{}' AND ".format(COL_OBJECT_NAME1, object_name1)
+        statement += "{} = '{}')".format(COL_OBJECT_NAME2, object_name2)
         cursor.execute(statement)
         #
         # Then we select and find it
@@ -2304,7 +2304,7 @@ available:
         for col, value in ((COL_RELATIONSHIP, relationship),
                            (COL_OBJECT_NAME1, object_name1),
                            (COL_OBJECT_NAME2, object_name2)):
-            select_statement += " AND %s = '%s'" % (col, value)
+            select_statement += " AND {} = '{}'".format(col, value)
         cursor.execute(select_statement)
         result = cursor.fetchall()
         if len(result) == 0 or result[0][0] is None:
@@ -2435,10 +2435,10 @@ available:
             object_name, feature_name, coltype = column[:3]
             if self.ignore_feature(object_name, feature_name):
                 continue
-            mappings.add("%s_%s" % (object_name, feature_name))
+            mappings.add("{}_{}".format(object_name, feature_name))
             if object_name != cellprofiler.measurement.IMAGE:
                 for agg_name in self.agg_names:
-                    mappings.add('%s_%s_%s' % (agg_name, object_name, feature_name))
+                    mappings.add('{}_{}_{}'.format(agg_name, object_name, feature_name))
         return mappings
 
     def get_aggregate_columns(self, pipeline, image_set_list, post_group=None):
@@ -2470,10 +2470,10 @@ available:
                 if (obname == ob_table and
                         (not self.ignore_feature(obname, feature)) and
                         (not cellprofiler.measurement.agg_ignore_feature(feature))):
-                    feature_name = '%s_%s' % (obname, feature)
+                    feature_name = '{}_{}'.format(obname, feature)
                     # create per_image aggregate column defs
                     result += [(obname, feature, aggname,
-                                '%s_%s' % (aggname, feature_name))
+                                '{}_{}'.format(aggname, feature_name))
                                for aggname in self.agg_names]
         return result
 
@@ -2481,7 +2481,7 @@ available:
         '''Get the names of the objects whose measurements are being taken'''
         column_defs = self.get_pipeline_measurement_columns(pipeline,
                                                             image_set_list)
-        obnames = set([c[0] for c in column_defs])
+        obnames = {c[0] for c in column_defs}
         #
         # In alphabetical order
         #
@@ -2648,7 +2648,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                 lambda x: x[0] == cellprofiler.measurement.EXPERIMENT,
                 workspace.pipeline.get_measurement_columns())
         experiment_coldefs = [
-            "%s %s" % (x[1],
+            "{} {}".format(x[1],
                        "TEXT" if x[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR)
                        else x[2]) for x in experiment_columns]
         create_per_experiment = """
@@ -2683,7 +2683,7 @@ CREATE TABLE %s (
                 #
                 value = "X'" + "".join(["%02X" % ord(x) for x in value]) + "'"
             values.append(value)
-        experiment_insert_statement = "INSERT INTO %s (%s) VALUES (%s)" % (
+        experiment_insert_statement = "INSERT INTO {} ({}) VALUES ({})".format(
             self.get_table_name(cellprofiler.measurement.EXPERIMENT),
             ",".join(column_names),
             ",".join(values))
@@ -2703,10 +2703,10 @@ CREATE TABLE %s (
             if obname == cellprofiler.measurement.IMAGE and not self.ignore_feature(obname, feature):
                 if ftype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
                     ftype = "TEXT"
-                feature_name = '%s_%s' % (obname, feature)
-                statement += ',\n%s %s' % (mappings[feature_name], ftype)
+                feature_name = '{}_{}'.format(obname, feature)
+                statement += ',\n{} {}'.format(mappings[feature_name], ftype)
         for column in self.get_aggregate_columns(pipeline, image_set_list):
-            statement += ',\n%s %s' % (mappings[column[3]],
+            statement += ',\n{} {}'.format(mappings[column[3]],
                                        cellprofiler.measurement.COLTYPE_FLOAT)
         statement += ',\nPRIMARY KEY (%s) )' % C_IMAGE_NUMBER
         return statement
@@ -2739,9 +2739,9 @@ CREATE TABLE %s (
             for column_def in column_defs:
                 obname, feature, ftype = column_def[:3]
                 if obname == ob_table and not self.ignore_feature(obname, feature):
-                    feature_name = '%s_%s' % (obname, feature)
-                    statement += ',\n%s %s' % (mappings[feature_name], ftype)
-        statement += ',\nPRIMARY KEY (%s, %s) )' % (C_IMAGE_NUMBER, object_pk)
+                    feature_name = '{}_{}'.format(obname, feature)
+                    statement += ',\n{} {}'.format(mappings[feature_name], ftype)
+        statement += ',\nPRIMARY KEY ({}, {}) )'.format(C_IMAGE_NUMBER, object_pk)
         return statement
 
     def get_create_object_view_statement(self, object_names, pipeline,
@@ -2763,25 +2763,25 @@ CREATE TABLE %s (
             for column_def in column_defs:
                 obname, feature, ftype = column_def[:3]
                 if obname == current_object and not self.ignore_feature(obname, feature):
-                    feature_name = '%s_%s' % (obname, feature)
+                    feature_name = '{}_{}'.format(obname, feature)
                     list_of_columns[-1] += [mappings[feature_name]]
         all_columns = sum(list_of_columns, [])
 
         selected_object = object_names[0]
-        all_columns = ["%s.%s" % (all_objects[selected_object], C_IMAGE_NUMBER),
-                       "%s_%s AS %s" % (selected_object, M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER)] + all_columns
+        all_columns = ["{}.{}".format(all_objects[selected_object], C_IMAGE_NUMBER),
+                       "{}_{} AS {}".format(selected_object, M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER)] + all_columns
 
         # Create the new view
         statement = "CREATE OR REPLACE VIEW " if self.db_type == DB_MYSQL else "CREATE VIEW "
-        statement += "%s AS SELECT %s FROM %s" % (object_table, ",".join(all_columns), all_objects[selected_object])
+        statement += "{} AS SELECT {} FROM {}".format(object_table, ",".join(all_columns), all_objects[selected_object])
 
         object_table_pairs = all_objects.items()
         object_table_pairs = [x for x in object_table_pairs if x[0] != selected_object]
         for (current_object, current_table) in object_table_pairs:
             statement = " ".join((statement, "INNER JOIN %s ON" % current_table, \
-                                  " AND ".join(("%s.%s = %s.%s" % (
+                                  " AND ".join(("{}.{} = {}.{}".format(
                                       all_objects[selected_object], C_IMAGE_NUMBER, current_table, C_IMAGE_NUMBER),
-                                                "%s.%s_%s = %s.%s_%s" % (
+                                                "{}.{}_{} = {}.{}_{}".format(
                                                     all_objects[selected_object], selected_object,
                                                     M_NUMBER_OBJECT_NUMBER,
                                                     current_table, current_object, M_NUMBER_OBJECT_NUMBER)))))
@@ -2818,7 +2818,7 @@ CREATE TABLE %s (
                  "varchar(255)", "varchar(255)"]
         rtt_unique_name = self.get_table_name(CONSTRAINT_RT_UNIQUE)
         statement = "CREATE TABLE %s " % relationship_type_table_name
-        statement += "(" + ", ".join(["%s %s" % (c, t)
+        statement += "(" + ", ".join(["{} {}".format(c, t)
                                       for c, t in zip(columns, types)])
         statement += ", CONSTRAINT %s UNIQUE ( " % rtt_unique_name
         statement += ", ".join(columns) + " ))"
@@ -2848,10 +2848,10 @@ CREATE TABLE %s (
                    COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2]
         statement = "CREATE TABLE %s " % relationship_table_name
         statement += "( " + ", ".join(["%s integer" % c for c in columns])
-        statement += " ,CONSTRAINT %s FOREIGN KEY ( %s ) " % (
+        statement += " ,CONSTRAINT {} FOREIGN KEY ( {} ) ".format(
             self.get_table_name(FK_RELATIONSHIP_TYPE_ID),
             COL_RELATIONSHIP_TYPE_ID)
-        statement += " REFERENCES %s ( %s )" % (
+        statement += " REFERENCES {} ( {} )".format(
             relationship_type_table_name, COL_RELATIONSHIP_TYPE_ID)
         statement += " ,CONSTRAINT %s UNIQUE" % self.get_table_name(
                 CONSTRAINT_R_UNIQUE)
@@ -2863,7 +2863,7 @@ CREATE TABLE %s (
         for index_name, image_column, object_column in (
                 (I_RELATIONSHIPS1, COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1),
                 (I_RELATIONSHIPS2, COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2)):
-            statement = "CREATE INDEX %s ON %s ( %s, %s, %s )" % (
+            statement = "CREATE INDEX {} ON {} ( {}, {}, {} )".format(
                 self.get_table_name(index_name),
                 relationship_table_name, image_column, object_column,
                 COL_RELATIONSHIP_TYPE_ID)
@@ -2880,9 +2880,9 @@ CREATE TABLE %s (
                                    "R.%s" % col for col in (
                 COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1,
                 COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2)])
-        statement += " FROM %s T JOIN %s R ON " % (
+        statement += " FROM {} T JOIN {} R ON ".format(
             relationship_type_table_name, relationship_table_name)
-        statement += " T.%s = R.%s" % (
+        statement += " T.{} = R.{}".format(
             COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP_TYPE_ID)
         statements.append(statement)
         return statements
@@ -3064,9 +3064,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         #
                         if data_type.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
                             continue
-                        feature_name = "%s_%s" % (object_name, feature)
+                        feature_name = "{}_{}".format(object_name, feature)
                         colname = mappings[feature_name]
-                        well_colname = "%s_%s" % (aggname, colname)
+                        well_colname = "{}_{}".format(aggname, colname)
                         if do_mapping:
                             well_mappings.add(well_colname)
                         if do_write:
@@ -3091,7 +3091,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 # between object tables.
                 #
                 fid.write(
-                        "RIGHT JOIN (SELECT DISTINCT %s, %s FROM\n" % (C_IMAGE_NUMBER, C_OBJECT_NUMBER))
+                        "RIGHT JOIN (SELECT DISTINCT {}, {} FROM\n".format(C_IMAGE_NUMBER, C_OBJECT_NUMBER))
                 fid.write("(SELECT %s, %s_%s as %s FROM %s\n" %
                           (C_IMAGE_NUMBER, object_names[0], M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
                            self.get_table_name(object_names[0])))
@@ -3100,7 +3100,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                               "FROM %s\n" %
                               (C_IMAGE_NUMBER, object_name, M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
                                self.get_table_name(object_name)))
-                fid.write(") N_INNER) N ON IT.%s = N.%s\n" % (C_IMAGE_NUMBER, C_IMAGE_NUMBER))
+                fid.write(") N_INNER) N ON IT.{} = N.{}\n".format(C_IMAGE_NUMBER, C_IMAGE_NUMBER))
                 for i, object_name in enumerate(object_names):
                     fid.write("LEFT JOIN %s OT%d " %
                               (self.get_table_name(object_name), i + 1))
@@ -3135,7 +3135,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         measurements = workspace.measurements
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
-        image_filename = self.make_full_filename('%s_%s.CSV' % (self.base_name(workspace),
+        image_filename = self.make_full_filename('{}_{}.CSV'.format(self.base_name(workspace),
                                                                 cellprofiler.measurement.IMAGE),
                                                  workspace)
         fid_per_image = open(image_filename, "wb")
@@ -3150,7 +3150,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     continue
                 if self.ignore_feature(object_name, feature, measurements):
                     continue
-                feature_name = "%s_%s" % (object_name, feature)
+                feature_name = "{}_{}".format(object_name, feature)
                 if not measurements.has_feature(cellprofiler.measurement.IMAGE, feature):
                     value = numpy.NaN
                 else:
@@ -3190,7 +3190,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             data = [(object_name, [object_name])
                     for object_name in object_names]
         for file_object_name, object_list in data:
-            file_name = "%s_%s.CSV" % (self.base_name(workspace),
+            file_name = "{}_{}.CSV".format(self.base_name(workspace),
                                        file_object_name)
             file_name = self.make_full_filename(file_name)
             fid = open(file_name, "wb")
@@ -3241,7 +3241,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         # returns the rows in the same order every time it's called.
         #
         if self.wants_relationship_table:
-            file_name = "%s_%s.CSV" % (
+            file_name = "{}_{}.CSV".format(
                 self.base_name(workspace), T_RELATIONSHIPS)
             file_name = self.make_full_filename(file_name)
             with open(file_name, "wb") as fid:
@@ -3326,7 +3326,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 #
                 if m_col[1] not in feature_names:
                     continue
-                feature_name = "%s_%s" % (cellprofiler.measurement.IMAGE, m_col[1])
+                feature_name = "{}_{}".format(cellprofiler.measurement.IMAGE, m_col[1])
                 value = measurements.get_measurement(
                         cellprofiler.measurement.IMAGE, m_col[1], image_number)
                 if isinstance(value, numpy.ndarray):
@@ -3418,7 +3418,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         object_numbers = measurements.get_measurement(
                                 object_name, M_NUMBER_OBJECT_NUMBER, image_number)
 
-                    object_cols += [mapping["%s_%s" % (column[0], column[1])]
+                    object_cols += [mapping["{}_{}".format(column[0], column[1])]
                                     for column in columns]
                     object_rows = []
                     for j in range(max_count):
@@ -3499,7 +3499,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 else:
                     stmt = (
                         ('UPDATE %s SET\n' % image_table) +
-                        ',\n'.join(["  %s = %s" % (mapping[colname], replacement)
+                        ',\n'.join(["  {} = {}".format(mapping[colname], replacement)
                                     for val, dtype, colname in image_row]) +
                         ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)))
                 execute(self.cursor, stmt, image_row_values, return_result=False)
@@ -3616,7 +3616,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         cellprofiler.measurement.EXPERIMENT, column[1]):
                     value = workspace.measurements[cellprofiler.measurement.EXPERIMENT, column[1]]
                     if value is not None:
-                        assignments.append("%s='%s'" % (column[1], value))
+                        assignments.append("{}='{}'".format(column[1], value))
             if len(assignments) > 0:
                 statement += ",".join(assignments)
                 with DBContext(self) as (connection, cursor):
@@ -3753,9 +3753,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         cell_x_loc = '%s_Location_Center_X' % self.location_object.value
                         cell_y_loc = '%s_Location_Center_Y' % self.location_object.value
                     elif self.separate_object_tables == OT_PER_OBJECT:
-                        cell_tables = '%sPer_%s' % (self.get_table_prefix(), object_name)
+                        cell_tables = '{}Per_{}'.format(self.get_table_prefix(), object_name)
                         object_id = '%s_Number_Object_Number' % object_name
-                        filename = '%s_%s.properties' % (tblname, object_name)
+                        filename = '{}_{}.properties'.format(tblname, object_name)
                         properties_object_name = object_name
                         object_count = 'Image_Count_%s' % object_name
                         cell_x_loc = '%s_Location_Center_X' % object_name
@@ -3782,17 +3782,17 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             file_name = self.make_full_filename(filename, workspace)
             unique_id = C_IMAGE_NUMBER
             image_thumbnail_cols = ','.join(
-                    ['%s_%s_%s' % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                    ['{}_{}_{}'.format(cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
                      for name in self.thumbnail_image_names.get_selections()]) \
                 if self.want_image_thumbnails else ''
 
             if self.properties_export_all_image_defaults:
                 image_file_cols = ','.join(
-                        ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
+                        ['{}_{}_{}'.format(cellprofiler.measurement.IMAGE,
                                        cellprofiler.measurement.C_FILE_NAME,
                                        name) for name in default_image_names])
                 image_path_cols = ','.join(
-                        ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
+                        ['{}_{}_{}'.format(cellprofiler.measurement.IMAGE,
                                        cellprofiler.measurement.C_PATH_NAME,
                                        name) for name in default_image_names])
 
@@ -3802,7 +3802,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 else:
                     image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, ' + ('none, ' * 10)
                     num_images = len(default_image_names) + len(
-                            set([name for name in self.thumbnail_image_names.get_selections()]).difference(
+                            {name for name in self.thumbnail_image_names.get_selections()}.difference(
                                     default_image_names)) if self.want_image_thumbnails else 0
                     image_channel_colors = ','.join(image_channel_colors.split(',')[:num_images])
                 image_names_csl = ','.join(default_image_names)  # Convert to comma-separated list
@@ -3814,7 +3814,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                                                                                        if
                                                                                                        name not in default_image_names]
                     image_thumbnail_cols = ','.join(
-                            ['%s_%s_%s' % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                            ['{}_{}_{}'.format(cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
                              for name in thumb_names])
                 else:
                     image_thumbnail_cols = ''
@@ -3833,11 +3833,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_channel_colors += [group.image_channel_colors.value]
 
                 image_file_cols = ','.join(
-                        ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
+                        ['{}_{}_{}'.format(cellprofiler.measurement.IMAGE,
                                        cellprofiler.measurement.C_FILE_NAME,
                                        name) for name in selected_image_names])
                 image_path_cols = ','.join(
-                        ['%s_%s_%s' % (cellprofiler.measurement.IMAGE,
+                        ['{}_{}_{}'.format(cellprofiler.measurement.IMAGE,
                                        cellprofiler.measurement.C_PATH_NAME,
                                        name) for name in selected_image_names])
 
@@ -3849,7 +3849,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                                                                                         if
                                                                                                         name not in selected_image_names]
                     image_thumbnail_cols = ','.join(
-                            ['%s_%s_%s' % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                            ['{}_{}_{}'.format(cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
                              for name in thumb_names])
                 else:
                     image_thumbnail_cols = ''
@@ -3887,11 +3887,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             image_url = self.properties_image_url_prepend.value \
                 if self.wants_properties_image_url_prepend else ""
             plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
-            plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s" % (
+            plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "{}_{}_{}".format(
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.C_METADATA,
                 self.properties_plate_metadata.value)
-            well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s" % (
+            well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "{}_{}_{}".format(
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.C_METADATA,
                 self.properties_well_metadata.value)

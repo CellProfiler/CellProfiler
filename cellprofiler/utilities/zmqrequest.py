@@ -56,7 +56,7 @@ def make_CP_encoder(buffers):
             buffers.append(data)
             return {'__buffer__': True,
                     'idx': idx}
-        raise TypeError("%r of type %r is not JSON serializable" % (data, type(data)))
+        raise TypeError("{!r} of type {!r} is not JSON serializable".format(data, type(data)))
 
     return encoder
 
@@ -213,7 +213,7 @@ class Communicable(object):
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:
-            print "Communicable could not instantiate %s from module %s with kwargs %s" % (
+            print "Communicable could not instantiate {} from module {} with kwargs {}".format(
                 module, classname, attribute_dict)
             raise
         instance._remote = True

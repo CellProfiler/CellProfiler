@@ -751,7 +751,7 @@ desired.
         :param settings_group: the settings group used to name the file
         '''
         if self.wants_everything:
-            filename = "%s.%s" % (object_name, self.extension())
+            filename = "{}.{}".format(object_name, self.extension())
 
             if object_name == EXPERIMENT:
                 # No metadata substitution allowed for experiment file
@@ -759,7 +759,7 @@ desired.
             return self.make_full_filename(
                     filename, workspace, image_set_number)
         if settings_group.wants_automatic_file_name:
-            filename = "%s.%s" % (settings_group.name.value, self.extension())
+            filename = "{}.{}".format(settings_group.name.value, self.extension())
         else:
             filename = settings_group.file_name.value
         filename = self.make_full_filename(
@@ -792,7 +792,7 @@ desired.
 
         files_to_check = []
         if self.wants_everything:
-            object_names = set((IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS))
+            object_names = {IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS}
             object_providers = workspace.pipeline.get_provider_dictionary(
                     cps.OBJECT_GROUP, self)
             object_names.update(object_providers.keys())
@@ -1247,7 +1247,7 @@ desired.
                               directory_choice, custom_directory]
             for name in object_names:
                 setting_values.extend([name, cps.NO,
-                                       "%s%s.csv" % (prefix, name)])
+                                       "{}{}.csv".format(prefix, name)])
             variable_revision_number = 3
             from_matlab = False
         if variable_revision_number == 1 and not from_matlab:

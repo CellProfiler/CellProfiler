@@ -144,7 +144,7 @@ the bins of interest are no longer visible.
                 x = x[x > self.xbounds.min]
                 x = x[x < self.xbounds.max]
             workspace.display_data.x = x
-            workspace.display_data.title = '%s (cycle %s)' % (self.title.value, workspace.measurements.image_set_number)
+            workspace.display_data.title = '{} (cycle {})'.format(self.title.value, workspace.measurements.image_set_number)
 
     def run_as_data_tool(self, workspace):
         self.run(workspace)

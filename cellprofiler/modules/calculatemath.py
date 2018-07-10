@@ -301,9 +301,9 @@ Enter the power by which you would like to raise the result.
                                      for operand in self.get_operands()])
         all_image_measurements = all([operand.object == cpmeas.IMAGE
                                       for operand in self.get_operands()])
-        all_object_names = list(set([operand.operand_objects.value
+        all_object_names = list({operand.operand_objects.value
                                      for operand in self.get_operands()
-                                     if operand.object != cpmeas.IMAGE]))
+                                     if operand.object != cpmeas.IMAGE})
         all_operands = self.get_operands()
 
         for operand in all_operands:
@@ -482,7 +482,7 @@ Enter the power by which you would like to raise the result.
                 workspace.measurements.next_image_set()
 
     def measurement_name(self):
-        return "%s_%s" % (C_MATH, self.output_feature_name.value)
+        return "{}_{}".format(C_MATH, self.output_feature_name.value)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
@@ -501,9 +501,9 @@ Enter the power by which you would like to raise the result.
             return self.operands
 
     def get_measurement_columns(self, pipeline):
-        all_object_names = list(set([operand.operand_objects.value
+        all_object_names = list({operand.operand_objects.value
                                      for operand in self.get_operands()
-                                     if operand.object != cpmeas.IMAGE]))
+                                     if operand.object != cpmeas.IMAGE})
         if len(all_object_names):
             return [(name, self.measurement_name(), cpmeas.COLTYPE_FLOAT)
                     for name in all_object_names]

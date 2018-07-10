@@ -469,9 +469,9 @@ class HDF5Dict(object):
                        and the second and third are start and stop values
                        for the slice.
         '''
-        self.indices[object_name, feature_name] = dict(
-                [(image_number, (slice(start, stop), i))
-                 for i, (image_number, start, stop) in enumerate(index_slices)])
+        self.indices[object_name, feature_name] = {
+                image_number: (slice(start, stop), i)
+                 for i, (image_number, start, stop) in enumerate(index_slices)}
 
     def __setitem__(self, idxs, vals):
         assert isinstance(idxs, tuple), \
@@ -1008,7 +1008,7 @@ class HDF5FileList(object):
         # I sure hope this isn't slow...
         #
         if name in ("index", "data", "metadata"):
-            return r"\%02x%s" % (ord(name[0]), name[1:])
+            return r"\{:02x}{}".format(ord(name[0]), name[1:])
         return "".join([c if c in HDF5FileList.LEGAL_GROUP_CHARACTERS
                         else r"\%02x" % ord(c)
                         for c in name])

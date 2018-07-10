@@ -17,17 +17,17 @@ def align_twosided_items(parent, items, min_spacing=8, left_texts=None, right_te
         if wx.Platform == '__WXMSW__':
             # ignore minspacing for windows
             for item, left, right in zip(items, left_texts, right_texts):
-                item.SetItemLabel("%s\t%s" % (left, right))
+                item.SetItemLabel("{}\t{}".format(left, right))
         else:
             # Mac and linux use spaces to align.
-            widths = [parent.GetTextExtent("%s%s%s" % (left, " " * min_spacing, right))[0]
+            widths = [parent.GetTextExtent("{}{}{}".format(left, " " * min_spacing, right))[0]
                       for left, right in zip(left_texts, right_texts)]
             maxwidth = max(widths)
             spacewidth = parent.GetTextExtent("  ")[0] - parent.GetTextExtent(" ")[0]
             for item, left, right, initial_width in \
                     zip(items, left_texts, right_texts, widths):
                 numspaces = int(min_spacing + (maxwidth - initial_width) / spacewidth)
-                item.SetItemLabel("%s%s%s" % (left, ' ' * numspaces, right))
+                item.SetItemLabel("{}{}{}".format(left, ' ' * numspaces, right))
 
 
 class NameSubscriberComboBox(wx.Panel):

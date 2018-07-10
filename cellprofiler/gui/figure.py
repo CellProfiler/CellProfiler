@@ -141,7 +141,7 @@ def match_rgbmask_to_image(rgb_mask, image):
 
 def window_name(module):
     """Return a module's figure window name"""
-    return "CellProfiler:%s:%s" % (module.module_name, module.module_num)
+    return "CellProfiler:{}:{}".format(module.module_name, module.module_num)
 
 
 def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
@@ -721,7 +721,7 @@ class Figure(wx.Frame):
             elif isinstance(event.inaxes, matplotlib.axes.Axes):
                 for artist in event.inaxes.artists:
                     if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
-                        fields += ["%s: %.4f" % (k, v) for k, v in artist.get_channel_values(xi, yi).items()]
+                        fields += ["{}: {:.4f}".format(k, v) for k, v in artist.get_channel_values(xi, yi).items()]
         else:
             fields = []
 
@@ -1030,7 +1030,7 @@ class Figure(wx.Frame):
 
         def show_hist(evt):
             """Callback for "Show image histogram" popup menu item"""
-            new_title = '%s %s image histogram' % (self.Title, (x, y))
+            new_title = '{} {} image histogram'.format(self.Title, (x, y))
             fig = create_or_find(self, -1, new_title, subplots=(1, 1), name=new_title)
             fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(), bins=200, xlabel='pixel intensity')
             fig.figure.canvas.draw()
@@ -1516,12 +1516,12 @@ class Figure(wx.Frame):
             self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(
                 menu_pos,
                 -1,
-                (title or 'Subplot (%s,%s)' % (x, y)),
+                (title or 'Subplot ({},{})'.format(x, y)),
                 self.get_imshow_menu((x, y))
             )
 
             # Attempt to update histogram plot if one was created
-            hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name, (x, y)))
+            hist_fig = find_fig(self, name='{} {} image histogram'.format(self.Name, (x, y)))
 
             if hist_fig:
                 hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(), bins=200, xlabel='pixel intensity')

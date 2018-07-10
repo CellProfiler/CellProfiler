@@ -158,7 +158,7 @@ class PreferencesDlg(wx.Dialog):
                         font = fd.GetChosenFont()
                         name = font.GetFaceName()
                         size = font.GetPointSize()
-                        ctl.Value = "%s, %f" % (name, size)
+                        ctl.Value = "{}, {:f}".format(name, size)
                     dlg.Destroy()
             elif ui_info == COLOR:
                 def on_press(event, ctl=ctl, parent=self):
@@ -353,7 +353,7 @@ class PreferencesDlg(wx.Dialog):
 
     @staticmethod
     def get_title_font():
-        return "%s,%f" % (cellprofiler.preferences.get_title_font_name(),
+        return "{},{:f}".format(cellprofiler.preferences.get_title_font_name(),
                           cellprofiler.preferences.get_title_font_size())
 
     @staticmethod
@@ -364,7 +364,7 @@ class PreferencesDlg(wx.Dialog):
 
     @staticmethod
     def get_table_font():
-        return "%s,%f" % (cellprofiler.preferences.get_table_font_name(),
+        return "{},{:f}".format(cellprofiler.preferences.get_table_font_name(),
                           cellprofiler.preferences.get_table_font_size())
 
     @staticmethod

@@ -206,7 +206,7 @@ executed.
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)
             elif self.well_format == WF_ROWCOL:
-                wells = ['%s%s' % (x, y) for x, y in zip(m.get_all_measurements(cpmeas.IMAGE, self.well_row.value),
+                wells = ['{}{}'.format(x, y) for x, y in zip(m.get_all_measurements(cpmeas.IMAGE, self.well_row.value),
                                                          m.get_all_measurements(cpmeas.IMAGE, self.well_col.value))]
             # Get data to plot
             data = m.get_all_measurements(self.get_object(), self.plot_measurement.value)
@@ -244,9 +244,9 @@ executed.
         if not hasattr(figure, "subplots"):
             figure.set_subplots((1, 1))
         if self.title.value != '':
-            title = '%s (cycle %s)' % (self.title.value, workspace.measurements.image_set_number)
+            title = '{} (cycle {})'.format(self.title.value, workspace.measurements.image_set_number)
         else:
-            title = '%s(%s)' % (self.agg_method, self.plot_measurement.value)
+            title = '{}({})'.format(self.agg_method, self.plot_measurement.value)
         figure.subplot_platemap(0, 0, pm_dict, self.plate_type,
                                 title=title)
 

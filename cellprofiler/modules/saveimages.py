@@ -716,7 +716,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
     def source_path(self, workspace):
         '''The path for the image data, or its first parent with a path'''
         if self.file_name_method.value == FN_FROM_IMAGE:
-            path_feature = '%s_%s' % (cellprofiler.measurement.C_PATH_NAME, self.file_image_name.value)
+            path_feature = '{}_{}'.format(cellprofiler.measurement.C_PATH_NAME, self.file_image_name.value)
             assert workspace.measurements.has_feature(cellprofiler.measurement.IMAGE, path_feature), \
                 "Image %s does not have a path!" % self.file_image_name.value
             return workspace.measurements.get_current_image_measurement(path_feature)
@@ -753,7 +753,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             ndigits = int(numpy.ceil(numpy.log10(n_image_sets + 1)))
             ndigits = max((ndigits, self.number_of_digits.value))
             padded_num_string = str(measurements.image_set_number).zfill(ndigits)
-            filename = '%s%s' % (filename, padded_num_string)
+            filename = '{}{}'.format(filename, padded_num_string)
         else:
             file_name_feature = self.source_file_name_feature
             filename = measurements.get_current_measurement('Image',
@@ -764,7 +764,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
                 suffix = workspace.measurements.apply_metadata(suffix)
                 filename += suffix
 
-        filename = "%s.%s" % (filename, self.get_file_format())
+        filename = "{}.{}".format(filename, self.get_file_format())
         pathname = self.pathname.get_absolute_path(measurements)
         if self.create_subdirectories:
             image_path = self.source_path(workspace)

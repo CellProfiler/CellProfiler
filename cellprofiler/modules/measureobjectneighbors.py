@@ -698,13 +698,13 @@ available colormaps can be seen `here`_.
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
-        coltypes = dict([(feature,
+        coltypes = {feature:
                           cpmeas.COLTYPE_INTEGER
                           if feature in (M_NUMBER_OF_NEIGHBORS,
                                          M_FIRST_CLOSEST_OBJECT_NUMBER,
                                          M_SECOND_CLOSEST_OBJECT_NUMBER)
-                          else cpmeas.COLTYPE_FLOAT)
-                         for feature in self.all_features])
+                          else cpmeas.COLTYPE_FLOAT
+                         for feature in self.all_features}
         return [(self.object_name.value,
                  self.get_measurement_name(feature_name),
                  coltypes[feature_name])

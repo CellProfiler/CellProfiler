@@ -789,18 +789,18 @@ safe to press it.""")
 
     def get_image_names(self, do_not_cache=False):
         header = self.get_header(do_not_cache=do_not_cache)
-        image_names = set([
+        image_names = {
                               get_image_name(field)
                               for field in header
-                              if is_file_name_feature(field) or is_url_name_feature(field)])
+                              if is_file_name_feature(field) or is_url_name_feature(field)}
         return list(image_names)
 
     def get_object_names(self, do_not_cache=False):
         header = self.get_header(do_not_cache=do_not_cache)
-        object_names = set([get_objects_name(field)
+        object_names = {get_objects_name(field)
                             for field in header
                             if is_objects_file_name_feature(field) or
-                            is_objects_url_name_feature(field)])
+                            is_objects_url_name_feature(field)}
         return list(object_names)
 
     def other_providers(self, group):
@@ -1002,9 +1002,9 @@ safe to press it.""")
         for column in self.get_measurement_columns(pipeline):
             column_type[column[1]] = column[2]
 
-        previous_column_types = dict([
-                                         (c[1], c[2]) for c in pipeline.get_measurement_columns(self)
-                                         if c[0] == cellprofiler.measurement.IMAGE])
+        previous_column_types = {
+                                         c[1]: c[2] for c in pipeline.get_measurement_columns(self)
+                                         if c[0] == cellprofiler.measurement.IMAGE}
         #
         # Arrange the metadata into columns
         #
@@ -1252,8 +1252,8 @@ safe to press it.""")
                 entry["measurement_columns"] = []
             return []
         previous_columns = pipeline.get_measurement_columns(self)
-        previous_fields = set([x[1] for x in previous_columns
-                               if x[0] == cellprofiler.measurement.IMAGE])
+        previous_fields = {x[1] for x in previous_columns
+                               if x[0] == cellprofiler.measurement.IMAGE}
         already_output = [x in previous_fields for x in header]
         coltypes = [cellprofiler.measurement.COLTYPE_INTEGER] * len(header)
         #
@@ -1395,8 +1395,8 @@ safe to press it.""")
     def get_categories(self, pipeline, object_name):
         try:
             columns = self.get_measurement_columns(pipeline)
-            result = set([column[1].split('_')[0] for column in columns
-                          if column[0] == object_name])
+            result = {column[1].split('_')[0] for column in columns
+                          if column[0] == object_name}
             return list(result)
         except:
             return []

@@ -849,7 +849,7 @@ def write_figures(prefix, directory, dose_name,
     for i, (object_name, feature_name) in enumerate(feature_set):
         fdata = data[:, i]
         fcoeffs = ec50_coeffs[i, :]
-        filename = "%s%s_%s.pdf" % (prefix, object_name, feature_name)
+        filename = "{}{}_{}.pdf".format(prefix, object_name, feature_name)
         pathname = os.path.join(directory, filename)
         f = Figure()
         canvas = FigureCanvasPdf(f)
@@ -861,5 +861,5 @@ def write_figures(prefix, directory, dose_name,
         ax.plot(dose_data, dose_y, "o")
         ax.set_xlabel('Dose')
         ax.set_ylabel('Response')
-        ax.set_title('%s_%s' % (object_name, feature_name))
+        ax.set_title('{}_{}'.format(object_name, feature_name))
         f.savefig(pathname)

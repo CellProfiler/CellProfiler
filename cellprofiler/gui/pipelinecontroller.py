@@ -467,7 +467,7 @@ class PipelineController(object):
         returns a path or None if the user canceled. If it returns a path,
         the workspace file is locked.
         """
-        wildcard = "CellProfiler project (%s)|%s|All files (*.*)|*.*" % (
+        wildcard = "CellProfiler project ({})|{}|All files (*.*)|*.*".format(
             ",".join(["*.%s" % x for x in cellprofiler.preferences.EXT_PROJECT_CHOICES]),
             ";".join(["*.%s" % x for x in cellprofiler.preferences.EXT_PROJECT_CHOICES]))
         with wx.FileDialog(
@@ -678,7 +678,7 @@ class PipelineController(object):
             default_filename = \
                 os.path.splitext(default_filename)[0] + "." + cellprofiler.preferences.EXT_PROJECT
 
-        wildcard = "CellProfiler project (*.%s)|*.%s" % (cellprofiler.preferences.EXT_PROJECT, cellprofiler.preferences.EXT_PROJECT)
+        wildcard = "CellProfiler project (*.{})|*.{}".format(cellprofiler.preferences.EXT_PROJECT, cellprofiler.preferences.EXT_PROJECT)
         with wx.FileDialog(
                 self.__frame,
                 "Save project file as",
@@ -728,7 +728,7 @@ class PipelineController(object):
         return True
 
     def __on_load_pipeline(self, event):
-        wildcard = "CellProfiler pipeline (%s)|%s" % (
+        wildcard = "CellProfiler pipeline ({})|{}".format(
             ",".join([".%s" % x for x in cellprofiler.preferences.EXT_PIPELINE_CHOICES]),
             ";".join(["*.%s" % x for x in cellprofiler.preferences.EXT_PIPELINE_CHOICES]))
         dlg = wx.FileDialog(self.__frame,
@@ -1276,10 +1276,10 @@ class PipelineController(object):
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
-            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (
+            self.__frame.Title = "CellProfiler {}: {}* ({})".format(
             cellprofiler.__version__, filename, path)
         else:
-            self.__frame.Title = "CellProfiler %s: %s (%s)" % (
+            self.__frame.Title = "CellProfiler {}: {} ({})".format(
             cellprofiler.__version__, filename, path)
 
     def __on_clear_pipeline(self, event):
@@ -1388,11 +1388,11 @@ class PipelineController(object):
                 else:
                     error_msg = str(event.error)
             if isinstance(event, cellprofiler.pipeline.PrepareRunExceptionEvent):
-                message = "Encountered unrecoverable error in %s during startup:\n%s" % (
+                message = "Encountered unrecoverable error in {} during startup:\n{}".format(
                     event.module.module_name, error_msg)
                 continue_only = True
             elif isinstance(event, cellprofiler.pipeline.PostRunExceptionEvent):
-                message = "Encountered uncrecoverable error in %s during post-processing:\n%s" % (
+                message = "Encountered uncrecoverable error in {} during post-processing:\n{}".format(
                     event.module.module_name, error_msg)
                 continue_only = True
             else:
@@ -2433,7 +2433,7 @@ class PipelineController(object):
             # exception in (prepare/post)_(run/group)
             wx.CallAfter(self.__on_pipeline_event, self.__pipeline, evt)
         else:
-            raise ValueError("Unknown event type %s %s" % (type(evt), evt))
+            raise ValueError("Unknown event type {} {}".format(type(evt), evt))
 
     def handle_analysis_feedback(self):
         """Process any pending exception or interaction requests from the
@@ -2557,7 +2557,7 @@ class PipelineController(object):
         # extract args and kwargs from the request.
         # see main().interaction_handler() in worker.py
         args = [evt.__dict__['arg_%d' % idx] for idx in range(evt.num_args)]
-        kwargs = dict((name, evt.__dict__['kwarg_%s' % name]) for name in evt.kwargs_names)
+        kwargs = {name: evt.__dict__['kwarg_%s' % name] for name in evt.kwargs_names}
         result = ""
         try:
             module = self.__pipeline.modules(
@@ -3066,7 +3066,7 @@ class PipelineController(object):
         choices = []
 
         for grouping, image_numbers in self.__groupings:
-            text = ["%s=%s" % (k, v) for k, v in grouping.iteritems()]
+            text = ["{}={}".format(k, v) for k, v in grouping.iteritems()]
             text = ', '.join(text)
             choices.append(text)
         lb = wx.ListBox(dialog, choices=choices)
@@ -3130,8 +3130,8 @@ class PipelineController(object):
               cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_FRAME)],
             cmp=feature_cmp)
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
-        columns = dict([
-                           (f, m[cellprofiler.measurement.IMAGE, f, image_numbers]) for f in features])
+        columns = {
+                           f: m[cellprofiler.measurement.IMAGE, f, image_numbers] for f in features}
         choices = {}
         for i, image_number in enumerate(image_numbers):
             choices[image_number] = [columns[f][i] for f in features]
@@ -3196,11 +3196,11 @@ class PipelineController(object):
                 total_width += 30
                 self.list_ctrl.SetMinSize(
                     wx.Size(min(total_width, 640), self.list_ctrl.GetMinHeight()))
-                self.itemDataMap = dict([
-                                            (k,
+                self.itemDataMap = {
+                                            k:
                                              [u"%06d" % v if isinstance(v, int) else
                                               u"%020.10f" % v if isinstance(v, float) else
-                                              unicode(v) for v in [k] + choices[k]]) for k in choices])
+                                              unicode(v) for v in [k] + choices[k]] for k in choices}
 
                 for image_number in sorted(choices.keys()):
                     row = [unicode(image_number)] + \
@@ -3435,7 +3435,7 @@ class PipelineController(object):
                 if not os.path.exists(alternate_name):
                     break
             result = wx.MessageDialog(parent=self.__frame,
-                                      message='%s already exists. Would you like to create %s instead?' % (
+                                      message='{} already exists. Would you like to create {} instead?'.format(
                                           path, alternate_name),
                                       caption='Output file exists',
                                       style=wx.YES_NO + wx.ICON_QUESTION)

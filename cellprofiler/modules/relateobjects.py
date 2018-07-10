@@ -86,10 +86,10 @@ FEAT_CENTROID = 'Centroid'
 FEAT_MINIMUM = 'Minimum'
 
 '''Centroid distance measurement (FF_DISTANCE % parent)'''
-FF_CENTROID = '%s_%s_%%s' % (C_DISTANCE, FEAT_CENTROID)
+FF_CENTROID = '{}_{}_%s'.format(C_DISTANCE, FEAT_CENTROID)
 
 '''Minimum distance measurement (FF_MINIMUM % parent)'''
-FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
+FF_MINIMUM = '{}_{}_%s'.format(C_DISTANCE, FEAT_MINIMUM)
 
 FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1

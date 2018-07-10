@@ -289,14 +289,14 @@ should_override = ['create_settings', 'settings', 'run']
 def check_module(module, name):
     if hasattr(module, 'do_not_check'):
         return
-    assert name == module.module_name, "Module %s should have module_name %s (is %s)" % (name, name, module.module_name)
+    assert name == module.module_name, "Module {} should have module_name {} (is {})".format(name, name, module.module_name)
     for method_name in do_not_override:
         assert getattr(module, method_name) == getattr(cpm.Module,
-                                                       method_name), "Module %s should not override method %s" % (
+                                                       method_name), "Module {} should not override method {}".format(
             name, method_name)
     for method_name in should_override:
         assert getattr(module, method_name) != getattr(cpm.Module,
-                                                       method_name), "Module %s should override method %s" % (
+                                                       method_name), "Module {} should override method {}".format(
             name, method_name)
 
 

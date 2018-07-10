@@ -147,7 +147,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
     def on_details(event):
         if not details_on[0]:
-            message_control.Label = "%s\n%s" % (message, traceback_text)
+            message_control.Label = "{}\n{}".format(message, traceback_text)
             message_control.Refresh()
             details_button.Label = "Hide details..."
             details_button.Refresh()

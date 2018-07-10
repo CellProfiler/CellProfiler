@@ -1231,7 +1231,7 @@ requests an object selection.
                 channel_category = cellprofiler.measurement.C_CHANNEL
             url_feature, path_name_feature, file_name_feature, \
                 series_feature, frame_feature, channel_feature = \
-                ["%s_%s" % (category, iscd.name) for category in (url_category, path_name_category,
+                ["{}_{}".format(category, iscd.name) for category in (url_category, path_name_category,
                                                                   file_name_category, series_category,
                                                                   frame_category, channel_category)]
             for ftr, jarray in ((url_feature, urls),
@@ -1267,9 +1267,9 @@ requests an object selection.
         #
         # Make a Java map of metadata key to metadata comparator
         #
-        comparators = javabridge.make_map(**dict(
-                [(key, self.get_metadata_comparator(workspace, key))
-                 for key in workspace.pipeline.get_available_metadata_keys()]))
+        comparators = javabridge.make_map(**{
+                key: self.get_metadata_comparator(workspace, key)
+                 for key in workspace.pipeline.get_available_metadata_keys()})
         #
         # Do the giant collation in Java
         #
@@ -1283,13 +1283,13 @@ requests an object selection.
         #
         env = javabridge.get_env()
         mc = workspace.pipeline.get_measurement_columns(self)
-        type_dict = dict([(c[1], c[2]) for c in mc if c[0] == cellprofiler.measurement.IMAGE])
+        type_dict = {c[1]: c[2] for c in mc if c[0] == cellprofiler.measurement.IMAGE}
 
         def get_string_utf(x):
             return None if x is None else env.get_string_utf(x)
 
-        promised = dict([(x[1], x[2]) for x in mc
-                         if x[1].startswith(cellprofiler.measurement.C_METADATA)])
+        promised = {x[1]: x[2] for x in mc
+                         if x[1].startswith(cellprofiler.measurement.C_METADATA)}
         for name in javabridge.iterate_collection(md_dict.keySet(), get_string_utf):
             feature_name = "_".join((cellprofiler.measurement.C_METADATA, name))
             values = javabridge.iterate_collection(md_dict[name], get_string_utf)
@@ -1461,9 +1461,9 @@ requests an object selection.
         if anchor_cf is None:
             raise ValueError(
                     "Please choose valid metadata keys for at least one channel in the metadata matcher")
-        channels = dict(
-            [(c, 0 if i == anchor_channel else i + 1 if i < anchor_channel else i) for i, c in enumerate(channel_names)]
-        )
+        channels = {
+            c: 0 if i == anchor_channel else i + 1 if i < anchor_channel else i for i, c in enumerate(channel_names)
+        }
         #
         # Make the joiner
         #
@@ -2237,9 +2237,9 @@ requests an object selection.
     def update_joiner(self):
         '''Update the joiner setting's entities'''
         if self.assignment_method == ASSIGN_RULES:
-            self.join.entities = dict([
-                                          (column_name, self.metadata_keys)
-                                          for column_name in self.get_column_names()])
+            self.join.entities = {
+                                          column_name: self.metadata_keys
+                                          for column_name in self.get_column_names()}
             try:
                 joins = self.join.parse()
                 if len(joins) > 0:
@@ -2264,7 +2264,7 @@ requests an object selection.
         if self.matching_method == MATCH_BY_METADATA:
             joins = self.join.parse()
             metadata_columns = [
-                " / ".join(set([k for k in join.values() if k is not None]))
+                " / ".join({k for k in join.values() if k is not None})
                 for join in joins]
         else:
             metadata_columns = [cellprofiler.measurement.IMAGE_NUMBER]

@@ -557,7 +557,7 @@ module.""".format(**{
         """Record the result of a measurement in the workspace's measurements"""
         data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
         workspace.add_measurement(object_name,
-                                  "%s_%s" % (AREA_SHAPE, feature_name),
+                                  "{}_{}".format(AREA_SHAPE, feature_name),
                                   data)
         if self.show_window and numpy.any(numpy.isfinite(data)) > 0:
             data = data[numpy.isfinite(data)]

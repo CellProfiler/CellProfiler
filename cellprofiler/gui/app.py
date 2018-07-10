@@ -57,7 +57,7 @@ class App(wx.App):
     def OnInit(self):
         import cellprofiler.gui.cpframe
 
-        self.SetAppName("CellProfiler{0:s}".format(cellprofiler.__version__))
+        self.SetAppName("CellProfiler{:s}".format(cellprofiler.__version__))
 
         self.frame = cellprofiler.gui.cpframe.CPFrame(None, -1, "CellProfiler")
 

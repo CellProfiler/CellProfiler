@@ -886,7 +886,7 @@ value will be retained.""".format(**{
 
         border_labels = set(labels[border_pixels])
 
-        if border_labels == set([0]) and src_objects.has_parent_image and src_objects.parent_image.has_mask:
+        if border_labels == {0} and src_objects.has_parent_image and src_objects.parent_image.has_mask:
             # The assumption here is that, if nothing touches the border,
             # the mask is a large, elliptical mask that tells you where the
             # well is. That's the way the old Matlab code works and it's duplicated here

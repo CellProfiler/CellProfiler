@@ -136,13 +136,13 @@ IO_ALL = (IO_IMAGES, IO_OBJECTS)
 IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 
 # The following is a list of extensions supported by PIL 1.1.7
-SUPPORTED_IMAGE_EXTENSIONS = set([
+SUPPORTED_IMAGE_EXTENSIONS = {
     '.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd', '.h5', '.jpe', '.jfif',
     '.jpg', '.fli', '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc',
     '.tif', '.hdf', '.icns', '.gif', '.palm', '.mpg', '.fits', '.pgm', '.mic',
     '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
     '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
-    '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
+    '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'}
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 SUPPORTED_IMAGE_EXTENSIONS.add(".npy")
 # The following is a list of the extensions as gathered from Bio-formats
@@ -173,8 +173,8 @@ SUPPORTED_IMAGE_EXTENSIONS.update(
          ".v", ".vms", ".vsi", ".vws", ".wat", ".wav", ".wlz", ".xdce",
          ".xlog", ".xqd", ".xqf", ".xv", ".xys", ".zfp", ".zfr",
          ".zpo", ".zvi"])
-SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk', '.flex', '.mov', '.tif',
-                                  '.tiff', '.zvi'])
+SUPPORTED_MOVIE_EXTENSIONS = {'.avi', '.mpeg', '.stk', '.flex', '.mov', '.tif',
+                                  '.tiff', '.zvi'}
 
 FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 SUPPORTED_IMAGE_EXTENSIONS.update([
@@ -2111,8 +2111,8 @@ to store the image.
                             frame_metadata[C_SERIES] = i
                             image_numbers = [image_set_count + 1]
                             if match_metadata:
-                                key = dict([(k, str(v))
-                                            for k, v in frame_metadata.items()])
+                                key = {k: str(v)
+                                            for k, v in frame_metadata.items()}
                                 if key not in md_dict:
                                     message = (
                                         "Could not find a matching image set for " %
@@ -2181,8 +2181,8 @@ to store the image.
                                 frame_metadata[C_SERIES] = i
                                 image_numbers = [image_set_count + 1]
                                 if match_metadata:
-                                    key = dict([(k, str(v))
-                                                for k, v in frame_metadata.items()])
+                                    key = {k: str(v)
+                                                for k, v in frame_metadata.items()}
                                     if key not in md_dict:
                                         message = (
                                             "Could not find a matching image set for " %
@@ -2674,8 +2674,8 @@ to store the image.
         if self.do_group_by_metadata:
             keys = ['_'.join((cellprofiler.measurement.C_METADATA, s))
                     for s in self.metadata_fields.selections]
-            mapping = dict([(key, s) for key, s in zip(
-                    keys, self.metadata_fields.selections)])
+            mapping = {key: s for key, s in zip(
+                    keys, self.metadata_fields.selections)}
             if len(keys) == 0:
                 return None
         elif self.load_movies() and self.file_types == FF_OTHER_MOVIES:
@@ -2696,7 +2696,7 @@ to store the image.
         #
         # Rewrite the grouping dictionaries using the preferred key names
         #
-        groupings = [(dict([(mapping[k], g[k]) for k in g]), image_numbers)
+        groupings = [({mapping[k]: g[k] for k in g}, image_numbers)
                      for g, image_numbers in groupings]
         return tuple([mapping[k] for k in keys]), groupings
 
@@ -3177,7 +3177,7 @@ to store the image.
                                 current.append({name: tag})
                         else:
                             for tag in my_tags:
-                                entry = dict([(k, None) for k in current[0]])
+                                entry = {k: None for k in current[0]}
                                 entry[name] = tag
                                 current.append(entry)
                     namesandtypes.join.build(current)

@@ -516,7 +516,7 @@ class PlateViewer(object):
         if self.image_dict is None:
             return
         with self.image_dict_lock:
-            image_dict = dict([(x, y.copy()) for x, y in self.image_dict.iteritems()])
+            image_dict = {x: y.copy() for x, y in self.image_dict.iteritems()}
         channel_dict = {}
         totals = numpy.zeros(4)
         for i in range(self.channel_grid.GetNumberRows()):

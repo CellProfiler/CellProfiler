@@ -449,7 +449,7 @@ class PreferencesView(object):
         if remaining_time is not None:
             self.__progress_bar.Value = \
                 (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
-            timestr = 'Time %s/%s' % (
+            timestr = 'Time {}/{}'.format(
                 secs_to_timestr(elapsed_time),
                 secs_to_timestr(elapsed_time + remaining_time))
         else:

@@ -521,8 +521,8 @@ class CPFrame(wx.Frame):
         wx.ID_DELETE
         wx.ID_SELECTALL
         """
-        d = dict([(x, False) for x in
-                  (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
+        d = {x: False for x in
+                  (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)}
         for eyedee in ids:
             d[eyedee] = True
         for k, v in d.iteritems():

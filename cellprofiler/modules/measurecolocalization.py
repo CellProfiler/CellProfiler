@@ -889,10 +889,10 @@ Select the objects to be measured."""
         result = []
         if measurement in self.get_measurements(pipeline, object_name, category):
             for i1, i2 in self.get_image_pairs():
-                result.append("%s_%s" % (i1, i2))
+                result.append("{}_{}".format(i1, i2))
                 # For asymmetric, return both orderings
                 if measurement in ("K", "Manders", "RWC", "Costes"):
-                    result.append("%s_%s" % (i2, i1))
+                    result.append("{}_{}".format(i2, i1))
         return result
 
     def upgrade_settings(self, setting_values, variable_revision_number,

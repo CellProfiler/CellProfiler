@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "CellProfiler"
-#define MyAppVersion "3.0.0rc4"
+#define MyAppVersion "3.1.5"
 #define MyAppPublisher "Broad Institute"
 #define MyAppURL "http://cellprofiler.org/"
 #define MyAppExeName "CellProfiler.exe"
@@ -27,6 +27,7 @@ SetupIconFile=.\CellProfiler\cellprofiler\data\icons\CellProfiler.ico
 Compression=lzma
 SolidCompression=yes
 DisableDirPage=no
+ChangesEnvironment=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -36,11 +37,13 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Java\jdk-10.0.2\*"; DestDir: "{app}\java"; Flags: recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
-[Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+[Registry]
+Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "JAVA_HOME"; ValueData: "{app}\java"; Flags: createvalueifdoesntexist
+Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "JDK_HOME"; ValueData: "{app}\java"; Flags: createvalueifdoesntexist

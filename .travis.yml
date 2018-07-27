@@ -8,12 +8,11 @@ env:
   global:
     - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
   matrix:
-    - REQUIREMENTS_FILE="unpinned_requirements.txt"
+    - REQUIREMENTS_FILE="pinned_requirements.txt"
     - REQUIREMENTS_FILE="requirements.txt"
 matrix:
   allow_failures:
-    - env: REQUIREMENTS_FILE="unpinned_requirements.txt"
-    - python: 3.6
+    - env: REQUIREMENTS_FILE="requirements.txt"
 install:
   - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04 wxPython
   - pip install -r $REQUIREMENTS_FILE

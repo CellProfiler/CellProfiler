@@ -208,22 +208,14 @@ Enter a name for the resulting grayscale image coming from the value.""")
 
     channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
 
-    def _get_next_channel(self):
-        while True:
-            channel = str(len(self.channel_names) + 1)
-            yield channel
-
     def add_channel(self, can_remove=True):
         '''Add another channel to the channels list'''
         group = cps.SettingsGroup()
         group.can_remove = can_remove
-        if len(self.channels) == len(self.channel_names):
-            ch = next(self._get_next_channel())
-            self.channel_names.append(ch)
-        group.append("channel_choice", cps.Choice(
+        group.append("channel_choice", cps.Integer(
             text="Channel number",
-            choices=self.channel_names,
-            value=self.channel_names[len(self.channels)],
+            value=len(self.channels)+1,
+            minval=1,
             doc="""\
 *(Used only when splitting images)*
 
@@ -345,7 +337,7 @@ Select the name of the output grayscale image."""))
                     (self.red_contribution, self.green_contribution,
                      self.blue_contribution))]
 
-        return [(self.channel_names.index(channel.channel_choice),
+        return [(self.get_channel_idx_from_choice(channel.channel_choice.value),
                  channel.contribution.value) for channel in self.channels]
 
     @staticmethod
@@ -356,7 +348,10 @@ Select the name of the output grayscale image."""))
                  (string ending in a one-based index)
         returns the zero-based index of the channel.
         '''
-        return int(re.search("[0-9]+$", choice).group()) - 1
+        if type(choice) == int:
+            return choice-1
+        else:
+            return int(re.search("[0-9]+$", choice).group())-1
 
     def channels_and_image_names(self):
         """Return tuples of channel indexes and the image names for output"""
@@ -378,8 +373,12 @@ Select the name of the output grayscale image."""))
         for channel in self.channels:
             choice = channel.channel_choice.value
             channel_idx = self.get_channel_idx_from_choice(choice)
+            if channel_idx < len(self.channel_names):
+                channel_name = self.channel_names[channel_idx]
+            else:
+                channel_name = 'Channel: '+str(choice)
             result.append((channel_idx, channel.image_name.value,
-                           channel.channel_choice.value))
+                           channel_name))
         return result
 
     def run(self, workspace):
@@ -537,6 +536,6 @@ Select the name of the output grayscale image."""))
         for i in range(nchannels):
             idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
             channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
-            setting_values[idx] = self.channel_names[channel_idx]
+            setting_values[idx] = channel_idx+1
 
         return setting_values, variable_revision_number, from_matlab

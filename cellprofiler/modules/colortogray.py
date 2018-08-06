@@ -219,11 +219,11 @@ Enter a name for the resulting grayscale image coming from the value.""")
             doc="""\
 *(Used only when splitting images)*
 
-This setting chooses a channel to be processed. For example, *Red: 1*
+This setting chooses a channel to be processed. For example, *1*
 is the first
 channel in a .TIF or the red channel in a traditional image file.
-*Green: 2* and *Blue: 3* are the second and third channels of a TIF or
-the green and blue channels in other formats. *Alpha: 4* is the
+*2* and *3* are the second and third channels of a TIF or
+the green and blue channels in other formats. *4* is the
 transparency channel for image formats that support transparency and is
 channel # 4 for a .TIF file. **ColorToGray** will fail to process an
 image if you select a channel that is not supported by that image, for

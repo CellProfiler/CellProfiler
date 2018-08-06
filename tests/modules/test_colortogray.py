@@ -145,7 +145,7 @@ def test_01_03_combine_channels():
     divisor = numpy.sum(factors)
     expected = numpy.zeros((20, 10))
     for i, channel_index in enumerate(channel_indexes):
-        module.channels[i].channel_choice.value = module.channel_names[channel_index]
+        module.channels[i].channel_choice.value = channel_index+1
         module.channels[i].contribution.value_text = "%.10f" % factors[i]
         expected += image[:, :, channel_index] * factors[i] / divisor
 
@@ -184,7 +184,7 @@ def test_01_04_split_channels():
 
     channel_indexes = numpy.array([1, 4, 2])
     for i, channel_index in enumerate(channel_indexes):
-        module.channels[i].channel_choice.value = module.channel_names[channel_index]
+        module.channels[i].channel_choice.value = channel_index+1
         module.channels[i].image_name.value = OUTPUT_IMAGE_F % i
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -310,9 +310,9 @@ Image name\x3A:BlueChannel3
     assert module.green_name == "OrigGreeny"
     assert module.blue_name == "OrigBluez"
     assert module.channel_count.value == 3
-    assert module.channels[0].channel_choice == module.channel_names[0]
-    assert module.channels[1].channel_choice == module.channel_names[2]
-    assert module.channels[2].channel_choice == module.channel_names[1]
+    assert module.channels[0].channel_choice.value == 1
+    assert module.channels[1].channel_choice.value == 3
+    assert module.channels[2].channel_choice.value == 2
     assert module.channels[0].contribution == 1
     assert module.channels[1].contribution == 2
     assert module.channels[2].contribution == 3

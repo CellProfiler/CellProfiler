@@ -54,7 +54,7 @@ SLOT_CHANNEL_CHOICE = 0
 
 class ColorToGray(cpm.Module):
     module_name = "ColorToGray"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Image Processing"
 
     def create_settings(self):

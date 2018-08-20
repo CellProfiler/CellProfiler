@@ -56,6 +56,7 @@ class ColorToGray(cpm.Module):
     module_name = "ColorToGray"
     variable_revision_number = 4
     category = "Image Processing"
+    channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
@@ -206,7 +207,6 @@ Enter a name for the resulting grayscale image coming from the value.""")
 
         self.channel_count = cps.HiddenCount(self.channels, "Channel count")
 
-    channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
 
     def add_channel(self, can_remove=True):
         '''Add another channel to the channels list'''
@@ -214,7 +214,7 @@ Enter a name for the resulting grayscale image coming from the value.""")
         group.can_remove = can_remove
         group.append("channel_choice", cps.Integer(
             text="Channel number",
-            value=len(self.channels)+1,
+            value=len(self.channels) + 1,
             minval=1,
             doc="""\
 *(Used only when splitting images)*
@@ -349,9 +349,9 @@ Select the name of the output grayscale image."""))
         returns the zero-based index of the channel.
         '''
         if type(choice) == int:
-            return choice-1
+            return choice - 1
         else:
-            return int(re.search("[0-9]+$", choice).group())-1
+            return int(re.search("[0-9]+$", choice).group()) - 1
 
     def channels_and_image_names(self):
         """Return tuples of channel indexes and the image names for output"""
@@ -376,7 +376,7 @@ Select the name of the output grayscale image."""))
             if channel_idx < len(self.channel_names):
                 channel_name = self.channel_names[channel_idx]
             else:
-                channel_name = 'Channel: '+str(choice)
+                channel_name = 'Channel: ' + str(choice)
             result.append((channel_idx, channel.image_name.value,
                            channel_name))
         return result
@@ -459,14 +459,14 @@ Select the name of the output grayscale image."""))
         input_image = workspace.display_data.input_image
         disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)
-        ncols = int(np.ceil((ndisp+1)**0.5))
-        subplots = (ncols, (ndisp/ncols)+1)
+        ncols = int(np.ceil((ndisp + 1) ** 0.5))
+        subplots = (ncols, (ndisp / ncols) + 1)
         figure.set_subplots(subplots)
         figure.subplot_imshow_color(0, 0, input_image, title="Original image")
 
         for eachplot in range(ndisp):
-             placenum = eachplot +1
-             figure.subplot_imshow(placenum%ncols, placenum/ncols, disp_collection[eachplot][0],
+             placenum = eachplot + 1
+             figure.subplot_imshow(placenum%ncols, placenum / ncols, disp_collection[eachplot][0],
                                    title="%s" % (disp_collection[eachplot][1]),
                                    colormap=matplotlib.cm.Greys_r,
                                    sharexy=figure.subplot(0, 0))
@@ -537,5 +537,5 @@ Select the name of the output grayscale image."""))
             for i in range(nchannels):
                 idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
                 channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
-                setting_values[idx] = channel_idx+1
+                setting_values[idx] = channel_idx + 1
         return setting_values, variable_revision_number, from_matlab

@@ -528,14 +528,14 @@ Select the name of the output grayscale image."""))
                               setting_values[13:])
             variable_revision_number = 3
 
-        #
-        # Standardize the channel choices
-        #
-        setting_values = list(setting_values)
-        nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
-        for i in range(nchannels):
-            idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
-            channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
-            setting_values[idx] = channel_idx+1
-
+        if variable_revision_number < 4:
+            #
+            # Standardize the channel choices
+            #
+            setting_values = list(setting_values)
+            nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
+            for i in range(nchannels):
+                idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
+                channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
+                setting_values[idx] = channel_idx+1
         return setting_values, variable_revision_number, from_matlab

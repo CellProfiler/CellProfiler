@@ -538,4 +538,6 @@ Select the name of the output grayscale image."""))
                 idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
                 channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
                 setting_values[idx] = channel_idx + 1
+            variable_revision_number = 4
+
         return setting_values, variable_revision_number, from_matlab

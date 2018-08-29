@@ -145,7 +145,7 @@ def test_01_03_combine_channels():
     divisor = numpy.sum(factors)
     expected = numpy.zeros((20, 10))
     for i, channel_index in enumerate(channel_indexes):
-        module.channels[i].channel_choice.value = module.channel_names[channel_index]
+        module.channels[i].channel_choice.value = channel_index+1
         module.channels[i].contribution.value_text = "%.10f" % factors[i]
         expected += image[:, :, channel_index] * factors[i] / divisor
 
@@ -184,7 +184,7 @@ def test_01_04_split_channels():
 
     channel_indexes = numpy.array([1, 4, 2])
     for i, channel_index in enumerate(channel_indexes):
-        module.channels[i].channel_choice.value = module.channel_names[channel_index]
+        module.channels[i].channel_choice.value = channel_index+1
         module.channels[i].image_name.value = OUTPUT_IMAGE_F % i
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -310,12 +310,93 @@ Image name\x3A:BlueChannel3
     assert module.green_name == "OrigGreeny"
     assert module.blue_name == "OrigBluez"
     assert module.channel_count.value == 3
-    assert module.channels[0].channel_choice == module.channel_names[0]
-    assert module.channels[1].channel_choice == module.channel_names[2]
-    assert module.channels[2].channel_choice == module.channel_names[1]
+    assert module.channels[0].channel_choice.value == 1
+    assert module.channels[1].channel_choice.value == 3
+    assert module.channels[2].channel_choice.value == 2
     assert module.channels[0].contribution == 1
     assert module.channels[1].contribution == 2
     assert module.channels[2].contribution == 3
     assert module.channels[0].image_name == "RedChannel1"
     assert module.channels[1].image_name == "GreenChannel2"
     assert module.channels[2].image_name == "BlueChannel3"
+
+def test_2_6_load_v3():
+    """
+    Tests a pipeline that was produced with module revision 3.
+    The channel names are named according to the schema:
+    Channel(#new_imagenumber)_(#channel_number),
+    e.g. Channel3_2 would be the image number 3 that contains channel
+    number 2.
+    Thus it can be easily checked via the new image name, if the channel
+    number is correctly parsed.
+    """
+
+    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:4
+DateRevision:315
+GitHash:
+ModuleCount:5
+HasImagePlaneDetails:False
+
+ColorToGray:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:\xff\xfeD\x00N\x00A\x00
+    Conversion method:\xff\xfeS\x00p\x00l\x00i\x00t\x00
+    Image type:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x00s\x00
+    Name the output image:\xff\xfeO\x00r\x00i\x00g\x00G\x00r\x00a\x00y\x00
+    Relative weight of the red channel:\xff\xfe1\x00.\x000\x00
+    Relative weight of the green channel:\xff\xfe1\x00.\x000\x00
+    Relative weight of the blue channel:\xff\xfe1\x00.\x000\x00
+    Convert red to gray?:\xff\xfeY\x00e\x00s\x00
+    Name the output image:\xff\xfeO\x00r\x00i\x00g\x00R\x00e\x00d\x00
+    Convert green to gray?:\xff\xfeY\x00e\x00s\x00
+    Name the output image:\xff\xfeO\x00r\x00i\x00g\x00G\x00r\x00e\x00e\x00n\x00
+    Convert blue to gray?:\xff\xfeY\x00e\x00s\x00
+    Name the output image:\xff\xfeO\x00r\x00i\x00g\x00B\x00l\x00u\x00e\x00
+    Convert hue to gray?:\xff\xfeY\x00e\x00s\x00
+    Name the output image:\xff\xfeO\x00r\x00i\x00g\x00H\x00u\x00e\x00
+    Convert saturation to gray?:\xff\xfeY\x00e\x00s\x00
+    Name the output image:\xff\xfeO\x00r\x00i\x00g\x00S\x00a\x00t\x00u\x00r\x00a\x00t\x00i\x00o\x00n\x00
+    Convert value to gray?:\xff\xfeY\x00e\x00s\x00
+    Name the output image:\xff\xfeO\x00r\x00i\x00g\x00V\x00a\x00l\x00u\x00e\x00
+    Channel count:\xff\xfe8\x00
+    Channel number:\xff\xfeG\x00r\x00e\x00e\x00n\x00\x3A\x00 \x002\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x001\x00_\x002\x00
+    Channel number:\xff\xfeR\x00e\x00d\x00\x3A\x00 \x001\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x002\x00_\x001\x00
+    Channel number:\xff\xfeB\x00l\x00u\x00e\x00\x3A\x00 \x003\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x003\x00_\x003\x00
+    Channel number:\xff\xfeA\x00l\x00p\x00h\x00a\x00\x3A\x00 \x004\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x004\x00_\x004\x00
+    Channel number:\xff\xfe5\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x005\x00_\x005\x00
+    Channel number:\xff\xfe7\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x006\x00_\x007\x00
+    Channel number:\xff\xfe7\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x007\x00_\x007\x00
+    Channel number:\xff\xfe6\x00
+    Relative weight of the channel:\xff\xfe1\x00.\x000\x00
+    Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x008\x00_\x006\x00
+"""
+    pipeline = cellprofiler.pipeline.Pipeline()
+
+    def callback(caller, event):
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+
+    pipeline.add_listener(callback)
+    pipeline.load(StringIO(data))
+    assert len(pipeline.modules()) == 1
+    module = pipeline.modules()[0]
+    assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
+    assert module.image_name == "DNA"
+    assert module.channel_count.value == 8
+    for i in range(module.channel_count.value):
+        c = module.channels[i].image_name.value.split('_')[1]
+        assert module.channels[i].channel_choice.value == int(c)
+    assert module.channels[6].image_name.value == 'Channel7_7'

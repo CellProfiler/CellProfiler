@@ -1921,6 +1921,8 @@ class Figure(wx.Frame):
                         xlabel='', ylabel='',
                         xscale='linear', yscale='linear',
                         title='',
+                        color='b',
+                        cmap=None,
                         clear=True):
         """Put a scatterplot into a subplot
 
@@ -1931,6 +1933,8 @@ class Figure(wx.Frame):
         xscale - scaling of the x axis (e.g., 'log' or 'linear')
         yscale - scaling of the y axis (e.g., 'log' or 'linear')
         title  - string title for the plot
+        color  - color, sequence, or sequence of color for the plotted points
+        cmap   - matplotlib Colormap
         """
         xvals = numpy.array(xvals).flatten()
         yvals = numpy.array(yvals).flatten()
@@ -1956,6 +1960,8 @@ class Figure(wx.Frame):
         plot = axes.scatter(xvals, yvals,
                             facecolor=(0.0, 0.62, 1.0),
                             edgecolor='none',
+                            c=color,
+                            cmap=cmap,
                             alpha=0.75)
         axes.set_title(title)
         axes.set_xlabel(xlabel)

@@ -1263,7 +1263,7 @@ class Figure(wx.Frame):
                 norm=norm
             )
 
-            ax.set_label("{:d}".format(position * (z - 1) / 8))
+            ax.set_xlabel("Z: {:d}".format(position * (z - 1) / 8))
 
             self.figure.add_subplot(ax)
 

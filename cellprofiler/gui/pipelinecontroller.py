@@ -1512,6 +1512,7 @@ class PipelineController(object):
     
     def on_pathlist_browse_folder(self, event, default_dir=wx.EmptyString):
         """Handle request for browsing for pathlist folder"""
+        print("in on_pathlist_browse_folder")
         with wx.DirDialog(
                 self.__path_list_ctrl,
                 "Select image folder",

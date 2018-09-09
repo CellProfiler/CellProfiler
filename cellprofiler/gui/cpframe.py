@@ -645,6 +645,9 @@ class CPFrame(wx.Frame):
         self.menu_edit.Append(ID_EDIT_BROWSE_FOR_FILES,
                               "Browse for Images",
                               "Select images to add to the file list using a file browser")
+        self.menu_edit.Append(ID_EDIT_BROWSE_FOR_FOLDER,
+                              "Browse for Image Folder",
+                              "Select a folder of images to add to the file list using a file browser")
         self.menu_edit.Append(ID_EDIT_CLEAR_FILE_LIST, "Clear File List",
                               "Remove all files from the file list")
         self.menu_edit.Append(ID_EDIT_EXPAND_ALL, "Expand All Folders",

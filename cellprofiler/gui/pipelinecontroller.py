@@ -1577,6 +1577,7 @@ class PipelineController(object):
                     None,
                     default_dir=path)
         elif cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+            print("selected browse folder")
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 self.on_pathlist_browse_folder(None)
             else:
@@ -1620,6 +1621,12 @@ class PipelineController(object):
                 self.on_pathlist_browse(None, default_dir=path)
             else:
                 self.on_pathlist_browse(None)
+         elif cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+            if path.startswith("file:"):
+                path = urllib.url2pathname(path[5:])
+                self.on_pathlist_browse_folder(None, default_dir=path)
+            else:
+                self.on_pathlist_browse_folder(None)
         else:
             self.on_pathlist_command(cmd)
 
@@ -1629,8 +1636,10 @@ class PipelineController(object):
 
     def on_pathlist_empty_command(self, path, cmd):
         if cmd == self.PATHLIST_CMD_BROWSE:
-            self.on_pathlist_browse(None)
-
+            self.on_pathlist_browse(None)        
+        if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+            self.on_pathlist_browse_folder(None)
+        
     def on_pathlist_expand_all(self, event=None):
         self.__path_list_ctrl.expand_all()
 

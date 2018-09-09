@@ -1621,7 +1621,7 @@ class PipelineController(object):
                 self.on_pathlist_browse(None, default_dir=path)
             else:
                 self.on_pathlist_browse(None)
-         elif cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+        elif cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
             if path.startswith("file:"):
                 path = urllib.url2pathname(path[5:])
                 self.on_pathlist_browse_folder(None, default_dir=path)

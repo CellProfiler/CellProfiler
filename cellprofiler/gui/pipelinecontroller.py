@@ -1566,24 +1566,17 @@ class PipelineController(object):
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_REFRESH:
             self.on_pathlist_refresh(paths)
-        elif cmd == self.PATHLIST_CMD_BROWSE_FILES:
+        elif cmd in [self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FOLDER]:
+            if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+                browse_function = self.on_pathlist_browse_folder 
+            else:
+                browse_function = self.on_pathlist_browse_files
             if len(paths) == 0 or not paths[0].startswith("file:"):
-                self.on_pathlist_browse_files(None)
+                browse_function(None)
             else:
                 path = urllib.url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
-                self.on_pathlist_browse_files(
-                    None,
-                    default_dir=path)
-        elif cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
-            if len(paths) == 0 or not paths[0].startswith("file:"):
-                self.on_pathlist_browse_folder(None)
-            else:
-                path = urllib.url2pathname(paths[0][5:])
-                path = os.path.split(path)[0]
-                self.on_pathlist_browse_folder(
-                    None,
-                    default_dir=path)
+                browse_function(None, default_dir=path)
         else:
             self.on_pathlist_command(cmd)
 
@@ -1613,18 +1606,16 @@ class PipelineController(object):
             paths = self.__path_list_ctrl.get_folder(
                 path, self.__path_list_ctrl.FLAG_RECURSE)
             self.on_pathlist_refresh(paths)
-        elif cmd == self.PATHLIST_CMD_BROWSE_FILES:
+        elif cmd in [self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FOLDER]:
+            if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+                browse_function = self.on_pathlist_browse_folder 
+            else:
+                browse_function = self.on_pathlist_browse_files
             if path.startswith("file:"):
                 path = urllib.url2pathname(path[5:])
-                self.on_pathlist_browse_files(None, default_dir=path)
+                browse_function(None, default_dir=path)
             else:
-                self.on_pathlist_browse_files(None)
-        elif cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
-            if path.startswith("file:"):
-                path = urllib.url2pathname(path[5:])
-                self.on_pathlist_browse_folder(None, default_dir=path)
-            else:
-                self.on_pathlist_browse_folder(None)
+                browse_function(None)
         else:
             self.on_pathlist_command(cmd)
 

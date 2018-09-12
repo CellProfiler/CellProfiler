@@ -133,8 +133,10 @@ class PipelineController(object):
         wx.EVT_MENU(frame, cpframe.ID_EDIT_DELETE, self.on_remove_module)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_DUPLICATE, self.on_duplicate_module)
 
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_BROWSE_FOR_FOLDER,
+                    self.on_pathlist_browse_folder)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_BROWSE_FOR_FILES,
-                    self.on_pathlist_browse)
+                    self.on_pathlist_browse_files)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_CLEAR_FILE_LIST,
                     self.on_pathlist_clear)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_COLLAPSE_ALL,
@@ -1507,8 +1509,19 @@ class PipelineController(object):
         elif event.Id == cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE:
             if not self.__path_list_ctrl.has_focus_item():
                 event.Enable(False)
+    
+    def on_pathlist_browse_folder(self, event, default_dir=wx.EmptyString):
+        """Handle request for browsing for pathlist folder"""
+        with wx.DirDialog(
+                self.__path_list_ctrl,
+                "Select image folder",
+               ) as dlg:
+            assert isinstance(dlg, wx.DirDialog)
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                self.add_paths_to_pathlist([path])
 
-    def on_pathlist_browse(self, event, default_dir=wx.EmptyString):
+    def on_pathlist_browse_files(self, event, default_dir=wx.EmptyString):
         """Handle request for browsing for pathlist files"""
         with wx.FileDialog(
                 self.__path_list_ctrl,
@@ -1524,7 +1537,8 @@ class PipelineController(object):
                 self.add_paths_to_pathlist(paths)
 
     PATHLIST_CMD_SHOW = "Show Selected Image"
-    PATHLIST_CMD_BROWSE = "Browse For Images"
+    PATHLIST_CMD_BROWSE_FILES = "Browse For Images"
+    PATHLIST_CMD_BROWSE_FOLDER = "Browse For Folder"
     PATHLIST_CMD_REMOVE = "Remove From File List"
     PATHLIST_CMD_REFRESH = "Refresh File List"
     PATHLIST_TEXT_REFRESH = "Remove Unavailable Files"
@@ -1536,7 +1550,8 @@ class PipelineController(object):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
                 (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
                 (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
-                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+                (self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FILES),
+                (self.PATHLIST_CMD_BROWSE_FOLDER, self.PATHLIST_CMD_BROWSE_FOLDER),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
                 (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
@@ -1544,22 +1559,24 @@ class PipelineController(object):
     def on_pathlist_file_command(self, paths, cmd):
         if cmd == self.PATHLIST_CMD_SHOW or cmd is None:
             if len(paths) == 0:
-                self.on_pathlist_browse(None)
+                self.on_pathlist_browse_files(None)
                 return
             self.on_pathlist_show()
         elif cmd == self.PATHLIST_CMD_REMOVE:
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_REFRESH:
             self.on_pathlist_refresh(paths)
-        elif cmd == self.PATHLIST_CMD_BROWSE:
+        elif cmd in [self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FOLDER]:
+            if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+                browse_function = self.on_pathlist_browse_folder 
+            else:
+                browse_function = self.on_pathlist_browse_files
             if len(paths) == 0 or not paths[0].startswith("file:"):
-                self.on_pathlist_browse(None)
+                browse_function(None)
             else:
                 path = urllib.url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
-                self.on_pathlist_browse(
-                    None,
-                    default_dir=path)
+                browse_function(None, default_dir=path)
         else:
             self.on_pathlist_command(cmd)
 
@@ -1574,7 +1591,8 @@ class PipelineController(object):
     def get_pathlist_folder_context_menu(self, path):
         return ((self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
                 (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
-                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+                (self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FILES),
+                (self.PATHLIST_CMD_BROWSE_FOLDER, self.PATHLIST_CMD_BROWSE_FOLDER),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
                 (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
@@ -1588,22 +1606,29 @@ class PipelineController(object):
             paths = self.__path_list_ctrl.get_folder(
                 path, self.__path_list_ctrl.FLAG_RECURSE)
             self.on_pathlist_refresh(paths)
-        elif cmd == self.PATHLIST_CMD_BROWSE:
+        elif cmd in [self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FOLDER]:
+            if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+                browse_function = self.on_pathlist_browse_folder 
+            else:
+                browse_function = self.on_pathlist_browse_files
             if path.startswith("file:"):
                 path = urllib.url2pathname(path[5:])
-                self.on_pathlist_browse(None, default_dir=path)
+                browse_function(None, default_dir=path)
             else:
-                self.on_pathlist_browse(None)
+                browse_function(None)
         else:
             self.on_pathlist_command(cmd)
 
     def get_pathlist_empty_context_menu(self, path):
-        return (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+        return ((self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FILES),
+                (self.PATHLIST_CMD_BROWSE_FOLDER, self.PATHLIST_CMD_BROWSE_FOLDER))
 
     def on_pathlist_empty_command(self, path, cmd):
-        if cmd == self.PATHLIST_CMD_BROWSE:
-            self.on_pathlist_browse(None)
-
+        if cmd == self.PATHLIST_CMD_BROWSE_FILES:
+            self.on_pathlist_browse_files(None)        
+        if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+            self.on_pathlist_browse_folder(None)
+        
     def on_pathlist_expand_all(self, event=None):
         self.__path_list_ctrl.expand_all()
 

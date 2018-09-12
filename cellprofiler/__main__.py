@@ -132,6 +132,7 @@ def main(args=None):
         if options.write_schema_and_exit:
             write_schema(options.pipeline_filename)
 
+        exit_code = 0
         if options.show_gui:
             matplotlib.use('WXAgg')
 
@@ -160,13 +161,15 @@ def main(args=None):
 
             return
         elif options.run_pipeline:
-            run_pipeline_headless(options, args)
+            exit_code = run_pipeline_headless(options, args)
 
     finally:
         # If anything goes wrong during the startup sequence headlessly, the JVM needs
         # to be explicitly closed
         if not options.show_gui:
             stop_cellprofiler()
+
+    sys.exit(exit_code)
 
 
 def __version__(exit_code):
@@ -759,6 +762,9 @@ def run_pipeline_headless(options, args):
         fd = open(options.done_file, "wt")
         fd.write("%s\n" % done_text)
         fd.close()
+    elif not measurements.has_feature(cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS):
+        # The pipeline probably failed
+        exit_code = 1
     else:
         exit_code = 0
 

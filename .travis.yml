@@ -17,6 +17,7 @@ env:
 matrix:
   allow_failures:
     - env: REQUIREMENTS_FILE="unpinned_requirements.txt"
+    - python: 3.6
 install:
   - pip install -r $REQUIREMENTS_FILE
   - pip install .[test]
@@ -30,10 +31,7 @@ notifications:
     on_success: change
 python:
   - 2.7
-  - 3.6
-matrix:
-  allow_failures:
-    - python: 3.6
+  - 3.6    
 before_script:
   - pip install flake8
   # stop the build if there are Python syntax errors or undefined names

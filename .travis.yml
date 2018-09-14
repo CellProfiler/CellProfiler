@@ -1,34 +1,42 @@
-addons:
-  apt:
-    packages:
-      - libhdf5-serial-dev
-      - python-mysqldb
-      - python-pip
-cache:
-  apt: true
-  directories: $HOME/.cache/pip
-dist: trusty
-env:
-  global:
-    - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
-  matrix:
-    - REQUIREMENTS_FILE="unpinned_requirements.txt"
-    - REQUIREMENTS_FILE="requirements.txt"
+group: travis_latest
+language: python
+cache: pip
+python:
+  - 2.7
+  - 3.6
 matrix:
   allow_failures:
-    - env: REQUIREMENTS_FILE="unpinned_requirements.txt"
+    - python: 3.6
+env:
+  - REPO=CellProfiler/BatchProfiler
+  - REPO=CellProfiler/CPCharm
+  - REPO=CellProfiler/CellProfiler  # has .travis.yml file
+  - REPO=CellProfiler/CellProfiler-Analyst
+  - REPO=CellProfiler/CellProfiler-build
+  - REPO=CellProfiler/CellProfiler-plugins  # has .travis.yml file
+  - REPO=CellProfiler/Distributed-CellProfiler
+  - REPO=CellProfiler/centrosome  # has .travis.yml file
+  - REPO=CellProfiler/distribution  # has .travis.yml file
+  - REPO=CellProfiler/meoir
+  - REPO=CellProfiler/python-bioformats  # has .travis.yml file
+  - REPO=CellProfiler/stitching
+  - REPO=CellProfiler/tutorial
+    
 install:
-  - pip install -r $REQUIREMENTS_FILE
-  - pip install .[test]
-  - pip freeze
-language: python
+  #- pip install -r requirements.txt
+  - pip install flake8  # pytest  # add other testing frameworks later
+before_script:
+  - URL=https://github.com/${REPO}
+  - echo ; echo -n "flake8 testing of ${URL} on " ; python -V
+  - git clone --depth=50 ${URL} ~/${REPO}  # --branch=master
+  - cd ~/${REPO}
+script:
+  - echo stop the build if there are Python syntax errors or undefined names
+  - echo ; echo -n "flake8 testing of ${URL} on " ; python -V
+  - time flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+  - echo exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
+  - time flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  #- true  # pytest --capture=sys
 notifications:
-  email: false
-  slack:
-    secure: kDWVy90sDY+o3g0/ZTGX2D+PTbzhtd74Whe1AJHhcUDobTUzkch8GtY9eZxybZk4nga9lQxL6YeJ72SfBBEPaLzXcUMe0YcNaBydkQHcipKZn+Vcb8kf2FiZC6YwsUYfTvvH9MPLbkZOZvsNyd0h85z+hYMB8jHsq6Yn5gf79BA=
-    on_failure: always
-    on_success: change
-python: 2.7.12
-script: pytest
-services: mysql
-sudo: required
+  on_success: change
+  on_failure: change  # `always` will be the setting once code changes slow down

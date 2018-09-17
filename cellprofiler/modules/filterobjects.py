@@ -1027,7 +1027,11 @@ value will be retained.""".format(**{
             # Added CPA rules
             #
             setting_values = (setting_values[:11] +
-                              [MODE_MEASUREMENTS, dir_default_input, "."] +
+                              [
+                                  MODE_MEASUREMENTS, 
+                                  cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, 
+                                  "."
+                              ] +
                               setting_values[11:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
@@ -1065,11 +1069,11 @@ value will be retained.""".format(**{
             rules_directory_choice = setting_values[7]
             rules_path_name = setting_values[8]
             if rules_directory_choice == DIR_CUSTOM:
-                rules_directory_choice == cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                rules_directory_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
                 if rules_path_name.startswith('.'):
-                    rules_directory_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+                    rules_directory_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif rules_path_name.startswith('&'):
-                    rules_directory_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    rules_directory_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     rules_path_name = "." + rules_path_name[1:]
 
             rules_directory = cellprofiler.setting.DirectoryPath.static_join_string(

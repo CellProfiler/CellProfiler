@@ -2533,7 +2533,7 @@ class StringReferencer(object):
         j_data = self.data[i, j_data_idx:(j_data_idx + j_data_len)]
         if i0 == self.SR_NULL:
             # Splitting the root. We need to promote.
-            i0 = self.sr_alloc_block(self.blockdesc, ol, data)
+            i0 = self.sr_alloc_block()
             j0 = 0
             self.blockdesc[i0, self.SR_BLOCKDESC_LEFTMOST_CHILD] = i
         elif self.blockdesc[i0, self.SR_BLOCKDESC_IDX_LEN] == self.blocksize:

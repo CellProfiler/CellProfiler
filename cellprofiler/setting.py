@@ -750,7 +750,7 @@ class Number(Text):
         '''Programatically set the minimum value allowed'''
         self.__minval = minval
 
-    def set_max_value(self, minval):
+    def set_max_value(self, maxval):
         '''Programatically set the maximum value allowed'''
         self.__maxval = maxval
 

@@ -856,7 +856,7 @@ safe to press it.""")
                        for s in row]
                 if len(row) != len(header):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d" %
-                                     (i, len(row), len(header)))
+                                     (idx, len(row), len(header)))
                 rows.append(row)
         else:
             rows = [[unicode(s, 'utf8') if isinstance(s, str) else s

@@ -392,6 +392,7 @@ supplied by a previous module.
 
     def save_into_ilp(self, project_name, labels, guidename):
         import h5py
+        import wx
         with h5py.File(project_name) as f:
             g = f["DataSets"]
             for k in g:
@@ -400,7 +401,7 @@ supplied by a previous module.
                     break
             else:
                 wx.MessageBox("Sorry, could not find the file, %s, in the project, %s" %
-                              (guidname, project_name))
+                              (guidename, project_name))
             project_labels = data_item["labels"]["data"]
             mask = np.ones(project_labels.shape[2:4], project_labels.dtype)
             for label in labels:

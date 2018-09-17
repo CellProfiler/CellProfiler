@@ -901,20 +901,8 @@ def lock_file(path, timeout=3):
         #
         # Fall through if we believe that the other end is dead
         #
-        if sys.platform == "win32":
-            # I'm not a patient person. Python open apparently can't
-            # open hidden files - are you kidding? It's some screwed up
-            # who's on first scenario between Windows and Python "it's hidden
-            # so when I go to see if it's there, it's not but when I open it
-            # it is there!". Another 15 minutes of my life down the drain.
-            #
-            attrs = get_file_attributes(lock_path)
-            set_file_attributes(lock_path, attrs & ~ FILE_ATTRIBUTE_HIDDEN)
         with open(lock_path, "w") as f:
             f.write(the_boundary.request_address + "\n" + uid)
-        if sys.platform == "win32":
-            attrs = get_file_attributes(lock_path)
-            set_file_attributes(lock_path, attrs | FILE_ATTRIBUTE_HIDDEN)
     #
     # The coast is clear to lock
     #

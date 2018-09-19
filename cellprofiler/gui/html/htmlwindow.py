@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import os
 import urllib
 import webbrowser
@@ -8,7 +9,7 @@ import sys
 import wx.html
 
 import cellprofiler.icons
-import utils
+from . import utils
 
 MEMORY_SCHEME = "memory:"
 

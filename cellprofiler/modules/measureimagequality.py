@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import logging
 import numpy
 import scipy.ndimage
@@ -10,8 +11,8 @@ import centrosome.threshold
 import centrosome.radial_power_spectrum
 import centrosome.threshold
 import itertools
-import identify
-import loadimages
+from . import identify
+from . import loadimages
 import cellprofiler.preferences
 import cellprofiler.module
 import cellprofiler.measurement

@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import absolute_import
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
@@ -7,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 import os
-import _help
+from . import _help
 
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp

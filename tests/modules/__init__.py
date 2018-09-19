@@ -33,7 +33,7 @@ cp_logo_url_shape = (70, 187, 3)
 
 def example_images_directory():
     global __temp_example_images_folder
-    if os.environ.has_key('CP_EXAMPLEIMAGES'):
+    if 'CP_EXAMPLEIMAGES' in os.environ:
         return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
     d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
@@ -72,7 +72,7 @@ __temp_test_images_folder = None
 
 def testimages_directory():
     global __temp_test_images_folder
-    if os.environ.has_key('CP_TESTIMAGES'):
+    if 'CP_TESTIMAGES' in os.environ:
         return os.environ['CP_TESTIMAGES']
     fyle = os.path.abspath(__file__)
     d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
@@ -286,7 +286,7 @@ def maybe_download_tesst_image(file_name):
         url = testimages_url() + "/" + file_name
         try:
             URLopener().retrieve(url, local_path)
-        except IOError, e:
+        except IOError as e:
             # This raises the "expected failure" exception.
             def bad_url(e=e):
                 raise e

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import cellprofiler.gui.help
 
 import math
@@ -15,8 +16,8 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.object
 import cellprofiler.setting
-import threshold
-import _help
+from . import threshold
+from . import _help
 
 __doc__ = """\
 IdentifyPrimaryObjects

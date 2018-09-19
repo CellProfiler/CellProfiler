@@ -4,6 +4,7 @@ This module implements the HDF5Dict class, which provides a dict-like
 interface for measurements, backed by an HDF5 file.
 """
 from __future__ import with_statement
+from __future__ import print_function
 
 import bisect
 import logging
@@ -307,7 +308,7 @@ class HDF5Dict(object):
                                             chunks=(self.chunksize,),
                                             maxshape=(None,))
             self.hdf5_file.flush()
-        except Exception, e:
+        except Exception as e:
             logger.exception("Failed during initial processing of %s" % self.filename)
             self.hdf5_file.close()
             raise
@@ -326,7 +327,7 @@ class HDF5Dict(object):
                 self.hdf5_file.flush()  # just in case unlink fails
                 self.hdf5_file.close()
                 os.unlink(self.filename)
-            except Exception, e:
+            except Exception as e:
                 logger.warn(
                         "So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
         else:
@@ -733,7 +734,7 @@ class HDF5Dict(object):
             self.add_object(object_name)
             if self.has_feature(object_name, feature_name):
                 del self.top_group[object_name][feature_name]
-                if self.indices.has_key((object_name, feature_name)):
+                if (object_name, feature_name) in self.indices:
                     del self.indices[object_name, feature_name]
             self.add_feature(object_name, feature_name)
             if len(values) > 0 and (
@@ -1069,14 +1070,14 @@ class HDF5FileList(object):
         timestamp = time.time()
         for url in urls:
             schema, parts = self.split_url(url)
-            if not d.has_key(schema):
+            if schema not in d:
                 d[schema] = {}
             d1 = d[schema]
             for part in parts[:-1]:
-                if not d1.has_key(part):
+                if part not in d1:
                     d1[part] = {}
                 d1 = d1[part]
-            if not d1.has_key(None):
+            if None not in d1:
                 d1[None] = []
             d1[None].append(parts[-1])
 
@@ -1135,14 +1136,14 @@ class HDF5FileList(object):
         d = {}
         for url in urls:
             schema, parts = self.split_url(url)
-            if not d.has_key(schema):
+            if schema not in d:
                 d[schema] = {}
             d1 = d[schema]
             for part in parts[:-1]:
-                if not d1.has_key(part):
+                if part not in d1:
                     d1[part] = {}
                 d1 = d1[part]
-            if not d1.has_key(None):
+            if None not in d1:
                 d1[None] = []
             d1[None].append(parts[-1])
 
@@ -1274,7 +1275,7 @@ class HDF5FileList(object):
 
         returns the URL list
         '''
-        if self.__cache.has_key(path_tuple):
+        if path_tuple in self.__cache:
             return self.__cache[path_tuple].urls
         a = tuple([x.encode("utf-8") for x in VStringArray(g)])
         is_not_none = VStringArray(g.require_group("metadata")).is_not_none()
@@ -2242,7 +2243,7 @@ class VStringArray(object):
                 lo = mid + 1
         return lo
 
-    def is_not_none(self, index=slice(0, sys.maxint)):
+    def is_not_none(self, index=slice(0, sys.maxsize)):
         '''Return True for indices that are not None
 
         index - either a single index (in which case, we return a single
@@ -2684,17 +2685,17 @@ if __name__ == '__main__':
     h['Object1', 'objfeature2', 1] = [1, 2, 3]
     h['Image', 'f1', 1] = 5
     h['Image', 'f2', 1] = 4
-    print h['Image', 'f2', 1]
+    print(h['Image', 'f2', 1])
     h['Image', 'f1', 2] = 6
     h['Image', 'f2', 1] = 6
-    print h['Image', 'f2', 1]
-    print h['Object1', 'objfeature1', 1]
+    print(h['Image', 'f2', 1])
+    print(h['Object1', 'objfeature1', 1])
     h['Object1', 'objfeature1', 2] = 3.0
-    print h['Object1', 'objfeature1', 1]
+    print(h['Object1', 'objfeature1', 1])
     h['Object1', 'objfeature1', 1] = [1, 2, 3]
     h['Object1', 'objfeature1', 1] = [1, 2, 3, 5, 6]
     h['Object1', 'objfeature1', 1] = [9, 4.0, 2.5]
-    print     h['Object1', 'objfeature1', 1]
+    print(h['Object1', 'objfeature1', 1])
 
 
     def randtext():

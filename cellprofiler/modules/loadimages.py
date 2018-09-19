@@ -64,6 +64,8 @@ Measurements made by this module
 -  *Height, Width:* The height and width of the current image.
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import hashlib
 import logging
@@ -76,7 +78,7 @@ import urllib
 import urlparse
 import shutil
 
-import _help
+from . import _help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.misc
@@ -86,8 +88,8 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import centrosome.outline
-import identify
-import images
+from . import identify
+from . import images
 import numpy
 import scipy.io.matlab.mio
 import skimage.external.tifffile
@@ -2259,7 +2261,7 @@ to store the image.
             pathname = os.path.join(self.image_directory(), pathname)
             frame_count = self.get_frame_count(pathname)
             if frame_count == 0:
-                print "Warning - no frame count detected"
+                print("Warning - no frame count detected")
                 frame_count = 256
             #
             # 3 choices here:
@@ -2428,7 +2430,7 @@ to store the image.
                         warning = bad_sizes_warning(image_size, first_image_filename,
                                                     pixel_data.shape[:2], filename)
                         if cellprofiler.preferences.get_headless():
-                            print warning
+                            print(warning)
                         elif self.show_window:
                             workspace.display_data.warning = warning
                 else:

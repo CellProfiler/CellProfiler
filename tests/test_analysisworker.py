@@ -109,7 +109,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         result = fn()
                         self.up_queue.put((result, None))
                         up_queue_send_socket.send("OK")
-                    except Exception, e:
+                    except Exception as e:
                         traceback.print_exc()
                         self.up_queue.put((None, e))
                         up_queue_send_socket.send("EXCEPTION")

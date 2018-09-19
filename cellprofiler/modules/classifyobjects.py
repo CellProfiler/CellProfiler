@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -8,7 +9,8 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import _help
+from . import _help
+from functools import reduce
 
 __doc__ = """\
 ClassifyObjects

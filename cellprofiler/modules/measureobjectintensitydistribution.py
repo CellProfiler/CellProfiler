@@ -1,6 +1,9 @@
 # coding=utf-8
 
-import _help
+from __future__ import absolute_import
+# coding=utf-8
+
+from . import _help
 import cellprofiler.gui.help.content
 
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')
@@ -849,7 +852,7 @@ be selected in a later **SaveImages** or other module.
 
         name = (object_name if center_object_name is None else "{}_{}".format(object_name, center_object_name))
 
-        if dd.has_key(name):
+        if name in dd:
             normalized_distance, i_center, j_center, good_mask = dd[name]
         else:
             d_to_edge = centrosome.cpmorphology.distance_to_edge(labels)

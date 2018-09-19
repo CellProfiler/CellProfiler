@@ -300,7 +300,7 @@ a separate alignment to the first image can be calculated:
             #
             first_pixels, other_pixels = [
                 img if img.ndim == 2 else np.mean(img, 2)
-                for img in first_input_pixels, input_pixels]
+                for img in (first_input_pixels, input_pixels)]
             max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
             img = np.zeros((max_shape[0], max_shape[1], 3))
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
@@ -313,7 +313,7 @@ a separate alignment to the first image can be calculated:
                               -off_x, -off_y))
             first_pixels, other_pixels = [
                 img if img.ndim == 2 else np.mean(img, 2)
-                for img in first_output_pixels, output_pixels]
+                for img in (first_output_pixels, output_pixels)]
             max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
             img = np.zeros((max_shape[0], max_shape[1], 3))
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels

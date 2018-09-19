@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import absolute_import
 import logging
 import os
 import re
@@ -7,15 +8,15 @@ import urllib
 
 import javabridge
 
-import _help
+from . import _help
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.setting
-import images
-import loadimages
+from . import images
+from . import loadimages
 
 logger = logging.getLogger(__name__)
 

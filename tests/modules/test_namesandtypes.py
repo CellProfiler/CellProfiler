@@ -937,7 +937,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                          for i, m in enumerate(md([(mB0, 2), (mA0, 3)]))],
                     C1: [("%s%s%s" % (C1, m[M1], m[M2]), m)
                          for i, m in enumerate(md([(mB1, 2),(mA1, 3)]))] }
-                expected_keys = [[(M0, M1), (M2, )][i] for i in j0, j1]
+                expected_keys = [[(M0, M1), (M2, )][i] for i in (j0, j1)]
                 self.do_teest(n, data, expected_keys,
                               [(C0, M0), (C0, M3), (C1, M1), (C1, M2)])
 
@@ -1694,10 +1694,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                      cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME:
             mnames = m.get_measurements(p, cellprofiler.measurement.IMAGE, cname)
             self.assertEqual(len(mnames), 2)
-            self.assertTrue(all([x in mnames for x in IMAGE_NAME, OBJECTS_NAME]))
+            self.assertTrue(all([x in mnames for x in (IMAGE_NAME, OBJECTS_NAME)]))
 
         mnames = m.get_measurements(p, OBJECTS_NAME, cellprofiler.measurement.C_LOCATION)
-        self.assertTrue(all([x in mnames for x in cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]))
+        self.assertTrue(all([x in mnames for x in (cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y)]))
 
     def test_05_01_validate_single_channel(self):
         # regression test for issue #1429

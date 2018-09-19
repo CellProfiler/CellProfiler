@@ -1,6 +1,8 @@
 # coding=utf-8
 """ModuleView.py - implements a view on a module
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import cellprofiler.gui.pipeline
 import cellprofiler.gui.html.utils
@@ -8,21 +10,21 @@ import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import cornerbuttonmixin
+from . import cornerbuttonmixin
 import cellprofiler.gui.htmldialog
 import logging
 import matplotlib.cm
-import metadatactrl
-import namesubscriber
+from . import metadatactrl
+from . import namesubscriber
 import numpy
 import os
 import Queue
-import regexp_editor
+from . import regexp_editor
 import stat
 import sys
 import threading
 import time
-import treecheckboxdialog
+from . import treecheckboxdialog
 import uuid
 import weakref
 import wx
@@ -861,7 +863,7 @@ class ModuleView(object):
                 control.Value = v.value
 
         if (getattr(v, 'has_tooltips', False) and
-                v.has_tooltips and v.tooltips.has_key(control.Value)):
+                v.has_tooltips and control.Value in v.tooltips):
             control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
         return control
 
@@ -885,7 +887,7 @@ class ModuleView(object):
                     pieces = [object_name] + feature.split('_')
                     d1 = d
                     for piece in pieces:
-                        if not d1.has_key(piece):
+                        if piece not in d1:
                             d1[piece] = {}
                             d1[None] = 0
                         d1 = d1[piece]
@@ -900,7 +902,7 @@ class ModuleView(object):
                     pieces = [object_name] + feature.split('_')
                     d1 = d
                     for piece in pieces:
-                        if not d1.has_key(piece):
+                        if piece not in d1:
                             break
                         d1 = d1[piece]
                     d1[None] = True
@@ -981,7 +983,7 @@ class ModuleView(object):
                                     continue
                                 d[dirname] = lambda dirpath=dirpath: fn_populate(dirpath)
                         except:
-                            print "Warning: failed to list directory %s" % root
+                            print("Warning: failed to list directory %s" % root)
                         return d
 
                     d = fn_populate(root)
@@ -989,7 +991,7 @@ class ModuleView(object):
 
                     def populate_selection(d, selection, root):
                         s0 = selection[0]
-                        if not d.has_key(s0):
+                        if s0 not in d:
                             d[s0] = fn_populate(os.path.join(root, s0))
                         elif hasattr(d[s0], "__call__"):
                             d[s0] = d[s0]()
@@ -2256,7 +2258,7 @@ class ModuleView(object):
                 self.__module.test_valid(self.__pipeline)
                 level = logging.WARNING
                 self.__module.test_module_warnings(self.__pipeline)
-            except cellprofiler.setting.ValidationError, instance:
+            except cellprofiler.setting.ValidationError as instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
         # update settings' foreground/background
@@ -2368,7 +2370,7 @@ class FilterPanelController(object):
         key = tuple(address)
         line_name = self.line_name(address)
         self.hide_show_dict[line_name] = True
-        if self.sizer_dict.has_key(key):
+        if key in self.sizer_dict:
             if len(address) > 0:
                 self.hide_show_dict[self.remove_button_name(address)] = True
                 self.hide_show_dict[self.add_button_name(address)] = True
@@ -2401,12 +2403,12 @@ class FilterPanelController(object):
             sizer.Add(self.make_add_rules_button(address), 0,
                       wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
             key = tuple(address[:-1] + [address[-1] + 1])
-            if not self.sizer_dict.has_key(key):
+            if key not in self.sizer_dict:
                 if len(address) == 1:
                     key = None
                 else:
                     key = tuple(address[:-2] + [address[-2] + 1])
-                    if not self.sizer_dict.has_key(key):
+                    if key not in self.sizer_dict:
                         key = None
         if key is not None:
             next_sizer = self.sizer_dict[key]
@@ -2422,7 +2424,7 @@ class FilterPanelController(object):
     def get_tokens(self):
         try:
             tokens = self.v.parse()
-        except Exception, e:
+        except Exception as e:
             logger.debug("Failed to parse filter (value=%s): %s",
                          self.v.value_text, str(e))
             tokens = self.v.default()
@@ -2625,13 +2627,13 @@ class FilterPanelController(object):
         """
         key = tuple(address + [index])
         next_key = tuple(address + [index + 1])
-        if self.sizer_item_dict.has_key(next_key):
+        if next_key in self.sizer_item_dict:
             next_ctrl = self.sizer_item_dict[next_key]
         else:
             next_ctrl = self.stretch_spacer_dict[tuple(address)]
         index = self.get_sizer_index(sizer, next_ctrl)
         sizer.Insert(index, item, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_HORIZONTAL)
-        if not self.sizer_item_dict.has_key(key):
+        if key not in self.sizer_item_dict:
             self.sizer_item_dict[key] = item
 
     def make_literal(self, token, index, address, sizer):
@@ -2952,7 +2954,7 @@ class FileCollectionDisplayController(object):
                                     self.FOLDER_OPEN_IMAGE_INDEX,
                                     wx.TreeItemIcon_Expanded)
         self.tree_ctrl.SetMinSize((100, 300))
-        self.tree_ctrl.SetMaxSize((sys.maxint, 300))
+        self.tree_ctrl.SetMaxSize((sys.maxsize, 300))
         self.file_drop_target = self.FCDCDropTarget(self.on_drop_files,
                                                     self.on_drop_text)
         self.tree_ctrl.SetDropTarget(self.file_drop_target)
@@ -3047,7 +3049,7 @@ class FileCollectionDisplayController(object):
         """
         parent_key = tuple(modpath[:-1])
         modpath = tuple(modpath)
-        if self.modpath_to_item.has_key(modpath):
+        if modpath in self.modpath_to_item:
             item = self.modpath_to_item[modpath]
             if text is not None:
                 self.tree_ctrl.SetItemText(item, text)
@@ -3057,7 +3059,7 @@ class FileCollectionDisplayController(object):
             text = modpath[-1]
         if len(modpath) == 1:
             parent_item = self.root_item
-        elif self.modpath_to_item.has_key(parent_key):
+        elif parent_key in self.modpath_to_item:
             parent_item = self.modpath_to_item[parent_key]
         else:
             parent_item = self.add_item(parent_key, sort=sort)
@@ -3092,7 +3094,7 @@ class FileCollectionDisplayController(object):
 
     def remove_item(self, modpath):
         modpath = tuple(modpath)
-        if self.modpath_to_item.has_key(modpath):
+        if modpath in self.modpath_to_item:
             item = self.modpath_to_item[modpath]
             n_children = self.tree_ctrl.GetChildrenCount(item, False)
             if n_children > 0:
@@ -3377,7 +3379,7 @@ class FileCollectionDisplayController(object):
                 node_is_filtered = (not file_tree[x]) or is_filtered
                 if node_is_filtered and not show_filtered:
                     continue
-                if existing_items.has_key(x):
+                if x in existing_items:
                     existing_items[x][1] = True
                     item_id = existing_items[x][0]
                     self.tree_ctrl.SetItemText(item_id, text)
@@ -3421,7 +3423,7 @@ class FileCollectionDisplayController(object):
                                 text += "\t%d of %d files" % (
                                     unfiltered_files, n_files)
                         text += ")"
-                if existing_items.has_key(x):
+                if x in existing_items:
                     existing_items[x][1] = True
                     item_id = existing_items[x][0]
                     self.tree_ctrl.SetItemText(item_id, text)
@@ -3766,7 +3768,7 @@ class BinaryMatrixController(object):
 
     def update(self):
         h, w = self.setting.get_size()
-        hh, ww = [(x - 1) / 2 for x in h, w]
+        hh, ww = [(x - 1) / 2 for x in (h, w)]
         if self.height_ctrl.Value != hh:
             self.height_ctrl.Value = hh
         if self.width_ctrl.Value != ww:
@@ -3804,7 +3806,7 @@ class BinaryMatrixController(object):
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT), 1, wx.SOLID)
         bBackground, bForeground = [
             wx.Brush(color) for color in
-            wx.Colour(80, 80, 80, 255), wx.WHITE]
+            (wx.Colour(80, 80, 80, 255), wx.WHITE)]
         rw = 2 * ex + dx
         rh = 2 * ey + dy
         for x in range(w):
@@ -4516,7 +4518,7 @@ def validate_module(pipeline, module_num, test_mode, callback):
         level = logging.WARNING
         module.test_module_warnings(pipeline)
         level = logging.INFO
-    except cellprofiler.setting.ValidationError, instance:
+    except cellprofiler.setting.ValidationError as instance:
         message = instance.message
         setting_idx = [m.key() for m in module.visible_settings()].index(instance.get_setting().key())
     wx.CallAfter(callback, setting_idx, message, level)

@@ -30,6 +30,7 @@ See also
 
 See also **NamesAndTypes**.
 """
+from __future__ import absolute_import
 
 import os
 import os.path
@@ -46,7 +47,7 @@ import cellprofiler.module
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
-import _help
+from . import _help
 
 
 IF_IMAGE = "Image"

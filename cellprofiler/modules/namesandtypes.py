@@ -1,9 +1,10 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import logging
 import re
 
-import _help
+from . import _help
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.image
@@ -13,10 +14,10 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import identify
-import images
+from . import identify
+from . import images
 import javabridge
-import loadimages
+from . import loadimages
 import numpy
 import skimage.color
 
@@ -1212,7 +1213,7 @@ requests an object selection.
 
         urls, path_names, file_names, series, index, channel = [
             env.get_object_array_elements(x) for x in
-            urls, path_names, file_names, series, index, channel]
+            (urls, path_names, file_names, series, index, channel)]
         for i, iscd in enumerate(iscds):
             image_set_column_idx = channel_map[column_names[i]]
             if iscd.channel_type == image_set_channel_descriptor.CT_OBJECTS:

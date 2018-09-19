@@ -31,8 +31,7 @@ class VersionChecker(threading.Thread):
             if new_version > self.current_version:
                 self.callback(new_version, info)
         except Exception, e:
-            logger.debug("NON-CRITICAL: cannot fetch new version information from %s: %s"%(self.url, e))
-            pass # no worries
+            pass # This site is no longer maintained
 
 def check_for_updates(url, current_version, callback, user_agent='CellProfiler_cfu'):
     vc = VersionChecker(url, current_version, callback, user_agent)

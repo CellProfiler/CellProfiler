@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"boto3" = "==1.7.62"
+"boto3" = "==*"
 centrosome = "==1.0.9"
 docutils = "==0.14"
 "h5py" = "==2.8.0"
@@ -29,3 +29,6 @@ pytest = "==3.3.2"
 
 [requires]
 python_version = "2.7"
+
+[scripts]
+cellprofiler = "python -c 'import cellprofiler.__main__ as cp; cp.main()'"

@@ -1,6 +1,8 @@
 # coding=utf-8
 """PipelineController.py - controls (modifies) a pipeline
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import cellprofiler
 import cellprofiler.analysis
@@ -27,7 +29,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
-import cpframe
+from . import cpframe
 import cStringIO
 import csv
 import datetime
@@ -40,7 +42,7 @@ import os
 import Queue
 import random
 import re
-import runmultiplepipelinesdialog
+from . import runmultiplepipelinesdialog
 import string
 import sys
 import threading
@@ -49,6 +51,7 @@ import urllib
 import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]
@@ -1014,7 +1017,7 @@ class PipelineController(object):
     def __on_save_as_pipeline(self, event):
         try:
             self.do_save_pipeline()
-        except Exception, e:
+        except Exception as e:
             wx.MessageBox('Exception:\n%s' % e, 'Could not save pipeline...', wx.ICON_ERROR | wx.OK, self.__frame)
 
     def do_save_pipeline(self):
@@ -1954,7 +1957,7 @@ class PipelineController(object):
                 else:
                     categories = list(category) + ["All"]
                 for category in categories:
-                    if not d.has_key(category):
+                    if category not in d:
                         d[category] = []
                     d[category].append(module_name)
             except:
@@ -1964,7 +1967,7 @@ class PipelineController(object):
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()
             for module_name in sorted(d[category]):
-                if self.module_name_to_menu_id.has_key(module_name):
+                if module_name in self.module_name_to_menu_id:
                     menu_id = self.module_name_to_menu_id[module_name]
                 else:
                     menu_id = wx.NewId()
@@ -2008,7 +2011,7 @@ class PipelineController(object):
         from cellprofiler.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
         assert isinstance(event, wx.CommandEvent)
-        if self.menu_id_to_module_name.has_key(event.Id):
+        if event.Id in self.menu_id_to_module_name:
             module_name = self.menu_id_to_module_name[event.Id]
 
             def loader(module_num, module_name=module_name):
@@ -2052,7 +2055,7 @@ class PipelineController(object):
             selected_modules = self.__get_selected_modules()
             for module in selected_modules:
                 for setting in module.settings():
-                    if self.__setting_errors.has_key(setting.key()):
+                    if setting.key() in self.__setting_errors:
                         self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))
                 self.__pipeline.remove_module(module.module_num)
             has_input_modules = any([m.is_input_module()
@@ -2324,7 +2327,7 @@ class PipelineController(object):
         if ok:
             try:
                 self.__pipeline.test_valid()
-            except cellprofiler.setting.ValidationError, v:
+            except cellprofiler.setting.ValidationError as v:
                 ok = False
                 reason = v.message
         if not ok:
@@ -2405,7 +2408,7 @@ class PipelineController(object):
         if isinstance(evt, cellprofiler.analysis.AnalysisStarted):
             wx.CallAfter(self.show_analysis_controls)
         elif isinstance(evt, cellprofiler.analysis.AnalysisProgress):
-            print "Progress", evt.counts
+            print("Progress", evt.counts)
             total_jobs = sum(evt.counts.values())
             completed = sum(map(
                 (lambda status: evt.counts.get(status, 0)),
@@ -2414,7 +2417,7 @@ class PipelineController(object):
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress,
                          total_jobs, completed)
         elif isinstance(evt, cellprofiler.analysis.AnalysisFinished):
-            print ("Cancelled!" if evt.cancelled else "Finished!")
+            print(("Cancelled!" if evt.cancelled else "Finished!"))
             # drop any interaction/display requests or exceptions
             while True:
                 try:
@@ -2928,7 +2931,7 @@ class PipelineController(object):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
             cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
-        except Exception, instance:
+        except Exception as instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
             event = cellprofiler.pipeline.RunExceptionEvent(instance, module)
@@ -3315,7 +3318,7 @@ class PipelineController(object):
                 self.show_parameter_sample_options(
                     self.__module_view.get_current_module().get_module_num(), event)
             else:
-                print "No current module"
+                print("No current module")
 
     def show_parameter_sample_options(self, module_num, event):
         if self.__parameter_sample_frame is None:

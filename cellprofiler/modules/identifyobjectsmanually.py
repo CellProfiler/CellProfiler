@@ -1,6 +1,9 @@
 # coding=utf-8
 
-import _help
+from __future__ import absolute_import
+# coding=utf-8
+
+from . import _help
 
 __doc__ = """\
 IdentifyObjectsManually
@@ -49,7 +52,7 @@ import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
+from . import identify as I
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"

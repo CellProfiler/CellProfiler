@@ -189,7 +189,7 @@ class Workspace(object):
 
     def get_grid(self, grid_name):
         '''Return a grid with the given name'''
-        if not self.__grid.has_key(grid_name):
+        if grid_name not in self.__grid:
             raise ValueError("Could not find grid %s" % grid_name)
         return self.__grid[grid_name]
 

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import re
 import numpy
 import scipy.ndimage
@@ -8,7 +9,7 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
 import cellprofiler.object
-import _help
+from . import _help
 
 __doc__ = """\
 RelateObjects

@@ -1,19 +1,20 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import centrosome.cpmorphology
 import centrosome.propagate
 import numpy
 import scipy.ndimage
 import skimage.morphology
 
-import threshold
+from . import threshold
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import _help
+from . import _help
 
 __doc__ = """\
 IdentifySecondaryObjects

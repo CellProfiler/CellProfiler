@@ -17,6 +17,7 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          YES
 ============ ============ ===============
 """
+from __future__ import absolute_import
 
 import centrosome.threshold
 import numpy
@@ -29,7 +30,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
-import _help
+from . import _help
 
 
 O_TWO_CLASS = "Two classes"

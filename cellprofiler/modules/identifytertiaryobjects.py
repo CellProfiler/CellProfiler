@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import cellprofiler.measurement
 import matplotlib
 import matplotlib.cm
@@ -12,9 +13,9 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as cpmi
+from . import identify as cpmi
 from cellprofiler.setting import YES, NO
-import _help
+from . import _help
 
 __doc__ = """\
 IdentifyTertiaryObjects

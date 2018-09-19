@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
-import _help
+from . import _help
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -1035,7 +1036,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         return self.get_dictionary(workspace.image_set_list)
 
     def __get(self, field, workspace, default):
-        if self.get_ws_dictionary(workspace).has_key(field):
+        if field in self.get_ws_dictionary(workspace):
             return self.get_ws_dictionary(workspace)[field]
         return default
 
@@ -1047,7 +1048,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         assert isinstance(m, cpmeas.Measurements)
         d = self.get_ws_dictionary(workspace)
         group_number = m.get_group_number()
-        if not d.has_key("group_number") or d["group_number"] != group_number:
+        if "group_number" not in d or d["group_number"] != group_number:
             d["group_number"] = group_number
             group_indexes = np.array([
                 (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
@@ -1670,7 +1671,7 @@ Enter a name to give the color-coded image of tracked labels.''')
                                              cpmeas.GROUP_NUMBER, i)
             group_index = m.get_measurement(cpmeas.IMAGE,
                                             cpmeas.GROUP_INDEX, i)
-            if ((not group_numbers.has_key(group_number)) or
+            if ((group_number not in group_numbers) or
                     (group_numbers[group_number][1] > group_index)):
                 group_numbers[group_number] = (i, group_index)
 
@@ -1931,7 +1932,7 @@ Enter a name to give the color-coded image of tracked labels.''')
                 z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
-                    chunks.append([_[mask] for _ in merge_p1idx, merge_lidx, z])
+                    chunks.append([_[mask] for _ in (merge_p1idx, merge_lidx, z)])
             if len(chunks) > 0:
                 merge_p1idx, merge_lidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1951,7 +1952,7 @@ Enter a name to give the color-coded image of tracked labels.''')
             merge_scores = d * rho
             mask = merge_scores <= max_merge_score
             merge_p1idx, merge_lidx, merge_scores = [
-                _[mask] for _ in merge_p1idx, merge_lidx, merge_scores]
+                _[mask] for _ in (merge_p1idx, merge_lidx, merge_scores)]
             merge_len = np.sum(mask)
             if merge_len > 0:
                 #
@@ -1998,7 +1999,7 @@ Enter a name to give the color-coded image of tracked labels.''')
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
                     chunks.append(
-                        [_[mask] for _ in split_p2idx, split_fidx, z])
+                        [_[mask] for _ in (split_p2idx, split_fidx, z)])
             if len(chunks) > 0:
                 split_p2idx, split_fidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -2017,7 +2018,7 @@ Enter a name to give the color-coded image of tracked labels.''')
             split_scores = d * rho
             mask = (split_scores <= max_split_score)
             split_p2idx, split_fidx, split_scores = \
-                [_[mask] for _ in split_p2idx, split_fidx, split_scores]
+                [_[mask] for _ in (split_p2idx, split_fidx, split_scores)]
             split_len = np.sum(mask)
             if split_len > 0:
                 #
@@ -2156,8 +2157,8 @@ Enter a name to give the color-coded image of tracked labels.''')
             #
             if x[pidx] == midx + mitosis_off and not \
                     any([y[idx] >= mitosis_off and y[idx] < mitosis_end
-                         for idx in lidx, ridx]):
-                alt_score = sum([score_matrix[y[idx], idx] for idx in lidx, ridx])
+                         for idx in (lidx, ridx)]):
+                alt_score = sum([score_matrix[y[idx], idx] for idx in (lidx, ridx)])
                 #
                 # Taking the alt score would cost us a mitosis alternative
                 # cost, but would remove half of a gap alternative.
@@ -3229,7 +3230,7 @@ Enter a name to give the color-coded image of tracked labels.''')
             else:
                 pg_meas = [
                     self.measurement_name(feature)
-                    for feature in F_LINKING_DISTANCE, F_MOVEMENT_MODEL]
+                    for feature in (F_LINKING_DISTANCE, F_MOVEMENT_MODEL)]
                 result = [
                     c if c[1] not in pg_meas else (c[0], c[1], c[2], attributes)
                     for c in result]

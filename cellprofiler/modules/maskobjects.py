@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import numpy as np
 import cellprofiler.measurement
 import scipy.ndimage as scind
@@ -12,9 +13,9 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
+from . import identify as I
 from cellprofiler.setting import YES, NO
-import _help
+from . import _help
 
 __doc__ = """\
 MaskObjects

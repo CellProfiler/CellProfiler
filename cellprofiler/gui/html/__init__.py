@@ -1,8 +1,9 @@
 # coding=utf-8
 """cellprofiler.gui.html.__init__
 """
+from __future__ import absolute_import
 import cellprofiler.gui.help
-import htmlwindow
+from . import htmlwindow
 import wx
 
 # Rewrite the help for the case where we have to use a differently named menu for wx 2.8.10.1 on Mac

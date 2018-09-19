@@ -1,5 +1,6 @@
 '''test_exporttodatabase.py - test the ExportToDatabase module
 '''
+from __future__ import print_function
 
 import base64
 
@@ -1738,10 +1739,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                         cursor.execute(statement)
                     except Exception:
                         traceback.print_exc()
-                        print "Failed to drop table %s" % table_name
+                        print("Failed to drop table %s" % table_name)
         except:
             traceback.print_exc()
-            print "Failed to drop all tables"
+            print("Failed to drop all tables")
         finally:
             try:
                 cursor.nextset()
@@ -3674,7 +3675,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         fd = open(sql_file, 'rt')
         sql_text = fd.read()
         fd.close()
-        print sql_text
+        print(sql_text)
         for statement in sql_text.split(';'):
             if len(statement.strip()) == 0:
                 continue
@@ -4494,7 +4495,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     ("cell_y_loc", "%s_Location_Center_Y" % OBJECT_NAME),
                     ("image_path_cols", "%s_%s_%s" % (cpmeas.IMAGE, C_PATH_NAME, IMAGE_NAME)),
                     ("image_file_cols", "%s_%s_%s" % (cpmeas.IMAGE, C_FILE_NAME, IMAGE_NAME))):
-                self.assertTrue(dictionary.has_key(k))
+                self.assertTrue(k in dictionary)
                 self.assertEqual(dictionary[k], v)
         finally:
             E.ExportToDatabase.get_measurement_columns = old_get_measurement_columns
@@ -5164,7 +5165,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     os.remove(os.path.join(output_dir, filename))
                 os.rmdir(output_dir)
             except:
-                print "Failed to remove %s" % output_dir
+                print("Failed to remove %s" % output_dir)
 
     def test_15_01_post_run_experiment_measurement_mysql(self):
         if not self.__test_mysql:

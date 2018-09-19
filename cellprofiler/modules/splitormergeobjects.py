@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind
@@ -17,7 +18,7 @@ from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.setting import YES, NO
-import _help
+from . import _help
 
 __doc__ = """\
 SplitOrMergeObjects

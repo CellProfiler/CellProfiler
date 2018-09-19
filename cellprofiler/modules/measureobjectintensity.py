@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import centrosome.cpmorphology
 import centrosome.filter
 import centrosome.outline
@@ -11,8 +12,8 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import identify
-import _help
+from . import identify
+from . import _help
 
 __doc__ = """
 MeasureObjectIntensity

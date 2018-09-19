@@ -236,7 +236,7 @@ class RegexpDialog(wx.Dialog):
         self.test_display.Text = self.__test_text
         try:
             parse(self.__value, RegexpState())
-        except ValueError, e:
+        except ValueError as e:
             self.test_display.Text = e.message
             self.test_display.StartStyling(0, 0xff)
             self.test_display.SetStyling(len(self.test_display.Text),

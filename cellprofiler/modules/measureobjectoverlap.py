@@ -56,6 +56,7 @@ References
 
 .. _(link): https://doi.org/10.1207/s15327906mbr2302_6
 """
+from __future__ import absolute_import
 
 import centrosome.cpmorphology
 import centrosome.fastemd
@@ -72,7 +73,8 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import _help
+from . import _help
+from functools import reduce
 
 
 C_IMAGE_OVERLAP = "Overlap"
@@ -834,7 +836,7 @@ the two objects. Set this setting to “No” to assess no penalty."""
         #
         # Filter out all unmasked points
         #
-        ii, jj = [x[labels_mask] for x in ii, jj]
+        ii, jj = [x[labels_mask] for x in (ii, jj)]
         if len(ii) == 0:
             return numpy.zeros(0, numpy.int32)
         #

@@ -1,6 +1,7 @@
 # coding: latin-1
 """test_preferences.py - test the preferences module
 """
+from __future__ import print_function
 
 import tempfile
 import unittest
@@ -97,5 +98,5 @@ class TestPreferences_02(unittest.TestCase):
         cpprefs.__dict__['__headless_config'] = self.old_headless_config
 
     def test_01_01_default_directory_none(self):
-        print cpprefs.get_default_image_directory()
+        print(cpprefs.get_default_image_directory())
         self.assertTrue(True)

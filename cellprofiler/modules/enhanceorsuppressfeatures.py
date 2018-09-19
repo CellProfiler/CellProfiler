@@ -21,6 +21,7 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          YES
 ============ ============ ===============
 """
+from __future__ import absolute_import
 
 import centrosome.filter
 import numpy
@@ -33,7 +34,7 @@ import skimage.transform
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import _help
+from . import _help
 
 
 ENHANCE = 'Enhance'

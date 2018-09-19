@@ -1,12 +1,13 @@
 # coding=utf-8
 
+from __future__ import absolute_import
 import numpy as np
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import _help
+from . import _help
 
 __doc__ = """
 MeasureImageIntensity

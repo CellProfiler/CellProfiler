@@ -857,12 +857,12 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                     self.assertEqual(column[0], object_name)
                     if wants or feature in second_phase:
                         self.assertEqual(len(column), 4)
-                        self.assertTrue(column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP))
+                        self.assertTrue(cpmeas.MCA_AVAILABLE_POST_GROUP in column[3])
                         self.assertTrue(column[3][cpmeas.MCA_AVAILABLE_POST_GROUP])
                     else:
                         self.assertTrue(
                             (len(column) == 3) or
-                            (not column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP)) or
+                            (cpmeas.MCA_AVAILABLE_POST_GROUP not in column[3]) or
                             (not column[3][cpmeas.MCA_AVAILABLE_POST_GROUP]))
 
     def test_06_01_measurements(self):

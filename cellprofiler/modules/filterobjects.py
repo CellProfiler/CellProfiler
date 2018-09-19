@@ -1,6 +1,9 @@
 # coding=utf-8
 
-import _help
+from __future__ import absolute_import
+# coding=utf-8
+
+from . import _help
 
 __doc__ = """\
 FilterObjects
@@ -74,7 +77,7 @@ import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.utilities.rules
-import _help
+from . import _help
 
 
 logger = logging.getLogger(__name__)
@@ -593,7 +596,7 @@ value will be retained.""".format(**{
         if self.mode == MODE_RULES:
             try:
                 rules = self.get_rules()
-            except Exception, instance:
+            except Exception as instance:
                 logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
                 raise cellprofiler.setting.ValidationError(str(instance),
                                                            self.rules_file_name)
@@ -795,7 +798,7 @@ value will be retained.""".format(**{
                 svalues = values
             order = numpy.lexsort((-areas, svalues[src_labels - 1]))
             src_labels, enclosing_labels, areas = [
-                x[order] for x in src_labels, enclosing_labels, areas]
+                x[order] for x in (src_labels, enclosing_labels, areas)]
             firsts = numpy.hstack((
                 [0], numpy.where(src_labels[:-1] != src_labels[1:])[0] + 1,
                 src_labels.shape[:1]))

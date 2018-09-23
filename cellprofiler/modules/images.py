@@ -1,10 +1,9 @@
 # coding=utf-8
 
-from __future__ import absolute_import
 import os
 import urllib
 
-from . import _help
+import _help
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.module
@@ -12,7 +11,7 @@ import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.utilities.hdf5_dict
 import javabridge
-from . import loadimages
+import loadimages
 
 __doc__ = """\
 Images

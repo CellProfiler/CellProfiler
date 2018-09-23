@@ -88,7 +88,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=[
         "tests*"
     ]),
-    python_requires=">=2.7, <3",
+    python_requires=">=2.7, <3, ==3.6.3",
     setup_requires=[
         "pytest"
     ],

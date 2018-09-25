@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from __future__ import absolute_import
 import cellprofiler.measurement
 import matplotlib
 import matplotlib.cm

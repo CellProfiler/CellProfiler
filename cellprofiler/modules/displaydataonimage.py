@@ -21,7 +21,6 @@ YES          NO           YES
 ============ ============ ===============
 
 """
-from __future__ import absolute_import
 
 import numpy as np
 

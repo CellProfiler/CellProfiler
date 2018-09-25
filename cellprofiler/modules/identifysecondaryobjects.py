@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from __future__ import absolute_import
 import centrosome.cpmorphology
 import centrosome.propagate
 import numpy

@@ -2,7 +2,6 @@
 """PipelineController.py - controls (modifies) a pipeline
 """
 from __future__ import print_function
-from __future__ import absolute_import
 
 import cellprofiler
 import cellprofiler.analysis

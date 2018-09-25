@@ -83,7 +83,6 @@ See also
 
 See also **ExportToSpreadsheet**.
 """
-from __future__ import absolute_import
 
 import csv
 import datetime

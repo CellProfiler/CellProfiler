@@ -1,7 +1,5 @@
 # coding=utf-8
 
-from __future__ import absolute_import
-
 from . import _help
 import cellprofiler.gui.help.content
 

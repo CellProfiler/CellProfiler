@@ -60,7 +60,6 @@ you will want to use **LoadImages** or **LoadData** with a single,
 hardcoded file name.
 
 """
-from __future__ import absolute_import
 
 import hashlib
 import os

@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from __future__ import absolute_import
 import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind

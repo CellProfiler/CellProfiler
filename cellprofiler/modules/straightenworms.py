@@ -84,7 +84,6 @@ References
 
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
-from __future__ import absolute_import
 
 import os
 

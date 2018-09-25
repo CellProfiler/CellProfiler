@@ -1,7 +1,6 @@
 # coding=utf-8
 """cellprofiler.gui.html.__init__
 """
-from __future__ import absolute_import
 import cellprofiler.gui.help
 from . import htmlwindow
 import wx

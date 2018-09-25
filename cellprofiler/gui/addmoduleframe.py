@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import cellprofiler.module
 import cellprofiler.gui
 import cellprofiler.gui.help.search

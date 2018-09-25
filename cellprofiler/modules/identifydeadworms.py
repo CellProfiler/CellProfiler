@@ -54,7 +54,6 @@ well as video tutorials.
 
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
-from __future__ import absolute_import
 
 import cellprofiler.measurement
 import numpy as np

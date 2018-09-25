@@ -56,7 +56,6 @@ References
 
 .. _(link): https://doi.org/10.1207/s15327906mbr2302_6
 """
-from __future__ import absolute_import
 
 import centrosome.cpmorphology
 import centrosome.fastemd

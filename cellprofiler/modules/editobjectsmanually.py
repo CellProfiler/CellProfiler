@@ -74,7 +74,6 @@ from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules import identify as I
-import wx
 
 ###########################################
 #
@@ -393,6 +392,7 @@ supplied by a previous module.
 
     def save_into_ilp(self, project_name, labels, guidename):
         import h5py
+        import wx
         with h5py.File(project_name) as f:
             g = f["DataSets"]
             for k in g:

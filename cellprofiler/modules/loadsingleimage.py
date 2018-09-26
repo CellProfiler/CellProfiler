@@ -91,7 +91,7 @@ from cellprofiler.modules.loadimages import IMAGE_FOR_OBJECTS_F
 from cellprofiler.modules.loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
 from cellprofiler.modules.loadimages import LoadImagesImageProvider, C_SCALING
 from cellprofiler.modules.loadimages import convert_image_to_objects, pathname2url
-import cellprofiler.modules.images
+from cellprofiler.modules import images
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"

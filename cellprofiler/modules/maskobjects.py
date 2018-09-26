@@ -12,9 +12,8 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from . import identify as I
+from cellprofiler.modules import _help, identify as I
 from cellprofiler.setting import YES, NO
-from . import _help
 
 __doc__ = """\
 MaskObjects

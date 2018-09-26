@@ -7,6 +7,7 @@ import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
 import cellprofiler.modules.images
+import cellprofiler.pipeline as cpp
 import cellprofiler.preferences
 import cellprofiler.setting
 import numpy

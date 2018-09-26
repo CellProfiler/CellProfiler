@@ -8,7 +8,6 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-from . import _help
 from functools import reduce
 
 __doc__ = """\

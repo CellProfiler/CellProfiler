@@ -3,35 +3,33 @@
 """
 from __future__ import print_function
 
-import cellprofiler.gui.pipeline
-import cellprofiler.gui.html.utils
-import cellprofiler.icons
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-from . import cornerbuttonmixin
-import cellprofiler.gui.htmldialog
 import logging
-import matplotlib.cm
-from . import metadatactrl
-from . import namesubscriber
-import numpy
 import os
 import Queue
-from . import regexp_editor
 import stat
 import sys
 import threading
 import time
-from . import treecheckboxdialog
 import uuid
-import weakref
+
+import numpy
+
+import cellprofiler.gui.html.utils
+import cellprofiler.gui.htmldialog
+import cellprofiler.gui.pipeline
+import cellprofiler.icons
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.setting
+import matplotlib.cm
 import wx
 import wx.grid
 import wx.lib.colourselect
 import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
+from cellprofiler.gui import (cornerbuttonmixin, metadatactrl, namesubscriber,
+                              regexp_editor, treecheckboxdialog)
 
 logger = logging.getLogger(__name__)
 

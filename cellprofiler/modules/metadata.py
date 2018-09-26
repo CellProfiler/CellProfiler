@@ -7,15 +7,14 @@ import urllib
 
 import javabridge
 
-from . import _help
+from cellprofiler.modules import _help
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.setting
-from . import images
-from . import loadimages
+from cellprofiler.modules import images, loadimages
 
 logger = logging.getLogger(__name__)
 

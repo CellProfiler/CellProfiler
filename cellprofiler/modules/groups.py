@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 import os
-from . import _help
+from cellprofiler.modules import _help
 
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp

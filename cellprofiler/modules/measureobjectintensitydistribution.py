@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from . import _help
+from cellprofiler.modules import _help
 import cellprofiler.gui.help.content
 
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')

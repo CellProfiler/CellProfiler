@@ -72,7 +72,7 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-from . import _help
+from cellprofiler.modules import _help
 from functools import reduce
 
 

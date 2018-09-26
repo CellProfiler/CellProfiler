@@ -3,7 +3,7 @@ import cellprofiler.gui
 import cellprofiler.gui.help.search
 import cellprofiler.modules
 import cellprofiler.preferences
-from . import cpframe
+from cellprofiler.gui import cpframe
 import wx
 
 

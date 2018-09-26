@@ -9,15 +9,14 @@ import urllib2
 import matplotlib.mlab
 import numpy
 
-from . import _help
+from cellprofiler.modules import _help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
-from . import identify
-from . import loadimages
+from cellprofiler.modules import identify, loadimages
 from functools import reduce
 
 logger = logging.getLogger(__name__)

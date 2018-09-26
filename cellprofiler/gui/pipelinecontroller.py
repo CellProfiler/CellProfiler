@@ -28,7 +28,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
-from . import cpframe
+from cellprofiler.gui import cpframe
 import cStringIO
 import csv
 import datetime
@@ -41,7 +41,7 @@ import os
 import Queue
 import random
 import re
-from . import runmultiplepipelinesdialog
+from cellprofiler.gui import runmultiplepipelinesdialog
 import string
 import sys
 import threading

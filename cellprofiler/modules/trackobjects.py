@@ -15,7 +15,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
-from . import _help
+from cellprofiler.modules import _help
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix

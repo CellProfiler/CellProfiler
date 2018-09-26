@@ -77,7 +77,7 @@ import urllib
 import urlparse
 import shutil
 
-from . import _help
+from cellprofiler.modules import _help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.misc
@@ -87,8 +87,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import centrosome.outline
-from . import identify
-from . import images
+from cellprofiler.modules import identify, images
 import numpy
 import scipy.io.matlab.mio
 import skimage.external.tifffile

@@ -74,7 +74,6 @@ from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules import identify as I
-import wx
 
 ###########################################
 #

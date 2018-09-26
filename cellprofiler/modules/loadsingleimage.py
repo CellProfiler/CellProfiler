@@ -61,35 +61,37 @@ hardcoded file name.
 
 """
 
+import hashlib
 import os
 import re
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
 import centrosome.outline
-from cellprofiler.measurement import (C_COUNT, C_FILE_NAME, C_LOCATION,
-                                      C_NUMBER, C_OBJECTS_FILE_NAME,
-                                      C_OBJECTS_PATH_NAME, C_OBJECTS_URL,
-                                      C_PATH_NAME, C_URL, FTR_CENTER_X,
-                                      FTR_CENTER_Y, FTR_OBJECT_NUMBER)
-from cellprofiler.modules import images
-from cellprofiler.modules._help import (IO_FOLDER_CHOICE_HELP_TEXT,
-                                        IO_WITH_METADATA_HELP_TEXT,
-                                        USING_METADATA_HELP_REF,
-                                        USING_METADATA_TAGS_REF)
-from cellprofiler.modules.identify import (add_object_count_measurements,
-                                           add_object_location_measurements,
-                                           get_object_measurement_columns)
-from cellprofiler.modules.loadimages import (C_HEIGHT, C_MD5_DIGEST, C_SCALING,
-                                             C_WIDTH, IO_ALL, IO_IMAGES,
-                                             IO_OBJECTS,
-                                             LoadImagesImageProvider,
-                                             convert_image_to_objects,
-                                             pathname2url)
-from cellprofiler.setting import NO, YES
+import numpy as np
+
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.object as cpo
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+import cellprofiler.modules.identify as I
+from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
+    IO_WITH_METADATA_HELP_TEXT
+from cellprofiler.preferences import standardize_default_folder_names, \
+    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.setting import YES, NO
+from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
+from cellprofiler.modules.identify import add_object_count_measurements, add_object_location_measurements
+from cellprofiler.modules.identify import get_object_measurement_columns
+from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH, C_MD5_DIGEST, IO_IMAGES, IO_OBJECTS, IO_ALL
+from cellprofiler.measurement import C_OBJECTS_FILE_NAME, C_OBJECTS_URL, C_PATH_NAME, C_URL,\
+    C_OBJECTS_PATH_NAME, C_FILE_NAME
+from cellprofiler.modules.loadimages import IMAGE_FOR_OBJECTS_F
+from cellprofiler.modules.loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
+from cellprofiler.modules.loadimages import LoadImagesImageProvider, C_SCALING
+from cellprofiler.modules.loadimages import convert_image_to_objects, pathname2url
+import cellprofiler.modules.images
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"

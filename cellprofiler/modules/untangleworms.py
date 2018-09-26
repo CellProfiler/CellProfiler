@@ -116,7 +116,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
-from . import identify as I
+from cellprofiler.modules import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
 from cellprofiler.preferences import standardize_default_folder_names, \

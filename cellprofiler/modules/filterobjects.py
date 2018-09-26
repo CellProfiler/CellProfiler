@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from . import _help
+from cellprofiler.modules import _help
 
 __doc__ = """\
 FilterObjects
@@ -74,8 +74,6 @@ import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.utilities.rules
-from . import _help
-
 
 logger = logging.getLogger(__name__)
 

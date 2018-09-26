@@ -1,14 +1,13 @@
 # coding=utf-8
 
 import os
+import sys
 import urllib
 import webbrowser
 
-import sys
-import wx.html
-
 import cellprofiler.icons
-from . import utils
+import wx.html
+from cellprofiler.gui.html import utils
 
 MEMORY_SCHEME = "memory:"
 

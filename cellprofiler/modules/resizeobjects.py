@@ -5,7 +5,7 @@ import scipy.ndimage
 import skimage.transform
 import cellprofiler.module
 import cellprofiler.setting
-from . import _help
+from cellprofiler.modules import _help
 
 __doc__ = """\
 ResizeObjects

@@ -1,6 +1,5 @@
 """Measurements.py - storage for image and object measurements
 """
-from __future__ import with_statement
 
 import json
 import logging

@@ -3,7 +3,6 @@
 This module implements the HDF5Dict class, which provides a dict-like
 interface for measurements, backed by an HDF5 file.
 """
-from __future__ import with_statement
 from __future__ import print_function
 
 import bisect

@@ -99,7 +99,7 @@ import cellprofiler.measurement
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.modules.loadimages
-from . import _help
+from cellprofiler.modules import _help
 
 
 logger = logging.getLogger(__name__)

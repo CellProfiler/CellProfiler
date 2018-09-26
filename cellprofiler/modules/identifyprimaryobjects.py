@@ -15,8 +15,7 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.object
 import cellprofiler.setting
-from . import threshold
-from . import _help
+from cellprofiler.modules import _help, threshold
 
 __doc__ = """\
 IdentifyPrimaryObjects

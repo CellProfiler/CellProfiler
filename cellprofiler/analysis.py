@@ -1,6 +1,5 @@
 """analysis.py - Run pipelines on imagesets to produce measurements.
 """
-from __future__ import with_statement
 
 import Queue
 import cStringIO as StringIO

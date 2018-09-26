@@ -9,7 +9,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting as cps
-from . import pipeline as cpp
+from cellprofiler import pipeline as cpp
 
 
 class Module(object):

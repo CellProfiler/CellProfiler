@@ -534,7 +534,9 @@ desired.
                     extension == ".txt" and self.delimiter == DELIMITER_TAB))
                                   for (extension, group) in zip(all_extensions, self.object_groups)]
             if not all(is_valid_extension):
-                raise cps
+                raise cps.ValidationError("To avoid formatting problems in Excel, use the extension .csv for "
+                                          "comma-delimited files and .txt for tab-delimited..",
+                                          self.object_groups[is_valid_extension.index(False)].file_name)
 
     @property
     def delimiter_char(self):

@@ -77,6 +77,7 @@ class TestMeasureObjectOverlap(unittest.TestCase):
         # All columns should be unique
         self.assertEqual(len(columns), len(set([x[1] for x in columns])))
         # All columns should be floats and done on images
+        x = columns[-1]
         self.assertTrue(all([x[0] == cellprofiler.measurement.IMAGE]))
         self.assertTrue(all([x[2] == cellprofiler.measurement.COLTYPE_FLOAT]))
         for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:

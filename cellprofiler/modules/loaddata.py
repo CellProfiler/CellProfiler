@@ -759,7 +759,7 @@ safe to press it.""")
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append([unicode(s, 'utf8') if isinstance(s, str) else s
+            list_ctl.Append([s.encode('utf8') if isinstance(s, str) else s
                              for s in line[:len(header)]])
         frame.SetMinSize((640, 480))
         frame.SetIcon(get_cp_icon())
@@ -854,14 +854,14 @@ safe to press it.""")
                     break
                 if len(row) == 0:
                     continue
-                row = [unicode(s, 'utf8') if isinstance(s, str) else s
+                row = [s.encode('utf8') if isinstance(s, str) else s
                        for s in row]
                 if len(row) != len(header):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d" %
                                      (idx, len(row), len(header)))
                 rows.append(row)
         else:
-            rows = [[unicode(s, 'utf8') if isinstance(s, str) else s
+            rows = [[s.encode('utf8') if isinstance(s, str) else s
                      for s in row] for row in reader
                     if len(row) > 0]
         fd.close()
@@ -1100,7 +1100,7 @@ safe to press it.""")
                             fullname = loadimages.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = unicode(loadimages.pathname2url(fullname), "utf-8")
+                            url = str(loadimages.pathname2url(fullname)).encode("utf-8")
                             m.add_measurement(cellprofiler.measurement.IMAGE, url_feature, url,
                                               image_set_number=image_number)
                             if file_feature is not None:

@@ -1671,7 +1671,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertEqual(header[1], "my_measurement")
             row = next(reader)
             self.assertEqual(row[0], "1")
-            self.assertEqual(unicode(row[1], 'utf8'), metadata_value)
+            self.assertEqual(row[1].decode('utf8'), metadata_value)
             self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()

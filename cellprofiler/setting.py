@@ -13,7 +13,7 @@ import sys
 import re
 import uuid
 
-from six import string_types, text_type
+import six
 
 from cellprofiler.preferences import \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
@@ -153,7 +153,7 @@ class Setting(object):
         override this to do things like compare whether an integer
         setting's value matches a given number
         '''
-        return self.value == text_type(x)
+        return self.value == six.text_type(x)
 
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -193,7 +193,7 @@ class Setting(object):
 
         NOTE: strings are deprecated, use unicode_value instead.
         '''
-        if isinstance(self.__value, text_type):
+        if isinstance(self.__value, six.text_type):
             return str(self.__value.encode('utf-16'))
         if not isinstance(self.__value, str):
             raise ValidationError("%s was not a string" % self.__value, self)
@@ -204,7 +204,7 @@ class Setting(object):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
-        return text_type(self.value_text)
+        return six.text_type(self.value_text)
 
 
 class HiddenCount(Setting):
@@ -240,7 +240,7 @@ class HiddenCount(Setting):
         return str(len(self.__sequence))
 
     def get_unicode_value(self):
-        return text_type(len(self.__sequence))
+        return six.text_type(len(self.__sequence))
 
 
 class Text(Setting):
@@ -706,7 +706,7 @@ class Number(Text):
 
     def __init__(self, text, value=0, minval=None, maxval=None, *args,
                  **kwargs):
-        if isinstance(value, string_types):
+        if isinstance(value, six.string_types):
             text_value = value
             value = self.str_to_value(value)
         else:
@@ -734,7 +734,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = text_type(value) if isinstance(value, string_types) \
+        str_value = six.text_type(value) if isinstance(value, six.string_types) \
             else self.value_to_str(value)
         self.set_value_text(str_value)
 
@@ -854,7 +854,7 @@ class Range(Setting):
 
     def set_value(self, value):
         '''Set the value of this range using either a string or a two-tuple'''
-        if isinstance(value, string_types):
+        if isinstance(value, six.string_types):
             self.set_value_text(value)
         elif hasattr(value, "__getitem__") and len(value) == 2:
             self.set_value_text(",".join([self.value_to_str(v) for v in value]))
@@ -1604,7 +1604,7 @@ class Binary(Setting):
 
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
-        if value in (YES, NO) or isinstance(value, string_types):
+        if value in (YES, NO) or isinstance(value, six.string_types):
             super(Binary, self).set_value(value)
         else:
             str_value = (value and YES) or NO
@@ -1793,7 +1793,7 @@ class MultiChoice(Setting):
     def parse_value(self, value):
         if value is None:
             return ''
-        elif isinstance(value, string_types):
+        elif isinstance(value, six.string_types):
             return value
         elif hasattr(value, "__getitem__"):
             return ','.join(value)
@@ -3058,8 +3058,8 @@ class Filter(Setting):
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
                 s.append(
-                        cls.FilterPredicate.encode_symbol(text_type(element.symbol)))
-            elif isinstance(element, string_types):
+                        cls.FilterPredicate.encode_symbol(six.text_type(element.symbol)))
+            elif isinstance(element, six.string_types):
                 s.append(u'"' + cls.encode_literal(element) + u'"')
             else:
                 s.append(u"(" + cls.build_string(element) + ")")
@@ -3260,7 +3260,7 @@ class FileCollectionDisplay(Setting):
         or 3-tuples representing image planes within an image file. Branches
         are two-tuples composed of a path part and more branches / leaves
         '''
-        return len(mod) != 2 or not isinstance(mod[0], string_types)
+        return len(mod) != 2 or not isinstance(mod[0], six.string_types)
 
     def node_count(self, file_tree=None):
         '''Count the # of nodes (leaves + directories) in the tree'''

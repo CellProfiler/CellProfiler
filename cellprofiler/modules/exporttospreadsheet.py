@@ -95,7 +95,7 @@ import numpy as np
 import os
 import sys
 
-from six import string_types, text_type
+import six
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
@@ -868,7 +868,7 @@ desired.
                                 v.dtype == np.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    text_type(v).encode('utf8')
+                    six.text_type(v).encode('utf8')
                 writer.writerow((feature_name, v))
         finally:
             fd.close()
@@ -923,9 +923,9 @@ desired.
                             value = m[IMAGE, feature_name, img_number]
                         if value is None:
                             row.append('')
-                        elif isinstance(value, text_type):
+                        elif isinstance(value, six.text_type):
                             row.append(value.encode('utf8'))
-                        elif isinstance(value, string_types):
+                        elif isinstance(value, six.string_types):
                             row.append(value)
                         elif isinstance(value, np.ndarray) and \
                                         value.dtype == np.uint8:

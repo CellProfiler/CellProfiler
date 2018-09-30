@@ -11,7 +11,7 @@ import numpy as np
 import re
 from scipy.io.matlab import loadmat
 from itertools import repeat
-from six import string_types, text_type
+import six
 import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
@@ -517,8 +517,8 @@ class Measurements(object):
 
         Experiment measurements have one value per experiment
         """
-        if isinstance(data, string_types):
-            data = text_type(data).encode('unicode_escape')
+        if isinstance(data, six.string_types):
+            data = six.text_type(data).encode('unicode_escape')
         self.hdf5_dict.add_all(EXPERIMENT, feature_name, [data], [0])
 
     def get_group_number(self):
@@ -558,7 +558,7 @@ class Measurements(object):
         '''
         d = {}
         image_numbers = self.get_image_numbers()
-        values = [[text_type(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
+        values = [[six.text_type(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
                   for feature in features]
         for i, image_number in enumerate(image_numbers):
             key = tuple([(k, v[i]) for k, v in zip(features, values)])
@@ -921,7 +921,7 @@ class Measurements(object):
 
     @staticmethod
     def wrap_string(v):
-        if isinstance(v, string_types):
+        if isinstance(v, six.string_types):
             if getattr(v, "__class__") == str:
                 v = v.decode("utf-8")
             return v.encode('unicode_escape')
@@ -1217,7 +1217,7 @@ class Measurements(object):
         # more loosely matched.
         #
         def cast(x):
-            if isinstance(x, string_types) and x.isdigit():
+            if isinstance(x, six.string_types) and x.isdigit():
                 return int(x)
             return x
 
@@ -1318,7 +1318,7 @@ class Measurements(object):
 
         stop - stop loading when this line is reached.
         '''
-        if isinstance(fd_or_file, string_types):
+        if isinstance(fd_or_file, six.string_types):
             with open(fd_or_file, "r") as fd:
                 return self.load_image_sets(fd, start, stop)
         import csv
@@ -1365,7 +1365,7 @@ class Measurements(object):
                 self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
 
     def write_image_sets(self, fd_or_file, start=None, stop=None):
-        if isinstance(fd_or_file, string_types):
+        if isinstance(fd_or_file, six.string_types):
             with open(fd_or_file, "w") as fd:
                 return self.write_image_sets(fd, start, stop)
 
@@ -1406,8 +1406,8 @@ class Measurements(object):
                 field = column[i]
                 if field is np.NaN or field is None:
                     field = ""
-                if isinstance(field, string_types):
-                    if isinstance(field, text_type):
+                if isinstance(field, six.string_types):
+                    if isinstance(field, six.text_type):
                         field = field.encode("utf-8")
                     field = "\"" + field.replace("\"", "\"\"") + "\""
                 else:
@@ -1517,7 +1517,7 @@ class Measurements(object):
                     full_name = \
                         remote_directory + full_name[len(local_directory):]
         url = "file:" + urllib.pathname2url(full_name)
-        if isinstance(url, text_type):
+        if isinstance(url, six.text_type):
             url = url.encode("utf-8")
         return url
 

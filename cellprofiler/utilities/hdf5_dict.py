@@ -17,7 +17,7 @@ import uuid
 
 import h5py
 import numpy as np
-from six import string_types, text_type
+import six
 
 import cellprofiler.utilities.legacy
 
@@ -374,8 +374,8 @@ class HDF5Dict(object):
 
     def __getitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"
-        assert (isinstance(idxs[0], string_types) and
-                isinstance(idxs[1], string_types)), "First two indices must be of type str."
+        assert (isinstance(idxs[0], six.string_types) and
+                isinstance(idxs[1], six.string_types)), "First two indices must be of type str."
 
         object_name, feature_name, num_idx = idxs
         if np.isscalar(num_idx):
@@ -484,8 +484,8 @@ class HDF5Dict(object):
     def __setitem__(self, idxs, vals):
         assert isinstance(idxs, tuple), \
             "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert (isinstance(idxs[0], string_types) and
-                isinstance(idxs[1], string_types)), "First two indices must be of type str."
+        assert (isinstance(idxs[0], six.string_types) and
+                isinstance(idxs[1], six.string_types)), "First two indices must be of type str."
         assert (not np.isscalar(idxs[2]) or self.__is_positive_int(idxs[2])), \
             "Third index must be a non-negative integer"
 
@@ -632,8 +632,8 @@ class HDF5Dict(object):
 
     def __delitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert (isinstance(idxs[0], string_types) and
-                isinstance(idxs[1], string_types)), "First two indices must be of type str."
+        assert (isinstance(idxs[0], six.string_types) and
+                isinstance(idxs[1], six.string_types)), "First two indices must be of type str."
         if len(idxs) == 3:
             assert isinstance(idxs[2], int) and idxs[2] >= 0, "Third index must be a non-negative integer"
 
@@ -1049,7 +1049,7 @@ class HDF5FileList(object):
 
         returns a two tuple of schema + path part sequence
         '''
-        if isinstance(url, text_type):
+        if isinstance(url, six.text_type):
             url = url.encode("utf-8")
         else:
             url = str(url)
@@ -2010,7 +2010,7 @@ class VStringArray(object):
                 self.index[idx, :] = (self.VS_NULL, 0)
                 return
 
-            elif isinstance(value, text_type):
+            elif isinstance(value, six.text_type):
                 value = value.encode("utf8")
             else:
                 value = str(value)
@@ -2081,7 +2081,7 @@ class VStringArray(object):
         '''Store the strings passed, overwriting any previously stored data'''
         nulls = np.array([s is None for s in strings])
         strings = ["" if s is None
-                   else s.encode("utf-8") if isinstance(s, text_type)
+                   else s.encode("utf-8") if isinstance(s, six.text_type)
         else str(s) for s in strings]
         with self.lock:
             target_len = len(strings)
@@ -2184,7 +2184,7 @@ class VStringArray(object):
             return
         nulls = np.array([s is None for s in strings])
         strings = ["" if s is None
-                   else s.encode("utf-8") if isinstance(s, text_type)
+                   else s.encode("utf-8") if isinstance(s, six.text_type)
         else str(s) for s in strings]
         with self.lock:
             old_len = len(self)
@@ -2219,7 +2219,7 @@ class VStringArray(object):
         '''Return the insertion point for s, assuming the array is sorted'''
         if s is None:
             return 0
-        elif isinstance(s, text_type):
+        elif isinstance(s, six.text_type):
             s = s.encode("utf-8")
         else:
             s = str(s)
@@ -2423,7 +2423,7 @@ class StringReferencer(object):
     @staticmethod
     def string_to_uint8(s):
         '''Convert a utf-8 encoded string to a np.uint8 array'''
-        if isinstance(s, text_type):
+        if isinstance(s, six.text_type):
             s = s.encode('utf-8')
         elif not isinstance(s, str):
             s = str(s)

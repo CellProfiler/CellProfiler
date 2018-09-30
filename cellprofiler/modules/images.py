@@ -3,7 +3,7 @@
 import os
 import urllib
 
-from six import text_type
+import six
 
 import _help
 import cellprofiler.gui.help.content
@@ -332,7 +332,7 @@ pass the current filter.
                 if url.startswith("s3:"):
                     url = url.replace(" ", "+")
 
-                if isinstance(url, text_type):
+                if isinstance(url, six.text_type):
                     ourl = env.new_string(url)
                 else:
                     ourl = env.new_string_utf(url)

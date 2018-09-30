@@ -11,7 +11,7 @@ import zlib
 from StringIO import StringIO
 
 import numpy as np
-from six import string_types
+import six
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -2292,7 +2292,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                             (object_name, feature, cpmeas.COLTYPE_VARCHAR))
                 elif image_number is not None:
                     data = m[object_name, feature, image_number]
-                    if isinstance(data, string_types):
+                    if isinstance(data, six.string_types):
                         columns.append(
                                 (object_name, feature, cpmeas.COLTYPE_VARCHAR))
                     else:

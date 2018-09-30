@@ -61,8 +61,7 @@ METADATA_ATTRIBUTE = "metadata"
 
 # Constants regarding scaling
 LINEAR = 'linear'
-LOG_NATURAL = 'log'
-LOG_10 = 'log10'
+LOG = 'log'
 
 
 class Setting(object):

@@ -77,7 +77,7 @@ import urllib
 import urlparse
 import shutil
 
-from six import text_type
+import six
 
 from cellprofiler.modules import _help
 import cellprofiler.image
@@ -3734,7 +3734,7 @@ def is_file_url(url):
 
 
 def url2pathname(url):
-    if isinstance(url, text_type):
+    if isinstance(url, six.text_type):
         url = url.encode("utf-8")
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url

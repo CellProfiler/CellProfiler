@@ -38,7 +38,7 @@ See also other **Display** modules and data tools.
 
 import numpy as np
 
-from six import text_type
+import six
 
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
@@ -202,7 +202,7 @@ executed.
             m = workspace.get_measurements()
             # Get plates
             plates = map(
-                    text_type,
+                    six.text_type,
                     m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value))
             # Get wells
             if self.well_format == WF_NAME:

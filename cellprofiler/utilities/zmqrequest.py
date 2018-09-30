@@ -12,7 +12,7 @@ import uuid
 import zmq
 import Queue
 import numpy as np
-from six import string_types
+import six
 import cellprofiler.grid as cpg
 
 try:
@@ -93,7 +93,7 @@ def make_sendable_dictionary(d):
     result = {}
     fake_key_idx = 1
     for k, v in d.items():
-        if (isinstance(k, string_types) and k.startswith('_')) or callable(d[k]):
+        if (isinstance(k, six.string_types) and k.startswith('_')) or callable(d[k]):
             continue
         if isinstance(v, dict):
             v = make_sendable_dictionary(v)

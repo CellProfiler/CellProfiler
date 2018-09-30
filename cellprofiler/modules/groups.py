@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 import os
-from six import text_type
+import six
 
 from cellprofiler.modules import _help
 
@@ -518,7 +518,7 @@ desired behavior.
             order = np.lexsort((group_indexes, group_numbers))
 
             for idx in order:
-                row = [text_type(x[idx]) for x in all_features]
+                row = [six.text_type(x[idx]) for x in all_features]
                 self.image_set_list.data.append(row)
 
     def get_groupings(self, workspace):

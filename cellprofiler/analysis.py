@@ -17,7 +17,7 @@ import uuid
 import h5py
 import numpy as np
 import zmq
-from six import string_types, text_type
+import six
 
 import cellprofiler
 import cellprofiler.image as cpimage
@@ -816,7 +816,7 @@ def find_worker_env(idx):
     if hasattr(sys, 'frozen'):
         if sys.platform == "darwin":
             # http://mail.python.org/pipermail/pythonmac-sig/2005-April/013852.html
-            added_paths += [p for p in sys.path if isinstance(p, string_types)]
+            added_paths += [p for p in sys.path if isinstance(p, six.string_types)]
     if 'PYTHONPATH' in newenv:
         added_paths.insert(0, newenv['PYTHONPATH'])
     newenv['PYTHONPATH'] = os.pathsep.join(
@@ -828,7 +828,7 @@ def find_worker_env(idx):
         newenv["CP_JDWP_PORT"] = port
         del newenv["AW_JDWP_PORT"]
     for key in newenv:
-        if isinstance(newenv[key], text_type):
+        if isinstance(newenv[key], six.text_type):
             newenv[key] = newenv[key].encode('utf-8')
     return newenv
 

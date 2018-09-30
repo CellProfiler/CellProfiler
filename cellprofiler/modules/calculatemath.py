@@ -58,7 +58,7 @@ import logging
 logger = logging.getLogger(__package__)
 
 import numpy as np
-from six import string_types
+import six
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
@@ -317,7 +317,7 @@ Enter the power by which you would like to raise the result.
                 # ensure that the data can be changed in-place by floating point ops
                 value = value.astype(np.float)
 
-            if isinstance(value, string_types):
+            if isinstance(value, six.string_types):
                 try:
                     value = float(value)
                 except ValueError:

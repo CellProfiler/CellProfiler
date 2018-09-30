@@ -19,16 +19,12 @@ import h5py
 import numpy as np
 from six import string_types, text_type
 
+import cellprofiler.utilities.legacy
+
 try:
     buffer         # Python 2
 except NameError:  # Python 3
     buffer = memoryview
-
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
 
 logger = logging.getLogger(__name__)
 
@@ -1107,7 +1103,7 @@ class HDF5FileList(object):
                         dest.extend(to_add)
                         sort_order = sorted(
                                 range(len(leaves)),
-                                cmp=lambda x, y: cmp(leaves[x], leaves[y]))
+                                cmp=lambda x, y: cellprofiler.utilities.legacy.cmp(leaves[x], leaves[y]))
                         dest.reorder(sort_order)
                         metadata.extend([None] * len(to_add))
                         metadata.reorder(sort_order)
@@ -2137,8 +2133,8 @@ class VStringArray(object):
                     dj = self.data[(j0 + idx):(j0 + idx_end)]
                     diff = np.argwhere(di != dj).flatten()
                     if len(diff) > 0:
-                        return cmp(di[diff[0]], dj[diff[0]])
-                return cmp(li, lj)
+                        return cellprofiler.utilities.legacy.cmp(di[diff[0]], dj[diff[0]])
+                return cellprofiler.utilities.legacy.cmp(li, lj)
 
             order = list(range(len(self)))
             order.sort(cmp=compare)

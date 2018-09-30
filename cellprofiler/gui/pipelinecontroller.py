@@ -29,6 +29,7 @@ import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
 import cellprofiler.gui.cpframe
+import cellprofiler.utilities.legacy
 import cStringIO
 import csv
 import datetime
@@ -53,11 +54,6 @@ import wx.lib.mixins.listctrl
 from functools import reduce
 from six import string_types, text_type
 
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]
@@ -3132,7 +3128,7 @@ class PipelineController(object):
 
         def feature_cmp(x, y):
             if "_" not in x or "_" not in y:
-                return cmp(x, y)
+                return cellprofiler.utilities.legacy.cmp(x, y)
             (cx, fx), (cy, fy) = [z.split("_", 1) for z in (x, y)]
             #
             # For image names, group image file, path and frame consecutively
@@ -3147,15 +3143,15 @@ class PipelineController(object):
                 if not cy_is_file_md:
                     return 1
                 elif fx != fy:
-                    return cmp(fx, fy)
+                    return cellprofiler.utilities.legacy.cmp(fx, fy)
                 else:
                     cx_priority, cy_priority = \
                         [file_md_order.index(cz) for cz in (cx, cy)]
-                    return cmp(cx_priority, cy_priority)
+                    return cellprofiler.utilities.legacy.cmp(cx_priority, cy_priority)
             elif cy_is_file_md:
                 return -1
             else:
-                return cmp(x, y)
+                return cellprofiler.utilities.legacy.cmp(x, y)
 
         m = self.__debug_measurements
         features = sorted(

@@ -59,6 +59,11 @@ AVAILABLE_ON_LAST_ATTRIBUTE = "available_on_last"
 '''Indicates that the control can contain metadata tags'''
 METADATA_ATTRIBUTE = "metadata"
 
+# Constants regarding scaling
+LINEAR = 'linear'
+LOG_NATURAL = 'log'
+LOG_10 = 'log10'
+
 
 class Setting(object):
     """A module setting which holds a single string value

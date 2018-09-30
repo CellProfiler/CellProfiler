@@ -8,6 +8,7 @@ import unittest
 
 import h5py
 import numpy as np
+from six import string_types
 
 import cellprofiler.utilities.hdf5_dict as H5DICT
 
@@ -147,7 +148,7 @@ class TestHDF5Dict(unittest.TestCase):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = [2.5]
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = ["alfalfa"]
         data = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
-        self.assertIsInstance(data[0], basestring)
+        self.assertIsInstance(data[0], string_types)
 
     def test_02_08_write_twice(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2)] = [1.2, 3.4]

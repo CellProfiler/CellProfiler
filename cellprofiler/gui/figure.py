@@ -33,6 +33,7 @@ import scipy.sparse
 import skimage.exposure
 import wx
 import wx.grid
+from six import string_types, text_type
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -1446,7 +1447,7 @@ class Figure(wx.Frame):
             else:
                 tick_vmax = image.max()
 
-            if isinstance(colormap, basestring):
+            if isinstance(colormap, string_types):
                 colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
             # NOTE: We bind this event each time imshow is called to a new closure
@@ -1880,7 +1881,7 @@ class Figure(wx.Frame):
         ctrl.CreateGrid(nrows, ncols)
         if col_labels is not None:
             for i, value in enumerate(col_labels):
-                ctrl.SetColLabelValue(i, unicode(value))
+                ctrl.SetColLabelValue(i, text_type(value))
         else:
             ctrl.SetColLabelSize(0)
         if row_labels is not None:
@@ -1888,7 +1889,7 @@ class Figure(wx.Frame):
             ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
             max_width = 0
             for i, value in enumerate(row_labels):
-                value = unicode(value)
+                value = text_type(value)
                 ctrl.SetRowLabelValue(i, value)
                 max_width = max(
                         max_width,
@@ -1899,7 +1900,7 @@ class Figure(wx.Frame):
 
         for i, row in enumerate(statistics):
             for j, value in enumerate(row):
-                ctrl.SetCellValue(i, j, unicode(value))
+                ctrl.SetCellValue(i, j, text_type(value))
                 ctrl.SetReadOnly(i, j, True)
         ctrl.AutoSize()
         ctrl.Show()

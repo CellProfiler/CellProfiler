@@ -69,6 +69,12 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 from cellprofiler.preferences import get_headless
 
+try:
+    cmp             # Python 2
+except NameError:
+    def cmp(a, b):  # Python 3
+        return (a > b) - (a < b)
+
 
 class MergeOutputFiles(cpm.Module):
     module_name = "MergeOutputFiles"

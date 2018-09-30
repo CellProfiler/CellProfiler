@@ -18,6 +18,7 @@ import cellprofiler.preferences
 import cellprofiler.setting
 from cellprofiler.modules import identify, loadimages
 from functools import reduce
+from six import string_types, text_type
 
 logger = logging.getLogger(__name__)
 try:
@@ -643,7 +644,7 @@ safe to press it.""")
             output = []
             for h in header:
                 if not h.startswith('file_'):
-                    if isinstance(h, unicode):
+                    if isinstance(h, text_type):
                         output.append(h.encode("utf-8"))
                     else:
                         output.append(h)
@@ -1519,7 +1520,7 @@ def best_cast(sequence, coltype=None):
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
     '''
-    if (isinstance(coltype, (str, unicode)) and
+    if (isinstance(coltype, string_types) and
             coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
         return numpy.array(sequence)

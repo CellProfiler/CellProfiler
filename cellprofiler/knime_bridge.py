@@ -14,6 +14,7 @@ import javabridge
 import numpy as np
 import threading
 import uuid
+from six import text_type
 import zmq
 
 if not hasattr(zmq, "Frame"):
@@ -286,7 +287,7 @@ class KnimeBridgeServer(threading.Thread):
                         sf.append((feature, 0))
                     else:
                         s = data[0]
-                        if isinstance(s, unicode):
+                        if isinstance(s, text_type):
                             s = s.encode("utf-8")
                         else:
                             s = str(s)
@@ -522,7 +523,7 @@ class KnimeBridgeServer(threading.Thread):
         return pipeline, m, object_set
 
     def raise_pipeline_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, text_type):
             message = message.encode("utf-8")
         else:
             message = str(message)
@@ -533,7 +534,7 @@ class KnimeBridgeServer(threading.Thread):
                  zmq.Frame(message)])
 
     def raise_cellprofiler_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, text_type):
             message = message.encode("utf-8")
         else:
             message = str(message)

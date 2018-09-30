@@ -35,6 +35,14 @@ import urllib
 import urllib2
 import re
 import numpy
+from six import string_types, text_type
+from six.moves import reload_module, xrange
+
+try:
+    cmp             # Python 2
+except NameError:
+    def cmp(a, b):  # Python 3
+        return (a > b) - (a < b)
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
@@ -425,7 +433,7 @@ def read_file_list(file_or_fd):
     "file:///imaging/analysis/singleplane.tif",,,
     """
 
-    if isinstance(file_or_fd, basestring):
+    if isinstance(file_or_fd, string_types):
         needs_close = True
         fd = open(file_or_fd, "r")
     else:
@@ -465,7 +473,7 @@ def write_file_list(file_or_fd, file_list):
     file_list - collection of URLs to be output
 
     '''
-    if isinstance(file_or_fd, basestring):
+    if isinstance(file_or_fd, string_types):
         fd = open(file_or_fd, "w")
         needs_close = True
     else:
@@ -477,7 +485,7 @@ def write_file_list(file_or_fd, file_list):
             len(file_list)))
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:
-            if isinstance(url, unicode):
+            if isinstance(url, text_type):
                 url = url.encode("utf-8")
             url = url.encode("string_escape").replace('"', r'\"')
             line = "\"%s\",,,\n" % url
@@ -674,7 +682,7 @@ class Pipeline(object):
         """
         # clear previously seen errors on reload
         import cellprofiler.modules
-        reload(cellprofiler.modules)
+        reload_module(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
         # attempt to reinstantiate pipeline with new modules
         try:
@@ -1194,7 +1202,7 @@ class Pipeline(object):
                                   attribute_string))
             for setting in module.settings():
                 setting_text = setting.text
-                if isinstance(setting_text, unicode):
+                if isinstance(setting_text, text_type):
                     # setting_text = setting_text.encode('utf-16')
                     setting_text = setting_text.encode('utf-8')
                 else:
@@ -2610,7 +2618,7 @@ class Pipeline(object):
 
         path - a path to a file or a URL
         '''
-        if isinstance(path_or_fd, basestring):
+        if isinstance(path_or_fd, string_types):
             from cellprofiler.modules.loadimages import \
                 url2pathname, FILE_SCHEME, PASSTHROUGH_SCHEMES
             pathname = path_or_fd
@@ -2655,7 +2663,7 @@ class Pipeline(object):
         returns an object that represents the state of the first instance
         of the named module or None if not in pipeline
         '''
-        if isinstance(module_name_or_module, basestring):
+        if isinstance(module_name_or_module, string_types):
             modules = [module for module in self.modules()
                        if module.module_name == module_name_or_module]
             if len(modules) == 0:
@@ -3925,14 +3933,14 @@ def encapsulate_strings_in_arrays(handles):
         # cells - descend recursively
         flat = handles.flat
         for i in range(0, len(flat)):
-            if isinstance(flat[i], str) or isinstance(flat[i], unicode):
+            if isinstance(flat[i], string_types):
                 flat[i] = encapsulate_string(flat[i])
             elif isinstance(flat[i], numpy.ndarray):
                 encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
         for field in handles.dtype.fields.keys():
-            if isinstance(handles[field], str) or isinstance(handles[field], unicode):
+            if isinstance(handles[field], string_types):
                 handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field], numpy.ndarray):
                 encapsulate_strings_in_arrays(handles[field])

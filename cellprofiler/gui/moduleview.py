@@ -13,6 +13,7 @@ import time
 import uuid
 
 import numpy
+from six import string_types, text_type
 
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
@@ -1652,7 +1653,7 @@ class ModuleView(object):
             else:
                 style = 0
                 text = v.get_value_text()
-                if not isinstance(text, (unicode, str)):
+                if not isinstance(text, string_types):
                     text = str(text)
                 if getattr(v, "multiline_display", False):
                     style = wx.TE_MULTILINE | wx.TE_PROCESS_ENTER
@@ -1672,7 +1673,7 @@ class ModuleView(object):
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, control)
         elif not (v.get_value_text() == control.Value):
             text = v.get_value_text()
-            if not isinstance(text, (unicode, str)):
+            if not isinstance(text, string_types):
                 text = str(text)
             control.Value = text
         if text is not None:
@@ -2135,7 +2136,7 @@ class ModuleView(object):
     def __on_cell_change(self, event, setting, control):
         if not self.__handle_change:
             return
-        proposed_value = unicode(control.GetValue())
+        proposed_value = text_type(control.GetValue())
         self.on_value_change(setting, control, proposed_value, event,
                              EDIT_TIMEOUT_SEC * 1000)
 
@@ -2593,7 +2594,7 @@ class FilterPanelController(object):
         # Make sure following predicates are legal
         #
         for index in range(index + 1, len(sequence)):
-            if isinstance(sequence[index], basestring):
+            if isinstance(sequence[index], string_types):
                 is_good = cellprofiler.setting.Filter.LITERAL_PREDICATE in predicates
             else:
                 matches = [p for p in predicates
@@ -2748,7 +2749,7 @@ class FilterPanelController(object):
                 sizer = self.get_sizer(subaddress)
                 predicates = self.v.predicates
                 for i, token in enumerate(substructure):
-                    if isinstance(token, basestring):
+                    if isinstance(token, string_types):
                         literal_ctrl = self.make_literal(
                                 token, i, subaddress, sizer)
                         predicates = []
@@ -3243,7 +3244,7 @@ class FileCollectionDisplayController(object):
                 file_tree = self.v.file_tree
             is_filtered = False
             while True:
-                if isinstance(mp, basestring) or isinstance(mp, tuple) and len(mp) == 3:
+                if isinstance(mp, string_types) or isinstance(mp, tuple) and len(mp) == 3:
                     path.append(mp)
                     if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
                         is_filtered = not file_tree[mp]
@@ -3259,7 +3260,7 @@ class FileCollectionDisplayController(object):
                 mp = mp_list[0]
             if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
                 self.status_text.Label = \
-                    ("Processing " + path[-1] if isinstance(path[-1], basestring)
+                    ("Processing " + path[-1] if isinstance(path[-1], string_types)
                      else path[-2])
             self.status_text.Update()
             if not any_others:
@@ -4153,7 +4154,7 @@ class TableController(wx.grid.PyGridTableBase):
             s = self.v.data[row][col]
             if s is None:
                 s = ''
-            elif not isinstance(s, basestring):
+            elif not isinstance(s, string_types):
                 s = str(s)
             self.grid.GetGridWindow().SetToolTipString(s)
         event.Skip()
@@ -4196,7 +4197,7 @@ class TableController(wx.grid.PyGridTableBase):
     def GetValue(self, row, col):
         if self.IsEmptyCell(row, col):
             return None
-        s = unicode(self.v.data[row][col])
+        s = text_type(self.v.data[row][col])
         if len(self.column_size) <= col:
             self.column_size += [self.v.max_field_size] * (col - len(self.column_size) + 1)
         field_size = self.column_size[col]

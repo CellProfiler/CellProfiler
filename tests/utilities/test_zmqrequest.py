@@ -12,7 +12,7 @@ import zmq
 import unittest
 import uuid
 import numpy as np
-
+from six import string_types
 import cellprofiler.utilities.zmqrequest as Z
 
 CLIENT_MESSAGE = "Hello, server"
@@ -267,7 +267,7 @@ class TestZMQRequest(unittest.TestCase):
     def same(self, a, b):
         if isinstance(a, (float, int)):
             self.assertAlmostEquals(a, b)
-        elif isinstance(a, basestring):
+        elif isinstance(a, string_types):
             self.assertEquals(a, b)
         elif isinstance(a, dict):
             self.assertTrue(isinstance(b, dict))

@@ -7,6 +7,9 @@ import urllib
 
 import javabridge
 
+from six import string_types, text_type
+from six.moves import xrange
+
 from cellprofiler.modules import _help
 import cellprofiler.gui.help
 import cellprofiler.measurement
@@ -915,7 +918,7 @@ not being applied, your choice on this setting may be the culprit.
             if url.startswith("s3:"):
                 url = url.replace(" ", "+")
 
-            if isinstance(url, unicode):
+            if isinstance(url, text_type):
                 ourl = env.new_string(url)
             else:
                 ourl = env.new_string_utf(url)
@@ -1214,7 +1217,7 @@ not being applied, your choice on this setting may be the culprit.
 
     def get_data_type(self, key):
         '''Get the data type for a particular metadata key'''
-        if isinstance(key, basestring):
+        if isinstance(key, string_types):
             return self.get_data_type([key]).get(key, cellprofiler.measurement.COLTYPE_VARCHAR)
         result = {}
         if self.data_type_choice == DTC_CHOOSE:

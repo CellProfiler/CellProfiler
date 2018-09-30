@@ -12,9 +12,8 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as cpmi
+from cellprofiler.modules import _help, identify as cpmi
 from cellprofiler.setting import YES, NO
-import _help
 
 __doc__ = """\
 IdentifyTertiaryObjects

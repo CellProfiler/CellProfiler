@@ -1,3 +1,4 @@
+from __future__ import print_function
 import errno
 import logging
 
@@ -213,8 +214,8 @@ class Communicable(object):
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:
-            print "Communicable could not instantiate %s from module %s with kwargs %s" % (
-                module, classname, attribute_dict)
+            print("Communicable could not instantiate %s from module %s with kwargs %s" % (
+                module, classname, attribute_dict))
             raise
         instance._remote = True
         instance._routing = routing
@@ -936,9 +937,9 @@ if __name__ == '__main__':
         mysock.connect(address)
         req = Request(this='is', a='test', b=5, c=1.3, d=np.arange(10), e=[{'q': np.arange(5)}])
         rep = req.send(mysock)
-        print "subproc received", rep, rep.__dict__
+        print("subproc received", rep, rep.__dict__)
         rep = rep.reply(Reply(msg='FOO'), please_reply=True)
-        print "subproc received", rep, rep.__dict__
+        print("subproc received", rep, rep.__dict__)
 
 
     if 'subproc' in sys.argv[1:]:
@@ -956,10 +957,10 @@ if __name__ == '__main__':
             while upq.empty():
                 cv.wait()
             req = upq.get()
-            print "mainproc received", req, req.__dict__
+            print("mainproc received", req, req.__dict__)
             rep = Reply(this='is', your='reply')
             rep2 = req.reply(rep, please_reply=True)
-            print "mainproc received", rep2, rep2.__dict__
+            print("mainproc received", rep2, rep2.__dict__)
             rep2.reply(Reply(message='done'))
 
         s.wait()

@@ -534,9 +534,9 @@ desired.
                     extension == ".txt" and self.delimiter == DELIMITER_TAB))
                                   for (extension, group) in zip(all_extensions, self.object_groups)]
             if not all(is_valid_extension):
-                raise (cps.ValidationError(
-                        "To avoid formatting problems in Excel, use the extension .csv for comma-delimited files and .txt for tab-delimited..",
-                        self.object_groups[is_valid_extension.index(False)].file_name))
+                raise cps.ValidationError("To avoid formatting problems in Excel, use the extension .csv for "
+                                          "comma-delimited files and .txt for tab-delimited..",
+                                          self.object_groups[is_valid_extension.index(False)].file_name)
 
     @property
     def delimiter_char(self):
@@ -776,7 +776,7 @@ desired.
         '''
         file_name = self.make_objects_file_name(
                 IMAGE, workspace, image_set_number, settings_group)
-        if any([file_name.lower().endswith(x) for x in ".csv", "txt"]):
+        if any([file_name.lower().endswith(x) for x in (".csv", "txt")]):
             file_name = file_name[:-3] + "gct"
         return file_name
 
@@ -915,7 +915,7 @@ desired.
                     if feature_name == IMAGE_NUMBER:
                         row.append(str(img_number))
                     else:
-                        if agg_measurements.has_key(feature_name):
+                        if feature_name in agg_measurements:
                             value = agg_measurements[feature_name]
                         else:
                             value = m[IMAGE, feature_name, img_number]
@@ -947,9 +947,9 @@ desired.
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from loaddata import is_path_name_feature, is_file_name_feature
+        from .loaddata import is_path_name_feature, is_file_name_feature
         from cellprofiler.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
-        from loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+        from .loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         file_name = self.make_gct_file_name(workspace, image_set_numbers[0],
                                             settings_group)
@@ -1004,7 +1004,7 @@ desired.
                     # Count # of actual measurements
                     num_measures = 0
                     for feature_name in image_features:
-                        if not ignore_feature(feature_name) or agg_measurements.has_key(feature_name):
+                        if not ignore_feature(feature_name) or feature_name in agg_measurements:
                             num_measures += 1
 
                     writer.writerow(['#1.2'])
@@ -1028,7 +1028,7 @@ desired.
 
                 # Output all measurements
                 row = [agg_measurements[feature_name]
-                       if agg_measurements.has_key(feature_name)
+                       if feature_name in agg_measurements
                        else m.get_measurement(IMAGE, feature_name, img_number)
                        for feature_name in image_features]
                 row = ['' if x is None

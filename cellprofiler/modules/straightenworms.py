@@ -107,13 +107,13 @@ from cellprofiler.setting import YES, NO
 import itertools
 from cellprofiler.measurement import C_COUNT, FTR_CENTER_X, FTR_CENTER_Y
 from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
-from identify import add_object_count_measurements
-from identify import add_object_location_measurements
-from identify import get_object_measurement_columns
-from untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
-from untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
-from untangleworms import read_params
-from untangleworms import recalculate_single_worm_control_points
+from .identify import add_object_count_measurements
+from .identify import add_object_location_measurements
+from .identify import get_object_measurement_columns
+from .untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
+from .untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
+from .untangleworms import read_params
+from .untangleworms import recalculate_single_worm_control_points
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -1228,7 +1228,7 @@ of the straightened worms.'''))
                         if pixel_data.ndim == 3:
                             pixel_data = np.mean(pixel_data, 2)
                         imin, imax = [fn(pixel_data[labels != 0])
-                                      for fn in np.min, np.max]
+                                      for fn in (np.min, np.max)]
                         if imin == imax:
                             pixel_data = np.zeros(labels.shape)
                         else:

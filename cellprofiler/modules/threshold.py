@@ -29,7 +29,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
-import _help
+from cellprofiler.modules import _help
 
 
 O_TWO_CLASS = "Two classes"

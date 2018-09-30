@@ -233,10 +233,10 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     except IOError:
         wx.MessageBox(u'Failed to open file, "{}"'.format(filename), caption="File open error")
         return
-    except javabridge.JavaException, je:
+    except javabridge.JavaException as je:
         wx.MessageBox(u'Could not open "{}" as an image.'.format(filename), caption="File format error")
         return
-    except Exception, e:
+    except Exception as e:
         cellprofiler.gui.errordialog.display_error_dialog(
             None,
             e,
@@ -520,7 +520,7 @@ class Figure(wx.Frame):
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
         """
-        if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
+        if any([not hasattr(self, bar) for bar in ("navtoolbar", "status_bar")]):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
@@ -621,7 +621,7 @@ class Figure(wx.Frame):
         fields = []
         is_float = True
 
-        x, y = [int(round(xy)) for xy in xi, yi]
+        x, y = [int(round(xy)) for xy in (xi, yi)]
 
         if not self.in_bounds(image, x, y):
             return fields
@@ -912,7 +912,7 @@ class Figure(wx.Frame):
         popup = self.get_imshow_menu(subplot_xy)
         self.PopupMenu(popup, pos)
 
-    def get_imshow_menu(self, (x, y)):
+    def get_imshow_menu(self, coordinates):
         """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
@@ -920,6 +920,7 @@ class Figure(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         """
+        (x, y) = coordinates
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
@@ -2208,7 +2209,7 @@ class Figure(wx.Frame):
         axes.axis('image')
 
         if colorbar and not numpy.all(numpy.isnan(data)):
-            if self.colorbar.has_key(axes):
+            if axes in self.colorbar:
                 cb = self.colorbar[axes]
                 cb.set_clim(numpy.min(clean_data), numpy.max(clean_data))
                 cb.update_normal(clean_data)

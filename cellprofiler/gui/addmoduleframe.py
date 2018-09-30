@@ -3,7 +3,7 @@ import cellprofiler.gui
 import cellprofiler.gui.help.search
 import cellprofiler.modules
 import cellprofiler.preferences
-import cpframe
+from cellprofiler.gui import cpframe
 import wx
 
 
@@ -135,7 +135,7 @@ class AddModuleFrame(wx.Frame):
                         self.__module_files.insert(-2, category)
                         self.__module_dict[category] = {}
                     self.__module_dict[category][module.module_name] = loader
-            except Exception, e:
+            except Exception as e:
                 import traceback
                 import logging
                 logging.root.error(

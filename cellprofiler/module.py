@@ -9,7 +9,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting as cps
-import pipeline as cpp
+from cellprofiler import pipeline as cpp
 
 
 class Module(object):
@@ -110,7 +110,7 @@ class Module(object):
         settings = handles[cpp.SETTINGS][0, 0]
         setting_values = []
         self.__notes = []
-        if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
+        if (cpp.MODULE_NOTES in settings.dtype.fields and
                     settings[cpp.MODULE_NOTES].shape[1] > idx):
             n = settings[cpp.MODULE_NOTES][0, idx].flatten()
             for x in n:
@@ -120,9 +120,9 @@ class Module(object):
                     else:
                         x = x[0]
                 self.__notes.append(x)
-        if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
+        if cpp.SHOW_WINDOW in settings.dtype.fields:
             self.__show_window = settings[cpp.SHOW_WINDOW][0, idx] != 0
-        if settings.dtype.fields.has_key(cpp.BATCH_STATE):
+        if cpp.BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
             self.batch_state = numpy.array(settings[cpp.BATCH_STATE][0, idx].tostring())
@@ -317,9 +317,9 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -334,9 +334,9 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -382,7 +382,7 @@ class Module(object):
         those modules create) previous to a given module.
         """
         if self.__module_num == -1:
-            raise (Exception('Module has not been created'))
+            raise Exception("Module has not been created")
         return self.__module_num
 
     def set_module_num(self, module_num):

@@ -2,6 +2,7 @@
 """
 
 import logging
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 import json
@@ -278,7 +279,7 @@ class RegexpText(Setting):
             # Convert Matlab to Python
             pattern = re.sub('(\\(\\?)([<][^)>]+?[>])', '\\1P\\2', self.value)
             re.search('(|(%s))' % pattern, '')
-        except re.error, v:
+        except re.error as v:
             raise ValidationError("Invalid regexp: %s" % v, self)
 
 
@@ -523,7 +524,7 @@ class Pathname(Text):
 
     def __init__(self, text, value="", *args, **kwargs):
         kwargs = kwargs.copy()
-        if kwargs.has_key("wildcard"):
+        if "wildcard" in kwargs:
             self.wildcard = kwargs["wildcard"]
             del kwargs["wildcard"]
         else:
@@ -599,7 +600,7 @@ class ImagePlane(Setting):
                     "URLs should not contain spaces. %s is the offending URL" % url)
             url = url.replace(" ", "%20")
         return " ".join([str(x) if x is not None else ""
-                         for x in url, series, index, channel])
+                         for x in (url, series, index, channel)])
 
     def __get_field(self, index):
         f = self.value_text.split(" ")[index]
@@ -1196,7 +1197,7 @@ class FloatRange(Range):
         maxval - the maximum acceptable value of either
         """
         smin, smax = [(u"%f" % v).rstrip("0") for v in value]
-        text_value = ",".join([x + "0" if x.endswith(".") else x for x in smin, smax])
+        text_value = ",".join([x + "0" if x.endswith(".") else x for x in (smin, smax)])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
@@ -1258,7 +1259,7 @@ class NameProvider(AlphanumericText):
     def __init__(self, text, group, value=DO_NOT_USE, *args, **kwargs):
         self.__provided_attributes = {"group": group}
         kwargs = kwargs.copy()
-        if kwargs.has_key("provided_attributes"):
+        if "provided_attributes" in kwargs:
             self.__provided_attributes.update(kwargs["provided_attributes"])
             del kwargs[PROVIDED_ATTRIBUTES]
         kwargs["first_must_be_alpha"] = True
@@ -1298,7 +1299,7 @@ class FileImageNameProvider(ImageNameProvider):
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameProvider, self).__init__(text, value, *args,
@@ -1311,7 +1312,7 @@ class ExternalImageNameProvider(ImageNameProvider):
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][EXTERNAL_IMAGE_ATTRIBUTE] = True
         super(ExternalImageNameProvider, self).__init__(text, value, *args,
@@ -1323,7 +1324,7 @@ class CroppingNameProvider(ImageNameProvider):
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameProvider, self).__init__(text, value, *args, **kwargs)
@@ -1376,7 +1377,7 @@ class NameSubscriber(Setting):
         if value is None:
             value = (can_be_blank and blank_text) or "None"
         self.__required_attributes = {"group": group}
-        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES in kwargs:
             self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
             kwargs = kwargs.copy()
             del kwargs[REQUIRED_ATTRIBUTES]
@@ -1495,7 +1496,7 @@ class FileImageNameSubscriber(ImageNameSubscriber):
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES not in kwargs:
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameSubscriber, self).__init__(text, value, can_be_blank,
@@ -1509,7 +1510,7 @@ class CroppingNameSubscriber(ImageNameSubscriber):
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES not in kwargs:
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameSubscriber, self).__init__(text, value, can_be_blank,
@@ -1855,7 +1856,7 @@ class SubscriberMultiChoice(MultiChoice):
 
     def __init__(self, text, group, value=None, *args, **kwargs):
         self.__required_attributes = {"group": group}
-        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES in kwargs:
             self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
             kwargs = kwargs.copy()
             del kwargs[REQUIRED_ATTRIBUTES]
@@ -1971,7 +1972,7 @@ class MeasurementMultiChoice(MultiChoice):
 
         def valid_mc(c):
             '''Disallow any measurement column with "," or "|" in its names'''
-            return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"])
+            return not any([any([bad in f for f in c[:2]]) for bad in (",", "|")])
 
         self.set_choices([self.make_measurement_choice(c[0], c[1])
                           for c in columns if valid_mc(c)])
@@ -2581,7 +2582,7 @@ class Color(Setting):
             return (int(value[1:3], 16),
                     int(value[3:5], 16),
                     int(value[5:7], 16))
-        elif self.colortable.has_key(value.lower()):
+        elif value.lower() in self.colortable:
             return self.colortable[value.lower()]
         else:
             raise ValueError("Unknown color: " + self.value)
@@ -3070,7 +3071,7 @@ class Filter(Setting):
             """, dict(expr=self.value_text,
                       klass=J.class_for_name(
                               "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
-        except Exception, e:
+        except Exception as e:
             raise ValidationError(str(e), self)
 
     def test_setting_warnings(self, pipeline):
@@ -3309,10 +3310,10 @@ class FileCollectionDisplay(Setting):
     def add_subtree(self, mods, tree):
         for mod in mods:
             if self.is_leaf(mod):
-                if not tree.has_key(mod):
+                if mod not in tree:
                     tree[mod] = True
             else:
-                if tree.has_key(mod[0]) and isinstance(tree[mod[0]], dict):
+                if mod[0] in tree and isinstance(tree[mod[0]], dict):
                     subtree = tree[mod[0]]
                 else:
                     subtree = tree[mod[0]] = {}
@@ -3337,7 +3338,7 @@ class FileCollectionDisplay(Setting):
 
     def remove_subtree(self, mod, tree):
         if not (isinstance(mod, tuple) and len(mod) == 2):
-            if tree.has_key(mod):
+            if mod in tree:
                 subtree = tree[mod]
                 if isinstance(subtree, dict):
                     #
@@ -3349,7 +3350,7 @@ class FileCollectionDisplay(Setting):
                         if isinstance(subtree[key], dict):
                             self.remove_subtree(key, subtree)
                 del tree[mod]
-        elif tree.has_key(mod[0]):
+        elif mod[0] in tree:
             root_mod = mod[0]
             subtree = tree[root_mod]
             if isinstance(subtree, dict):
@@ -3359,7 +3360,7 @@ class FileCollectionDisplay(Setting):
                 # Delete the subtree if the subtree is emptied
                 #
                 if len(subtree) == 0 or (
-                                len(subtree) == 1 and subtree.has_key(None)):
+                                len(subtree) == 1 and None in subtree):
                     del tree[root_mod]
             else:
                 del tree[root_mod]
@@ -3377,13 +3378,13 @@ class FileCollectionDisplay(Setting):
     def mark_subtree(self, mods, keep, tree):
         for mod in mods:
             if self.is_leaf(mod):
-                if tree.has_key(mod):
+                if mod in tree:
                     if isinstance(tree[mod], dict):
                         tree[mod][None] = keep
                     else:
                         tree[mod] = keep
             else:
-                if tree.has_key(mod[0]):
+                if mod[0] in tree:
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
         kept = [tree[k][None] if isinstance(tree[k], dict)
                 else tree[k]
@@ -3568,12 +3569,12 @@ class Table(Setting):
         set_attribute - True to set, False to clear
         '''
         if set_attribute:
-            if self.row_attributes.has_key(row_index):
+            if row_index in self.row_attributes:
                 self.row_attributes[row_index].add(attribute)
             else:
                 self.row_attributes[row_index] = set([attribute])
         else:
-            if self.row_attributes.has_key(row_index):
+            if row_index in self.row_attributes:
                 s = self.row_attributes[row_index]
                 s.remove(attribute)
                 if len(s) == 0:
@@ -3602,12 +3603,12 @@ class Table(Setting):
         '''
         key = (row_index, self.column_names.index(column_name))
         if set_attribute:
-            if self.cell_attributes.has_key(key):
+            if key in self.cell_attributes:
                 self.cell_attributes[key].add(attribute)
             else:
                 self.cell_attributes[key] = set([attribute])
         else:
-            if self.cell_attributes.has_key(key):
+            if key in self.cell_attributes:
                 s = self.cell_attributes[key]
                 s.remove(attribute)
                 if len(s) == 0:
@@ -3693,7 +3694,7 @@ class Joiner(Setting):
         best_count = 0
         for value_list in self.entities.values():
             for value in value_list:
-                if all_names.has_key(value):
+                if value in all_names:
                     all_names[value] += 1
                 else:
                     all_names[value] = 1

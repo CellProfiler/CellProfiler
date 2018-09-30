@@ -11,8 +11,8 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import identify
-import _help
+from cellprofiler.modules import identify
+from cellprofiler.modules import _help
 
 __doc__ = """
 MeasureObjectIntensity

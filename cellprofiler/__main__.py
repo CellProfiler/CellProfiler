@@ -1,3 +1,4 @@
+from __future__ import print_function
 import bioformats.formatreader
 import ctypes
 import cellprofiler

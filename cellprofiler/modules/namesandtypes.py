@@ -3,7 +3,10 @@
 import logging
 import re
 
-import _help
+import numpy
+
+import bioformats
+import bioformats.omexml
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.image
@@ -13,15 +16,9 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import identify
-import images
 import javabridge
-import loadimages
-import numpy
 import skimage.color
-
-import bioformats
-import bioformats.omexml
+from cellprofiler.modules import _help, identify, images, loadimages
 
 logger = logging.getLogger(__name__)
 
@@ -1212,7 +1209,7 @@ requests an object selection.
 
         urls, path_names, file_names, series, index, channel = [
             env.get_object_array_elements(x) for x in
-            urls, path_names, file_names, series, index, channel]
+            (urls, path_names, file_names, series, index, channel)]
         for i, iscd in enumerate(iscds):
             image_set_column_idx = channel_map[column_names[i]]
             if iscd.channel_type == image_set_channel_descriptor.CT_OBJECTS:

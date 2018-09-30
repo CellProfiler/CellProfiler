@@ -1,11 +1,13 @@
 # coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
+from __future__ import print_function
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
 import cellprofiler.modules.images
+import cellprofiler.pipeline as cpp
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.pipeline
@@ -769,11 +771,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.ShowModal()
 
     def on_add_column(self):
-        print "Add column pressed"
+        print("Add column pressed")
         self.Table.AppendCols(1)
 
     def on_remove_column(self, col):
-        print "Remove column pressed"
+        print("Remove column pressed")
         self.Table.DeleteCols(col, 1)
 
     ####

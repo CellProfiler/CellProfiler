@@ -16,6 +16,7 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
+from functools import reduce
 
 cellprofiler.preferences.set_headless()
 

@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import _help
+from cellprofiler.modules import _help
 
 __doc__ = """\
 EditObjectsManually
@@ -73,7 +73,7 @@ import cellprofiler.workspace as cpw
 from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
-import identify as I
+from cellprofiler.modules import identify as I
 
 ###########################################
 #

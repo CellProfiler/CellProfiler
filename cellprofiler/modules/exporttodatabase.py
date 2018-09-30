@@ -99,7 +99,7 @@ import cellprofiler.measurement
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.modules.loadimages
-import _help
+from cellprofiler.modules import _help
 
 
 logger = logging.getLogger(__name__)
@@ -290,10 +290,10 @@ def get_results_as_list(cursor):
 
 def get_next_result(cursor):
     try:
-        return cursor.next()
-    except MySQLdb.Error, e:
+        return next(cursor)
+    except MySQLdb.Error as e:
         raise Exception('Error retrieving next result from database: %s' % e)
-    except StopIteration, e:
+    except StopIteration as e:
         return None
 
 
@@ -1882,7 +1882,7 @@ available:
                                        self.db_user.value,
                                        self.db_passwd.value,
                                        self.db_name.value)
-        except MySQLdb.Error, error:
+        except MySQLdb.Error as error:
             if error.args[0] == 1045:
                 msg = "Incorrect username or password"
             elif error.args[0] == 1049:
@@ -2806,7 +2806,7 @@ CREATE TABLE %s (
         relationship_table_name = self.get_table_name(T_RELATIONSHIPS)
         statements += [
             "DROP TABLE IF EXISTS %s" % x for x in
-            relationship_table_name, relationship_type_table_name]
+            (relationship_table_name, relationship_type_table_name)]
         #
         # The relationship type table has the module #, relationship name
         # and object names of every relationship reported by
@@ -3276,7 +3276,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return not post_group
         if not hasattr(column[3], "has_key"):
             return not post_group
-        if not column[3].has_key(cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP):
+        if cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP not in column[3]:
             return not post_group
         return (post_group if column[3][cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP]
                 else not post_group)
@@ -4179,7 +4179,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
     def get_pipeline_measurement_columns(self, pipeline, image_set_list, remove_postgroup_key=False):
         '''Get the measurement columns for this pipeline, possibly cached'''
         d = self.get_dictionary(image_set_list)
-        if not d.has_key(D_MEASUREMENT_COLUMNS):
+        if D_MEASUREMENT_COLUMNS not in d:
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
             d[D_MEASUREMENT_COLUMNS] = self.filter_measurement_columns(
                     d[D_MEASUREMENT_COLUMNS])
@@ -4620,9 +4620,9 @@ class ColumnNameMapping:
             orig_name = name
             if not re.match(valid_name_regexp, name):
                 name = re.sub("[^0-9a-zA-Z_$]", "_", name)
-                if reverse_dictionary.has_key(name):
+                if name in reverse_dictionary:
                     i = 1
-                    while reverse_dictionary.has_key(name + str(i)):
+                    while name + str(i) in reverse_dictionary:
                         i += 1
                     name = name + str(i)
             starting_name = name
@@ -4659,7 +4659,7 @@ class ColumnNameMapping:
                         rng = random_number_generator(starting_name)
                     name = starting_name
                     while len(name) > self.__max_len:
-                        index = rng.next() % len(name)
+                        index = next(rng) % len(name)
                         name = name[:index] + name[index + 1:]
             reverse_dictionary.pop(orig_name)
             reverse_dictionary[name] = key

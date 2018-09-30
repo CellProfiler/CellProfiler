@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import print_function
 import csv
 import logging
 import os
@@ -8,15 +9,15 @@ import urllib2
 import matplotlib.mlab
 import numpy
 
-import _help
+from cellprofiler.modules import _help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
-import identify
-import loadimages
+from cellprofiler.modules import identify, loadimages
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 try:
@@ -526,7 +527,7 @@ safe to press it.""")
 
         try:
             self.open_csv()
-        except IOError, e:
+        except IOError as e:
             import errno
             if e.errno == errno.EWOULDBLOCK:
                 raise cellprofiler.setting.ValidationError("Another program (Excel?) is locking the CSV file %s." %
@@ -537,7 +538,7 @@ safe to press it.""")
 
         try:
             self.get_header()
-        except Exception, e:
+        except Exception as e:
             raise cellprofiler.setting.ValidationError(
                 "The CSV file, %s, is not in the proper format." 
                 " See this module's help for details on CSV format. (error: %s)" % (self.csv_path, e),
@@ -724,7 +725,7 @@ safe to press it.""")
                 try:
                     url = cellprofiler.misc.generate_presigned_url(self.csv_path)
                     url_fd = urllib2.urlopen(url)
-                except Exception, e:
+                except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
                 fd = StringIO()
@@ -748,7 +749,7 @@ safe to press it.""")
             wx.MessageBox("Could not read %s" % self.csv_path)
             return
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
         sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(sizer)
@@ -776,12 +777,12 @@ safe to press it.""")
 
         fd = self.open_csv(do_not_cache=do_not_cache)
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         fd.close()
         if header[0].startswith('ELN_RUN_ID'):
             try:
                 data = self.convert()
-            except Exception, e:
+            except Exception as e:
                 raise RuntimeError("%s" % e)
             header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
@@ -809,13 +810,13 @@ safe to press it.""")
             try:
                 # do not load URLs automatically
                 return self.get_image_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
         elif group == 'objectgroup' and self.wants_images:
             try:
                 # do not load URLs automatically
                 return self.get_object_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
 
         return []
@@ -838,7 +839,7 @@ safe to press it.""")
             return True
         fd = self.open_csv()
         reader = csv.reader(fd)
-        header = [header_to_column(column) for column in reader.next()]
+        header = [header_to_column(column) for column in next(reader)]
         if header[0].startswith('ELN_RUN_ID'):
             reader = self.convert()
             header = list(reader.dtype.names)
@@ -1185,7 +1186,7 @@ safe to press it.""")
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:
-                        print warning
+                        print(warning)
                         #
                         # Process any object tags
                         #
@@ -1243,7 +1244,7 @@ safe to press it.""")
                 return entry["measurement_columns"]
             fd = self.open_csv()
             reader = csv.reader(fd)
-            header = [header_to_column(x) for x in reader.next()]
+            header = [header_to_column(x) for x in next(reader)]
             if header[0].startswith('ELN_RUN_ID'):
                 reader = self.convert()
                 header = reader.dtype.names

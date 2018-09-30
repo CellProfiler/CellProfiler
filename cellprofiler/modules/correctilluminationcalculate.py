@@ -934,7 +934,7 @@ fewer iterations, but less accuracy.
         d = self.illumination_image_name.provided_attributes
         if self.each_or_all == EA_ALL_ACROSS:
             d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
-        elif d.has_key(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
+        elif cps.AVAILABLE_ON_LAST_ATTRIBUTE in d:
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
 
     def validate_module_warnings(self, pipeline):

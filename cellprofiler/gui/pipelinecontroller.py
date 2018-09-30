@@ -41,7 +41,7 @@ import os
 import Queue
 import random
 import re
-from cellprofiler.gui import runmultiplepipelinesdialog
+import cellprofiler.gui.runmultiplepipelinesdialog
 import string
 import sys
 import threading
@@ -2282,7 +2282,7 @@ class PipelineController(object):
 
     def on_run_multiple_pipelines(self, event):
         """Menu handler for run multiple pipelines"""
-        dlg = runmultiplepipelinesdialog.RunMultplePipelinesDialog(
+        dlg = cellprofiler.gui.runmultiplepipelinesdialog.RunMultplePipelinesDialog(
             parent=self.__frame,
             title="Run multiple pipelines",
             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME,

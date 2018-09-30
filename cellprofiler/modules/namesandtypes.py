@@ -18,6 +18,7 @@ import cellprofiler.preferences
 import cellprofiler.setting
 import javabridge
 import skimage.color
+from six.moves import xrange
 from cellprofiler.modules import _help, identify, images, loadimages
 
 logger = logging.getLogger(__name__)

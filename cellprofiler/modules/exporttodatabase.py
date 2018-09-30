@@ -91,6 +91,7 @@ import logging
 import numpy
 import os
 import re
+from six import string_types, text_type
 import cellprofiler
 import cellprofiler.module
 import cellprofiler.setting
@@ -101,6 +102,16 @@ import cellprofiler.pipeline
 import cellprofiler.modules.loadimages
 from cellprofiler.modules import _help
 
+try:
+    buffer         # Python 2
+except NameError:  # Python 3
+    buffer = memoryview
+
+try:
+    cmp             # Python 2
+except NameError:
+    def cmp(a, b):  # Python 3
+        return (a > b) - (a < b)
 
 logger = logging.getLogger(__name__)
 try:
@@ -109,7 +120,7 @@ try:
     import sqlite3
 
     HAS_MYSQL_DB = True
-except:
+except Exception:
     logger.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB = False
 
@@ -2634,7 +2645,7 @@ INSERT INTO %s (name) values ('%s')""" % (
         properties = self.get_property_file_text(workspace)
         for p in properties:
             for k, v in p.properties.iteritems():
-                if isinstance(v, unicode):
+                if isinstance(v, text_type):
                     v = v.encode('utf-8')
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
@@ -2670,7 +2681,7 @@ CREATE TABLE %s (
             value = workspace.measurements.get_experiment_measurement(ftr)
 
             if column[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
-                if isinstance(value, unicode):
+                if isinstance(value, text_type):
                     value = value.encode('utf-8')
                 if self.db_type != DB_SQLITE:
                     value = MySQLdb.escape_string(value)
@@ -3159,7 +3170,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if isinstance(value, numpy.ndarray):
                     value = value[0]
                 if coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
-                    if isinstance(value, str) or isinstance(value, unicode):
+                    if isinstance(value, string_types):
                         value = '"' + MySQLdb.escape_string(value) + '"'
                     elif value is None:
                         value = "NULL"

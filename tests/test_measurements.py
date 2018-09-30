@@ -17,6 +17,7 @@ import numpy as np
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 from functools import reduce
+from six import text_type
 
 OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"
@@ -34,7 +35,7 @@ class TestMeasurements(unittest.TestCase):
         for case in test:
             result = cpmeas.Measurements.unwrap_string(
                     cpmeas.Measurements.wrap_string(case))
-            if not isinstance(case, unicode):
+            if not isinstance(case, text_type):
                 case = case.decode("utf-8")
             self.assertEqual(result, case)
 
@@ -191,10 +192,10 @@ class TestMeasurements(unittest.TestCase):
         bad_order = r.permutation(np.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(cpmeas.IMAGE, "Feature",
-                              unicode(vals[image_number - 1]),
+                              text_type(vals[image_number - 1]),
                               image_set_number=image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == text_type(v) for r, v in zip(result, vals)]))
 
     def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
         r = np.random.RandomState()
@@ -203,9 +204,9 @@ class TestMeasurements(unittest.TestCase):
         vals = r.uniform(size=100)
         bad_order = r.permutation(np.arange(1, 101))
         for image_number in bad_order:
-            m[cpmeas.IMAGE, "Feature", image_number] = unicode(vals[image_number - 1])
+            m[cpmeas.IMAGE, "Feature", image_number] = text_type(vals[image_number - 1])
         result = m[cpmeas.IMAGE, "Feature", :]
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == text_type(v) for r, v in zip(result, vals)]))
 
     def test_04_03_get_all_image_measurements_unicode(self):
         r = np.random.RandomState()
@@ -218,7 +219,7 @@ class TestMeasurements(unittest.TestCase):
                               vals[image_number - 1],
                               image_set_number=image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == text_type(v) for r, v in zip(result, vals)]))
 
     def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
         r = np.random.RandomState()
@@ -229,7 +230,7 @@ class TestMeasurements(unittest.TestCase):
         for image_number in bad_order:
             m[cpmeas.IMAGE, "Feature", image_number] = vals[image_number - 1]
         result = m[cpmeas.IMAGE, "Feature", :]
-        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+        self.assertTrue(all([r == text_type(v) for r, v in zip(result, vals)]))
 
     def test_04_04_get_all_object_measurements(self):
         r = np.random.RandomState()
@@ -527,8 +528,8 @@ class TestMeasurements(unittest.TestCase):
         result = m.get_groupings(["Metadata_A", "Metadata_B"])
         for d, image_numbers in result:
             for image_number in image_numbers:
-                self.assertEqual(d["Metadata_A"], unicode(aa[image_number - 1]))
-                self.assertEqual(d["Metadata_B"], unicode(bb[image_number - 1]))
+                self.assertEqual(d["Metadata_A"], text_type(aa[image_number - 1]))
+                self.assertEqual(d["Metadata_B"], text_type(bb[image_number - 1]))
 
     def test_10_01_remove_image_measurement(self):
         m = cpmeas.Measurements()

@@ -12,6 +12,8 @@ import traceback
 import unittest
 import zlib
 
+from six import text_type
+
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.module as cpm
@@ -1075,7 +1077,7 @@ HasImagePlaneDetails:False"""
         fd.seek(0)
         result = cpp.read_file_list(fd)
         for rr, tt in zip(result, test_data):
-            if isinstance(tt, unicode):
+            if isinstance(tt, text_type):
                 tt = tt.encode("utf-8")
             self.assertEquals(rr, tt)
 

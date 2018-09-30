@@ -7,6 +7,8 @@ import cellprofiler.preferences
 import wx
 import wx.lib.masked
 
+from six import text_type, unichr
+
 __choice_ids = []
 
 
@@ -126,7 +128,7 @@ class MetadataControl(wx.PyControl):
                 if value[index] in ('g', '?'):
                     state = STATE_PRE
                 else:
-                    self.__tokens.append(unicode(value[index]))
+                    self.__tokens.append(text_type(value[index]))
                     state = STATE_INITIAL
             elif state == STATE_PRE:
                 if value[index] != '<':

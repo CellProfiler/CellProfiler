@@ -115,6 +115,12 @@ from .untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
 from .untangleworms import read_params
 from .untangleworms import recalculate_single_worm_control_points
 
+try:
+    cmp             # Python 2
+except NameError:
+    def cmp(a, b):  # Python 3
+        return (a > b) - (a < b)
+
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
 

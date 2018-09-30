@@ -51,6 +51,13 @@ import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
 from functools import reduce
+from six import string_types, text_type
+
+try:
+    cmp             # Python 2
+except NameError:
+    def cmp(a, b):  # Python 3
+        return (a > b) - (a < b)
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]
@@ -817,7 +824,7 @@ class PipelineController(object):
         """
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
-                if isinstance(url, unicode):
+                if isinstance(url, text_type):
                     url = url.encode()
                 fd.write(url + "\n")
 
@@ -1951,7 +1958,7 @@ class PipelineController(object):
                 if module.is_input_module():
                     continue
                 category = module.category
-                if isinstance(category, (str, unicode)):
+                if isinstance(category, string_types):
                     categories = [category, "All"]
                 else:
                     categories = list(category) + ["All"]
@@ -3215,7 +3222,7 @@ class PipelineController(object):
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in choices.values():
-                        w, h = self.list_ctrl.GetTextExtent(unicode(row[i]))
+                        w, h = self.list_ctrl.GetTextExtent(text_type(row[i]))
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)
@@ -3227,11 +3234,11 @@ class PipelineController(object):
                                             (k,
                                              [u"%06d" % v if isinstance(v, int) else
                                               u"%020.10f" % v if isinstance(v, float) else
-                                              unicode(v) for v in [k] + choices[k]]) for k in choices])
+                                              text_type(v) for v in [k] + choices[k]]) for k in choices])
 
                 for image_number in sorted(choices.keys()):
-                    row = [unicode(image_number)] + \
-                          [unicode(x) for x in choices[image_number]]
+                    row = [text_type(image_number)] + \
+                          [text_type(x) for x in choices[image_number]]
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
                 wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)

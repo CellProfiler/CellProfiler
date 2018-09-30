@@ -5,6 +5,8 @@ import re
 
 import numpy as np
 
+from six import string_types
+
 import cellprofiler.measurement as cpmeas
 
 
@@ -89,7 +91,7 @@ class Rules(object):
                         "\\s*(?P<threshold>[^,]+)"
                         ",\\s*\\[\\s*(?P<true>[^\\]]+)\\s*\\]"
                         ",\\s*\\[\\s*(?P<false>[^\\]]+)\\s*\\]\\s*\\)$")
-        if isinstance(fd_or_file, str) or isinstance(fd_or_file, unicode):
+        if isinstance(fd_or_file, string_types):
             fd = open(fd_or_file, 'r')
             needs_close = True
         else:

@@ -18,6 +18,13 @@ import wx
 import wx.combo
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
+from six import string_types, text_type
+
+try:
+    cmp             # Python 2
+except NameError:
+    def cmp(a, b):  # Python 3
+        return (a > b) - (a < b)
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -313,7 +320,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             image_number = self.image_numbers[row]
             metadata_tags = self.metadata_tags
             if len(metadata_tags) > 0:
-                key = [unicode(self.cache[tag, image_number])
+                key = [text_type(self.cache[tag, image_number])
                        for tag in metadata_tags]
                 return " : ".join(key)
 
@@ -980,7 +987,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if need_column_layout:
                 if self.Table.GetNumberRows() > 0:
                     first_width, _ = self.GridWindow.GetTextExtent(
-                            unicode(self.Table.GetValue(0, i)))
+                            text_type(self.Table.GetValue(0, i)))
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
                 else:
@@ -1003,7 +1010,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = text_type(grid.Table.GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1093,7 +1100,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = text_type(grid.Table.GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1255,7 +1262,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
-        elif isinstance(bitmap, basestring):
+        elif isinstance(bitmap, string_types):
             dc.Font = window.Font
             dc.BackgroundMode = wx.TRANSPARENT
             width, height = dc.GetTextExtent(bitmap)

@@ -3740,7 +3740,7 @@ def url2pathname(url):
         return url
     assert is_file_url(url)
     utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])
-    return unicode(utf8_url, 'utf-8')
+    return utf8_url.encode('utf-8')
 
 
 def urlfilename(url):

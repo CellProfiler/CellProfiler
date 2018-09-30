@@ -12,7 +12,6 @@ import sys
 import tempfile
 import threading
 import time
-import urllib2
 import uuid
 
 import h5py
@@ -20,6 +19,11 @@ import numpy as np
 import six
 
 import cellprofiler.utilities.legacy
+
+from future.standard_library import install_aliases
+install_aliases()
+import urllib.parse
+
 
 try:
     buffer         # Python 2
@@ -1053,7 +1057,7 @@ class HDF5FileList(object):
             url = url.encode("utf-8")
         else:
             url = str(url)
-        schema, rest = urllib2.splittype(url)
+        schema, rest = urllib.parse.splittype(url)
         if schema is not None and schema.lower() == "omero":
             return schema, [rest]
         #

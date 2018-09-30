@@ -36,18 +36,15 @@ See also
 See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 """
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler.module
+import cellprofiler.setting
 from cellprofiler.setting import YES, NO
 
 
-class DisplayHistogram(cpm.Module):
+class DisplayHistogram(cellprofiler.module.Module):
     module_name = "DisplayHistogram"
     category = "Data Tools"
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def get_object(self):
         return self.object.value
@@ -57,26 +54,28 @@ class DisplayHistogram(cpm.Module):
 
         create_settings is called at the end of initialization.
         """
-        self.object = cps.ObjectNameSubscriber(
+        self.object = cellprofiler.setting.ObjectNameSubscriber(
                 'Select the object whose measurements will be displayed',
-                cps.NONE, doc='''\
+                cellprofiler.setting.NONE, doc='''\
 Choose the name of objects identified by some previous module (such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
 measurements are to be displayed.
 ''')
 
-        self.x_axis = cps.Measurement(
+        self.x_axis = cellprofiler.setting.Measurement(
                 'Select the object measurement to plot',
-                self.get_object, cps.NONE, doc='''Choose the object measurement made by a previous module to plot.''')
+                self.get_object, cellprofiler.setting.NONE, doc='''Choose the object measurement made by a previous module to plot.''')
 
-        self.bins = cps.Integer(
+        self.bins = cellprofiler.setting.Integer(
                 'Number of bins', 100, 1, 1000, doc='''Enter the number of equally-spaced bins that you want used on the X-axis.''')
 
-        self.xscale = cps.Choice(
-                'Transform the data prior to plotting along the X-axis?',
-                ['no', 'log'], None, doc='''\
+        self.xscale = cellprofiler.setting.Choice(
+                'How should the X-axis be scaled?',
+                [cellprofiler.setting.LINEAR,
+                 cellprofiler.setting.LOG_10,
+                 cellprofiler.setting.LOG_NATURAL], None, doc='''\
 The measurement data can be scaled with either a *linear* scale ("*No*") or
-a *log* (base 10) scaling.
+a *log* (natural log) scaling.
 
 Log scaling is useful when one of the measurements being plotted covers
 a large range of values; a log scale can bring out features in the
@@ -84,11 +83,12 @@ measurements that would not easily be seen if the measurement is plotted
 linearly.
 ''')
 
-        self.yscale = cps.Choice(
+        self.yscale = cellprofiler.setting.Choice(
                 'How should the Y-axis be scaled?',
-                ['linear', 'log'], None, doc='''\
+                [cellprofiler.setting.LINEAR,
+                 cellprofiler.setting.LOG_NATURAL], None, doc='''\
 The Y-axis can be scaled either with either a *linear* scale or a *log*
-(base 10) scaling.
+(natural log) scaling.
 
 Log scaling is useful when one of the measurements being plotted covers
 a large range of values; a log scale can bring out features in the
@@ -96,14 +96,14 @@ measurements that would not easily be seen if the measurement is plotted
 linearly.
 ''')
 
-        self.title = cps.Text(
+        self.title = cellprofiler.setting.Text(
                 'Enter a title for the plot, if desired', '', doc='''\
 Enter a title for the plot. If you leave this blank, the title will
 default to *(cycle N)* where *N* is the current image cycle being
 executed.
 ''')
 
-        self.wants_xbounds = cps.Binary(
+        self.wants_xbounds = cellprofiler.setting.Binary(
                 'Specify min/max bounds for the X-axis?',
                 False, doc='''\
 Select "*%(YES)s*" to specify minimum and maximum values for the plot on
@@ -111,7 +111,7 @@ the X-axis. This is helpful if an outlier bin skews the plot such that
 the bins of interest are no longer visible.
 ''' % globals())
 
-        self.xbounds = cps.FloatRange(
+        self.xbounds = cellprofiler.setting.FloatRange(
                 'Minimum/maximum values for the X-axis', doc="""Set lower/upper limits for X-axis of the histogram.""")
 
     def settings(self):
@@ -159,8 +159,8 @@ the bins of interest are no longer visible.
                                      yscale=self.yscale.value,
                                      title=workspace.display_data.title)
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if variable_revision_number == 1:
             # Add bins=100 to second position
             setting_values.insert(2, 100)
@@ -169,4 +169,9 @@ the bins of interest are no longer visible.
             # add wants_xbounds=False and xbounds=(0,1)
             setting_values = setting_values + [False, (0, 1)]
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            # Changed linear scaling name
+            if setting_values[3] == 'no':
+                setting_values[3] = cellprofiler.setting.LINEAR
+            variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab

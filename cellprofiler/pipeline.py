@@ -2176,7 +2176,7 @@ class Pipeline(object):
         if len(args) == 3:
             measurements, image_set_list, frame = args
             workspace = cpw.Workspace(self,
-                                      module,
+                                      None,
                                       None,
                                       None,
                                       measurements,
@@ -3082,7 +3082,6 @@ class Pipeline(object):
                 ipd = self.find_image_plane_details(exemplar)
             if ipd is not None:
                 ipd.metadata.update(m)
-                self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
 
         #
         # If there are planes, we create image plane descriptors for them
@@ -3118,7 +3117,6 @@ class Pipeline(object):
                         to_add.append(exemplar)
                     else:
                         ipd.metadata.update(m)
-                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
 
             elif pixels.SizeZ > 1 or pixels.SizeT > 1:
                 #
@@ -3173,7 +3171,6 @@ class Pipeline(object):
                         to_add.append(exemplar)
                     else:
                         ipd.metadata.update(metadata)
-                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
         if len(to_add) > 0:
             self.add_image_plane_details(to_add, False)
 

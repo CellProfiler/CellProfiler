@@ -832,8 +832,8 @@ def entropy2(x, y):
     #
     xy = 256 * x + y
     xy = xy.flatten()
-    sparse = scipy.sparse.coo_matrix((np.ones(xy.shape),
-                                      (xy, np.zeros(xy.shape))))
+    sparse = scipy.sparse.coo_matrix((np.ones(xy.shape, dtype=np.int32),
+                                      (xy, np.zeros(xy.shape, dtype=np.int32))))
     histogram = sparse.toarray()
     n = np.sum(histogram)
     if n > 0 and np.max(histogram) > 0:

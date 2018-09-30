@@ -10,7 +10,7 @@ FillObjects
 **ConvertImageToObjects** or **Watershed**). Labels are preserved and, where possible, holes
 entirely within the boundary of labeled objects are filled with the surrounding object number.
 
-**FillObjects** can also be run on a "per-plane" basis working with volumetric data.
+**FillObjects** can also be optionally run on a "per-plane" basis working with volumetric data.
 Holes will be filled for each XY plane, rather than on the whole volume.
 
 |

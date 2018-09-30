@@ -103,67 +103,10 @@ def cp_start_vm():
     #
     # Enable Bio-Formats directory cacheing
     #
-    try:
-        c_location = javabridge.JClassWrapper("loci.common.Location")
-        c_location.cacheDirectoryListings(True)
-        logger.debug("Enabled Bio-formats directory cacheing")
-    except:
-        logger.warning("Bioformats version does not support directory cacheing")
-    #
-    # Monkey-patch bioformats.formatreader.get_class_list to add
-    # the classes we added to loci.formats.in
-    #
-    old_get_class_list = bioformats.formatreader.get_class_list
 
-    def get_class_list():
-        "Return a wrapped instance of loci.formats.ClassList"
-
-        env = javabridge.get_env()
-        class_list = old_get_class_list()
-        rais_classname = 'loci/common/RandomAccessInputStream'
-        #
-        # Move any class to the back that thinks it can read garbage
-        #
-        fd, path = tempfile.mkstemp(suffix=".garbage",
-                                    dir=cellprofiler.preferences.get_temporary_directory())
-        stream = None
-        try:
-            os.write(fd, "This is not an image file")
-            os.fsync(fd)
-            stream = javabridge.make_instance(
-                    rais_classname, '(Ljava/lang/String;)V', path)
-            problem_classes = []
-            for klass in env.get_object_array_elements(class_list.get_classes()):
-                try:
-                    instance = javabridge.call(
-                            klass, "newInstance", "()Ljava/lang/Object;")
-                    can_read_garbage = javabridge.call(
-                            instance, "isThisType",
-                            "(L%s;)Z" % rais_classname, stream)
-                    if can_read_garbage:
-                        problem_classes.append(klass)
-                        class_list.remove_class(klass)
-                except:
-                    logger.info("Caught exception in %s.isThisType",
-                                javabridge.to_string(klass))
-        finally:
-            os.close(fd)
-            javabridge.call(stream, "close", "()V")
-            os.remove(path)
-
-        for classname in ("loci.formats.in.FlowSightReader",
-                          "loci.formats.in.IM3Reader"):
-            try:
-                klass = javabridge.class_for_name(classname)
-                class_list.add_class(klass)
-            except:
-                logger.warn("Could not find Bio-formats reader %s" % classname,
-                            exc_info=1)
-        for klass in problem_classes:
-            class_list.add_class(klass)
-        return class_list
-
-    bioformats.formatreader.get_class_list = get_class_list
+    c_location = javabridge.JClassWrapper("loci.common.Location")
+    c_location.cacheDirectoryListings(True)
+    logger.debug("Enabled Bio-formats directory cacheing")
 
 
 def cp_stop_vm(kill=True):

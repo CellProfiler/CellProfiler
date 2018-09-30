@@ -8,7 +8,11 @@ The **MatchTemplate** module uses `normalized cross-correlation`_ to
 match a template to a single-channel two-or-three dimensional image or
 multi-channel two-dimensional image. The output of the module is an
 image where each pixel corresponds to the `Pearson product-moment
-correlation coefficient`_ between the image and the template.
+correlation coefficient`_ between the image and the template. Practically, this 
+allows you to crop a single object of interest (i.e., a cell) and predict where
+other such objects are in the image. Note that this is not rotation invariant, so
+this module will perform best when objects are approximately round or are angled
+in a relatively unified direction.
 
 |
 
@@ -37,16 +41,17 @@ class MatchTemplate(cellprofiler.module.Module):
     def create_settings(self):
         self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
             "Image",
+            doc="Select the image you want to use."
         )
 
         self.template_name = cellprofiler.setting.Pathname(
             "Template",
-            ""
+            doc="Specify the location of the cropped image you want to use as a template."
         )
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
             "Output",
-            "",
+            doc="Enter the name you want to call the image produced by this module.",
         )
 
     def settings(self):

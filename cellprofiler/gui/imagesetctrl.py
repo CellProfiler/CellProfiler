@@ -10,6 +10,7 @@ import cellprofiler.modules.images
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences
 import cellprofiler.setting
+import cellprofiler.pipeline
 import numpy
 import re
 import urllib
@@ -298,7 +299,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             """Get the URL for a cell"""
             image_set = self.image_numbers[row]
             column = self.columns[col]
-            if column.channel_type == cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
+            if column.channel_type == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
                 feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + column.channel
             else:
                 feature = cellprofiler.measurement.C_URL + "_" + column.channel
@@ -634,19 +635,19 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.Title = "Change image type for %s" % (self.Table.GetColLabelValue(col))
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
                  self.monochrome_channel_image,
                  "Treat the image as monochrome, averaging colors if needed"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
                  self.color_channel_image,
                  "Treat the image as color. Use ColorToGray to get individual colors"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_MASK,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
                  self.mask_image,
                  "Treat the image as a binary mask"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
                  self.objects_image,
                  "Treat the image as objects"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
                  self.illumination_function_image,
                  "Use the image for illumination correction")]
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)

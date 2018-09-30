@@ -6,7 +6,8 @@ Watershed
 
 **Watershed** is a segmentation algorithm. It is used to separate
 different objects in an image. For more information please visit
-the `scikit-image documentation`_ on **Watershed** that CellProfiler implements.
+the `scikit-image documentation`_ on the **Watershed** implementation that 
+CellProfiler uses.
 
 Note, when using marker-based **Watershed** that it is typical to use the input binary image
 as the mask. Otherwise, if the mask is *None*, the background will be interpreted as an object

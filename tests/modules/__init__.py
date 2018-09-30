@@ -129,7 +129,10 @@ def load_pipeline(test_case, encoded_data):
     def blowup(pipeline, event):
         if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
                               cellprofiler.pipeline.LoadExceptionEvent)):
-            test_case.assertFalse(event.error.message)
+            if test_case is not None:
+                test_case.assertFalse(event.error.message)
+            else:
+                assert not event.error.message
 
     pipeline.add_listener(blowup)
     pipeline.create_from_handles(handles)

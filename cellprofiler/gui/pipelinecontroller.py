@@ -135,8 +135,10 @@ class PipelineController(object):
         wx.EVT_MENU(frame, cpframe.ID_EDIT_DELETE, self.on_remove_module)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_DUPLICATE, self.on_duplicate_module)
 
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_BROWSE_FOR_FOLDER,
+                    self.on_pathlist_browse_folder)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_BROWSE_FOR_FILES,
-                    self.on_pathlist_browse)
+                    self.on_pathlist_browse_files)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_CLEAR_FILE_LIST,
                     self.on_pathlist_clear)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_COLLAPSE_ALL,
@@ -977,7 +979,7 @@ class PipelineController(object):
                               os.path.split(pathname)[1]
                     sizer.Add(wx.StaticText(dlg, label=message), 0, wx.EXPAND)
                     sizer.AddSpacer(4)
-                    gb_sizer = wx.BoxSizer(groupbox, wx.VERTICAL)
+                    gb_sizer = wx.BoxSizer(wx.VERTICAL)
                     sizer.Add(gb_sizer, 1, wx.EXPAND)
                     rb_primary = wx.RadioButton(dlg, label="&Primary pipeline")
                     gb_sizer.Add(rb_primary, 0, wx.ALIGN_LEFT)
@@ -1063,64 +1065,65 @@ class PipelineController(object):
                             wildcard="Image set file (*.csv)|*.csv",
                             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         try:
-            if dlg.ShowModal() == wx.ID_OK:
-                try:
-                    self.__workspace.refresh_image_set()
-                    self.__workspace.measurements.write_image_sets(dlg.Path)
-                except Exception as e:
-                    error = cellprofiler.gui.dialog.Error("Error", e.message)
-
-                    if error.status is wx.ID_CANCEL:
-                        cellprofiler.preferences.cancel_progress()
-
+            dialog_response = dlg.ShowModal()
         finally:
             dlg.Destroy()
 
-        # Show helpful message to guide in proper use (GithHub issue #688)
-        frame = wx.Frame(self.__frame,
-                         title="Image set listing saved")
-        frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-        panel = wx.Panel(frame)
-        frame.Sizer.Add(panel, 1, wx.EXPAND)
-        panel.Sizer = wx.BoxSizer(wx.VERTICAL)
-        subpanel = wx.Panel(panel)
-        panel.Sizer.Add(subpanel, 1, wx.EXPAND)
-        subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
-        subpanel.Sizer.AddSpacer(15)
-        message_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        subpanel.Sizer.Add(
-            message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
-        subpanel.Sizer.AddSpacer(15)
-        button_bar = wx.StdDialogButtonSizer()
-        panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
+        if dialog_response == wx.ID_OK:
+            try:
+                self.__workspace.refresh_image_set()
+                self.__workspace.measurements.write_image_sets(dlg.Path)
+                
+                # Show helpful message to guide in proper use (GithHub issue #688)
+                frame = wx.Frame(self.__frame,
+                                 title="Image set listing saved")
+                frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+                panel = wx.Panel(frame)
+                frame.Sizer.Add(panel, 1, wx.EXPAND)
+                panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+                subpanel = wx.Panel(panel)
+                panel.Sizer.Add(subpanel, 1, wx.EXPAND)
+                subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
+                subpanel.Sizer.AddSpacer(15)
+                message_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                subpanel.Sizer.Add(
+                    message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
+                subpanel.Sizer.AddSpacer(15)
+                button_bar = wx.StdDialogButtonSizer()
+                panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
-        info_bitmap = wx.ArtProvider.GetBitmap(
-            wx.ART_INFORMATION,
-            client=wx.ART_CMN_DIALOG)
-        message_sizer.Add(
-            wx.StaticBitmap(subpanel, bitmap=info_bitmap),
-            0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
-        message_sizer.AddSpacer(12)
-        help_text = (
-            "Your image set listing has been saved as a comma-delimited file (CSV). This file can be loaded \n"
-            "into CellProfiler using the LoadData module (located in the File Processing category). In the\n"
-            "module, specify the CSV in the input data file location, and set the base image location to 'None'.\n"
-            "\n"
-            "If you are running CellProfiler from the command line without the UI (i.e., 'headless'), you can use\n"
-            "the '--data-file' switch to use an alternate CSV file as input to LoadData rather than the one specified\n"
-            "in the LoadData module itself.\n")
-        text = wx.StaticText(
-            subpanel, label=help_text)
-        message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
+                info_bitmap = wx.ArtProvider.GetBitmap(
+                    wx.ART_INFORMATION,
+                    client=wx.ART_CMN_DIALOG)
+                message_sizer.Add(
+                    wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+                    0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
+                message_sizer.AddSpacer(12)
+                help_text = (
+                    "Your image set listing has been saved as a comma-delimited file (CSV). This file can be loaded \n"
+                    "into CellProfiler using the LoadData module (located in the File Processing category). In the\n"
+                    "module, specify the CSV in the input data file location, and set the base image location to 'None'.\n"
+                    "\n"
+                    "If you are running CellProfiler from the command line without the UI (i.e., 'headless'), you can use\n"
+                    "the '--data-file' switch to use an alternate CSV file as input to LoadData rather than the one specified\n"
+                    "in the LoadData module itself.\n")
+                text = wx.StaticText(
+                    subpanel, label=help_text)
+                message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
 
-        ok_button = wx.Button(panel, wx.ID_OK)
-        button_bar.AddButton(ok_button)
-        button_bar.Realize()
-        ok_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event: frame.Close())
-        frame.Fit()
-        frame.Show()
+                ok_button = wx.Button(panel, wx.ID_OK)
+                button_bar.AddButton(ok_button)
+                button_bar.Realize()
+                ok_button.Bind(
+                    wx.EVT_BUTTON,
+                    lambda event: frame.Close())
+                frame.Fit()
+                frame.Show()
+            except Exception as e:
+                error = cellprofiler.gui.dialog.Error("Error", e.message)
+
+                if error.status is wx.ID_CANCEL:
+                    cellprofiler.preferences.cancel_progress()
 
     def __on_export_pipeline_notes(self, event):
         default_filename = cellprofiler.preferences.get_current_workspace_path()
@@ -1508,8 +1511,19 @@ class PipelineController(object):
         elif event.Id == cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE:
             if not self.__path_list_ctrl.has_focus_item():
                 event.Enable(False)
+    
+    def on_pathlist_browse_folder(self, event, default_dir=wx.EmptyString):
+        """Handle request for browsing for pathlist folder"""
+        with wx.DirDialog(
+                self.__path_list_ctrl,
+                "Select image folder",
+               ) as dlg:
+            assert isinstance(dlg, wx.DirDialog)
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                self.add_paths_to_pathlist([path])
 
-    def on_pathlist_browse(self, event, default_dir=wx.EmptyString):
+    def on_pathlist_browse_files(self, event, default_dir=wx.EmptyString):
         """Handle request for browsing for pathlist files"""
         with wx.FileDialog(
                 self.__path_list_ctrl,
@@ -1525,7 +1539,8 @@ class PipelineController(object):
                 self.add_paths_to_pathlist(paths)
 
     PATHLIST_CMD_SHOW = "Show Selected Image"
-    PATHLIST_CMD_BROWSE = "Browse For Images"
+    PATHLIST_CMD_BROWSE_FILES = "Browse For Images"
+    PATHLIST_CMD_BROWSE_FOLDER = "Browse For Folder"
     PATHLIST_CMD_REMOVE = "Remove From File List"
     PATHLIST_CMD_REFRESH = "Refresh File List"
     PATHLIST_TEXT_REFRESH = "Remove Unavailable Files"
@@ -1537,7 +1552,8 @@ class PipelineController(object):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
                 (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
                 (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
-                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+                (self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FILES),
+                (self.PATHLIST_CMD_BROWSE_FOLDER, self.PATHLIST_CMD_BROWSE_FOLDER),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
                 (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
@@ -1545,22 +1561,24 @@ class PipelineController(object):
     def on_pathlist_file_command(self, paths, cmd):
         if cmd == self.PATHLIST_CMD_SHOW or cmd is None:
             if len(paths) == 0:
-                self.on_pathlist_browse(None)
+                self.on_pathlist_browse_files(None)
                 return
             self.on_pathlist_show()
         elif cmd == self.PATHLIST_CMD_REMOVE:
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_REFRESH:
             self.on_pathlist_refresh(paths)
-        elif cmd == self.PATHLIST_CMD_BROWSE:
+        elif cmd in [self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FOLDER]:
+            if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+                browse_function = self.on_pathlist_browse_folder 
+            else:
+                browse_function = self.on_pathlist_browse_files
             if len(paths) == 0 or not paths[0].startswith("file:"):
-                self.on_pathlist_browse(None)
+                browse_function(None)
             else:
                 path = urllib.url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
-                self.on_pathlist_browse(
-                    None,
-                    default_dir=path)
+                browse_function(None, default_dir=path)
         else:
             self.on_pathlist_command(cmd)
 
@@ -1575,7 +1593,8 @@ class PipelineController(object):
     def get_pathlist_folder_context_menu(self, path):
         return ((self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
                 (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
-                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+                (self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FILES),
+                (self.PATHLIST_CMD_BROWSE_FOLDER, self.PATHLIST_CMD_BROWSE_FOLDER),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
                 (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
@@ -1589,22 +1608,29 @@ class PipelineController(object):
             paths = self.__path_list_ctrl.get_folder(
                 path, self.__path_list_ctrl.FLAG_RECURSE)
             self.on_pathlist_refresh(paths)
-        elif cmd == self.PATHLIST_CMD_BROWSE:
+        elif cmd in [self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FOLDER]:
+            if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+                browse_function = self.on_pathlist_browse_folder 
+            else:
+                browse_function = self.on_pathlist_browse_files
             if path.startswith("file:"):
                 path = urllib.url2pathname(path[5:])
-                self.on_pathlist_browse(None, default_dir=path)
+                browse_function(None, default_dir=path)
             else:
-                self.on_pathlist_browse(None)
+                browse_function(None)
         else:
             self.on_pathlist_command(cmd)
 
     def get_pathlist_empty_context_menu(self, path):
-        return (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+        return ((self.PATHLIST_CMD_BROWSE_FILES, self.PATHLIST_CMD_BROWSE_FILES),
+                (self.PATHLIST_CMD_BROWSE_FOLDER, self.PATHLIST_CMD_BROWSE_FOLDER))
 
     def on_pathlist_empty_command(self, path, cmd):
-        if cmd == self.PATHLIST_CMD_BROWSE:
-            self.on_pathlist_browse(None)
-
+        if cmd == self.PATHLIST_CMD_BROWSE_FILES:
+            self.on_pathlist_browse_files(None)        
+        if cmd == self.PATHLIST_CMD_BROWSE_FOLDER:
+            self.on_pathlist_browse_folder(None)
+        
     def on_pathlist_expand_all(self, event=None):
         self.__path_list_ctrl.expand_all()
 

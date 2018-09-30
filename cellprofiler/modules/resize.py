@@ -6,7 +6,8 @@ Resize
 
 **Resize** resizes images (changes their resolution).
 
-This module is compatible with 2D and 3D/volumetric images.
+This module is compatible with 2D and 3D/volumetric images; for 3D images the
+module resizes only in X and Y, not in Z. 
 
 Images are resized (made smaller or larger) based on your input. You can
 resize an image by applying a resizing factor or by specifying the
@@ -317,20 +318,24 @@ resized with the same settings as the first image."""))
         new_shape = self.resized_shape(image, workspace)
 
         order = self.spline_order()
+        # Pixel values need to be between -1, 1 in order to use  skimage resize
+        # Thus determine a factor to scale by
+        img_scale_fac = numpy.abs(image_pixels).max()
 
         if image.volumetric and image.multichannel:
             output_pixels = numpy.zeros(new_shape.astype(int), dtype=image_pixels.dtype)
 
+
             for idx in range(int(new_shape[-1])):
                 output_pixels[:, :, :, idx] = skimage.transform.resize(
-                    image_pixels[:, :, :, idx],
+                    image_pixels[:, :, :, idx]/img_scale_fac,
                     new_shape[:-1],
                     order=order,
                     mode="symmetric"
                 )
         else:
             output_pixels = skimage.transform.resize(
-                image_pixels,
+                image_pixels/img_scale_fac,
                 new_shape,
                 order=order,
                 mode="symmetric"
@@ -338,6 +343,11 @@ resized with the same settings as the first image."""))
 
         if image.multichannel and len(new_shape) > image.dimensions:
             new_shape = new_shape[:-1]
+
+        if img_scale_fac != 1:
+            # if the image intensities were scaled,
+            # scale them back in the output
+            output_pixels = output_pixels*img_scale_fac
 
         mask = skimage.transform.resize(
             image.mask,

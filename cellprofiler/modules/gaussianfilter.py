@@ -36,7 +36,8 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
 
         self.sigma = cellprofiler.setting.Integer(
             text="Sigma",
-            value=1
+            value=1,
+            doc="Standard deviation of the kernel to be used for blurring. Larger sigmas induce more blurring."
         )
 
     def run(self, workspace):

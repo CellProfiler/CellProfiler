@@ -67,13 +67,8 @@ import numpy as np
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
+import cellprofiler.utilities.legacy
 from cellprofiler.preferences import get_headless
-
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
 
 
 class MergeOutputFiles(cpm.Module):
@@ -314,7 +309,7 @@ class MergeOutputFiles(cpm.Module):
         '''
 
         def sortfn(item1, item2):
-            return cmp(order[item1], order[item2])
+            return cellprofiler.utilities.legacy.cmp(order[item1], order[item2])
 
         list_ctrl.SortItems(sortfn)
 

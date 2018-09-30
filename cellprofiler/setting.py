@@ -22,14 +22,10 @@ from cellprofiler.preferences import \
     get_default_image_directory, get_default_output_directory, \
     standardize_default_folder_names
 import cellprofiler.measurement
+import cellprofiler.utilities.legacy
 
 import skimage.morphology
 
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
@@ -3537,7 +3533,7 @@ class Table(Setting):
 
         def compare_fn(row1, row2):
             for index in indices:
-                x = cmp(row1[index], row2[index])
+                x = cellprofiler.utilities.legacy.cmp(row1[index], row2[index])
                 if x != 0:
                     return x
             return 0
@@ -3848,7 +3844,7 @@ class NumberConnector(object):
         return float(self.__fn())
 
     def __cmp__(self, other):
-        return cmp(self.__fn(), other)
+        return cellprofiler.utilities.legacy.cmp(self.__fn(), other)
 
     def __hash__(self):
         return self.__fn().__hash__()

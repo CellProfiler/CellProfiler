@@ -14,7 +14,7 @@ import zlib
 
 import numpy
 
-from six import text_type
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -800,5 +800,5 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
-    return u", ".join([u":".join([text_type(y) for y in x])
+    return u", ".join([u":".join([six.text_type(y) for y in x])
                        for x in sorted(key.iteritems())])

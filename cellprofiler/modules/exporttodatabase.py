@@ -91,7 +91,7 @@ import logging
 import numpy
 import os
 import re
-from six import string_types, text_type
+import six
 import cellprofiler
 import cellprofiler.module
 import cellprofiler.setting
@@ -2640,7 +2640,7 @@ INSERT INTO %s (name) values ('%s')""" % (
         properties = self.get_property_file_text(workspace)
         for p in properties:
             for k, v in p.properties.iteritems():
-                if isinstance(v, text_type):
+                if isinstance(v, six.text_type):
                     v = v.encode('utf-8')
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
@@ -2676,7 +2676,7 @@ CREATE TABLE %s (
             value = workspace.measurements.get_experiment_measurement(ftr)
 
             if column[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
-                if isinstance(value, text_type):
+                if isinstance(value, six.text_type):
                     value = value.encode('utf-8')
                 if self.db_type != DB_SQLITE:
                     value = MySQLdb.escape_string(value)
@@ -3165,7 +3165,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if isinstance(value, numpy.ndarray):
                     value = value[0]
                 if coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
-                    if isinstance(value, string_types):
+                    if isinstance(value, six.string_types):
                         value = '"' + MySQLdb.escape_string(value) + '"'
                     elif value is None:
                         value = "NULL"

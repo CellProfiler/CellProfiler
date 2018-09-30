@@ -23,6 +23,12 @@ from cellprofiler.preferences import set_headless
 set_headless()
 from cellprofiler.modules import builtin_modules, all_modules
 
+try:
+    cmp             # Python 2
+except NameError:
+    def cmp(a, b):  # Python 3
+        return (a > b) - (a < b)
+
 __temp_example_images_folder = None
 
 # FIXME: use a stable URI

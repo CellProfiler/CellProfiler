@@ -5,6 +5,8 @@ import tempfile
 import unittest
 import urllib
 
+from six import string_types
+
 import cellprofiler.measurement
 import cellprofiler.modules.createbatchfiles
 import cellprofiler.modules.namesandtypes
@@ -741,7 +743,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
     def make_ipd(self, url, metadata, series=0, index=0, channel=None):
         if channel is None:
             channel = "ALWAYS_MONOCHROME"
-        if isinstance(channel, basestring):
+        if isinstance(channel, string_types):
             channel = javabridge.run_script("""
             importPackage(Packages.org.cellprofiler.imageset);
             ImagePlane.%s;""" % channel)

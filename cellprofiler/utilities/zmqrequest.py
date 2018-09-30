@@ -12,7 +12,13 @@ import uuid
 import zmq
 import Queue
 import numpy as np
+from six import string_types
 import cellprofiler.grid as cpg
+
+try:
+    buffer         # Python 2
+except NameError:  # Python 3
+    buffer = memoryview
 
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 SD_KEY_DICT = "__keydict__"
@@ -87,7 +93,7 @@ def make_sendable_dictionary(d):
     result = {}
     fake_key_idx = 1
     for k, v in d.items():
-        if (isinstance(k, basestring) and k.startswith('_')) or callable(d[k]):
+        if (isinstance(k, string_types) and k.startswith('_')) or callable(d[k]):
             continue
         if isinstance(v, dict):
             v = make_sendable_dictionary(v)

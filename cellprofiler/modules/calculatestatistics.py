@@ -155,6 +155,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler.setting import YES, NO
 from functools import reduce
+from six import string_types
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1
@@ -479,7 +480,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         else:
             return False
         if np.isscalar(v):
-            return not (isinstance(v, (str, unicode)))
+            return not (isinstance(v, string_types))
         #
         # Make sure the measurement isn't a string or other oddity
         #

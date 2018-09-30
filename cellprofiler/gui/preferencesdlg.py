@@ -10,6 +10,7 @@ import matplotlib.cm
 import os
 import sys
 import wx
+from six import string_types
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"
@@ -133,7 +134,7 @@ class PreferencesDlg(wx.Dialog):
                     if dlg.ShowModal() == wx.ID_OK:
                         ctl.Value = dlg.Path
                         dlg.Destroy()
-            elif (isinstance(ui_info, basestring) and
+            elif (isinstance(ui_info, string_types) and
                       ui_info.startswith(FILEBROWSE)):
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)

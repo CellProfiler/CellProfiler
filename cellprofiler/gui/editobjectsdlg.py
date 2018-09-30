@@ -1802,8 +1802,8 @@ class EditObjectsDialog(wx.Dialog):
             (xmin, xmax), (ymin, ymax) = [
                 [fn(a, b) for fn in (min, max)]
                 for a, b in
-                (self.delete_mode_start[0], event.xdata),
-                (self.delete_mode_start[1], event.ydata)]
+                ((self.delete_mode_start[0], event.xdata),
+                 (self.delete_mode_start[1], event.ydata))]
             self.delete_mode_rect_artist.set_data([
                 [xmin, xmin, xmax, xmax, xmin],
                 [ymin, ymax, ymax, ymin, ymin]])

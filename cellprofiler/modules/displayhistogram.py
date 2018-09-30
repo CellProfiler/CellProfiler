@@ -36,9 +36,10 @@ See also
 See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 """
 
+import textwrap
+
 import cellprofiler.module
 import cellprofiler.setting
-from cellprofiler.setting import YES, NO
 
 
 class DisplayHistogram(cellprofiler.module.Module):
@@ -55,64 +56,86 @@ class DisplayHistogram(cellprofiler.module.Module):
         create_settings is called at the end of initialization.
         """
         self.object = cellprofiler.setting.ObjectNameSubscriber(
-                'Select the object whose measurements will be displayed',
-                cellprofiler.setting.NONE, doc='''\
-Choose the name of objects identified by some previous module (such as
-**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
-measurements are to be displayed.
-''')
+            text='Select the object whose measurements will be displayed',
+            value=cellprofiler.setting.NONE,
+            doc=textwrap.dedent("""\
+                Choose the name of objects identified by some previous module (such as
+                **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
+                measurements are to be displayed.
+            """))
 
         self.x_axis = cellprofiler.setting.Measurement(
-                'Select the object measurement to plot',
-                self.get_object, cellprofiler.setting.NONE, doc='''Choose the object measurement made by a previous module to plot.''')
+            text='Select the object measurement to plot',
+            object_fn=self.get_object,
+            value=cellprofiler.setting.NONE,
+            doc="Choose the object measurement made by a previous module to plot.")
 
         self.bins = cellprofiler.setting.Integer(
-                'Number of bins', 100, 1, 1000, doc='''Enter the number of equally-spaced bins that you want used on the X-axis.''')
+            text='Number of bins',
+            value=100,
+            minval=1,
+            maxval=1000,
+            doc="Enter the number of equally-spaced bins that you want used on the X-axis.")
 
         self.xscale = cellprofiler.setting.Choice(
-                'How should the X-axis be scaled?',
-                [cellprofiler.setting.LINEAR,
-                 cellprofiler.setting.LOG_10,
-                 cellprofiler.setting.LOG_NATURAL], None, doc='''\
-The measurement data can be scaled with either a *linear* scale ("*No*") or
-a *log* (natural log) scaling.
+            text='How should the X-axis be scaled?',
+            choices=[cellprofiler.setting.LINEAR,
+                     cellprofiler.setting.LOG],
+            value=None,
+            doc=textwrap.dedent("""\
+                The measurement data can be scaled with either a **{LINEAR}** scale or
+                a **{LOG_NATURAL}** (natural log) scaling.
 
-Log scaling is useful when one of the measurements being plotted covers
-a large range of values; a log scale can bring out features in the
-measurements that would not easily be seen if the measurement is plotted
-linearly.
-''')
+                Log scaling is useful when one of the measurements being plotted covers
+                a large range of values; a log scale can bring out features in the
+                measurements that would not easily be seen if the measurement is plotted
+                linearly.
+                """.format(
+                    LINEAR=cellprofiler.setting.LINEAR,
+                    LOG_NATURAL=cellprofiler.setting.LOG
+                )))
 
         self.yscale = cellprofiler.setting.Choice(
-                'How should the Y-axis be scaled?',
-                [cellprofiler.setting.LINEAR,
-                 cellprofiler.setting.LOG_NATURAL], None, doc='''\
-The Y-axis can be scaled either with either a *linear* scale or a *log*
-(natural log) scaling.
+            text='How should the Y-axis be scaled?',
+            choices=[cellprofiler.setting.LINEAR,
+                     cellprofiler.setting.LOG],
+            value=None,
+            doc=textwrap.dedent("""\
+                The Y-axis can be scaled either with either a **{LINEAR}** scale or a **{LOG_NATURAL}**
+                (natural log) scaling.
 
-Log scaling is useful when one of the measurements being plotted covers
-a large range of values; a log scale can bring out features in the
-measurements that would not easily be seen if the measurement is plotted
-linearly.
-''')
+                Log scaling is useful when one of the measurements being plotted covers
+                a large range of values; a log scale can bring out features in the
+                measurements that would not easily be seen if the measurement is plotted
+                linearly.
+                """.format(
+                    LINEAR=cellprofiler.setting.LINEAR,
+                    LOG_NATURAL=cellprofiler.setting.LOG
+                )))
 
         self.title = cellprofiler.setting.Text(
-                'Enter a title for the plot, if desired', '', doc='''\
-Enter a title for the plot. If you leave this blank, the title will
-default to *(cycle N)* where *N* is the current image cycle being
-executed.
-''')
+            text='Enter a title for the plot, if desired',
+            value='',
+            doc=textwrap.dedent("""\
+                Enter a title for the plot. If you leave this blank, the title will
+                default to *(cycle N)* where *N* is the current image cycle being
+                executed.
+                """))
 
         self.wants_xbounds = cellprofiler.setting.Binary(
-                'Specify min/max bounds for the X-axis?',
-                False, doc='''\
-Select "*%(YES)s*" to specify minimum and maximum values for the plot on
-the X-axis. This is helpful if an outlier bin skews the plot such that
-the bins of interest are no longer visible.
-''' % globals())
+            text='Specify min/max bounds for the X-axis?',
+            value=False,
+            doc=textwrap.dedent("""\
+                Select "**{YES}**" to specify minimum and maximum values for the plot on
+                the X-axis. This is helpful if an outlier bin skews the plot such that
+                the bins of interest are no longer visible.
+                """.format(
+                    YES=cellprofiler.setting.YES
+                )))
 
         self.xbounds = cellprofiler.setting.FloatRange(
-                'Minimum/maximum values for the X-axis', doc="""Set lower/upper limits for X-axis of the histogram.""")
+            text='Minimum/maximum values for the X-axis',
+            doc="Set lower/upper limits for X-axis of the histogram.")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -126,8 +149,7 @@ the bins of interest are no longer visible.
                 self.title, self.wants_xbounds, self.xbounds]
 
     def visible_settings(self):
-        """The settings that are visible in the UI
-        """
+        """The settings that are visible in the UI"""
         result = [self.object, self.x_axis, self.bins, self.xscale, self.yscale,
                   self.title, self.wants_xbounds]
         if self.wants_xbounds:
@@ -135,8 +157,7 @@ the bins of interest are no longer visible.
         return result
 
     def run(self, workspace):
-        """Run the module
-        """
+        """Run the module"""
         if self.show_window:
             m = workspace.get_measurements()
             x = m.get_current_measurement(self.get_object(), self.x_axis.value)
@@ -144,7 +165,8 @@ the bins of interest are no longer visible.
                 x = x[x > self.xbounds.min]
                 x = x[x < self.xbounds.max]
             workspace.display_data.x = x
-            workspace.display_data.title = '%s (cycle %s)' % (self.title.value, workspace.measurements.image_set_number)
+            workspace.display_data.title = '{} (cycle {})'.format(self.title.value,
+                                                                  workspace.measurements.image_set_number)
 
     def run_as_data_tool(self, workspace):
         self.run(workspace)

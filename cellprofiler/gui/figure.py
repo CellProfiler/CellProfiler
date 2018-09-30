@@ -44,7 +44,7 @@ import cellprofiler.gui.tools
 import cellprofiler.modules.loadimages
 import cellprofiler.object
 import cellprofiler.preferences
-from cellprofiler.setting import LINEAR, LOG_NATURAL, LOG_10
+from cellprofiler.setting import LINEAR, LOG
 
 logger = logging.getLogger(__name__)
 
@@ -2000,12 +2000,9 @@ class Figure(wx.Frame):
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
         values = numpy.array(values).flatten()
-        if xscale == LOG_NATURAL:
+        if xscale == LOG:
             values = numpy.log(values[values > 0])
             xlabel = 'Log(%s)' % (xlabel or '?')
-        elif xscale == LOG_10:
-            values = numpy.log10(values[values > 0])
-            xlabel = 'Log10(%s)' % (xlabel or '?')
         # hist apparently doesn't like nans, need to preen them out first
         # (infinities are not much better)
         values = values[numpy.isfinite(values)]
@@ -2021,7 +2018,7 @@ class Figure(wx.Frame):
         plot = axes.hist(values, bins,
                          facecolor=(0.0, 0.62, 1.0),
                          edgecolor='none',
-                         log=(yscale == LOG_NATURAL),
+                         log=(yscale == LOG),
                          alpha=0.75)
         axes.set_xlabel(xlabel)
         axes.set_title(title)

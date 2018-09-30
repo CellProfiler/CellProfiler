@@ -102,6 +102,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
+import cellprofiler.utilities.legacy
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 import itertools
@@ -115,11 +116,6 @@ from .untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
 from .untangleworms import read_params
 from .untangleworms import recalculate_single_worm_control_points
 
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -410,7 +406,7 @@ of the straightened worms.'''))
                 '''Sort by control point number'''
                 acp = int(a.split("_")[-1])
                 bcp = int(b.split("_")[-1])
-                return cmp(acp, bcp)
+                return cellprofiler.utilities.legacy.cmp(acp, bcp)
 
             cpx.sort(sort_fn)
             cpy.sort(sort_fn)

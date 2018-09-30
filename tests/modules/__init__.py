@@ -19,15 +19,10 @@ import tempfile
 
 import scipy.io.matlab.mio
 from cellprofiler.preferences import set_headless
+import cellprofiler.utilities.legacy
 
 set_headless()
 from cellprofiler.modules import builtin_modules, all_modules
-
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
 
 __temp_example_images_folder = None
 
@@ -211,7 +206,7 @@ def make_12_bit_image(folder, filename, shape):
         np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8),
         # max value = 4095
         np.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], np.uint8)]
-    ifds = sorted(ifds, cmp=(lambda a, b: cmp(a.tolist(), b.tolist())))
+    ifds = sorted(ifds, cmp=(lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())))
     old_end = offset + 2 + nentries * 12
     new_end = offset + 2 + len(ifds) * 12
     diff = new_end - old_end

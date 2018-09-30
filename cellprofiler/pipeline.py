@@ -38,12 +38,6 @@ import numpy
 from six import string_types, text_type
 from six.moves import reload_module, xrange
 
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
-
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler
@@ -54,6 +48,7 @@ import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 import cellprofiler.utilities.utf16encode
+import cellprofiler.utilities.legacy
 from bioformats.omexml import OMEXML
 from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
@@ -253,7 +248,7 @@ def map_feature_names(feature_names, max_size=63):
     seeded = False
 
     def shortest_first(a, b):
-        return -1 if len(a) < len(b) else 1 if len(b) < len(a) else cmp(a, b)
+        return -1 if len(a) < len(b) else 1 if len(b) < len(a) else cellprofiler.utilities.legacy.cmp(a, b)
 
     for feature_name in sorted(feature_names, shortest_first):
         if len(feature_name) > max_size:
@@ -3488,7 +3483,7 @@ def find_image_plane_details(exemplar, ipds):
     '''
     pos = bisect.bisect_left(ipds, exemplar)
     if (pos == len(ipds) or
-            cmp(ipds[pos], exemplar)):
+            cellprofiler.utilities.legacy.cmp(ipds[pos], exemplar)):
         return None
     return ipds[pos]
 

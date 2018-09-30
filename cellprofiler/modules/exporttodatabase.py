@@ -100,18 +100,13 @@ import cellprofiler.measurement
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.modules.loadimages
+import cellprofiler.utilities.legacy
 from cellprofiler.modules import _help
 
 try:
     buffer         # Python 2
 except NameError:  # Python 3
     buffer = memoryview
-
-try:
-    cmp             # Python 2
-except NameError:
-    def cmp(a, b):  # Python 3
-        return (a > b) - (a < b)
 
 logger = logging.getLogger(__name__)
 try:
@@ -4215,12 +4210,12 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                 elif y[0] == cellprofiler.measurement.IMAGE:
                     return 1
                 else:
-                    return cmp(x[0], y[0])
+                    return cellprofiler.utilities.legacy.cmp(x[0], y[0])
             if x[1] == M_NUMBER_OBJECT_NUMBER:
                 return -1
             if y[1] == M_NUMBER_OBJECT_NUMBER:
                 return 1
-            return cmp(x[1], y[1])
+            return cellprofiler.utilities.legacy.cmp(x[1], y[1])
 
         columns.sort(cmp=cmpfn)
         #

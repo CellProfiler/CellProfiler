@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import glob
 import os.path
 import sys
@@ -62,13 +63,7 @@ else:
 
 __extensions = [
     setuptools.Extension(
-        name="_cpmorphology",
-        sources=[
-            "centrosome/src/_cpmorphology.c"
-        ]
-    ),
-    setuptools.Extension(
-        name="_propagate",
+        name="centrosome._propagate",
         sources=[
             "centrosome/_propagate.{}".format("c" if __suffix == "cpp" else __suffix)
         ]
@@ -105,9 +100,11 @@ setuptools.setup(
         "Programming Language :: C",
         "Programming Language :: C++",
         "Programming Language :: Cython",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Scientific/Engineering",
     ],
@@ -118,6 +115,7 @@ setuptools.setup(
     description="An open source image processing library",
     ext_modules=__extensions,
     install_requires=[
+        "deprecation",
         "matplotlib",
         "numpy",
         "pillow",
@@ -140,5 +138,5 @@ setuptools.setup(
         "pytest",
     ],
     url="https://github.com/CellProfiler/centrosome",
-    version="1.0.9",
+    version="2.0.0",
 )

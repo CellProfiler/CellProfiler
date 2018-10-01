@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+from __future__ import division
 import numpy as np
 import scipy.ndimage as scind
 import unittest
 import centrosome.zernike as z
 from centrosome.cpmorphology import fill_labeled_holes, draw_line
+from six.moves import range
 
 class TestZernike(unittest.TestCase):
     def make_zernike_indexes(self):
@@ -24,7 +27,7 @@ class TestZernike(unittest.TestCase):
         test_x      = np.zeros((labels.shape[0]*n,labels.shape[0]))
         test_y      = np.zeros((labels.shape[0]*n,labels.shape[0]))
         diameter = labels.shape[0]
-        radius = labels.shape[0]/2
+        radius = labels.shape[0]//2
         y,x=np.mgrid[-radius:radius+1,-radius:radius+1].astype(float)/radius
         anti_mask = x**2+y**2 > 1
         x[anti_mask] = 0
@@ -32,7 +35,7 @@ class TestZernike(unittest.TestCase):
         min_pixels = 100000
         max_pixels = 0
         for i in range(0,n):
-            angle = 360*i / n # believe it or not, in degrees!
+            angle = 360*i // n # believe it or not, in degrees!
             off_x = labels.shape[0]*i
             off_y = 0
             rotated_labels = scind.rotate(labels,angle,order=0,reshape=False)
@@ -71,7 +74,7 @@ class TestZernike(unittest.TestCase):
         for i in range(n+1):
             scaled_labels = scind.zoom(labels,3**i,order=0)
             diameter = scaled_labels.shape[0]
-            radius = scaled_labels.shape[0]/2
+            radius = scaled_labels.shape[0]//2
             radii.append(radius)
             y,x=np.mgrid[-radius:radius+1,-radius:radius+1].astype(float)/radius
             anti_mask = x**2+y**2 > 1

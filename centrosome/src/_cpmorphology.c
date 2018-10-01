@@ -24,6 +24,16 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
+#if PY_MAJOR_VERSION >= 3
+#define IS_PY3K
+#endif
+
+#ifdef IS_PY3K
+#define PYINTASLONG(m) (PyInt_AsLong(m))
+#else
+#define PYINTASLONG(m) (PyLong_AsLong(m))
+#endif
+
 static void to_stdout(const char *text)
 {
      PySys_WriteStdout("%s", text);     
@@ -108,7 +118,7 @@ cpmaximum(PyObject *self, PyObject *args)
      }
      for (i=0;i<4;i++) {
           PyObject *obDim = PyTuple_GetItem(*shapes[i],indices[i]);
-          *(slots[i]) = PyInt_AsLong(obDim);
+          *(slots[i]) = PYINTASLONG(obDim);
           if (PyErr_Occurred()) {
                error = "Array shape is not a tuple of integers";
                goto exit;
@@ -138,7 +148,7 @@ cpmaximum(PyObject *self, PyObject *args)
                error = "Failed to get x offset from tuple";
                goto exit;
           }
-          xoff = PyInt_AsLong(temp);
+          xoff = PYINTASLONG(temp);
           if (PyErr_Occurred()) {
                error = "Offset X is not an integer";
                goto exit;
@@ -148,7 +158,7 @@ cpmaximum(PyObject *self, PyObject *args)
                error = "Failed to get y offset from tuple";
                goto exit;
           }
-          yoff = PyInt_AsLong(temp);
+          yoff = PYINTASLONG(temp);
           if (PyErr_Occurred()) {
                error = "Offset Y is not an integer";
                goto exit;
@@ -246,9 +256,29 @@ static PyMethodDef methods[] = {
     { NULL, NULL, 0, NULL}
 };
 
+#ifdef PY3K
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "_cpmorphology",
+    "C routines for morphology processing",
+    -1,
+    methods,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+PyMODINIT_FUNC PyInit_cpmorphology(void)
+{
+    PyObject *m;
+    m = PyModule_Create(&moduledef);
+    return m;
+}
+#else
 PyMODINIT_FUNC init_cpmorphology(void)
 {
     Py_InitModule("_cpmorphology", methods);
     import_array();
 }
-
+#endif

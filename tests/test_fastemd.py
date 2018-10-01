@@ -13,6 +13,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+from __future__ import absolute_import
 import numpy as np
 import unittest
 from centrosome._fastemd import *

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import numpy as np
 from scipy.fftpack import fft2
 from scipy.ndimage.measurements import sum as nd_sum

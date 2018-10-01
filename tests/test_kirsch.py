@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import centrosome.kirsch
 import scipy.misc
 import numpy as np

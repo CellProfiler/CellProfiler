@@ -1,3 +1,5 @@
+from __future__ import division
+from __future__ import absolute_import
 import base64
 import unittest
 import numpy as np
@@ -8,6 +10,8 @@ import scipy.io.matlab
 import centrosome.cpmorphology as morph
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.filter import permutations
+from six.moves import range
+from six.moves import zip
 
         
 class TestFillLabeledHoles(unittest.TestCase):
@@ -45,7 +49,7 @@ class TestFillLabeledHoles(unittest.TestCase):
                    ((0,10),(15,25),(0,3),(18,22)),
                    ((15,25),(30,39),(18,22),(36,39)),
                    ((30,39),(15,25),(36,39),(18,22)))
-        for idx,x in zip(range(1,len(objects)+1),objects):
+        for idx, x in enumerate(objects, start=1):
             image[x[0][0]:x[0][1],x[1][0]:x[1][1]] = idx
             image[x[2][0]:x[2][1],x[3][0]:x[3][1]] = 0
         output = morph.fill_labeled_holes(image)
@@ -408,7 +412,8 @@ class TestBinaryShrink(unittest.TestCase):
         filled_labels = morph.fill_labeled_holes(labels)
         input = filled_labels > 0
         result = morph.binary_shrink(input)
-        my_sum = scind.sum(result.astype(int),filled_labels,np.array(range(nlabels+1),dtype=np.int32))
+        my_sum = scind.sum(result.astype(int), filled_labels,
+                           np.arange(nlabels + 1, dtype=np.int32))
         my_sum = np.array(my_sum)
         self.assertTrue(np.all(my_sum[1:] == 1))
         
@@ -675,11 +680,11 @@ class TestConvexHull(unittest.TestCase):
         np.random.seed(0)
         s = 10 # divide each image into this many mini-squares with a shape in each
         side = 250
-        mini_side = side / s
+        mini_side = side // s
         ct = 20
         labels = np.zeros((side,side),int)
         pts = np.zeros((s*s*ct,2),int)
-        index = np.array(range(pts.shape[0])).astype(float)/float(ct)
+        index = np.arange(pts.shape[0], dtype=float) / ct
         index = index.astype(int)
         idx = 0
         for i in range(0,side,mini_side):
@@ -693,7 +698,7 @@ class TestConvexHull(unittest.TestCase):
                     if pu.shape[0] == ct+1:
                         break
                     p[:pu.shape[0],0] = np.mod(pu,mini_side).astype(int)
-                    p[:pu.shape[0],1] = (pu / mini_side).astype(int)
+                    p[:pu.shape[0],1] = (pu // mini_side).astype(int)
                     p_size = (ct+1-pu.shape[0],2)
                     p[pu.shape[0],:] = np.random.uniform(low=0,
                                                             high=mini_side,
@@ -715,7 +720,7 @@ class TestConvexHull(unittest.TestCase):
                 for k in range(ct):
                     morph.draw_line(labels, p[k,:], p[(k+1)%ct,:], idx)
         self.assertTrue(labels[5,106]==5)
-        result,counts = morph.convex_hull(labels,np.array(range(100))+1)
+        result,counts = morph.convex_hull(labels, np.arange(1, 101))
         self.assertFalse(np.any(np.logical_and(result[:,1]==5,
                                                      result[:,2]==106)))
     
@@ -959,7 +964,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
         np.random.seed(0)
         s = 10 # divide each image into this many mini-squares with a shape in each
         side = 250
-        mini_side = side / s
+        mini_side = side // s
         ct = 20
         #
         # We keep going until we get at least 10 multi-edge cases -
@@ -969,7 +974,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
         while n_multi_edge < 10:
             labels = np.zeros((side,side),int)
             pts = np.zeros((s*s*ct,2),int)
-            index = np.array(range(pts.shape[0])).astype(float)/float(ct)
+            index = np.arange(pts.shape[0], dtype=float) / ct
             index = index.astype(int)
             idx = 0
             for i in range(0,side,mini_side):
@@ -983,7 +988,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
                         if pu.shape[0] == ct+1:
                             break
                         p[:pu.shape[0],0] = np.mod(pu,mini_side).astype(int)
-                        p[:pu.shape[0],1] = (pu / mini_side).astype(int)
+                        p[:pu.shape[0],1] = (pu // mini_side).astype(int)
                         p_size = (ct+1-pu.shape[0],2)
                         p[pu.shape[0],:] = np.random.uniform(low=0,
                                                                 high=mini_side,
@@ -1005,7 +1010,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
                     for k in range(ct):
                         morph.draw_line(labels, p[k,:], p[(k+1)%ct,:], idx)
             center,radius = morph.minimum_enclosing_circle(labels, 
-                                                           np.array(range(s**2))+1)
+                                                           np.arange(s**2)+1)
             epsilon = .000001
             center_per_pt = center[index]
             radius_per_pt = radius[index]
@@ -1016,9 +1021,8 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
             #
             self.assertTrue(np.all(distance_from_center - epsilon < radius_per_pt))
             pt_on_edge = np.abs(distance_from_center - radius_per_pt)<epsilon
-            count_pt_on_edge = scind.sum(pt_on_edge,
-                                                 index,
-                                                 np.array(range(s**2),dtype=np.int32))
+            count_pt_on_edge = scind.sum(pt_on_edge, index,
+                                         np.arange(s**2, dtype=np.int32))
             count_pt_on_edge = np.array(count_pt_on_edge)
             #
             # Every dodecagon must have at least 2 points on the edge.
@@ -1165,7 +1169,7 @@ class TestCalculateExtents(unittest.TestCase):
         labels = np.zeros((1001,1001),int)
         y,x = np.mgrid[-500:501,-500:501]
         labels[x*x+y*y<=250000] = 1
-        extents = morph.calculate_extents(labels,[1])
+        extents = morph.calculate_extents(labels,[1])[0]
         self.assertAlmostEqual(extents,np.pi/4,2)
         
     def test_01_03_two_objects(self):
@@ -2857,7 +2861,7 @@ class TestBlock(unittest.TestCase):
         self.assertEqual(len(indexes),6)
         self.assertEqual(labels.shape, (10,15))
         i,j = np.mgrid[0:10,0:15]
-        self.assertTrue(np.all(labels == (i / 5).astype(int)*3 + (j/5).astype(int)))
+        self.assertTrue(np.all(labels == (i // 5).astype(int)*3 + (j//5).astype(int)))
 
     def test_01_03_big_blocks(self):
         labels, indexes = morph.block((10,10),(20,20))
@@ -2870,8 +2874,8 @@ class TestBlock(unittest.TestCase):
         labels, indexes = morph.block((100,100),(2,4))
         self.assertEqual(len(indexes), 1250)
         i,j = np.mgrid[0:100,0:100]
-        i = (i / 2).astype(int)
-        j = (j / 4).astype(int)
+        i = (i // 2).astype(int)
+        j = (j // 4).astype(int)
         expected = i * 25 + j
         self.assertTrue(np.all(labels == expected))
 
@@ -5088,7 +5092,7 @@ class TestAngularDistribution(unittest.TestCase):
         assert np.all(angdist[9, :] == 0.0)
         # check approximation to chord ratio of filled rectangle (roughly 3.16)
         resolution = angdist.shape[1]
-        angdist2 = angdist[-1, :resolution/2] + angdist[-1, resolution/2:]
+        angdist2 = angdist[-1, :resolution//2] + angdist[-1, resolution//2:]
         assert np.abs(3.16 - np.sqrt(angdist2.max() / angdist2.min())) < 0.05
 
 class TestFeretDiameter(unittest.TestCase):

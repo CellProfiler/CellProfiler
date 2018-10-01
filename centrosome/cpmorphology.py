@@ -1,25 +1,28 @@
+from __future__ import absolute_import
+from __future__ import division
 import logging
 
 import numpy as np
 import scipy.ndimage as scind
 import scipy.sparse
 
-import _cpmorphology
-from outline import outline
-from centrosome.rankorder import rank_order
-from index import Indexes
-from _cpmorphology2 import skeletonize_loop, table_lookup_index
-from _cpmorphology2 import grey_reconstruction_loop
-from _cpmorphology2 import _all_connected_components
-from _cpmorphology2 import index_lookup, prepare_for_index_lookup
-from _cpmorphology2 import extract_from_image_lookup, fill_labeled_holes_loop
-from _cpmorphology2 import trace_outlines
+from .outline import outline
+from .rankorder import rank_order
+from .index import Indexes
+from ._cpmorphology2 import skeletonize_loop, table_lookup_index
+from ._cpmorphology2 import grey_reconstruction_loop
+from ._cpmorphology2 import _all_connected_components
+from ._cpmorphology2 import index_lookup, prepare_for_index_lookup
+from ._cpmorphology2 import extract_from_image_lookup, fill_labeled_holes_loop
+from ._cpmorphology2 import trace_outlines
+from six.moves import range
+from six.moves import zip
 
 try:
-    from _cpmorphology2 import ptrsize
+    from ._cpmorphology2 import ptrsize
 except:
     pass
-import _convex_hull
+from . import _convex_hull
 
 logger = logging.getLogger(__name__)
 '''A structuring element for eight-connecting a neigborhood'''
@@ -529,7 +532,7 @@ def strel_periodicline(xoff, yoff, n):
     (k * yoff, k * xoff)
     for k in range(-n, n+1)
     """
-    xoff, yoff, n = [int(t) for t in xoff, yoff, n]
+    xoff, yoff, n = [int(t) for t in (xoff, yoff, n)]
     center_x, center_y = abs(n * xoff), abs(n * yoff)
     result = np.zeros((center_y * 2 + 1, center_x * 2 + 1), bool)
     k = np.arange(-n, n+1)
@@ -545,7 +548,7 @@ def strel_rectangle(width, height):
     height = the height of the structuring element (in the i direction). The
             height will be rounded down to the nearest multiple of 2*n+1
     """
-    return np.ones([int((hw - 1) / 2) * 2 + 1 for hw in height, width], bool)
+    return np.ones([int((hw - 1) // 2) * 2 + 1 for hw in (height, width)], bool)
 
 def strel_square(s):
     """Create a square structuring element
@@ -563,10 +566,12 @@ def cpmaximum(image, structure=np.ones((3,3),dtype=bool),offset=None):
                 local elements should be sampled
     offset - the offset to the center of the structuring element
     """
-    if not offset:
-        offset = (structure.shape[0]/2,structure.shape[1]/2)
-    offset = tuple(offset)
-    return _cpmorphology.cpmaximum(image,structure,offset)
+    center = np.array(structure.shape) // 2
+    if offset is None:
+        offset = center
+    origin = np.array(offset) - center
+    return scind.maximum_filter(image, footprint=structure, origin=origin,
+                                mode='constant', cval=np.min(image))
 
 def relabel(image):
     """Given a labeled image, relabel each of the objects consecutively
@@ -664,7 +669,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
     #
     # An array that converts from label # to index in "indexes"
     anti_indexes = np.zeros((np.max(indexes)+1,),int)
-    anti_indexes[indexes] = range(len(indexes))
+    anti_indexes[indexes] = list(range(len(indexes)))
 
     coords = pixel_labels[:,:2]
     i = coords[:, 0]
@@ -767,7 +772,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
             # Map label #s to the index into indexes_to_finish of that label #
             #
             anti_indexes_to_finish = np.zeros((len(indexes),), np.int32)
-            anti_indexes_to_finish[indexes_to_finish] = range(len(indexes_to_finish))
+            anti_indexes_to_finish[indexes_to_finish] = list(range(len(indexes_to_finish)))
             #
             # Figure out the indices of each point in a label to be finished.
             # We figure out how much to subtract for each label, then
@@ -779,7 +784,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
             finish_idx_base = np.zeros((len(indexes_to_finish),), np.int32)
             finish_idx_base[1:]=np.cumsum(new_counts[indexes_to_finish])[:-1]
             finish_idx_bases = finish_idx_base[anti_indexes_to_finish[atf_indexes]]
-            finish_idx = (np.array(range(a_to_finish.shape[0]))-
+            finish_idx = (np.array(list(range(a_to_finish.shape[0])))-
                           finish_idx_bases)
             finish_idx = finish_idx + result_index[atf_indexes]
             result[finish_idx,1:] = a_to_finish[:,1:]
@@ -803,12 +808,12 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
         # to address those situations.
         #
         anti_indexes_to_keep = np.zeros((len(indexes),), np.int32)
-        anti_indexes_to_keep[indexes_to_keep] = range(len(indexes_to_keep))
+        anti_indexes_to_keep[indexes_to_keep] = list(range(len(indexes_to_keep)))
         idx_base = np.zeros((len(indexes_to_keep),), np.int32)
         idx_base[1:]=np.cumsum(counts[keep_me])[0:-1]
         idx_bases = idx_base[anti_indexes_to_keep[a[:,0]]]
         counts_per_pt = counts[a[:,0]]
-        idx = np.array(range(a.shape[0]), np.int32)-idx_bases
+        idx = np.array(list(range(a.shape[0])), np.int32)-idx_bases
         n_minus_one = np.mod(idx+counts_per_pt-1,counts_per_pt)+idx_bases
         n_plus_one  = np.mod(idx+1,counts_per_pt)+idx_bases
         #
@@ -874,7 +879,7 @@ def convex_hull_ijv(pixel_labels, indexes, fast=True):
     # points for a label, then only keep those whose indexes are
     # less than the count for their label.
     #
-    within_label_index = np.array(range(result.shape[0]), np.int32)
+    within_label_index = np.array(list(range(result.shape[0])), np.int32)
     counts_per_point = result_counts[r_anti_indexes_per_point]
     result_indexes_per_point = result_index[r_anti_indexes_per_point] 
     within_label_index = (within_label_index - result_indexes_per_point)
@@ -946,7 +951,7 @@ def fill_convex_hulls(ch_pts, ch_counts):
         i_horiz = l_horiz = j_first_horiz = j_last_horiz = np.zeros(0, int)
     
     if (np.any(~ horizontal)):
-        ch_pts, ch_pts1, n_i = [x[~horizontal] for x in ch_pts, ch_pts1, n_i]
+        ch_pts, ch_pts1, n_i = [x[~horizontal] for x in (ch_pts, ch_pts1, n_i)]
         indexer = Indexes(n_i)
         l = ch_pts[indexer.rev_idx, 0]
         sign = np.sign(ch_pts1[:, 0] - ch_pts[:, 1])
@@ -1353,7 +1358,7 @@ def median_of_labels(image, labels, indices):
     counts = np.bincount(labels)
     last = np.cumsum(counts)
     first = np.hstack(([0], last[:-1]))
-    middle_low = first + ((counts-1) / 2).astype(int)
+    middle_low = first + ((counts-1) // 2).astype(int)
     
     median = np.zeros(len(indices))
     odds = (counts % 2) == 1
@@ -1394,7 +1399,7 @@ def minimum_enclosing_circle(labels, indexes = None,
             indexes = np.array(np.unique(hull_and_point_count[0][:,0]),dtype=np.int32)
         else:
             max_label = np.max(labels)
-            indexes = np.array(range(1,max_label+1),dtype=np.int32)
+            indexes = np.array(list(range(1,max_label+1)),dtype=np.int32)
     else:
         indexes = np.array(indexes,dtype=np.int32)
     if indexes.shape[0] == 0:
@@ -1435,7 +1440,7 @@ def minimum_enclosing_circle(labels, indexes = None,
     # anti_indexes_per_point gives the label index of any vertex
     #
     anti_indexes=np.zeros((np.max(indexes)+1,),int)
-    anti_indexes[indexes] = range(indexes.shape[0])
+    anti_indexes[indexes] = list(range(indexes.shape[0]))
     anti_indexes_per_point = anti_indexes[hull[:,0]]
     #
     # Start out by eliminating the degenerate cases: 0, 1 and 2
@@ -1467,7 +1472,7 @@ def minimum_enclosing_circle(labels, indexes = None,
     # the order in which we'll get their angles. We use this to pick out
     # points # 2 to N which are the candidate vertices to S
     # 
-    within_label_indexes = (np.array(range(hull.shape[0]),int) -
+    within_label_indexes = (np.array(list(range(hull.shape[0])),int) -
                             point_index[anti_indexes_per_point])
     
     while(np.any(keep_me)):
@@ -1487,7 +1492,7 @@ def minimum_enclosing_circle(labels, indexes = None,
         anti_indexes_to_consider =\
             np.zeros((np.max(labels_to_consider)+1,),int)
         anti_indexes_to_consider[labels_to_consider] = \
-            np.array(range(labels_to_consider.shape[0]))
+            np.array(list(range(labels_to_consider.shape[0])))
         ##############################################################
         # Vertex indexing for active vertexes other than S0 and S1
         ##############################################################
@@ -2296,10 +2301,10 @@ def __calculate_perimeter_scoring():
     score = np.zeros((512,))
     i = np.zeros((prashker.shape[0]),int)
     for j in range(4): # 1,2,4,8
-        i = i+((prashker[:,0].astype(int) / 2**j)%2)*2**j
+        i = i+((prashker[:,0].astype(int) // 2**j)%2)*2**j
     i = i+16
     for j in range(4,8):
-        i = i+((prashker[:,0].astype(int) / 2**j)%2)*2**(j+1)
+        i = i+((prashker[:,0].astype(int) // 2**j)%2)*2**(j+1)
     score[i.astype(int)] = prashker[:,1]
     return score
 
@@ -2370,7 +2375,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     # Given a label number "index_of_label" indexes into the result
     #
     index_of_label = np.zeros((hull[:,0].max()+1),int)
-    index_of_label[indexes] = np.array(range(indexes.shape[0]))
+    index_of_label[indexes] = np.array(list(range(indexes.shape[0])))
     #
     # hull_index is the index into hull of the first point on the hull
     # per label
@@ -2396,7 +2401,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     counts_nd = counts[counts>=3]
     indexes_nd = indexes[counts>=3]
     index_of_label_nd = np.zeros((index_of_label.shape[0],),int)
-    index_of_label_nd[indexes_nd] = np.array(range(indexes_nd.shape[0]))
+    index_of_label_nd[indexes_nd] = np.array(list(range(indexes_nd.shape[0])))
     #
     # Figure out the within-label index of each point in a label. This is
     # so we can do modulo arithmetic when pairing a point with the next
@@ -2407,7 +2412,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
         hull_index_nd[1:] = np.cumsum(counts_nd[:-1])
     index_of_label_per_pixel_nd = index_of_label_nd[hull_nd[:,0]]
     hull_index_per_pixel_nd = hull_index_nd[index_of_label_per_pixel_nd] 
-    within_label_index = (np.array(range(hull_nd.shape[0])) -
+    within_label_index = (np.array(list(range(hull_nd.shape[0]))) -
                           hull_index_per_pixel_nd)
     #
     # Find some point within each convex hull.
@@ -2446,7 +2451,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     # from point n to point n+1 (modulo count) to the point within
     # the hull.
     #
-    plus_one_idx = np.array(range(hull_nd.shape[0]))+1
+    plus_one_idx = np.array(list(range(hull_nd.shape[0])))+1
     modulo_mask = within_label_index+1 == counts_nd[index_of_label_per_pixel_nd]
     plus_one_idx[modulo_mask] = hull_index_per_pixel_nd[modulo_mask]
     area_per_pt_nd = triangle_areas(hull_nd[:,1:],
@@ -2613,7 +2618,7 @@ def block(shape, block_shape):
     i = (i * multiplier[0]).astype(int)
     j = (j * multiplier[1]).astype(int)
     labels = i * ijmax[1] + j
-    indexes = np.array(range(np.product(ijmax)))
+    indexes = np.array(list(range(np.product(ijmax))))
     return labels, indexes
 
 def white_tophat(image, radius=None, mask=None, footprint=None):
@@ -2667,7 +2672,7 @@ def grey_erosion(image, radius=None, mask=None, footprint=None):
         else:
             footprint = strel_disk(radius)==1
     else:
-        radius = max(1, np.max(np.array(footprint.shape) / 2))
+        radius = max(1, np.max(np.array(footprint.shape) // 2))
     iradius = int(np.ceil(radius))
     #
     # Do a grey_erosion with masked pixels = 1 so they don't participate
@@ -2695,7 +2700,7 @@ def grey_dilation(image, radius=None, mask=None, footprint=None):
             footprint_size = (radius*2+1,radius*2+1)
     else:
         footprint_size = footprint.shape
-        radius = max(np.max(np.array(footprint.shape) / 2),1)
+        radius = max(np.max(np.array(footprint.shape) // 2),1)
     iradius = int(np.ceil(radius))
     #
     # Do a grey_dilation with masked pixels = 0 so they don't participate
@@ -2735,7 +2740,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     if offset is None:
         assert all([d % 2 == 1 for d in footprint.shape]),\
                "Footprint dimensions must all be odd"
-        offset = np.array([d/2 for d in footprint.shape])
+        offset = np.array([d//2 for d in footprint.shape])
     # Cross out the center of the footprint
     footprint[[slice(d,d+1) for d in offset]] = False
     #
@@ -2743,7 +2748,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     # The array is a dstack of the image and the mask; this lets us interleave
     # image and mask pixels when sorting which makes list manipulations easier
     #
-    padding = (np.array(footprint.shape)/2).astype(int)
+    padding = (np.array(footprint.shape)//2).astype(int)
     dims = np.zeros(image.ndim+1,int)
     dims[1:] = np.array(image.shape)+2*padding
     dims[0] = 2
@@ -2755,8 +2760,8 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     # Create a list of strides across the array to get the neighbors
     # within a flattened array
     #
-    value_stride = np.array(values.strides[1:]) / values.dtype.itemsize
-    image_stride = values.strides[0] / values.dtype.itemsize
+    value_stride = np.array(values.strides[1:]) // values.dtype.itemsize
+    image_stride = values.strides[0] // values.dtype.itemsize
     footprint_mgrid = np.mgrid[[slice(-o,d - o) 
                                 for d,o in zip(footprint.shape,offset)]]
     footprint_offsets = footprint_mgrid[:,footprint].transpose()
@@ -2864,7 +2869,7 @@ def openlines(image, linelength=10, dAngle=10, mask=None):
     angluar_resolution - angle step for the rotating lines
     mask - if present, only use unmasked pixels for operations
     """
-    nAngles = 180/dAngle
+    nAngles = 180//dAngle
     openingstack = np.zeros((nAngles,image.shape[0],image.shape[1]),image.dtype)
 
     for iAngle in range(nAngles):
@@ -3878,7 +3883,7 @@ def skeleton_length(labels, indices=None):
                     for adjacent_i, adjacent_j in (
                         (ii-1, jj), (ii, jj-1), (ii+1, jj), (ii, jj+1)):
                         if any([_ < -1 or _ > 1 
-                                for _ in adjacent_i, adjacent_j]):
+                                for _ in (adjacent_i, adjacent_j)]):
                             continue
                         aidx = 2 ** (adjacent_i+1 + (adjacent_j + 1) * 3)
                         mask = mask & ((np.arange(512) & aidx) != aidx)
@@ -3970,10 +3975,10 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
     # points. Construct a big mask that represents the edges.
     #
     big_mask = np.zeros(np.array(image.shape) + np.array(structure.shape), bool)
-    structure_half_shape = np.array(structure.shape)/2
+    structure_half_shape = np.array(structure.shape)//2
     big_mask[structure_half_shape[0]:structure_half_shape[0]+image.shape[0],
              structure_half_shape[1]:structure_half_shape[1]+image.shape[1]]=\
-        mask if not mask is None else True
+        mask if mask is not None else True
     for i in range(structure.shape[0]):
         off_i = i-structure_half_shape[0]
         for j in range(structure.shape[1]):
@@ -4099,7 +4104,7 @@ def pairwise_permutations(i, j):
     # The sizes of each destination item: n * (n - 1) / 2
     # This is the number of permutations of n items against themselves.
     #
-    dest_count = src_count * (src_count - 1) / 2
+    dest_count = src_count * (src_count - 1) // 2
     #
     # The indexes of the starts of each destination item (+ total sum at end)
     #
@@ -4134,7 +4139,7 @@ def pairwise_permutations(i, j):
     # So here, we make a sparse array for the unique values of src_count
     #
     unique_src_count = np.unique(src_count)
-    unique_dest_len = (unique_src_count * (unique_src_count - 1) / 2).astype(int)
+    unique_dest_len = (unique_src_count * (unique_src_count - 1) // 2).astype(int)
     #
     # src_count repeated once per permutation
     #
@@ -4191,7 +4196,7 @@ def is_local_maximum(image, labels, footprint):
     '''
     assert((np.all(footprint.shape) & 1) == 1)
     footprint = (footprint != 0)
-    footprint_extent = (np.array(footprint.shape)-1) / 2
+    footprint_extent = (np.array(footprint.shape)-1) // 2
     if np.all(footprint_extent == 0):
         return labels > 0
     result = (labels > 0).copy()
@@ -4205,9 +4210,9 @@ def is_local_maximum(image, labels, footprint):
     #
     # Find the relative indexes of each footprint element
     #
-    image_strides = np.array(image.strides) / image.dtype.itemsize
-    big_strides = np.array(big_labels.strides) / big_labels.dtype.itemsize
-    result_strides = np.array(result.strides) / result.dtype.itemsize
+    image_strides = np.array(image.strides) // image.dtype.itemsize
+    big_strides = np.array(big_labels.strides) // big_labels.dtype.itemsize
+    result_strides = np.array(result.strides) // result.dtype.itemsize
     footprint_offsets = np.mgrid[[slice(-fe,fe+1) for fe in footprint_extent]]
     footprint_offsets = footprint_offsets[:, footprint]
     #
@@ -4268,7 +4273,7 @@ def angular_distribution(labels, resolution=100, weights=None):
 
     The ChordRatio of an object can be approximated by 
     >>> angdist = angular_distribution(labels, resolution)
-    >>> angdist2 = angdist[:, :resolution/2] + angdist[:, resolution/2] # map to widths, rather than radii
+    >>> angdist2 = angdist[:, :resolution//2] + angdist[:, resolution//2] # map to widths, rather than radii
     >>> chord_ratio = np.sqrt(angdist2.max(axis=1) / angdist2.min(axis=1)) # sqrt because these are sectors, not triangles
     '''
     if weights is None:
@@ -4627,7 +4632,7 @@ def get_outline_pts(labels, idxs):
         labels = np.ascontiguousarray(labels, np.uint32)
         offset = np.zeros(2, int)
     assert isinstance(labels, np.ndarray)
-    strides = np.array(labels.strides) / labels.dtype.itemsize
+    strides = np.array(labels.strides) // labels.dtype.itemsize
     assert strides[1] == 1, "Last stride must be 1 for modulo unravel to work"
     stride_table = np.ascontiguousarray(
         np.sum(traversal_order[:, :2] * strides, 1), np.int32)
@@ -4683,6 +4688,6 @@ def get_outline_pts(labels, idxs):
         coord_offsets[mapper[idx_of_first[1:]]] = np.cumsum(output_count[:-1],
                                                             dtype=output_count.dtype)
     coords = np.column_stack((
-        output / strides[0] - offset[0],
+        output // strides[0] - offset[0],
         output % strides[0] - offset[1]))
     return coords, coord_offsets, coord_counts

@@ -1,6 +1,8 @@
 # The help text for various thresholding options whose code resides here is in modules/identify.py
 
 
+from __future__ import absolute_import
+from __future__ import division
 import inspect
 import math
 import numpy as np
@@ -8,9 +10,11 @@ import scipy.ndimage
 import scipy.sparse
 import scipy.interpolate
 
-from centrosome.otsu import otsu, entropy, otsu3, entropy3
-from centrosome.smooth import smooth_with_noise
-from centrosome.filter import stretch, unstretch
+from .otsu import otsu, entropy, otsu3, entropy3
+from .smooth import smooth_with_noise
+from .filter import stretch, unstretch
+from six.moves import range
+from six.moves import zip
 
 TM_OTSU                         = "Otsu"
 TM_OTSU_GLOBAL                  = "Otsu Global"
@@ -189,7 +193,7 @@ def get_adaptive_threshold(threshold_method, image, threshold,
     # for the X and Y direction, find the # of blocks, given the
     # size constraints
     image_size = np.array(image.shape[:2],dtype=int)
-    nblocks = image_size / adaptive_window_size
+    nblocks = image_size // adaptive_window_size
     #
     # Use a floating point block size to apportion the roundoff
     # roughly equally to each block
@@ -259,7 +263,7 @@ def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
             labels[np.logical_not(mask)] = 0 
     label_extents = scipy.ndimage.find_objects(labels,np.max(labels))
     local_threshold = np.ones(image.shape,image.dtype)
-    for i,extent in zip(range(1,len(label_extents)+1),label_extents):
+    for i, extent in enumerate(label_extents, start=1):
         label_mask = labels[extent]==i
         if not mask is None:
             label_mask = np.logical_and(mask[extent], label_mask)
@@ -345,7 +349,7 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     # in case there are any quantization effects that have resulted in
     # unnaturally many 0:s or 1:s in the image.
     cropped_image.sort()
-    one_percent = (np.product(cropped_image.shape) + 99)/100
+    one_percent = (np.product(cropped_image.shape) + 99)//100
     cropped_image=cropped_image[one_percent:-one_percent]
     pixel_count = np.product(cropped_image.shape)
     # Guess at the class means for the 3 classes: background,
@@ -372,7 +376,7 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     r = np.random.RandomState()
     r.seed(np.frombuffer(cropped_image[:100].data, np.uint8).tolist())
     for data in (
-        r.permutation(cropped_image)[0:(len(cropped_image) / 10)],
+        r.permutation(cropped_image)[0:(len(cropped_image) // 10)],
         cropped_image):
         delta = 1
         pixel_count = len(data)
@@ -406,7 +410,7 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     # Construct an equally spaced array of values between the background
     # and object mean
     ndivisions = 10000
-    level = (np.array(range(ndivisions)) *
+    level = (np.arange(ndivisions) *
              ((class_mean[2]-class_mean[0]) / ndivisions)
              + class_mean[0])
     class_gaussian = np.ndarray((ndivisions,class_count))
@@ -595,7 +599,7 @@ def get_kapur_threshold(image, mask=None):
                                         max_log_image,
                                         256)
     histogram_values = (min_log_image + (max_log_image - min_log_image)*
-                        np.array(range(256),float) / 255)
+                        np.arange(256, dtype=float) / 255)
     # drop any zero bins
     keep = histogram != 0
     histogram = histogram[keep]
@@ -809,7 +813,7 @@ def inverse_log_transform(image, d):
 
 def numpy_histogram(a, bins=10, range=None, normed=False, weights=None):
     '''A version of numpy.histogram that accounts for numpy's version'''
-    args = inspect.getargs(np.histogram.func_code)[0]
+    args = inspect.getargs(np.histogram.__code__)[0]
     if args[-1] == "new":
         return np.histogram(a, bins, range, normed, weights, new=True)
     return np.histogram(a, bins, range, normed, weights)

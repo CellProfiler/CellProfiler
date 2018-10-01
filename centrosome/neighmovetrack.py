@@ -1,13 +1,38 @@
+from __future__ import absolute_import
 import math
 import copy
 import numpy
 import scipy.ndimage.measurements
-import centrosome.lapjv
+from . import lapjv
+import six
+from six.moves import range
+from six.moves import zip
 
 invalid_match = 1000000  # limiting the choices of the algorithms
 
 
-def euclidean_dist((x1, y1), (x2, y2)):
+def euclidean_dist(point1, point2):
+    """Compute the Euclidean distance between two points.
+
+    Parameters
+    ----------
+    point1, point2 : 2-tuples of float
+        The input points.
+
+    Returns
+    -------
+    d : float
+        The distance between the input points.
+
+    Examples
+    --------
+    >>> point1 = (1.0, 2.0)
+    >>> point2 = (4.0, 6.0)  # (3., 4.) away, simplest Pythagorean triangle
+    >>> euclidean_dist(point1, point2)
+    5.0
+    """
+    (x1, y1) = point1
+    (x2, y2) = point2
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
@@ -85,7 +110,7 @@ class CellFeatures(object):
         """
         labels = labels.astype(int)
 
-        areas = scipy.ndimage.measurements.sum(labels != 0, labels, range(1, numpy.max(labels) + 1))
+        areas = scipy.ndimage.measurements.sum(labels != 0, labels, list(range(1, numpy.max(labels) + 1)))
 
         existing_labels = [i for (i, a) in enumerate(areas, 1) if a > 0]
 
@@ -93,9 +118,10 @@ class CellFeatures(object):
 
         existing_centers = scipy.ndimage.measurements.center_of_mass(labels != 0, labels, existing_labels)
 
-        zipped = (zip(existing_labels, existing_centers, existing_areas))
+        zipped = zip(existing_labels, existing_centers, existing_areas)
 
-        features = [CellFeatures(c, a, i, labels.shape) for i, c, a in zipped if a != 0]
+        features = [CellFeatures(c, a, i, labels.shape)
+                    for i, c, a in zipped if a != 0]
 
         return features
 
@@ -148,7 +174,7 @@ class Trace(object):
         """
         traces = []
 
-        for d1n, d2n in assignments.iteritems():
+        for d1n, d2n in six.iteritems(assignments):
             # check if the match is between existing cells
             if d1n < len(detections_1) and d2n < len(detections_2):
                 traces.append(Trace(detections_1[d1n], detections_2[d2n]))

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import numpy as np
 
 class Indexes(object):
@@ -131,7 +132,7 @@ def all_pairs(n):
     # Get all against all
     i, j = [x.flatten() for x in np.mgrid[0:n, 0:n]]
     # Eliminate the diagonal of i == j
-    i, j = [x[i != j] for x in i,j]
+    i, j = [x[i != j] for x in (i,j)]
     # Order by smallest of i or j first, then j then i for neatness
     order = np.lexsort((j, i, np.maximum(i, j)))
     return np.column_stack((i[order], j[order]))

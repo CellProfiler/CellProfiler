@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 cimport numpy as np
 cimport cython
@@ -643,12 +644,12 @@ def trace_outlines(
     assert len(new_direction_table) == 8
     if True:
         for first_idx from 0 <= first_idx < n_labels:
-            #print "Label %d of %d" % (first_idx, n_labels)
+            #print("Label %d of %d" % (first_idx, n_labels))
             current_direction = 2
             current_location = p_firsts[first_idx]
             current_label = p_labels[current_location]
             output_start = output_idx
-            #print "Label = %d, start = %d" % (current_label, current_location)
+            #print("Label = %d, start = %d" % (current_label, current_location))
             while output_idx < output_end:
                 p_output[output_idx] = current_location
                 output_idx += 1
@@ -659,14 +660,14 @@ def trace_outlines(
                         break
                 else:
                     # Case: a single point can't find anything in the traversal
-                    #print "No traversal"
+                    #print("No traversal")
                     break
                 if test_location == p_firsts[first_idx]:
-                    #print "Found %d" % p_firsts[first_idx]
+                    #print("Found %d" % p_firsts[first_idx])
                     break
                 current_location = test_location
                 current_direction = new_direction_table[traversal_entry]
-                #print "Moving to %d, direction=%d" % (current_location, current_direction)
+                #print("Moving to %d, direction=%d" % (current_location, current_direction))
             else:
                 overrun = 1
                 break

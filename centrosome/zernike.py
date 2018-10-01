@@ -1,9 +1,13 @@
+from __future__ import absolute_import
+from __future__ import division
 import numpy as np
 import scipy.sparse
 import scipy.ndimage
 
-from centrosome.cpmorphology import minimum_enclosing_circle,fixup_scipy_ndimage_result
-from centrosome.cpmorphology import fill_labeled_holes,draw_line
+from .cpmorphology import minimum_enclosing_circle,fixup_scipy_ndimage_result
+from .cpmorphology import fill_labeled_holes,draw_line
+from six.moves import range
+from six.moves import zip
 
 
 def construct_zernike_lookuptable(zernike_indexes):
@@ -16,12 +20,12 @@ def construct_zernike_lookuptable(zernike_indexes):
     n_max = np.max(zernike_indexes[:,0])
     factorial = np.ones((1 + n_max,), dtype=float)
     factorial[1:] = np.cumproduct(np.arange(1, 1 + n_max, dtype=float))
-    width = int(n_max/2 + 1)
+    width = int(n_max//2 + 1)
     lut = np.zeros((zernike_indexes.shape[0],width), dtype=float)
-    for idx,(n,m) in zip(range(zernike_indexes.shape[0]),zernike_indexes):
+    for idx, (n, m) in enumerate(zernike_indexes):
         alt = 1
-        npmh = (n+m)/2
-        nmmh = (n-m)/2
+        npmh = (n+m)//2
+        nmmh = (n-m)//2
         for k in range(0,nmmh+1):
             lut[idx,k] = \
                 (alt * factorial[n-k] /
@@ -69,7 +73,7 @@ def construct_zernike_polynomials(x, y, zernike_indexes, mask=None, weight=None)
     s = np.empty_like(x)
     zf = np.zeros((nzernikes,) + x.shape, np.complex)
     z_pows = {}
-    for idx,(n,m) in zip(range(nzernikes), zernike_indexes):
+    for idx, (n, m) in enumerate(zernike_indexes):
         s[:]=0
         if not m in z_pows:
             if m == 0:
@@ -78,7 +82,7 @@ def construct_zernike_polynomials(x, y, zernike_indexes, mask=None, weight=None)
                 z_pows[m] = z if m == 1 else (z ** m)
         z_pow = z_pows[m]
         # use Horner scheme
-        for k in range((n-m)/2+1):
+        for k in range((n-m)//2+1):
             s *= r_square
             s += lut[idx, k]
         s[r_square>1]=0

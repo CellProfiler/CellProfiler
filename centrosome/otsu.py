@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import division
 import numpy as np
 
 def otsu(data, min_threshold=None, max_threshold=None,bins=256):
@@ -30,11 +32,11 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     data.sort()
     var = running_variance(data)
     rvar = np.flipud(running_variance(np.flipud(data))) 
-    thresholds = data[1:len(data):len(data)/bins]
-    score_low = (var[0:len(data)-1:len(data)/bins] * 
-                 np.arange(0,len(data)-1,len(data)/bins))
-    score_high = (rvar[1:len(data):len(data)/bins] *
-                  (len(data) - np.arange(1,len(data),len(data)/bins)))
+    thresholds = data[1:len(data):len(data)//bins]
+    score_low = (var[0:len(data)-1:len(data)//bins] * 
+                 np.arange(0,len(data)-1,len(data)//bins))
+    score_high = (rvar[1:len(data):len(data)//bins] *
+                  (len(data) - np.arange(1,len(data),len(data)//bins)))
     scores = score_low + score_high
     if len(scores) == 0:
         return constrain(thresholds[0])
@@ -76,14 +78,14 @@ def entropy(data, bins=256):
     data.sort()
     var = running_variance(data)+1.0/512.0
     rvar = np.flipud(running_variance(np.flipud(data)))+1.0/512.0 
-    thresholds = data[1:len(data):len(data)/bins]
-    w = np.arange(0,len(data)-1,len(data)/bins)
-    score_low = w * np.log(var[0:len(data)-1:len(data)/bins] *
+    thresholds = data[1:len(data):len(data)//bins]
+    w = np.arange(0,len(data)-1,len(data)//bins)
+    score_low = w * np.log(var[0:len(data)-1:len(data)//bins] *
                            w * np.sqrt(2*np.pi*np.exp(1)))
     score_low[np.isnan(score_low)]=0
     
-    w = len(data) - np.arange(1,len(data),len(data)/bins)
-    score_high = w * np.log(rvar[1:len(data):len(data)/bins] * w *
+    w = len(data) - np.arange(1,len(data),len(data)//bins)
+    score_high = w * np.log(rvar[1:len(data):len(data)//bins] * w *
                             np.sqrt(2*np.pi*np.exp(1)))
     score_high[np.isnan(score_high)]=0
     scores = score_low + score_high
@@ -132,7 +134,7 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     rvar = np.flipud(running_variance(np.flipud(data)))
     if bins > len(data):
         bins = len(data)
-    bin_len = int(len(data)/bins) 
+    bin_len = int(len(data)//bins) 
     thresholds = data[0:len(data):bin_len]
     score_low = (var[0:len(data):bin_len] * 
                  np.arange(0,len(data),bin_len))
@@ -150,7 +152,7 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     mean2 = (cs2[j] - cs2[i]) / diff
     score_middle = w * (mean2 - mean**2)
     score_middle[i >= j] = np.Inf
-    score = score_low[i*bins/len(data)] + score_middle + score_high[j*bins/len(data)]
+    score = score_low[i*bins//len(data)] + score_middle + score_high[j*bins//len(data)]
     best_score = np.min(score)
     best_i_j = np.argwhere(score==best_score)
     return (thresholds[best_i_j[0,0]],thresholds[best_i_j[0,1]])
@@ -177,7 +179,7 @@ def entropy3(data, bins=128):
     var = running_variance(data)+1.0/512.0
     if bins > len(data):
         bins = len(data)
-    bin_len = int(len(data)/bins) 
+    bin_len = int(len(data)//bins) 
     thresholds = data[0:len(data):bin_len]
     score_low = entropy_score(var,bins)
     
@@ -195,7 +197,7 @@ def entropy3(data, bins=128):
     mean2 = (cs2[j] - cs2[i]) / diff
     score_middle = entropy_score(mean2 - mean**2 + 1.0/512.0, bins, w, False)
     score_middle[(i >= j) | np.isnan(score_middle)] = np.Inf
-    score = score_low[i/bin_len] + score_middle + score_high[j/bin_len]
+    score = score_low[i//bin_len] + score_middle + score_high[j//bin_len]
     best_score = np.min(score)
     best_i_j = np.argwhere(score==best_score)
     return (thresholds[best_i_j[0,0]],thresholds[best_i_j[0,1]])
@@ -206,10 +208,10 @@ def entropy_score(var,bins, w=None, decimate=True):
     '''
     if w is None:
         n = len(var)
-        w = np.arange(0,n,n/bins) / float(n)
+        w = np.arange(0,n,n//bins) / float(n)
     if decimate:
         n = len(var)
-        var = var[0:n:n/bins]
+        var = var[0:n:n//bins]
     score = w * np.log(var * w * np.sqrt(2*np.pi*np.exp(1)))
     score[np.isnan(score)]=np.Inf
     return score

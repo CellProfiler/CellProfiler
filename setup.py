@@ -71,7 +71,7 @@ setuptools.setup(
         "mysqlclient==1.3.13",
         "numpy",
         "prokaryote==2.4.0",
-        "python-bioformats==1.5.1",
+        "python-bioformats==1.5.2",
         "pyzmq==15.3.0",
         "raven",
         "requests",

@@ -3,18 +3,17 @@ from __future__ import division
 import deprecation
 import numpy as np
 import scipy.ndimage as scind
-from scipy.ndimage import map_coordinates, label
-from scipy.ndimage import convolve, gaussian_filter
-from scipy.ndimage import binary_erosion
-from scipy.ndimage import generate_binary_structure
+from scipy.ndimage import (binary_erosion, convolve, gaussian_filter,
+                           generate_binary_structure, label,
+                           map_coordinates)
 
 from . import _filter
 from .rankorder import rank_order
 from .smooth import smooth_with_function_and_mask
 from .cpmorphology import fixup_scipy_ndimage_result as fix
-from .cpmorphology import centers_of_labels
-from .cpmorphology import grey_erosion, grey_reconstruction
-from .cpmorphology import convex_hull_ijv, get_line_pts
+from .cpmorphology import (centers_of_labels, convex_hull_ijv,
+                           get_line_pts, grey_dilation,
+                           grey_erosion, grey_reconstruction)
 from six.moves import range
 
 '''# of points handled in the first pass of the convex hull code'''
@@ -718,6 +717,7 @@ def granulometry_filter(image, min_radius, max_radius, mask=None):
     #
     # Initialize
     #
+    inverted_image = image.max() - image
     previous_opened_image = image
     eroded_image = image
     selected_granules_image = np.zeros(image.shape)

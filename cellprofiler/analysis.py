@@ -1,8 +1,7 @@
 """analysis.py - Run pipelines on imagesets to produce measurements.
 """
 
-import Queue
-import cStringIO as StringIO
+import queue
 import collections
 import logging
 import multiprocessing
@@ -18,6 +17,7 @@ import h5py
 import numpy as np
 import zmq
 import six
+import six.moves
 
 import cellprofiler
 import cellprofiler.image as cpimage
@@ -185,9 +185,9 @@ class AnalysisRunner(object):
         self.paused = False
         self.cancelled = False
 
-        self.work_queue = Queue.Queue()
-        self.in_process_queue = Queue.Queue()
-        self.finished_queue = Queue.Queue()
+        self.work_queue = queue.Queue()
+        self.in_process_queue = queue.Queue()
+        self.finished_queue = queue.Queue()
 
         # We use a queue size of 10 because we keep measurements in memory (as
         # their HDF5 file contents) until they get merged into the full
@@ -196,7 +196,7 @@ class AnalysisRunner(object):
         # than interface() doing so.  Currently, passing measurements in this
         # way seems like it might be buggy:
         # http://code.google.com/p/h5py/issues/detail?id=244
-        self.received_measurements_queue = Queue.Queue(maxsize=10)
+        self.received_measurements_queue = queue.Queue(maxsize=10)
 
         self.shared_dicts = None
 
@@ -553,7 +553,7 @@ class AnalysisRunner(object):
         # all the requests from workers, of which there might be several.
 
         # start the zmqrequest Boundary
-        request_queue = Queue.Queue()
+        request_queue = queue.Queue()
         boundary = register_analysis(analysis_id,
                                      request_queue)
         #
@@ -584,7 +584,7 @@ class AnalysisRunner(object):
 
             try:
                 req = request_queue.get(timeout=0.25)
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
             if isinstance(req, PipelinePreferencesRequest):
@@ -673,7 +673,7 @@ class AnalysisRunner(object):
             self.interface_work_cv.notify()
 
     def pipeline_as_string(self):
-        s = StringIO.StringIO()
+        s = six.moves.StringIO()
         self.pipeline.savetxt(s)
         return s.getvalue()
 

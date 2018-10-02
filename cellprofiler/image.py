@@ -4,8 +4,6 @@ Image        - Represents an image with secondary attributes such as a mask and 
 ImageSetList - Represents the list of image filenames that make up a pipeline run
 """
 
-import StringIO
-import cPickle
 import logging
 import math
 import struct
@@ -15,6 +13,7 @@ import zlib
 import numpy
 
 import six
+import six.moves
 
 logger = logging.getLogger(__name__)
 
@@ -753,14 +752,14 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO.StringIO()
-        cPickle.dump(self.count(), f)
+        f = six.moves.StringIO()
+        six.moves.cPickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            cPickle.dump(image_set.keys, f)
-        cPickle.dump(self.legacy_fields, f)
+            six.moves.cPickle.dump(image_set.keys, f)
+        six.moves.cPickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -770,7 +769,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = cPickle.Unpickler(StringIO.StringIO(state))
+        p = six.moves.cPickle.Unpickler(six.moves.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)

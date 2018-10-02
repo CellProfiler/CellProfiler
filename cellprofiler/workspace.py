@@ -4,10 +4,10 @@
 import logging
 
 logger = logging.getLogger(__name__)
-from cStringIO import StringIO
 import numpy as np
 import h5py
 import os
+from six.moves import StringIO
 
 from cellprofiler.grid import Grid
 from .utilities.hdf5_dict import HDF5FileList, HDF5Dict

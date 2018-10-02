@@ -3,7 +3,6 @@ deploy:
         python: 2.7
         repo: CellProfiler/centrosome
         tags: true
-    distributions: "sdist bdist_wheel"
     provider: pypi
     user: "0x00B1"
     password:

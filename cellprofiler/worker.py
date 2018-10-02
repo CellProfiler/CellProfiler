@@ -120,12 +120,11 @@ if __name__ == "__main__":
 
 import time
 import threading
-import thread
 import random
 import zmq
-import cStringIO as StringIO
 import traceback
 from weakref import WeakSet
+import six.moves
 
 import cellprofiler.workspace as cpw
 import cellprofiler.measurement as cpmeas
@@ -330,7 +329,7 @@ class AnalysisWorker(object):
                 logger.debug("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
-                current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob),
+                current_pipeline.loadtxt(six.moves.StringIO(pipeline_blob),
                                          raise_on_error=True)
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(

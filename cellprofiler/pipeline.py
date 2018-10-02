@@ -22,7 +22,6 @@ except:
     has_mat_read_error = False
 
 import os
-import StringIO  # XXX - replace with cStringIO?
 import sys
 import tempfile
 import traceback
@@ -30,13 +29,15 @@ import datetime
 import timeit
 import traceback
 import threading
-import urlparse
-import urllib
-import urllib2
 import re
 import numpy
 import six
 import six.moves
+
+from future.standard_library import install_aliases
+install_aliases()
+import urllib.parse
+import urllib.request
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
@@ -370,7 +371,7 @@ class ImagePlaneDetails(object):
     def path(self):
         '''The file path if a file: URL, otherwise the URL'''
         if self.url.startswith("file:"):
-            return urllib.url2pathname(self.url[5:]).decode('utf8')
+            return urllib.request.url2pathname(self.url[5:]).decode('utf8')
         return self.url
 
     @property
@@ -590,7 +591,7 @@ class Pipeline(object):
 
     def copy(self, save_image_plane_details=True):
         '''Create a copy of the pipeline modules and settings'''
-        fd = StringIO.StringIO()
+        fd = six.moves.StringIO()
         self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
@@ -682,7 +683,7 @@ class Pipeline(object):
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload
-            fd = StringIO.StringIO()
+            fd = six.moves.StringIO()
             self.save(fd)
             fd.seek(0)
             self.loadtxt(fd, raise_on_error=True)
@@ -772,7 +773,7 @@ class Pipeline(object):
         elif hasattr(fd_or_filename, 'read') and hasattr(fd_or_filename, 'url'):
             # This is a URL file descriptor. Read into a StringIO so that
             # seek is available.
-            fd = StringIO.StringIO()
+            fd = six.moves.StringIO()
             while True:
                 text = fd_or_filename.read()
                 if len(text) == 0:
@@ -786,10 +787,10 @@ class Pipeline(object):
             filename = fd_or_filename
         else:
             # Assume is string URL
-            parsed_path = urlparse.urlparse(fd_or_filename)
+            parsed_path = urllib.parse.urlparse(fd_or_filename)
             if len(parsed_path.scheme) < 2:
                 raise IOError("Could not find file, " + fd_or_filename)
-            fd = urllib2.urlopen(fd_or_filename)
+            fd = urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
@@ -812,7 +813,7 @@ class Pipeline(object):
                 m = cpmeas.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
                 pipeline_text = pipeline_text.encode('us-ascii')
-                self.load(StringIO.StringIO(pipeline_text))
+                self.load(six.moves.StringIO(pipeline_text))
                 return
 
         if has_mat_read_error:
@@ -879,7 +880,7 @@ class Pipeline(object):
                 return None
 
         header = rl()
-        if not self.is_pipeline_txt_fd(StringIO.StringIO(header)):
+        if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
         version = NATIVE_VERSION
         from_matlab = False
@@ -1261,7 +1262,7 @@ class Pipeline(object):
                         created by CreateBatchFiles.
         '''
         assert (isinstance(m, cpmeas.Measurements))
-        fd = StringIO.StringIO()
+        fd = six.moves.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT,
                           M_USER_PIPELINE if user_pipeline else M_PIPELINE,
@@ -2519,12 +2520,12 @@ class Pipeline(object):
         n = len(urls)
         for i, url in enumerate(urls):
             if i % 100 == 0:
-                path = urlparse.urlparse(url).path
+                path = urllib.parse.urlparse(url).path
                 if "/" in path:
                     filename = path.rsplit("/", 1)[1]
                 else:
                     filename = path
-                filename = urllib.url2pathname(filename)
+                filename = urllib.request.url2pathname(filename)
                 cpprefs.report_progress(
                         uid, float(i) / n,
                              u"Adding %s" % filename)
@@ -2622,9 +2623,8 @@ class Pipeline(object):
                 with open(pathname, "r") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
-                import urllib2
                 try:
-                    fd = urllib2.urlopen(pathname)
+                    fd = urllib.request.urlopen(pathname)
                     self.read_file_list(fd, add_undo=add_undo)
                 finally:
                     fd.close()
@@ -3045,13 +3045,13 @@ class Pipeline(object):
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            url = "file:" + urllib.pathname2url(path)
+            url = "file:" + urllib.request.pathname2url(path)
             ipd = ImagePlaneDetails(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
     def wp_add_image_metadata(self, path, metadata):
-        self.add_image_metadata("file:" + urllib.pathname2url(path), metadata)
+        self.add_image_metadata("file:" + urllib.request.pathname2url(path), metadata)
 
     def add_image_metadata(self, url, metadata, ipd=None):
         if metadata.image_count == 1:

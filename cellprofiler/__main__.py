@@ -11,7 +11,6 @@ import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
-import cStringIO
 import h5py
 import json
 import logging
@@ -26,6 +25,7 @@ import re
 import site
 import sys
 import tempfile
+import six.moves
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -675,7 +675,7 @@ def run_pipeline_headless(options, args):
 
         pipeline_text = pipeline_text.encode('us-ascii')
 
-        pipeline.load(cStringIO.StringIO(pipeline_text))
+        pipeline.load(six.moves.StringIO(pipeline_text))
 
         if not pipeline.in_batch_mode():
             #

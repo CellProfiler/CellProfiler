@@ -133,10 +133,13 @@ setuptools.setup(
         "cython",
         "numpy",
         "pytest",
+        "setuptools_scm"
     ],
     tests_require=[
         "pytest",
     ],
     url="https://github.com/CellProfiler/centrosome",
-    version="2.0.0",
+    use_scm_version = {
+        "write_to": "centrosome/_version.py",
+    },
 )

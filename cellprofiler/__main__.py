@@ -57,7 +57,7 @@ def main(args=None):
         cellprofiler.preferences.set_headless()
         cellprofiler.worker.aw_parse_args()
         cellprofiler.worker.main()
-        sys.exit(exit_code)
+        return exit_code
 
     options, args = parse_args(args)
 
@@ -132,7 +132,6 @@ def main(args=None):
         if options.write_schema_and_exit:
             write_schema(options.pipeline_filename)
 
-        exit_code = 0
         if options.show_gui:
             matplotlib.use('WXAgg')
 
@@ -169,7 +168,7 @@ def main(args=None):
         if not options.show_gui:
             stop_cellprofiler()
 
-    sys.exit(exit_code)
+    return exit_code
 
 
 def __version__(exit_code):
@@ -775,4 +774,4 @@ def run_pipeline_headless(options, args):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -379,7 +379,7 @@ class NeighbourMovementTracking(object):
 
         costs_list = [costs[i, j] for (i, j) in pairs]
 
-        assignment = lapjv.lapjv(zip(*pairs)[0], zip(*pairs)[1], costs_list)
+        assignment = lapjv.lapjv(list(zip(*pairs))[0], list(zip(*pairs))[1], costs_list)
 
         indexes = enumerate(list(assignment[0]))
 

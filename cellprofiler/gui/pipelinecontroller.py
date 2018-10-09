@@ -2671,10 +2671,10 @@ class PipelineController(object):
 
         error = cellprofiler.gui.dialog.Error("Error", message)
 
-        if error.status is wx.ID_CANCEL:
+        if error.status == wx.ID_CANCEL:
             cellprofiler.preferences.cancel_progress()
 
-            self.__analysis.cancel()
+            self.stop_running()
 
             disposition = ED_STOP
         else:

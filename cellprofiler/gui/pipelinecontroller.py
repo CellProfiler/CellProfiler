@@ -2616,7 +2616,6 @@ class PipelineController(object):
     def analysis_exception(self, evt):
         """Report an error in analysis to the user, giving options for
         skipping, aborting, and debugging."""
-
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
         self.debug_request_queue = Queue.Queue()
@@ -2671,10 +2670,10 @@ class PipelineController(object):
 
         error = cellprofiler.gui.dialog.Error("Error", message)
 
-        if error.status is wx.ID_CANCEL:
+        if error.status == wx.ID_CANCEL:
             cellprofiler.preferences.cancel_progress()
 
-            self.__analysis.cancel()
+            self.stop_running()
 
             disposition = ED_STOP
         else:

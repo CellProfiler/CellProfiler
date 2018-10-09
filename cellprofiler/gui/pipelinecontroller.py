@@ -2616,6 +2616,7 @@ class PipelineController(object):
     def analysis_exception(self, evt):
         """Report an error in analysis to the user, giving options for
         skipping, aborting, and debugging."""
+        
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
         self.debug_request_queue = Queue.Queue()

@@ -11,6 +11,7 @@ import skimage.morphology
 import skimage.segmentation
 import skimage.transform
 import skimage.util
+import pytest
 
 import cellprofiler.image
 import cellprofiler.modules.watershed
@@ -18,7 +19,34 @@ import cellprofiler.modules.watershed
 instance = cellprofiler.modules.watershed.Watershed()
 
 
-def test_run_markers(image, module, image_set, workspace):
+@pytest.fixture(
+    scope="module",
+    params=[1, 2],
+    ids=["1connectivity", "2connectivity"]
+)
+def connectivity(request):
+    return request.param
+
+
+@pytest.fixture(
+    scope="module",
+    params=[0., 1., 2.],
+    ids=["0compactness", "1compactness", "2compactness"]
+)
+def compactness(request):
+    return request.param
+
+
+@pytest.fixture(
+    scope="module",
+    params=[False, True],
+    ids=["noborder", "yesborder"]
+)
+def watershed_line(request):
+    return request.param
+
+
+def test_run_markers(image, module, image_set, workspace, connectivity, compactness, watershed_line):
     module.operation.value = "Markers"
 
     module.x_name.value = "gradient"
@@ -26,6 +54,12 @@ def test_run_markers(image, module, image_set, workspace):
     module.y_name.value = "watershed"
 
     module.markers_name.value = "markers"
+
+    module.connectivity.value = connectivity
+
+    module.compactness.value = compactness
+
+    module.watershed_line.value = watershed_line
 
     if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
@@ -80,7 +114,11 @@ def test_run_markers(image, module, image_set, workspace):
 
         markers = skimage.color.rgb2gray(markers)
 
-    expected = skimage.morphology.watershed(gradient, markers)
+    expected = skimage.morphology.watershed(gradient,
+                                            markers,
+                                            connectivity=connectivity,
+                                            compactness=compactness,
+                                            watershed_line=watershed_line)
 
     expected = skimage.measure.label(expected)
 
@@ -96,7 +134,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.connectivity.value = 3
+    module.footprint.value = 3
 
     data = image.pixel_data
 
@@ -120,9 +158,6 @@ def test_run_distance(image, module, image_set, workspace):
 
     original_shape = binary.shape
 
-    if image.volumetric:
-        binary = skimage.transform.resize(binary, (original_shape[0], 256, 256), order=0, mode="edge")
-
     distance = scipy.ndimage.distance_transform_edt(binary)
 
     distance = mahotas.stretch(distance)
@@ -144,9 +179,6 @@ def test_run_distance(image, module, image_set, workspace):
     expected = mahotas.cwatershed(surface, markers)
 
     expected = expected * binary
-
-    if image.volumetric:
-        expected = skimage.transform.resize(expected, original_shape, order=0, mode="edge")
 
     expected = skimage.measure.label(expected)
 

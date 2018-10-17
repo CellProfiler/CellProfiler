@@ -1,14 +1,29 @@
 # coding=utf-8
 
 """
-The **template matching** module uses `normalized cross-correlation`_ to
+MatchTemplate
+=============
+
+The **MatchTemplate** module uses `normalized cross-correlation`_ to
 match a template to a single-channel two-or-three dimensional image or
 multi-channel two-dimensional image. The output of the module is an
 image where each pixel corresponds to the `Pearson product-moment
-correlation coefficient`_ between the image and the template.
+correlation coefficient`_ between the image and the template. Practically, this 
+allows you to crop a single object of interest (i.e., a cell) and predict where
+other such objects are in the image. Note that this is not rotation invariant, so
+this module will perform best when objects are approximately round or are angled
+in a relatively unified direction.
 
-.. _normalized cross-correlation: https://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation
-.. _Pearson product-moment correlation coefficient: https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+.. _normalized cross-correlation: http://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation
+.. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 """
 
 import cellprofiler.image
@@ -20,22 +35,23 @@ import skimage.io
 
 class MatchTemplate(cellprofiler.module.Module):
     module_name = "MatchTemplate"
-    category = "Image Processing"
+    category = "Advanced"
     variable_revision_number = 1
 
     def create_settings(self):
         self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
             "Image",
+            doc="Select the image you want to use."
         )
 
         self.template_name = cellprofiler.setting.Pathname(
             "Template",
-            ""
+            doc="Specify the location of the cropped image you want to use as a template."
         )
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
             "Output",
-            "",
+            doc="Enter the name you want to call the image produced by this module.",
         )
 
     def settings(self):
@@ -100,5 +116,6 @@ class MatchTemplate(cellprofiler.module.Module):
             1,
             0,
             workspace.display_data.output_pixels,
-            "Correlation coefficient"
+            "Correlation coefficient",
+            sharexy=figure.subplot(0, 0)
         )

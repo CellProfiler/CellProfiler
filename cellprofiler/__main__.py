@@ -1,3 +1,4 @@
+from __future__ import print_function
 import bioformats.formatreader
 import ctypes
 import cellprofiler
@@ -10,7 +11,6 @@ import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
-import cStringIO
 import h5py
 import json
 import logging
@@ -25,6 +25,7 @@ import re
 import site
 import sys
 import tempfile
+import six.moves
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -41,7 +42,7 @@ def main(args=None):
 
     """Run CellProfiler
 
-    args - command-line arguments, e.g. sys.argv
+    args - command-line arguments, e.g., sys.argv
     """
     if args is None:
         args = sys.argv
@@ -513,16 +514,16 @@ def print_measurements(options):
 
     columns = pipeline.get_measurement_columns()
 
-    print "--- begin measurements ---"
+    print("--- begin measurements ---")
 
-    print "Object,Feature,Type"
+    print("Object,Feature,Type")
 
     for column in columns:
         object_name, feature, data_type = column[:3]
 
-        print "%s,%s,%s" % (object_name, feature, data_type)
+        print("%s,%s,%s" % (object_name, feature, data_type))
 
-    print "--- end measurements ---"
+    print("--- end measurements ---")
 
 
 def print_groups(filename):
@@ -583,7 +584,7 @@ def get_batch_commands(filename, n_per_job=1):
                 if off == prev:
                     continue
 
-                print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off)
+                print("CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off))
 
                 prev = off
     else:
@@ -593,7 +594,7 @@ def get_batch_commands(filename, n_per_job=1):
             for i in range(0, len(image_numbers), n_per_job):
                 first = image_numbers[i]
                 last = image_numbers[min(i+n_per_job-1, len(image_numbers)-1)]
-                print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, first, last)
+                print("CellProfiler -c -r -p %s -f %d -l %d" % (filename, first, last))
         else:
             # LoadData w/ images grouped by metadata tags
             groupings = m.get_groupings(metadata_tags)
@@ -601,7 +602,7 @@ def get_batch_commands(filename, n_per_job=1):
             for grouping in groupings:
                 group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
 
-                print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
+                print("CellProfiler -c -r -p %s -g %s" % (filename, group_string))
     return
 
 def write_schema(pipeline_filename):
@@ -674,7 +675,7 @@ def run_pipeline_headless(options, args):
 
         pipeline_text = pipeline_text.encode('us-ascii')
 
-        pipeline.load(cStringIO.StringIO(pipeline_text))
+        pipeline.load(six.moves.StringIO(pipeline_text))
 
         if not pipeline.in_batch_mode():
             #

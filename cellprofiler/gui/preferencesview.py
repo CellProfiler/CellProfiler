@@ -4,7 +4,9 @@
 
 import cellprofiler.analysis
 import cellprofiler.gui.help
+import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
+import cellprofiler.gui.html.utils
 import cellprofiler.preferences
 import numpy
 import os
@@ -43,7 +45,7 @@ class PreferencesView(object):
             cellprofiler.preferences.get_default_image_directory(),
             lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY),
             'Default Input Folder',
-            cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP,
+            cellprofiler.preferences.DEFAULT_IMAGE_FOLDER_HELP,
             [cellprofiler.preferences.set_default_image_directory,
              self.__notify_pipeline_list_view_directory_change],
             refresh_action=self.refresh_input_directory)
@@ -54,7 +56,7 @@ class PreferencesView(object):
             cellprofiler.preferences.get_default_output_directory(),
             lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY),
             'Default Output Folder',
-            cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP,
+            cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_HELP,
             [cellprofiler.preferences.set_default_output_directory,
              self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel)
@@ -171,8 +173,7 @@ class PreferencesView(object):
             self.__on_edit_box_change(event, edit_box, text, actions)
             event.Skip()
 
-        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text),
-                   help_button)
+        help_button.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text))
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
         panel.Bind(wx.EVT_TEXT, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_COMBOBOX, on_edit_box_change, edit_box)
@@ -284,7 +285,7 @@ class PreferencesView(object):
             wx.EVT_CHECKBOX, on_allow_checkbox)
         output_filename_help_button.Bind(
             wx.EVT_BUTTON,
-            lambda event: self.__on_help(event, cellprofiler.gui.help.USING_THE_OUTPUT_FILE_HELP))
+            lambda event: self.__on_help(event, cellprofiler.gui.help.content.read_content("legacy_output_file.rst")))
         output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)
@@ -380,7 +381,7 @@ class PreferencesView(object):
         wx.SafeYield(None, True)  # ouch, can't repaint without it.
 
     def check_preferences(self):
-        """Return True if preferences are OK (e.g. directories exist)"""
+        """Return True if preferences are OK (e.g., directories exist)"""
         path = self.__image_edit_box.Value
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Input Folder is "%s", but '
@@ -476,7 +477,7 @@ class PreferencesView(object):
             if len(self.__errors) == 0:
                 self.set_message_text(WELCOME_MESSAGE)
             else:
-                self.set_message_text(self.__errors.__iter__().next())
+                self.set_message_text(next(self.__errors.__iter__()))
 
     def set_error_text(self, error_text):
         self.set_message_text(error_text)
@@ -512,7 +513,11 @@ class PreferencesView(object):
             self.set_error_text(error_text)
 
     def __on_help(self, event, help_text):
-        dlg = cellprofiler.gui.htmldialog.HTMLDialog(self.__panel, "Help", help_text)
+        dlg = cellprofiler.gui.htmldialog.HTMLDialog(
+            self.__panel,
+            "Help",
+            cellprofiler.gui.html.utils.rst_to_html_fragment(help_text)
+        )
         dlg.Show()
 
     def __on_pixel_size_changed(self, event):

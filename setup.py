@@ -1,5 +1,4 @@
 import codecs
-import glob
 import os
 import re
 
@@ -21,6 +20,15 @@ def find_version(*pathnames):
         return matched.group(1)
 
     raise RuntimeError("Unable to find version string.")
+
+
+def find_resources(directory, subdirectory):
+    resources = []
+    for root, _, filenames in os.walk(os.path.join(directory, subdirectory)):
+        resources += [os.path.relpath(os.path.join(root, filename), directory) for filename in filenames]
+
+    return resources
+
 
 setuptools.setup(
     author="cellprofiler-dev",
@@ -47,38 +55,42 @@ setuptools.setup(
             "twine"
         ],
         "test": [
-            "pytest"
+            "pytest>=3.3.2"
         ]
     },
     install_requires=[
+        "boto3",
         "centrosome",
+        "docutils",
         "h5py",
         "inflect",
         "javabridge",
         "joblib",
-        "libtiff",
         "mahotas",
-        "matplotlib",
-        "MySQL-python",
+        "matplotlib>=2.0.0, !=2.1.0",
+        "mysqlclient==1.3.13",
         "numpy",
-        "prokaryote>=1.0.11",
-        "python-bioformats",
-        "pyzmq",
+        "prokaryote==2.4.0",
+        "python-bioformats==1.5.2",
+        "pyzmq==15.3.0",
         "raven",
         "requests",
         "scikit-image",
         "scikit-learn",
-        "scipy"
+        "scipy",
+        "six"
     ],
     license="BSD",
     name="CellProfiler",
     package_data={
-        "images": glob.glob(os.path.join("data", "images", "*"))
+        "cellprofiler": find_resources("cellprofiler", "data")
     },
+    include_package_data=True,
     packages=setuptools.find_packages(exclude=[
         "tests*"
     ]),
-    python_requires=">=2.7, <3",
+    # Allow experimentation with Travis' Python 3.6.3 but not many other Py3s
+    python_requires=">=2.7, !=3.0, !=3.1, !=3.2, !=3.3, !=3.4, !=3.5, <=3.6.3",
     setup_requires=[
         "pytest"
     ],

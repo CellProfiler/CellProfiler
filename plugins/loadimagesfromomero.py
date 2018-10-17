@@ -2,7 +2,7 @@
 <hr>
 
 This module retrieves all images in a dataset or plate from an OMERO server.
-It is also possible to load a single image (e.g. for testing your pipeline).
+It is also possible to load a single image (e.g., for testing your pipeline).
 
 <b>Important note</b>
 
@@ -15,7 +15,7 @@ it will mean a Cellprofiler image (= OMERO image plane) unless noted otherwise.<
 <p>When run from the command line the module will not used the omero object id that is saved in
 the pipeline. It will use the image directory parameter instead. e.g.:</p>
 
-<i>python CellProfiler.py -p mypipeline -i 1</i>
+<i>cellprofiler -p mypipeline -i 1</i>
 
 In the above example the pipeline "mypipeline" will be run with "1" as omero object id.
 
@@ -27,6 +27,7 @@ In the above example the pipeline "mypipeline" will be run with "1" as omero obj
 <li>University of Dundee</li>
 </ul>
 '''
+from __future__ import print_function
 
 # module author: Bram Gerritsen
 # e-mail: b.gerritsen@nki.nl
@@ -164,7 +165,7 @@ def create_omero_gateway(host=DEFAULT_OMERO_HOST, port=DEFAULT_OMERO_PORT,
         omero_client = omero.client(host, port)
         omero_session = omero_client.createSession(username, password)
         omero_gateway = omero_session.createGateway()
-    except Exception, err:
+    except Exception as err:
         raise RuntimeError("Unable to connect to OMERO server %s@%s:%d" %
                            (username, host, int(port)), err)
     return omero_client, omero_session, omero_gateway
@@ -268,7 +269,7 @@ class OmeroLoadImages(cpm.Module):
             for channel_number in range(0, number_of_channels):
                 omero_channel = omero_channels[channel_number].getLogicalChannel()
                 # load default cpimage name in case the logical channel name
-                # cannot be retrieved. e.g. when the logical channel name is null
+                # cannot be retrieved. e.g., when the logical channel name is null
                 try:
                     omero_channel_name = omero_channel.getName().getValue().strip()
                 except:
@@ -310,7 +311,7 @@ class OmeroLoadImages(cpm.Module):
                 "Channel number:", channel_numbers, channel_numbers[len(self.channels) - 1],
                 doc="""(Used only for multichannel images)
 			The channels of a multichannel image are numbered starting from 0 (zero).
-			
+
 			Each channel is a greyscale image, acquired using different
 			illumination sources and/or optics. Use this setting to pick
 			the channel to associate with the image or images you load from
@@ -355,15 +356,15 @@ class OmeroLoadImages(cpm.Module):
         image_set_list = workspace.image_set_list
         if pipeline.in_batch_mode():
             # TODO: Rewrite the OmeroImageProvider such that it can be used in batch mode
-            # e.g. omero session keys could be used to attach to existing sessions to
+            # e.g., omero session keys could be used to attach to existing sessions to
             # keep OmeroImageProviders from creating a new session every time an image should be loaded
             return False
 
         if cpp.get_headless():
-            print 'OmeroLoadImages running in headless mode: image directory parameter will be used as omero object id'
+            print('OmeroLoadImages running in headless mode: image directory parameter will be used as omero object id')
             self.omero_object_id.set_value(int(cpp.get_default_image_directory()))
-            print 'omero object id = %d' % self.omero_object_id.value
-            print 'omero object type = %s' % self.omero_object.value
+            print('omero object id = %d' % self.omero_object_id.value)
+            print('omero object type = %s' % self.omero_object.value)
 
         self.create_omero_gateway()
         if self.omero_object == MS_IMAGE:
@@ -481,10 +482,10 @@ class OmeroLoadImages(cpm.Module):
     def get_dictionary(self, image_set):
         '''Get the module's legacy fields dictionary for this image set'''
         key = "%s:%d" % (self.module_name, self.module_num)
-        if not image_set.legacy_fields.has_key(key):
+        if key not in image_set.legacy_fields:
             image_set.legacy_fields[key] = {}
         d = image_set.legacy_fields[key]
-        if not d.has_key(image_set.image_number):
+        if image_set.image_number not in d:
             d[image_set.image_number] = {}
         return d[image_set.image_number]
 
@@ -553,10 +554,10 @@ class OmeroLoadImages(cpm.Module):
         if cpp.get_headless():  # headless mode
             for channel in self.channels:
                 image_name, channel_number = channel.cpimage_name.value, channel.channel_number.value
-                print "--- image name: %s\tchannel: %s" % (image_name, channel_number)
+                print("--- image name: %s\tchannel: %s" % (image_name, channel_number))
                 (header, row) = workspace.display_data.statistics[channel_number]
                 for i in range(0, len(header)):
-                    print "\t%s: %s" % (header[i], row[i])
+                    print("\t%s: %s" % (header[i], row[i]))
 
     def post_run(self, workspace):
         '''Disconnect from the omero server after the run completes'''

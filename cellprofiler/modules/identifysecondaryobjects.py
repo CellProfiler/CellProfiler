@@ -1,16 +1,46 @@
 # coding=utf-8
 
-"""
-**Identify Secondary Objects** identifies objects (e.g., cell edges)
+import centrosome.cpmorphology
+import centrosome.propagate
+import numpy
+import scipy.ndimage
+import skimage.morphology
+
+from cellprofiler.modules import _help, threshold
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.setting
+
+__doc__ = """\
+IdentifySecondaryObjects
+========================
+
+**IdentifySecondaryObjects** identifies objects (e.g., cells)
 using objects identified by another module (e.g., nuclei) as a starting
 point.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also the other **Identify** modules.
 
 What is a secondary object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In CellProfiler, we use the term *object* as a generic term to refer to
-an identifed feature in an image, usually a cellular subcompartment of
-some kind (for example, nuclei, cells, colonies, worms). We define an
+{DEFINITION_OBJECT}
+
+We define an
 object as *secondary* when it can be found in an image by using another
 cellular feature as a reference for guiding detection.
 
@@ -28,7 +58,7 @@ primary object.
 In order to identify the edges of secondary objects, this module
 performs two tasks:
 
-#. Finds the dividing lines between secondary objects which touch each
+#. Finds the dividing lines between secondary objects that touch each
    other.
 #. Finds the dividing lines between the secondary objects and the
    background of the image. In most cases, this is done by thresholding
@@ -42,26 +72,16 @@ This module identifies secondary objects based on two types of input:
 #. An *object* (e.g., nuclei) identified from a prior module. These are
    typically produced by an **IdentifyPrimaryObjects** module, but any
    object produced by another module may be selected for this purpose.
-#. An *image* highlighting the image features defining the cell edges.
+#. (*optional*) An *image* highlighting the image features defining the edges of the
+   secondary objects (e.g., cell edges).
    This is typically a fluorescent stain for the cell body, membrane or
    cytoskeleton (e.g., phalloidin staining for actin). However, any
-   image which produces these features can be used for this purpose. For
+   image that produces these features can be used for this purpose. For
    example, an image processing module might be used to transform a
-   brightfield image into one which captures the characteristics of a
-   cell body flourescent stain.
-
-What do the settings mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See below for help on the individual settings. The following icons are
-used to call attention to key items:
-
--  |image0| Our recommendation or example use case for which a
-   particular setting is best used.
--  |image1| Indicates a condition under which a particular setting may
-   not work well.
--  |image2| Technical note. Provides more detailed information on the
-   setting, if interested.
+   brightfield image into one that captures the characteristics of a
+   cell body fluorescent stain. This input is optional because you can
+   instead define secondary objects as a fixed distance around each
+   primary object.
 
 What do I get as output?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -73,19 +93,22 @@ a corresponding secondary object, keep in mind the following points:
 
 -  The primary object will always be completely contained within a
    secondary object. For example, nuclei are completely enclosed within
-   identified cells stained for actin.
+   cells identified by actin staining.
 -  There will always be at most one secondary object for each primary
    object.
 
-See the section `“Available measurements”`_ below for the measurements
-that are produced by this module. Once the module has finished
-processing, the module display window will show the following panels:
+Once the module has finished processing, the module display window will
+show the following panels;
+note that these are just for display: you must use the **SaveImages**
+module if you would like to save any of these images to the hard drive
+(as well, the **OverlayOutlines** module or **ConvertObjectsToImage**
+modules might be needed):
 
 -  *Upper left:* The raw, original image.
 -  *Upper right:* The identified objects shown as a color image where
    connected pixels that belong to the same object are assigned the same
-   color (*label image*). It is important to note that assigned colors
-   are arbitrary; they are used simply to help you distingush the
+   color (*label image*). Note that assigned colors
+   are arbitrary; they are used simply to help you distinguish the
    various objects.
 -  *Lower left:* The raw image overlaid with the colored outlines of the
    identified secondary objects. The objects are shown with the
@@ -96,12 +119,14 @@ processing, the module display window will show the following panels:
 
    If you need to change the color defaults, you can make adjustments in
    *File > Preferences*.
--  *Lower right:* A table showing some of the settings selected by the
-   user, as well as those calculated by the module in order to produce
+-  *Lower right:* A table showing some of the settings you chose,
+   as well as those calculated by the module in order to produce
    the objects shown.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+{HELP_ON_SAVING_OBJECTS}
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 
@@ -123,43 +148,10 @@ Available measurements
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified secondary objects.
 
-Technical notes
-^^^^^^^^^^^^^^^
-
-The *Propagation* algorithm is the default approach for secondary object
-creation, creating each primary object as a “seed” guided by the input
-image and limited to the foreground region as determined by the chosen
-thresholding method. λ is a regularization parameter; see the help for
-the setting for more details. Propagation of secondary object labels is
-by the shortest path to an adjacent primary object from the starting
-(“seeding”) primary object. The seed-to-pixel distances are calculated
-as the sum of absolute differences in a 3x3 (8-connected) image
-neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
-λ\ :sup:`2`).
-
-See also the other **Identify** modules.
-
-.. _“Available measurements”: #Available_measurements
-
-.. |image0| image:: memory:thumb-up.png
-.. |image1| image:: memory:thumb-down.png
-.. |image2| image:: memory:gear.png
-"""
-
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import numpy
-import scipy.ndimage
-import skimage.morphology
-
-import applythreshold
-import cellprofiler.gui.help
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+""".format(**{
+    "DEFINITION_OBJECT": _help.DEFINITION_OBJECT,
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"
@@ -168,7 +160,7 @@ M_DISTANCE_N = "Distance - N"
 M_DISTANCE_B = "Distance - B"
 
 '''# of setting values other than thresholding ones'''
-N_SETTING_VALUES = 14
+N_SETTING_VALUES = 10
 
 '''Parent (seed) relationship of input objects to output objects'''
 R_PARENT = "Parent"
@@ -177,25 +169,27 @@ R_PARENT = "Parent"
 class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
     module_name = "IdentifySecondaryObjects"
 
-    variable_revision_number = 9
+    variable_revision_number = 10
 
     category = "Object Processing"
 
     def __init__(self):
-        self.apply_threshold = applythreshold.ApplyThreshold()
+        self.threshold = threshold.Threshold()
 
         super(IdentifySecondaryObjects, self).__init__()
+
+    def volumetric(self):
+        return False
 
     def create_settings(self):
         super(IdentifySecondaryObjects, self).create_settings()
 
         self.x_name.text = "Select the input objects"
 
-        self.x_name.doc = """
-        What did you call the objects you want to use as "seeds" to identify a secondary
-        object around each one? By definition, each primary object must be associated with exactly one
-        secondary object and completely contained within it.
-        """
+        self.x_name.doc = """\
+What did you call the objects you want to use as primary objects ("seeds") to identify a secondary
+object around each one? By definition, each primary object must be associated with exactly one
+secondary object and completely contained within it."""
 
         self.y_name.text = "Name the objects to be identified"
 
@@ -211,71 +205,95 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
                 M_DISTANCE_B
             ],
             M_PROPAGATION,
-            doc=u"""
-            <p>There are several methods available to find the dividing lines between secondary objects which
-            touch each other:</p>
-            <ul>
-                <li><i>{M_PROPAGATION:s}:</i> This method will find dividing lines between clumped objects
-                where the image stained for secondary objects shows a change in staining (i.e., either a dimmer
-                or a brighter line). Smoother lines work better, but unlike the Watershed method, small gaps
-                are tolerated. This method is considered an improvement on the traditional <i>Watershed</i>
-                method. The dividing lines between objects are determined by a combination of the distance to
-                the nearest primary object and intensity gradients. This algorithm uses local image similarity
-                to guide the location of boundaries between cells. Boundaries are preferentially placed where
-                the image's local appearance changes perpendicularly to the boundary (<i>Jones et al,
-                2005</i>).</li>
-                <li><i>{M_WATERSHED_G:s}:</i> This method uses the watershed algorithm (<i>Vincent and Soille,
-                1991</i>) to assign pixels to the primary objects which act as seeds for the watershed. In this
-                variant, the watershed algorithm operates on the Sobel transformed image which computes an
-                intensity gradient. This method works best when the image intensity drops off or increases
-                rapidly near the boundary between cells.</li>
-                <li><i>{M_WATERSHED_I:s}:</i> This method is similar to the above, but it uses the inverted
-                intensity of the image for the watershed. The areas of lowest intensity will form the
-                boundaries between cells. This method works best when there is a saddle of relatively low
-                intensity at the cell-cell boundary.</li>
-                <li>
-                    <i>Distance:</i> In this method, the edges of the primary objects are expanded a specified
-                    distance to create the secondary objects. For example, if nuclei are labeled but there is
-                    no stain to help locate cell edges, the nuclei can simply be expanded in order to estimate
-                    the cell's location. This is often called the "doughnut" or "annulus" or "ring" approach
-                    for identifying the cytoplasm. There are two methods that can be used:
-                    <ul>
-                        <li><i>{M_DISTANCE_N:s}</i>: In this method, the image of the secondary staining is not
-                        used at all; the expanded objects are the final secondary objects.</li>
-                        <li><i>{M_DISTANCE_B:s}</i>: Thresholding of the secondary staining image is used to
-                        eliminate background regions from the secondary objects. This allows the extent of the
-                        secondary objects to be limited to a certain distance away from the edge of the primary
-                        objects without including regions of background.</li>
-                    </ul>
-                </li>
-            </ul><b>References</b>
-            <ul>
-                <li>Jones TR, Carpenter AE, Golland P (2005) "Voronoi-Based Segmentation of Cells on Image
-                Manifolds", <i>ICCV Workshop on Computer Vision for Biomedical Image Applications</i>, 535-543.
-                (<a href="http://www.cellprofiler.org/linked_files/Papers/JonesCVBIA2005.pdf">link</a>)
-                </li>
-                <li>(Vincent L, Soille P (1991) "Watersheds in Digital Spaces: An Efficient Algorithm Based on
-                Immersion Simulations", <i>IEEE Transactions of Pattern Analysis and Machine Intelligence</i>,
-                13(6): 583-598 (<a href="http://dx.doi.org/10.1109/34.87344">link</a>)
-                </li>
-            </ul>
-            """.format(**{
+            doc=u"""\
+There are several methods available to find the dividing lines between
+secondary objects that touch each other:
+
+-  *{M_PROPAGATION:s}:* This method will find dividing lines between
+   clumped objects where the image stained for secondary objects shows a
+   change in staining (i.e., either a dimmer or a brighter line).
+   Smoother lines work better, but unlike the Watershed method, small
+   gaps are tolerated. This method is considered an improvement on the
+   traditional *Watershed* method. The dividing lines between objects
+   are determined by a combination of the distance to the nearest
+   primary object and intensity gradients. This algorithm uses local
+   image similarity to guide the location of boundaries between cells.
+   Boundaries are preferentially placed where the image’s local
+   appearance changes perpendicularly to the boundary (*Jones et al,
+   2005*).
+
+   |image0| The {M_PROPAGATION:s} algorithm is the default approach for secondary object
+   creation. Each primary object is a "seed" for its corresponding
+   secondary object, guided by the input
+   image and limited to the foreground region as determined by the chosen
+   thresholding method. λ is a regularization parameter; see the help for
+   the setting for more details. Propagation of secondary object labels is
+   by the shortest path to an adjacent primary object from the starting
+   (“seeding”) primary object. The seed-to-pixel distances are calculated
+   as the sum of absolute differences in a 3x3 (8-connected) image
+   neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
+   λ\ :sup:`2`).
+-  *{M_WATERSHED_G:s}:* This method uses the watershed algorithm
+   (*Vincent and Soille, 1991*) to assign pixels to the primary objects
+   which act as seeds for the watershed. In this variant, the watershed
+   algorithm operates on the Sobel transformed image which computes an
+   intensity gradient. This method works best when the image intensity
+   drops off or increases rapidly near the boundary between cells.
+-  *{M_WATERSHED_I:s}:* This method is similar to the above, but it
+   uses the inverted intensity of the image for the watershed. The areas
+   of lowest intensity will be detected as the boundaries between cells. This
+   method works best when there is a saddle of relatively low intensity
+   at the cell-cell boundary.
+-  *Distance:* In this method, the edges of the primary objects are
+   expanded a specified distance to create the secondary objects. For
+   example, if nuclei are labeled but there is no stain to help locate
+   cell edges, the nuclei can simply be expanded in order to estimate
+   the cell’s location. This is often called the “doughnut” or “annulus”
+   or “ring” approach for identifying the cytoplasm. There are two
+   methods that can be used:
+
+   -  *{M_DISTANCE_N:s}*: In this method, the image of the secondary
+      staining is not used at all; the expanded objects are the final
+      secondary objects.
+   -  *{M_DISTANCE_B:s}*: Thresholding of the secondary staining image
+      is used to eliminate background regions from the secondary
+      objects. This allows the extent of the secondary objects to be
+      limited to a certain distance away from the edge of the primary
+      objects without including regions of background.
+
+References
+^^^^^^^^^^
+
+Jones TR, Carpenter AE, Golland P (2005) “Voronoi-Based Segmentation of
+Cells on Image Manifolds”, *ICCV Workshop on Computer Vision for
+Biomedical Image Applications*, 535-543. (`link1`_)
+
+Vincent L, Soille P (1991) "Watersheds in Digital Spaces: An Efficient
+Algorithm Based on Immersion Simulations", *IEEE Transactions on Pattern
+Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
+
+.. _link1: http://people.csail.mit.edu/polina/papers/JonesCarpenterGolland_CVBIA2005.pdf
+.. _link2: http://www.cse.msu.edu/~cse902/S03/watershed.pdf
+
+.. |image0| image:: {TECH_NOTE_ICON}
+""".format(**{
                 "M_PROPAGATION": M_PROPAGATION,
                 "M_WATERSHED_G": M_WATERSHED_G,
                 "M_WATERSHED_I": M_WATERSHED_I,
                 "M_DISTANCE_N": M_DISTANCE_N,
-                "M_DISTANCE_B": M_DISTANCE_B
+                "M_DISTANCE_B": M_DISTANCE_B,
+                "TECH_NOTE_ICON": _help.TECH_NOTE_ICON
             })
         )
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
             "Select the input image",
             cellprofiler.setting.NONE,
-            doc=u"""
-            The selected image will be used to find the edges of the secondary objects.
-            For <i>{M_DISTANCE_N:s}</i> this will not affect object identification,
-            only the final display.
-            """.format(**{
+            doc=u"""\
+The selected image will be used to find the edges of the secondary
+objects. For *{M_DISTANCE_N:s}* this will not affect object
+identification, only the module's display.
+""".format(**{
                 "M_DISTANCE_N": M_DISTANCE_N
             })
         )
@@ -283,59 +301,63 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.distance_to_dilate = cellprofiler.setting.Integer(
             "Number of pixels by which to expand the primary objects",
             10,
-            minval=1
+            minval=1,
+            doc = u"""\
+*(Used only if "{M_DISTANCE_B:s}" or "{M_DISTANCE_N:s}" method is selected)*
+
+This option allows you to define the number of pixels by which the primary objects
+will be expanded. This option becomes useful in situations when no staining was
+used to define cell cytoplasm but the cell edges must be defined for further
+measurements.
+""".format(**{
+            "M_DISTANCE_N": M_DISTANCE_N,
+            "M_DISTANCE_B": M_DISTANCE_B
+            })
         )
 
         self.regularization_factor = cellprofiler.setting.Float(
             "Regularization factor",
             0.05,
             minval=0,
-            doc=u"""
-            <i>(Used only if {M_PROPAGATION:s} method is selected)</i><br>
-            The regularization factor &lambda; can be anywhere in the range 0 to infinity. This method takes
-            two factors into account when deciding where to draw the dividing line between two touching
-            secondary objects: the distance to the nearest primary object, and the intensity of the secondary
-            object image. The regularization factor controls the balance between these two considerations:
-            <ul>
-                <li>A &lambda; value of 0 means that the distance to the nearest primary object is ignored and
-                the decision is made entirely on the intensity gradient between the two competing primary
-                objects.</li>
-                <li>Larger values of &lambda; put more and more weight on the distance between the two objects.
-                This relationship is such that small changes in &lambda; will have fairly different results
-                (e.,g 0.01 vs 0.001). However, the intensity image is almost completely ignored at &lambda;
-                much greater than 1.</li>
-                <li>At infinity, the result will look like {M_DISTANCE_B:s}, masked to the secondary staining
-                image.</li>
-            </ul>
-            </ul>
-            """.format(**{
+            doc=u"""\
+*(Used only if "{M_PROPAGATION:s}" method is selected)*
+
+The regularization factor λ can be anywhere in the range 0 to
+infinity. This method takes two factors into account when deciding
+where to draw the dividing line between two touching secondary
+objects: the distance to the nearest primary object, and the intensity
+of the secondary object image. The regularization factor controls the
+balance between these two considerations:
+
+-  A λ value of 0 means that the distance to the nearest primary object
+   is ignored and the decision is made entirely on the intensity
+   gradient between the two competing primary objects.
+-  Larger values of λ put more and more weight on the distance between
+   the two objects. This relationship is such that small changes in λ
+   will have fairly different results (e.g., 0.01 vs 0.001). However, the
+   intensity image is almost completely ignored at λ much greater than
+   1.
+-  At infinity, the result will look like {M_DISTANCE_B:s}, masked to
+   the secondary staining image.
+""".format(**{
                 "M_PROPAGATION": M_PROPAGATION,
                 "M_DISTANCE_B": M_DISTANCE_B
             })
         )
 
-        self.use_outlines = cellprofiler.setting.Binary(
-            "Retain outlines of the identified secondary objects?",
-            False,
-            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
-        )
-
-        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-            "Name the outline image",
-            "SecondaryOutlines",
-            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
-        )
-
         self.wants_discard_edge = cellprofiler.setting.Binary(
             "Discard secondary objects touching the border of the image?",
             False,
-            doc=u"""
-            Select <i>{YES:s}</i> to discard secondary objects which touch the image border. Select
-            <i>{NO:s}</i> to retain objects regardless of whether they touch the image edge or not.
-            <p>The objects are discarded with respect to downstream measurement modules, but they are retained
-            in memory as "unedited objects"; this allows them to be considered in downstream modules that
-            modify the segmentation.</p>
-            """.format(**{
+            doc=u"""\
+Select *{YES:s}* to discard secondary objects that touch the image
+border. Select *{NO:s}* to retain objects regardless of whether they
+touch the image edge or not.
+
+Note: the objects are discarded with respect to downstream measurement
+modules, but they are retained in memory as “Unedited objects”; this
+allows them to be considered in downstream modules that modify the
+segmentation.
+""".format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO
             })
@@ -344,9 +366,12 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.fill_holes = cellprofiler.setting.Binary(
             "Fill holes in identified objects?",
             True,
-            doc=u"""
-            Select <i>{YES:s}</i> to fill any holes inside objects.
-            """.format(**{
+            doc=u"""\
+Select *{YES:s}* to fill any holes inside objects.
+
+Please note that if an object is located within a hole and this option is
+enabled, the object will be lost when the hole is filled in.
+""".format(**{
                 "YES": cellprofiler.setting.YES
             })
         )
@@ -354,14 +379,17 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.wants_discard_primary = cellprofiler.setting.Binary(
             "Discard the associated primary objects?",
             False,
-            doc=u"""
-            <i>(Used only if discarding secondary objects touching the image border)</i><br>
-            It might be appropriate to discard the primary object for any secondary object that touches the
-            edge of the image.
-            <p>Select <i>{YES:s}</i> to create a new set of objects that are identical to the original primary
-            objects set, minus the objects for which the associated secondary object touches the image
-            edge.</p>
-            """.format(**{
+            doc=u"""\
+*(Used only if discarding secondary objects touching the image
+border)*
+
+It might be appropriate to discard the primary object for any
+secondary object that touches the edge of the image.
+
+Select *{YES:s}* to create a new set of objects that are identical to
+the original set of primary objects, minus the objects for which the
+associated secondary object touches the image edge.
+""".format(**{
                 "YES": cellprofiler.setting.YES
             })
         )
@@ -369,45 +397,24 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         self.new_primary_objects_name = cellprofiler.setting.ObjectNameProvider(
             "Name the new primary objects",
             "FilteredNuclei",
-            doc="""
-            <i>(Used only if associated primary objects are discarded)</i><br>
-            You can name the primary objects that remain after the discarding step. These objects will all have
-            secondary objects that do not touch the edge of the image. Note that any primary object whose
-            secondary object touches the edge will be retained in memory as an "unedited object"; this allows
-            them to be considered in downstream modules that modify the segmentation.
-            """
-        )
+            doc="""\
+*(Used only if associated primary objects are discarded)*
 
-        self.wants_primary_outlines = cellprofiler.setting.Binary(
-            "Retain outlines of the new primary objects?",
-            False,
-            doc=u"""
-            <i>(Used only if associated primary objects are discarded)</i><br>
-            {RETAINING_OUTLINES_HELP:s}
-            """.format(**{
-                "RETAINING_OUTLINES_HELP": cellprofiler.gui.help.RETAINING_OUTLINES_HELP
-            })
-        )
-
-        self.new_primary_outlines_name = cellprofiler.setting.OutlineNameProvider(
-            "Name the new primary object outlines",
-            "FilteredNucleiOutlines",
-            doc="""
-            <i>(Used only if associated primary objects are discarded and saving outlines of new primary
-            objects)</i><br>
-            Enter a name for the outlines of the identified objects. The outlined image can be selected in
-            downstream modules by selecting them from any drop-down image list.
-            """
-        )
+You can name the primary objects that remain after the discarding step.
+These objects will all have secondary objects that do not touch the edge
+of the image. Note that any primary object whose secondary object
+touches the edge will be retained in memory as an “unedited object”;
+this allows them to be considered in downstream modules that modify the
+segmentation.""")
 
         self.threshold_setting_version = cellprofiler.setting.Integer(
             "Threshold setting version",
-            value=self.apply_threshold.variable_revision_number
+            value=self.threshold.variable_revision_number
         )
 
-        self.apply_threshold.create_settings()
+        self.threshold.create_settings()
 
-        self.apply_threshold.threshold_smoothing_scale.value = 0
+        self.threshold.threshold_smoothing_scale.value = 0
 
     def settings(self):
         settings = super(IdentifySecondaryObjects, self).settings()
@@ -417,15 +424,11 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             self.image_name,
             self.distance_to_dilate,
             self.regularization_factor,
-            self.outlines_name,
-            self.use_outlines,
             self.wants_discard_edge,
             self.wants_discard_primary,
             self.new_primary_objects_name,
-            self.wants_primary_outlines,
-            self.new_primary_outlines_name,
             self.fill_holes
-        ] + [self.threshold_setting_version] + self.apply_threshold.settings()[2:]
+        ] + [self.threshold_setting_version] + self.threshold.settings()[2:]
 
     def visible_settings(self):
         visible_settings = [self.image_name]
@@ -435,7 +438,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         visible_settings += [self.method]
 
         if self.method != M_DISTANCE_N:
-            visible_settings += self.apply_threshold.visible_settings()[2:]
+            visible_settings += self.threshold.visible_settings()[2:]
 
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             visible_settings += [self.distance_to_dilate]
@@ -451,18 +454,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             visible_settings += [self.wants_discard_primary]
 
             if self.wants_discard_primary:
-                visible_settings += [
-                    self.new_primary_objects_name,
-                    self.wants_primary_outlines
-                ]
-
-                if self.wants_primary_outlines:
-                    visible_settings += [self.new_primary_outlines_name]
-
-        visible_settings+= [self.use_outlines]
-
-        if self.use_outlines.value:
-            visible_settings += [self.outlines_name]
+                visible_settings += [self.new_primary_objects_name]
 
         return visible_settings
 
@@ -474,7 +466,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             self.image_name
         ]
 
-        help_settings += self.apply_threshold.help_settings()[2:]
+        help_settings += self.threshold.help_settings()[2:]
 
         help_settings += [
             self.distance_to_dilate,
@@ -482,33 +474,36 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             self.fill_holes,
             self.wants_discard_edge,
             self.wants_discard_primary,
-            self.new_primary_objects_name,
-            self.wants_primary_outlines,
-            self.new_primary_outlines_name,
-            self.use_outlines,
-            self.outlines_name
+            self.new_primary_objects_name
         ]
+
+        return help_settings
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab:
             raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
 
         if variable_revision_number < 9:
-            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
+            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.")
+
+        if variable_revision_number == 9:
+            setting_values = setting_values[:6] + setting_values[8:11] + setting_values[13:]
+
+            variable_revision_number = 10
 
         threshold_setting_values = setting_values[N_SETTING_VALUES:]
 
         threshold_settings_version = int(threshold_setting_values[0])
 
         if threshold_settings_version < 4:
-            threshold_setting_values = self.apply_threshold.upgrade_threshold_settings(threshold_setting_values)
+            threshold_setting_values = self.threshold.upgrade_threshold_settings(threshold_setting_values)
 
             threshold_settings_version = 9
 
-        threshold_upgrade_settings, threshold_settings_version, _ = self.apply_threshold.upgrade_settings(
+        threshold_upgrade_settings, threshold_settings_version, _ = self.threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
-            "ApplyThreshold",
+            "Threshold",
             False
         )
 
@@ -672,15 +667,6 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             if objects.has_small_removed_segmented:
                 new_objects.small_removed_segmented = objects.small_removed_segmented
             new_objects.parent_image = objects.parent_image
-            primary_outline = centrosome.outline.outline(segmented_labels)
-            if self.wants_primary_outlines:
-                out_img = cellprofiler.image.Image(primary_outline.astype(bool),
-                                                   parent_image=image)
-                workspace.image_set.add(self.new_primary_outlines_name.value,
-                                        out_img)
-        else:
-            primary_outline = centrosome.outline.outline(objects.segmented)
-        secondary_outline = centrosome.outline.outline(segmented_out)
 
         #
         # Add the objects to the object set
@@ -692,10 +678,6 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         objects_out.parent_image = image
         objname = self.y_name.value
         workspace.object_set.add_objects(objects_out, objname)
-        if self.use_outlines.value:
-            out_img = cellprofiler.image.Image(secondary_outline.astype(bool),
-                                               parent_image=image)
-            workspace.image_set.add(self.outlines_name.value, out_img)
         object_count = numpy.max(segmented_out)
         #
         # Add measurements
@@ -762,18 +744,18 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
     def _threshold_image(self, image_name, workspace, automatic=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        local_threshold, global_threshold = self.apply_threshold.get_threshold(image, workspace, automatic)
+        local_threshold, global_threshold = self.threshold.get_threshold(image, workspace, automatic)
 
-        self.apply_threshold.add_threshold_measurements(
+        self.threshold.add_threshold_measurements(
             self.y_name.value,
             workspace.measurements,
             local_threshold,
             global_threshold
         )
 
-        binary_image, sigma = self.apply_threshold.apply_threshold(image, local_threshold, automatic)
+        binary_image, sigma = self.threshold.apply_threshold(image, local_threshold, automatic)
 
-        self.apply_threshold.add_fg_bg_measurements(
+        self.threshold.add_fg_bg_measurements(
             self.y_name.value,
             workspace.measurements,
             image,
@@ -907,7 +889,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
             columns = super(IdentifySecondaryObjects, self).get_measurement_columns(pipeline)
 
         if self.method != M_DISTANCE_N:
-            columns += self.apply_threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
+            columns += self.threshold.get_measurement_columns(pipeline, object_name=self.y_name.value)
 
         return columns
 
@@ -915,7 +897,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         categories = super(IdentifySecondaryObjects, self).get_categories(pipeline, object_name)
 
         if self.method != M_DISTANCE_N:
-            categories += self.apply_threshold.get_categories(pipeline, object_name)
+            categories += self.threshold.get_categories(pipeline, object_name)
 
         if self.wants_discard_edge and self.wants_discard_primary:
             if object_name == self.new_primary_objects_name.value:
@@ -930,7 +912,7 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         measurements = super(IdentifySecondaryObjects, self).get_measurements(pipeline, object_name, category)
 
         if self.method.value != M_DISTANCE_N:
-            measurements += self.apply_threshold.get_measurements(pipeline, object_name, category)
+            measurements += self.threshold.get_measurements(pipeline, object_name, category)
 
         if self.wants_discard_edge and self.wants_discard_primary:
             if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
@@ -967,7 +949,9 @@ class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
         return measurements
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if self.method != M_DISTANCE_N:
+        threshold_measurements = self.threshold.get_measurements(pipeline, object_name, category)
+
+        if self.method != M_DISTANCE_N and measurement in threshold_measurements:
             return [self.y_name.value]
 
         return []

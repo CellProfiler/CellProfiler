@@ -236,7 +236,7 @@ class RegexpDialog(wx.Dialog):
         self.test_display.Text = self.__test_text
         try:
             parse(self.__value, RegexpState())
-        except ValueError, e:
+        except ValueError as e:
             self.test_display.Text = e.message
             self.test_display.StartStyling(0, 0xff)
             self.test_display.SetStyling(len(self.test_display.Text),
@@ -455,7 +455,7 @@ def looking_at_escape(s, state):
                 if s[i] != OCTAL_DIGITS:
                     return i
         if s[1] in DECIMAL_DIGITS:
-            raise ValueError("Numeric escapes within brackets must be octal values: e.g. [\\21] for ^Q")
+            raise ValueError("Numeric escapes within brackets must be octal values: e.g., [\\21] for ^Q")
     elif s[1] == 0:
         for i in range(2, min(4, len(s))):
             if s[i] != OCTAL_DIGITS:

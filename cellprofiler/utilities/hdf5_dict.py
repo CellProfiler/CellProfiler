@@ -3,7 +3,7 @@
 This module implements the HDF5Dict class, which provides a dict-like
 interface for measurements, backed by an HDF5 file.
 """
-from __future__ import with_statement
+from __future__ import print_function
 
 import bisect
 import logging
@@ -12,11 +12,23 @@ import sys
 import tempfile
 import threading
 import time
-import urllib2
 import uuid
 
 import h5py
 import numpy as np
+import six
+
+import cellprofiler.utilities.legacy
+
+from future.standard_library import install_aliases
+install_aliases()
+import urllib.parse
+
+
+try:
+    buffer         # Python 2
+except NameError:  # Python 3
+    buffer = memoryview
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +233,7 @@ class HDF5Dict(object):
                         self.top_group.copy(object_group, self.top_group)
                         for feature_name in object_group.keys():
                             # some measurement objects are written at a higher level, and don't
-                            # have an index (e.g. Relationship).
+                            # have an index (e.g., Relationship).
                             if 'index' in object_group[feature_name].keys():
                                 hdf5_index = object_group[feature_name]['index'][:]
                                 self.__cache_index(object_name, feature_name,
@@ -307,7 +319,7 @@ class HDF5Dict(object):
                                             chunks=(self.chunksize,),
                                             maxshape=(None,))
             self.hdf5_file.flush()
-        except Exception, e:
+        except Exception as e:
             logger.exception("Failed during initial processing of %s" % self.filename)
             self.hdf5_file.close()
             raise
@@ -326,7 +338,7 @@ class HDF5Dict(object):
                 self.hdf5_file.flush()  # just in case unlink fails
                 self.hdf5_file.close()
                 os.unlink(self.filename)
-            except Exception, e:
+            except Exception as e:
                 logger.warn(
                         "So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
         else:
@@ -366,8 +378,8 @@ class HDF5Dict(object):
 
     def __getitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"
-        assert isinstance(idxs[0], basestring) and isinstance(idxs[1],
-                                                              basestring), "First two indices must be of type str."
+        assert (isinstance(idxs[0], six.string_types) and
+                isinstance(idxs[1], six.string_types)), "First two indices must be of type str."
 
         object_name, feature_name, num_idx = idxs
         if np.isscalar(num_idx):
@@ -476,8 +488,8 @@ class HDF5Dict(object):
     def __setitem__(self, idxs, vals):
         assert isinstance(idxs, tuple), \
             "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), \
-            "First two indices must be of type str."
+        assert (isinstance(idxs[0], six.string_types) and
+                isinstance(idxs[1], six.string_types)), "First two indices must be of type str."
         assert (not np.isscalar(idxs[2]) or self.__is_positive_int(idxs[2])), \
             "Third index must be a non-negative integer"
 
@@ -624,8 +636,8 @@ class HDF5Dict(object):
 
     def __delitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert isinstance(idxs[0], basestring) and isinstance(idxs[1],
-                                                              basestring), "First two indices must be of type str."
+        assert (isinstance(idxs[0], six.string_types) and
+                isinstance(idxs[1], six.string_types)), "First two indices must be of type str."
         if len(idxs) == 3:
             assert isinstance(idxs[2], int) and idxs[2] >= 0, "Third index must be a non-negative integer"
 
@@ -733,7 +745,7 @@ class HDF5Dict(object):
             self.add_object(object_name)
             if self.has_feature(object_name, feature_name):
                 del self.top_group[object_name][feature_name]
-                if self.indices.has_key((object_name, feature_name)):
+                if (object_name, feature_name) in self.indices:
                     del self.indices[object_name, feature_name]
             self.add_feature(object_name, feature_name)
             if len(values) > 0 and (
@@ -1041,11 +1053,11 @@ class HDF5FileList(object):
 
         returns a two tuple of schema + path part sequence
         '''
-        if isinstance(url, unicode):
+        if isinstance(url, six.text_type):
             url = url.encode("utf-8")
         else:
             url = str(url)
-        schema, rest = urllib2.splittype(url)
+        schema, rest = urllib.parse.splittype(url)
         if schema is not None and schema.lower() == "omero":
             return schema, [rest]
         #
@@ -1059,7 +1071,7 @@ class HDF5FileList(object):
                     return schema, [rest[:i], rest[i:]]
                 return schema, [rest[:i] + parts[0]] + parts[1:]
         #
-        # If no slashes in url (e.g. http:someplace.org ), return schema + rest
+        # If no slashes in url (e.g., http:someplace.org ), return schema + rest
         #
         return schema, [rest]
 
@@ -1069,14 +1081,14 @@ class HDF5FileList(object):
         timestamp = time.time()
         for url in urls:
             schema, parts = self.split_url(url)
-            if not d.has_key(schema):
+            if schema not in d:
                 d[schema] = {}
             d1 = d[schema]
             for part in parts[:-1]:
-                if not d1.has_key(part):
+                if part not in d1:
                     d1[part] = {}
                 d1 = d1[part]
-            if not d1.has_key(None):
+            if None not in d1:
                 d1[None] = []
             d1[None].append(parts[-1])
 
@@ -1095,7 +1107,7 @@ class HDF5FileList(object):
                         dest.extend(to_add)
                         sort_order = sorted(
                                 range(len(leaves)),
-                                cmp=lambda x, y: cmp(leaves[x], leaves[y]))
+                                cmp=lambda x, y: cellprofiler.utilities.legacy.cmp(leaves[x], leaves[y]))
                         dest.reorder(sort_order)
                         metadata.extend([None] * len(to_add))
                         metadata.reorder(sort_order)
@@ -1135,14 +1147,14 @@ class HDF5FileList(object):
         d = {}
         for url in urls:
             schema, parts = self.split_url(url)
-            if not d.has_key(schema):
+            if schema not in d:
                 d[schema] = {}
             d1 = d[schema]
             for part in parts[:-1]:
-                if not d1.has_key(part):
+                if part not in d1:
                     d1[part] = {}
                 d1 = d1[part]
-            if not d1.has_key(None):
+            if None not in d1:
                 d1[None] = []
             d1[None].append(parts[-1])
 
@@ -1274,7 +1286,7 @@ class HDF5FileList(object):
 
         returns the URL list
         '''
-        if self.__cache.has_key(path_tuple):
+        if path_tuple in self.__cache:
             return self.__cache[path_tuple].urls
         a = tuple([x.encode("utf-8") for x in VStringArray(g)])
         is_not_none = VStringArray(g.require_group("metadata")).is_not_none()
@@ -1912,12 +1924,12 @@ class HDF5Lock:
 
     def __enter__(self):
         self.lock.acquire()
-        if hasattr(h5py.highlevel, "phil"):
-            h5py.highlevel.phil.acquire()
+        if hasattr(h5py, "phil"):
+            h5py.phil.acquire()
 
     def __exit__(self, t, v, tb):
-        if hasattr(h5py.highlevel, "phil"):
-            h5py.highlevel.phil.release()
+        if hasattr(h5py, "phil"):
+            h5py.phil.release()
         self.lock.release()
 
 
@@ -2002,7 +2014,7 @@ class VStringArray(object):
                 self.index[idx, :] = (self.VS_NULL, 0)
                 return
 
-            elif isinstance(value, unicode):
+            elif isinstance(value, six.text_type):
                 value = value.encode("utf8")
             else:
                 value = str(value)
@@ -2073,7 +2085,7 @@ class VStringArray(object):
         '''Store the strings passed, overwriting any previously stored data'''
         nulls = np.array([s is None for s in strings])
         strings = ["" if s is None
-                   else s.encode("utf-8") if isinstance(s, unicode)
+                   else s.encode("utf-8") if isinstance(s, six.text_type)
         else str(s) for s in strings]
         with self.lock:
             target_len = len(strings)
@@ -2125,8 +2137,8 @@ class VStringArray(object):
                     dj = self.data[(j0 + idx):(j0 + idx_end)]
                     diff = np.argwhere(di != dj).flatten()
                     if len(diff) > 0:
-                        return cmp(di[diff[0]], dj[diff[0]])
-                return cmp(li, lj)
+                        return cellprofiler.utilities.legacy.cmp(di[diff[0]], dj[diff[0]])
+                return cellprofiler.utilities.legacy.cmp(li, lj)
 
             order = list(range(len(self)))
             order.sort(cmp=compare)
@@ -2176,7 +2188,7 @@ class VStringArray(object):
             return
         nulls = np.array([s is None for s in strings])
         strings = ["" if s is None
-                   else s.encode("utf-8") if isinstance(s, unicode)
+                   else s.encode("utf-8") if isinstance(s, six.text_type)
         else str(s) for s in strings]
         with self.lock:
             old_len = len(self)
@@ -2211,7 +2223,7 @@ class VStringArray(object):
         '''Return the insertion point for s, assuming the array is sorted'''
         if s is None:
             return 0
-        elif isinstance(s, unicode):
+        elif isinstance(s, six.text_type):
             s = s.encode("utf-8")
         else:
             s = str(s)
@@ -2242,7 +2254,7 @@ class VStringArray(object):
                 lo = mid + 1
         return lo
 
-    def is_not_none(self, index=slice(0, sys.maxint)):
+    def is_not_none(self, index=slice(0, sys.maxsize)):
         '''Return True for indices that are not None
 
         index - either a single index (in which case, we return a single
@@ -2415,7 +2427,7 @@ class StringReferencer(object):
     @staticmethod
     def string_to_uint8(s):
         '''Convert a utf-8 encoded string to a np.uint8 array'''
-        if isinstance(s, unicode):
+        if isinstance(s, six.text_type):
             s = s.encode('utf-8')
         elif not isinstance(s, str):
             s = str(s)
@@ -2533,7 +2545,7 @@ class StringReferencer(object):
         j_data = self.data[i, j_data_idx:(j_data_idx + j_data_len)]
         if i0 == self.SR_NULL:
             # Splitting the root. We need to promote.
-            i0 = self.sr_alloc_block(self.blockdesc, ol, data)
+            i0 = self.sr_alloc_block()
             j0 = 0
             self.blockdesc[i0, self.SR_BLOCKDESC_LEFTMOST_CHILD] = i
         elif self.blockdesc[i0, self.SR_BLOCKDESC_IDX_LEN] == self.blocksize:
@@ -2630,7 +2642,7 @@ class StringReferencer(object):
     def sr_search(self, s):
         '''Search for s in btree
 
-        s: a uint8 numpy array string representation, e.g. as returned by
+        s: a uint8 numpy array string representation, e.g., as returned by
            string_to_uint8
 
         returns the block #, index of entry or insertion point
@@ -2684,17 +2696,17 @@ if __name__ == '__main__':
     h['Object1', 'objfeature2', 1] = [1, 2, 3]
     h['Image', 'f1', 1] = 5
     h['Image', 'f2', 1] = 4
-    print h['Image', 'f2', 1]
+    print(h['Image', 'f2', 1])
     h['Image', 'f1', 2] = 6
     h['Image', 'f2', 1] = 6
-    print h['Image', 'f2', 1]
-    print h['Object1', 'objfeature1', 1]
+    print(h['Image', 'f2', 1])
+    print(h['Object1', 'objfeature1', 1])
     h['Object1', 'objfeature1', 2] = 3.0
-    print h['Object1', 'objfeature1', 1]
+    print(h['Object1', 'objfeature1', 1])
     h['Object1', 'objfeature1', 1] = [1, 2, 3]
     h['Object1', 'objfeature1', 1] = [1, 2, 3, 5, 6]
     h['Object1', 'objfeature1', 1] = [9, 4.0, 2.5]
-    print     h['Object1', 'objfeature1', 1]
+    print(h['Object1', 'objfeature1', 1])
 
 
     def randtext():

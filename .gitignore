@@ -1,12 +1,16 @@
 *.egg-info/
 *.iml
 *.pyc
+.DS_Store
 .cache/
 .eggs/
 .idea/
 .python-version
+*.swp
 build/
 dist/
 frozen_version.py
 plugins/
-src/
+docs/source/help
+docs/source/images
+.pytest_cache/

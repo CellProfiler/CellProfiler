@@ -1,8 +1,9 @@
-import cellprofiler.image
-import cellprofiler.modules.medialaxis
 import numpy.testing
 import skimage.color
 import skimage.morphology
+
+import cellprofiler.image
+import cellprofiler.modules.medialaxis
 
 instance = cellprofiler.modules.medialaxis.MedialAxis()
 

@@ -1,11 +1,17 @@
 # coding=utf-8
 
-"""
-**Identify Objects Manually** allows you to identify objects in an image
+from cellprofiler.modules import _help
+
+__doc__ = """\
+IdentifyObjectsManually
+=======================
+
+**IdentifyObjectsManually** allows you to identify objects in an image
 by hand rather than automatically.
 
-| This module lets you outline the objects in an image using the mouse.
-  The user interface has several mouse tools:
+This module lets you outline the objects in an image using the mouse.
+
+The user interface has several mouse tools:
 
 -  *Outline:* Lets you draw an outline around an object. Press the left
    mouse button at the start of the outline and draw the outline around
@@ -15,7 +21,23 @@ by hand rather than automatically.
    that rectangle.
 -  *Zoom out:* Reverses the effect of the last zoom-in.
 -  *Erase:* Erases an object if you click on it.
-"""
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+{HELP_ON_SAVING_OBJECTS}
+
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import numpy as np
 from centrosome.cpmorphology import draw_line
@@ -27,50 +49,37 @@ import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.modules import identify as I
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
 TOOL_ERASE = "Erase"
 
-
 class IdentifyObjectsManually(I.Identify):
     category = "Object Processing"
     module_name = "IdentifyObjectsManually"
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""
-            Choose the name of the image to display in the object
-            selection user interface.""")
+                "Select the input image", cps.NONE, doc="""Choose the name of the image to display in the object selection user interface.""")
 
         self.objects_name = cps.ObjectNameProvider(
-                "Name the objects to be identified", "Cells", doc="""
-            What do you want to call the objects
-            that you identify using this module? You can use this name to
-            refer to your objects in subsequent modules.""")
-
-        self.wants_outlines = cps.Binary(
-                "Retain outlines of the identified objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
-
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outlines", "CellOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+                "Name the objects to be identified", "Cells", doc="""\
+What do you want to call the objects that you identify using this module? You can use this name to
+refer to your objects in subsequent modules.""")
 
     def settings(self):
-        '''The settings as saved in the pipeline'''
-        return [self.image_name, self.objects_name, self.wants_outlines,
-                self.outlines_name]
+        return [
+            self.image_name,
+            self.objects_name
+        ]
 
     def visible_settings(self):
-        '''The settings as displayed in the UI'''
-        result = [self.image_name, self.objects_name, self.wants_outlines]
-        if self.wants_outlines:
-            result += [self.outlines_name]
-        return result
+        return [
+            self.image_name,
+            self.objects_name
+        ]
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''This module cannot be used in a batch context'''
@@ -79,7 +88,6 @@ class IdentifyObjectsManually(I.Identify):
     def run(self, workspace):
         image_name = self.image_name.value
         objects_name = self.objects_name.value
-        outlines_name = self.outlines_name.value
         image = workspace.image_set.get_image(image_name)
         pixel_data = image.pixel_data
 
@@ -107,14 +115,6 @@ class IdentifyObjectsManually(I.Identify):
         # The object locations
         #
         I.add_object_location_measurements(m, objects_name, labels)
-        #
-        # Outlines if we want them
-        #
-        if self.wants_outlines:
-            outlines_name = self.outlines_name.value
-            outlines = outline(labels)
-            outlines_image = cpi.Image(outlines.astype(bool))
-            workspace.image_set.add(outlines_name, outlines_image)
 
         workspace.display_data.labels = labels
         workspace.display_data.pixel_data = pixel_data
@@ -132,43 +132,6 @@ class IdentifyObjectsManually(I.Identify):
         else:
             figure.subplot_imshow_grayscale(
                     0, 0, pixel_data, title=objects_name, cplabels=cplabels)
-
-    def draw_outlines(self, pixel_data, labels):
-        '''Draw a color image that shows the objects
-
-        pixel_data - image, either b & w or color
-        labels - labels for image
-
-        returns - color image of same size as pixel_data
-        '''
-        from cellprofiler.gui.tools import renumber_labels_for_display
-        import matplotlib
-
-        labels = renumber_labels_for_display(labels)
-        outlines = outline(labels)
-
-        if pixel_data.ndim == 3:
-            image = pixel_data.copy()
-        else:
-            image = np.dstack([pixel_data] * 3)
-        #
-        # make labeled pixels a grayscale times the label color
-        #
-        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        sm = matplotlib.cm.ScalarMappable(cmap=cm)
-        labels_image = sm.to_rgba(labels)[:, :, :3]
-
-        lmask = labels > 0
-        gray = (image[lmask, 0] + image[lmask, 1] + image[lmask, 2]) / 3
-
-        for i in range(3):
-            image[lmask, i] = gray * labels_image[lmask, i]
-        #
-        # Make the outline pixels a solid color
-        #
-        outlines_image = sm.to_rgba(outlines)[:, :, :3]
-        image[outlines > 0, :] = outlines_image[outlines > 0, :]
-        return image
 
     def handle_interaction(self, pixel_data, image_set_number):
         '''Display a UI for editing'''
@@ -199,6 +162,12 @@ class IdentifyObjectsManually(I.Identify):
                               save_outlines]
             variable_revision_number = 1
             from_matlab = False
+
+        if variable_revision_number == 1:
+            setting_values = setting_values[:-2]
+
+            variable_revision_number = 2
+
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):

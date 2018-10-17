@@ -686,14 +686,14 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in (x_loc, y_loc)])
             radius = r.uniform() * (max_radius - 5) + 5
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(np.ones(np.sum(mask), np.uint32) * (idx + 1))
         ijv = np.core.records.fromarrays([
-                                             np.hstack(x) for x in ii, jj, vv],
+                                             np.hstack(x) for x in (ii, jj, vv)],
                                          [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
@@ -717,7 +717,7 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in (x_loc, y_loc)])
             radius = r.uniform() * (max_radius - 5) + 5
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             dense[idx, 0, 0, 0, mask] = idx + 1
@@ -880,6 +880,48 @@ class TestCropLabelsAndImage(unittest.TestCase):
         numpy.testing.assert_array_equal(actual_children, expected_children)
 
         numpy.testing.assert_array_equal(actual_parents, expected_parents)
+
+    # https://github.com/CellProfiler/CellProfiler/issues/2751
+    def test_overlay_objects(self):
+        data = numpy.zeros((9, 9, 9))
+
+        labels = numpy.zeros_like(data, dtype=numpy.uint8)
+        labels[:3, :3, :3] = 1
+        labels[:, 3:-3, 3:-3] = 2
+        labels[-3:, -3:, -3:] = 3
+
+        overlay_pixel_data = cpo.overlay_labels(pixel_data=data, labels=labels)
+
+        overlay_region_1 = overlay_pixel_data[:3, :3, :3]
+        assert numpy.all(overlay_region_1 == overlay_region_1[0, 0, 0])
+
+        overlay_region_2 = overlay_pixel_data[:, 3:-3, 3:-3]
+        assert numpy.all(overlay_region_2 == overlay_region_2[0, 0, 0])
+
+        overlay_region_3 = overlay_pixel_data[-3:, -3:, -3:]
+        assert numpy.all(overlay_region_3 == overlay_region_3[0, 0, 0])
+
+        assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_2[0, 0, 0])
+        assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_3[0, 0, 0])
+        assert not numpy.all(overlay_region_2[0, 0, 0] == overlay_region_3[0, 0, 0])
+
+    # https://github.com/CellProfiler/CellProfiler/issues/3268
+    def test_overlay_objects_empty_label(self):
+        data = numpy.zeros((9, 9, 9))
+
+        labels = numpy.zeros_like(data, dtype=numpy.uint8)
+        labels[:3, :3, :3] = 1
+        labels[-3:, -3:, -3:] = 3
+
+        overlay_pixel_data = cpo.overlay_labels(pixel_data=data, labels=labels)
+
+        overlay_region_1 = overlay_pixel_data[:3, :3, :3]
+        assert numpy.all(overlay_region_1 == overlay_region_1[0, 0, 0])
+
+        overlay_region_3 = overlay_pixel_data[-3:, -3:, -3:]
+        assert numpy.all(overlay_region_3 == overlay_region_3[0, 0, 0])
+
+        assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_3[0, 0, 0])
 
 
 class TestSizeSimilarly(unittest.TestCase):

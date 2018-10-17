@@ -4,24 +4,40 @@ addons:
       - libhdf5-serial-dev
       - python-mysqldb
       - python-pip
+cache:
   apt: true
   directories: $HOME/.cache/pip
 dist: trusty
 env:
-  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
-group: deprecated-2017Q2
+  global:
+    - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
+  matrix:
+    - REQUIREMENTS_FILE="unpinned_requirements.txt"
+    - REQUIREMENTS_FILE="requirements.txt"
+matrix:
+  allow_failures:
+    - env: REQUIREMENTS_FILE="unpinned_requirements.txt"
+    - python: 3.6
 install:
-  - pip install --upgrade pip
-  - pip install --upgrade cython
-  - pip install --upgrade joblib
-  - pip install --upgrade numpy
-  - pip install --upgrade scipy
-  - pip install --upgrade --editable .[test]
+  - pip install -r $REQUIREMENTS_FILE
+  - pip install .[test]
   - pip freeze
 language: python
 notifications:
   email: false
-python: 2.7.12
+  slack:
+    secure: kDWVy90sDY+o3g0/ZTGX2D+PTbzhtd74Whe1AJHhcUDobTUzkch8GtY9eZxybZk4nga9lQxL6YeJ72SfBBEPaLzXcUMe0YcNaBydkQHcipKZn+Vcb8kf2FiZC6YwsUYfTvvH9MPLbkZOZvsNyd0h85z+hYMB8jHsq6Yn5gf79BA=
+    on_failure: always
+    on_success: change
+python:
+  - 2.7
+  - 3.6    
+before_script:
+  - pip install flake8
+  # stop the build if there are Python syntax errors or undefined names
+  - flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+  # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
+  - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 script: pytest
 services: mysql
 sudo: required

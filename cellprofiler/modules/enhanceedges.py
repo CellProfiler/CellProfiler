@@ -1,15 +1,28 @@
 # coding=utf-8
 
 """
-**Enhance Edges** enhances or identifies edges in an image, which can
+EnhanceEdges
+============
+
+**EnhanceEdges** enhances or identifies edges in an image, which can
 improve object identification or other downstream image processing.
 
-This module enhances the edges (gradients) in a grayscale image. All
+This module enhances the edges (gradients - places where pixel
+intensities change dramatically) in a grayscale image. All
 methods other than Canny produce a grayscale image that can be used in
-an **Identify** module or thresholded using the **ApplyThreshold**
+an **Identify** module or thresholded using the **Threshold**
 module to produce a binary (black/white) mask of edges. The Canny
 algorithm produces a binary (black/white) mask image consisting of the
 edge pixels.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
 """
 
 import numpy as np
@@ -47,87 +60,108 @@ class EnhanceEdges(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''
-            What did you call the image in which you want to enhance the edges?''')
+                "Select the input image", cps.NONE, doc='''Select the image whose edges you want to enhance.''')
 
         self.output_image_name = cps.ImageNameProvider(
-                "Name the output image", "EdgedImage", doc='''
-            What do you want to call the image with edges enhanced?''')
-
-        self.wants_automatic_threshold = cps.Binary(
-                "Automatically calculate the threshold?", True, doc='''
-            <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
-            Select <i>%(YES)s</i> to automatically calculate the threshold using a three-category
-            Otsu algorithm performed on the Sobel transform of the image.
-            <p>Select <i>%(NO)s</i> to manually enter the threshold value.</p>''' % globals())
-
-        self.manual_threshold = cps.Float(
-                "Absolute threshold", 0.2, 0, 1, doc='''
-            <i>(Used only with the %(M_CANNY)s option and manual thresholding)</i><br>
-            The upper cutoff for Canny edges. All Sobel-transformed
-            pixels with this value or higher will be marked as an edge.
-            You can enter a threshold between 0 and 1.''' % globals())
-
-        self.threshold_adjustment_factor = cps.Float(
-                "Threshold adjustment factor", 1, doc='''
-            <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i><br>
-            This threshold adjustment factor is a multiplier that is applied to
-            both the lower and upper Canny thresholds if they are calculated
-            automatically. An adjustment factor of 1 indicates no adjustment.
-            The adjustment factor has no effect on any threshhold entered manually entered.''' % globals())
+                "Name the output image", "EdgedImage", doc='''Enter a name for the resulting image with edges enhanced.''')
 
         self.method = cps.Choice(
                 "Select an edge-finding method",
-                [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH], doc='''
-            There are several methods that can be used to enhance edges:
-            <ul>
-            <li><i>%(M_SOBEL)s:</i> Finds edges using the %(M_SOBEL)s approximation to the derivative.
-            The %(M_SOBEL)s method derives a horizontal and vertical gradient measure and returns the
-            square-root of the sum of the two squared signals.</li>
-            <li><i>%(M_PREWITT)s:</i> Finds edges using the %(M_PREWITT)s approximation to the derivative.
-            It returns edges at those points where the gradient of the image is maximum.</li>
-            <li><i>%(M_ROBERTS)s:</i> Finds edges using the Roberts approximation to the derivative.
-            The %(M_ROBERTS)s method looks for gradients in the diagonal and anti-diagonal directions
-            and returns the square-root of the sum of the two squared signals. This method is fast,
-            but it creates diagonal artifacts that may need to be removed by smoothing.</li>
-            <li><i>%(M_LOG)s:</i> Applies a Laplacian of Gaussian filter to the image
-            and finds zero crossings. </li>
-            <li><i>%(M_CANNY)s:</i> Finds edges by looking for local maxima
-            of the gradient of the image. The gradient is calculated using the derivative
-            of a Gaussian filter. The method uses two thresholds to detect strong and weak
-            edges, and includes the weak edges in the output only if they are connected to
-            strong edges. This method is therefore less likely than the others to be fooled
-            by noise, and more likely to detect true weak edges.</li>
-            <li><i>%(M_KIRSCH)s:</i> Finds edges by calculating the gradient
-            among the 8 compass points (North, North-east, etc.) and selecting
-            the maximum as the pixel's value.</li>
-            </ul>''' % globals())
+                [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH], doc='''\
+There are several methods that can be used to enhance edges. Often, it
+is best to test them against each other empirically:
+
+-  *%(M_SOBEL)s:* Finds edges using the %(M_SOBEL)s approximation to
+   the derivative. The %(M_SOBEL)s method derives a horizontal and
+   vertical gradient measure and returns the square-root of the sum of
+   the two squared signals.
+-  *%(M_PREWITT)s:* Finds edges using the %(M_PREWITT)s approximation
+   to the derivative. It returns edges at those points where the
+   gradient of the image is maximum.
+-  *%(M_ROBERTS)s:* Finds edges using the Roberts approximation to the
+   derivative. The %(M_ROBERTS)s method looks for gradients in the
+   diagonal and anti-diagonal directions and returns the square-root of
+   the sum of the two squared signals. This method is fast, but it
+   creates diagonal artifacts that may need to be removed by smoothing.
+-  *%(M_LOG)s:* Applies a Laplacian of Gaussian filter to the image and
+   finds zero crossings.
+-  *%(M_CANNY)s:* Finds edges by looking for local maxima of the
+   gradient of the image. The gradient is calculated using the
+   derivative of a Gaussian filter. The method uses two thresholds to
+   detect strong and weak edges, and includes the weak edges in the
+   output only if they are connected to strong edges. This method is
+   therefore less likely than the others to be fooled by noise, and more
+   likely to detect true weak edges.
+-  *%(M_KIRSCH)s:* Finds edges by calculating the gradient among the 8
+   compass points (North, North-east, etc.) and selecting the maximum as
+   the pixel’s value.
+''' % globals())
+
+        self.wants_automatic_threshold = cps.Binary(
+                "Automatically calculate the threshold?", True, doc='''\
+*(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
+
+Select *%(YES)s* to automatically calculate the threshold using a
+three-category Otsu algorithm performed on the Sobel transform of the
+image.
+
+Select *%(NO)s* to manually enter the threshold value.
+''' % globals())
+
+        self.manual_threshold = cps.Float(
+                "Absolute threshold", 0.2, 0, 1, doc='''\
+*(Used only with the "%(M_CANNY)s" option and manual thresholding)*
+
+The upper cutoff for Canny edges. All Sobel-transformed pixels with this
+value or higher will be marked as an edge. You can enter a threshold
+between 0 and 1.
+''' % globals())
+
+        self.threshold_adjustment_factor = cps.Float(
+                "Threshold adjustment factor", 1, doc='''\
+*(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
+
+This threshold adjustment factor is a multiplier that is applied to both
+the lower and upper Canny thresholds if they are calculated
+automatically. An adjustment factor of 1 indicates no adjustment. The
+adjustment factor has no effect on any threshold entered manually.
+''' % globals())
 
         self.direction = cps.Choice(
                 "Select edge direction to enhance",
-                [E_ALL, E_HORIZONTAL, E_VERTICAL], doc='''
-            <i>(Used only with %(M_PREWITT)s and %(M_SOBEL)s methods)</i> <br>
-            The direction of the edges
-            are you are identifying in the image (predominantly horizontal, predominantly vertical,
-            or both).''' % globals())
+                [E_ALL, E_HORIZONTAL, E_VERTICAL], doc='''\
+*(Used only with "%(M_PREWITT)s" and "%(M_SOBEL)s" methods)*
 
-        self.wants_automatic_sigma = cps.Binary("Calculate Gaussian's sigma automatically?", True)
+Select the direction of the edges you aim to identify in the image
+(predominantly horizontal, predominantly vertical, or both).
+''' % globals())
 
-        self.sigma = cps.Float("Gaussian's sigma value", 10)
+        self.wants_automatic_sigma = cps.Binary("Calculate Gaussian's sigma automatically?", True, doc="""\
+Select *%(YES)s* to automatically calculate the Gaussian's sigma.
+
+Select *%(NO)s* to manually enter the value.
+""" % globals())
+
+        self.sigma = cps.Float("Gaussian's sigma value", 10, doc="""Set a value for Gaussian's sigma.""")
 
         self.wants_automatic_low_threshold = cps.Binary(
-                "Calculate value for low threshold automatically?", True, doc="""
-            <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
-            Select <i>%(YES)s</i> to automatically calculate the low / soft threshold cutoff for
-            the %(M_CANNY)s method.
-            <p>Select <i>%(NO)s</i> to manually enter the low threshold value.</p>""" % globals())
+                "Calculate value for low threshold automatically?", True, doc="""\
+*(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
+
+Select *%(YES)s* to automatically calculate the low / soft threshold
+cutoff for the %(M_CANNY)s method.
+
+Select *%(NO)s* to manually enter the low threshold value.
+""" % globals())
 
         self.low_threshold = cps.Float(
-                "Low threshold value", 0.1, 0, 1, doc="""
-            <i>(Used only with the %(M_CANNY)s option and manual thresholding)</i><br>
-            Enter the soft threshold cutoff for the %(M_CANNY)s method.
-            The %(M_CANNY)s method will mark all %(M_SOBEL)s-transformed pixels with values
-            below this threshold as not being edges.""" % globals())
+                "Low threshold value", 0.1, 0, 1, doc="""\
+*(Used only with the "%(M_CANNY)s" option and manual thresholding)*
+
+Enter the soft threshold cutoff for the %(M_CANNY)s method. The
+%(M_CANNY)s method will mark all %(M_SOBEL)s-transformed pixels with
+values below this threshold as not being edges.
+""" % globals())
 
     def settings(self):
         return [self.image_name, self.output_image_name,
@@ -135,6 +169,21 @@ class EnhanceEdges(cpm.Module):
                 self.threshold_adjustment_factor, self.method,
                 self.direction, self.wants_automatic_sigma, self.sigma,
                 self.wants_automatic_low_threshold, self.low_threshold]
+
+    def help_settings(self):
+        return [
+            self.image_name,
+            self.output_image_name,
+            self.method,
+            self.direction,
+            self.wants_automatic_sigma,
+            self.sigma,
+            self.wants_automatic_threshold,
+            self.manual_threshold,
+            self.threshold_adjustment_factor,
+            self.wants_automatic_low_threshold,
+            self.low_threshold
+        ]
 
     def visible_settings(self):
         settings = [self.image_name, self.output_image_name]

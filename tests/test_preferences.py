@@ -1,6 +1,7 @@
 # coding: latin-1
 """test_preferences.py - test the preferences module
 """
+from __future__ import print_function
 
 import tempfile
 import unittest
@@ -62,6 +63,14 @@ class TestPreferences(unittest.TestCase):
         result = cpprefs.config_read("test_preferences")
         self.assertEqual(result, gotcha)
 
+    def test_01_05_unicode_value(self):
+        # If the item is already in unicode, don't re-decode
+        gotcha = u"c:\\users\\default"
+        cpprefs.set_preferences_from_dict({})  # clear cache
+        cpprefs.get_config().Write("test_preferences", gotcha)
+        result = cpprefs.config_read("test_preferences")
+        self.assertEqual(result, gotcha)
+
 
 class TestPreferences_02(unittest.TestCase):
     def setUp(self):
@@ -89,5 +98,5 @@ class TestPreferences_02(unittest.TestCase):
         cpprefs.__dict__['__headless_config'] = self.old_headless_config
 
     def test_01_01_default_directory_none(self):
-        print cpprefs.get_default_image_directory()
+        print(cpprefs.get_default_image_directory())
         self.assertTrue(True)

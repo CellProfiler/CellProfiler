@@ -4,8 +4,6 @@ Image        - Represents an image with secondary attributes such as a mask and 
 ImageSetList - Represents the list of image filenames that make up a pipeline run
 """
 
-import StringIO
-import cPickle
 import logging
 import math
 import struct
@@ -13,6 +11,9 @@ import sys
 import zlib
 
 import numpy
+
+import six
+import six.moves
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class Image(object):
 
     file_name - the file name of the file holding the image or None for a derived image
 
-    scale - the scaling suggested by the initial image format (e.g. 4095 for a 12-bit a/d converter).
+    scale - the scaling suggested by the initial image format (e.g., 4095 for a 12-bit a/d converter).
 
     Resolution of mask and cropping_mask properties:
 
@@ -553,7 +554,7 @@ class ImageSet(object):
                       discard alpha channel.
         """
         name = str(name)
-        if not self.__images.has_key(name):
+        if name not in self.__images:
             image = self.get_image_provider(name).provide_image(self)
 
         else:
@@ -627,7 +628,7 @@ class ImageSet(object):
         name - the name of the provider
         '''
         self.get_image_provider(name).release_memory()
-        if self.__images.has_key(name):
+        if name in self.__images:
             del self.__images[name]
 
     @property
@@ -673,7 +674,7 @@ class ImageSetList(object):
         else:
             keys = keys_or_number
             k = make_dictionary_key(keys)
-            if self.__image_sets_by_key.has_key(k):
+            if k in self.__image_sets_by_key:
                 number = self.__image_sets_by_key[k].number
             else:
                 number = len(self.__image_sets)
@@ -739,7 +740,7 @@ class ImageSetList(object):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             key_values = tuple([str(image_set.keys[key]) for key in keys])
-            if not d.has_key(key_values):
+            if key_values not in d:
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i + 1)
@@ -751,14 +752,14 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO.StringIO()
-        cPickle.dump(self.count(), f)
+        f = six.moves.StringIO()
+        six.moves.cPickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            cPickle.dump(image_set.keys, f)
-        cPickle.dump(self.legacy_fields, f)
+            six.moves.cPickle.dump(image_set.keys, f)
+        six.moves.cPickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -768,7 +769,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = cPickle.Unpickler(StringIO.StringIO(state))
+        p = six.moves.cPickle.Unpickler(six.moves.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
@@ -798,5 +799,5 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
-    return u", ".join([u":".join([unicode(y) for y in x])
+    return u", ".join([u":".join([six.text_type(y) for y in x])
                        for x in sorted(key.iteritems())])

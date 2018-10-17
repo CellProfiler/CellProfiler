@@ -1,40 +1,50 @@
 # coding=utf-8
-""" figure.py - provides a frame with a figure inside
+
+"""
+figure.py - provides a frame with a figure inside
 """
 
-import cellprofiler.gui
-import cellprofiler.gui.artist
-import cellprofiler.gui.help
-import cellprofiler.preferences
-import cellprofiler.preferences
-import centrosome.cpmorphology
-import centrosome.outline
-import tools
 import csv
 import functools
-import javabridge
 import logging
-import math
+import os
+import sys
+import uuid
+
+import centrosome.cpmorphology
+import centrosome.outline
+import javabridge
 import matplotlib
-import matplotlib.backends.backend_wxagg
+import matplotlib.axes
+import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
+import matplotlib.collections
 import matplotlib.colorbar
 import matplotlib.colors
 import matplotlib.gridspec
+import matplotlib.image
 import matplotlib.patches
 import matplotlib.pyplot
 import numpy
 import numpy.ma
-import os
 import scipy.ndimage
 import scipy.sparse
-import skimage.color
-import sys
-import uuid
+import skimage.exposure
 import wx
+import wx.grid
+import six
 
-im = None
+import cellprofiler.gui
+import cellprofiler.gui.artist
+import cellprofiler.gui.errordialog
+import cellprofiler.gui.help
+import cellprofiler.gui.help.content
+import cellprofiler.gui.tools
+import cellprofiler.modules.loadimages
+import cellprofiler.object
+import cellprofiler.preferences
+from cellprofiler.setting import LINEAR, LOG
 
 logger = logging.getLogger(__name__)
 
@@ -42,45 +52,12 @@ logger = logging.getLogger(__name__)
 # Monkey-patch the backend canvas to only report the truly supported filetypes
 #
 mpl_filetypes = ["png", "pdf"]
+
 mpl_unsupported_filetypes = [
     ft for ft in matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes
     if ft not in mpl_filetypes]
 for ft in mpl_unsupported_filetypes:
     del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[ft]
-
-g_use_imshow = False
-
-
-def log_transform(im):
-    """returns log(image) scaled to the interval [0,1]"""
-    orig = im
-    try:
-        im = im.copy()
-        im[numpy.isnan(im)] = 0
-        (minimum, maximum) = (im[im > 0].min(), im[numpy.isfinite(im)].max())
-        if (maximum > minimum) and (maximum > 0):
-            return (numpy.log(im.clip(minimum, maximum)) - numpy.log(minimum)) / (numpy.log(maximum) - numpy.log(minimum))
-    except:
-        pass
-    return orig
-
-
-def auto_contrast(im):
-    """returns image scaled to the interval [0,1]"""
-    im = im.copy()
-    if numpy.prod(im.shape) == 0:
-        return im
-    (minimum, maximum) = (im.min(), im.max())
-    # Check that the image isn't binary
-    if numpy.any((im > minimum) & (im < maximum)):
-        im -= im.min()
-        if im.max() > 0:
-            im /= im.max()
-    return im
-
-
-def is_color_image(im):
-    return im.ndim == 3 and im.shape[2] >= 2
 
 
 COLOR_NAMES = ['Red', 'Green', 'Blue', 'Yellow', 'Cyan', 'Magenta', 'White']
@@ -117,45 +94,42 @@ CPLD_ALPHA_VALUE = "alpha_value"
 """subplot_imshow cplabels dictionary key: show (TRUE) or hide (False)"""
 CPLD_SHOW = "show"
 
+EVT_NAV_MODE_CHANGE = wx.PyEventBinder(wx.NewEventType())
+NAV_MODE_ZOOM = 'zoom rect'
+NAV_MODE_PAN = 'pan/zoom'
+NAV_MODE_NONE = ''
+MENU_FILE_SAVE = wx.NewId()
+MENU_FILE_SAVE_TABLE = wx.NewId()
+MENU_CLOSE_WINDOW = wx.NewId()
+MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
+MENU_CLOSE_ALL = wx.NewId()
+MENU_LABELS_OUTLINE = {}
+MENU_LABELS_OVERLAY = {}
+MENU_LABELS_LINES = {}
+MENU_LABELS_OFF = {}
+MENU_LABELS_ALPHA = {}
+MENU_SAVE_SUBPLOT = {}
+MENU_RGB_CHANNELS = {}
+
+'''mouse tool mode - do nothing'''
+MODE_NONE = 0
+
+'''mouse tool mode - show pixel data'''
+MODE_MEASURE_LENGTH = 2
+
+window_ids = []
+
+__crosshair_cursor = None
+
+
+def is_color_image(image):
+    return image.ndim == 3 and image.shape[2] >= 2
+
 
 def wraparound(sequence):
     while True:
         for l in sequence:
             yield l
-
-
-def make_1_or_3_channels(im):
-    if im.ndim == 2 or im.shape[2] == 1:
-        return im.astype(numpy.float32)
-    if im.shape[2] == 3:
-        return (im * 255).clip(0, 255).astype(numpy.uint8)
-    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.float32)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
-        for idx, v in enumerate(weights):
-            out[:, :, idx] += v * im[:, :, chanidx]
-    return (out * 255).clip(0, 255).astype(numpy.uint8)
-
-
-def make_3_channels_float(im):
-    if im.ndim == 3 and im.shape[2] == 1:
-        im = im[:, :, 0]
-    if im.ndim == 2:
-        return numpy.dstack((im, im, im)).astype(numpy.double).clip(0, 1)
-    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.double)
-    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
-        for idx, v in enumerate(weights):
-            out[:, :, idx] += v * im[:, :, chanidx]
-    return out.clip(0, 1)
-
-
-def getbitmap(im):
-    if im.ndim == 2:
-        im = (255 * numpy.dstack((im, im, im))).astype(numpy.uint8)
-    h, w, _ = im.shape
-    outim = wx.EmptyImage(w, h)
-    b = buffer(im)  # make sure buffer exists through the remainder of function
-    outim.SetDataBuffer(b)
-    return outim.ConvertToBitmap()
 
 
 def match_rgbmask_to_image(rgb_mask, image):
@@ -165,9 +139,6 @@ def match_rgbmask_to_image(rgb_mask, image):
     if len(rgb_mask) < nchannels:
         rgb_mask = rgb_mask + [1] * (nchannels - len(rgb_mask))
     return rgb_mask
-
-
-window_ids = []
 
 
 def window_name(module):
@@ -182,15 +153,10 @@ def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
             return w
 
 
-def create_or_find(parent=None, identifier=-1, title="",
-                   pos=wx.DefaultPosition, size=wx.DefaultSize,
-                   style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
-                   subplots=None,
-                   on_close=None):
+def create_or_find(parent=None, identifier=-1, title="", pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr, subplots=None, on_close=None):
     """Create or find a figure frame window"""
     win = find_fig(parent, title, name, subplots)
-    return win or Figure(parent, identifier, title, pos, size, style, name,
-                         subplots, on_close)
+    return win or Figure(parent, identifier, title, pos, size, style, name, subplots, on_close)
 
 
 def close_all(parent):
@@ -221,31 +187,113 @@ def allow_sharexy(fn):
     return wrapper
 
 
-MENU_FILE_SAVE = wx.NewId()
-MENU_FILE_SAVE_TABLE = wx.NewId()
-MENU_CLOSE_WINDOW = wx.NewId()
-MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
-MENU_CLOSE_ALL = wx.NewId()
-MENU_LABELS_OUTLINE = {}
-MENU_LABELS_OVERLAY = {}
-MENU_LABELS_LINES = {}
-MENU_LABELS_OFF = {}
-MENU_LABELS_ALPHA = {}
-MENU_SAVE_SUBPLOT = {}
-MENU_RGB_CHANNELS = {}
-
-
 def get_menu_id(d, idx):
     if idx not in d:
         d[idx] = wx.NewId()
     return d[idx]
 
 
-'''mouse tool mode - do nothing'''
-MODE_NONE = 0
+def format_plate_data_as_array(plate_dict, plate_type):
+    """ Returns an array shaped like the given plate type with the values from
+    plate_dict stored in it.  Wells without data will be set to np.NaN
+    plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
+                   data values must be of numerical or string types
+    plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
+    """
+    if plate_type == '96':
+        plate_shape = (8, 12)
+    elif plate_type == '384':
+        plate_shape = (16, 24)
+    alphabet = 'ABCDEFGHIJKLMNOP'
+    data = numpy.zeros(plate_shape)
+    data[:] = numpy.nan
+    display_error = True
+    for well, val in plate_dict.items():
+        r = alphabet.index(well[0].upper())
+        c = int(well[1:]) - 1
+        if r >= data.shape[0] or c >= data.shape[1]:
+            if display_error:
+                logging.getLogger("cellprofiler.gui.cpfigure").warning(
+                        'A well value (%s) does not fit in the given plate type.\n' % well)
+                display_error = False
+            continue
+        data[r, c] = val
+    return data
 
-'''mouse tool mode - show pixel data'''
-MODE_MEASURE_LENGTH = 2
+
+def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
+    filename = url[(url.rfind("/") + 1):]
+
+    try:
+        provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
+            filename=filename,
+            name=os.path.splitext(filename)[0],
+            pathname=os.path.dirname(url),
+            volume=True if dimensions == 3 else False
+        )
+        image = provider.provide_image(None).pixel_data
+    except IOError:
+        wx.MessageBox(u'Failed to open file, "{}"'.format(filename), caption="File open error")
+        return
+    except javabridge.JavaException as je:
+        wx.MessageBox(u'Could not open "{}" as an image.'.format(filename), caption="File format error")
+        return
+    except Exception as e:
+        cellprofiler.gui.errordialog.display_error_dialog(
+            None,
+            e,
+            None,
+            u"Failed to load {}".format(url),
+            continue_only=True
+        )
+        return
+
+    frame = Figure(parent=parent, title=filename)
+    frame.set_subplots(dimensions=dimensions, subplots=(1, 1))
+
+    if dimensions == 2 and image.ndim == 3:  # multichannel images
+        frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename)
+    else:  # grayscale image or volume
+        frame.subplot_imshow_grayscale(0, 0, image, title=filename)
+
+    frame.panel.draw()
+
+    if needs_raise_after:
+        # %$@ hack hack hack
+        wx.CallAfter(lambda: frame.Raise())
+
+    return True
+
+
+def get_matplotlib_interpolation_preference():
+    interpolation = cellprofiler.preferences.get_interpolation_mode()
+    if interpolation == cellprofiler.preferences.IM_NEAREST:
+        return matplotlib.image.NEAREST
+    elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+        return matplotlib.image.BILINEAR
+    elif interpolation == cellprofiler.preferences.IM_BICUBIC:
+        return matplotlib.image.BICUBIC
+    return matplotlib.image.NEAREST
+
+
+def get_crosshair_cursor():
+    global __crosshair_cursor
+    if __crosshair_cursor is None:
+        if sys.platform.lower().startswith('win'):
+            #
+            # Build the crosshair cursor image as a numpy array.
+            #
+            buf = numpy.ones((16, 16, 3), dtype='uint8') * 255
+            buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
+            abuf = numpy.ones((16, 16), dtype='uint8') * 255
+            abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
+            image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
+            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
+            __crosshair_cursor = wx.CursorFromImage(image)
+        else:
+            __crosshair_cursor = wx.CROSS_CURSOR
+    return __crosshair_cursor
 
 
 class Figure(wx.Frame):
@@ -256,7 +304,7 @@ class Figure(wx.Frame):
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
                  subplots=None, on_close=None,
                  secret_panel_class=None,
-                 help_menu_items=cellprofiler.gui.help.FIGURE_HELP):
+                 help_menu_items=cellprofiler.gui.help.content.FIGURE_HELP):
         """Initialize the frame:
 
         parent   - parent window to this one, typically CPFrame
@@ -292,6 +340,7 @@ class Figure(wx.Frame):
         self.figure = matplotlib.pyplot.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         self.__gridspec = None
+        self.dimensions = 2
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -344,7 +393,7 @@ class Figure(wx.Frame):
                         wx.EVT_MENU(parent, window_id, on_menu_command)
                         self.remove_menu.append([menu, window_id])
 
-    def create_menu(self, figure_help=cellprofiler.gui.help.FIGURE_HELP):
+    def create_menu(self, figure_help=cellprofiler.gui.help.content.FIGURE_HELP):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE, "&Save")
@@ -382,7 +431,7 @@ class Figure(wx.Frame):
         self.MenuBar.Append(cellprofiler.gui.help.make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
-        self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
+        self.navtoolbar = NavigationToolbar(self.figure.canvas)
         if wx.VERSION < (2, 9, 1, 1, ''):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
@@ -473,12 +522,22 @@ class Figure(wx.Frame):
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
         """
-        if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
+        if any([not hasattr(self, bar) for bar in ("navtoolbar", "status_bar")]):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
+
+        # On some operating systems (specifically Ubuntu), the matplotlib toolbar
+        # may not render with an appropriate height. This is the result of creating
+        # the navtoolbar without an appropriate slider. Until this is refactored
+        # to make it size properly, this check ensures the navtoolbar at least appears.
+        # https://github.com/CellProfiler/CellProfiler/issues/2679
+        if nbheight < 40:
+            nbheight = 40
+
         self.navtoolbar.SetPosition((0, 0))
         self.navtoolbar.SetSize((available_width, nbheight))
+
         if self.secret_panel.IsShown():
             sp_width = self.secret_panel.GetVirtualSize()[0]
             canvas_width = min(max(available_width - sp_width, 250),
@@ -495,6 +554,7 @@ class Figure(wx.Frame):
                 kid.Update()
         else:
             canvas_width = available_width
+
         self.panel.SetPosition((0, nbheight))
         self.panel.SetSize((canvas_width, available_height - nbheight))
         self.ClearBackground()
@@ -502,23 +562,29 @@ class Figure(wx.Frame):
     def on_close(self, event):
         if self.close_fn is not None:
             self.close_fn(event)
+
         self.clf()  # Free memory allocated by imshow
+
         for menu, menu_id in self.remove_menu:
             self.Parent.Unbind(wx.EVT_MENU, id=menu_id)
+
             menu.Delete(menu_id)
+
         self.Destroy()
 
     def on_navtool_changed(self, event):
-        if event.EventObject.mode != NAV_MODE_NONE and \
-                        self.mouse_mode == MODE_MEASURE_LENGTH:
+        if event.EventObject.mode != NAV_MODE_NONE and self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
+
             self.__menu_item_measure_length.Check(False)
 
     def on_measure_length(self, event):
         """Measure length menu item selected."""
         if self.__menu_item_measure_length.IsChecked():
             self.mouse_mode = MODE_MEASURE_LENGTH
+
             self.navtoolbar.cancel_mode()
+
             self.Layout()
         elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
@@ -526,8 +592,10 @@ class Figure(wx.Frame):
     def on_button_press(self, event):
         if not hasattr(self, "subplots"):
             return
+
         if event.inaxes in self.subplots.flatten():
             self.mouse_down = (event.xdata, event.ydata)
+
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_mouse_down(event)
 
@@ -545,40 +613,53 @@ class Figure(wx.Frame):
             x1 = max(self.mouse_down[0], evt.xdata)
             y0 = min(self.mouse_down[1], evt.ydata)
             y1 = max(self.mouse_down[1], evt.ydata)
+
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)
-        elif not self.mouse_mode == MODE_NONE:
+        else:
             self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
 
-    def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
+    def get_pixel_data_fields_for_status_bar(self, image, xi, yi):
         fields = []
-        x, y = [int(round(xy)) for xy in xi, yi]
-        if not self.in_bounds(im, x, y):
+        is_float = True
+
+        x, y = [int(round(xy)) for xy in (xi, yi)]
+
+        if not self.in_bounds(image, x, y):
             return fields
-        if im.dtype.type == numpy.uint8:
-            im = im.astype(numpy.float32) / 255.0
-        if im.ndim == 2:
-            fields += ["Intensity: %.4f" % (im[y, x])]
-        elif im.ndim == 3 and im.shape[2] == 3:
-            fields += ["Red: %.4f" % (im[y, x, 0]),
-                       "Green: %.4f" % (im[y, x, 1]),
-                       "Blue: %.4f" % (im[y, x, 2])]
-        elif im.ndim == 3:
-            fields += ["Channel %d: %.4f" % (idx + 1, im[y, x, idx]) for idx in range(im.shape[2])]
+
+        if numpy.issubdtype(image.dtype, numpy.integer):
+            is_float = False
+
+        if image.dtype.type == numpy.uint8:
+            image = image.astype(numpy.float32) / 255.0
+
+        if image.ndim == 2:
+            if is_float:
+                fields += ["Intensity: {:.4f}".format(image[y, x] or 0)]
+            # This is to allow intensity values to be displayed more intuitively
+            else:
+                fields += ["Intensity: {:d}".format(image[y, x] or 0)]
+
+        elif image.ndim == 3 and image.shape[2] == 3:
+            fields += ["Red: %.4f" % (image[y, x, 0]),
+                       "Green: %.4f" % (image[y, x, 1]),
+                       "Blue: %.4f" % (image[y, x, 2])]
+        elif image.ndim == 3:
+            fields += ["Channel %d: %.4f" % (idx + 1, image[y, x, idx]) for idx in range(image.shape[2])]
+
         return fields
 
     @staticmethod
-    def in_bounds(im, xi, yi):
+    def in_bounds(image, xi, yi):
         """Return false if xi or yi are outside of the bounds of the image"""
-        return not (im is None or xi >= im.shape[1] or yi >= im.shape[0]
-                    or xi < 0 or yi < 0)
+        return not (image is None or xi >= image.shape[1] or yi >= image.shape[0] or xi < 0 or yi < 0)
 
     def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
         xi = int(event.xdata + .5)
         yi = int(event.ydata + .5)
-        im = None
         fields = self.get_fields(event, yi, xi, x1)
 
         if self.mouse_down is not None:
@@ -620,51 +701,70 @@ class Figure(wx.Frame):
         """Get the standard fields at the cursor location"""
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
-            self.find_image_for_axes(event.inaxes)
+
+            if self.dimensions == 2:
+                im = self.find_image_for_axes(event.inaxes)
+            else:  # self.dimensions == 3
+                axes = event.inaxes
+
+                axes_image_list = axes.get_images()
+
+                if len(axes_image_list):
+                    axes_image = axes_image_list[0]
+
+                    fields += ["Z: {}".format(axes.get_label())]
+
+                    im = axes_image.get_array().data
+                else:
+                    im = None
+
             if im is not None:
                 fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
             elif isinstance(event.inaxes, matplotlib.axes.Axes):
                 for artist in event.inaxes.artists:
-                    if isinstance(
-                            artist, cellprofiler.gui.artist.CPImageArtist):
-                        fields += ["%s: %.4f" % (k, v) for k, v in
-                                   artist.get_channel_values(xi, yi).items()]
+                    if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                        fields += ["%s: %.4f" % (k, v) for k, v in artist.get_channel_values(xi, yi).items()]
         else:
             fields = []
+
         return fields
 
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
+
         xi = int(event.xdata + .5)
         yi = int(event.ydata + .5)
+
         fields = self.get_fields(event, yi, xi, x1)
+
         if len(fields) > 0:
             self.status_bar.SetFields(fields)
 
     def find_image_for_axes(self, axes):
-        value = None
-
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
                 if axes == slax:
-                    value = self.images.get((i, j), None)
+                    return self.images.get((i, j), None)
 
-        return value
+        return None
 
     def on_button_release(self, event):
         if not hasattr(self, "subplots"):
             return
+
         if event.inaxes in self.subplots.flatten() and self.mouse_down:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
             y1 = max(self.mouse_down[1], event.ydata)
+
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_done(event, x0, y0, x1, y1)
         elif self.mouse_down:
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_canceled(event)
+
         self.mouse_down = None
 
     def on_measure_length_done(self, event, x0, y0, x1, y1):
@@ -673,17 +773,18 @@ class Figure(wx.Frame):
     def on_measure_length_canceled(self, event):
         if self.length_arrow is not None:
             self.length_arrow.remove()
+
             self.length_arrow = None
+
         self.figure.canvas.draw()
+
         self.Refresh()
 
     def on_file_save(self, event):
-        with wx.FileDialog(self, "Save figure",
-                           wildcard=("PDF file (*.pdf)|*.pdf|"
-                                     "PNG image (*.png)|*.png"),
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+        with wx.FileDialog(self, "Save figure", wildcard=("PDF file (*.pdf)|*.pdf|PNG image (*.png)|*.png"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
+
                 if dlg.FilterIndex == 1:
                     file_format = "png"
                 elif dlg.FilterIndex == 0:
@@ -694,18 +795,20 @@ class Figure(wx.Frame):
                     file_format = "jpg"
                 else:
                     file_format = "pdf"
+
                 if "." not in os.path.split(path)[1]:
                     path += "." + file_format
+
                 self.figure.savefig(path, format=file_format)
 
     def on_file_save_table(self, event):
         if self.table is None:
             return
-        with wx.FileDialog(self, "Save table",
-                           wildcard="Excel file (*.csv)|*.csv",
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+
+        with wx.FileDialog(self, "Save table", wildcard="Excel file (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
+
                 with open(path, "wb") as fd:
                     csv.writer(fd).writerows(self.table)
 
@@ -721,15 +824,13 @@ class Figure(wx.Frame):
         # http://stackoverflow.com/questions/4325733/save-a-subplot-in-matplotlib
         #
         ax = self.subplots[x, y]
-        extent = ax.get_window_extent().transformed(
-                self.figure.dpi_scale_trans.inverted())
-        with wx.FileDialog(self, "Save axes",
-                           wildcard=("PDF file (*.pdf)|*.pdf|"
-                                     "Png image (*.png)|*.png|"
-                                     "Postscript file (*.ps)|*.ps"),
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+
+        extent = ax.get_window_extent().transformed(self.figure.dpi_scale_trans.inverted())
+
+        with wx.FileDialog(self, "Save axes", wildcard=("PDF file (*.pdf)|*.pdf|Png image (*.png)|*.png|Postscript file (*.ps)|*.ps"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
+
                 if dlg.FilterIndex == 1:
                     file_format = "png"
                 elif dlg.FilterIndex == 0:
@@ -738,12 +839,14 @@ class Figure(wx.Frame):
                     file_format = "ps"
                 else:
                     file_format = "pdf"
-                self.figure.savefig(path,
-                                    format=file_format,
-                                    bbox_inches=extent)
+
+                self.figure.savefig(path, format=file_format, bbox_inches=extent)
 
     def set_subplots(self, subplots, dimensions=2):
         self.clf()  # get rid of any existing subplots, menus, etc.
+
+        self.dimensions = dimensions
+
         if subplots is None:
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
@@ -764,11 +867,16 @@ class Figure(wx.Frame):
         sharey - If creating a new subplot, you can specify a subplot instance
                  here to share the Y axis with. eg: for zooming, panning
         """
+        if self.dimensions == 3:
+            return None
+
         if not self.subplots[x, y]:
             rows, cols = self.subplots.shape
-            plot = self.figure.add_subplot(cols, rows, x + y * rows + 1,
-                                           sharex=sharex, sharey=sharey)
+
+            plot = self.figure.add_subplot(cols, rows, x + y * rows + 1, sharex=sharex, sharey=sharey)
+
             self.subplots[x, y] = plot
+
         return self.subplots[x, y]
 
     def set_subplot_title(self, title, x, y):
@@ -778,11 +886,9 @@ class Figure(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        fontname = fontname = cellprofiler.preferences.get_title_font_name()
+        fontname = cellprofiler.preferences.get_title_font_name()
 
-        self.subplot(x, y).set_title(title,
-                                     fontname=fontname,
-                                     fontsize=cellprofiler.preferences.get_title_font_size())
+        self.subplot(x, y).set_title(title, fontname=fontname, fontsize=cellprofiler.preferences.get_title_font_size())
 
     def clear_subplot(self, x, y):
         """Clear a subplot of its gui junk. Noop if no subplot exists at x,y
@@ -792,19 +898,23 @@ class Figure(wx.Frame):
         """
         if not self.subplots[x, y]:
             return
+
         axes = self.subplot(x, y)
+
         try:
             del self.images[(x, y)]
+
             del self.popup_menus[(x, y)]
         except:
             pass
+
         axes.clear()
 
     def show_imshow_popup_menu(self, pos, subplot_xy):
         popup = self.get_imshow_menu(subplot_xy)
         self.PopupMenu(popup, pos)
 
-    def get_imshow_menu(self, (x, y)):
+    def get_imshow_menu(self, coordinates):
         """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
@@ -812,9 +922,11 @@ class Figure(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         """
+        (x, y) = coordinates
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
+        MENU_CONTRAST_GAMMA = wx.NewId()
         MENU_INTERPOLATION_NEAREST = wx.NewId()
         MENU_INTERPOLATION_BILINEAR = wx.NewId()
         MENU_INTERPOLATION_BICUBIC = wx.NewId()
@@ -839,13 +951,25 @@ class Figure(wx.Frame):
                                          'Stretch pixel intensities to fit '
                                          'the interval [0,1]',
                                          wx.ITEM_RADIO)
-        item_log = submenu.Append(MENU_CONTRAST_LOG, 'Log normalized',
-                                  'Log transform pixel intensities, then '
-                                  'stretch them to fit the interval [0,1]',
-                                  wx.ITEM_RADIO)
+        item_log = submenu.Append(
+            MENU_CONTRAST_LOG,
+            'Log normalized',
+            'Log transform pixel intensities, after stretching them to fit the interval [0,1]',
+            wx.ITEM_RADIO
+        )
+
+        item_gamma = submenu.Append(
+            MENU_CONTRAST_GAMMA,
+            'Adjust gamma',
+            'Apply gamma correction (a.k.a., power law transform) pixel intensities, after stretching them'
+            ' to fit the interval [0,1].',
+            wx.ITEM_RADIO
+        )
 
         if params['normalize'] == 'log':
             item_log.Check()
+        elif params['normalize'] == 'gamma':
+            item_gamma.Check()
         elif params['normalize']:
             item_normalized.Check()
         else:
@@ -926,8 +1050,10 @@ class Figure(wx.Frame):
                 params['normalize'] = True
             elif evt.Id == MENU_CONTRAST_LOG:
                 params['normalize'] = 'log'
+            elif evt.Id == MENU_CONTRAST_GAMMA:
+                params['normalize'] = 'gamma'
             for artist in axes.artists:
-                if isinstance(artist, CPImageArtist):
+                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.kwargs["normalize"] = params['normalize']
                     self.figure.canvas.draw()
                     return
@@ -938,6 +1064,24 @@ class Figure(wx.Frame):
                 self.subplot(x, y).set_ylim(ylims[0], ylims[1])
                 self.figure.canvas.draw()
 
+        def adjust_gamma(evt):
+            dlg = wx.TextEntryDialog(self, 'Normalization factor', 'Adjust gamma')
+            dlg.SetValue(cellprofiler.preferences.get_normalization_factor())
+            if dlg.ShowModal() == wx.ID_OK:
+                params["normalize_args"] = {"gamma": float(dlg.GetValue())}
+            dlg.Destroy()
+
+            change_contrast(evt)
+
+        def adjust_log(evt):
+            dlg = wx.TextEntryDialog(self, 'Normalization factor', 'Log normalization')
+            dlg.SetValue(cellprofiler.preferences.get_normalization_factor())
+            if dlg.ShowModal() == wx.ID_OK:
+                params["normalize_args"] = {"gain": float(dlg.GetValue())}
+            dlg.Destroy()
+
+            change_contrast(evt)
+
         def change_interpolation(evt):
             if evt.Id == MENU_INTERPOLATION_NEAREST:
                 params['interpolation'] = matplotlib.image.NEAREST
@@ -947,7 +1091,7 @@ class Figure(wx.Frame):
                 params['interpolation'] = matplotlib.image.BICUBIC
             axes = self.subplot(x, y)
             for artist in axes.artists:
-                if isinstance(artist, CPImageArtist):
+                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.interpolation = params['interpolation']
                     artist.kwargs["interpolation"] = params["interpolation"]
                     self.figure.canvas.draw()
@@ -1034,7 +1178,8 @@ class Figure(wx.Frame):
         self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
-        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
+        self.Bind(wx.EVT_MENU, adjust_log, id=MENU_CONTRAST_LOG)
+        self.Bind(wx.EVT_MENU, adjust_gamma, id=MENU_CONTRAST_GAMMA)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)
@@ -1077,7 +1222,7 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False):
+    def gridshow(self, x, y, image, title=None, colormap="gray", colorbar=False, normalize=True):
         gx, gy = self.__gridspec.get_geometry()
 
         gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
@@ -1113,11 +1258,15 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
+            norm = matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax) if normalize else None
+
             ax.imshow(
                 image[position * (z - 1) / 8],
                 cmap=cmap,
-                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+                norm=norm
             )
+
+            ax.set_xlabel("Z: {:d}".format(position * (z - 1) / 8))
 
             self.figure.add_subplot(ax)
 
@@ -1136,7 +1285,7 @@ class Figure(wx.Frame):
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1,
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow=False, interpolation=None, cplabels=None, dimensions=2):
+                       use_imshow=False, interpolation=None, cplabels=None, normalize_args={}):
         """Show an image in a subplot
 
         x, y  - show image in this subplot
@@ -1161,26 +1310,37 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
-        if dimensions == 2:
+        if self.dimensions == 2:
             orig_vmin = vmin
             orig_vmax = vmax
+
             if interpolation is None:
                 interpolation = get_matplotlib_interpolation_preference()
+
             if normalize is None:
                 normalize = cellprofiler.preferences.get_intensity_mode()
+
                 if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
                     normalize = False
                 elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
                     normalize = "log"
+                    normalize_args["gain"] = float(cellprofiler.preferences.get_normalization_factor())
+                elif normalize == cellprofiler.preferences.INTENSITY_MODE_GAMMA:
+                    normalize = "gamma"
+                    normalize_args["gamma"] = float(cellprofiler.preferences.get_normalization_factor())
                 else:
                     normalize = True
+
             if cplabels is None:
                 cplabels = []
             else:
                 use_imshow = False
+
                 new_cplabels = []
+
                 for i, d in enumerate(cplabels):
                     d = d.copy()
+
                     if CPLD_OUTLINE_COLOR not in d:
                         if i == 0:
                             d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_primary_outline_color()
@@ -1188,15 +1348,21 @@ class Figure(wx.Frame):
                             d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_secondary_outline_color()
                         elif i == 2:
                             d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_tertiary_outline_color()
+
                     if CPLD_MODE not in d:
                         d[CPLD_MODE] = CPLDM_OUTLINES
+
                     if CPLD_LINE_WIDTH not in d:
                         d[CPLD_LINE_WIDTH] = 1
+
                     if CPLD_ALPHA_COLORMAP not in d:
                         d[CPLD_ALPHA_COLORMAP] = cellprofiler.preferences.get_default_colormap()
+
                     if CPLD_ALPHA_VALUE not in d:
                         d[CPLD_ALPHA_VALUE] = .25
+
                     new_cplabels.append(d)
+
                 cplabels = new_cplabels
 
             # NOTE: self.subplot_user_params is used to store changes that are made
@@ -1204,24 +1370,32 @@ class Figure(wx.Frame):
             #    Once a subplot that uses this mechanism has been drawn, it will
             #    continually load defaults from self.subplot_user_params instead of
             #    the default values specified in the function definition.
-            kwargs = {'title': title,
-                      'clear': False,
-                      'colormap': colormap,
-                      'colorbar': colorbar,
-                      'normalize': normalize,
-                      'vmin': vmin,
-                      'vmax': vmax,
-                      'rgb_mask': rgb_mask,
-                      'use_imshow': use_imshow,
-                      'interpolation': interpolation,
-                      'cplabels': cplabels}
+            kwargs = {
+                'title': title,
+                'clear': False,
+                'colormap': colormap,
+                'colorbar': colorbar,
+                'normalize': normalize,
+                'vmin': vmin,
+                'vmax': vmax,
+                'rgb_mask': rgb_mask,
+                'use_imshow': use_imshow,
+                'interpolation': interpolation,
+                'cplabels': cplabels,
+                'normalize_args': normalize_args
+            }
+
             if (x, y) not in self.subplot_user_params:
                 self.subplot_user_params[(x, y)] = {}
+
             if (x, y) not in self.subplot_params:
                 self.subplot_params[(x, y)] = {}
+
             # overwrite keyword arguments with user-set values
             kwargs.update(self.subplot_user_params[(x, y)])
+
             self.subplot_params[(x, y)].update(kwargs)
+
             if kwargs["colormap"] is None:
                 kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
 
@@ -1245,6 +1419,7 @@ class Figure(wx.Frame):
 
             if clear:
                 self.clear_subplot(x, y)
+
             # Store the raw image keyed by it's subplot location
             self.images[(x, y)] = image
 
@@ -1267,12 +1442,13 @@ class Figure(wx.Frame):
                 tick_vmin = image[image > 0].min()
             else:
                 tick_vmin = image.min()
+
             if orig_vmax is not None:
                 tick_vmax = orig_vmax
             else:
                 tick_vmax = image.max()
 
-            if isinstance(colormap, basestring):
+            if isinstance(colormap, six.string_types):
                 colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
             # NOTE: We bind this event each time imshow is called to a new closure
@@ -1295,6 +1471,7 @@ class Figure(wx.Frame):
 
             if colorbar and not is_color_image(image):
                 colormap.set_array(self.images[(x, y)])
+
                 colormap.autoscale()
 
             image = self.images[(x, y)]
@@ -1302,102 +1479,178 @@ class Figure(wx.Frame):
             subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)
+
             #
             # Colorbar support
             #
             if colorbar and not is_color_image(image):
-
                 if not subplot in self.colorbar:
                     cax = matplotlib.colorbar.make_axes(subplot)[0]
+
                     bar = subplot.figure.colorbar(colormap, cax, subplot, use_gridspec=False)
+
                     self.colorbar[subplot] = (cax, bar)
                 else:
                     cax, bar = self.colorbar[subplot]
+
                     bar.set_array(self.images[(x, y)])
+
                     bar.update_normal(colormap)
+
                     bar.update_ticks()
 
             # Also add this menu to the main menu
             if (x, y) in self.subplot_menus:
                 # First trash the existing menu if there is one
                 self.menu_subplots.RemoveItem(self.subplot_menus[(x, y)])
+
             menu_pos = 0
+
             for yy in range(y + 1):
                 if yy == y:
                     cols = x
                 else:
                     cols = self.subplots.shape[0]
+
                 for xx in range(cols):
                     if (xx, yy) in self.images:
                         menu_pos += 1
-            self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(menu_pos,
-                                                                       -1, (title or 'Subplot (%s,%s)' % (x, y)),
-                                                                       self.get_imshow_menu((x, y)))
+
+            self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(
+                menu_pos,
+                -1,
+                (title or 'Subplot (%s,%s)' % (x, y)),
+                self.get_imshow_menu((x, y))
+            )
 
             # Attempt to update histogram plot if one was created
-            hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name,
-                                                                      (x, y)))
+            hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name, (x, y)))
+
             if hist_fig:
-                hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(),
-                                           bins=200, xlabel='pixel intensity')
+                hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(), bins=200, xlabel='pixel intensity')
+
                 hist_fig.figure.canvas.draw()
+
             return subplot
         else:
-            self.gridshow(x, y, image, title, colormap, colorbar)
+            self.gridshow(x, y, image, title, colormap, colorbar, normalize)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
-        outlines = [x for x in subplot.collections
-                    if isinstance(x, CPOutlineArtist)]
+        outlines = [x for x in subplot.collections if isinstance(x, OutlineArtist)]
+
         for outline in outlines:
             outline.remove()
+
         for cplabels in kwargs['cplabels']:
             if not cplabels.get(CPLD_SHOW, True):
                 continue
+
             if cplabels[CPLD_MODE] == CPLDM_LINES:
-                subplot.add_collection(CPOutlineArtist(
+                subplot.add_collection(
+                    OutlineArtist(
                         cplabels[CPLD_NAME],
                         cplabels[CPLD_LABELS],
                         linewidth=cplabels[CPLD_LINE_WIDTH],
-                        colors=numpy.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.))
+                        colors=numpy.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.)
+                )
 
     @allow_sharexy
-    def subplot_imshow_color(self, x, y, image, title=None,
-                             normalize=False, rgb_mask=None, **kwargs):
+    def subplot_imshow_color(self, x, y, image, title=None, normalize=False, rgb_mask=None, **kwargs):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
-        return self.subplot_imshow(
-                x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
+
+        # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
+        if image.shape[2] > 3:
+            logger.warn(
+                "Multichannel display is only supported for RGB (3-channel) data."
+                " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
+                    image.shape[2]
+                )
+            )
+
+            return self.subplot_imshow(x, y, image[:, :, :3], title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
+
+        return self.subplot_imshow(x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
 
     @allow_sharexy
-    def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
-                              sharex=None, sharey=None,
-                              use_imshow=False, dimensions=2):
-        """Show a labels matrix using the default color map
-
-        x,y - the subplot's coordinates
-        image - the binary image to show
-        title - the caption for the image
-        clear - clear the axis before showing
-        sharex, sharey - the coordinates of the subplot that dictates
-                panning and zooming, if any
-        use_imshow - Use matplotlib's imshow to display instead of creating
-                     our own artist.
+    def subplot_imshow_labels(
+            self,
+            x,
+            y,
+            image,
+            title=None,
+            clear=True,
+            sharex=None,
+            sharey=None,
+            use_imshow=False,
+            background_image=None,
+            max_label=None,
+            seed=None
+    ):
         """
-        cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+        Show a labels matrix using a custom colormap which better showcases the individual label values
 
-        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+        :param x: the subplot's row coordinate
+        :param y: the subplot's column coordinate
+        :param image: the segmentation to display
+        :param title: the caption for the image
+        :param clear: clear the axis before showing
+        :param sharex: the row coordinate of the subplot that dictates panning and zooming, if any
+        :param sharey: the column coordinate of the subplot that dictates panning and zooming, if any
+        :param use_imshow: use matplotlib's imshow to display, instead of creating our own artist
+        :param dimensions: dimensions of the data to display (2 or 3)
+        :param background_image: a base image to overlay label data on, or None for blank
+        :param max_label: set the maximum label in the segmentation, or None to use the segmentation's maximum label
+                          (useful for generating consistent label colors in displays with varying # of objects)
+        :param seed: shuffle label colors with this seed, or None for completely random (useful for generating
+                     consistent label colors in multiple displays)
+        :return:
+        """
+        if background_image is not None:
+            opacity = 0.7
+            label_image = cellprofiler.object.overlay_labels(
+                labels=image,
+                opacity=opacity,
+                pixel_data=background_image,
+                max_label=max_label,
+                seed=seed
+            )
+            colormap = None
+        else:
+            # Mask the original labels
+            label_image = numpy.ma.masked_where(image == 0, image)
+            # Get the colormap from the user preferences
+            colormap = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+            # Initialize the colormap so we have access to the LUT
+            colormap._init()
+            # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
+            # I think because there are "under" and "over" values. Regardless, we only one this
+            # part of the LUT
+            n = colormap.N
+            # Get the LUT (only the part we care about)
+            lut = colormap._lut[:n].copy()
+            # Shuffle the colors so adjacently labeled objects are different colors
+            numpy.random.shuffle(lut)
+            # Set the LUT
+            colormap._lut[:n] = lut
+            # Make sure the background is black
+            colormap.set_bad(color='black')
 
-        colors = mappable.to_rgba(numpy.unique(labels))[:, :3]
-
-        numpy.random.shuffle(colors)
-
-        image = skimage.color.label2rgb(labels, bg_label=0, colors=colors)
-
-        return self.subplot_imshow(x, y, image, title, clear,
-                                   normalize=False, vmin=None, vmax=None,
-                                   sharex=sharex, sharey=sharey,
-                                   use_imshow=use_imshow, dimensions=dimensions)
+        return self.subplot_imshow(
+            x,
+            y,
+            label_image,
+            title,
+            clear,
+            normalize=False,
+            vmin=None,
+            vmax=None,
+            sharex=sharex,
+            sharey=sharey,
+            use_imshow=use_imshow,
+            colormap=colormap
+        )
 
     @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape=None, title=None,
@@ -1422,26 +1675,42 @@ class Figure(wx.Frame):
                 shape = [1, 1]
             else:
                 shape = [numpy.max(ijv[:, 0]) + 1, numpy.max(ijv[:, 1]) + 1]
+
         image = numpy.zeros(list(shape) + [3], numpy.float)
+
         if len(ijv) > 0:
             cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+
             max_label = numpy.max(ijv[:, 2])
+
             if renumber:
                 numpy.random.seed(0)
                 order = numpy.random.permutation(max_label)
             else:
                 order = numpy.arange(max_label)
+
             order = numpy.hstack(([0], order + 1))
+
             colors = matplotlib.cm.ScalarMappable(cmap=cm).to_rgba(order)
-            r, g, b, a = [scipy.sparse.coo_matrix((colors[ijv[:, 2], i], (ijv[:, 0], ijv[:, 1])),
-                                                  shape=shape).toarray()
-                          for i in range(4)]
+
+            r, g, b, a = [scipy.sparse.coo_matrix((colors[ijv[:, 2], i], (ijv[:, 0], ijv[:, 1])), shape=shape).toarray() for i in range(4)]
+
             for i, plane in enumerate((r, g, b)):
                 image[a != 0, i] = plane[a != 0] / a[a != 0]
-        return self.subplot_imshow(x, y, image, title, clear,
-                                   normalize=False, vmin=None, vmax=None,
-                                   sharex=sharex, sharey=sharey,
-                                   use_imshow=use_imshow)
+
+        return self.subplot_imshow(
+            x,
+            y,
+            image,
+            title,
+            clear,
+            normalize=False,
+            vmin=None,
+            vmax=None,
+            sharex=sharex,
+            sharey=sharey,
+            use_imshow=use_imshow
+        )
 
     @allow_sharexy
     def subplot_imshow_grayscale(self, x, y, image, title=None, **kwargs):
@@ -1463,7 +1732,7 @@ class Figure(wx.Frame):
         if image.dtype.type == numpy.float64:
             image = image.astype(numpy.float32)
         kwargs = kwargs.copy()
-        kwargs['colormap'] = matplotlib.cm.Greys_r
+        kwargs['colormap'] = "Greys_r"
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     @allow_sharexy
@@ -1480,12 +1749,18 @@ class Figure(wx.Frame):
                      our own artist.
         """
         kwargs = kwargs.copy()
-        kwargs['colormap'] = matplotlib.cm.binary_r
+        kwargs['colormap'] = "binary_r"
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     @staticmethod
     def normalize_image(image, **kwargs):
         """Produce a color image normalized according to user spec"""
+        if 0 in image.shape:
+            # No normalization to perform for images with an empty dimension.
+            # Return the image.
+            # https://github.com/CellProfiler/CellProfiler/issues/3330
+            return image
+
         colormap = kwargs['colormap']
         normalize = kwargs['normalize']
         vmin = kwargs['vmin']
@@ -1498,14 +1773,25 @@ class Figure(wx.Frame):
         # Perform normalization
         if normalize == 'log':
             if is_color_image(image):
-                image = numpy.dstack([log_transform(image[:, :, ch]) for ch in range(image.shape[2])])
+                image = [skimage.exposure.adjust_log(image[:, :, ch], **kwargs["normalize_args"]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
             else:
-                image = log_transform(image)
+                image = skimage.exposure.adjust_log(image, **kwargs["normalize_args"])
+        elif normalize == "gamma":
+            if is_color_image(image):
+                image = [skimage.exposure.adjust_gamma(image[:, :, ch], **kwargs["normalize_args"]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
+            else:
+                image = skimage.exposure.adjust_gamma(image, **kwargs["normalize_args"])
         elif normalize:
             if is_color_image(image):
-                image = numpy.dstack([auto_contrast(image[:, :, ch]) for ch in range(image.shape[2])])
+                image = [skimage.exposure.rescale_intensity(image[:, :, ch]) for ch in range(image.shape[2])]
+
+                image = numpy.dstack(image)
             else:
-                image = auto_contrast(image)
+                image = skimage.exposure.rescale_intensity(image)
 
         # Apply rgb mask to hide/show channels
         if is_color_image(image):
@@ -1547,7 +1833,7 @@ class Figure(wx.Frame):
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
-                    lnumbers = tools.renumber_labels_for_display(labels) + loffset
+                    lnumbers = cellprofiler.gui.tools.renumber_labels_for_display(labels) + loffset
                     mappable = matplotlib.cm.ScalarMappable(
                             cmap=cplabel[CPLD_ALPHA_COLORMAP])
                     mappable.set_clim(1, ltotal)
@@ -1564,7 +1850,6 @@ class Figure(wx.Frame):
                       row_labels=None,
                       n_cols=1,
                       n_rows=1,
-                      dimensions=2,
                       **kwargs):
         """Put a table into a subplot
 
@@ -1578,7 +1863,7 @@ class Figure(wx.Frame):
         **kwargs - for backwards compatibility, old argument values
         """
 
-        if dimensions == 2:
+        if self.dimensions == 2:
             nx, ny = self.subplots.shape
         else:
             ny, nx = self.__gridspec.get_geometry()
@@ -1597,7 +1882,7 @@ class Figure(wx.Frame):
         ctrl.CreateGrid(nrows, ncols)
         if col_labels is not None:
             for i, value in enumerate(col_labels):
-                ctrl.SetColLabelValue(i, unicode(value))
+                ctrl.SetColLabelValue(i, six.text_type(value))
         else:
             ctrl.SetColLabelSize(0)
         if row_labels is not None:
@@ -1605,7 +1890,7 @@ class Figure(wx.Frame):
             ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
             max_width = 0
             for i, value in enumerate(row_labels):
-                value = unicode(value)
+                value = six.text_type(value)
                 ctrl.SetRowLabelValue(i, value)
                 max_width = max(
                         max_width,
@@ -1616,7 +1901,7 @@ class Figure(wx.Frame):
 
         for i, row in enumerate(statistics):
             for j, value in enumerate(row):
-                ctrl.SetCellValue(i, j, unicode(value))
+                ctrl.SetCellValue(i, j, six.text_type(value))
                 ctrl.SetReadOnly(i, j, True)
         ctrl.AutoSize()
         ctrl.Show()
@@ -1639,6 +1924,8 @@ class Figure(wx.Frame):
                         xlabel='', ylabel='',
                         xscale='linear', yscale='linear',
                         title='',
+                        color='b',
+                        cmap=None,
                         clear=True):
         """Put a scatterplot into a subplot
 
@@ -1646,28 +1933,47 @@ class Figure(wx.Frame):
         xvals, yvals - values to scatter
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
         title  - string title for the plot
+        color  - color, sequence, or sequence of color for the plotted points
+        cmap   - matplotlib Colormap
         """
         xvals = numpy.array(xvals).flatten()
         yvals = numpy.array(yvals).flatten()
-        if clear:
-            self.clear_subplot(x, y)
+        if self.dimensions == 2:
+            if clear:
+                self.clear_subplot(x, y)
 
-        self.figure.set_facecolor((1, 1, 1))
-        self.figure.set_edgecolor((1, 1, 1))
+            self.figure.set_facecolor((1, 1, 1))
+            self.figure.set_edgecolor((1, 1, 1))
 
-        axes = self.subplot(x, y)
+            axes = self.subplot(x, y)
+        else:
+            gx, gy = self.__gridspec.get_geometry()
+
+            gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
+                ncols=1,
+                nrows=1,
+                subplot_spec=self.__gridspec[gy * y + x],
+            )
+
+            axes = matplotlib.pyplot.Subplot(self.figure, gridspec[0])
+
         plot = axes.scatter(xvals, yvals,
                             facecolor=(0.0, 0.62, 1.0),
                             edgecolor='none',
+                            c=color,
+                            cmap=cmap,
                             alpha=0.75)
         axes.set_title(title)
         axes.set_xlabel(xlabel)
         axes.set_ylabel(ylabel)
         axes.set_xscale(xscale)
         axes.set_yscale(yscale)
+
+        if self.dimensions == 3:
+            self.figure.add_subplot(axes)
 
         return plot
 
@@ -1685,7 +1991,7 @@ class Figure(wx.Frame):
         bins - number of bins to aggregate data in
         xlabel - string label for x axis
         xscale - 'log' to log-transform the data
-        yscale - scaling of the y axis (e.g. 'log')
+        yscale - scaling of the y axis (e.g., 'log')
         title  - string title for the plot
         """
         if clear:
@@ -1694,7 +2000,7 @@ class Figure(wx.Frame):
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
         values = numpy.array(values).flatten()
-        if xscale == 'log':
+        if xscale == LOG:
             values = numpy.log(values[values > 0])
             xlabel = 'Log(%s)' % (xlabel or '?')
         # hist apparently doesn't like nans, need to preen them out first
@@ -1712,7 +2018,7 @@ class Figure(wx.Frame):
         plot = axes.hist(values, bins,
                          facecolor=(0.0, 0.62, 1.0),
                          edgecolor='none',
-                         log=(yscale == 'log'),
+                         log=(yscale == LOG),
                          alpha=0.75)
         axes.set_xlabel(xlabel)
         axes.set_title(title)
@@ -1736,9 +2042,9 @@ class Figure(wx.Frame):
         gridsize - x & y bin size for data aggregation
         xlabel - string label for x axis
         ylabel - string label for y axis
-        xscale - scaling of the x axis (e.g. 'log' or 'linear')
-        yscale - scaling of the y axis (e.g. 'log' or 'linear')
-        bins - scaling of the color map (e.g. None or 'log', see mpl.hexbin)
+        xscale - scaling of the x axis (e.g., 'log' or 'linear')
+        yscale - scaling of the y axis (e.g., 'log' or 'linear')
+        bins - scaling of the color map (e.g., None or 'log', see mpl.hexbin)
         title  - string title for the plot
         """
         if clear:
@@ -1797,7 +2103,7 @@ class Figure(wx.Frame):
         return plot
 
     def subplot_platemap(self, x, y, plates_dict, plate_type,
-                         cmap=matplotlib.cm.jet, colorbar=True, title=''):
+                         cmap="jet", colorbar=True, title=''):
         """Draws a basic plate map (as an image).
         x, y       - subplot's column and row (should be 0,0)
         plates_dict - dict of the form: d[plate][well] --> numeric value
@@ -1851,7 +2157,7 @@ class Figure(wx.Frame):
             self.plate_choice.plate_type = plate_type
             self.plate_choice.x = x
             self.plate_choice.y = y
-            self.plate_choice.cmap = cmap
+            self.plate_choice.cmap = matplotlib.cm.get_cmap(cmap)
             self.plate_choice.axis_title = title
             self.plate_choice.colorbar = colorbar
         else:
@@ -1905,7 +2211,7 @@ class Figure(wx.Frame):
         axes.axis('image')
 
         if colorbar and not numpy.all(numpy.isnan(data)):
-            if self.colorbar.has_key(axes):
+            if axes in self.colorbar:
                 cb = self.colorbar[axes]
                 cb.set_clim(numpy.min(clean_data), numpy.max(clean_data))
                 cb.update_normal(clean_data)
@@ -1931,83 +2237,84 @@ class Figure(wx.Frame):
         return plot
 
 
-def format_plate_data_as_array(plate_dict, plate_type):
-    """ Returns an array shaped like the given plate type with the values from
-    plate_dict stored in it.  Wells without data will be set to np.NaN
-    plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
-                   data values must be of numerical or string types
-    plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
-    """
-    if plate_type == '96':
-        plate_shape = (8, 12)
-    elif plate_type == '384':
-        plate_shape = (16, 24)
-    alphabet = 'ABCDEFGHIJKLMNOP'
-    data = numpy.zeros(plate_shape)
-    data[:] = numpy.nan
-    display_error = True
-    for well, val in plate_dict.items():
-        r = alphabet.index(well[0].upper())
-        c = int(well[1:]) - 1
-        if r >= data.shape[0] or c >= data.shape[1]:
-            if display_error:
-                logging.getLogger("cellprofiler.gui.cpfigure").warning(
-                        'A well value (%s) does not fit in the given plate type.\n' % well)
-                display_error = False
-            continue
-        data[r, c] = val
-    return data
+class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
+    """Navigation toolbar for EditObjectsDialog"""
 
+    def __init__(self, canvas):
+        super(NavigationToolbar, self).__init__(canvas)
 
-def show_image(url, parent=None, needs_raise_after=True):
-    """Show an image in a figure frame
-
-    url - url of the image
-    parent - parent frame to this one.
-    """
-    filename = url[(url.rfind("/") + 1):]
-    try:
-        if url.lower().endswith(".mat"):
-            from scipy.io.matlab.mio import loadmat
-            from cellprofiler.modules.loadimages import url2pathname
-            image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
+    def set_cursor(self, cursor):
+        """Set the cursor based on the mode"""
+        if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
+            self.canvas.SetCursor(get_crosshair_cursor())
         else:
-            from bioformats import load_image_url
-            image = load_image_url(url)
-    except IOError:
-        wx.MessageBox('Failed to open file, "%s"' % filename,
-                      caption="File open error")
-        return
-    except javabridge.JavaException, je:
-        wx.MessageBox(
-                'Could not open "%s" as an image.' % filename,
-                caption="File format error")
-        return
+            matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.set_cursor(self, cursor)
 
-    except Exception, e:
-        from cellprofiler.gui.errordialog import display_error_dialog
-        display_error_dialog(None, e, None,
-                             "Failed to load %s" % url,
-                             continue_only=True)
-        return
-    frame = Figure(parent=parent,
-                   title=filename,
-                   subplots=(1, 1))
-    if image.ndim == 2:
-        frame.subplot_imshow_grayscale(0, 0, image, title=filename)
-    else:
-        frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename)
-    frame.panel.draw()
-    if needs_raise_after:
-        # %$@ hack hack hack
-        wx.CallAfter(lambda: frame.Raise())
-    return True
+    def cancel_mode(self):
+        """Toggle the current mode to off"""
+        if self.mode == NAV_MODE_ZOOM:
+            self.zoom()
+
+            if 'Zoom' in self.wx_ids:
+                self.ToggleTool(self.wx_ids['Zoom'], False)
+        elif self.mode == NAV_MODE_PAN:
+            self.pan()
+
+            if 'Pan' in self.wx_ids:
+                self.ToggleTool(self.wx_ids['Pan'], False)
+
+    def zoom(self, *args):
+        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.zoom(self, *args)
+
+        self.__send_mode_change_event()
+
+    def pan(self, *args):
+        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.pan(self, *args)
+
+        self.__send_mode_change_event()
+
+    def is_home(self):
+        """Return True if zoom/pan is at the home position"""
+        if self._views._pos <= 0:
+            return True
+
+        if self._views[0] == self._views[-1]:
+            return True
+
+        return False
+
+    def reset(self):
+        """Clear out the position stack"""
+        # We differ from the reference implementation because we clear
+        # the view stacks.
+        self._views.clear()
+
+        self._positions.clear()
+
+        self.home()
+
+    def save(self, event):
+        #
+        # Capture any file save event and redirect it to CPFigureFrame
+        # Fixes issue #829 - Mac & PC display invalid save options when
+        #                    you save using the icon.
+        #
+        parent = self.GetTopLevelParent()
+
+        if isinstance(parent, Figure):
+            parent.on_file_save(event)
+        else:
+            super(NavigationToolbar, self).save(event)
+
+    def __send_mode_change_event(self):
+        event = wx.NotifyEvent(EVT_NAV_MODE_CHANGE.evtType[0])
+
+        event.EventObject = self
+
+        self.GetEventHandler().ProcessEvent(event)
 
 
-roundoff = True
-
-
-class CPOutlineArtist(matplotlib.collections.LineCollection):
+class OutlineArtist(matplotlib.collections.LineCollection):
     """An artist that is a plot of the outline around an object
 
     This class is here so that we can add and remove artists for certain
@@ -2051,106 +2358,3 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
 
     def get_outline_name(self):
         return self.__outline_name
-
-
-def get_matplotlib_interpolation_preference():
-    interpolation = cellprofiler.preferences.get_interpolation_mode()
-    if interpolation == cellprofiler.preferences.IM_NEAREST:
-        return matplotlib.image.NEAREST
-    elif interpolation == cellprofiler.preferences.IM_BILINEAR:
-        return matplotlib.image.BILINEAR
-    elif interpolation == cellprofiler.preferences.IM_BICUBIC:
-        return matplotlib.image.BICUBIC
-    return matplotlib.image.NEAREST
-
-
-__crosshair_cursor = None
-
-
-def get_crosshair_cursor():
-    global __crosshair_cursor
-    if __crosshair_cursor is None:
-        if sys.platform.lower().startswith('win'):
-            #
-            # Build the crosshair cursor image as a numpy array.
-            #
-            buf = numpy.ones((16, 16, 3), dtype='uint8') * 255
-            buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
-            abuf = numpy.ones((16, 16), dtype='uint8') * 255
-            abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
-            im = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            __crosshair_cursor = wx.CursorFromImage(im)
-        else:
-            __crosshair_cursor = wx.CROSS_CURSOR
-    return __crosshair_cursor
-
-
-EVT_NAV_MODE_CHANGE = wx.PyEventBinder(wx.NewEventType())
-NAV_MODE_ZOOM = 'zoom rect'
-NAV_MODE_PAN = 'pan/zoom'
-NAV_MODE_NONE = ''
-
-
-class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
-    """Navigation toolbar for EditObjectsDialog"""
-
-    def set_cursor(self, cursor):
-        """Set the cursor based on the mode"""
-        if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
-            self.canvas.SetCursor(get_crosshair_cursor())
-        else:
-            matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.set_cursor(self, cursor)
-
-    def cancel_mode(self):
-        """Toggle the current mode to off"""
-        if self.mode == NAV_MODE_ZOOM:
-            self.zoom()
-            if 'Zoom' in self.wx_ids:
-                self.ToggleTool(self.wx_ids['Zoom'], False)
-        elif self.mode == NAV_MODE_PAN:
-            self.pan()
-            if 'Pan' in self.wx_ids:
-                self.ToggleTool(self.wx_ids['Pan'], False)
-
-    def zoom(self, *args):
-        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.zoom(self, *args)
-        self.__send_mode_change_event()
-
-    def pan(self, *args):
-        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.pan(self, *args)
-        self.__send_mode_change_event()
-
-    def is_home(self):
-        """Return True if zoom/pan is at the home position"""
-        if self._views._pos <= 0:
-            return True
-        if self._views[0] == self._views[-1]:
-            return True
-        return False
-
-    def reset(self):
-        """Clear out the position stack"""
-        # We differ from the reference implementation because we clear
-        # the view stacks.
-        self._views.clear()
-        self._positions.clear()
-        self.home()
-
-    def save(self, event):
-        #
-        # Capture any file save event and redirect it to CPFigureFrame
-        # Fixes issue #829 - Mac & PC display invalid save options when
-        #                    you save using the icon.
-        #
-        parent = self.GetTopLevelParent()
-        if isinstance(parent, Figure):
-            parent.on_file_save(event)
-        else:
-            super(CPNavigationToolbar, self).save(event)
-
-    def __send_mode_change_event(self):
-        event = wx.NotifyEvent(EVT_NAV_MODE_CHANGE.evtType[0])
-        event.EventObject = self
-        self.GetEventHandler().ProcessEvent(event)

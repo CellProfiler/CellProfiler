@@ -14,6 +14,7 @@ import javabridge
 import numpy as np
 import threading
 import uuid
+import six
 import zmq
 
 if not hasattr(zmq, "Frame"):
@@ -136,7 +137,7 @@ class KnimeBridgeServer(threading.Thread):
                                 try:
                                     self.dispatch[message_type](
                                             session_id, message_type, msg)
-                                except Exception, e:
+                                except Exception as e:
                                     logger.warn(e.message, exc_info=1)
                                     self.raise_cellprofiler_exception(
                                             session_id, e.message)
@@ -164,7 +165,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline = cpp.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -190,7 +191,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline = cpp.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -233,7 +234,7 @@ class KnimeBridgeServer(threading.Thread):
                 if workspace.disposition in \
                         (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
                     break
-            except Exception, e:
+            except Exception as e:
                 msg = "Encountered error while running module, \"%s\": %s" % (
                     module.module_name, e.message)
                 logger.warning(msg, exc_info=1)
@@ -286,14 +287,14 @@ class KnimeBridgeServer(threading.Thread):
                         sf.append((feature, 0))
                     else:
                         s = data[0]
-                        if isinstance(s, unicode):
+                        if isinstance(s, six.text_type):
                             s = s.encode("utf-8")
                         else:
                             s = str(s)
                         string_data.append(np.frombuffer(s, np.uint8))
         data = np.hstack([
                              np.frombuffer(np.hstack(ditem).data, np.uint8)
-                             for ditem in double_data, float_data, int_data, string_data
+                             for ditem in (double_data, float_data, int_data, string_data)
                              if len(ditem) > 0])
         self.socket.send_multipart(
                 [zmq.Frame(session_id),
@@ -341,13 +342,13 @@ class KnimeBridgeServer(threading.Thread):
                     return
                 image_group.create_dataset(channel_name,
                                            data=pixel_data)
-        except Exception, e:
+        except Exception as e:
             self.raise_cellprofiler_exception(
                     session_id, e.message)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -387,7 +388,7 @@ class KnimeBridgeServer(threading.Thread):
                     if workspace.disposition in \
                             (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
                         break
-                except Exception, e:
+                except Exception as e:
                     msg = "Encountered error while running module, \"%s\": %s" % (
                         module.module_name, e.message)
                     logger.warning(msg, exc_info=1)
@@ -467,7 +468,7 @@ class KnimeBridgeServer(threading.Thread):
                         int_data.append(data.astype('<i4'))
         data = np.hstack([
                              np.frombuffer(np.ascontiguousarray(np.hstack(ditem)).data, np.uint8)
-                             for ditem in double_data, float_data, int_data
+                             for ditem in (double_data, float_data, int_data)
                              if len(ditem) > 0])
         data = np.ascontiguousarray(data)
         self.socket.send_multipart(
@@ -505,14 +506,14 @@ class KnimeBridgeServer(threading.Thread):
                         channel_metadata, message.pop(0).bytes,
                         grouping_allowed=grouping_allowed)
                 m.add(channel_name, cpi.Image(pixel_data))
-        except Exception, e:
+        except Exception as e:
             logger.warn("Failed to decode message", exc_info=1)
             self.raise_cellprofiler_exception(
                     session_id, e.message)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -522,7 +523,7 @@ class KnimeBridgeServer(threading.Thread):
         return pipeline, m, object_set
 
     def raise_pipeline_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, six.text_type):
             message = message.encode("utf-8")
         else:
             message = str(message)
@@ -533,7 +534,7 @@ class KnimeBridgeServer(threading.Thread):
                  zmq.Frame(message)])
 
     def raise_cellprofiler_exception(self, session_id, message):
-        if isinstance(message, unicode):
+        if isinstance(message, six.text_type):
             message = message.encode("utf-8")
         else:
             message = str(message)
@@ -575,7 +576,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline - the pipeline they came from
 
         returns a two tuple of
-            Java types, e.g. "java.lang.Integer"
+            Java types, e.g., "java.lang.Integer"
             A dictionary whose key is the object name and whose
             value is a list of two-tuples of feature name and index into
             the java types array.

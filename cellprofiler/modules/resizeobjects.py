@@ -1,28 +1,42 @@
 # coding=utf-8
 
-"""
-ResizeObjects
-=============
-
-Upsize or downsize an object’s label matrix by a factor or by specifying
-the final dimensions in pixels. ResizeObjects uses nearest neighbor
-interpolation to preserve object labels after the resizing operation.
-When resizing 3D data, ResizeObjects resizes the height and width and
-keeps the original depth (or z-dimension).
-
-ResizeObjects is useful for processing very large or 3D data. A user
-might downsize a 3D image to generate a segmentation. She can then use
-ResizeObjects to stretch the segmented objects to their original size
-before computing measurements with the original 3D image.
-"""
-
 import numpy
 import scipy.ndimage
 import skimage.transform
-
 import cellprofiler.module
 import cellprofiler.setting
+from cellprofiler.modules import _help
 
+__doc__ = """\
+ResizeObjects
+=============
+
+**ResizeObjects** will upsize or downsize an object’s label matrix by a factor or by specifying
+the final dimensions in pixels. **ResizeObjects** is similar to **ResizeImage**, but
+**ResizeObjects** is specific to CellProfiler objects created by modules such as
+**IdentifyPrimaryObjects** or **Watershed**. **ResizeObjects** uses nearest neighbor
+interpolation to preserve object labels after the resizing operation.
+
+When resizing 3D data, the height and width will be changed, but
+the original depth (or z-dimension) will be kept. This 3D behavior was chosen, because in most
+cases the number of slices in a z-stack is much fewer than the number of pixels that define the
+x-y dimensions. Otherwise, a significant fraction of z information would be lost during downsizing.
+**ResizeObjects** is useful for processing very large or 3D data to reduce computation time. You
+might downsize a 3D image with **ResizeImage** to generate a segmentation, then use
+**ResizeObjects** to stretch the segmented objects to their original size
+before computing measurements with the original 3D image. **ResizeObjects** differs
+from **ExpandOrShrinkObjects** and **ShrinkToObjectCenters** in that the overall dimensions
+of the object label matrix, or image, are changed. In contrast, **ExpandOrShrinkObjects**
+will alter the size of the objects within an image, but it will not change the size of the image itself.
+
+See also
+^^^^^^^^
+
+{HELP_ON_SAVING_OBJECTS}
+
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 class ResizeObjects(cellprofiler.module.ObjectProcessing):
     module_name = "ResizeObjects"
@@ -38,13 +52,11 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
                 "Dimensions",
                 "Factor"
             ],
-            doc="""
-            The following options are available:
-            <ul>
-                <li><i>Dimensions:</i> Enter the new height and width of the resized objects.</li>
-                <li><i>Factor:</i> Enter a single value which specifies the scaling.</li>
-            </ul>
-            """,
+            doc="""\
+The following options are available:
+
+-  *Dimensions:* Enter the new height and width of the resized objects.
+-  *Factor:* Enter a single value which specifies the scaling.""",
             value="Factor"
         )
 
@@ -52,31 +64,29 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
             "Factor",
             0.25,
             minval=0,
-            doc="""
-            <i>(Used only if resizing by <i>Factor</i>)</i><br />
-            Numbers less than 1 will shrink the objects; numbers greater than 1 will enlarge the objects.
-            """
-        )
+            doc="""\
+*(Used only if resizing by "Factor")*
+
+Numbers less than 1 will shrink the objects; numbers greater than 1 will
+enlarge the objects.""")
 
         self.width = cellprofiler.setting.Integer(
             "Width",
             100,
             minval=1,
-            doc="""
-            <i>(Used only if resizing by <i>Dimensions</i>)</i><br />
-            Enter the desired width of the final objects, in pixels.
-            """
-        )
+            doc="""\
+*(Used only if resizing by "Dimensions")*
+
+Enter the desired width of the final objects, in pixels.""")
 
         self.height = cellprofiler.setting.Integer(
             "Height",
             100,
             minval=1,
-            doc="""
-            <i>(Used only if resizing by <i>Dimensions</i>)</i><br />
-            Enter the desired height of the final objects, in pixels.
-            """
-        )
+            doc="""\
+*(Used only if resizing by "Dimensions")*
+
+Enter the desired height of the final objects, in pixels.""")
 
     def settings(self):
         settings = super(ResizeObjects, self).settings()

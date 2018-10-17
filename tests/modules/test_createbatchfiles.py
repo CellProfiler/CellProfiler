@@ -26,8 +26,8 @@ import tests.modules as T
 
 
 class TestCreateBatchFiles(unittest.TestCase):
-    def test_01_00_test_load_version_8_please(self):
-        self.assertEqual(C.CreateBatchFiles.variable_revision_number, 7)
+    def test_01_00_test_load_version_9_please(self):
+        self.assertEqual(C.CreateBatchFiles.variable_revision_number, 8)
 
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -62,11 +62,40 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         self.assertEqual(module.default_image_directory, r"C:\bar\baz")
         self.assertEqual(module.revision, 0)
         self.assertFalse(module.from_old_matlab)
-        self.assertTrue(module.go_to_website)
         self.assertEqual(len(module.mappings), 1)
         mapping = module.mappings[0]
         self.assertEqual(mapping.local_directory, r"\\argon-cifs\imaging_docs")
         self.assertEqual(mapping.remote_directory, r"/imaging/docs")
+
+    def test_01_08_load_v8(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150713184605
+GitHash:2f7b3b9
+ModuleCount:1
+HasImagePlaneDetails:False
+
+CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:8|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Store batch files in default output folder?:Yes
+    Output folder path:/Users/cellprofiler
+    Are the cluster computers running Windows?:No
+    Hidden\x3A in batch mode:No
+    Hidden\x3A in distributed mode:No
+    Hidden\x3A default input folder at time of save:/Users/mcquin/Pictures
+    Hidden\x3A revision number:0
+    Hidden\x3A from old matlab:No
+    Local root path:/Users/cellprofiler/Pictures
+    Cluster root path:/Remote/cellprofiler/Pictures
+"""
+        pipeline = cpp.Pipeline()
+        pipeline.loadtxt(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        assert module.wants_default_output_directory.value
+        assert module.custom_output_directory.value == "/Users/cellprofiler"
+        assert not module.remote_host_is_windows.value
+        assert module.mappings[0].local_directory.value == "/Users/cellprofiler/Pictures"
+        assert module.mappings[0].remote_directory.value == "/Remote/cellprofiler/Pictures"
 
     def test_02_01_module_must_be_last(self):
         '''Make sure that the pipeline is invalid if CreateBatchFiles is not last'''
@@ -132,7 +161,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 self.assertTrue(isinstance(li, LI.LoadImages))
                 module = pipeline.modules()[1]
                 self.assertTrue(isinstance(module, C.CreateBatchFiles))
-                li.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+                li.location.dir_choice = cps.ABSOLUTE_FOLDER_NAME
                 li.location.custom_path = ipath
                 module.wants_default_output_directory.value = False
                 module.custom_output_directory.value = bpath

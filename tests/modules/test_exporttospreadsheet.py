@@ -1,5 +1,6 @@
 '''test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
 '''
+from __future__ import print_function
 
 import base64
 import csv
@@ -10,6 +11,7 @@ import zlib
 from StringIO import StringIO
 
 import numpy as np
+import six
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -19,6 +21,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
+import cellprofiler.setting
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E
 from cellprofiler.modules import identifyprimaryobjects
@@ -83,7 +86,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter_char, "\t")
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
         self.assertFalse(module.wants_aggregate_means)
         self.assertTrue(module.wants_aggregate_medians)
@@ -154,7 +156,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.pick_columns)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
@@ -227,7 +228,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
         self.assertTrue(all([module.columns.get_measurement_object(x) == "Image"
                              for x in module.columns.selections]))
@@ -378,7 +378,6 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
         self.assertTrue(all([module.columns.get_measurement_object(x) == "Image"
                              for x in module.columns.selections]))
@@ -415,7 +414,6 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertTrue(module.add_metadata)
-        self.assertTrue(module.excel_limits)
         self.assertFalse(module.pick_columns)
         self.assertTrue(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
@@ -475,7 +473,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -534,7 +531,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -597,7 +593,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -662,7 +657,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
-        self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
@@ -710,7 +704,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 3)
             self.assertEqual(header[2], "my_measurement")
             self.assertRaises(StopIteration, reader.next)
@@ -743,11 +737,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 2)
             self.assertEqual(header[0], E.EH_KEY)
             self.assertEqual(header[1], E.EH_VALUE)
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 2)
             self.assertEqual(row[0], "my_measurement")
             self.assertEqual(row[1], "Hello, world")
@@ -784,12 +778,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
-            row = reader.next()
+            header = next(reader)
+            row = next(reader)
             self.assertEqual(len(row), 2)
             self.assertEqual(row[0], "my_measurement")
             self.assertEqual(row[1], "Hello, world")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 2)
             self.assertEqual(row[0], "my_other_measurement")
             self.assertEqual(row[1], "Goodbye")
@@ -883,11 +877,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 2)
             self.assertEqual(header[0], 'ImageNumber')
             self.assertEqual(header[1], "my_measurement")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[0], "1")
             self.assertEqual(row[1], "Hello, world")
             self.assertRaises(StopIteration, reader.next)
@@ -924,13 +918,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 4)
             self.assertEqual(header[0], "ImageNumber")
             for i in range(3):
                 self.assertEqual(header[i + 1], "measurement_%d" % i)
             for i in range(2):
-                row = reader.next()
+                row = next(reader)
                 self.assertEqual(len(row), 4)
                 for j in range(3):
                     self.assertEqual(row[j + 1], "%d:%d" % (i, j))
@@ -967,12 +961,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 3)
             self.assertEqual(header[0], "ImageNumber")
             self.assertEqual(header[1], "ObjectNumber")
             self.assertEqual(header[2], "my_measurement")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
             self.assertRaises(StopIteration, reader.next)
@@ -1009,14 +1003,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 5)
             self.assertEqual(header[0], "ImageNumber")
             self.assertEqual(header[1], "ObjectNumber")
             for i in range(3):
                 self.assertEqual(header[i + 2], "measurement_%d" % i)
             for i in range(2):
-                row = reader.next()
+                row = next(reader)
                 self.assertEqual(len(row), 5)
                 self.assertEqual(int(row[0]), 1)
                 self.assertEqual(int(row[1]), i + 1)
@@ -1065,12 +1059,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 8)
             for oidx in range(2):
                 for i in range(3):
                     self.assertEqual(header[i + oidx * 3 + 2], "object_%d" % oidx)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 8)
             self.assertEqual(header[0], "ImageNumber")
             self.assertEqual(header[1], "ObjectNumber")
@@ -1079,7 +1073,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     self.assertEqual(header[i + oidx * 3 + 2], "measurement_%d" % i)
 
             for i in range(4):
-                row = reader.next()
+                row = next(reader)
                 self.assertEqual(len(row), 8)
                 self.assertEqual(int(row[0]), 1)
                 self.assertEqual(int(row[1]), i + 1)
@@ -1120,15 +1114,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 3)
             self.assertEqual(header[0], "ImageNumber")
             self.assertEqual(header[1], "ObjectNumber")
             self.assertEqual(header[2], "my_measurement")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertEqual(row[2], str(np.NaN))
             self.assertRaises(StopIteration, reader.next)
@@ -1165,15 +1159,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 3)
             self.assertEqual(header[0], "ImageNumber")
             self.assertEqual(header[1], "ObjectNumber")
             self.assertEqual(header[2], "my_measurement")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertEqual(len(row[2]), 0)
             self.assertRaises(StopIteration, reader.next)
@@ -1218,19 +1212,19 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             d = dict([(h, i) for i, h in enumerate(header)])
             agg_meas = "Mean_%s_%s" % (OBJECTS_NAME, OBJ_MEAS)
             self.assertIn(agg_meas, d)
             self.assertIn(IMG_MEAS, d)
-            row = reader.next()
+            row = next(reader)
             value = row[d[agg_meas]]
             self.assertEqual(
                     value, str(np.NaN),
                     msg="Expected nan %s measurement, got %s" %
                         (agg_meas, value))
             self.assertEqual(float(row[d[IMG_MEAS]]), 13)
-            row = reader.next()
+            row = next(reader)
             for meas in agg_meas, IMG_MEAS:
                 value = row[d[meas]]
                 self.assertEqual(
@@ -1277,19 +1271,19 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             d = dict([(h, i) for i, h in enumerate(header)])
             agg_meas = "Mean_%s_%s" % (OBJECTS_NAME, OBJ_MEAS)
             self.assertIn(agg_meas, d)
             self.assertIn(IMG_MEAS, d)
-            row = reader.next()
+            row = next(reader)
             value = row[d[agg_meas]]
             self.assertEqual(
                     len(value), 0,
                     msg="Expected null %s measurement, got %s" %
                         (agg_meas, value))
             self.assertEqual(float(row[d[IMG_MEAS]]), 13)
-            row = reader.next()
+            row = next(reader)
             for meas in agg_meas, IMG_MEAS:
                 value = row[d[meas]]
                 self.assertEqual(
@@ -1327,10 +1321,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             d = dict([(h, i) for i, h in enumerate(header)])
             self.assertIn(IMG_MEAS, d)
-            row = reader.next()
+            row = next(reader)
             data = base64.b64decode(row[d[IMG_MEAS]])
             value = np.frombuffer(data, np.uint8)
             np.testing.assert_array_equal(value, my_blob)
@@ -1364,7 +1358,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             for feature, value in reader:
                 if feature == IMG_MEAS:
                     data = base64.b64decode(value)
@@ -1415,13 +1409,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
-                header = reader.next()
+                header = next(reader)
                 self.assertEqual(len(header), 3)
                 self.assertEqual(header[0], "ImageNumber")
                 self.assertEqual(header[1], "ObjectNumber")
                 self.assertEqual(header[2], "my_measurement")
                 for value_index in value_indexes:
-                    row = reader.next()
+                    row = next(reader)
                     self.assertEqual(len(row), 3)
                     self.assertEqual(int(row[0]), value_index + 1)
                     self.assertEqual(int(row[1]), 1)
@@ -1472,13 +1466,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
-                header = reader.next()
+                header = next(reader)
                 self.assertEqual(len(header), 3)
                 self.assertEqual(header[0], "ImageNumber")
                 self.assertEqual(header[1], "ObjectNumber")
                 self.assertEqual(header[2], "my_measurement")
                 for value_index in value_indexes:
-                    row = reader.next()
+                    row = next(reader)
                     self.assertEqual(len(row), 3)
                     self.assertEqual(int(row[0]), value_index + 1)
                     self.assertEqual(int(row[1]), 1)
@@ -1526,7 +1520,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
-                header = reader.next()
+                header = next(reader)
                 self.assertEqual(len(header), 3)
                 d = {}
                 self.assertTrue("ImageNumber" in header)
@@ -1535,7 +1529,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 for caption, index in zip(header, range(3)):
                     d[caption] = index
                 for value_index in value_indexes:
-                    row = reader.next()
+                    row = next(reader)
                     self.assertEqual(len(row), 3)
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                            mvalues[value_index], 4)
@@ -1584,7 +1578,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
-                header = reader.next()
+                header = next(reader)
                 self.assertEqual(len(header), 3)
                 d = {}
                 self.assertTrue("ImageNumber" in header)
@@ -1593,7 +1587,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 for caption, index in zip(header, range(3)):
                     d[caption] = index
                 for value_index in value_indexes:
-                    row = reader.next()
+                    row = next(reader)
                     self.assertEqual(len(row), 3)
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                            mvalues[value_index], 4)
@@ -1630,11 +1624,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 2)
             self.assertEqual(header[0], 'ImageNumber')
             self.assertEqual(header[1], "my_measurement")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[0], "1")
             self.assertEqual(row[1], "Hello, world")
             self.assertRaises(StopIteration, reader.next)
@@ -1671,13 +1665,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 2)
             self.assertEqual(header[0], 'ImageNumber')
             self.assertEqual(header[1], "my_measurement")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[0], "1")
-            self.assertEqual(unicode(row[1], 'utf8'), metadata_value)
+            self.assertEqual(row[1].decode('utf8'), metadata_value)
             self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
@@ -1781,13 +1775,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), len(cpmeas.AGG_NAMES) + 2)
             d = {}
             for index, caption in enumerate(header):
                 d[caption] = index
 
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[d["Count_my_objects"]], "6")
             for agg in cpmeas.AGG_NAMES:
                 value = (np.mean(data) if agg == cpmeas.AGG_MEAN
@@ -1831,12 +1825,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 2)
             d = {}
             for index, caption in enumerate(header):
                 d[caption] = index
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[d["Count_my_objects"]], "6")
             self.assertRaises(StopIteration, reader.next)
         finally:
@@ -1902,7 +1896,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(image_path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 4)
             expected_image_columns = (
                 "ImageNumber", "Count_my_objects", "first_measurement",
@@ -1911,7 +1905,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             for index, caption in enumerate(header):
                 self.assertTrue(caption in expected_image_columns)
                 d[caption] = index
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[d["ImageNumber"]], "1")
             self.assertEqual(row[d["Count_my_objects"]], "6")
             self.assertAlmostEqual(float(row[d["first_measurement"]]), np.sum(data))
@@ -1923,7 +1917,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(object_path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 4)
             expected_object_columns = (
                 "ImageNumber", "ObjectNumber", "Number_Object_Number",
@@ -1981,7 +1975,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(image_path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 2)
             expected_image_columns = (
                 "ImageNumber", "first_measurement")
@@ -2024,12 +2018,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 2)
             self.assertEqual(header[0], E.IMAGE_NUMBER)
             self.assertEqual(header[1], "quotation")
             for i in range(len(data)):
-                row = reader.next()
+                row = next(reader)
                 self.assertEqual(int(row[0]), i + 1)
                 self.assertEqual(row[1], data[i])
             self.assertRaises(StopIteration, reader.next)
@@ -2069,14 +2063,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 3)
             self.assertEqual(header[0], E.IMAGE_NUMBER)
             self.assertEqual(header[1], E.OBJECT_NUMBER)
             self.assertEqual(header[2], "my_measurement")
             for image_idx in range(mvalues.shape[0]):
                 for object_idx in range(mvalues.shape[1]):
-                    row = reader.next()
+                    row = next(reader)
                     self.assertEqual(len(row), 3)
                     self.assertEqual(int(row[0]), image_idx + 1)
                     self.assertEqual(int(row[1]), object_idx + 1)
@@ -2122,17 +2116,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 5)
             d = {}
             for index, column in enumerate(header):
                 d[column] = index
-            self.assertTrue(d.has_key("Metadata_Plate"))
-            self.assertTrue(d.has_key("Metadata_Well"))
-            self.assertTrue(d.has_key("my_measurement"))
+            self.assertTrue("Metadata_Plate" in d)
+            self.assertTrue("Metadata_Well" in d)
+            self.assertTrue("my_measurement" in d)
             for image_idx in range(mvalues.shape[0]):
                 for object_idx in range(mvalues.shape[1]):
-                    row = reader.next()
+                    row = next(reader)
                     self.assertEqual(len(row), 5)
                     self.assertEqual(row[d["Metadata_Plate"]], "P-X9TRG")
                     self.assertEqual(row[d["Metadata_Well"]], "C0%d" % (image_idx + 1))
@@ -2183,15 +2177,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             self.assertEqual(len(header), 3)
             d = {}
             for index, column in enumerate(header):
                 d[column] = index
-            self.assertTrue(d.has_key("my_measurement"))
+            self.assertTrue("my_measurement" in d)
             for image_idx in range(3):
                 for object_idx in range(mvalues.shape[1]):
-                    row = reader.next()
+                    row = next(reader)
                     self.assertEqual(len(row), 3)
                     if image_idx == 1:
                         self.assertEqual(row[d["my_measurement"]], str(np.NAN))
@@ -2205,7 +2199,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_07_02_missing_column_measurements(self):
         # Regression test of issue 1293:
         # pipeline.get_column_measurements reports a measurement
-        # The measurement isn't made (e.g. FlagImages)
+        # The measurement isn't made (e.g., FlagImages)
         # ExportToSpreadsheet should put a column of all NaNs, even if
         # no image set makes the measurement
         #
@@ -2245,14 +2239,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
-            header = reader.next()
+            header = next(reader)
             d = {}
             for index, column in enumerate(header):
                 d[column] = index
-            self.assertTrue(d.has_key(M_LOCATION_CENTER_X))
-            self.assertTrue(d.has_key(M_LOCATION_CENTER_Y))
+            self.assertTrue(M_LOCATION_CENTER_X in d)
+            self.assertTrue(M_LOCATION_CENTER_Y in d)
             for i in range(3):
-                row = reader.next()
+                row = next(reader)
                 x = row[d[M_LOCATION_CENTER_X]]
                 self.assertEqual(float(x), (i + 1) ** 2)
                 y = row[d[M_LOCATION_CENTER_Y]]
@@ -2270,7 +2264,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd.close()
         csv_path, csv_file = os.path.split(name)
         module = L.LoadText()
-        module.csv_directory.dir_choice = L.ABSOLUTE_FOLDER_NAME
+        module.csv_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.csv_directory.custom_path = csv_path
         module.csv_file_name.value = csv_file
         module.module_num = 1
@@ -2298,7 +2292,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                             (object_name, feature, cpmeas.COLTYPE_VARCHAR))
                 elif image_number is not None:
                     data = m[object_name, feature, image_number]
-                    if isinstance(data, basestring):
+                    if isinstance(data, six.string_types):
                         columns.append(
                                 (object_name, feature, cpmeas.COLTYPE_VARCHAR))
                     else:
@@ -2377,19 +2371,19 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             output_gct_filename = p + '.gct'
             fd = open(output_gct_filename, "r")
             reader = csv.reader(fd, delimiter="\t")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 1)
             self.assertEqual(row[0], "#1.2")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 2)
             self.assertEqual(row[0], "2")
             self.assertEqual(row[1], "1")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertEqual(row[0].lower(), "name")
             self.assertEqual(row[1].lower(), "description")
             self.assertEqual(row[2], metadata_name)
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[1], input_dir)
         finally:
             try:
@@ -2425,12 +2419,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             output_gct_filename = p + '.gct'
             fd = open(output_gct_filename, "r")
             reader = csv.reader(fd, delimiter="\t")
-            row = reader.next()
-            row = reader.next()
-            row = reader.next()
-            row = reader.next()
+            row = next(reader)
+            row = next(reader)
+            row = next(reader)
+            row = next(reader)
             self.assertEqual(row[0], "Channel1-01-A-01.tif")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[0], "Channel1-02-A-02.tif")
             fd.close()
         finally:
@@ -2465,12 +2459,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             output_gct_filename = p + '.gct'
             fd = open(output_gct_filename, "r")
             reader = csv.reader(fd, delimiter="\t")
-            row = reader.next()
-            row = reader.next()
-            row = reader.next()
-            row = reader.next()
+            row = next(reader)
+            row = next(reader)
+            row = next(reader)
+            row = next(reader)
             self.assertEqual(row[0], "Hi")
-            row = reader.next()
+            row = next(reader)
             self.assertEqual(row[0], "Hello")
             fd.close()
         finally:
@@ -2540,7 +2534,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             module.post_run(workspace)
             fd = open(path, "rb")
             rdr = csv.reader(fd)
-            header = rdr.next()
+            header = next(rdr)
             for heading, expected in zip(
                     header, ["Module", "Module Number", "Relationship",
                              "First Object Name", "First Image Number",
@@ -2550,7 +2544,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             for i in range(len(my_image_numbers1)):
                 (module_name, module_number, relationship,
                  object_name_1, image_number_1, object_number_1,
-                 object_name_2, image_number_2, object_number_2) = rdr.next()
+                 object_name_2, image_number_2, object_number_2) = next(rdr)
                 self.assertEqual(module_name, module.module_name)
                 self.assertEqual(int(module_number), module.module_num)
                 self.assertEqual(relationship, my_relationship)

@@ -4,15 +4,26 @@
 ColorToGray
 ===========
 
-**Color to Gray** converts an image with three color channels to a set
-of individual grayscale images.
+**ColorToGray** converts an image with multiple color channels to one or more
+grayscale images.
 
-| This module converts RGB (Red, Green, Blue) color images to grayscale.
-  All channels can be merged into one grayscale image (*Combine*), or
-  each channel can be extracted into a separate grayscale image
-  (*Split*). If you use *Combine*, the relative weights will adjust the
-  contribution of the colors relative to each other.
-| *Note:*\ All **Identify** modules require grayscale images.
+This module converts color and channel-stacked
+images to grayscale. All channels can be merged into one grayscale image
+(*Combine*), or each channel can be extracted into a separate grayscale image
+(*Split*). If you use *Combine*, the relative weights you provide allow
+adjusting the contribution of the colors relative to each other.
+Note that all **Identify** modules require grayscale images.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
 
 See also **GrayToColor**.
 """
@@ -25,6 +36,8 @@ import numpy as np
 import cellprofiler.image  as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
+
+from cellprofiler.setting import YES, NO
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -41,88 +54,150 @@ SLOT_CHANNEL_CHOICE = 0
 
 class ColorToGray(cpm.Module):
     module_name = "ColorToGray"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Image Processing"
+    channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE)
+                "Select the input image", cps.NONE, doc="""Select the multichannel image you want to convert to grayscale.""")
 
         self.combine_or_split = cps.Choice(
                 "Conversion method",
-                [COMBINE, SPLIT], doc='''
-            How do you want to convert the color image?
-            <ul>
-            <li><i>%(SPLIT)s:</i> Splits the three channels
-            (red, green, blue) of a color image into three separate grayscale images. </li>
-            <li><i>%(COMBINE)s</i> Converts a color image to a grayscale
-            image by combining the three channels (red, green, blue) together.</li>
-            </ul>''' % globals())
+                [COMBINE, SPLIT], doc='''\
+How do you want to convert the color image?
+
+-  *%(SPLIT)s:* Splits the channels of a color
+   image (e.g., red, green, blue) into separate grayscale images.
+-  *%(COMBINE)s:* Converts a color image to a grayscale image by
+   combining channels together (e.g., red, green, blue).''' % globals())
 
         self.rgb_or_channels = cps.Choice(
-                "Image type", [CH_RGB, CH_HSV, CH_CHANNELS], doc="""
-            Many images contain color channels other than red, green
-            and blue. For instance, GIF and PNG formats can have an alpha
-            channel that encodes transparency. TIF formats can have an arbitrary
-            number of channels which represent pixel measurements made by
-            different detectors, filters or lighting conditions. This setting
-            provides three options to choose from:
-            <ul>
-            <li><i>%(CH_RGB)s:</i> The RGB (red,green,blue) color space is the typical model in which color images are stored. Choosing this option
-            will split the image into any of the red, green and blue component images.</li>
-            <li><i>%(CH_HSV)s:</i>The HSV (hue, saturation, value) color space is based on more intuitive color characteristics as
-            tint, shade and tone. Choosing
-            this option will split the image into any of the hue, saturation, and value component images.</li>
-            <li><i>%(CH_CHANNELS)s:</i>This is a more complex model for images which involve more than three channels.</li>
-            </ul>""" % globals())
+                "Image type", [CH_RGB, CH_HSV, CH_CHANNELS], doc="""\
+This setting provides three options to choose from:
+
+-  *%(CH_RGB)s:* The RGB (red, green, blue) color space is the typical
+   model in which color images are stored. Choosing this option will
+   split the image into red, green, and blue component images.
+-  *%(CH_HSV)s:* The HSV (hue, saturation, value) color space is based
+   on color characteristics such as tint, shade, and tone.
+   Choosing this option will split the image into the hue,
+   saturation, and value component images.
+-  *%(CH_CHANNELS)s:* Many images contain color channels other than RGB
+   or HSV. For instance, GIF and PNG formats can have an alpha
+   channel that encodes transparency. TIF formats can have an arbitrary
+   number of channels which represent pixel measurements made by
+   different detectors, filters or lighting conditions. This setting
+   allows you to handle a more complex model for images that
+   have more than three channels.""" % globals())
 
         # The following settings are used for the combine option
         self.grayscale_name = cps.ImageNameProvider(
-                "Name the output image", "OrigGray")
+                "Name the output image", "OrigGray", doc="""\
+*(Used only when combining channels)*
+
+Enter a name for the resulting grayscale image.""")
 
         self.red_contribution = cps.Float(
                 "Relative weight of the red channel",
-                1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+                1, 0, doc='''\
+*(Used only when combining channels)*
+
+Relative weights: If all relative weights are equal, all three colors
+contribute equally in the final image. To weight colors relative to each
+other, increase or decrease the relative weights.''')
 
         self.green_contribution = cps.Float(
                 "Relative weight of the green channel",
-                1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+                1, 0, doc='''\
+*(Used only when combining channels)*
+
+Relative weights: If all relative weights are equal, all three colors
+contribute equally in the final image. To weight colors relative to each
+other, increase or decrease the relative weights.''')
 
         self.blue_contribution = cps.Float(
                 "Relative weight of the blue channel",
-                1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+                1, 0, doc='''\
+*(Used only when combining channels)*
+
+Relative weights: If all relative weights are equal, all three colors
+contribute equally in the final image. To weight colors relative to each
+other, increase or decrease the relative weights.''')
 
         # The following settings are used for the split RGB option
-        self.use_red = cps.Binary('Convert red to gray?', True)
-        self.red_name = cps.ImageNameProvider('Name the output image', "OrigRed")
+        self.use_red = cps.Binary('Convert red to gray?', True, doc="""\
+*(Used only when splitting RGB images)*
 
-        self.use_green = cps.Binary('Convert green to gray?', True)
-        self.green_name = cps.ImageNameProvider('Name the output image', "OrigGreen")
+Select *"%(YES)s"* to extract the red channel to grayscale. Otherwise, the
+red channel will be ignored.
+""" % globals())
 
-        self.use_blue = cps.Binary('Convert blue to gray?', True)
-        self.blue_name = cps.ImageNameProvider('Name the output image', "OrigBlue")
+        self.red_name = cps.ImageNameProvider('Name the output image', "OrigRed", doc="""\
+*(Used only when splitting RGB images)*
 
-        # The following settings are used for the split HSV ption
-        self.use_hue = cps.Binary('Convert hue to gray?', True)
-        self.hue_name = cps.ImageNameProvider('Name the output image', "OrigHue")
+Enter a name for the resulting grayscale image coming from the red channel.""")
 
-        self.use_saturation = cps.Binary('Convert saturation to gray?', True)
-        self.saturation_name = cps.ImageNameProvider('Name the output image', "OrigSaturation")
+        self.use_green = cps.Binary('Convert green to gray?', True, doc="""\
+*(Used only when splitting RGB images)*
 
-        self.use_value = cps.Binary('Convert value to gray?', True)
-        self.value_name = cps.ImageNameProvider('Name the output image', "OrigValue")
+Select *"%(YES)s"* to extract the green channel to grayscale. Otherwise, the
+green channel will be ignored.
+""" % globals())
+
+        self.green_name = cps.ImageNameProvider('Name the output image', "OrigGreen", doc="""\
+*(Used only when splitting RGB images)*
+
+Enter a name for the resulting grayscale image coming from the green channel.""")
+
+        self.use_blue = cps.Binary('Convert blue to gray?', True, doc="""\
+*(Used only when splitting RGB images)*
+
+Select *"%(YES)s"* to extract the blue channel to grayscale. Otherwise, the
+blue channel will be ignored.
+""" % globals())
+
+        self.blue_name = cps.ImageNameProvider('Name the output image', "OrigBlue", doc="""\
+*(Used only when splitting RGB images)*
+
+Enter a name for the resulting grayscale image coming from the blue channel.""")
+
+        # The following settings are used for the split HSV option
+        self.use_hue = cps.Binary('Convert hue to gray?', True, doc="""\
+*(Used only when splitting HSV images)*
+
+Select *"%(YES)s"* to extract the hue to grayscale. Otherwise, the hue
+will be ignored.
+""" % globals())
+
+        self.hue_name = cps.ImageNameProvider('Name the output image', "OrigHue", doc="""\
+*(Used only when splitting HSV images)*
+
+Enter a name for the resulting grayscale image coming from the hue.""")
+
+        self.use_saturation = cps.Binary('Convert saturation to gray?', True, doc="""\
+*(Used only when splitting HSV images)*
+
+Select *"%(YES)s"* to extract the saturation to grayscale. Otherwise, the
+saturation will be ignored.
+""" % globals())
+
+        self.saturation_name = cps.ImageNameProvider('Name the output image', "OrigSaturation", doc="""\
+*(Used only when splitting HSV images)*
+
+Enter a name for the resulting grayscale image coming from the saturation.""")
+
+        self.use_value = cps.Binary('Convert value to gray?', True, doc="""\
+*(Used only when splitting HSV images)*
+
+Select *"%(YES)s"* to extract the value to grayscale. Otherwise, the
+value will be ignored.
+""" % globals())
+
+        self.value_name = cps.ImageNameProvider('Name the output image', "OrigValue", doc="""\
+*(Used only when splitting HSV images)*
+
+Enter a name for the resulting grayscale image coming from the value.""")
 
         # The alternative model:
         self.channels = []
@@ -132,39 +207,41 @@ class ColorToGray(cpm.Module):
 
         self.channel_count = cps.HiddenCount(self.channels, "Channel count")
 
-    channel_names = (["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"] +
-                     [str(x) for x in range(5, 20)])
 
     def add_channel(self, can_remove=True):
         '''Add another channel to the channels list'''
         group = cps.SettingsGroup()
         group.can_remove = can_remove
-        group.append("channel_choice", cps.Choice(
-                "Channel number", self.channel_names,
-                self.channel_names[len(self.channels) % len(self.channel_names)], doc="""
-            This setting chooses a channel to be processed.
-            <i>Red: 1</i> is the first channel in a .TIF or the red channel
-            in a traditional image file. <i>Green: 2</i> and <i>Blue: 3</i>
-            are the second and third channels of a TIF or the green and blue
-            channels in other formats. <i>Alpha: 4</i> is the transparency
-            channel for image formats that support transparency and is
-            channel # 4 for a .TIF file.
+        group.append("channel_choice", cps.Integer(
+            text="Channel number",
+            value=len(self.channels) + 1,
+            minval=1,
+            doc="""\
+*(Used only when splitting images)*
 
-            <b>ColorToGray</b> will fail to process an image if you select
-            a channel that is not supported by that image, for example, "5"
-            for a .PNG file"""))
+This setting chooses a channel to be processed. For example, *1*
+is the first
+channel in a .TIF or the red channel in a traditional image file.
+*2* and *3* are the second and third channels of a TIF or
+the green and blue channels in other formats. *4* is the
+transparency channel for image formats that support transparency and is
+channel # 4 for a .TIF file. **ColorToGray** will fail to process an
+image if you select a channel that is not supported by that image, for
+example, “5” for a three-channel .PNG file."""))
 
         group.append("contribution", cps.Float(
-                "Relative weight of the channel", 1, 0, doc='''
-            <i>(Used only when combining channels)</i><br>
-            Relative weights: If all relative weights are equal, all three
-            colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.'''))
+                "Relative weight of the channel", 1, 0, doc='''\
+*(Used only when combining channels)*
+
+Relative weights: If all relative weights are equal, all three colors
+contribute equally in the final image. To weight colors relative to each
+other, increase or decrease the relative weights.'''))
 
         group.append("image_name", cps.ImageNameProvider(
-                "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""
-            This is the name of the grayscale image that holds
-            the image data from the chosen channel."""))
+                "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""\
+*(Used only when splitting images)*
+
+Select the name of the output grayscale image."""))
 
         if group.can_remove:
             group.append("remover", cps.RemoveSettingButton(
@@ -260,7 +337,7 @@ class ColorToGray(cpm.Module):
                     (self.red_contribution, self.green_contribution,
                      self.blue_contribution))]
 
-        return [(self.channel_names.index(channel.channel_choice),
+        return [(self.get_channel_idx_from_choice(channel.channel_choice.value),
                  channel.contribution.value) for channel in self.channels]
 
     @staticmethod
@@ -271,7 +348,10 @@ class ColorToGray(cpm.Module):
                  (string ending in a one-based index)
         returns the zero-based index of the channel.
         '''
-        return int(re.search("[0-9]+$", choice).group()) - 1
+        if type(choice) == int:
+            return choice - 1
+        else:
+            return int(re.search("[0-9]+$", choice).group()) - 1
 
     def channels_and_image_names(self):
         """Return tuples of channel indexes and the image names for output"""
@@ -293,8 +373,12 @@ class ColorToGray(cpm.Module):
         for channel in self.channels:
             choice = channel.channel_choice.value
             channel_idx = self.get_channel_idx_from_choice(choice)
+            if channel_idx < len(self.channel_names):
+                channel_name = self.channel_names[channel_idx]
+            else:
+                channel_name = 'Channel: ' + str(choice)
             result.append((channel_idx, channel.image_name.value,
-                           channel.channel_choice.value))
+                           channel_name))
         return result
 
     def run(self, workspace):
@@ -343,10 +427,10 @@ class ColorToGray(cpm.Module):
         input_image = workspace.display_data.input_image
         output_image = workspace.display_data.output_image
         figure.set_subplots((1, 2))
-        figure.subplot_imshow(0, 0, input_image,
-                              title="Original image: %s" % self.image_name)
+        figure.subplot_imshow_color(0, 0, input_image,
+                              title="Original image: %s" % self.image_name.value)
         figure.subplot_imshow(0, 1, output_image,
-                              title="Grayscale image: %s" % self.grayscale_name,
+                              title="Grayscale image: %s" % self.grayscale_name.value,
                               colormap=matplotlib.cm.Greys_r,
                               sharexy=figure.subplot(0, 0))
 
@@ -375,15 +459,14 @@ class ColorToGray(cpm.Module):
         input_image = workspace.display_data.input_image
         disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)
-        ncols = int(np.ceil((ndisp+1)**0.5))
-        subplots = (ncols, (ndisp/ncols)+1)
+        ncols = int(np.ceil((ndisp + 1) ** 0.5))
+        subplots = (ncols, (ndisp / ncols) + 1)
         figure.set_subplots(subplots)
-        figure.subplot_imshow(0, 0, input_image,
-                              title="Original image")
+        figure.subplot_imshow_color(0, 0, input_image, title="Original image")
 
         for eachplot in range(ndisp):
-             placenum = eachplot +1
-             figure.subplot_imshow(placenum%ncols, placenum/ncols, disp_collection[eachplot][0],
+             placenum = eachplot + 1
+             figure.subplot_imshow(placenum%ncols, placenum / ncols, disp_collection[eachplot][0],
                                    title="%s" % (disp_collection[eachplot][1]),
                                    colormap=matplotlib.cm.Greys_r,
                                    sharexy=figure.subplot(0, 0))
@@ -445,14 +528,16 @@ class ColorToGray(cpm.Module):
                               setting_values[13:])
             variable_revision_number = 3
 
-        #
-        # Standardize the channel choices
-        #
-        setting_values = list(setting_values)
-        nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
-        for i in range(nchannels):
-            idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
-            channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
-            setting_values[idx] = self.channel_names[channel_idx]
+        if variable_revision_number < 4:
+            #
+            # Standardize the channel choices
+            #
+            setting_values = list(setting_values)
+            nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
+            for i in range(nchannels):
+                idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
+                channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
+                setting_values[idx] = channel_idx + 1
+            variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab

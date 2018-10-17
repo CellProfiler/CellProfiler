@@ -3,18 +3,21 @@
 """
 
 import cellprofiler.gui.help
+import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
 import cellprofiler.preferences
 import matplotlib.cm
 import os
 import sys
 import wx
+import six
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"
 FONT = "Font"
 COLOR = "Color"
 CHOICE = "Choice"
+TEXT = "Text"
 
 
 class IntegerPreference(object):
@@ -102,9 +105,9 @@ class PreferencesDlg(wx.Dialog):
                 ctl = wx.CheckBox(scrollpanel, -1)
                 ctl.Value = getter()
             elif isinstance(ui_info, IntegerPreference):
-                minval = (-sys.maxint if ui_info.minval is None
+                minval = (-sys.maxsize if ui_info.minval is None
                           else ui_info.minval)
-                maxval = (sys.maxint if ui_info.maxval is None
+                maxval = (sys.maxsize if ui_info.maxval is None
                           else ui_info.maxval)
                 ctl = wx.SpinCtrl(scrollpanel,
                                   min=minval,
@@ -118,8 +121,7 @@ class PreferencesDlg(wx.Dialog):
                 current = getter()
                 if current is None:
                     current = ""
-                ctl = wx.TextCtrl(scrollpanel, -1, current,
-                                  validator=validator)
+                ctl = wx.TextCtrl(parent=scrollpanel, id=-1, value=current, validator=validator)
                 min_height = ctl.GetMinHeight()
                 min_width = ctl.GetTextExtent("Make sure the window can display this")[0]
                 ctl.SetMinSize((min_width, min_height))
@@ -132,8 +134,8 @@ class PreferencesDlg(wx.Dialog):
                     if dlg.ShowModal() == wx.ID_OK:
                         ctl.Value = dlg.Path
                         dlg.Destroy()
-            elif (isinstance(ui_info, basestring) and
-                      ui_info.startswith(FILEBROWSE)):
+            elif (isinstance(ui_info, six.string_types) and
+                  ui_info.startswith(FILEBROWSE)):
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)
                     dlg.Path = ctl.Value
@@ -175,7 +177,11 @@ class PreferencesDlg(wx.Dialog):
             button = wx.Button(scrollpanel, -1, '?', (0, 0), (30, -1))
 
             def on_help(event, help_text=help_text):
-                dlg = cellprofiler.gui.htmldialog.HTMLDialog(self, "Preferences help", help_text)
+                dlg = cellprofiler.gui.htmldialog.HTMLDialog(
+                    self,
+                    "Preferences help",
+                    cellprofiler.gui.html.utils.rst_to_html_fragment(help_text)
+                )
                 dlg.Show()
 
             sizer.Add(button, (index, 3))
@@ -235,121 +241,110 @@ class PreferencesDlg(wx.Dialog):
                 cellprofiler.preferences.get_telemetry,
                 cellprofiler.preferences.set_telemetry,
                 CHOICE,
-                cellprofiler.gui.help.SHOW_TELEMETRY_HELP
+                cellprofiler.preferences.SHOW_TELEMETRY_HELP
             ],
                 ["Default Input Folder",
                  cellprofiler.preferences.get_default_image_directory,
                  cellprofiler.preferences.set_default_image_directory,
-                 DIRBROWSE, cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP],
+                 DIRBROWSE, cellprofiler.preferences.DEFAULT_IMAGE_FOLDER_HELP],
                 ["Default Output Folder",
                  cellprofiler.preferences.get_default_output_directory,
                  cellprofiler.preferences.set_default_output_directory,
-                 DIRBROWSE, cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP],
+                 DIRBROWSE, cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_HELP],
                 ["Table font",
                  self.get_table_font,
                  self.set_table_font,
-                 FONT, cellprofiler.gui.help.TABLE_FONT_HELP],
+                 FONT, cellprofiler.preferences.TABLE_FONT_HELP],
                 ["Default colormap",
                  cellprofiler.preferences.get_default_colormap,
                  cellprofiler.preferences.set_default_colormap,
-                 cmaps, cellprofiler.gui.help.DEFAULT_COLORMAP_HELP],
+                 cmaps, cellprofiler.preferences.DEFAULT_COLORMAP_HELP],
                 ["Error color",
                  cellprofiler.preferences.get_error_color,
                  cellprofiler.preferences.set_error_color,
-                 COLOR, cellprofiler.gui.help.ERROR_COLOR_HELP],
+                 COLOR, cellprofiler.preferences.ERROR_COLOR_HELP],
                 ["Primary outline color",
                  cellprofiler.preferences.get_primary_outline_color,
                  cellprofiler.preferences.set_primary_outline_color,
-                 COLOR, cellprofiler.gui.help.PRIMARY_OUTLINE_COLOR_HELP],
+                 COLOR, cellprofiler.preferences.PRIMARY_OUTLINE_COLOR_HELP],
                 ["Secondary outline color",
                  cellprofiler.preferences.get_secondary_outline_color,
                  cellprofiler.preferences.set_secondary_outline_color,
-                 COLOR, cellprofiler.gui.help.SECONDARY_OUTLINE_COLOR_HELP],
+                 COLOR, cellprofiler.preferences.SECONDARY_OUTLINE_COLOR_HELP],
                 ["Tertiary outline color",
                  cellprofiler.preferences.get_tertiary_outline_color,
                  cellprofiler.preferences.set_tertiary_outline_color,
-                 COLOR, cellprofiler.gui.help.TERTIARY_OUTLINE_COLOR_HELP],
+                 COLOR, cellprofiler.preferences.TERTIARY_OUTLINE_COLOR_HELP],
                 ["Interpolation mode",
                  cellprofiler.preferences.get_interpolation_mode,
                  cellprofiler.preferences.set_interpolation_mode,
                  [cellprofiler.preferences.IM_NEAREST, cellprofiler.preferences.IM_BILINEAR, cellprofiler.preferences.IM_BICUBIC],
-                 cellprofiler.gui.help.INTERPOLATION_MODE_HELP],
+                 cellprofiler.preferences.INTERPOLATION_MODE_HELP],
                 ["Intensity normalization",
                  cellprofiler.preferences.get_intensity_mode,
                  cellprofiler.preferences.set_intensity_mode,
-                 [cellprofiler.preferences.INTENSITY_MODE_RAW, cellprofiler.preferences.INTENSITY_MODE_NORMAL,
-                  cellprofiler.preferences.INTENSITY_MODE_LOG],
-                 cellprofiler.gui.help.INTENSITY_MODE_HELP],
+                 [cellprofiler.preferences.INTENSITY_MODE_RAW,
+                  cellprofiler.preferences.INTENSITY_MODE_NORMAL,
+                  cellprofiler.preferences.INTENSITY_MODE_LOG,
+                  cellprofiler.preferences.INTENSITY_MODE_GAMMA],
+                 cellprofiler.preferences.INTENSITY_MODE_HELP],
+                ["Intensity normalization factor",
+                 cellprofiler.preferences.get_normalization_factor,
+                 cellprofiler.preferences.set_normalization_factor,
+                 TEXT,
+                 cellprofiler.preferences.NORMALIZATION_FACTOR_HELP],
                 ["CellProfiler plugins directory",
                  cellprofiler.preferences.get_plugin_directory,
                  cellprofiler.preferences.set_plugin_directory,
-                 DIRBROWSE, cellprofiler.gui.help.PLUGINS_DIRECTORY_HELP],
+                 DIRBROWSE, cellprofiler.preferences.PLUGINS_DIRECTORY_HELP],
                 ["ImageJ plugins directory",
                  cellprofiler.preferences.get_ij_plugin_directory,
                  cellprofiler.preferences.set_ij_plugin_directory,
-                 DIRBROWSE, cellprofiler.gui.help.IJ_PLUGINS_DIRECTORY_HELP],
+                 DIRBROWSE, cellprofiler.preferences.IJ_PLUGINS_DIRECTORY_HELP],
                 ["Display welcome text on startup",
                  cellprofiler.preferences.get_startup_blurb,
                  cellprofiler.preferences.set_startup_blurb,
-                 CHOICE, cellprofiler.gui.help.SHOW_STARTUP_BLURB_HELP],
+                 CHOICE, cellprofiler.preferences.SHOW_STARTUP_BLURB_HELP],
                 ["Warn if Java runtime environment not present",
                  cellprofiler.preferences.get_report_jvm_error,
                  cellprofiler.preferences.set_report_jvm_error,
-                 CHOICE, cellprofiler.gui.help.REPORT_JVM_ERROR_HELP],
+                 CHOICE, cellprofiler.preferences.REPORT_JVM_ERROR_HELP],
                 ['Show the "Analysis complete" message at the end of a run',
                  cellprofiler.preferences.get_show_analysis_complete_dlg,
                  cellprofiler.preferences.set_show_analysis_complete_dlg,
-                 CHOICE, cellprofiler.gui.help.SHOW_ANALYSIS_COMPLETE_HELP],
+                 CHOICE, cellprofiler.preferences.SHOW_ANALYSIS_COMPLETE_HELP],
                 ['Show the "Exiting test mode" message',
                  cellprofiler.preferences.get_show_exiting_test_mode_dlg,
                  cellprofiler.preferences.set_show_exiting_test_mode_dlg,
-                 CHOICE, cellprofiler.gui.help.SHOW_EXITING_TEST_MODE_HELP],
+                 CHOICE, cellprofiler.preferences.SHOW_EXITING_TEST_MODE_HELP],
                 ['Warn if images are different sizes',
                  cellprofiler.preferences.get_show_report_bad_sizes_dlg,
                  cellprofiler.preferences.set_show_report_bad_sizes_dlg,
-                 CHOICE, cellprofiler.gui.help.SHOW_REPORT_BAD_SIZES_DLG_HELP],
+                 CHOICE, cellprofiler.preferences.SHOW_REPORT_BAD_SIZES_DLG_HELP],
                 ['Show the sampling menu',
                  cellprofiler.preferences.get_show_sampling,
                  cellprofiler.preferences.set_show_sampling,
-                 CHOICE, """<p>Show the sampling menu </p>
-                 <p><i>Note that CellProfiler must be restarted after setting.</i></p>
-                 <p>The sampling menu is an interplace for Paramorama, a plugin for an interactive visualization
-                 program for exploring the parameter space of image analysis algorithms.
-                 will generate a text file, which specifies: (1) all unique combinations of
-                 the sampled parameter values; (2) the mapping from each combination of parameter values to
-                 one or more output images; and (3) the actual output images.</p>
-                 <p>More information on how to use the plugin can be found
-                 <a href="http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/">here</a>.</p>
-                 <p><b>References</b>
-                 <ul>
-                 <li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE
-                 and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
-                 </ul>"""],
+                 CHOICE, cellprofiler.preferences.SHOW_SAMPLING_MENU_HELP],
                 ['Maximum number of workers',
                  cellprofiler.preferences.get_max_workers,
                  cellprofiler.preferences.set_max_workers,
                  IntegerPreference(1, cellprofiler.preferences.default_max_workers() * 4),
-                 cellprofiler.gui.help.MAX_WORKERS_HELP],
+                 cellprofiler.preferences.MAX_WORKERS_HELP],
                 ['Temporary folder',
                  cellprofiler.preferences.get_temporary_directory,
                  (lambda x: cellprofiler.preferences.set_temporary_directory(x, globally=True)),
                  DIRBROWSE,
-                 cellprofiler.gui.help.TEMP_DIR_HELP],
+                 cellprofiler.preferences.TEMP_DIR_HELP],
                 ['Maximum memory for Java (MB)',
                  cellprofiler.preferences.get_jvm_heap_mb,
                  cellprofiler.preferences.set_jvm_heap_mb,
                  IntegerPreference(128, 64000),
-                 cellprofiler.gui.help.JVM_HEAP_HELP],
+                 cellprofiler.preferences.JVM_HEAP_HELP],
                 ['Save pipeline and/or file list in addition to project',
                  cellprofiler.preferences.get_save_pipeline_with_project,
                  cellprofiler.preferences.set_save_pipeline_with_project,
                  cellprofiler.preferences.SPP_ALL,
-                 cellprofiler.gui.help.SAVE_PIPELINE_WITH_PROJECT_HELP],
-                ['Batch Profiler URL',
-                 cellprofiler.preferences.get_batchprofiler_url,
-                 cellprofiler.preferences.set_batchprofiler_url,
-                 None,
-                 cellprofiler.gui.help.BATCHPROFILER_URL_HELP],
+                 cellprofiler.preferences.SAVE_PIPELINE_WITH_PROJECT_HELP],
                 ["Pony",
                  cellprofiler.preferences.get_wants_pony,
                  cellprofiler.preferences.set_wants_pony,

@@ -1,6 +1,5 @@
 """Measurements.py - storage for image and object measurements
 """
-from __future__ import with_statement
 
 import json
 import logging
@@ -12,6 +11,7 @@ import numpy as np
 import re
 from scipy.io.matlab import loadmat
 from itertools import repeat
+import six
 import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
@@ -139,7 +139,7 @@ C_SERIES = "Series"
 '''The frame of a movie file'''
 C_FRAME = "Frame"
 
-'''For 3-D images (e.g. 3 color planes), the indexes of the planes'''
+'''For 3-D images (e.g., 3 color planes), the indexes of the planes'''
 C_FRAMES = "Frames"
 
 '''The channel # of a color image plane'''
@@ -517,8 +517,8 @@ class Measurements(object):
 
         Experiment measurements have one value per experiment
         """
-        if isinstance(data, basestring):
-            data = unicode(data).encode('unicode_escape')
+        if isinstance(data, six.string_types):
+            data = six.text_type(data).encode('unicode_escape')
         self.hdf5_dict.add_all(EXPERIMENT, feature_name, [data], [0])
 
     def get_group_number(self):
@@ -558,11 +558,11 @@ class Measurements(object):
         '''
         d = {}
         image_numbers = self.get_image_numbers()
-        values = [[unicode(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
+        values = [[six.text_type(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
                   for feature in features]
         for i, image_number in enumerate(image_numbers):
             key = tuple([(k, v[i]) for k, v in zip(features, values)])
-            if not d.has_key(key):
+            if key not in d:
                 d[key] = []
             d[key].append(image_number)
         return [(dict(k), d[k]) for k in sorted(d.keys())]
@@ -665,7 +665,7 @@ class Measurements(object):
 
         module_number - # of module recording the relationship
 
-        relationship - the name of the relationship, e.g. "Parent" for
+        relationship - the name of the relationship, e.g., "Parent" for
                        object # 1 is parent of object # 2
 
         object_name1, object_name2 - the names of the two objects
@@ -704,7 +704,7 @@ class Measurements(object):
                 # Find the slice of the hdf5 array that contains all records
                 # for the desired image numbers
                 #
-                t_min = sys.maxint
+                t_min = sys.maxsize
                 t_max = 0
                 for image_number in image_numbers:
                     i_min, i_max = d.get(image_number, (t_min, t_max - 1))
@@ -773,7 +773,7 @@ class Measurements(object):
         lasts = np.hstack((firsts[1:], [True]))
         for i, f, l in zip(
                 imgnums[firsts], offsets[firsts], offsets[lasts]):
-            old_f, old_l = d.get(i, (sys.maxint, 0))
+            old_f, old_l = d.get(i, (sys.maxsize, 0))
             d[i] = (min(old_f, f), max(old_l, l))
 
     def copy_relationships(self, src):
@@ -889,7 +889,7 @@ class Measurements(object):
         '''Assign all image measurements to new image numbers
 
         new_image_numbers - a zero-based array that maps old image number
-                            to new image number, e.g. if
+                            to new image number, e.g., if
                             new_image_numbers = [ 0, 3, 1, 2], then
                             the measurements for old image number 1 will
                             be the measurements for new image number 3, etc.
@@ -921,7 +921,7 @@ class Measurements(object):
 
     @staticmethod
     def wrap_string(v):
-        if isinstance(v, basestring):
+        if isinstance(v, six.string_types):
             if getattr(v, "__class__") == str:
                 v = v.decode("utf-8")
             return v.encode('unicode_escape')
@@ -1157,7 +1157,7 @@ class Measurements(object):
                   for tag in tags]
         for i, image_number in enumerate(image_numbers):
             key = tuple([(k, v[i]) for k, v in zip(tags, values)])
-            if not flat_dictionary.has_key(key):
+            if key not in flat_dictionary:
                 flat_dictionary[key] = []
             flat_dictionary[key].append(image_number)
         result = []
@@ -1217,7 +1217,7 @@ class Measurements(object):
         # more loosely matched.
         #
         def cast(x):
-            if isinstance(x, basestring) and x.isdigit():
+            if isinstance(x, six.string_types) and x.isdigit():
                 return int(x)
             return x
 
@@ -1243,7 +1243,7 @@ class Measurements(object):
         vv = [values[features.index(c)] for c in common_features]
         for i in range(len(values[0])):
             key = tuple([cast(vvv[i]) for vvv in vv])
-            if not groupings.has_key(key):
+            if key not in groupings:
                 raise ValueError(
                         ("There was no image set whose metadata matched row %d.\n" % (i + 1)) +
                         "Metadata values: " +
@@ -1318,12 +1318,12 @@ class Measurements(object):
 
         stop - stop loading when this line is reached.
         '''
-        if isinstance(fd_or_file, basestring):
+        if isinstance(fd_or_file, six.string_types):
             with open(fd_or_file, "r") as fd:
                 return self.load_image_sets(fd, start, stop)
         import csv
         reader = csv.reader(fd_or_file)
-        header = [x.decode('utf-8') for x in reader.next()]
+        header = [x.decode('utf-8') for x in next(reader)]
         columns = [[] for _ in range(len(header))]
         column_is_all_none = np.ones(len(header), bool)
         last_image_number = 0
@@ -1365,7 +1365,7 @@ class Measurements(object):
                 self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
 
     def write_image_sets(self, fd_or_file, start=None, stop=None):
-        if isinstance(fd_or_file, basestring):
+        if isinstance(fd_or_file, six.string_types):
             with open(fd_or_file, "w") as fd:
                 return self.write_image_sets(fd, start, stop)
 
@@ -1406,8 +1406,8 @@ class Measurements(object):
                 field = column[i]
                 if field is np.NaN or field is None:
                     field = ""
-                if isinstance(field, basestring):
-                    if isinstance(field, unicode):
+                if isinstance(field, six.string_types):
+                    if isinstance(field, six.text_type):
                         field = field.encode("utf-8")
                     field = "\"" + field.replace("\"", "\"\"") + "\""
                 else:
@@ -1491,7 +1491,7 @@ class Measurements(object):
 
         This method can be run on the measurements output by CreateBatchFiles
         to map the paths of any URL that wasn't mapped by the alter-paths
-        mechanism (e.g. URLs encoded in blobs)
+        mechanism (e.g., URLs encoded in blobs)
 
         url - the url to map
 
@@ -1517,7 +1517,7 @@ class Measurements(object):
                     full_name = \
                         remote_directory + full_name[len(local_directory):]
         url = "file:" + urllib.pathname2url(full_name)
-        if isinstance(url, unicode):
+        if isinstance(url, six.text_type):
             url = url.encode("utf-8")
         return url
 
@@ -1580,7 +1580,7 @@ class Measurements(object):
         from .modules.loadimages import LoadImagesImageProviderURL
         from .image import GrayscaleImage, RGBImage
         name = str(name)
-        if self.__images.has_key(name):
+        if name in self.__images:
             image = self.__images[name]
         else:
             matching_providers = [p for p in self.__image_providers
@@ -1689,7 +1689,7 @@ class Measurements(object):
         name - the name of the provider
         '''
         self.get_image_provider(name).release_memory()
-        if self.__images.has_key(name):
+        if name in self.__images:
             del self.__images[name]
 
     def clear_cache(self):

@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Image Math** performs simple mathematical operations on image
+ImageMath
+=========
+
+**ImageMath** performs simple mathematical operations on image
 intensities.
 
 This module can perform addition, subtraction, multiplication, division,
@@ -15,12 +18,24 @@ scaled from 0 – 1 for object identification and display purposes, so
 additional rescaling may be needed. Please see the **RescaleIntensity**
 module for more scaling options.
 
-See also **ApplyThreshold**, **RescaleIntensity**,
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **Threshold**, **RescaleIntensity**,
 **CorrectIlluminationCalculate**.
 """
 
 import inflect
 import numpy
+import skimage.util
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -81,86 +96,97 @@ class ImageMath(cellprofiler.module.ImageProcessing):
                 [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE,
                  O_MINIMUM, O_MAXIMUM, O_INVERT,
                  O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY,
-                 O_AND, O_OR, O_NOT, O_EQUALS, O_NONE], doc="""
-            Select the operation to perform. Note that if more than two images are chosen,
-            then operations will be performed sequentially from first to last, e.g.,
-            for "Divide", (Image1 / Image2) / Image3
-            <ul>
-            <li><i>%(O_ADD)s:</i> Adds the first image to the second, and so on.</li>
-            <li><i>%(O_SUBTRACT)s:</i> Subtracts the second image from the first.</li>
-            <li><i>%(O_DIFFERENCE)s:</i> The absolute value of the difference between the first and second images.</li>
-            <li><i>%(O_MULTIPLY)s:</i> Multiplies the first image by the second.</li>
-            <li><i>%(O_DIVIDE)s:</i> Divides the first image by the second.</li>
-            <li><i>%(O_AVERAGE)s</i> Calculates the mean intensity of the images loaded in the module.
-            This is equivalent to the Add option divided by the number of images loaded
-            by this module.  If you would like to average all of the images in
-            an entire pipeline, i.e., across cycles, you should instead use the <b>CorrectIlluminationCalculate</b> module
-            and choose the <i>All</i> (vs. <i>Each</i>) option.</li>
-            <li><i>%(O_MINIMUM)s:</i> Returns the element-wise minimum value at each pixel location.</li>
-            <li><i>%(O_MAXIMUM)s:</i> Returns the element-wise maximum value at each pixel location.</li>
-            <li><i>%(O_INVERT)s:</i> Subtracts the image intensities from 1. This makes the darkest
-            color the brightest and vice-versa.</li>
-            <li><i>%(O_LOG_TRANSFORM)s</i> Log transforms each pixel's intensity.
-            The actual function is log<sub>2</sub>(image + 1), transforming values from 0 to 1 into values from 0 to 1.</li>
-            <li><i>%(O_LOG_TRANSFORM_LEGACY)s</i> Log<sub>2</sub> transform for backwards compatibility.</li>
-            <li><i>%(O_NONE)s</i> This option is useful if you simply want to select some of the later
-            options in the module, such as adding, multiplying, or exponentiating your image by a constant.</li>
-            </ul>
-            <p>The following are operations that produce binary images. In a
-            binary image, the foreground has a truth value of "true" and the
-            background has a truth value of "false". The
-            operations, <i>%(O_OR)s, %(O_AND)s and %(O_NOT)s</i> will convert
-            the input images to binary by changing all zero values to
-            background (false) and all other values to foreground (true).
-            <ul>
-            <li><i>%(O_AND)s:</i> a pixel in the output image is in the
-            foreground only if all corresponding pixels in the input images are
-            also in the foreground.</li>
-            <li><i>%(O_OR)s:</i> a pixel in the output image is in the
-            foreground if a corresponding pixel in any of the input images is
-            also in the foreground.</li>
-            <li><i>%(O_NOT)s:</i> the foreground of the input image becomes
-            the background of the output image and vice-versa.</li>
-            <li><i>%(O_EQUALS)s:</i> a pixel in the output image is in the
-            foreground if the corresponding pixels in the input images have
-            the same value.</li>
-            </ul>
-            <p>Note that <i>%(O_INVERT)s</i>, <i>%(O_LOG_TRANSFORM)s</i>, <i>%(O_LOG_TRANSFORM_LEGACY)s</i> and <i>%(O_NONE)s</i> operate on only a single image.</p>
-            """ % globals())
+                 O_AND, O_OR, O_NOT, O_EQUALS, O_NONE], doc="""\
+Select the operation to perform. Note that if more than two images are
+chosen, then operations will be performed sequentially from first to
+last, e.g., for “Divide”, (Image1 / Image2) / Image3
+
+-  *%(O_ADD)s:* Adds the first image to the second, and so on.
+-  *%(O_SUBTRACT)s:* Subtracts the second image from the first.
+-  *%(O_DIFFERENCE)s:* The absolute value of the difference between the
+   first and second images.
+-  *%(O_MULTIPLY)s:* Multiplies the first image by the second.
+-  *%(O_DIVIDE)s:* Divides the first image by the second.
+-  *%(O_AVERAGE)s:* Calculates the mean intensity of the images loaded
+   in the module. This is equivalent to the Add option divided by the
+   number of images loaded by this module. If you would like to average
+   all of the images in an entire pipeline, i.e., across cycles, you
+   should instead use the **CorrectIlluminationCalculate** module and
+   choose the *All* (vs. *Each*) option.
+-  *%(O_MINIMUM)s:* Returns the element-wise minimum value at each
+   pixel location.
+-  *%(O_MAXIMUM)s:* Returns the element-wise maximum value at each
+   pixel location.
+-  *%(O_INVERT)s:* Subtracts the image intensities from 1. This makes
+   the darkest color the brightest and vice-versa. Note that if a
+   mask has been applied to the image, the mask will also be inverted.
+-  *%(O_LOG_TRANSFORM)s:* Log transforms each pixel’s intensity. The
+   actual function is log\ :sub:`2`\ (image + 1), transforming values
+   from 0 to 1 into values from 0 to 1.
+-  *%(O_LOG_TRANSFORM_LEGACY)s:* Log\ :sub:`2` transform for backwards
+   compatibility.
+-  *%(O_NONE)s:* This option is useful if you simply want to select some
+   of the later options in the module, such as adding, multiplying, or
+   exponentiating your image by a constant.
+
+The following are operations that produce binary images. In a binary
+image, the foreground has a truth value of “true” (ones) and the background has
+a truth value of “false” (zeros). The operations, *%(O_OR)s, %(O_AND)s and
+%(O_NOT)s* will convert the input images to binary by changing all zero
+values to background (false) and all other values to foreground (true).
+
+-  *%(O_AND)s:* a pixel in the output image is in the foreground only
+   if all corresponding pixels in the input images are also in the
+   foreground.
+-  *%(O_OR)s:* a pixel in the output image is in the foreground if a
+   corresponding pixel in any of the input images is also in the
+   foreground.
+-  *%(O_NOT)s:* the foreground of the input image becomes the
+   background of the output image and vice-versa.
+-  *%(O_EQUALS)s:* a pixel in the output image is in the foreground if
+   the corresponding pixels in the input images have the same value.
+
+Note that *%(O_INVERT)s*, *%(O_LOG_TRANSFORM)s*,
+*%(O_LOG_TRANSFORM_LEGACY)s* and *%(O_NONE)s* operate on only a
+single image.
+""" % globals())
         self.divider_top = cellprofiler.setting.Divider(line=False)
 
         self.exponent = cellprofiler.setting.Float(
-                "Raise the power of the result by", 1, doc="""
-            Enter an exponent to raise the result to *after* the chosen operation""")
+                "Raise the power of the result by", 1, doc="""\
+Enter an exponent to raise the result to *after* the chosen operation.""")
 
         self.after_factor = cellprofiler.setting.Float(
-                "Multiply the result by", 1, doc="""
-            Enter a factor to multiply the result by *after* the chosen operation""")
+                "Multiply the result by", 1, doc="""\
+Enter a factor to multiply the result by *after* the chosen operation.""")
 
         self.addend = cellprofiler.setting.Float(
-                "Add to result", 0, doc="""
-            Enter a number to add to the result *after* the chosen operation""")
+                "Add to result", 0, doc="""\
+Enter a number to add to the result *after* the chosen operation.""")
 
         self.truncate_low = cellprofiler.setting.Binary(
-                "Set values less than 0 equal to 0?", True, doc="""
-            Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(YES)s</i> to set negative values to 0.""" % globals())
+                "Set values less than 0 equal to 0?", True, doc="""\
+Values outside the range 0 to 1 might not be handled well by other
+modules. Select *%(YES)s* to set negative values to 0.
+""" % globals())
 
         self.truncate_high = cellprofiler.setting.Binary(
-                "Set values greater than 1 equal to 1?", True, doc="""
-            Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(YES)s</i> to set values greater than 1 to a maximum value of 1.""" % globals())
+                "Set values greater than 1 equal to 1?", True, doc="""\
+Values outside the range 0 to 1 might not be handled well by other
+modules. Select *%(YES)s* to set values greater than 1 to a maximum
+value of 1.
+""" % globals())
 
         self.ignore_mask = cellprofiler.setting.Binary(
-                "Ignore the image masks?", False, doc="""
-            Usually, the smallest mask of all image operands is applied after
-            image math has been completed. Select <i>%(YES)s</i> to set
-            equal to zero all previously masked pixels and operate on the masked
-            images as if no mask had been applied.""" % globals())
+                "Ignore the image masks?", False, doc="""\
+Select *%(YES)s* to set equal to zero all previously masked pixels and
+operate on the masked images as if no mask had been applied. Otherwise,
+the smallest image mask is applied after image math has been completed.
+""" % globals())
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
-                "Name the output image", "ImageAfterMath", doc="""
-            Enter a name for the resulting image.""")
+                "Name the output image", "ImageAfterMath", doc="""\
+Enter a name for the resulting image.""")
 
         self.add_button = cellprofiler.setting.DoSomething("", "Add another image", self.add_image)
 
@@ -171,31 +197,40 @@ class ImageMath(cellprofiler.module.ImageProcessing):
         group = cellprofiler.setting.SettingsGroup()
         group.removable = removable
         group.append("image_or_measurement", cellprofiler.setting.Choice(
-                "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT], doc="""
-            You can perform math operations using two images or you
-            can use a measurement for one of the operands. For instance,
-            to divide the intensity of one image by another, choose <i>%(IM_IMAGE)s</i>
-            for both and pick the respective images. To divide the intensity
-            of an image by its median intensity, use <b>MeasureImageIntensity</b>
-            prior to this module to calculate the median intensity, then
-            select <i>%(IM_MEASUREMENT)s</i> and use the median intensity measurement as
-            the denominator""" % globals()))
+                "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT], doc="""\
+You can perform math operations using two images or you can use a
+measurement for one of the operands. For instance, to divide the
+intensity of one image by another, choose *%(IM_IMAGE)s* for both and
+pick the respective images. To divide the intensity of an image by its
+median intensity, use **MeasureImageIntensity** prior to this module to
+calculate the median intensity, then select *%(IM_MEASUREMENT)s* and
+use the median intensity measurement as the denominator.
+""" % globals()))
 
-        group.append("image_name", cellprofiler.setting.ImageNameSubscriber("", "", doc="""
-            Selec the image that you want to use for this operation."""))
+        group.append("image_name", cellprofiler.setting.ImageNameSubscriber("Select the image", "", doc="""\
+Select the image that you want to use for this operation."""))
 
         group.append("measurement", cellprofiler.setting.Measurement(
-                "Measurement", lambda: cellprofiler.measurement.IMAGE, "", doc="""
-            This is a measurement made on the image. The value of the
-            measurement is used for the operand for all of the pixels of the
-            other operand's image."""))
+                "Measurement", lambda: cellprofiler.measurement.IMAGE, "", doc="""\
+Select a measurement made on the image. The value of the
+measurement is used for the operand for all of the pixels of the
+other operand's image."""))
 
-        group.append("factor", cellprofiler.setting.Float("", 1, doc="""
-            Enter the number that you would like to multiply the above image by. This multiplication
-            is applied before other operations."""))
+        group.append("factor", cellprofiler.setting.Float("Multiply the image by", 1, doc="""\
+Enter the number that you would like to multiply the above image by. This multiplication
+is applied before other operations."""))
 
         if removable:
-            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.images, group))
+            group.append(
+                "remover",
+                cellprofiler.setting.RemoveSettingButton(
+                    "",
+                    "Remove this image",
+                    self.images,
+                    group
+                )
+            )
+
         group.append("divider", cellprofiler.setting.Divider())
         self.images.append(group)
 
@@ -255,13 +290,20 @@ class ImageMath(cellprofiler.module.ImageProcessing):
         return result
 
     def help_settings(self):
-        result = [self.operation, self.output_image_name, ]
-        for image in self.images:
-            result += [image.image_or_measurement, image.image_name,
-                       image.measurement, image.factor]
-        result += [self.exponent, self.after_factor, self.addend,
-                   self.truncate_low, self.truncate_high, self.ignore_mask]
-        return result
+        return [
+            self.operation,
+            self.output_image_name,
+            self.images[0].image_or_measurement,
+            self.images[0].image_name,
+            self.images[0].measurement,
+            self.images[0].factor,
+            self.exponent,
+            self.after_factor,
+            self.addend,
+            self.truncate_low,
+            self.truncate_high,
+            self.ignore_mask
+        ]
 
     def prepare_settings(self, setting_values):
         value_count = len(setting_values)
@@ -272,48 +314,42 @@ class ImageMath(cellprofiler.module.ImageProcessing):
         while len(self.images) < image_count:
             self.add_image()
 
+    def use_logical_operation(self, pixel_data):
+        return all([pd.dtype == numpy.bool for pd in pixel_data if not numpy.isscalar(pd)])
+
     def run(self, workspace):
-        image_names = [image.image_name.value for image in self.images
-                       if image.image_or_measurement == IM_IMAGE]
+        image_names = [image.image_name.value for image in self.images if image.image_or_measurement == IM_IMAGE]
         image_factors = [image.factor.value for image in self.images]
-        wants_image = [image.image_or_measurement == IM_IMAGE
-                       for image in self.images]
-        if self.operation.value in \
-                (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NOT, O_NONE):
+        wants_image = [image.image_or_measurement == IM_IMAGE for image in self.images]
+
+        if self.operation.value in [O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NOT, O_NONE]:
             # these only operate on the first image
             image_names = image_names[:1]
             image_factors = image_factors[:1]
 
-        images = [workspace.image_set.get_image(x)
-                  for x in image_names]
+        images = [workspace.image_set.get_image(x) for x in image_names]
         pixel_data = [image.pixel_data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]
-        #
+
         # Crop all of the images similarly
-        #
         smallest = numpy.argmin([numpy.product(pd.shape) for pd in pixel_data])
         smallest_image = images[smallest]
         for i in [x for x in range(len(images)) if x != smallest]:
             pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
             if masks[i] is not None:
                 masks[i] = smallest_image.crop_image_similarly(masks[i])
+
         # weave in the measurements
         idx = 0
         measurements = workspace.measurements
-        assert isinstance(measurements, cellprofiler.measurement.Measurements)
         for i in range(self.operand_count):
             if not wants_image[i]:
-                value = measurements.get_current_image_measurement(
-                        self.images[i].measurement.value)
-                if value is None:
-                    value = numpy.NaN
-                else:
-                    value = float(value)
+                value = measurements.get_current_image_measurement(self.images[i].measurement.value)
+                value = numpy.NaN if value is None else float(value)
                 pixel_data.insert(i, value)
                 masks.insert(i, True)
-        #
+
         # Multiply images by their factors
-        #
         for i, image_factor in enumerate(image_factors):
             if image_factor != 1 and self.operation not in BINARY_OUTPUT_OPS:
                 pixel_data[i] = pixel_data[i] * image_factors[i]
@@ -322,18 +358,24 @@ class ImageMath(cellprofiler.module.ImageProcessing):
         output_mask = masks[0]
 
         opval = self.operation.value
-        if opval in (O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE,
-                     O_AVERAGE, O_MAXIMUM, O_MINIMUM, O_AND, O_OR, O_EQUALS):
+        if opval in [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE,
+                     O_AVERAGE, O_MAXIMUM, O_MINIMUM, O_AND, O_OR, O_EQUALS]:
             # Binary operations
             if opval in (O_ADD, O_AVERAGE):
                 op = numpy.add
             elif opval == O_SUBTRACT:
-                op = numpy.subtract
+                if self.use_logical_operation(pixel_data):
+                    op = numpy.logical_xor
+                else:
+                    op = numpy.subtract
             elif opval == O_DIFFERENCE:
-                op = lambda x, y: numpy.abs(numpy.subtract(x, y))
+                if self.use_logical_operation(pixel_data):
+                    op = numpy.logical_xor
+                else:
+                    def op(x, y):
+                        return numpy.abs(numpy.subtract(x, y))
             elif opval == O_MULTIPLY:
-                if all([pd.dtype == numpy.bool for pd in pixel_data
-                        if not numpy.isscalar(pd)]):
+                if self.use_logical_operation(pixel_data):
                     op = numpy.logical_and
                 else:
                     op = numpy.multiply
@@ -362,7 +404,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
                     output_pixel_data = output_pixel_data & (comparitor == pd)
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
-                if self.ignore_mask == True:
+                if self.ignore_mask:
                     continue
                 else:
                     if output_mask is None:
@@ -370,9 +412,10 @@ class ImageMath(cellprofiler.module.ImageProcessing):
                     elif mask is not None:
                         output_mask = (output_mask & mask)
             if opval == O_AVERAGE:
-                output_pixel_data /= sum(image_factors)
+                if not self.use_logical_operation(pixel_data):
+                    output_pixel_data /= sum(image_factors)
         elif opval == O_INVERT:
-            output_pixel_data = output_pixel_data.max() - output_pixel_data
+            output_pixel_data = skimage.util.invert(output_pixel_data)
         elif opval == O_NOT:
             output_pixel_data = numpy.logical_not(output_pixel_data)
         elif opval == O_LOG_TRANSFORM:
@@ -457,9 +500,8 @@ class ImageMath(cellprofiler.module.ImageProcessing):
                 int(i / columns),
                 pixel_data[i],
                 title=display_names[i],
-                # sharexy=figure.subplot(0, 0),
-                colormap=cmap,
-                dimensions=workspace.display_data.dimensions
+                sharexy=figure.subplot(0, 0),
+                colormap=cmap
             )
 
     def validate_module(self, pipeline):
@@ -473,10 +515,9 @@ class ImageMath(cellprofiler.module.ImageProcessing):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if (from_matlab and module_name == 'Subtract' and
-                    variable_revision_number == 3):
+        if (from_matlab and module_name == 'Subtract' and variable_revision_number == 3):
             subtract_image_name, basic_image_name, resulting_image_name, \
-            multiply_factor_1, multiply_factor_2, truncate = setting_values
+                multiply_factor_1, multiply_factor_2, truncate = setting_values
             setting_values = [O_SUBTRACT,
                               1,  # exponent
                               1,  # post-multiply factor
@@ -491,8 +532,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             module_name = 'ImageMath'
             from_matlab = False
             variable_revision_number = 1
-        if (from_matlab and module_name == 'Combine' and
-                    variable_revision_number == 3):
+        if (from_matlab and module_name == 'Combine' and variable_revision_number == 3):
             names_and_weights = [
                 (name, weight)
                 for name, weight in zip(setting_values[:3],
@@ -514,16 +554,14 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             module_name = 'ImageMath'
             variable_revision_number = 1
             from_matlab = False
-        if (from_matlab and module_name == 'InvertIntensity' and
-                    variable_revision_number == 1):
+        if (from_matlab and module_name == 'InvertIntensity' and variable_revision_number == 1):
             image_name, output_image = setting_values
             setting_values = [image_name, cellprofiler.setting.DO_NOT_USE, cellprofiler.setting.DO_NOT_USE,
                               'Invert',
                               1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO, output_image]
             module_name = 'ImageMath'
             variable_revision_number = 2
-        if (from_matlab and module_name == 'Multiply' and
-                    variable_revision_number == 1):
+        if (from_matlab and module_name == 'Multiply' and variable_revision_number == 1):
             image1, image2, output_image = setting_values
             setting_values = [image1, image2, cellprofiler.setting.DO_NOT_USE,
                               'Multiply', 1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO,
@@ -531,8 +569,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             module_name = 'ImageMath'
             variable_revision_number = 2
 
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'ImageMath'):
+        if (from_matlab and variable_revision_number == 1 and module_name == 'ImageMath'):
             image_names = [setting_values[1]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]
@@ -541,7 +578,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             try:
                 factors += [float(setting_values[2]) *
                             float(setting_values[5])]
-            except:
+            except ValueError:
                 if setting_values[2] != cellprofiler.setting.DO_NOT_USE:
                     image_names += [setting_values[2]]
                     input_factors += [float(setting_values[5])]
@@ -576,8 +613,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             from_matlab = False
             variable_revision_number = 1
 
-        if (from_matlab and variable_revision_number == 2 and
-                    module_name == 'ImageMath'):
+        if (from_matlab and variable_revision_number == 2 and module_name == 'ImageMath'):
             image_names = [setting_values[0]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]
@@ -585,10 +621,8 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             for i in range(1, 3 if operation == O_COMBINE else 2):
                 # The user could type in a constant for the second or third image name
                 try:
-                    factors += [float(setting_values[i]) *
-                                float(setting_values[i + 4])]
-
-                except:
+                    factors += [float(setting_values[i]) * float(setting_values[i + 4])]
+                except ValueError:
                     if setting_values[i] != cellprofiler.setting.DO_NOT_USE:
                         image_names += [setting_values[i]]
                         input_factors += [float(setting_values[i + 4])]

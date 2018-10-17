@@ -198,14 +198,9 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         workspace = self.make_workspace(primary_labels, secondary_labels)
         module = workspace.module
         self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
-        module.use_outlines.value = True
-        module.outlines_name.value = OUTLINES
         module.run(workspace)
         measurements = workspace.measurements
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
-        output_outlines = workspace.image_set.get_image(OUTLINES,
-                                                        must_be_binary=True)
-        self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
         for parent_name, parent_labels in ((PRIMARY, expected_primary_parents),
                                            (SECONDARY, expected_secondary_parents)):
             parents_of_feature = ("Parent_%s" % parent_name)
@@ -237,14 +232,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         workspace = self.make_workspace(primary_labels, secondary_labels)
         module = workspace.module
         self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
-        module.use_outlines.value = True
-        module.outlines_name.value = OUTLINES
         module.run(workspace)
-        measurements = workspace.measurements
-        output_labels = workspace.object_set.get_objects(TERTIARY).segmented
-        output_outlines = workspace.image_set.get_image(OUTLINES,
-                                                        must_be_binary=True)
-        self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
 
     def test_03_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
@@ -319,7 +307,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         measurements = workspace.measurements
         count_feature = "Count_%s" % TERTIARY
         value = measurements.get_current_measurement("Image", count_feature)
-        self.assertEqual(value, 3)
+        self.assertEqual(value, 2)
 
         child_count_feature = "Children_%s_Count" % TERTIARY
         for parent_name in PRIMARY, SECONDARY:
@@ -431,3 +419,31 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 self.assertEqual(result[cpm.R_SECOND_IMAGE_NUMBER][i], 1)
                 self.assertEqual(result[cpm.R_FIRST_OBJECT_NUMBER][i], i + 1)
                 self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][i], i + 1)
+
+    def test_06_01_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150319195827
+GitHash:d8289bf
+ModuleCount:1
+HasImagePlaneDetails:False
+
+IdentifyTertiaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the larger identified objects:IdentifySecondaryObjects
+    Select the smaller identified objects:IdentifyPrimaryObjects
+    Name the tertiary objects to be identified:IdentifyTertiaryObjects
+    Shrink smaller object prior to subtraction?:Yes
+"""
+        pipeline = cpp.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.loadtxt(StringIO(data))
+        module = pipeline.modules()[0]
+
+        assert module.secondary_objects_name.value == "IdentifySecondaryObjects"
+        assert module.primary_objects_name.value == "IdentifyPrimaryObjects"
+        assert module.subregion_objects_name.value == "IdentifyTertiaryObjects"
+        assert module.shrink_primary.value

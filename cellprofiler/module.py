@@ -1,17 +1,17 @@
-import os
-import re
 import sys
 import uuid
 
+import docutils.core
 import numpy
-import scipy.ndimage
+import skimage.color
+
+import six
 
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting as cps
-import pipeline as cpp
-import skimage.color
+from cellprofiler import pipeline as cpp
 
 
 class Module(object):
@@ -112,7 +112,7 @@ class Module(object):
         settings = handles[cpp.SETTINGS][0, 0]
         setting_values = []
         self.__notes = []
-        if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
+        if (cpp.MODULE_NOTES in settings.dtype.fields and
                     settings[cpp.MODULE_NOTES].shape[1] > idx):
             n = settings[cpp.MODULE_NOTES][0, idx].flatten()
             for x in n:
@@ -122,9 +122,9 @@ class Module(object):
                     else:
                         x = x[0]
                 self.__notes.append(x)
-        if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
+        if cpp.SHOW_WINDOW in settings.dtype.fields:
             self.__show_window = settings[cpp.SHOW_WINDOW][0, idx] != 0
-        if settings.dtype.fields.has_key(cpp.BATCH_STATE):
+        if cpp.BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
             self.batch_state = numpy.array(settings[cpp.BATCH_STATE][0, idx].tostring())
@@ -208,40 +208,61 @@ class Module(object):
            settings have been loaded or initialized"""
         pass
 
+    # https://wiki.python.org/moin/reStructuredText
+    @staticmethod
+    def _rst_to_html_fragment(source):
+        parts = docutils.core.publish_parts(source=source, writer_name="html")
+
+        return parts["body_pre_docinfo"] + parts["fragment"]
+
+    def _get_setting_help(self, setting):
+        if isinstance(setting, cellprofiler.setting.HiddenCount):
+            return u""
+
+        return u"""\
+<div>
+    <h4>{SETTING_NAME}</h4>
+    <p>{SETTING_DOC}</p>
+</div>
+        """.format(**{
+            "SETTING_DOC": self._rst_to_html_fragment(setting.doc),
+            "SETTING_NAME": self._rst_to_html_fragment(setting.text)
+        })
+
     def get_help(self):
         """Return help text for the module
 
         The default help is taken from your modules docstring and from
         the settings.
         """
-        if self.__doc__ is None:
-            doc = "<i>No help available for module</i>\n"
-        else:
-            doc = self.__doc__
-        doc = doc.replace("\r", "").replace("\n\n", "<p>")
-        doc = doc.replace("\n", " ")
-        result = "<html style=""font-family:arial""><head><title>%s</title></head>" % self.module_name
-        result += "<body><h1>%s</h1><div>" % self.module_name + doc
-        first_setting_doc = True
-        seen_setting_docs = set()
-        for setting in self.help_settings():
-            if setting.doc is not None:
-                key = (setting.text, setting.doc)
-                if key not in seen_setting_docs:
-                    seen_setting_docs.add(key)
-                    if first_setting_doc:
-                        result = result + "</div><div><h2>Settings:</h2>"
-                        first_setting_doc = False
-                    result = (result + "<h4>" + setting.text + "</h4><div>" +
-                              setting.doc + "</div>")
-        result += "</div>"
-        result += "</body></html>"
-        return result
+        settings_help = u"""\
+<div>
+    <h2>Settings:</h2>
+    {SETTINGS_DOC}
+</div>
+""".format(**{
+            "SETTINGS_DOC": u"\n".join([self._get_setting_help(setting) for setting in self.help_settings()])
+        }) if len(self.help_settings()) else u""
+
+        return u"""\
+<html style="font-family:arial">
+    <body>
+        <div>
+            {MODULE_DOC}
+        </div>
+        {SETTINGS_HELP}
+    </body>
+</html>
+""".format(**{
+            "MODULE_DOC": self._rst_to_html_fragment(self.__doc__),
+            "SETTINGS_HELP": settings_help,
+            "TITLE": self.module_name
+        })
 
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
         setting = handles[cpp.SETTINGS][0, 0]
-        setting[cpp.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
+        setting[cpp.MODULE_NAMES][0, module_idx] = six.text_type(self.module_class())
         setting[cpp.MODULE_NOTES][0, module_idx] = numpy.ndarray(shape=(len(self.notes), 1), dtype='object')
         for i in range(0, len(self.notes)):
             setting[cpp.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
@@ -251,9 +272,9 @@ class Module(object):
             if len(str(variable)) > 0:
                 setting[cpp.VARIABLE_VALUES][module_idx, i] = variable.get_unicode_value()
             if isinstance(variable, cps.NameProvider):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode("%s indep" % variable.group)
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = six.text_type("%s indep" % variable.group)
             elif isinstance(variable, cps.NameSubscriber):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(variable.group)
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = six.text_type(variable.group)
         setting[cpp.VARIABLE_REVISION_NUMBERS][0, module_idx] = self.variable_revision_number
         setting[cpp.MODULE_REVISION_NUMBERS][0, module_idx] = 0
         setting[cpp.SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0
@@ -298,9 +319,9 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -315,9 +336,9 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -363,7 +384,7 @@ class Module(object):
         those modules create) previous to a given module.
         """
         if self.__module_num == -1:
-            raise (Exception('Module has not been created'))
+            raise Exception("Module has not been created")
         return self.__module_num
 
     def set_module_num(self, module_num):
@@ -524,7 +545,7 @@ class Module(object):
         '''If true, the module will pickle the pipeline into a batch file and exit
 
         This is needed by modules which can't properly operate in a batch
-        mode (e.g. do all their work post_run or don't work so well if
+        mode (e.g., do all their work post_run or don't work so well if
         run in parallel)
         '''
         return False
@@ -889,12 +910,14 @@ class ImageProcessing(Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+            "Select the input image",
+            doc="Select the image you want to use."
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
-            "Output",
-            self.__class__.__name__
+            "Name the output image",
+            self.__class__.__name__,
+            doc="Enter the name you want to call the image produced by this module."
         )
 
     def display(self, workspace, figure, cmap=["gray", "gray"]):
@@ -907,16 +930,17 @@ class ImageProcessing(Module):
 
         figure.subplot_imshow(
             colormap=cmap[0],
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
+            title=self.x_name.value,
             x=0,
             y=0
         )
 
         figure.subplot_imshow(
             colormap=cmap[1],
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
+            title=self.y_name.value,
             x=1,
             y=0
         )
@@ -1023,32 +1047,18 @@ class ImageSegmentation(Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+            "Select the input image",
+            doc="Select the image you want to use."
         )
 
         self.y_name = cellprofiler.setting.ObjectNameProvider(
-            "Object",
-            self.__class__.__name__
+            "Name the output object",
+            self.__class__.__name__,
+            doc="Enter the name you want to call the object produced by this module."
         )
 
     def display(self, workspace, figure):
         layout = (2, 1)
-
-        if workspace.display_data.dimensions == 3:
-            overlay = numpy.zeros(workspace.display_data.x_data.shape + (3,))
-
-            for index, data in enumerate(workspace.display_data.x_data):
-                overlay[index] = skimage.color.label2rgb(
-                    workspace.display_data.y_data[index],
-                    image=data,
-                    bg_label=0
-                )
-        else:
-            overlay = skimage.color.label2rgb(
-                workspace.display_data.y_data,
-                image=workspace.display_data.x_data,
-                bg_label=0
-            )
 
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions,
@@ -1057,15 +1067,17 @@ class ImageSegmentation(Module):
 
         figure.subplot_imshow(
             colormap="gray",
-            dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
+            title=self.x_name.value,
             x=0,
             y=0
         )
 
-        figure.subplot_imshow(
-            dimensions=workspace.display_data.dimensions,
-            image=overlay,
+        figure.subplot_imshow_labels(
+            background_image=workspace.display_data.x_data,
+            image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
+            title=self.y_name.value,
             x=1,
             y=0
         )
@@ -1217,7 +1229,8 @@ class ObjectProcessing(ImageSegmentation):
         super(ObjectProcessing, self).create_settings()
 
         self.x_name = cellprofiler.setting.ObjectNameSubscriber(
-            "Input"
+            "Select the input object",
+            doc="Select the object you want to use."
         )
 
     def display(self, workspace, figure):
@@ -1229,16 +1242,15 @@ class ObjectProcessing(ImageSegmentation):
         )
 
         figure.subplot_imshow_labels(
-            dimensions=workspace.display_data.dimensions,
-            labels=workspace.display_data.x_data,
+            image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
             y=0
         )
 
         figure.subplot_imshow_labels(
-            dimensions=workspace.display_data.dimensions,
-            labels=workspace.display_data.y_data,
+            image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
             y=0

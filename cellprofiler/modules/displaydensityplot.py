@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Display Density Plot** plots measurements as a two-dimensional density
+DisplayDensityPlot
+==================
+
+**DisplayDensityPlot** plots measurements as a two-dimensional density
 plot.
 
 A density plot displays the relationship between two measurements (that
@@ -18,8 +21,25 @@ region.
 The module shows the values generated for the current cycle. However,
 this module can also be run as a Data Tool, in which case you will first
 be asked for the output file produced by the analysis run. The
-resultings plot is created from all the measurements collected during
+resulting plot is created from all the measurements collected during
 the run.
+
+At this time, the display produced when **DisplayDensityPlot** is run as a
+module cannot be saved in the pipeline (e.g., by using **SaveImages**). The
+display can be saved manually by selecting the window produced by the
+module and clicking the Save icon in its menu bar or by choosing *File
+> Save* from CellProfiler's main menu bar.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
 
 See also **DisplayScatterPlot**, **DisplayHistogram**.
 """
@@ -46,81 +66,84 @@ class DisplayDensityPlot(cpm.Module):
     def create_settings(self):
         self.x_object = cps.ObjectNameSubscriber(
                 'Select the object to display on the X-axis',
-                cps.NONE, doc='''
-            Choose the name of objects identified by some previous
-            module (such as <b>IdentifyPrimaryObjects</b> or
-            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
+                cps.NONE, doc='''\
+Choose the name of objects identified by some previous module (such as
+**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
+measurements are to be displayed on the X-axis.
+''')
 
         self.x_axis = cps.Measurement(
                 'Select the object measurement to plot on the X-axis',
-                self.get_x_object, cps.NONE, doc='''
-            Choose the object measurement made by a previous
-            module to display on the X-axis.''')
+                self.get_x_object, cps.NONE, doc='''Choose the object measurement made by a previous module to display on the X-axis.''')
 
         self.y_object = cps.ObjectNameSubscriber(
                 'Select the object to display on the Y-axis',
-                cps.NONE, doc='''
-            Choose the name of objects identified by some previous
-            module (such as <b>IdentifyPrimaryObjects</b> or
-            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
+                cps.NONE, doc='''\
+Choose the name of objects identified by some previous module (such as
+**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
+measurements are to be displayed on the Y-axis.
+''')
 
         self.y_axis = cps.Measurement(
                 'Select the object measurement to plot on the Y-axis',
-                self.get_y_object, cps.NONE, doc='''
-            Choose the object measurement made by a previous
-            module to display on the Y-axis.''')
+                self.get_y_object, cps.NONE, doc='''Choose the object measurement made by a previous module to display on the Y-axis.''')
 
         self.gridsize = cps.Integer(
-                'Select the grid size', 100, 1, 1000, doc='''
-            Enter the number of grid regions you want used on each
-            axis. Increasing the number of grid regions increases the
-            resolution of the plot.''')
+                'Select the grid size', 100, 1, 1000, doc='''\
+Enter the number of grid regions you want used on each
+axis. Increasing the number of grid regions increases the
+resolution of the plot.''')
 
         self.xscale = cps.Choice(
-                'How should the X-axis be scaled?', ['linear', 'log'], None, doc='''
-            The X-axis can be scaled either with a <i>linear</i>
-            scale or with a <i>log</i> (base 10) scaling.
-            <p>Using a log scaling is useful when one of the
-            measurements being plotted covers a large range of
-            values; a log scale can bring out features in the
-            measurements that would not easily be seen if the
-            measurement is plotted linearly.</p>''')
+                'How should the X-axis be scaled?', ['linear', 'log'], None, doc='''\
+The X-axis can be scaled either with a *linear* scale or with a *log*
+(base 10) scaling.
+
+Using a log scaling is useful when one of the measurements being plotted
+covers a large range of values; a log scale can bring out features in
+the measurements that would not easily be seen if the measurement is
+plotted linearly.
+''')
 
         self.yscale = cps.Choice(
-                'How should the Y-axis be scaled?', ['linear', 'log'], None, doc='''
-            The Y-axis can be scaled either with a <i>linear</i>
-            scale or with a <i>log</i> (base 10) scaling.
-            <p>Using a log scaling is useful when one of the
-            measurements being plotted covers a large range of
-            values; a log scale can bring out features in the
-            measurements that would not easily be seen if the
-            measurement is plotted linearly.</p>''')
+                'How should the Y-axis be scaled?', ['linear', 'log'], None, doc='''\
+The Y-axis can be scaled either with a *linear* scale or with a *log*
+(base 10) scaling.
+
+Using a log scaling is useful when one of the measurements being plotted
+covers a large range of values; a log scale can bring out features in
+the measurements that would not easily be seen if the measurement is
+plotted linearly.
+''')
 
         self.bins = cps.Choice(
-                'How should the colorbar be scaled?', ['linear', 'log'], None, doc='''
-            The colorbar can be scaled either with a <i>linear</i>
-            scale or with a <i>log</i> (base 10) scaling.
-            <p>Using a log scaling is useful when one of the
-            measurements being plotted covers a large range of
-            values; a log scale can bring out features in the
-            measurements that would not easily be seen if the
-            measurement is plotted linearly.''')
+                'How should the colorbar be scaled?', ['linear', 'log'], None, doc='''\
+The colorbar can be scaled either with a *linear* scale or with a *log*
+(base 10) scaling.
+
+Using a log scaling is useful when one of the measurements being plotted
+covers a large range of values; a log scale can bring out features in
+the measurements that would not easily be seen if the measurement is
+plotted linearly.
+''')
 
         maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith('_r')]
         maps.sort()
 
         self.colormap = cps.Choice(
-                'Select the color map', maps, 'jet', doc='''
-            Select the color map for the density plot. See
-            <a href="http://www.astro.princeton.edu/~msshin/science/code/matplotlib_cm/">
-            this page</a> for pictures of the available colormaps.''')
+                'Select the color map', maps, 'jet', doc='''\
+Select the color map for the density plot. See `this page`_ for pictures
+of the available colormaps.
+
+.. _this page: http://matplotlib.org/users/colormaps.html
+''')
 
         self.title = cps.Text(
-                'Enter a title for the plot, if desired', '', doc='''
-            Enter a title for the plot. If you leave this blank,
-            the title will default
-            to <i>(cycle N)</i> where <i>N</i> is the current image
-            cycle being executed.''')
+                'Enter a title for the plot, if desired', '', doc='''\
+Enter a title for the plot. If you leave this blank, the title will
+default to *(cycle N)* where *N* is the current image cycle being
+executed.
+''')
 
     def settings(self):
         return [self.x_object, self.x_axis, self.y_object, self.y_axis,

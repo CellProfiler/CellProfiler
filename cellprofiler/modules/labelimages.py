@@ -1,29 +1,47 @@
 # coding=utf-8
 
 """
-<b>LabelImages</b> assigns plate metadata to image sets.
-<hr>
-<b>LabelImages</b> assigns a plate number, well and site number to each image
-set based on the order in which they are processed. You can use <b>Label
-Images</b> to add plate and well metadata for images loaded using <i>Order</i>
-for "Image set matching order" in <b>NamesAndTypes</b>. <
-b>LabelImages</b> assumes the following are true of the image order:
-<ul>
-<li>Each well has the same number of images (i.e., sites) per channel.</li>
-<li>Each plate has the same number of rows and columns, so that the total
-number of images per plate is the same. </li>
-</ul>
+LabelImages
+===========
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Metadata_Plate:</i> The plate number, starting at 1 for the first plate.</li>
-<li><i>Metadata_Well:</i> The well name, e.g., <i>A01</i>.</li>
-<li><i>Metadata_Row:</i> The row name, starting with <i>A</i> for the first row.</li>
-<li><i>Metadata_Column:</i> The column number, starting with 1 for the first column.</li>
-<li><i>Metadata_Site:</i> The site number within the well, starting at 1 for the first site</li>
-</ul>
+**LabelImages** assigns plate metadata to image sets.
 
-See also the <b>Metadata</b> module.
+**LabelImages** assigns a plate number, well and site number to each
+image set based on the order in which they are processed. You can use
+**Label Images** to add plate and well metadata for images loaded using
+*Order* for “Image set matching order” in **NamesAndTypes**.
+
+LabelImages assumes the following are true of the image order:
+
+-  Each well has the same number of images (i.e., sites) per channel.
+-  Each plate has the same number of rows and columns, so that the total
+   number of images per plate is the same.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also the **Metadata** module.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  *Metadata_Plate:* The plate number, starting at 1 for the first
+   plate.
+-  *Metadata_Well:* The well name, e.g., *A01*.
+-  *Metadata_Row:* The row name, starting with *A* for the first row.
+-  *Metadata_Column:* The column number, starting with 1 for the first
+   column.
+-  *Metadata_Site:* The site number within the well, starting at 1 for
+   the first site.
+
 """
 
 import numpy as np
@@ -31,6 +49,7 @@ import numpy as np
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
+from functools import reduce
 
 O_ROW = "Row"
 O_COLUMN = "Column"
@@ -38,45 +57,40 @@ O_COLUMN = "Column"
 
 class LabelImages(cpm.Module):
     module_name = "LabelImages"
-    category = "Other"
+    category = "File Processing"
     variable_revision_number = 1
 
     def create_settings(self):
         self.site_count = cps.Integer(
-                "Number of image sites per well", 1, minval=1, doc="""
-            This setting controls the number of image sets for each well""")
+                "Number of image sites per well", 1, minval=1, doc="""\
+Enter the number of image sets (fields of view) corresponding to each well.""")
 
         self.column_count = cps.Integer(
-                "Number of columns per plate", 12, minval=1, doc="""
-            Enter the number of columns per plate""")
+                "Number of columns per plate", 12, minval=1, doc="""\
+Enter the number of columns per plate.""")
 
         self.row_count = cps.Integer(
-                "Number of rows per plate", 8, minval=1, doc="""
-            The number of rows per plate""")
+                "Number of rows per plate", 8, minval=1, doc="""\
+Enter the number of rows per plate.""")
 
         self.order = cps.Choice(
-                "Order of image data", [O_ROW, O_COLUMN], doc="""
-            This setting specifies how the input data is ordered (assuming
-            that sites within a well are ordered consecutively):
-            <ul>
-            <li><i>%(O_ROW)s:</i>: The data appears by row and then by column. That is,
-            all columns for a given row (e.g. A01, A02, A03...) appear consecutively, for
-            each row in consecutive order.</li>
-            <li><i>%(O_COLUMN)s:</i> The data appears by column and then by row. That is,
-            all rows for a given column (e.g. A01, B01, C01...) appear consecutively, for
-            each column in consecutive order.</li>
-            </ul>
-            <p>For instance, the SBS Bioimage example (available
-            <a href="http://cellprofiler.org/examples.html#SBS_Bioimage_CNT">here</a>)
-            has files that are named:<br>
-            Channel1-01-A01.tif<br>
-            Channel1-02-A02.tif<br>
-            ...<br>
-            Channel1-12-A12.tif<br>
-            Channel1-13-B01.tif<br>
-            ...<br>
-            You would use "%(O_ROW)s" to label these because the ordering
-            is by row and then by column.</p>""" % globals())
+                "Order of image data", [O_ROW, O_COLUMN], doc="""\
+This setting specifies how the input data is ordered (assuming that
+sites within a well are ordered consecutively):
+
+-  *%(O_ROW)s:* The data appears by row and then by column. That is,
+   all columns for a given row (e.g., A01, A02, A03…) appear
+   consecutively, for each row in consecutive order.
+-  *%(O_COLUMN)s:* The data appears by column and then by row. That is,
+   all rows for a given column (e.g., A01, B01, C01…) appear
+   consecutively, for each column in consecutive order.
+
+For instance, the SBS Bioimage example (available `here`_) has files that are named:
+Channel1-01-A01.tif, Channel1-02-A02.tif, …, Channel1-12-A12.tif, Channel1-13-B01.tif, …
+You would use “%(O_ROW)s” to label these because the ordering is by row and then by column.
+
+.. _here: http://cellprofiler.org/examples.html#SBS_Bioimage_CNT
+""" % globals())
 
     def settings(self):
         '''The settings as they appear in the pipeline'''

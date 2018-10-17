@@ -1,4 +1,5 @@
 """test_Pipeline.py - test the CellProfiler.Pipeline module"""
+from __future__ import print_function
 
 import base64
 import cProfile
@@ -10,6 +11,8 @@ import tempfile
 import traceback
 import unittest
 import zlib
+
+import six
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
@@ -137,7 +140,7 @@ HasImagePlaneDetails:False"""
     def test_09_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
         x = get_empty_pipeline()
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
         module.module_num = 1
         module.my_variable.value = "foo"
         x.add_module(module)
@@ -152,10 +155,10 @@ HasImagePlaneDetails:False"""
                              column[2] == cpmeas.COLTYPE_INTEGER
                              for column in columns]))
         self.assertTrue(any([column[0] == 'Image' and
-                             column[1] == 'ModuleError_01MyClassForTest0801'
+                             column[1] == 'ModuleError_01TestModuleWithMeasurement'
                              for column in columns]))
         self.assertTrue(any([column[0] == 'Image' and
-                             column[1] == 'ExecutionTime_01MyClassForTest0801'
+                             column[1] == 'ExecutionTime_01TestModuleWithMeasurement'
                              for column in columns]))
         self.assertTrue(any([column[0] == cpmeas.EXPERIMENT and
                              column[1] == cpp.M_PIPELINE
@@ -177,7 +180,7 @@ HasImagePlaneDetails:False"""
         columns = x.get_measurement_columns()
         self.assertEqual(len(columns), 9)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
         module.module_num = 2
         module.my_variable.value = "foo"
         x.add_module(module)
@@ -241,7 +244,7 @@ HasImagePlaneDetails:False"""
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
@@ -300,7 +303,7 @@ HasImagePlaneDetails:False"""
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             self.assertEqual(expects_grouping, 1)
@@ -323,7 +326,7 @@ HasImagePlaneDetails:False"""
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             expects[0], expects[1] = ('PostRun', 0)
@@ -470,7 +473,7 @@ HasImagePlaneDetails:False"""
             try:
                 v.module_name
             except:
-                print "%s needs to define module_name as a class variable" % k
+                print("%s needs to define module_name as a class variable" % k)
                 success = False
         self.assertTrue(success)
 
@@ -663,8 +666,10 @@ HasImagePlaneDetails:False"""
 
     def test_14_01_unicode_save(self):
         pipeline = get_empty_pipeline()
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
+        # Little endian utf-16 encoding
         module.my_variable.value = u"\\\u2211"
+        module.other_variable.value = u"\u2222\u0038"
         module.module_num = 1
         module.notes = u"\u03B1\\\u03B2"
         pipeline.add_module(module)
@@ -672,19 +677,28 @@ HasImagePlaneDetails:False"""
         pipeline.savetxt(fd, save_image_plane_details=False)
         result = fd.getvalue()
         lines = result.split("\n")
-        self.assertEqual(len(lines), 10)
+        self.assertEqual(len(lines), 11)
+        text, value = lines[-3].split(":")
+        #
+        # unicode encoding:
+        #     backslash: \\ (BOM encoding)
+        #     unicode character: \u2211 (n-ary summation)
+        #
+        # escape encoding:
+        #     utf-16 to byte: \xff\xfe\\\x00\x11"
+        #
+        # result = \\xff\\xfe\\\\\\x00\\x11"
+        self.assertEqual(value, '\\xff\\xfe\\\\\\x00\\x11"')
         text, value = lines[-2].split(":")
         #
         # unicode encoding:
-        #     backslash: \\
         #     unicode character: \u
         #
         # escape encoding:
-        #     backslash * 2: \\\\
-        #     unicode character: \\
+        #     utf-16 to byte: \xff\xfe""8\x00
         #
-        # result = \\\\\\u2211
-        self.assertEqual(value, r"\\\\\\u2211")
+        # result = \\xff\\xfe""8\\x00
+        self.assertEqual(value, '\\xff\\xfe""8\\x00')
         mline = lines[7]
         idx0 = mline.find("notes:")
         mline = mline[(idx0 + 6):]
@@ -694,11 +708,11 @@ HasImagePlaneDetails:False"""
 
     def test_14_02_unicode_save_and_load(self):
         #
-        # Put "MyClassForTest0801" into the module list
+        # Put "TestModuleWithMeasurement" into the module list
         #
         cellprofiler.modules.fill_modules()
-        cellprofiler.modules.all_modules[MyClassForTest0801.module_name] = \
-            MyClassForTest0801
+        cellprofiler.modules.all_modules[TestModuleWithMeasurement.module_name] = \
+            TestModuleWithMeasurement
         #
         # Continue with test
         #
@@ -708,7 +722,7 @@ HasImagePlaneDetails:False"""
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        module = MyClassForTest0801()
+        module = TestModuleWithMeasurement()
         module.my_variable.value = u"\\\u2211"
         module.module_num = 1
         module.notes = u"\u03B1\\\u03B2"
@@ -719,7 +733,22 @@ HasImagePlaneDetails:False"""
         pipeline.loadtxt(fd)
         self.assertEqual(len(pipeline.modules()), 1)
         result_module = pipeline.modules()[0]
-        self.assertTrue(isinstance(result_module, MyClassForTest0801))
+        self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
+        self.assertEqual(module.notes, result_module.notes)
+        self.assertEqual(module.my_variable.value, result_module.my_variable.value)
+
+    def test_14_03_deprecated_unicode_load(self):
+        pipeline = get_empty_pipeline()
+        deprecated_pipeline_file = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                                 'resources/pipelineV3.cppipe'))
+        pipeline.loadtxt(deprecated_pipeline_file)
+        module = TestModuleWithMeasurement()
+        module.my_variable.value = u"\\\u2211"
+        module.module_num = 1
+        module.notes = u"\u03B1\\\u03B2"
+        self.assertEqual(len(pipeline.modules()), 1)
+        result_module = pipeline.modules()[0]
+        self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
         self.assertEqual(module.notes, result_module.notes)
         self.assertEqual(module.my_variable.value, result_module.my_variable.value)
 
@@ -865,13 +894,13 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 2)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         providers = d[IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
         self.assertEqual(provider[0], module)
         self.assertEqual(provider[1], image_setting)
-        self.assertTrue(d.has_key(ALT_IMAGE_NAME))
+        self.assertTrue(ALT_IMAGE_NAME in d)
         providers = d[ALT_IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -880,7 +909,7 @@ HasImagePlaneDetails:False"""
 
         d = pipeline.get_provider_dictionary(cps.OBJECT_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(OBJECT_NAME))
+        self.assertTrue(OBJECT_NAME in d)
         providers = d[OBJECT_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -921,7 +950,7 @@ HasImagePlaneDetails:False"""
             pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(len(d[IMAGE_NAME]), 2)
         for module in (module1, module3):
             self.assertTrue(any([x[0] == module for x in d[IMAGE_NAME]]))
@@ -931,12 +960,12 @@ HasImagePlaneDetails:False"""
 
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module2)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(d[IMAGE_NAME][0][0], module1)
 
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module4)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(len(d[IMAGE_NAME]), 1)
         self.assertEqual(d[IMAGE_NAME][0][0], module3)
 
@@ -1048,13 +1077,13 @@ HasImagePlaneDetails:False"""
         fd.seek(0)
         result = cpp.read_file_list(fd)
         for rr, tt in zip(result, test_data):
-            if isinstance(tt, unicode):
+            if isinstance(tt, six.text_type):
                 tt = tt.encode("utf-8")
             self.assertEquals(rr, tt)
 
     def test_19_01_read_file_list_pathnames(self):
         root = os.path.split(__file__)[0]
-        paths = [os.path.join(root, x) for x in "foo.tif", "bar.tif"]
+        paths = [os.path.join(root, x) for x in ("foo.tif", "bar.tif")]
         fd = cStringIO.StringIO("\n".join([
             paths[0], "", paths[1]]))
         p = cpp.Pipeline()
@@ -1223,7 +1252,7 @@ def profile_pipeline(pipeline_filename,
         output_filename = os.path.join(cpprefs.get_default_output_directory(), pipeline_name + '_profile')
 
     if not os.path.exists(output_filename) or always_run:
-        print 'Profiling %s' % pipeline_filename
+        print('Profiling %s' % pipeline_filename)
         cProfile.runctx('run_pipeline(pipeline_filename)', globals(), locals(), output_filename)
 
     p = pstats.Stats(output_filename)
@@ -1271,22 +1300,23 @@ class ATestModule(cpm.Module):
         return list(measurements)
 
 
-class MyClassForTest0801(cpm.Module):
+class TestModuleWithMeasurement(cpm.Module):
     module_name = "Test0801"
     category = "Test"
     variable_revision_number = 1
 
     def create_settings(self):
         self.my_variable = cps.Text('', '')
+        self.other_variable = cps.Text('', '')
 
     def settings(self):
-        return [self.my_variable]
+        return [self.my_variable, self.other_variable]
 
-    module_name = "MyClassForTest0801"
+    module_name = "TestModuleWithMeasurement"
     variable_revision_number = 1
 
     def module_class(self):
-        return "cellprofiler.tests.Test_Pipeline.MyClassForTest0801"
+        return "cellprofiler.tests.Test_Pipeline.TestModuleWithMeasurement"
 
     def get_measurement_columns(self, pipeline):
         return [(cpmeas.IMAGE,

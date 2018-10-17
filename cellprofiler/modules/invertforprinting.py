@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Invert For Printing** inverts fluorescent images into
+InvertForPrinting
+=================
+
+**InvertForPrinting** inverts fluorescent images into
 brightfield-looking images for printing.
 
 This module turns a single or multi-channel immunofluorescent-stained
@@ -12,6 +15,15 @@ channels of a color image) or on an image that is already a color image.
 The module can produce either three grayscale images or one color image
 as output. If you want to invert the grayscale intensities of an image,
 use **ImageMath**.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
 """
 
 import numpy as np
@@ -34,63 +46,188 @@ class InvertForPrinting(cpm.Module):
     def create_settings(self):
         # Input settings
         self.input_color_choice = cps.Choice(
-                "Input image type", CC_ALL, doc="""
-            Specify whether you are combining several grayscale images or
-            loading a single color image.""")
+            "Input image type",
+            CC_ALL,
+            doc="Specify whether you are combining several grayscale images or loading a single color image."
+        )
 
         self.wants_red_input = cps.Binary(
-                "Use a red image?", True, doc="""
-            Select <i>%(YES)s</i> to specify an image to use for the red channel.""" % globals())
+            "Use a red image?",
+            True,
+            doc="""\
+*(Used only if input image type is "{CC_GRAYSCALE}")*
+
+Select "*{YES}*" to specify an image to use for the red channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE,
+                "YES": YES
+            })
+        )
 
         self.red_input_image = cps.ImageNameSubscriber(
-                "Select the red image", cps.NONE)
+            "Select the red image",
+            cps.NONE,
+            doc="""\
+*(Used only if input image type is "{CC_GRAYSCALE}" and a red image is used)*
+
+Provide an image for the red channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE
+            })
+        )
 
         self.wants_green_input = cps.Binary(
-                "Use a green image?", True, doc="""
-            Select <i>%(YES)s</i> to specify an image to use for the green channel.""" % globals())
+            "Use a green image?",
+            True,
+            doc="""\
+*(Used only if input image type is "{CC_GRAYSCALE}")*
+
+Select "*{YES}*" to specify an image to use for the green channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE,
+                "YES": YES
+            })
+        )
 
         self.green_input_image = cps.ImageNameSubscriber(
-                "Select the green image", cps.NONE)
+            "Select the green image",
+            cps.NONE,
+            doc="""\
+*(Used only if input image type is "{CC_GRAYSCALE}" and a green image is used)*
+
+Provide an image for the green channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE
+            })
+        )
 
         self.wants_blue_input = cps.Binary(
-                "Use a blue image?", True, doc="""
-            Select <i>%(YES)s</i> to specify an image to use for the blue channel.""" % globals())
+            "Use a blue image?",
+            True,
+            doc="""\
+*(Used only if input image type is "{CC_GRAYSCALE}")*
+
+Select "*{YES}*" to specify an image to use for the blue channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE,
+                "YES": YES
+            })
+        )
 
         self.blue_input_image = cps.ImageNameSubscriber(
-                "Select the blue image", cps.NONE)
+            "Select the blue image",
+            cps.NONE,
+            doc="""\
+*(Used only if input image type is "{CC_GRAYSCALE}" and a blue image is used)*
+
+Provide an image for the blue channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE
+            })
+        )
 
         self.color_input_image = cps.ImageNameSubscriber(
-                "Select the color image", cps.NONE, doc='''
-            Select the color image to use.''')
+            "Select the color image",
+            cps.NONE,
+            doc="""
+*(Used only if input image type is "{CC_COLOR}")*
+
+Select the color image to use.
+""".format(**{
+                "CC_COLOR": CC_COLOR
+            })
+        )
 
         # Output settings
         self.output_color_choice = cps.Choice(
-                "Output image type", CC_ALL, doc="""
-            Specify whether you want to produce several grayscale images or one color image.""")
+            "Output image type",
+            CC_ALL,
+            doc="Specify whether you want to produce several grayscale images or one color image.")
 
         self.wants_red_output = cps.Binary(
-                "Select <i>%(YES)s</i> to produce a red image." % globals(), True)
+            "Select \"*{YES}*\" to produce a red image.".format(**{"YES": YES}),
+            True,
+            doc="""\
+*(Used only if output image type is "{CC_GRAYSCALE}")*
+
+Select "*{YES}*" to produce a grayscale image corresponding to the inverted red channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE,
+                "YES": YES
+            })
+        )
 
         self.red_output_image = cps.ImageNameProvider(
-                "Name the red image", "InvertedRed")
+            "Name the red image",
+            "InvertedRed",
+            doc="""\
+*(Used only if output image type is "{CC_GRAYSCALE}" and a red image is output)*
+
+Provide a name for the inverted red channel image.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE
+            })
+        )
 
         self.wants_green_output = cps.Binary(
-                "Select <i>%(YES)s</i> to produce a green image." % globals(), True)
+            "Select \"*{YES}*\" to produce a green image.".format(**{"YES": YES}),
+            True,
+            doc="""\
+*(Used only if output image type is "{CC_GRAYSCALE}")*
+
+Select "*{YES}*" to produce a grayscale image corresponding to the inverted green channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE,
+                "YES": YES
+            })
+        )
 
         self.green_output_image = cps.ImageNameProvider(
-                "Name the green image", "InvertedGreen")
+            "Name the green image",
+            "InvertedGreen",
+            doc="""\
+*(Used only if output image type is "{CC_GRAYSCALE}" and a green image is output)*
+
+Provide a name for the inverted green channel image.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE
+            })
+        )
 
         self.wants_blue_output = cps.Binary(
-                "Select <i>%(YES)s</i> to produce a blue image." % globals(), True)
+            "Select \"*{YES}*\" to produce a blue image.".format(**{"YES": YES}),
+            True,
+            doc="""\
+*(Used only if output image type is "{CC_GRAYSCALE}")*
+
+Select "*{YES}*" to produce a grayscale image corresponding to the inverted blue channel.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE,
+                "YES": YES
+            })
+        )
 
         self.blue_output_image = cps.ImageNameProvider(
-                "Name the blue image", "InvertedBlue")
+            "Name the blue image",
+            "InvertedBlue",
+            doc="""\
+*(Used only if output image type is "{CC_GRAYSCALE}" and a blue image is output)*
+
+Provide a name for the inverted blue channel image.
+""".format(**{
+                "CC_GRAYSCALE": CC_GRAYSCALE
+            })
+        )
 
         self.color_output_image = cps.ImageNameProvider(
-                "Name the inverted color image",
-                "InvertedColor", doc='''
-            <i>(Used only when producing a color output image)</i><br>
-            Enter a name for the inverted color image.''')
+            "Name the inverted color image",
+            "InvertedColor",
+            doc="""\
+*(Used only when producing a color output image)*
+
+Enter a name for the inverted color image.
+"""
+        )
 
     def settings(self):
         '''Return the settings as saved in the pipeline'''

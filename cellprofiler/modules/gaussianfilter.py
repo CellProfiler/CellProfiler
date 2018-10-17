@@ -1,9 +1,20 @@
 # coding=utf-8
 
 """
-A Guassian filter will blur an image and remove noise. Filtering an
+GaussianFilter
+==============
+
+**GuassianFilter** will blur an image and remove noise. Filtering an
 image with a Gaussian filter can be helpful if the foreground signal is
 noisy or near the noise floor.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
 """
 
 import cellprofiler.module
@@ -14,6 +25,8 @@ import numpy
 
 
 class GaussianFilter(cellprofiler.module.ImageProcessing):
+    category = "Advanced"
+
     module_name = "GaussianFilter"
 
     variable_revision_number = 1
@@ -23,7 +36,8 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
 
         self.sigma = cellprofiler.setting.Integer(
             text="Sigma",
-            value=1
+            value=1,
+            doc="Standard deviation of the kernel to be used for blurring. Larger sigmas induce more blurring."
         )
 
     def run(self, workspace):

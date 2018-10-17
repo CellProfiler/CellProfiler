@@ -19,6 +19,7 @@ import tempfile
 
 import scipy.io.matlab.mio
 from cellprofiler.preferences import set_headless
+import cellprofiler.utilities.legacy
 
 set_headless()
 from cellprofiler.modules import builtin_modules, all_modules
@@ -33,7 +34,7 @@ cp_logo_url_shape = (70, 187, 3)
 
 def example_images_directory():
     global __temp_example_images_folder
-    if os.environ.has_key('CP_EXAMPLEIMAGES'):
+    if 'CP_EXAMPLEIMAGES' in os.environ:
         return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
     d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
@@ -72,7 +73,7 @@ __temp_test_images_folder = None
 
 def testimages_directory():
     global __temp_test_images_folder
-    if os.environ.has_key('CP_TESTIMAGES'):
+    if 'CP_TESTIMAGES' in os.environ:
         return os.environ['CP_TESTIMAGES']
     fyle = os.path.abspath(__file__)
     d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
@@ -129,7 +130,10 @@ def load_pipeline(test_case, encoded_data):
     def blowup(pipeline, event):
         if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
                               cellprofiler.pipeline.LoadExceptionEvent)):
-            test_case.assertFalse(event.error.message)
+            if test_case is not None:
+                test_case.assertFalse(event.error.message)
+            else:
+                assert not event.error.message
 
     pipeline.add_listener(blowup)
     pipeline.create_from_handles(handles)
@@ -202,7 +206,7 @@ def make_12_bit_image(folder, filename, shape):
         np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8),
         # max value = 4095
         np.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], np.uint8)]
-    ifds = sorted(ifds, cmp=(lambda a, b: cmp(a.tolist(), b.tolist())))
+    ifds = sorted(ifds, cmp=(lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())))
     old_end = offset + 2 + nentries * 12
     new_end = offset + 2 + len(ifds) * 12
     diff = new_end - old_end
@@ -286,7 +290,7 @@ def maybe_download_tesst_image(file_name):
         url = testimages_url() + "/" + file_name
         try:
             URLopener().retrieve(url, local_path)
-        except IOError, e:
+        except IOError as e:
             # This raises the "expected failure" exception.
             def bad_url(e=e):
                 raise e
@@ -298,7 +302,7 @@ def maybe_download_tesst_image(file_name):
 def read_example_image(folder, file_name, **kwargs):
     '''Read an example image from one of the example image directories
 
-    folder - folder containing images, e.g. "ExampleFlyImages"
+    folder - folder containing images, e.g., "ExampleFlyImages"
 
     file_name - the name of the file within the folder
 

@@ -1,10 +1,27 @@
 # coding=utf-8
 
-"""
-**Measure Object Intensity** measures several intensity features for
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.outline
+import numpy
+import scipy.ndimage
+import skimage.segmentation
+
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.setting
+from cellprofiler.modules import identify
+from cellprofiler.modules import _help
+
+__doc__ = """
+MeasureObjectIntensity
+======================
+
+**MeasureObjectIntensity** measures several intensity features for
 identified objects.
 
-Given an image with objects identified (e.g. nuclei or cells), this
+Given an image with objects identified (e.g., nuclei or cells), this
 module extracts intensity features for each object based on one or more
 corresponding grayscale images. Measurements are recorded for each
 object.
@@ -14,21 +31,23 @@ objects entered. If you want only specific image/object measurements,
 you can use multiple MeasureObjectIntensity modules for each group of
 measurements desired.
 
-Note that for publication purposes, the units of intensity from
-microscopy images are usually described as “Intensity units” or
-“Arbitrary intensity units” since microscopes are not calibrated to an
-absolute scale. Also, it is important to note whether you are reporting
-either the mean or the integrated intensity, so specify “Mean intensity
-units” or “Integrated intensity units” accordingly.
+{HELP_ON_MEASURING_INTENSITIES}
 
-Keep in mind that the default behavior in CellProfiler is to rescale the
-image intensity from 0 to 1 by dividing all pixels in the image by the
-maximum possible intensity value. This “maximum possible” value is
-defined by the “Set intensity range from” setting in **NamesAndTypes**;
-see the help for that setting for more details.
+|
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also **NamesAndTypes**, **MeasureImageIntensity**.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *IntegratedIntensity:* The sum of the pixel intensities within an
    object.
@@ -49,34 +68,22 @@ Available measurements
    representation of the object.
 -  *LowerQuartileIntensity:* The intensity value of the pixel for which
    25% of the pixels in the object have lower values.
--  *MedianIntensity:* The median intensity value within the object
+-  *MedianIntensity:* The median intensity value within the object.
 -  *MADIntensity:* The median absolute deviation (MAD) value of the
    intensities within the object. The MAD is defined as the
    median(\|x\ :sub:`i` - median(x)\|).
 -  *UpperQuartileIntensity:* The intensity value of the pixel for which
    75% of the pixels in the object have lower values.
 -  *Location\_CenterMassIntensity\_X, Location\_CenterMassIntensity\_Y:*
-   The pixel (X,Y) coordinates of the intensity weighted centroid (=
+   The (X,Y) coordinates of the intensity weighted centroid (=
    center of mass = first moment) of all pixels within the object.
--  *Location\_MaxIntensity\_X, Location\_MaxIntensity\_Y:* The pixel
+-  *Location\_MaxIntensity\_X, Location\_MaxIntensity\_Y:* The
    (X,Y) coordinates of the pixel with the maximum intensity within the
    object.
 
-See also **NamesAndTypes**, **MeasureImageIntensity**.
-"""
-
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.outline
-import numpy
-import scipy.ndimage
-import skimage.segmentation
-
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
-import identify
+""".format(**{
+    "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
+})
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -135,8 +142,8 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
         group.append("name", cellprofiler.setting.ImageNameSubscriber(
-                "Select an image to measure", cellprofiler.setting.NONE, doc="""
-            Select the grayscale images whose intensity you want to measure."""))
+                "Select an image to measure", cellprofiler.setting.NONE, doc="""\
+Select the grayscale images whose intensity you want to measure."""))
 
         if can_remove:
             group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.images, group))
@@ -152,8 +159,8 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
         group.append("name", cellprofiler.setting.ObjectNameSubscriber(
-                "Select objects to measure", cellprofiler.setting.NONE, doc="""
-            Select the objects whose intensities you want to measure."""))
+                "Select objects to measure", cellprofiler.setting.NONE, doc="""\
+Select the objects whose intensities you want to measure."""))
 
         if can_remove:
             group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this object", self.objects, group))
@@ -308,7 +315,7 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         else:
             return []
         for object_name_variable in [obj.name for obj in self.objects]:
-            if object_name_variable == object_name:
+            if object_name_variable.value == object_name:
                 return [image.name.value for image in self.images]
         return []
 
@@ -461,7 +468,7 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
                             dest[lindexes[qmask] - 1] = (limg[order[qi]] * (1 - qf) + limg[order[qi + 1]] * qf)
 
                             #
-                            # In some situations (e.g. only 3 points), there may
+                            # In some situations (e.g., only 3 points), there may
                             # not be an upper bound.
                             #
                             qmask = (~qmask) & (areas > 0)

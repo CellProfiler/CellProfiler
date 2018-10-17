@@ -34,10 +34,8 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module = cellprofiler.modules.expandorshrinkobjects.ExpandOrShrink()
         module.object_name.value = INPUT_NAME
         module.output_object_name.value = OUTPUT_NAME
-        module.outlines_name.value = OUTLINES_NAME
         module.operation.value = operation
         module.iterations.value = iterations
-        module.wants_outlines.value = wants_outlines
         module.wants_fill_holes.value = wants_fill_holes
         module.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -176,19 +174,3 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(numpy.all(objects.segmented == expected))
-
-    def test_07_01_outlines(self):
-        '''Create an outline of the resulting objects'''
-        labels = numpy.zeros((10, 10), int)
-        labels[4, 4] = 1
-        i, j = numpy.mgrid[0:10, 0:10] - 4
-        expected = (i ** 2 + j ** 2 <= 4).astype(int)
-        expected_outlines = centrosome.outline.outline(expected)
-        workspace, module = self.make_workspace(labels, cellprofiler.modules.expandorshrinkobjects.O_EXPAND, 2,
-                                                wants_outlines=True)
-        module.run(workspace)
-        objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
-        self.assertTrue(OUTLINES_NAME in workspace.image_set.names)
-        outlines = workspace.image_set.get_image(OUTLINES_NAME).pixel_data
-        self.assertTrue(numpy.all(outlines == expected_outlines))

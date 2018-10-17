@@ -70,17 +70,22 @@ class App(wx.App):
 
         self.frame.Show()
 
-        telemetry = cellprofiler.gui.dialog.Telemetry()
+        if cellprofiler.preferences.get_telemetry_prompt():
+            telemetry = cellprofiler.gui.dialog.Telemetry()
 
-        if telemetry.status == wx.ID_YES:
-            cellprofiler.preferences.set_telemetry(True)
-        else:
-            cellprofiler.preferences.set_telemetry(False)
+            if telemetry.status == wx.ID_YES:
+                cellprofiler.preferences.set_telemetry(True)
+            else:
+                cellprofiler.preferences.set_telemetry(False)
+
+            cellprofiler.preferences.set_telemetry_prompt(False)
 
         if cellprofiler.preferences.get_telemetry():
-            logging = raven.handlers.logging.SentryHandler(sentry)
+            sentry_handler = raven.handlers.logging.SentryHandler(sentry)
 
-            raven.conf.setup_logging(logging)
+            sentry_handler.setLevel(logging.ERROR)
+
+            raven.conf.setup_logging(sentry_handler)
 
         if self.frame.startup_blurb_frame.IsShownOnScreen():
             self.frame.startup_blurb_frame.Raise()

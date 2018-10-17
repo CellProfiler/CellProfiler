@@ -1,13 +1,9 @@
-"""AddModuleFrame.py - this is the window frame and the subwindows
-that give you the GUI to add a module to a pipeline
-"""
-
 import cellprofiler.module
 import cellprofiler.gui
-import cellprofiler.gui.html.manual
+import cellprofiler.gui.help.search
 import cellprofiler.modules
 import cellprofiler.preferences
-import cpframe
+import cellprofiler.gui.cpframe
 import wx
 
 
@@ -38,7 +34,6 @@ class AddModuleFrame(wx.Frame):
         module_help_button = wx.Button(selected_module_panel, -1, '? Module Help')
         # Other buttons
         getting_started_button = wx.Button(left_panel, -1, 'Getting Started')
-        wheres_my_module_button = wx.Button(left_panel, -1, "Where's my Module?")
         done_button = wx.Button(left_panel, -1, 'Done')
         # Right-side panel
         self.__module_list_box = wx.ListBox(right_panel, -1)
@@ -68,8 +63,6 @@ class AddModuleFrame(wx.Frame):
         left_sizer.AddSpacer((-1, 10))
         left_sizer.Add(getting_started_button, 0, wx.EXPAND)
         left_sizer.AddSpacer(2)
-        left_sizer.Add(wheres_my_module_button, 0, wx.EXPAND)
-        left_sizer.AddSpacer(2)
         left_sizer.Add(done_button, 0, wx.EXPAND | wx.BOTTOM, 5)
         left_panel.SetSizer(left_sizer)
 
@@ -85,7 +78,7 @@ class AddModuleFrame(wx.Frame):
 
         self.__set_icon()
         accelerators = wx.AcceleratorTable(
-                [(wx.ACCEL_CMD, ord('W'), cpframe.ID_FILE_EXIT)])
+                [(wx.ACCEL_CMD, ord('W'), cellprofiler.gui.cpframe.ID_FILE_EXIT)])
         self.SetAcceleratorTable(accelerators)
 
         self.Bind(wx.EVT_CLOSE, self.__on_close, self)
@@ -95,8 +88,7 @@ class AddModuleFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.__on_close, done_button)
         self.Bind(wx.EVT_BUTTON, self.__on_help, module_help_button)
         self.Bind(wx.EVT_BUTTON, self.__on_getting_started, getting_started_button)
-        self.Bind(wx.EVT_BUTTON, self.__on_wheres_my_module, wheres_my_module_button)
-        self.Bind(wx.EVT_MENU, self.__on_close, id=cpframe.ID_FILE_EXIT)
+        self.Bind(wx.EVT_MENU, self.__on_close, id=cellprofiler.gui.cpframe.ID_FILE_EXIT)
         self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
         self.__set_categories()
@@ -143,7 +135,7 @@ class AddModuleFrame(wx.Frame):
                         self.__module_files.insert(-2, category)
                         self.__module_dict[category] = {}
                     self.__module_dict[category][module.module_name] = loader
-            except Exception, e:
+            except Exception as e:
                 import traceback
                 import logging
                 logging.root.error(
@@ -177,7 +169,7 @@ class AddModuleFrame(wx.Frame):
             filename = self.__module_list_box.GetItems()[idx]
             loader = self.__module_dict[category][filename]
             module = loader(0)
-            if isinstance(self.Parent, cpframe.CPFrame):
+            if isinstance(self.Parent, cellprofiler.gui.cpframe.CPFrame):
                 self.Parent.do_help_module(module.module_name, module.get_help())
             else:
                 help_text = module.get_help()
@@ -193,7 +185,7 @@ class AddModuleFrame(wx.Frame):
             self.search_text.SetFocus()
             return
 
-        html = cellprofiler.gui.html.manual.search_module_help(self.search_text.Value)
+        html = cellprofiler.gui.help.search.search_module_help(self.search_text.Value)
         if html is None:
             wx.MessageBox('No references found for "%s".' % self.search_text.Value,
                           caption="Text not found",
@@ -203,9 +195,13 @@ class AddModuleFrame(wx.Frame):
             self.display_helpframe(html, 'Help matching "%s"' % self.search_text.Value)
 
     def __on_getting_started(self, event):
-        from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
-        self.display_helpframe(BUILDING_A_PIPELINE_HELP,
-                               'Add modules: Getting Started')
+        import cellprofiler.gui.help.content
+        import cellprofiler.gui.html.utils
+        self.display_helpframe(
+            cellprofiler.gui.html.utils.rst_to_html_fragment(
+                cellprofiler.gui.help.content.read_content("pipelines_building.rst")
+            ),
+            'Add modules: Getting Started')
 
     def display_helpframe(self, help_text, title):
         from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
@@ -218,11 +214,6 @@ class AddModuleFrame(wx.Frame):
         helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
-
-    @staticmethod
-    def __on_wheres_my_module(event):
-        import webbrowser
-        webbrowser.open("http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=3221#p4486")
 
     def add_listener(self, listener):
         self.__listeners.append(listener)

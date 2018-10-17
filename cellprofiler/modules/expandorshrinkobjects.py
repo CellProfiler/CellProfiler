@@ -1,28 +1,39 @@
 # coding=utf-8
 
-"""
-**Expand Or Shrink Objects** expands or shrinks objects by a defined
+from cellprofiler.modules import _help
+
+__doc__ = """\
+ExpandOrShrinkObjects
+=====================
+
+**ExpandOrShrinkObjects** expands or shrinks objects by a defined
 distance.
 
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be added or
-removed, expand objects until they are almost touching or shrink objects
-down to a point. Objects are never lost using this module (shrinking
-stops when an object becomes a single pixel). The module can separate
-touching objects without otherwise shrinking the objects.
+removed, expand objects until they are almost touching, or shrink objects
+down to a point. The module can also separate touching objects without
+otherwise shrinking them, and can perform some specialized morphological
+operations that remove pixels without completely removing an object.
 
-**ExpandOrShrinkObjects** can perform some specialized morphological
-operations that remove pixels without completely removing an object. See
-the Settings help (below) for more detail.
+See also **IdentifySecondaryObjects** which allows creating new objects
+based on expansion of existing objects, with a a few different options
+than in this module. There are also several related modules in the
+*Advanced* category (e.g., **Dilation**, **Erosion**,
+**MorphologicalSkeleton**).
 
-*Special note on saving images:* You can use the settings in this module
-to pass object outlines along to the module **OverlayOutlines** and then
-save them with the **SaveImages** module. You can also pass the
-identified objects themselves along to the object processing module
-**ConvertToImage** and then save them with the **SaveImages** module.
+{HELP_ON_SAVING_OBJECTS}
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 
@@ -32,22 +43,21 @@ Available measurements
 
 -  *Location\_X, Location\_Y:* Pixel (*X,Y*) coordinates of the center
    of mass of the expanded/shrunken objects.
-
-See also **Identify** modules.
-"""
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import centrosome.cpmorphology
-import centrosome.outline
 import numpy
 import scipy.ndimage
 
-import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.object
 import cellprofiler.setting
+
 
 O_SHRINK_INF = "Shrink objects to a point"
 O_EXPAND_INF = "Expand objects until touching"
@@ -62,7 +72,7 @@ O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND, O_SKELETONIZE
 class ExpandOrShrinkObjects(cellprofiler.module.Module):
     module_name = "ExpandOrShrinkObjects"
     category = "Object Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
@@ -80,29 +90,37 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
         self.operation = cellprofiler.setting.Choice(
             "Select the operation",
             O_ALL,
-            doc="""
-            Choose the operation that you want to perform:
-            <ul>
-                <li><i>{O_SHRINK_INF}:</i> Remove all pixels but one from filled objects. Thin objects with
-                holes to loops unless the "fill" option is checked.</li>
-                <li><i>{O_EXPAND_INF}:</i> Expand objects, assigning every pixel in the image to an object.
-                Background pixels are assigned to the nearest object.</li>
-                <li><i>{O_DIVIDE}:</i> Remove pixels from an object that are adjacent to another object's
-                pixels unless doing so would change the object's Euler number (break an object in two, remove
-                the object completely or open a hole in an object).</li>
-                <li><i>{O_SHRINK}:</i> Remove pixels around the perimeter of an object unless doing so would
-                change the object's Euler number (break the object in two, remove the object completely or open
-                a hole in the object). You can specify the number of times perimeter pixels should be removed.
-                Processing stops automatically when there are no more pixels to remove.</li>
-                <li><i>{O_EXPAND}:</i> Expand each object by adding background pixels adjacent to the image.
-                You can choose the number of times to expand. Processing stops automatically if there are no
-                more background pixels.</li>
-                <li><i>{O_SKELETONIZE}:</i> Erode each object to its skeleton.</li>
-                <li><i>{O_SPUR}:</i> Remove or reduce the length of spurs in a skeletonized image. The
-                algorithm reduces spur size by the number of pixels indicated in the setting <i>Number of
-                pixels by which to expand or shrink</i>.</li>
-            </ul>
-            """.format(**{
+            doc="""\
+Choose the operation that you want to perform:
+
+-  *{O_SHRINK_INF}:* Remove all pixels but one from filled objects.
+   Thin objects with holes to loops unless the “fill” option is checked.
+   Objects are never lost using this module (shrinking stops when an
+   object becomes a single pixel).
+-  *{O_EXPAND_INF}:* Expand objects, assigning every pixel in the
+   image to an object. Background pixels are assigned to the nearest
+   object.
+-  *{O_DIVIDE}:* Remove pixels from an object that are adjacent to
+   another object’s pixels unless doing so would change the object’s
+   Euler number (break an object in two, remove the object completely or
+   open a hole in an object).
+-  *{O_SHRINK}:* Remove pixels around the perimeter of an object unless
+   doing so would change the object’s Euler number (break the object in
+   two, remove the object completely or open a hole in the object). You
+   can specify the number of times perimeter pixels should be removed.
+   Processing stops automatically when there are no more pixels to
+   remove. Objects are never lost using this module (shrinking
+   stops when an object becomes a single pixel).
+-  *{O_EXPAND}:* Expand each object by adding background pixels
+   adjacent to the image. You can choose the number of times to expand.
+   Processing stops automatically if there are no more background
+   pixels.
+-  *{O_SKELETONIZE}:* Erode each object to its skeleton.
+-  *{O_SPUR}:* Remove or reduce the length of spurs in a skeletonized
+   image. The algorithm reduces spur size by the number of pixels
+   indicated in the setting *Number of pixels by which to expand or
+   shrink*.
+""".format(**{
                 "O_DIVIDE": O_DIVIDE,
                 "O_EXPAND": O_EXPAND,
                 "O_EXPAND_INF": O_EXPAND_INF,
@@ -113,35 +131,39 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
             })
         )
 
-        self.iterations = cellprofiler.setting.Integer("Number of pixels by which to expand or shrink", 1, minval=1)
+        self.iterations = cellprofiler.setting.Integer(
+            "Number of pixels by which to expand or shrink",
+            1,
+            minval=1,
+            doc="""\
+*(Used only if "{O_SHRINK}", "{O_EXPAND}", or "{O_SPUR}" is selected)*
+
+Specify the number of pixels to add or remove from object borders.
+""".format(**{
+                "O_EXPAND": O_EXPAND,
+                "O_SHRINK": O_SHRINK,
+                "O_SPUR": O_SPUR
+            })
+        )
 
         self.wants_fill_holes = cellprofiler.setting.Binary(
             "Fill holes in objects so that all objects shrink to a single point?",
             False,
-            doc="""
-            <i>(Used only if one of the "shrink" options selected)</i><br>
-            Select <i>{YES}</i> to ensure that each object will shrink to a single point, by filling the holes
-            in each object.
-            <p>Select <i>{NO}</i> to preserve the Euler number. in this case, the shrink algorithm preserves
-            each object's Euler number, which means that it will erode an object with a hole to a ring in order
-            to keep the hole. An object with two holes will be shrunk to two rings connected by a line in order
-            to keep from breaking up the object or breaking the hole.</p>
-            """.format(**{
+            doc="""\
+*(Used only if one of the “Shrink” options selected)*
+
+Select *{YES}* to ensure that each object will shrink to a single
+point, by filling the holes in each object.
+
+Select *{NO}* to preserve the Euler number. In this case, the shrink
+algorithm preserves each object’s Euler number, which means that it will
+erode an object with a hole to a ring in order to keep the hole. An
+object with two holes will be shrunk to two rings connected by a line in
+order to keep from breaking up the object or breaking the hole.
+""".format(**{
                 "NO": cellprofiler.setting.NO,
                 "YES": cellprofiler.setting.YES
             })
-        )
-
-        self.wants_outlines = cellprofiler.setting.Binary(
-            "Retain the outlines of the identified objects?",
-            False,
-            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
-        )
-
-        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-            "Name the outline image",
-            "ShrunkenNucleiOutlines",
-            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
         )
 
     def settings(self):
@@ -150,9 +172,7 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
             self.output_object_name,
             self.operation,
             self.iterations,
-            self.wants_fill_holes,
-            self.wants_outlines,
-            self.outlines_name
+            self.wants_fill_holes
         ]
 
     def visible_settings(self):
@@ -167,11 +187,6 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
 
         if self.operation in [O_SHRINK, O_SHRINK_INF]:
             result += [self.wants_fill_holes]
-
-        result += [self.wants_outlines]
-
-        if self.wants_outlines.value:
-            result += [self.outlines_name]
 
         return result
 
@@ -202,14 +217,6 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
             self.output_object_name.value,
             output_objects.segmented
         )
-
-        if self.wants_outlines.value:
-            outline_image = cellprofiler.image.Image(
-                centrosome.outline.outline(output_objects.segmented) > 0,
-                parent_image=input_objects.parent_image
-            )
-
-            workspace.image_set.add(self.outlines_name.value, outline_image)
 
         if self.show_window:
             workspace.display_data.input_objects_segmented = input_objects.segmented
@@ -317,6 +324,11 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
 
             variable_revision_number = 1
 
+        if variable_revision_number == 1:
+            setting_values = setting_values[:-2]
+
+            variable_revision_number = 2
+
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
@@ -356,6 +368,6 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
 
 
 #
-# backwards compatability
+# backwards compatibility
 #
 ExpandOrShrink = ExpandOrShrinkObjects

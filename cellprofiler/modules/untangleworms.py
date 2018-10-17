@@ -11,12 +11,26 @@ create a worm model, or takes a binary image and the results of worm
 training and labels the worms in the image, untangling them and
 associating all of a worm’s pieces together. The results of untangling
 the input image will be an object set that can be used with downstream
-measurment modules. If using the *overlapping* style of objects, these
+measurement modules. If using the *overlapping* style of objects, these
 can be saved as images using **SaveImages** to create a multi-page TIF
 file by specifying “Objects” as the type of image to save.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also our `Worm Toolbox`_ page for sample images and pipelines, as
+well as video tutorials.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Object measurements (for “Untangle” mode only)**:
 
@@ -72,12 +86,8 @@ References
    EJ, Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P,
    Ruvkun G, Ausubel FM, Carpenter AE (2012). "An image analysis toolbox
    for high-throughput *C. elegans* assays." *Nature Methods* 9(7):
-   714-716. `(link)`_
+   714-716. `(link) <https://doi.org/10.1038/nmeth.1984>`__
 
-See also: Our `Worm Toolbox`_ page for sample images and pipelines, as
-well as video tutorials.
-
-.. _(link): http://dx.doi.org/10.1038/nmeth.1984
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
@@ -106,14 +116,24 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
-import identify as I
+from cellprofiler.modules import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
 from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+    ABSOLUTE_FOLDER_NAME
+from cellprofiler.modules._help import USING_METADATA_GROUPING_HELP_REF, \
+    IO_FOLDER_CHOICE_HELP_TEXT
+
+RETAINING_OUTLINES_HELP = """\
+Select *{YES}* to retain the outlines of the new objects for later use
+in the pipeline. For example, a common use is for quality control
+purposes by overlaying them on your image of choice using the
+**OverlayOutlines** module and then saving the overlay image with the
+**SaveImages** module.
+""".format(**{
+    "YES": cps.YES
+})
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"
@@ -203,109 +223,130 @@ complexity_limits = {
 
 class UntangleWorms(cpm.Module):
     variable_revision_number = 2
-    category = ["Object Processing", "Worm Toolbox"]
+    category = ["Worm Toolbox"]
     module_name = "UntangleWorms"
 
     def create_settings(self):
         '''Create the settings that parameterize the module'''
         self.mode = cps.Choice(
-                "Train or untangle worms?", [MODE_UNTANGLE, MODE_TRAIN], doc="""
-            <b>UntangleWorms</b> has two modes:
-            <ul>
-            <li><i>%(MODE_TRAIN)s</i> creates one training set per image group,
-            using all of the worms in the training set as examples. It then writes
-            the training file at the end of each image group.</li>
-            <li><i>%(MODE_UNTANGLE)s</i> uses the training file to untangle images of worms.</li>
-            </ul>
-            %(USING_METADATA_GROUPING_HELP_REF)s""" % globals())
+                "Train or untangle worms?", [MODE_UNTANGLE, MODE_TRAIN], doc="""\
+**UntangleWorms** has two modes:
+
+-  *%(MODE_TRAIN)s* creates one training set per image group, using all
+   of the worms in the training set as examples. It then writes the
+   training file at the end of each image group.
+-  *%(MODE_UNTANGLE)s* uses the training file to untangle images of
+   worms.
+
+%(USING_METADATA_GROUPING_HELP_REF)s
+""" % globals())
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input binary image", cps.NONE, doc="""
-            A binary image where the foreground indicates the worm
-            shapes. The binary image can be produced by the <b>ApplyThreshold</b>
-            module.""")
+                "Select the input binary image", cps.NONE, doc="""\
+A binary image where the foreground indicates the worm
+shapes. The binary image can be produced by the **ApplyThreshold**
+module.""")
 
         self.overlap = cps.Choice(
-                "Overlap style", [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP], doc="""
-            This setting determines which style objects are output.
-            If two worms overlap, you have a choice of including the overlapping
-            regions in both worms or excluding the overlapping regions from
-            both worms.
-            <ul>
-            <li><i>%(OO_WITH_OVERLAP)s:</i> Save objects including
-            overlapping regions.</li>
-            <li><i>%(OO_WITHOUT_OVERLAP)s:</i> Save only
-            the portions of objects that do not overlap.</li>
-            <li><i>%(OO_BOTH)s:</i> Save two versions: with and without overlap.</li>
-            </ul>""" %
-                                                                                     globals())
+                "Overlap style", [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP], doc="""\
+This setting determines which style objects are output. If two worms
+overlap, you have a choice of including the overlapping regions in both
+worms or excluding the overlapping regions from both worms.
+
+-  *%(OO_WITH_OVERLAP)s:* Save objects including overlapping regions.
+-  *%(OO_WITHOUT_OVERLAP)s:* Save only the portions of objects that do
+   not overlap.
+-  *%(OO_BOTH)s:* Save two versions: with and without overlap.
+""" % globals())
 
         self.overlap_objects = cps.ObjectNameProvider(
                 "Name the output overlapping worm objects", "OverlappingWorms",
-                provided_attributes={ATTR_WORM_MEASUREMENTS: True}, doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            This setting names the objects representing the overlapping
-            worms. When worms cross, they overlap and pixels are shared by
-            both of the overlapping worms. The overlapping worm objects share
-            these pixels and measurements of both overlapping worms will include
-            these pixels in the measurements of both worms.""" % globals())
+                provided_attributes={ATTR_WORM_MEASUREMENTS: True}, doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
+“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+
+This setting names the objects representing the overlapping worms. When
+worms cross, they overlap and pixels are shared by both of the
+overlapping worms. The overlapping worm objects share these pixels and
+measurements of both overlapping worms will include these pixels in the
+measurements of both worms.
+""" % globals())
 
         self.wants_overlapping_outlines = cps.Binary(
-                "Retain outlines of the overlapping objects?", False, doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+                "Retain outlines of the overlapping objects?", False, doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
+“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+
+%(RETAINING_OUTLINES_HELP)s
+""" % globals())
 
         self.overlapping_outlines_colormap = cps.Colormap(
-                "Outline colormap?", doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode, "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style and retaining outlines are selected )</i> <br>
-            This setting controls the colormap used when drawing
-            outlines. The outlines are drawn in color to highlight the
-            shapes of each worm in a group of overlapping worms""" % globals())
+                "Outline colormap?", doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode, “%(OO_BOTH)s” or
+“%(OO_WITH_OVERLAP)s” overlap style and retaining outlines are
+selected )*
+
+This setting controls the colormap used when drawing outlines. The
+outlines are drawn in color to highlight the shapes of each worm in a
+group of overlapping worms
+""" % globals())
 
         self.overlapping_outlines_name = cps.OutlineNameProvider(
                 "Name the overlapped outline image",
-                "OverlappedWormOutlines", doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            This is the name of the outlines of the overlapped worms.""" % globals())
+                "OverlappedWormOutlines", doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
+“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+
+This is the name of the outlines of the overlapped worms.
+""" % globals())
 
         self.nonoverlapping_objects = cps.ObjectNameProvider(
                 "Name the output non-overlapping worm objects", "NonOverlappingWorms",
-                provided_attributes={ATTR_WORM_MEASUREMENTS: True}, doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            This setting names the objects representing the worms,
-            excluding those regions where the worms overlap. When worms cross,
-            there are pixels that cannot be unambiguously assigned to one
-            worm or the other. These pixels are excluded from both worms
-            in the non-overlapping objects and will not be a part of the
-            measurements of either worm.""" % globals())
+                provided_attributes={ATTR_WORM_MEASUREMENTS: True}, doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
+“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+
+This setting names the objects representing the worms, excluding those
+regions where the worms overlap. When worms cross, there are pixels that
+cannot be unambiguously assigned to one worm or the other. These pixels
+are excluded from both worms in the non-overlapping objects and will not
+be a part of the measurements of either worm.
+""" % globals())
 
         self.wants_nonoverlapping_outlines = cps.Binary(
-                "Retain outlines of the non-overlapping worms?", False,
-                """<i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-                %(RETAINING_OUTLINES_HELP)s""" % globals())
+                "Retain outlines of the non-overlapping worms?", False, doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
+“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+
+%(RETAINING_OUTLINES_HELP)s
+""" % globals())
 
         self.nonoverlapping_outlines_name = cps.OutlineNameProvider(
                 "Name the non-overlapped outlines image",
-                "NonoverlappedWormOutlines", doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            This is the name of the of the outlines of the worms
-            with the overlapping sections removed.""" % globals())
+                "NonoverlappedWormOutlines", doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
+“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+
+This is the name of the of the outlines of the worms with the
+overlapping sections removed.
+""" % globals())
 
         self.training_set_directory = cps.DirectoryPath(
                 "Training set file location",
                 support_urls=True,
-                allow_metadata=False, doc="""
-            Select the folder containing the training set to be loaded.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s
-            <p>An additional option is the following:
-            <ul>
-            <li><i>URL</i>: Use the path part of a URL. For instance, your
-            training set might be hosted at
-            <code>http://my_institution.edu/server/my_username/TrainingSet.xml</code>
-            To access this file, you would choose <i>URL</i> and enter
-            <code>http://my_institution.edu/server/my_username/</code>
-            as the path location.</li>
-            </ul></p>""" % globals())
+                allow_metadata=False, doc="""\
+Select the folder containing the training set to be loaded.
+%(IO_FOLDER_CHOICE_HELP_TEXT)s
+
+An additional option is the following:
+
+-  *URL*: Use the path part of a URL. For instance, your training set
+   might be hosted at
+   ``http://my_institution.edu/server/my_username/TrainingSet.xml`` To
+   access this file, you would choose *URL* and enter
+   ``http://my_institution.edu/server/my_username/`` as the path
+   location.
+""" % globals())
         self.training_set_directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
         def get_directory_fn():
@@ -318,7 +359,7 @@ class UntangleWorms(cpm.Module):
 
         self.training_set_file_name = cps.FilenameText(
                 "Training set file name", "TrainingSet.xml",
-                doc="This is the name of the training set file.",
+                doc="""This is the name of the training set file.""",
                 get_directory_fn=get_directory_fn,
                 set_directory_fn=set_directory_fn,
                 browse_msg="Choose training set",
@@ -326,181 +367,202 @@ class UntangleWorms(cpm.Module):
                       ("All files (*.*)", "*.*")])
 
         self.wants_training_set_weights = cps.Binary(
-                "Use training set weights?", True, doc="""
-            Select <i>%(YES)s</i> to use the overlap and leftover
-            weights from the training set.
-            <p>Select <i>%(NO)s</i> to override
-            these weights with user-specified values.</p>""" % globals())
+                "Use training set weights?", True, doc="""\
+Select "*%(YES)s*" to use the overlap and leftover weights from the
+training set.
+
+Select "*%(NO)s*" to override these weights with user-specified values.
+""" % globals())
 
         self.override_overlap_weight = cps.Float(
-                "Overlap weight", 5, 0, doc="""
-            <i>(Used only if not using training set weights)</i> <br>
-            This setting controls how much weight is given to overlaps
-            between worms. <b>UntangleWorms</b> charges a penalty to a
-            particular putative grouping of worms that overlap equal to the
-            length of the overlapping region times the overlap weight.
-            <ul>
-            <li>Increase
-            the overlap weight to make <b>UntangleWorms</b> avoid overlapping
-            portions of worms.</li>
-            <li>Decrease the overlap weight to make
-            <b>UntangleWorms</b> ignore overlapping portions of worms.</li>
-            </ul>""")
+                "Overlap weight", 5, 0, doc="""\
+*(Used only if not using training set weights)*
+
+This setting controls how much weight is given to overlaps between
+worms. **UntangleWorms** charges a penalty to a particular putative
+grouping of worms that overlap equal to the length of the overlapping
+region times the overlap weight.
+
+-  Increase the overlap weight to make **UntangleWorms** avoid
+   overlapping portions of worms.
+-  Decrease the overlap weight to make **UntangleWorms** ignore
+   overlapping portions of worms.
+""")
 
         self.override_leftover_weight = cps.Float(
-                "Leftover weight", 10, 0, doc="""
-            <i>(Used only if not using training set weights)</i> <br>
-            This setting controls how much weight is given to
-            areas not covered by worms.
-            <b>UntangleWorms</b> charges a penalty to a
-            particular putative grouping of worms that fail to cover all
-            of the foreground of a binary image. The penalty is equal to the
-            length of the uncovered region times the leftover weight.
-            <ul>
-            <li> Increase the leftover weight to make <b>UntangleWorms</b>
-            cover more foreground with worms.</li>
-            <li>Decrease the overlap weight to make <b>UntangleWorms</b>
-            ignore uncovered foreground.</li>
-            </ul>""")
+                "Leftover weight", 10, 0, doc="""\
+*(Used only if not using training set weights)*
+
+This setting controls how much weight is given to areas not covered by
+worms. **UntangleWorms** charges a penalty to a particular putative
+grouping of worms that fail to cover all of the foreground of a binary
+image. The penalty is equal to the length of the uncovered region
+times the leftover weight.
+
+-  Increase the leftover weight to make **UntangleWorms** cover more
+   foreground with worms.
+-  Decrease the overlap weight to make **UntangleWorms** ignore
+   uncovered foreground.
+""")
 
         self.min_area_percentile = cps.Float(
-                "Minimum area percentile", 1, 0, 100, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> will discard single worms whose area
-            is less than a certain minimum. It ranks all worms in the training
-            set according to area and then picks the worm at this percentile.
-            It then computes the minimum area allowed as this worm's area
-            times the minimum area factor.""" % globals())
+                "Minimum area percentile", 1, 0, 100, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** will discard single worms whose area is less than a
+certain minimum. It ranks all worms in the training set according to
+area and then picks the worm at this percentile. It then computes the
+minimum area allowed as this worm’s area times the minimum area factor.
+""" % globals())
 
         self.min_area_factor = cps.Float(
-                "Minimum area factor", .85, 0, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            This setting is a multiplier that is applied to the
-            area of the worm, selected as described in the documentation
-            for <i>Minimum area percentile</i>.""" % globals())
+                "Minimum area factor", .85, 0, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+This setting is a multiplier that is applied to the area of the worm,
+selected as described in the documentation for *Minimum area
+percentile*.
+""" % globals())
 
         self.max_area_percentile = cps.Float(
-                "Maximum area percentile", 90, 0, 100, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i><br>
-            <b>UntangleWorms</b> uses a maximum area to distinguish
-            between single worms and clumps of worms. Any blob whose area is
-            less than the maximum area is considered to be a single worm
-            whereas any blob whose area is greater is considered to be two
-            or more worms. <b>UntangleWorms</b> orders all worms in the
-            training set by area and picks the worm at the percentile
-            given by this setting. It then multiplies this worm's area
-            by the <i>Maximum area factor</i> (see below) to get the maximum
-            area""" % globals())
+                "Maximum area percentile", 90, 0, 100, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses a maximum area to distinguish between single
+worms and clumps of worms. Any blob whose area is less than the maximum
+area is considered to be a single worm whereas any blob whose area is
+greater is considered to be two or more worms. **UntangleWorms** orders
+all worms in the training set by area and picks the worm at the
+percentile given by this setting. It then multiplies this worm’s area by
+the *Maximum area factor* (see below) to get the maximum area
+""" % globals())
 
         self.max_area_factor = cps.Float(
-                "Maximum area factor", 1.0, 0, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            The <i>Maximum area factor</i> setting is used to
-            compute the maximum area as decribed above in <i>Maximum area
-            percentile</i>.""" % globals())
+                "Maximum area factor", 1.0, 0, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+The *Maximum area factor* setting is used to compute the maximum area as
+described above in *Maximum area percentile*.
+""" % globals())
 
         self.min_length_percentile = cps.Float(
-                "Minimum length percentile", 1, 0, 100, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> uses the minimum length to restrict its
-            search for worms in a clump to worms of at least the minimum length.
-            <b>UntangleWorms</b> sorts all worms by length and picks the worm
-            at the percentile indicated by this setting. It then multiplies the
-            length of this worm by the <i>Mininmum length factor</i> (see below)
-            to get the minimum length.""" % globals())
+                "Minimum length percentile", 1, 0, 100, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses the minimum length to restrict its search for
+worms in a clump to worms of at least the minimum length.
+**UntangleWorms** sorts all worms by length and picks the worm at the
+percentile indicated by this setting. It then multiplies the length of
+this worm by the *Minimum length factor* (see below) to get the minimum
+length.
+""" % globals())
 
         self.min_length_factor = cps.Float(
-                "Minimum length factor", 0.9, 0, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> uses the <i>Minimum length factor</i>
-            to compute the minimum length from the training set as described
-            in the documentation above for <i>Minimum length percentile</i>""" % globals())
+                "Minimum length factor", 0.9, 0, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses the *Minimum length factor* to compute the
+minimum length from the training set as described in the documentation
+above for *Minimum length percentile*
+""" % globals())
 
         self.max_length_percentile = cps.Float(
-                "Maximum length percentile", 99, 0, 100, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> uses the maximum length to restrict
-            its search for worms in a clump to worms of at least the maximum
-            length. It computes this length by sorting all of the training
-            worms by length. It then selects the worm at the <i>Maximum
-            length percentile</i> and multiplies that worm's length by
-            the <i>Maximum length factor</i> to get the maximum length""" % globals())
+                "Maximum length percentile", 99, 0, 100, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses the maximum length to restrict its search for
+worms in a clump to worms of at least the maximum length. It computes
+this length by sorting all of the training worms by length. It then
+selects the worm at the *Maximum length percentile* and multiplies that
+worm’s length by the *Maximum length factor* to get the maximum length
+""" % globals())
 
         self.max_length_factor = cps.Float(
-                "Maximum length factor", 1.1, 0, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> uses this setting to compute the
-            maximum length as described in <i>Maximum length percentile</i>
-            above""" % globals())
+                "Maximum length factor", 1.1, 0, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses this setting to compute the maximum length as
+described in *Maximum length percentile* above
+""" % globals())
 
         self.max_cost_percentile = cps.Float(
-                "Maximum cost percentile", 90, 0, 100, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i><br>
-            <b>UntangleWorms</b> computes a shape-based cost for
-            each worm it considers. It will restrict the allowed cost to
-            less than the cost threshold. During training, <b>UntangleWorms</b>
-            computes the shape cost of every worm in the training set. It
-            then orders them by cost and uses <i>Maximum cost percentile</i>
-            to pick the worm at the given percentile. It them multiplies
-            this worm's cost by the <i>Maximum cost factor</i> to compute
-            the cost threshold.""" % globals())
+                "Maximum cost percentile", 90, 0, 100, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** computes a shape-based cost for each worm it
+considers. It will restrict the allowed cost to less than the cost
+threshold. During training, **UntangleWorms** computes the shape cost of
+every worm in the training set. It then orders them by cost and uses
+*Maximum cost percentile* to pick the worm at the given percentile. It
+them multiplies this worm’s cost by the *Maximum cost factor* to compute
+the cost threshold.
+""" % globals())
 
         self.max_cost_factor = cps.Float(
-                "Maximum cost factor", 1.9, 0, doc="""
-            <i>(Used only "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> uses this setting to compute the
-            cost threshold as described in <i>Maximum cost percentile</i>
-            above.""" % globals())
+                "Maximum cost factor", 1.9, 0, doc="""\
+*(Used only “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses this setting to compute the cost threshold as
+described in *Maximum cost percentile* above.
+""" % globals())
 
         self.num_control_points = cps.Integer(
-                "Number of control points", 21, 3, 50, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            This setting controls the number of control points that
-            will be sampled when constructing a worm shape from its skeleton.""" % globals())
+                "Number of control points", 21, 3, 50, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+This setting controls the number of control points that will be sampled
+when constructing a worm shape from its skeleton.
+""" % globals())
 
         self.max_radius_percentile = cps.Float(
-                "Maximum radius percentile", 90, 0, 100, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> uses the maximum worm radius during
-            worm skeletonization. <b>UntangleWorms</b> sorts the radii of
-            worms in increasing size and selects the worm at this percentile.
-            It then multiplies this worm's radius by the <i>Maximum radius
-            factor</i> (see below) to compute the maximum radius.""" % globals())
+                "Maximum radius percentile", 90, 0, 100, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses the maximum worm radius during worm
+skeletonization. **UntangleWorms** sorts the radii of worms in
+increasing size and selects the worm at this percentile. It then
+multiplies this worm’s radius by the *Maximum radius factor* (see below)
+to compute the maximum radius.
+""" % globals())
 
         self.max_radius_factor = cps.Float(
-                "Maximum radius factor", 1, 0, doc="""
-            <i>(Used only if "%(MODE_TRAIN)s" mode is selected)</i> <br>
-            <b>UntangleWorms</b> uses this setting to compute the
-            maximum radius as described in <i>Maximum radius percentile</i>
-            above.""" % globals())
+                "Maximum radius factor", 1, 0, doc="""\
+*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+
+**UntangleWorms** uses this setting to compute the maximum radius as
+described in *Maximum radius percentile* above.
+""" % globals())
 
         self.complexity = cps.Choice(
                 "Maximum complexity",
                 [C_MEDIUM, C_HIGH, C_VERY_HIGH, C_ALL, C_CUSTOM],
-                value=C_HIGH, doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode is selected)</i><br>
-            This setting controls which clusters of worms are rejected as
-            being too time-consuming to process. <b>UntangleWorms</b> judges
-            complexity based on the number of segments in a cluster where
-            a segment is the piece of a worm between crossing points or
-            from the head or tail to the first or last crossing point.
-            The choices are:<br>
-            <ul><li><i>%(C_MEDIUM)s</i>: %(C_MEDIUM_VALUE)d segments
-            (takes up to several minutes to process)</li>
-            <li><i>%(C_HIGH)s</i>: %(C_HIGH_VALUE)d segments
-            (takes up to a quarter-hour to process)</li>
-            <li><i>%(C_VERY_HIGH)s</i>: %(C_VERY_HIGH_VALUE)d segments
-            (can take hours to process)</li>
-            <li><i>%(C_CUSTOM)s</i>: allows you to enter a custom number of
-            segments.</li>
-            <li><i>%(C_ALL)s</i>: Process all worms, regardless of complexity</li>
-            </ul>""" % globals())
+                value=C_HIGH, doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode is selected)*
+
+This setting controls which clusters of worms are rejected as being
+too time-consuming to process. **UntangleWorms** judges complexity
+based on the number of segments in a cluster where a segment is the
+piece of a worm between crossing points or from the head or tail to
+the first or last crossing point. The choices are:
+
+-  *%(C_MEDIUM)s*: %(C_MEDIUM_VALUE)d segments (takes up to several
+   minutes to process)
+-  *%(C_HIGH)s*: %(C_HIGH_VALUE)d segments (takes up to a
+   quarter-hour to process)
+-  *%(C_VERY_HIGH)s*: %(C_VERY_HIGH_VALUE)d segments (can take
+   hours to process)
+-  *%(C_CUSTOM)s*: allows you to enter a custom number of segments.
+-  *%(C_ALL)s*: Process all worms, regardless of complexity
+""" % globals())
 
         self.custom_complexity = cps.Integer(
-                "Custom complexity", 400, 20, doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(C_CUSTOM)s" complexity are selected )</i>
-            Enter the maximum number of segments of any cluster that should
-            be processed.""" % globals())
+                "Custom complexity", 400, 20, doc="""\
+*(Used only if “%(MODE_UNTANGLE)s” mode and “%(C_CUSTOM)s” complexity
+are selected )*
+
+Enter the maximum number of segments of any cluster that
+should be processed.
+""" % globals())
 
     def settings(self):
         return [self.image_name, self.overlap, self.overlap_objects,
@@ -1047,7 +1109,7 @@ class UntangleWorms(cpm.Module):
 
         Given a binary image containing a cluster of worms, returns a structure
         describing the graph structure of the skeleton of the cluster. This graph
-        structure can later be used as input to e.g. get_all_paths().
+        structure can later be used as input to e.g., get_all_paths().
 
         Input parameters:
 
@@ -1065,14 +1127,14 @@ class UntangleWorms(cpm.Module):
         of the pixels making up one segment, traced in the right order.
 
         branch_areas: A list describing the
-        branch areas, i.e. the areas where different segments join. Each
+        branch areas, i.e., the areas where different segments join. Each
         element is an array of i,j coordinates
         of the pixels making up one branch area, in no particular order.
         The branch areas will include all branchpoints,
         followed by a dilation. If max_radius is supplied, all pixels remaining
         after opening the binary image consisting of all pixels further
         than max_pix from the image background. This allows skeleton pixels
-        in thick regions to be replaced by branchppoint regions, which increases
+        in thick regions to be replaced by branchpoint regions, which increases
         the chance of connecting skeleton pieces correctly.
 
         incidence_matrix: A num_branch_areas x num_segments logical array,
@@ -1099,7 +1161,7 @@ class UntangleWorms(cpm.Module):
            that of the segments.
 
         3. Even if one segment is only one pixel long (but still connects to
-           two branch areas), its orientation is well-defined, i.e. one branch
+           two branch areas), its orientation is well-defined, i.e., one branch
            area will be chosen as starting end. (Even though in this case, the
            "positive direction" of the segment cannot be determined from the
            information in graph_struct.segments.)'''
@@ -1401,7 +1463,7 @@ class UntangleWorms(cpm.Module):
         neighbor_index = neighbor_index[neighbor_count > 0]
         neighbor_count = neighbor_count[neighbor_count > 0]
         #
-        # Correct n2 beause we have formerly added N1 to its labels. Make
+        # Correct n2 because we have formerly added N1 to its labels. Make
         # it zero-based.
         #
         n2 -= N1 + 1
@@ -1433,7 +1495,7 @@ class UntangleWorms(cpm.Module):
         line segments form the path itself.)
 
         path_struct: A structure, with entries 'segments' and 'branch_areas',
-        descring the path found, in relation to graph_struct. See
+        describing the path found, in relation to graph_struct. See
         get_all_paths.m for details.'''
 
         path_list = self.get_all_paths(graph_struct, 0, max_length)
@@ -1451,7 +1513,7 @@ class UntangleWorms(cpm.Module):
 
     def path_to_pixel_coords(self, graph_struct, path):
         '''Given a structure describing paths in a graph, converts those to a
-        polyline (i.e. successive coordinates) representation of the same graph.
+        polyline (i.e., successive coordinates) representation of the same graph.
 
         (This is possible because the graph_struct descriptor contains
         information on where the vertices and edges of the graph were initially
@@ -1472,9 +1534,7 @@ class UntangleWorms(cpm.Module):
         coordinates of one point on the path. The path itself can be formed
         by joining these points successively to each other.
 
-        Note:
-
-        Because of the way the graph is built, the points in pixel_coords are
+        Note that because of the way the graph is built, the points in pixel_coords are
         likely to contain segments consisting of runs of pixels where each is
         close to the next (in its 8-neighbourhood), but interleaved with
         reasonably long "jumps", where there is some distance between the end
@@ -1506,7 +1566,7 @@ class UntangleWorms(cpm.Module):
                           np.cumsum(np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))))
 
     def single_worm_filter(self, workspace, path_coords, params):
-        '''Given a path representing a single worm, caculates its shape cost, and
+        '''Given a path representing a single worm, calculates its shape cost, and
         either accepts it as a worm or rejects it, depending on whether or not
         the shape cost is higher than some threshold.
 
@@ -1555,7 +1615,7 @@ class UntangleWorms(cpm.Module):
 
         cumul_lengths: A vector, where the ith entry indicates the
         length from the first point of the path to the ith in path_coords).
-        In most cases, should be calculate_cumulative_lenghts(path_coords).
+        In most cases, should be calculate_cumulative_lengths(path_coords).
 
         n: A positive integer. The number of control points to sample.
 
@@ -1563,7 +1623,7 @@ class UntangleWorms(cpm.Module):
 
         control_coords: A N x 2 double array, where the jth column contains the
         jth control point, sampled along the path. The first and last control
-        points are equal to the first and last points of the path (i.e. the
+        points are equal to the first and last points of the path (i.e., the
         points whose coordinates are the first and last columns of
         path_coords), respectively.'''
         assert num_control_points > 2
@@ -1620,12 +1680,12 @@ class UntangleWorms(cpm.Module):
         format as returned by sample_control_points().
 
         total_length: Scalar double. The total length of the path from which the control
-        points are sampled. (I.e. the distance along the path from the
-        first control poin to the last. E.g. as returned by
+        points are sampled. (I.e., the distance along the path from the
+        first control point to the last, e.g., as returned by
         calculate_path_length().
 
         mean_angles: A (N-1) x 1 double array. The mu in the above formula,
-        i.e. the mean of the feature vectors as calculated from the
+        i.e., the mean of the feature vectors as calculated from the
         training set. Thus, the first N-2 entries are the means of the
         angles, and the last entry is the mean length of the training
         worms.
@@ -1642,7 +1702,7 @@ class UntangleWorms(cpm.Module):
         the control points (and length) are less similar to the training
         set.
 
-        Note: All the angles in question here are direction angles,
+        Note that all the angles in question here are direction angles,
         constrained to lie between -pi and pi. The angle 0 corresponds to
         the case when two adjacnet line segments are parallel (and thus
         belong to the same line); the angles can be thought of as the
@@ -1708,11 +1768,11 @@ class UntangleWorms(cpm.Module):
         such that e_1 is incident to v_1, v_1 incident to e_2, and so on.
 
         Note that, since the ends are not considered parts of the paths, cyclic
-        paths are allowed (i.e. ones starting and ending at the same vertex, but
+        paths are allowed (i.e., ones starting and ending at the same vertex, but
         not self-crossing ones.)
 
         Furthermore, this function also considers two paths identical if one can
-        be obtained by a simple reversation of the other.
+        be obtained by a simple reverse of the other.
 
         This function works by a simple depth-first search. It seems
         unnecessarily complicated compared to what it perhaps could have been;
@@ -1775,7 +1835,7 @@ class UntangleWorms(cpm.Module):
         '''Return a list of all branch areas incident to j for each segment
 
         incident_branch_areas{j} is a row array containing a list of all those
-        branch areas incident to segment j; similary, incident_segments{i} is a
+        branch areas incident to segment j; similarly, incident_segments{i} is a
         row array containing a list of all those segments incident to branch area
         i.'''
         m = graph_struct.incidence_matrix.shape[1]
@@ -1926,12 +1986,12 @@ class UntangleWorms(cpm.Module):
         fact not used at all.
 
         overlap_weight: Scalar double. The weight factor assigned to
-        overlaps, i.e. the a in the formula of the cost to be minimised.
+        overlaps, i.e., the a in the formula of the cost to be minimised.
         the unit is (shape cost unit)/(pixels as a unit of
         skeleton length).
 
         leftover_weight:  The
-        weight factor assigned to leftover pieces, i.e. the b in the
+        weight factor assigned to leftover pieces, i.e., the b in the
         formula of the cost to be minimised. In units of (shape cost
         unit)/(pixels of skeleton length).
 
@@ -2020,7 +2080,7 @@ class UntangleWorms(cpm.Module):
 
         overlap_weight - the penalty per pixel of an overlap
 
-        leftover_weight - the penalty per pixel of an unincluded segment
+        leftover_weight - the penalty per pixel of an excluded segment
 
         max_num_worms - maximum # of worms allowed in returned match.
         '''
@@ -2181,7 +2241,7 @@ class UntangleWorms(cpm.Module):
         for index in order:
             new_cost = current_cost + current_overlapped_costs[index]
             if new_cost >= current_best_cost:
-                break  # No chance of subseequent better cost
+                break  # No chance of subsequent better cost
             path_index = last_chosen + index
             current_best_subset, current_best_cost = self.search_recur(
                     path_segment_matrix, segment_lengths, path_raw_costs,
@@ -2543,7 +2603,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
     path = training_set_directory.get_absolute_path()
     file_name = training_set_file_name.value
-    if d.has_key(file_name):
+    if file_name in d:
         result, timestamp = d[file_name]
         if (timestamp == "URL" or
                     timestamp == os.stat(os.path.join(path, file_name)).st_mtime):

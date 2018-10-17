@@ -1,7 +1,10 @@
 # coding=utf-8
 
 """
-**Load Single Image** loads a single image for use in all image cycles.
+LoadSingleImage
+===============
+
+**LoadSingleImage** loads a single image for use in all image cycles.
 
 This module tells CellProfiler where to retrieve a single image and
 gives the image a meaningful name by which the other modules can access
@@ -13,19 +16,33 @@ when that single image will be used to correct all images in the
 analysis run.
 
 *Disclaimer:* Please note that the Input modules (i.e., **Images**,
-**Metadata**, **NamesAndTypes** and **Groups**) largely supercedes this
+**Metadata**, **NamesAndTypes** and **Groups**) largely supersedes this
 module. However, old pipelines loaded into CellProfiler that contain
 this module will provide the option of preserving them; these pipelines
 will operate exactly as before.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+See also the **Input** modules (**Images**, **NamesAndTypes**,
+**MetaData**, **Groups**), **LoadImages**, and **LoadData**.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Pathname, Filename:* The full path and the filename of each image.
 -  *Metadata:* The metadata information extracted from the path and/or
    filename, if requested.
 -  *Scaling:* The maximum possible intensity value for the image format.
--  *Height, Width:* The height and width of the current image.
+-  *Height, Width:* The height and width of images loaded by this module.
 
 Technical notes
 ^^^^^^^^^^^^^^^
@@ -42,7 +59,6 @@ If you have a single file to load in the pipeline (and only that file),
 you will want to use **LoadImages** or **LoadData** with a single,
 hardcoded file name.
 
-See also the **Input** modules, **LoadImages**,\ **LoadData**.
 """
 
 import hashlib
@@ -59,22 +75,22 @@ import cellprofiler.object as cpo
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
+    IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler.setting import YES, NO
 from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
-from identify import add_object_count_measurements, add_object_location_measurements
-from identify import get_object_measurement_columns
-from loadimages import C_HEIGHT, C_WIDTH, C_PATH_NAME, C_MD5_DIGEST, C_URL
-from loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_URL
-from loadimages import C_OBJECTS_PATH_NAME, IO_IMAGES, IO_OBJECTS, IO_ALL
-from loadimages import IMAGE_FOR_OBJECTS_F
-from loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
-from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
-from loadimages import convert_image_to_objects, pathname2url
+from cellprofiler.modules.identify import add_object_count_measurements, add_object_location_measurements
+from cellprofiler.modules.identify import get_object_measurement_columns
+from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH, C_MD5_DIGEST, IO_IMAGES, IO_OBJECTS, IO_ALL
+from cellprofiler.measurement import C_OBJECTS_FILE_NAME, C_OBJECTS_URL, C_PATH_NAME, C_URL,\
+    C_OBJECTS_PATH_NAME, C_FILE_NAME
+from cellprofiler.modules.loadimages import IMAGE_FOR_OBJECTS_F
+from cellprofiler.modules.loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
+from cellprofiler.modules.loadimages import LoadImagesImageProvider, C_SCALING
+from cellprofiler.modules.loadimages import convert_image_to_objects, pathname2url
+from cellprofiler.modules import images
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
@@ -102,19 +118,22 @@ class LoadSingleImage(cpm.Module):
 
         """
         self.directory = cps.DirectoryPath(
-                "Input image file location", support_urls=True, doc='''
-            Select the folder containing the image(s) to be loaded. Generally,
-            it is best to store the image you want to load in either the Default Input or
-            Output Folder, so that the correct image is loaded into the pipeline
-            and typos are avoided. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            "Input image file location",
+            support_urls=True,
+            doc="""\
+Choose the folder containing the image(s) to be loaded. Generally, it is
+best to store the image you want to load in either the Default Input or
+Output Folder, so that the correct image is loaded into the pipeline and
+typos are avoided.
 
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s For instance,
-            if you have a "Plate" metadata tag, and your single files are
-            organized in subfolders named with the "Plate" tag, you can select one of the
-            subfolder options and then specify a subfolder name of "\g&lt;Plate&gt;"
-            to get the files from the subfolder associated with that image's plate. The module will
-            substitute the metadata values for the current image set for any metadata tags in the
-            folder name. %(USING_METADATA_HELP_REF)s.</p>''' % globals())
+{IO_FOLDER_CHOICE_HELP_TEXT}
+
+{IO_WITH_METADATA_HELP_TEXT}
+""".format(**{
+                "IO_FOLDER_CHOICE_HELP_TEXT": IO_FOLDER_CHOICE_HELP_TEXT,
+                "IO_WITH_METADATA_HELP_TEXT": IO_WITH_METADATA_HELP_TEXT
+            })
+        )
 
         self.file_settings = []
         self.add_file(can_remove=False)
@@ -129,7 +148,9 @@ class LoadSingleImage(cpm.Module):
         def get_directory_fn():
             return self.directory.get_absolute_path()
 
-        group.append("file_name", cps.FilenameText(
+        group.append(
+            "file_name",
+            cps.FilenameText(
                 FILE_TEXT,
                 cps.NONE,
                 metadata=True,
@@ -140,78 +161,142 @@ class LoadSingleImage(cpm.Module):
                       ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),
                       ("Compuserve GIF file (*.gif)", "*.gif"),
                       ("MATLAB image (*.mat)", "*.mat"),
-                      ("All files (*.*)", "*.*")], doc="""
-                    The filename can be constructed in one of two ways:
-                    <ul>
-                    <li>As a fixed filename (e.g., <i>Exp1_D03f00d0.tif</i>). </li>
-                    <li>Using the metadata associated with an image set in
-                    <b>LoadImages</b> or <b>LoadData</b>. This is especially useful
-                    if you want your output given a unique label according to the
-                    metadata corresponding to an image group. The name of the metadata
-                    to substitute is included in a special tag format embedded
-                    in your file specification. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</li>
-                    </ul>
-                    <p>Keep in mind that in either case, the image file extension, if any, must be included.""" % globals()))
+                      ("NumPy array (*.npy)", "*.npy"),
+                      ("All files (*.*)", "*.*")],
+                doc="""\
+The filename can be constructed in one of two ways:
 
-        group.append("image_objects_choice", cps.Choice(
-                'Load as images or objects?', IO_ALL, doc="""
-                    This setting determines whether you load an image as image data
-                    or as segmentation results (i.e., objects):
-                    <ul>
-                    <li><i>%(IO_IMAGES)s:</i> The input image will be given a user-specified name by
-                    which it will be refered downstream. This is the most common usage for this
-                    module.</li>
-                    <li><i>%(IO_OBJECTS)s:</i> Use this option if the input image is a label matrix
-                    and you want to obtain the objects that it defines. A <i>label matrix</i>
-                    is a grayscale or color image in which the connected regions share the
-                    same label, and defines how objects are represented in CellProfiler.
-                    The labels are integer values greater than or equal to 0.
-                    The elements equal to 0 are the background, whereas the elements equal to 1
-                    make up one object, the elements equal to 2 make up a second object, and so on.
-                    This option allows you to use the objects without needing to insert an
-                    <b>Identify</b> module to extract them first. See <b>IdentifyPrimaryObjects</b>
-                    for more details.</li>
-                    </ul>""" % globals()))
+-  As a fixed filename (e.g., *Exp1\_D03f00d0.tif*).
+-  Using the metadata associated with an image set in **LoadImages** or
+   **LoadData**. This is especially useful if you want your output given
+   a unique label according to the metadata corresponding to an image
+   group. The name of the metadata to substitute is included in a
+   special tag format embedded in your file specification.
 
-        group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded",
-                                                             "OrigBlue", doc='''
-                    <i>(Used only if an image is output)</i><br>
-                    Enter the name of the image that will be loaded.
-                    You can use this name to select the image in downstream modules.'''))
+{USING_METADATA_TAGS_REF}
 
-        group.append("rescale", cps.Binary(
-                "Rescale intensities?", True, doc="""
-                    <i>(Used only if an image is output)</i><br>
-                    This option determines whether image metadata should be
-                    used to rescale the image's intensities. Some image formats
-                    save the maximum possible intensity value along with the pixel data.
-                    For instance, a microscope might acquire images using a 12-bit
-                    A/D converter which outputs intensity values between zero and 4095,
-                    but stores the values in a field that can take values up to 65535.
-                    <p>Select <i>%(YES)s</i> to rescale the image intensity so that
-                    saturated values are rescaled to 1.0 by dividing all pixels
-                    in the image by the maximum possible intensity value. </p>
-                    <p>Select <i>%(NO)s</i> to ignore the image metadata and rescale the image
-                    to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-                    of bits used to store the image.</p>""" % globals()))
+{USING_METADATA_HELP_REF}
+
+Keep in mind that in either case, the image file extension, if any, must
+be included.
+""".format(**{
+                    "USING_METADATA_TAGS_REF": USING_METADATA_TAGS_REF,
+                    "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF
+                })
+            )
+        )
+
+        group.append(
+            "image_objects_choice",
+            cps.Choice(
+                'Load as images or objects?',
+                IO_ALL,
+                doc="""\
+This setting determines whether you load an image as image data or as
+segmentation results (i.e., objects):
+
+-  *{IO_IMAGES}:* The input image will be given the name you specify, by
+   which it will be referred downstream. This is the most common usage
+   for this module.
+-  *{IO_OBJECTS}:* Use this option if the input image is a label matrix
+   and you want to obtain the objects that it defines. A *label matrix*
+   is a grayscale or color image in which the connected regions share
+   the same label, and defines how objects are represented in
+   CellProfiler. The labels are integer values greater than or equal to
+   0. The elements equal to 0 are the background, whereas the elements
+   equal to 1 make up one object, the elements equal to 2 make up a
+   second object, and so on. This option allows you to use the objects
+   without needing to insert an **Identify** module to extract them
+   first. See **IdentifyPrimaryObjects** for more details.
+""".format(**{
+                    "IO_IMAGES": IO_IMAGES,
+                    "IO_OBJECTS": IO_OBJECTS
+                })
+            )
+        )
+
+        group.append(
+            "image_name",
+            cps.FileImageNameProvider(
+                "Name the image that will be loaded",
+                "OrigBlue",
+                doc="""\
+*(Used only if an image is output)*
+
+Enter the name of the image that will be loaded. You can use this name
+to select the image in downstream modules.
+"""
+            )
+        )
+
+        group.append(
+            "rescale", cps.Binary(
+                "Rescale intensities?",
+                True,
+                doc="""\
+*(Used only if an image is output)*
+
+This option determines whether image metadata should be used to
+rescale the image’s intensities. Some image formats save the maximum
+possible intensity value along with the pixel data. For instance, a
+microscope might acquire images using a 12-bit A/D converter which
+outputs intensity values between zero and 4095, but stores the values
+in a field that can take values up to 65535.
+
+Select *{YES}* to rescale the image intensity so that saturated values
+are rescaled to 1.0 by dividing all pixels in the image by the maximum
+possible intensity value.
+
+Select *{NO}* to ignore the image metadata and rescale the image to 0 –
+1.0 by dividing by 255 or 65535, depending on the number of bits used to
+store the image.
+""".format(**{
+                    "NO": NO,
+                    "YES": YES
+                })
+            )
+        )
 
         group.append("objects_name", cps.ObjectNameProvider(
                 'Name this loaded object',
                 "Nuclei",
-                doc="""<i>(Used only if objects are output)</i><br>
-                    This is the name for the objects loaded from your image"""))
+                doc="""\
+*(Used only if objects are output)*
 
-        group.append("wants_outlines", cps.Binary(
-                "Retain outlines of loaded objects?", False, doc="""
-                    <i>(Used only if objects are output)</i><br>
-                    Select <i>%(YES)s</i> if you want to save an image of the outlines
-                    of the loaded objects.""" % globals()))
+This is the name for the objects loaded from your image
+"""
+            )
+        )
 
-        group.append("outlines_name", cps.OutlineNameProvider(
+        group.append(
+            "wants_outlines",
+            cps.Binary(
+                "Retain outlines of loaded objects?",
+                False,
+                doc="""\
+*(Used only if objects are output)*
+
+Select *{YES}* if you want to save an image of the outlines of the
+loaded objects.
+""".format(**{
+                    "YES": YES
+                })
+            )
+        )
+
+        group.append(
+            "outlines_name",
+            cps.OutlineNameProvider(
                 'Name the outlines',
-                'NucleiOutlines', doc="""
-                    <i>(Used only if objects are output)</i><br>
-                    Enter a name that will allow the outlines to be selected later in the pipeline."""))
+                'NucleiOutlines',
+                doc="""\
+*(Used only if objects are output)*
+
+Enter a name that will allow the outlines to be selected later in the
+pipeline.
+"""
+            )
+        )
 
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))
@@ -604,7 +689,7 @@ class LoadSingleImage(cpm.Module):
             edited_modules.add(namesandtypes)
             assignment = namesandtypes.assignments[-1]
             structure = [cps.Filter.AND_PREDICATE]
-            fp = cpnamesandtypes.FilePredicate()
+            fp = images.FilePredicate()
             fp_does, fp_does_not = [
                 [d for d in fp.subpredicates if isinstance(d, c)][0]
                 for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]

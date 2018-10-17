@@ -1,16 +1,23 @@
 # coding=utf-8
 
 """
-**Convert Objects To Image** converts objects you have identified into
+ConvertObjectsToImage
+=====================
+
+**ConvertObjectsToImage** converts objects you have identified into
 an image.
 
 This module allows you to take previously identified objects and convert
-them into an image according to a colormap you select, which can then be
-saved with the **SaveImages** modules.
+them into an image according to a colormap you select, which can then be saved 
+with the **SaveImages** module.
 
-If you would like to save your objects but do not need a colormap, you
-can by bypass this module and use the **SaveImages** module directly by
-specifying “Objects” as the type of image to save.
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
 """
 
 import centrosome.cpmorphology
@@ -36,13 +43,13 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
             "Select the input objects",
             cellprofiler.setting.NONE,
-            doc="""Choose the name of the objects you want to convert to an image."""
+            doc="Choose the name of the objects you want to convert to an image."
         )
 
         self.image_name = cellprofiler.setting.ImageNameProvider(
             "Name the output image",
             "CellImage",
-            doc="""Enter the name of the resulting image."""
+            doc="Enter the name of the resulting image."
         )
 
         self.image_mode = cellprofiler.setting.Choice(
@@ -53,36 +60,45 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
                 "Grayscale",
                 "uint16"
             ],
-            doc="""Select which colors the resulting image should use. You have the following options:
-            <ul>
-                <li>
-                    <i>Color:</i> Allows you to choose a colormap that will produce jumbled colors for your objects.
-                </li>
-                <li>
-                    <i>Binary (black & white):</i> All object pixels will be assigned 1 and all background pixels will
-                    be assigned 0, creating a binary image.
-                </li>
-                <li>
-                    <i>Grayscale:</i> Gives each object a graylevel pixel intensity value corresponding to its
-                    number (also called label), so it usually results in objects on the left side of the image being
-                    very dark, progressing toward white on the right side of the image.
-                </li>
-                <li>
-                    <i>uint16:</i> Assigns each object a different number, from 1 to 65535 (the numbers that
-                    you can put in a 16-bit integer) and numbers all pixels in each object with the object's number.
-                    This format can be written out as a .mat or .tiff file if you want to process the label matrix
-                    image using another program.
-                </li>
-            </ul>
-            You can choose <i>Color</i> with a <i>Gray</i> colormap to produce jumbled gray objects."""
+            doc="""\
+Select which colors the resulting image should use. You have the
+following options:
+
+-  *Color:* Allows you to choose a colormap that will produce jumbled
+   colors for your objects.
+-  *Binary (black & white):* All object pixels will be assigned 1 and
+   all background pixels will be assigned 0, creating a binary image.
+-  *Grayscale:* Assigns all background pixels to 0 and each object a
+   different number from 1 to 255 (the maximum value that you can put in an 8-bit
+   integer) and numbers all pixels in each object with the object’s number.  This creates an image where
+   objects in the top left corner of the image are very dark and where the colors progress to white
+   toward the bottom right corner of the image. Use **SaveImages** to write the resulting image as a
+   .npy file or 8-bit or 16-bit .tiff file to disk if you want to process the label matrix image using
+   another program or in a separate CellProfiler pipeline.
+-  *uint16:* Assigns all background pixels to 0 and each object a different number from
+   1 to 65535 (the maximum value that you can put in a 16-bit integer) and numbers all
+   pixels in each object with the object’s number.  This creates an image where
+   objects in the top left corner of the image are very dark and where the colors progress to white
+   toward the bottom right corner of the image (though this can usually only be seen in a
+   scientific image viewer since standard image viewers only handle 8-bit images). Use
+   **SaveImages** to write the resulting image as a .npy file or 16-bit (not 8-bit!) .tiff file to disk if
+   you want to process the label matrix image using another program or in a separate CellProfiler pipeline
+   and think you are likely to have more than 255 objects in some or all of your images.
+
+You can choose *Color* with a *Gray* colormap to produce jumbled gray
+objects.
+            """
         )
 
         self.colormap = cellprofiler.setting.Colormap(
             "Select the colormap",
-            doc="""<i>(Used only if "<i>Color</i>" output image selected)</i>
-            <br>
-            Choose the colormap to be used, which affects how the objects are colored. You can look up your default
-            colormap under <i>File > Preferences</i>."""
+            doc="""\
+*(Used only if "Color" output image selected)*
+
+Choose the colormap to be used, which affects how the objects are
+colored. You can look up your default colormap under *File >
+Preferences*.
+"""
         )
 
     def settings(self):
@@ -227,8 +243,7 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
                 0,
                 0,
                 workspace.display_data.segmented,
-                title="Original: %s" % self.object_name.value,
-                dimensions=dimensions
+                title="Original: %s" % self.object_name.value
             )
 
         figure.subplot_imshow(
@@ -237,7 +252,7 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
             pixel_data,
             self.image_name.value,
             colormap=cmap,
-            dimensions=dimensions
+            sharexy=figure.subplot(0, 0)
         )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
@@ -250,6 +265,6 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
         return True
 
 #
-# Backwards compatability
+# Backwards compatibility
 #
 ConvertToImage = ConvertObjectsToImage

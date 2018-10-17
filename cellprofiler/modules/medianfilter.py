@@ -1,8 +1,19 @@
 # coding=utf-8
 
 """
-Median filter reduces salt-and-pepper noise in an image while preserving
+MedianFilter
+============
+
+**MedianFilter** reduces salt-and-pepper noise in an image while preserving
 borders.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
 """
 
 import cellprofiler.module
@@ -11,6 +22,8 @@ import scipy.signal
 
 
 class MedianFilter(cellprofiler.module.ImageProcessing):
+    category = "Advanced"
+
     module_name = "MedianFilter"
 
     variable_revision_number = 1
@@ -22,12 +35,11 @@ class MedianFilter(cellprofiler.module.ImageProcessing):
             text="Window",
             value=3,
             minval=0,
-            doc="""
-                Patch size for computing the median filter. Must be odd. Use a window with a small size to
-                remove small elements of noise. A larger window will remove larger elements of noise at the
-                risk of blurring other features.
-                """
-        )
+            doc="""\
+Dimension in each direction for computing the median filter. Must be odd. Use a window with a small size to
+remove noise that's small in size. A larger window will remove larger scales of noise at the
+risk of blurring other features.
+""")
 
     def settings(self):
         __settings__ = super(MedianFilter, self).settings()

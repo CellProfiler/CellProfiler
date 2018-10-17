@@ -1,7 +1,12 @@
 # coding=utf-8
 
-"""
-**Identify Objects In Grid** identifies objects within each section of a
+from cellprofiler.modules import _help
+
+__doc__ = """\
+IdentifyObjectsInGrid
+=====================
+
+**IdentifyObjectsInGrid** identifies objects within each section of a
 grid that has been defined by the **DefineGrid** module.
 
 This module identifies objects that are contained within in a grid
@@ -17,15 +22,20 @@ from the earlier **Identify** module. If placing the objects within the
 grid is impossible for some reason (the grid compartments are too close
 together to fit the proper sized circles, for example) the grid will
 fail and processing will be canceled unless you choose to re-use a grid
-from a previous successful image cycle. *Special note on saving images:*
-You can use the settings in this module to pass object outlines along to
-the **OverlayOutlines**\ module and then save them with the
-**SaveImages** module. You can also pass along objects themselves to the
-object processing module **ConvertToImage** and then save them with the
-**SaveImages** module.
+from a previous successful image cycle.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+{HELP_ON_SAVING_OBJECTS}
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Image measurements:**
 
@@ -36,14 +46,18 @@ Available measurements
 -  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified objects.
 -  *Number:* The numeric label assigned to each identified object
-   according to the arrangement order specified by the user.
+   according to the arrangement order you specified.
+
+See also
+^^^^^^^^
 
 See also **DefineGrid**.
-"""
+""".format(**{
+    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
+})
 
 import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel
-from centrosome.outline import outline
 
 import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
@@ -51,8 +65,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
@@ -72,7 +85,7 @@ FAIL_FIRST = "The First"
 
 class IdentifyObjectsInGrid(cpm.Module):
     module_name = "IdentifyObjectsInGrid"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Object Processing"
 
     def create_settings(self):
@@ -81,84 +94,86 @@ class IdentifyObjectsInGrid(cpm.Module):
         create_settings is called at the end of initialization.
         """
         self.grid_name = cps.GridNameSubscriber(
-                "Select the defined grid", cps.NONE, doc="""
-            Select the name of a grid created by a previous <b>DefineGrid</b>
-            module.""")
+                "Select the defined grid", cps.NONE, doc="""Select the name of a grid created by a previous **DefineGrid** module.""")
 
         self.output_objects_name = cps.ObjectNameProvider(
-                "Name the objects to be identified", "Wells", doc="""
-            Enter the name of the grid objects identified by this module. These objects
-            will be available for further measurement and processing in subsequent modules.""")
+                "Name the objects to be identified", "Wells", doc="""\
+Enter the name of the grid objects identified by this module. These objects
+will be available for further measurement and processing in subsequent modules.""")
 
         self.shape_choice = cps.Choice(
                 "Select object shapes and locations",
-                [SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED, SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL], doc="""
-            Use this setting to choose the method to be used to determine the
-            grid objects' shapes and locations:
-            <ul>
-            <li><i>%(SHAPE_RECTANGLE)s:</i> Each object will be created as a rectangle,
-            completely occupying the entire grid compartment (rectangle). This option creates
-            the rectangular objects based solely on the grid's specifications,
-            not on any previously identified guiding objects.</li>
-            <li><i>%(SHAPE_CIRCLE_FORCED)s:</i> Each object will be created as a circle, centered
-            in the middle of each grid compartment. This option places
-            the circular objects' locations based solely on the grid's specifications,
-            not on any previously identified guiding objects. The radius of all circles in a grid
-            will be constant for the entire grid in each image cycle, and can
-            be determined automatically for each image cycle based on the average radius of previously
-            identified guiding objects for that image cycle, or instead it can be specified
-            as a single radius for all circles in all grids in the entire analysis run.</li>
-            <li><i>%(SHAPE_CIRCLE_NATURAL)s:</i> Each object will be created as a circle,
-            and each circle's location within its grid compartment will be determined
-            based on the location of any previously identified guiding objects within
-            that grid compartment. Thus, if a guiding object lies within a particular grid compartment,
-            that object's center will be the center of the created circular object.
-            If no guiding objects lie within a particular grid compartment, the circular object
-            is placed within the center of that grid compartment.  If more than one
-            guiding object lies within the grid compartment, they will be combined and the centroid of
-            this combined object will be the location of the created circular object.
-            Note that guiding objects whose centers are close to the grid edge are ignored.</li>
-            <li><i>%(SHAPE_NATURAL)s:</i> Within each grid compartment, the object
-            will be identified based on combining all of the parts of guiding objects, if any,
-            that fall within the grid compartment.
-            Note that guiding objects whose centers are close to the grid edge are ignored.
-            If a guiding object does not exist within a grid compartment, an object consisting
-            of one single pixel in the middle of the grid compartment will be created.</li>
-            </ul>""" % globals())
+                [SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED, SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL], doc="""\
+Use this setting to choose the method to be used to determine the grid
+objects’ shapes and locations:
+
+-  *%(SHAPE_RECTANGLE)s:* Each object will be created as a rectangle,
+   completely occupying the entire grid compartment (rectangle). This
+   option creates the rectangular objects based solely on the grid’s
+   specifications, not on any previously identified guiding objects.
+-  *%(SHAPE_CIRCLE_FORCED)s:* Each object will be created as a circle,
+   centered in the middle of each grid compartment. This option places
+   the circular objects’ locations based solely on the grid’s
+   specifications, not on any previously identified guiding objects. The
+   radius of all circles in a grid will be constant for the entire grid
+   in each image cycle, and can be determined automatically for each
+   image cycle based on the average radius of previously identified
+   guiding objects for that image cycle, or instead it can be specified
+   as a single radius for all circles in all grids in the entire
+   analysis run.
+-  *%(SHAPE_CIRCLE_NATURAL)s:* Each object will be created as a
+   circle, and each circle’s location within its grid compartment will
+   be determined based on the location of any previously identified
+   guiding objects within that grid compartment. Thus, if a guiding
+   object lies within a particular grid compartment, that object’s
+   center will be the center of the created circular object. If no
+   guiding objects lie within a particular grid compartment, the
+   circular object is placed within the center of that grid compartment.
+   If more than one guiding object lies within the grid compartment,
+   they will be combined and the centroid of this combined object will
+   be the location of the created circular object. Note that guiding
+   objects whose centers are close to the grid edge are ignored.
+-  *%(SHAPE_NATURAL)s:* Within each grid compartment, the object will
+   be identified based on combining all of the parts of guiding objects,
+   if any, that fall within the grid compartment. Note that guiding
+   objects whose centers are close to the grid edge are ignored. If a
+   guiding object does not exist within a grid compartment, an object
+   consisting of one single pixel in the middle of the grid compartment
+   will be created.
+""" % globals())
 
         self.diameter_choice = cps.Choice(
                 "Specify the circle diameter automatically?",
-                [AM_AUTOMATIC, AM_MANUAL], doc="""
-            <i>(Used only if Circle is selected as object shape)</i><br>
-            There are two methods for selecting the circle diameter:
-            <ul>
-            <li><i>%(AM_AUTOMATIC)s:</i> Uses the average diameter of previously identified guiding
-            objects as the diameter.</li>
-            <li><i>%(AM_MANUAL)s:</i> Lets you specify the diameter directly, as a number.</li>
-            </ul>""" % globals())
+                [AM_AUTOMATIC, AM_MANUAL], doc="""\
+*(Used only if "Circle" is selected as object shape)*
+
+There are two methods for selecting the circle diameter:
+
+-  *%(AM_AUTOMATIC)s:* Uses the average diameter of previously
+   identified guiding objects as the diameter.
+-  *%(AM_MANUAL)s:* Lets you specify the diameter directly, as a
+   number.
+""" % globals())
 
         self.diameter = cps.Integer(
-                "Circle diameter", 20, minval=2, doc="""
-            <i>(Used only if Circle is selected as object shape and diameter is
-            specified manually)</i><br>
-            Enter the diameter to be used for each grid circle, in pixels.
-            %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
+                "Circle diameter", 20, minval=2, doc="""\
+*(Used only if "Circle" is selected as object shape and diameter is
+specified manually)*
+
+Enter the diameter to be used for each grid circle, in pixels.
+%(HELP_ON_MEASURING_DISTANCES)s
+""" % globals())
 
         self.guiding_object_name = cps.ObjectNameSubscriber(
-                "Select the guiding objects", cps.NONE, doc="""
-            <i>(Used only if Circle is selected as object shape and diameter is specified
-            automatically, or if Natural Location is selected as the object shape)</i><br>
-            Select the names of previously identified objects that
-            will be used to guide the shape and/or location of the objects created by this
-            module, depending on the method chosen.""")
+                "Select the guiding objects", cps.NONE, doc="""\
+*(Used only if "Circle" is selected as object shape and diameter is
+specified automatically, or if "Natural Location" is selected as the
+object shape)*
 
-        self.wants_outlines = cps.Binary(
-                "Retain outlines of the identified objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
-
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "GridOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+Select the names of previously identified objects that will be used to
+guide the shape and/or location of the objects created by this module,
+depending on the method chosen.
+""")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -170,8 +185,7 @@ class IdentifyObjectsInGrid(cpm.Module):
         """
         return [self.grid_name, self.output_objects_name, self.shape_choice,
                 self.diameter_choice, self.diameter,
-                self.guiding_object_name,
-                self.wants_outlines, self.outlines_name]
+                self.guiding_object_name]
 
     def visible_settings(self):
         """Return the settings that the user sees"""
@@ -182,9 +196,6 @@ class IdentifyObjectsInGrid(cpm.Module):
                 result += [self.diameter]
         if self.wants_guiding_objects():
             result += [self.guiding_object_name]
-        result += [self.wants_outlines]
-        if self.wants_outlines:
-            result += [self.outlines_name]
         return result
 
     def wants_guiding_objects(self):
@@ -223,10 +234,6 @@ class IdentifyObjectsInGrid(cpm.Module):
         add_object_count_measurements(workspace.measurements,
                                       self.output_objects_name.value,
                                       object_count)
-        if self.wants_outlines:
-            outlines = outline(labels != 0)
-            outline_image = cpi.Image(outlines)
-            workspace.image_set.add(self.outlines_name.value, outline_image)
         if self.show_window:
             workspace.display_data.gridding = gridding
             workspace.display_data.labels = labels
@@ -262,7 +269,7 @@ class IdentifyObjectsInGrid(cpm.Module):
                                gridding.x_locations[j])
 
     def run_circle(self, workspace, gridding, spot_center_i, spot_center_j):
-        '''Return a labels matrix compose of circles centered on the x,y locs
+        '''Return a labels matrix compose of circles centered on the x,y locations
 
         workspace - workspace for the run
         gridding - an instance of CPGridInfo giving the details of the grid
@@ -476,6 +483,10 @@ class IdentifyObjectsInGrid(cpm.Module):
             elif setting_values[2] == "Natural Shape":
                 setting_values[2] = SHAPE_NATURAL
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            setting_values = setting_values[:-2]
+            variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
 

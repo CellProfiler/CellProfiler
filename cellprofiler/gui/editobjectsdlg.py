@@ -269,7 +269,7 @@ class EditObjectsDialog(wx.Dialog):
                     self.Parent.inside_print = False
 
         self.panel = CanvasPatch(self, -1, self.figure)
-        self.toolbar = cellprofiler.gui.figure.CPNavigationToolbar(self.panel)
+        self.toolbar = cellprofiler.gui.figure.NavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #
         # Need to reparent the canvas after instantiating the toolbar so
@@ -405,11 +405,11 @@ class EditObjectsDialog(wx.Dialog):
         # The buttons on the bottom
         #
         ###################################################
-        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sub_sizer = wx.WrapSizer(wx.HORIZONTAL)
         #
         # Need padding on top because tool bar is wonky about its height
         #
-        sizer.Add(sub_sizer, 0, wx.EXPAND)
+        sizer.Add(sub_sizer, 0, wx.ALIGN_CENTER)
 
         #########################################
         #
@@ -810,6 +810,7 @@ class EditObjectsDialog(wx.Dialog):
             self.orig_axes.add_line(artist)
         if self.split_artist is not None:
             self.orig_axes.add_line(self.split_artist)
+        # Set background to None as we've effectively redrawn the display
         self.background = None
         self.Refresh()
 
@@ -1194,7 +1195,12 @@ class EditObjectsDialog(wx.Dialog):
         self.update_artists()
 
     def update_artists(self):
-        self.figure.canvas.restore_region(self.background)
+        # Only restore if background was set, otherwise no need
+        if self.background is not None:
+            self.figure.canvas.restore_region(self.background)
+        else:
+            self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
+
         for artist in self.artists:
             self.orig_axes.draw_artist(artist)
         if self.split_artist is not None:
@@ -1794,10 +1800,10 @@ class EditObjectsDialog(wx.Dialog):
         if (self.delete_mode_start is not None and
                     event.inaxes == self.orig_axes):
             (xmin, xmax), (ymin, ymax) = [
-                [fn(a, b) for fn in min, max]
+                [fn(a, b) for fn in (min, max)]
                 for a, b in
-                (self.delete_mode_start[0], event.xdata),
-                (self.delete_mode_start[1], event.ydata)]
+                ((self.delete_mode_start[0], event.xdata),
+                 (self.delete_mode_start[1], event.ydata))]
             self.delete_mode_rect_artist.set_data([
                 [xmin, xmin, xmax, xmax, xmin],
                 [ymin, ymax, ymax, ymin, ymin]])

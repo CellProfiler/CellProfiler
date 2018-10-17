@@ -1,7 +1,10 @@
-import numpy.testing
+import numpy
+import pytest
 import skimage.morphology
 
+import cellprofiler.image
 import cellprofiler.modules.removeholes
+import cellprofiler.workspace
 
 
 instance = cellprofiler.modules.removeholes.RemoveHoles()
@@ -26,5 +29,42 @@ def test_run(image, module, workspace):
     data = skimage.img_as_bool(image.pixel_data)
 
     expected = skimage.morphology.remove_small_holes(data, numpy.pi * factor)
+
+    numpy.testing.assert_array_equal(actual, expected)
+
+
+# https://github.com/CellProfiler/CellProfiler/issues/3369
+def test_run_label_image(module):
+    data = numpy.zeros((10, 10), dtype=numpy.uint8)
+    data[3:8, 3:8] = 1
+    data[5, 5] = 0
+
+    image = cellprofiler.image.Image(
+        image=data,
+        convert=False
+    )
+
+    image_set_list = cellprofiler.image.ImageSetList()
+
+    image_set = image_set_list.get_image_set(0)
+    image_set.add("example", image)
+
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline=None,
+        module=module,
+        image_set=image_set,
+        object_set=None,
+        measurements=None,
+        image_set_list=image_set_list
+    )
+
+    module.x_name.value = "example"
+    module.y_name.value = "output"
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    expected = numpy.zeros((10, 10), dtype=numpy.bool)
+    expected[3:8, 3:8] = True
 
     numpy.testing.assert_array_equal(actual, expected)

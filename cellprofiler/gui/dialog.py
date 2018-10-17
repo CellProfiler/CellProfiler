@@ -8,7 +8,7 @@ class AboutDialogInfo(wx.AboutDialogInfo):
     def __init__(self):
         super(AboutDialogInfo, self).__init__()
 
-        self.Copyright = u"Copyright © 2003 - 2017 Broad Institute, Inc." \
+        self.Copyright = u"Copyright © 2003 - 2018 Broad Institute, Inc." \
                          u"\nAll rights reserved."
 
         self.Name = "CellProfiler"
@@ -45,7 +45,9 @@ class Telemetry(wx.MessageDialog):
 
         extended_message = "Allow limited and anonymous usage statistics and " \
                            "exception reports to be sent to the CellProfiler " \
-                           "team to help improve CellProfiler. "
+                           "team to help improve CellProfiler.\n\n" \
+                           "(You can always update this setting in your " \
+                           "CellProfiler preferences.)"
 
         self.SetExtendedMessage(extended_message)
 

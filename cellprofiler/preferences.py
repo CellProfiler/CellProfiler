@@ -1,26 +1,29 @@
+# coding:utf-8
+
 """Preferences.py - singleton preferences for CellProfiler
 
    TO-DO - load the default preferences from somewhere.
            Create a function to save the preferences.
            Create a function to populate a handles structure with preferences.
 """
+from __future__ import print_function
 
 import logging
 import multiprocessing
 import os
 import os.path
-import random
-import re
-import sys
 import tempfile
 import threading
-import time
 import traceback
 import uuid
 import weakref
 
+import sys
+import time
+
 import cellprofiler
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
+import cellprofiler.gui.help.content
+import cellprofiler.utilities.utf16encode
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +38,11 @@ __cp_root = os.path.split(__python_root)[0]
 
 
 class HeadlessConfig(object):
+    """
+    This class functions as a configuration set for headless runs.
+    The default config class is wx-based, which means we have to replace it
+    here with this psuedo-replacement that has the same interface
+    """
     def __init__(self):
         self.__preferences = {}
 
@@ -50,11 +58,14 @@ class HeadlessConfig(object):
     def Write(self, kwd, value):
         self.__preferences[kwd] = value
 
+    # wx implements these for their own version of the "Config" object
+    # Because this class is a mock config object without wx, we need to
+    # make its interface the same
     WriteInt = Write
     WriteBool = Write
 
     def Exists(self, kwd):
-        return self.__preferences.has_key(kwd)
+        return kwd in self.__preferences
 
     def GetEntryType(self, kwd):
         '''Get the data type of the registry key.
@@ -100,7 +111,7 @@ def get_awt_headless():
     '''Return True if Java is to be started with AWT headless, False to use AWT'''
     global __awt_headless
     if __awt_headless is None:
-        return get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB")
+        return get_headless() and "CELLPROFILER_USE_XVFB" not in os.environ
     return __awt_headless
 
 
@@ -175,8 +186,6 @@ def config_read(key):
     Only read from the registry once. This is both technically efficient
     and keeps parallel running instances of CellProfiler from overwriting
     each other's values for things like the current output directory.
-
-    Decode escaped config sequences too.
     '''
     global __cached_values
     if not __is_headless:
@@ -185,7 +194,7 @@ def config_read(key):
         #
         import wx
         shutup = wx.LogNull()
-    if __cached_values.has_key(key):
+    if key in __cached_values:
         return __cached_values[key]
     if get_config().Exists(key):
         if not __is_headless:
@@ -201,21 +210,12 @@ def config_read(key):
         value = get_config().Read(key)
     else:
         value = None
-    if value is not None:
-        try:
-            value = utf16decode(value)
-        except:
-            logger.warning(
-                    "Failed to decode preference (%s=%s), assuming 2.0" %
-                    (key, value))
     __cached_values[key] = value
     return value
 
 
 def config_write(key, value):
     '''Write the given configuration value
-
-    Encode escaped config sequences.
     '''
     if not __is_headless:
         #
@@ -224,8 +224,6 @@ def config_write(key, value):
         import wx
         shutup = wx.LogNull()
     __cached_values[key] = value
-    if value is not None:
-        value = utf16encode(value)
     get_config().Write(key, value)
 
 
@@ -282,37 +280,6 @@ FOLDER_CHOICE_TRANSLATIONS = {
     'Elsewhere...': ABSOLUTE_FOLDER_NAME
 }
 
-IO_FOLDER_CHOICE_HELP_TEXT = """
-You can choose among the following options which are common to all file input/output
-modules:
-<ul>
-<li><i>Default Input Folder</i>: Use the default input folder.</li>
-<li><i>Default Output Folder:</i> Use from the default output folder.</li>
-<li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
-<li><i>Default input directory sub-folder</i>: Enter the name of a subfolder of
-the default input folder or a path that starts from the default input folder.</li>
-<li><i>Default output directory sub-folder</i>: Enter the name of a subfolder of
-the default output folder or a path that starts from the default output folder.</li>
-</ul>
-<p><i>Elsewhere</i> and the two sub-folder options all require you to enter an additional
-path name. You can use an <i>absolute path</i> (such as "C:\imagedir\image.tif" on a PC) or a
-<i>relative path</i> to specify the file location relative to a directory):
-<ul>
-<li>Use one period to represent the current directory. For example, if you choose
-<i>Default Input Folder sub-folder</i>, you can enter "./MyFiles" to look in a
-folder called "MyFiles" that is contained within the Default Input Folder.</li>
-<li>Use two periods ".." to move up one folder level. For example, if you choose
-<i>Default Input Folder sub-folder</i>, you can enter "../MyFolder" to look in a
-folder called "MyFolder" at the same level as the Default Input Folder.</li>
-</ul></p>
-"""
-
-IO_WITH_METADATA_HELP_TEXT = """
-For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and
-<i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata associated with your
-images via <b>Metadata</b> module, you can name the folder using metadata
-tags.""" % globals()
-
 PREFERENCES_VERSION = 'PreferencesVersion'
 PREFERENCES_VERSION_NUMBER = 1
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
@@ -329,6 +296,7 @@ SKIPVERSION = 'SkipVersion2.1'
 FF_RECENTFILES = 'RecentFile%d'
 STARTUPBLURB = 'StartupBlurb'
 TELEMETRY = "Telemetry"
+TELEMETRY_PROMPT = "Telemetry prompt"
 RECENT_FILE_COUNT = 10
 PRIMARY_OUTLINE_COLOR = 'PrimaryOutlineColor'
 SECONDARY_OUTLINE_COLOR = 'SecondaryOutlineColor'
@@ -359,11 +327,9 @@ INTENSITY_MODE = "IntensityMode"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
-BATCHPROFILER_URL = "BatchProfilerURL"
 CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
 
 '''Default URL root for BatchProfiler'''
-BATCHPROFILER_URL_DEFAULT = "http://imageweb/batchprofiler"
 
 IM_NEAREST = "Nearest"
 IM_BILINEAR = "Bilinear"
@@ -372,6 +338,7 @@ IM_BICUBIC = "Bicubic"
 INTENSITY_MODE_RAW = "raw"
 INTENSITY_MODE_NORMAL = "normalized"
 INTENSITY_MODE_LOG = "log"
+INTENSITY_MODE_GAMMA = "gamma"
 
 WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
 WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
@@ -411,6 +378,263 @@ SPP_PIPELINE_AND_FILE_LIST = "Pipeline and file list"
 SPP_ALL = [SPP_NEITHER, SPP_PIPELINE_ONLY, SPP_FILE_LIST_ONLY,
            SPP_PIPELINE_AND_FILE_LIST]
 
+#######################
+#
+# Preferences help text
+#
+#######################
+DEFAULT_COLORMAP_HELP = """\
+Specifies the color map that sets the colors for labels and other
+elements. See this `page`_ for pictures of available colormaps.
+
+.. _page: http://matplotlib.org/users/colormaps.html\
+"""
+
+DEFAULT_IMAGE_FOLDER_HELP = """\
+The folder designated as the *Default Input Folder* contains the input
+image or data files that you want to analyze. Several File Processing
+modules (e.g., **LoadImages** or **LoadData**) provide the
+option of retrieving images from this folder on a default basis unless
+you specify, within the module, an alternate, specific folder on your
+computer. Within modules, we recommend selecting the Default Input
+Folder as much as possible, so that your pipeline will work even if you
+transfer your images and pipeline to a different computer. If, instead,
+you type specific folder path names into a module’s settings, your
+pipeline will not work on someone else’s computer until you adjust those
+pathnames within each module.
+
+Use the *Browse* button |image0| to specify the folder you would like to
+use as the Default Input Folder, or type the full folder path in the
+edit box. If you type a folder path that cannot be found, the message
+box below will indicate this fact until you correct the problem. If you
+want to specify a folder that does not yet exist, type the desired name
+and click on the *New folder* button |image1|. The folder will be
+created according to the pathname you have typed.
+
+.. |image0| image:: {BROWSE_BUTTON}
+.. |image1| image:: {CREATE_BUTTON}\
+""".format(**{
+    "CREATE_BUTTON": cellprofiler.gui.help.content.image_resource("folder_create.png"),
+    "BROWSE_BUTTON": cellprofiler.gui.help.content.image_resource("folder_browse.png")
+})
+
+DEFAULT_OUTPUT_FOLDER_HELP = """\
+The *Default Output Folder* is accessible by pressing the “View output
+settings” button at the bottom of the pipeline panel. The *Default Output
+Folder* is the folder that CellProfiler uses to store the output file it
+creates. Also, several File Processing modules (e.g., **SaveImages** or
+**ExportToSpreadsheet**) provide the option of saving analysis results
+to this folder on a default basis unless you specify, within the module,
+an alternate, specific folder on your computer. Within modules, we
+recommend selecting the Default Output Folder as much as possible, so
+that your pipeline will work even if you transfer your images and
+pipeline to a different computer. If, instead, you type specific folder
+path names into a module’s settings, your pipeline will not work on
+someone else’s computer until you adjust those pathnames within each
+module.
+
+Use the *Browse* button (to the right of the text box) to specify the
+folder you would like to use as the Default Output Folder, or type the
+full folder path in the edit box. If you type a folder path that cannot
+be found, the message box below will indicate this fact until you
+correct the problem. If you want to specify a folder that does not yet
+exist, type the desired name and click on the *New folder* icon to the
+right of the *Browse folder* icon. The folder will be created according
+to the pathname you have typed.\
+"""
+
+ERROR_COLOR_HELP = "Sets the color used for the error alerts associated with misconfigured settings and other errors."
+
+IJ_PLUGINS_DIRECTORY_HELP = """\
+Sets the directory that holds ImageJ plugins (for the **RunImageJ**
+module). You can download or write your own ImageJ plugin and place it
+in this directory and CellProfiler will make it available for your
+pipeline. You must restart CellProfiler after modifying this setting.\
+"""
+
+INTENSITY_MODE_HELP = """\
+Sets the way CellProfiler normalizes pixel intensities when displaying.
+If you choose “raw”, CellProfiler will display a pixel with a value of
+“1” or above with the maximum brightness and a pixel with a value of “0”
+or below as black. If you choose “normalize”, CellProfiler will find the
+minimum and maximum intensities in the display image and show pixels at
+maximum intensity with the maximum brightness and pixels at the minimum
+intensity as black. This can be used to view dim images. If you choose
+“log”, CellProfiler will use the full brightness range and will use a
+log scale to scale the intensities. This can be used to view the image
+background in more detail.
+"""
+
+INTERPOLATION_MODE_HELP = """\
+Sets the way CellProfiler displays image pixels. If you choose
+*Nearest*, CellProfiler will display each pixel as a square block of
+uniform intensity. This is truest to the data, but the resulting images
+look blocky and pixelated. You can choose either *Bilinear* or *Bicubic*
+to see images where the a bilinear or bicubic spline model has been used
+to interpolate the screen pixel value for screen pixels that do not fall
+exactly in the center of the image pixel. The result, for bilinear or
+bicubic interpolation is an image that is more visually appealing and
+easier to interpret, but obscures the true pixel nature of the real
+data.\
+"""
+
+JVM_HEAP_HELP = """\
+Sets the maximum amount of memory that can be used by the Java virtual
+machine. CellProfiler uses Java for loading images, for running ImageJ
+and for processing image sets. If you load extremely large images, use
+the RunImageJ module extensively or process large image set lists, you
+can use this option to start Java with a larger amount of memory. By
+default, CellProfiler starts Java with 512 MB, but you can override this
+by specifying the number of megabytes to load. You can also start
+CellProfiler from the command-line with the –jvm-heap-size switch to get
+the same effect.\
+"""
+
+MAX_WORKERS_HELP = """\
+Controls the maximum number of *workers* (i.e., copies of CellProfiler)
+that will be started at the outset of an analysis run. CellProfiler uses
+these copies to process multiple image sets in parallel, utilizing the
+computer’s CPUs and memory fully. The default value is the number of
+CPUs detected on your computer. Use fewer workers for pipelines that
+require a large amount of memory. Use more workers for pipelines that
+are accessing image data over a slow connection.
+
+If using the **Groups** module, only one worker will be allocated to
+handle each group. This means that you may have multiple workers
+created, but only a subset of them may actually be active, depending on
+the number of groups you have.\
+"""
+
+PLUGINS_DIRECTORY_HELP = """\
+Chooses the directory that holds dynamically-loaded CellProfiler
+modules. You can write your own module and place it in this directory
+and CellProfiler will make it available for your pipeline. You must
+restart CellProfiler after modifying this setting.\
+"""
+
+PRIMARY_OUTLINE_COLOR_HELP = """\
+Sets the color used for the outline of the object of interest in the
+**IdentifyPrimaryObjects**, **IdentifySecondaryObjects** and
+**IdentifyTertiaryObjects** displays.\
+"""
+
+REPORT_JVM_ERROR_HELP = """\
+Determines whether CellProfiler will display a warning on startup if
+CellProfiler can’t locate the Java installation on your computer. Check
+this box if you want to be warned. Uncheck this box to hide warnings.\
+"""
+
+SAVE_PIPELINE_WITH_PROJECT_HELP = """\
+Controls whether a pipeline and/or file list file is saved whenever the
+user saves the project file. Users may find it handy to have the
+pipeline and/or file list saved in a readable format, for instance, for
+version control whenever the project file is saved. Your project can be
+restored by importing both the pipeline and file list, and your pipeline
+can be run using a different file list, and your file list can be reused
+by importing it into a different project. Note: When using LoadData, it
+is not recommended to auto-save the file list, as this feature only
+saves the file list existing in the Input Modules, not LoadData input
+files.
+
+-  *Neither:* Refrain from saving either file.
+-  *Pipeline:* Save the pipeline, using the project’s file name and path
+   and a .cppipe extension.
+-  *File list:* Save the file list, using the project’s file name and
+   path and a .txt extension.
+-  *Pipeline and file list:* Save both files.\
+"""
+
+SECONDARY_OUTLINE_COLOR_HELP = """\
+Sets the color used for objects other than the ones of interest. In
+**IdentifyPrimaryObjects**, these are the objects that are too small or
+too large. In **IdentifySecondaryObjects** and
+**IdentifyTertiaryObjects**, this is the color of the secondary objects’
+outline.\
+"""
+
+SHOW_ANALYSIS_COMPLETE_HELP = """\
+Determines whether CellProfiler displays a message box at the end of a
+run. Check this preference to show the message box or uncheck it to stop
+display.\
+"""
+
+SHOW_EXITING_TEST_MODE_HELP = """\
+Determines whether CellProfiler displays a message box to inform you
+that a change made to the pipeline will cause test mode to end. Check
+this preference to show the message box or uncheck it to stop display.\
+"""
+
+SHOW_REPORT_BAD_SIZES_DLG_HELP = """\
+Determines whether CellProfiler will display a warning dialog if images
+of different sizes are loaded together in an image set. Check this
+preference to show the message box or uncheck it to stop display.\
+"""
+
+SHOW_SAMPLING_MENU_HELP = """\
+Show the sampling menu
+
+*Note that CellProfiler must be restarted after setting.*
+
+The sampling menu is an interplace for Paramorama, a plugin for an
+interactive visualization program for exploring the parameter space of
+image analysis algorithms. will generate a text file, which specifies:
+(1) all unique combinations of the sampled parameter values; (2) the
+mapping from each combination of parameter values to one or more output
+images; and (3) the actual output images.
+
+More information on how to use the plugin can be found `here`_.
+
+**References**
+
+-  Visualization of parameter space for image analysis. Pretorius AJ,
+   Bray MA, Carpenter AE and Ruddle RA. (2011) IEEE Transactions on
+   Visualization and Computer Graphics, 17(12), 2402-2411.
+
+.. _here: http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/
+"""
+
+SHOW_STARTUP_BLURB_HELP = "Controls whether CellProfiler displays an orientation message on startup."
+
+SHOW_TELEMETRY_HELP = """\
+Allow limited and anonymous usage statistics and exception reports to be
+sent to the CellProfiler team to help improve CellProfiler.\
+"""
+
+TABLE_FONT_HELP = "Sets the font used in tables displayed in module figure windows."
+TERTIARY_OUTLINE_COLOR_HELP = """\
+Sets the color used for the objects touching the image border or image
+mask in **IdentifyPrimaryObjects**.\
+"""
+
+TEMP_DIR_HELP = """\
+Sets the folder that CellProfiler uses when storing temporary files.
+CellProfiler will create a temporary measurements file for analyses when
+the user specifies that a MATLAB measurements file should be created or
+when the user asks that no measurements file should be permanently
+saved. CellProfiler will also save images accessed by http URL
+temporarily to disk (but will efficiently access OMERO image planes
+directly from the server).\
+"""
+
+NORMALIZATION_FACTOR_HELP = """\
+Sets the normalization factor for intensity normalization methods:
+
+-  *{INTENSITY_MODE_LOG}*: Set the gain applied to the each pixel in the image during log normalization. Pixels are
+   transformed according to the formula `O = gain * log(1 + I)`, where `I` is the pixel intensity. Increasing the value
+   of `gain` makes the displayed image appear brighter.
+-  *{INTENSITY_MODE_GAMMA}*: Set the value of gamma. Pixels are transformed according to the formula `O = I ** gamma`,
+   where I is the pixel intensity. For `gamma` > 1.0, the output image will appear darker than the original image. For
+   `gamma` < 1.0, the output image will appear brighter than the original image.
+   
+The normalization factor is ignored when the normalization method is *{INTENSITY_MODE_NORMAL}* or 
+*{INTENSITY_MODE_RAW}*.
+""".format(**{
+    "INTENSITY_MODE_GAMMA": INTENSITY_MODE_GAMMA,
+    "INTENSITY_MODE_LOG": INTENSITY_MODE_LOG,
+    "INTENSITY_MODE_NORMAL": INTENSITY_MODE_NORMAL,
+    "INTENSITY_MODE_RAW": INTENSITY_MODE_RAW
+})
+
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -423,7 +647,7 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR,
              PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
              SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG,
              SHOW_EXITING_TEST_MODE_DLG, WORKSPACE_CHOICE,
-             SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB, TELEMETRY,
+             SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB, TELEMETRY, TELEMETRY_PROMPT,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
              WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
@@ -617,7 +841,7 @@ def tuple_to_color(t, default=(0, 0, 0)):
     import wx
     try:
         return wx.Colour(red=int(t[0]), green=int(t[1]), blue=int(t[2]))
-    except IndexError, ValueError:
+    except IndexError as ValueError:
         return tuple_to_color(default)
 
 
@@ -653,7 +877,7 @@ def get_error_color():
             try:
                 __error_color = tuple_to_color(color_string.split(','))
             except:
-                print "Failed to parse error color string: " + color_string
+                print("Failed to parse error color string: " + color_string)
                 traceback.print_exc()
                 __error_color = default_color
     return __error_color
@@ -749,7 +973,7 @@ def get_absolute_path(path, abspath_mode=ABSPATH_IMAGE):
 
 def is_url_path(path):
     '''Return True if the path should be treated as a URL'''
-    for protocol in ('http', 'https', 'ftp'):
+    for protocol in ('http', 'https', 'ftp', 's3'):
         if path.lower().startswith('%s:' % protocol):
             return True
     return False
@@ -976,6 +1200,17 @@ def set_telemetry(val):
     get_config().WriteBool(TELEMETRY, val)
 
 
+def get_telemetry_prompt():
+    if not config_exists(TELEMETRY_PROMPT):
+        return True
+
+    return get_config().ReadBool(TELEMETRY_PROMPT)
+
+
+def set_telemetry_prompt(val):
+    get_config().WriteBool(TELEMETRY_PROMPT, val)
+
+
 def get_startup_blurb():
     if not config_exists(STARTUPBLURB):
         return True
@@ -1185,7 +1420,7 @@ def set_workspace_file(path, permanently=True):
     path - path to the file
 
     permanently - True to write it to the configuration, False if the file
-                  should only be set for the running instance (e.g. as a
+                  should only be set for the running instance (e.g., as a
                   command-line parameter for a scripted run)
     '''
     global __workspace_file
@@ -1532,32 +1767,6 @@ def set_pathname_re_guess_file(value):
     __pathname_re_guess_file = value
     config_write(PATHNAME_RE_GUESSES_FILE, value)
 
-
-__batchprofiler_url = None
-
-
-def get_batchprofiler_url():
-    '''Get the URL base for BatchProfiler
-
-    For example: "http://<dns-name>/BatchProfiler/cgi-bin"
-
-    Append /NewBatch.py?data_dir=... to get the URL for the batch
-    '''
-    global __batchprofiler_url
-    if __batchprofiler_url is None:
-        if config_exists(BATCHPROFILER_URL):
-            __batchprofiler_url = config_read(BATCHPROFILER_URL)
-        else:
-            __batchprofiler_url = BATCHPROFILER_URL_DEFAULT
-    return __batchprofiler_url
-
-
-def set_batchprofiler_url(value):
-    global __batchprofiler_url
-    __batchprofiler_url = value
-    config_write(BATCHPROFILER_URL, value)
-
-
 __image_set_filename = None
 
 __wants_pony = None
@@ -1641,6 +1850,21 @@ def set_choose_image_set_frame_size(w, h):
     config_write(CHOOSE_IMAGE_SET_FRAME_SIZE, "%d,%d" % (w, h))
 
 
+__normalization_factor = "1.0"
+
+
+def get_normalization_factor():
+    global __normalization_factor
+
+    return __normalization_factor
+
+
+def set_normalization_factor(normalization_factor):
+    global __normalization_factor
+
+    __normalization_factor = normalization_factor
+
+
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls
 
@@ -1654,7 +1878,7 @@ def add_progress_callback(callback):
     callback - callback function with signature of
                fn(operation_id, progress, message)
                where operation_id names the instance of the operation being
-               performed (e.g. a UUID), progress is a number between 0 and 1
+               performed (e.g., a UUID), progress is a number between 0 and 1
                where 1 indicates that the operation has completed and
                message is the message to show.
 

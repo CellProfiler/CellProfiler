@@ -1,14 +1,21 @@
 # coding=utf-8
 
 """
-**Overlay Outlines** places outlines produced by an **Identify** module
-over a desired image.
+OverlayOutlines
+===============
 
-This module places outlines (in a special format produced by an
-**Identify** module) on any desired image (grayscale, color, or blank).
-The resulting image can be saved using the **SaveImages** module. See
-also **IdentifyPrimaryObjects, IdentifySecondaryObjects,
-IdentifyTertiaryObjects**.
+**OverlayOutlines** places outlines of objects over a desired image.
+
+This module places outlines of objects on any desired image (grayscale, color, or blank).
+The resulting image can be saved using the **SaveImages** module.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          NO
+============ ============ ===============
 """
 
 import numpy
@@ -60,10 +67,11 @@ class OverlayOutlines(cellprofiler.module.Module):
         self.blank_image = cellprofiler.setting.Binary(
             "Display outlines on a blank image?",
             False,
-            doc="""
-            Select <i>{YES}</i> to produce an image of the outlines on a black background.
-            <p>Select <i>{NO}</i>, the module will overlay the outlines on an image of your choosing.</p>
-            """.format(**{
+            doc="""\
+Select "*{YES}*" to produce an image of the outlines on a black background.
+
+Select "*{NO}*" to overlay the outlines on an image you choose.
+""".format(**{
                 "YES": cellprofiler.setting.YES,
                 "NO": cellprofiler.setting.NO
             })
@@ -72,47 +80,51 @@ class OverlayOutlines(cellprofiler.module.Module):
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
             "Select image on which to display outlines",
             cellprofiler.setting.NONE,
-            doc="""
-            <i>(Used only when a blank image has not been selected)</i><br>
-            Choose the image to serve as the background for the outlines. You can choose from images that were
-            loaded or created by modules previous to this one.
-            """
+            doc="""\
+*(Used only when a blank image has not been selected)*
+
+Choose the image to serve as the background for the outlines. You can
+choose from images that were loaded or created by modules previous to
+this one.
+"""
         )
 
         self.line_mode = cellprofiler.setting.Choice(
             "How to outline",
             ["Inner", "Outer", "Thick"],
             value="Inner",
-            doc="""
-            Specify how to mark the boundaries around an object:
-            <ul>
-                <li><i>Inner:</i> outline the pixels just inside of objects, leaving background pixels untouched.</li>
-                <li><i>Outer:</i> outline pixels in the background around object boundaries. When two objects touch,
-                their boundary is also marked.</li>
-                <li><i>Thick:</i> any pixel not completely surrounded by pixels of the same label is marked as a
-                boundary. This results in boundaries that are 2 pixels thick.</li>
-            </ul>
-            """
+            doc="""\
+Specify how to mark the boundaries around an object:
+
+-  *Inner:* outline the pixels just inside of objects, leaving
+   background pixels untouched.
+-  *Outer:* outline pixels in the background around object boundaries.
+   When two objects touch, their boundary is also marked.
+-  *Thick:* any pixel not completely surrounded by pixels of the same
+   label is marked as a boundary. This results in boundaries that are 2
+   pixels thick.
+"""
         )
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
             "Name the output image",
             "OrigOverlay",
-            doc="""
-            Enter the name of the output image with the outlines overlaid. This image can be selected in later
-            modules (for instance, <b>SaveImages</b>).
-            """
+            doc="""\
+Enter the name of the output image with the outlines overlaid. This
+image can be selected in later modules (for instance, **SaveImages**).
+"""
         )
 
         self.wants_color = cellprofiler.setting.Choice(
             "Outline display mode",
             [WANTS_COLOR, WANTS_GRAYSCALE],
-            doc="""
-            Specify how to display the outline contours around your objects. Color outlines produce a clearer
-            display for images where the cell borders have a high intensity, but take up more space in memory.
-            Grayscale outlines are displayed with either the highest possible intensity or the same intensity
-            as the brightest pixel in the image.
-            """
+            doc="""\
+Specify how to display the outline contours around your objects. Color
+outlines produce a clearer display for images where the cell borders
+have a high intensity, but take up more space in memory. Grayscale
+outlines are displayed with either the highest possible intensity or the
+same intensity as the brightest pixel in the image.
+"""
         )
 
         self.spacer = cellprofiler.setting.Divider(line=False)
@@ -120,16 +132,21 @@ class OverlayOutlines(cellprofiler.module.Module):
         self.max_type = cellprofiler.setting.Choice(
             "Select method to determine brightness of outlines",
             [MAX_IMAGE, MAX_POSSIBLE],
-            doc="""
-            <i>(Used only when outline display mode is grayscale)</i><br>
-            The following options are possible for setting the intensity (brightness) of the outlines:
-            <ul>
-                <li><i>{MAX_IMAGE}:</i> Set the brighness to the the same as the brightest point in the
-                image.</li>
-                <li><i>{MAX_POSSIBLE}:</i> Set to the maximum possible value for this image format.</li>
-            </ul>If your image is quite dim, then putting bright white lines onto it may not be useful. It may
-            be preferable to make the outlines equal to the maximal brightness already occurring in the image.
-            """.format(**{
+            doc="""\
+*(Used only when outline display mode is grayscale)*
+
+The following options are possible for setting the intensity
+(brightness) of the outlines:
+
+-  *{MAX_IMAGE}:* Set the brightness to the the same as the brightest
+   point in the image.
+-  *{MAX_POSSIBLE}:* Set to the maximum possible value for this image
+   format.
+
+If your image is quite dim, then putting bright white lines onto it may
+not be useful. It may be preferable to make the outlines equal to the
+maximal brightness already occurring in the image.
+""".format(**{
                 "MAX_IMAGE": MAX_IMAGE,
                 "MAX_POSSIBLE": MAX_POSSIBLE
             })
@@ -157,7 +174,14 @@ class OverlayOutlines(cellprofiler.module.Module):
 
         default_color = (COLOR_ORDER[len(self.outlines)] if len(self.outlines) < len(COLOR_ORDER) else COLOR_ORDER[0])
 
-        group.append("color", cellprofiler.setting.Color("Select outline color", default_color))
+        group.append(
+            "color",
+            cellprofiler.setting.Color(
+                "Select outline color",
+                default_color,
+                doc="Objects will be outlined in this color."
+            )
+        )
 
         if can_remove:
             group.append(
@@ -235,16 +259,14 @@ class OverlayOutlines(cellprofiler.module.Module):
                     0,
                     0,
                     workspace.display_data.pixel_data,
-                    self.output_image_name.value,
-                    dimensions=dimensions
+                    self.output_image_name.value
                 )
             else:
                 figure.subplot_imshow_bw(
                     0,
                     0,
                     workspace.display_data.pixel_data,
-                    self.output_image_name.value,
-                    dimensions=dimensions
+                    self.output_image_name.value
                 )
         else:
             figure.set_subplots((2, 1), dimensions=dimensions)
@@ -253,8 +275,7 @@ class OverlayOutlines(cellprofiler.module.Module):
                 0,
                 0,
                 workspace.display_data.image_pixel_data,
-                self.image_name.value,
-                dimensions=dimensions
+                self.image_name.value
             )
 
             if self.wants_color.value == WANTS_COLOR:
@@ -263,7 +284,7 @@ class OverlayOutlines(cellprofiler.module.Module):
                     0,
                     workspace.display_data.pixel_data,
                     self.output_image_name.value,
-                    dimensions=dimensions
+                    sharexy=figure.subplot(0, 0)
                 )
             else:
                 figure.subplot_imshow_bw(
@@ -271,7 +292,7 @@ class OverlayOutlines(cellprofiler.module.Module):
                     0,
                     workspace.display_data.pixel_data,
                     self.output_image_name.value,
-                    dimensions=dimensions
+                    sharexy=figure.subplot(0, 0)
                 )
 
     def base_image(self, workspace):

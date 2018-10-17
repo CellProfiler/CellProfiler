@@ -1,23 +1,39 @@
 # coding=utf-8
 
 """
-**Measure Texture** measures the degree and nature of textures within
-objects (versus smoothness).
+MeasureTexture
+==============
 
-This module measures the variations in grayscale images. An object (or
-entire image) without much texture has a smooth appearance; an object or
+**MeasureTexture** measures the degree and nature of textures within
+images and objects to quantify their roughness and smoothness.
+
+This module measures intensity variations in grayscale images. An object or
+entire image without much texture has a smooth appearance; an object or
 image with a lot of texture will appear rough and show a wide variety of
 pixel intensities.
 
-This module can also measure textures of objects against grayscale
-images. Any input objects specified will have their texture measured
+Note that any input objects specified will have their texture measured
 against *all* input images specified, which may lead to image-object
-texture combinations that are unneccesary. If you do not want this
+texture combinations that are unnecessary. If you do not want this
 behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
-Available measurements
-^^^^^^^^^^^^^^^^^^^^^^
+Note also that CellProfiler in all 2.X versions increased speed by binning 
+the image into only 8 greyscale levels before calculating Haralick features; 
+this is not done in CellProfiler versions 3.0.0 and after. Values calculated in 
+MeasureTexture in CellProfiler 2 versions will therefore not directly correspond 
+to those in CellProfiler 3 and after. 
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          YES          YES
+============ ============ ===============
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Haralick Features:* Haralick texture features are derived from the
    co-occurrence matrix, which contains information about how image
@@ -27,11 +43,6 @@ Available measurements
    co-occurrence matrix is constructed. For example, if you choose a
    scale of 2, each pixel in the image (excluding some border pixels)
    will be compared against the one that is two pixels to the right.
-   **MeasureTexture** quantizes the image into eight intensity levels.
-   There are then 8x8 possible ways to categorize a pixel with its
-   scale-neighbor. **MeasureTexture** forms the 8x8 co-occurrence matrix
-   by counting how many pixels and neighbors have each of the 8x8
-   intensity combinations.
 
    Thirteen measurements are then calculated for the image by performing
    mathematical operations on the co-occurrence matrix (the formulas can
@@ -40,14 +51,14 @@ Available measurements
    -  *AngularSecondMoment:* Measure of image homogeneity. A higher
       value of this feature indicates that the intensity varies less in
       an image. Has a value of 1 for a uniform image.
-   -  *Contrast:* Measure of local variation in an image. A high
-      contrast value indicates a high degree of local variation, and is
-      0 for a uniform image.
+   -  *Contrast:* Measure of local variation in an image, with 0 for a
+      uniform image and a high value indicating a high degree of local
+      variation.
    -  *Correlation:* Measure of linear dependency of intensity values in
       an image. For an image with large areas of similar intensities,
       correlation is much higher than for an image with noisier,
       uncorrelated intensities. Has a value of 1 or -1 for a perfectly
-      positively or negatively correlated image.
+      positively or negatively correlated image, respectively.
    -  *Variance:* Measure of the variation of image intensity values.
       For an image with uniform intensity, the texture variance would be
       zero.
@@ -62,78 +73,40 @@ Available measurements
    -  *Entropy:* An indication of the complexity within an image. A
       complex image produces a high entropy value.
    -  *DifferenceVariance:* The image variation in a normalized
-      co-occurance matrix.
+      co-occurrence matrix.
    -  *DifferenceEntropy:* Another indication of the amount of
       randomness in an image.
-   -  *InfoMeas1*
-   -  *InfoMeas2*
-
-   Each measurement is suffixed with the direction of the offset used
-   between pixels in the co-occurrence matrix:
-
-   -  *0:* Horizontal
-   -  *90:* Vertical
-   -  *45:* Diagonal
-   -  *135:* Anti-diagonal
-
--  *Gabor “wavelet” features:* These features are similar to wavelet
-   features, and they are obtained by applying so-called Gabor filters
-   to the image. The Gabor filters measure the frequency content in
-   different orientations. They are very similar to wavelets, and in the
-   current context they work exactly as wavelets, but they are not
-   wavelets by a strict mathematical definition. The Gabor features
-   detect correlated bands of intensities, for instance, images of
-   Venetian blinds would have high scores in the horizontal orientation.
-
-.. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
+   -  *InfoMeas1:* A measure of the total amount of information contained
+      within a region of pixels derived from the recurring spatial
+      relationship between specific intensity values.
+   -  *InfoMeas2:* An additional measure of the total amount of information
+      contained within a region of pixels derived from the recurring spatial
+      relationship between specific intensity values. It is a complementary
+      value to InfoMeas1 and is on a different scale.
 
 Technical notes
 ^^^^^^^^^^^^^^^
 
 To calculate the Haralick features, **MeasureTexture** normalizes the
-co-occurence matrix at the per-object level by basing the intensity
+co-occurrence matrix at the per-object level by basing the intensity
 levels of the matrix on the maximum and minimum intensity observed
 within each object. This is beneficial for images in which the maximum
 intensities of the objects vary substantially because each object will
 have the full complement of levels.
-
-**MeasureTexture** performs a vectorized calculation of the Gabor
-filter, properly scaled to the size of the object being measured and
-covering all pixels in the object. The Gabor filter can be calculated at
-a user-selected number of angles by using the following algorithm to
-compute a score at each scale using the Gabor filter:
-
--  Divide the half-circle from 0 to 180° by the number of desired
-   angles. For instance, if the user chooses two angles,
-   **MeasureTexture** uses 0 and 90 ° (horizontal and vertical) for the
-   filter orientations. This is the θ value from the reference paper.
--  For each angle, compute the Gabor filter for each object in the image
-   at two phases separated by 90° in order to account for texture
-   features whose peaks fall on even or odd quarter-wavelengths.
--  Multiply the image times each Gabor filter and sum over the pixels in
-   each object.
--  Take the square root of the sum of the squares of the two filter
-   scores. This results in one score per θ.
--  Save the maximum score over all θ as the score at the desired scale.
 
 References
 ^^^^^^^^^^
 
 -  Haralick RM, Shanmugam K, Dinstein I. (1973), “Textural Features for
    Image Classification” *IEEE Transaction on Systems Man, Cybernetics*,
-   SMC-3(6):610-621. `(link)`_
--  Gabor D. (1946). “Theory of communication” *Journal of the Institute
-   of Electrical Engineers* 93:429-441.
-   `(link) <http://dx.doi.org/10.1049/ji-3-2.1946.0074>`__
+   SMC-3(6):610-621. `(link) <https://doi.org/10.1109/TSMC.1973.4309314>`__
 
-.. _(link): http://dx.doi.org/10.1109/TSMC.1973.4309314
+.. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 """
 
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.haralick
+import mahotas.features
 import numpy
-import scipy.ndimage
+import skimage.util
 
 import cellprofiler.measurement
 import cellprofiler.module
@@ -142,37 +115,9 @@ import cellprofiler.setting
 
 TEXTURE = "Texture"
 
-OG_NAME = "name"
-
-OG_REMOVE = "remove"
-
 F_HARALICK = """AngularSecondMoment Contrast Correlation Variance
 InverseDifferenceMoment SumAverage SumVariance SumEntropy Entropy
 DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
-
-F_GABOR = "Gabor"
-
-H_HORIZONTAL = "Horizontal"
-A_HORIZONTAL = "0"
-H_VERTICAL = "Vertical"
-A_VERTICAL = "90"
-H_DIAGONAL = "Diagonal"
-A_DIAGONAL = "45"
-H_ANTIDIAGONAL = "Anti-diagonal"
-A_ANTIDIAGONAL = "135"
-H_ALL = [
-    H_HORIZONTAL,
-    H_VERTICAL,
-    H_DIAGONAL,
-    H_ANTIDIAGONAL
-]
-
-H_TO_A = {
-    H_HORIZONTAL: A_HORIZONTAL,
-    H_VERTICAL: A_VERTICAL,
-    H_DIAGONAL: A_DIAGONAL,
-    H_ANTIDIAGONAL: A_ANTIDIAGONAL
-}
 
 IO_IMAGES = "Images"
 IO_OBJECTS = "Objects"
@@ -182,7 +127,7 @@ IO_BOTH = "Both"
 class MeasureTexture(cellprofiler.module.Module):
     module_name = "MeasureTexture"
 
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     category = "Measurement"
 
@@ -229,32 +174,6 @@ class MeasureTexture(cellprofiler.module.Module):
 
         self.scale_divider = cellprofiler.setting.Divider()
 
-        self.wants_gabor = cellprofiler.setting.Binary(
-            "Measure Gabor features?",
-            True,
-            doc="""
-            The Gabor features measure striped texture in an object, and can take a substantial time to
-            calculate.
-            <p>Select <i>{YES}</i> to measure the Gabor features. Select <i>{NO}</i> to skip the Gabor feature
-            calculation if it is not informative for your images.</p>
-            """.format(**{
-                "YES": cellprofiler.setting.YES,
-                "NO": cellprofiler.setting.NO
-            })
-        )
-
-        self.gabor_angles = cellprofiler.setting.Integer(
-            "Number of angles to compute for Gabor",
-            4,
-            2,
-            doc="""
-            <i>(Used only if Gabor features are measured)</i><br>
-            Enter the number of angles to use for each Gabor texture measurement.
-            The default value is 4 which detects bands in the horizontal, vertical and diagonal
-            orientations.
-            """
-        )
-
         self.images_or_objects = cellprofiler.setting.Choice(
             "Measure images or objects?",
             [
@@ -263,16 +182,16 @@ class MeasureTexture(cellprofiler.module.Module):
                 IO_BOTH
             ],
             value=IO_BOTH,
-            doc="""
-            This setting determines whether the module computes image-wide measurements, per-object
-            measurements or both.
-            <ul>
-                <li><i>{IO_IMAGES}:</i> Select if you only want to measure the texture of objects.</li>
-                <li><i>{IO_OBJECTS}:</i> Select if your pipeline does not contain objects or if you only want
-                to make per-image measurements.</li>
-                <li><i>{IO_BOTH}:</i> Select to make both image and object measurements.</li>
-            </ul>
-            """.format(**{
+            doc="""\
+This setting determines whether the module computes image-wide
+measurements, per-object measurements or both.
+
+-  *{IO_IMAGES}:* Select if you only want to measure the texture
+   across entire images.
+-  *{IO_OBJECTS}:* Select if you want to measure the texture
+   on a per-object basis only.
+-  *{IO_BOTH}:* Select to make both image and object measurements.
+""".format(**{
                 "IO_IMAGES": IO_IMAGES,
                 "IO_OBJECTS": IO_OBJECTS,
                 "IO_BOTH": IO_BOTH
@@ -295,7 +214,7 @@ class MeasureTexture(cellprofiler.module.Module):
         elements = [
             ["image_name"],
             ["object_name"],
-            ["scale", "angles"]
+            ["scale"]
         ]
 
         for groups, elements in zip(groups, elements):
@@ -304,8 +223,6 @@ class MeasureTexture(cellprofiler.module.Module):
                     settings += [getattr(group, element)]
 
         settings += [
-            self.wants_gabor,
-            self.gabor_angles,
             self.images_or_objects
         ]
 
@@ -350,11 +267,6 @@ class MeasureTexture(cellprofiler.module.Module):
 
             if groups == self.image_groups:
                 visible_settings += [self.images_or_objects]
-
-        visible_settings += [self.wants_gabor]
-
-        if self.wants_gabor:
-            visible_settings += [self.gabor_angles]
 
         return visible_settings
 
@@ -417,15 +329,17 @@ class MeasureTexture(cellprofiler.module.Module):
             group.append("divider", divider)
 
         object_subscriber = cellprofiler.setting.ObjectNameSubscriber(
-            doc="""
-            <p>Select the objects whose texture you want to measure. If you only want to measure the texture for
-            the image overall, you can remove all objects using the "Remove this object" button.</p>
+            doc="""\
+Select the objects whose texture you want to measure. If you only want
+to measure the texture for the image overall, you can remove all objects
+using the “Remove this object” button.
 
-            <p>Objects specified here will have their texture measured against <i>all</i> images specified
-            above, which may lead to image-object combinations that are unneccesary. If you do not want this
-            behavior, use multiple <b>MeasureTexture</b> modules to specify the particular image-object
-            measures that you want.</p>
-            """,
+Objects specified here will have their texture measured against *all*
+images specified above, which may lead to image-object combinations that
+are unnecessary. If you do not want this behavior, use multiple
+**MeasureTexture** modules to specify the particular image-object
+measures that you want.
+""",
             text="Select objects to measure",
             value=cellprofiler.setting.NONE
         )
@@ -458,50 +372,22 @@ class MeasureTexture(cellprofiler.module.Module):
             group.append("divider", cellprofiler.setting.Divider(line=False))
 
         scale = cellprofiler.setting.Integer(
-            doc="""
-            <p>You can specify the scale of texture to be measured, in pixel units; the texture scale is the
-            distance between correlated intensities in the image. A higher number for the scale of texture
-            measures larger patterns of texture whereas smaller numbers measure more localized patterns of
-            texture. It is best to measure texture on a scale smaller than your objects' sizes, so be sure that
-            the value entered for scale of texture is smaller than most of your objects. For very small objects
-            (smaller than the scale of texture you are measuring), the texture cannot be measured and will
-            result in a undefined value in the output file.</p>
-            """,
+            doc="""\
+You can specify the scale of texture to be measured, in pixel units; the
+texture scale is the distance between correlated intensities in the
+image. A higher number for the scale of texture measures larger patterns
+of texture whereas smaller numbers measure more localized patterns of
+texture. It is best to measure texture on a scale smaller than your
+objects’ sizes, so be sure that the value entered for scale of texture
+is smaller than most of your objects. For very small objects (smaller
+than the scale of texture you are measuring), the texture cannot be
+measured and will result in a undefined value in the output file.
+""",
             text="Texture scale to measure",
             value=len(self.scale_groups) + 3
         )
 
         group.append("scale", scale)
-
-        angles = cellprofiler.setting.MultiChoice(
-            choices=H_ALL,
-            doc="""
-            <p>The Haralick texture measurements are based on the correlation between pixels offset by the scale
-            in one of four directions:</p>
-
-            <ul>
-                <li><i>{H_HORIZONTAL}</i> - the correlated pixel is "scale" pixels to the right of the pixel
-                of interest.</li>
-                <li><i>{H_VERTICAL}</i> - the correlated pixel is "scale" pixels below the pixel of
-                interest.</li>
-                <li><i>{H_DIAGONAL}</i> - the correlated pixel is "scale" pixels to the right and "scale"
-                pixels below the pixel of interest.</li>
-                <li><i>{H_ANTIDIAGONAL}</i> - the correlated pixel is "scale" pixels to the left and "scale"
-                pixels below the pixel of interest.</li>
-            </ul>
-
-            <p>Choose one or more directions to measure.</p>
-            """.format(**{
-                "H_ANTIDIAGONAL": H_ANTIDIAGONAL,
-                "H_DIAGONAL": H_DIAGONAL,
-                "H_HORIZONTAL": H_HORIZONTAL,
-                "H_VERTICAL": H_VERTICAL
-            }),
-            text="Angles to measure",
-            value=H_ALL
-        )
-
-        group.append("angles", angles)
 
         if removable:
             remove_setting = cellprofiler.setting.RemoveSettingButton(
@@ -562,7 +448,7 @@ class MeasureTexture(cellprofiler.module.Module):
         return []
 
     def get_features(self):
-        return F_HARALICK + ([F_GABOR] if self.wants_gabor else [])
+        return F_HARALICK
 
     def get_measurements(self, pipeline, object_name, category):
         if category in self.get_categories(pipeline, object_name):
@@ -581,16 +467,13 @@ class MeasureTexture(cellprofiler.module.Module):
     def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
         def format_measurement(scale_group):
             return [
-                "{:d}_{}".format(
+                "{:d}_{:02d}".format(
                     scale_group.scale.value,
-                    H_TO_A[angle]
-                ) for angle in scale_group.angles.get_selections()
+                    angle
+                ) for angle in range(13 if pipeline.volumetric() else 4)
             ]
 
         if len(self.get_measurement_images(pipeline, object_name, category, measurement)) > 0:
-            if measurement == F_GABOR:
-                return [scale_group.scale.value for scale_group in self.scale_groups]
-
             return sum([format_measurement(scale_group) for scale_group in self.scale_groups], [])
 
         return []
@@ -603,68 +486,40 @@ class MeasureTexture(cellprofiler.module.Module):
             for feature in self.get_features():
                 for image_group in self.image_groups:
                     for scale_group in self.scale_groups:
-                        if feature == F_GABOR:
+                        for angle in range(13 if pipeline.volumetric() else 4):
                             columns += [
                                 (
                                     cellprofiler.measurement.IMAGE,
-                                    "{}_{}_{}_{:d}".format(
+                                    "{}_{}_{}_{:d}_{:02d}".format(
                                         TEXTURE,
                                         feature,
                                         image_group.image_name.value,
-                                        scale_group.scale.value
+                                        scale_group.scale.value,
+                                        angle
                                     ),
                                     cellprofiler.measurement.COLTYPE_FLOAT
                                 )
                             ]
-                        else:
-                            for angle in scale_group.angles.get_selections():
-                                columns += [
-                                    (
-                                        cellprofiler.measurement.IMAGE,
-                                        "{}_{}_{}_{:d}_{}".format(
-                                            TEXTURE,
-                                            feature,
-                                            image_group.image_name.value,
-                                            scale_group.scale.value,
-                                            H_TO_A[angle]
-                                        ),
-                                        cellprofiler.measurement.COLTYPE_FLOAT
-                                    )
-                                ]
 
         if self.wants_object_measurements():
             for object_group in self.object_groups:
                 for feature in self.get_features():
                     for image_group in self.image_groups:
                         for scale_group in self.scale_groups:
-                            if feature == F_GABOR:
+                            for angle in range(13 if pipeline.volumetric() else 4):
                                 columns += [
                                     (
                                         object_group.object_name.value,
-                                        "{}_{}_{}_{:d}".format(
+                                        "{}_{}_{}_{:d}_{:02d}".format(
                                             TEXTURE,
                                             feature,
                                             image_group.image_name.value,
-                                            scale_group.scale.value
+                                            scale_group.scale.value,
+                                            angle
                                         ),
                                         cellprofiler.measurement.COLTYPE_FLOAT
                                     )
                                 ]
-                            else:
-                                for angle in scale_group.angles.get_selections():
-                                    columns += [
-                                        (
-                                            object_group.object_name.value,
-                                            "{}_{}_{}_{:d}_{}".format(
-                                                TEXTURE,
-                                                feature,
-                                                image_group.image_name.value,
-                                                scale_group.scale.value,
-                                                H_TO_A[angle]
-                                            ),
-                                            cellprofiler.measurement.COLTYPE_FLOAT
-                                        )
-                                    ]
 
         return columns
 
@@ -686,21 +541,13 @@ class MeasureTexture(cellprofiler.module.Module):
                 scale = scale_group.scale.value
 
                 if self.wants_image_measurements():
-                    if self.wants_gabor:
-                        statistics += self.run_image_gabor(image_name, scale, workspace)
-
-                    for angle in scale_group.angles.get_selections():
-                        statistics += self.run_image(image_name, scale, angle, workspace)
+                    statistics += self.run_image(image_name, scale, workspace)
 
                 if self.wants_object_measurements():
                     for object_group in self.object_groups:
                         object_name = object_group.object_name.value
 
-                        for angle in scale_group.angles.get_selections():
-                            statistics += self.run_one(image_name, object_name, scale, angle, workspace)
-
-                        if self.wants_gabor:
-                            statistics += self.run_one_gabor(image_name, object_name, scale, workspace)
+                        statistics += self.run_one(image_name, object_name, scale, workspace)
 
         if self.show_window:
             workspace.display_data.statistics = statistics
@@ -710,201 +557,111 @@ class MeasureTexture(cellprofiler.module.Module):
 
         figure.subplot_table(0, 0, workspace.display_data.statistics, col_labels=workspace.display_data.col_labels)
 
-    def run_one(self, image_name, object_name, scale, angle, workspace):
+    def run_one(self, image_name, object_name, scale, workspace):
         statistics = []
 
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
         objects = workspace.get_objects(object_name)
-
-        pixel_data = image.pixel_data
-
-        if image.has_mask:
-            mask = image.mask
-        else:
-            mask = None
-
         labels = objects.segmented
 
+        unique_labels = numpy.unique(labels)
+        if unique_labels[0] == 0:
+            unique_labels = unique_labels[1:]
+
+        n_directions = 13 if objects.volumetric else 4
+
+        if len(unique_labels) == 0:
+            for direction in range(n_directions):
+                for feature_name in F_HARALICK:
+                    statistics += self.record_measurement(
+                        image=image_name,
+                        feature=feature_name,
+                        obj=object_name,
+                        result=numpy.zeros((0,)),
+                        scale="{:d}_{:02d}".format(scale, direction),
+                        workspace=workspace
+                    )
+
+            return statistics
+
+        # IMG-961: Ensure image and objects have the same shape.
         try:
-            pixel_data = objects.crop_image_similarly(pixel_data)
+            mask = image.mask if image.has_mask else numpy.ones_like(image.pixel_data, dtype=numpy.bool)
+            pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:
-            pixel_data, m1 = cellprofiler.object.size_similarly(labels, pixel_data)
+            pixel_data, m1 = cellprofiler.object.size_similarly(labels, image.pixel_data)
 
             if numpy.any(~m1):
-                if mask is None:
-                    mask = m1
-                else:
-                    mask, m2 = cellprofiler.object.size_similarly(labels, mask)
-
+                if image.has_mask:
+                    mask, m2 = cellprofiler.object.size_similarly(labels, image.mask)
                     mask[~m2] = False
+                else:
+                    mask = m1
 
-        if numpy.all(labels == 0):
-            for name in F_HARALICK:
-                statistics += self.record_measurement(
-                    workspace,
-                    image_name,
-                    object_name,
-                    str(scale) + "_" + H_TO_A[angle], name, numpy.zeros((0,))
+        pixel_data[~mask] = 0
+        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+        pixel_data = skimage.util.img_as_ubyte(pixel_data)
+
+        features = numpy.empty((n_directions, 13, len(unique_labels)))
+
+        for index, label in enumerate(unique_labels):
+            label_data = numpy.zeros_like(pixel_data)
+            label_data[labels == label] = pixel_data[labels == label]
+
+            try:
+                features[:, :, index] = mahotas.features.haralick(
+                    label_data,
+                    distance=scale,
+                    ignore_zeros=True
                 )
-        else:
-            scale_i, scale_j = self.get_angle_ij(angle, scale)
+            except ValueError:
+                features[:, :, index] = numpy.nan
 
-            for name, value in zip(F_HARALICK, centrosome.haralick.Haralick(pixel_data, labels, scale_i, scale_j, mask=mask).all()):
+        for direction, direction_features in enumerate(features):
+            for feature_name, feature in zip(F_HARALICK, direction_features):
                 statistics += self.record_measurement(
-                    workspace,
-                    image_name,
-                    object_name,
-                    str(scale) + "_" + H_TO_A[angle],
-                    name,
-                    value
+                    image=image_name,
+                    feature=feature_name,
+                    obj=object_name,
+                    result=feature,
+                    scale="{:d}_{:02d}".format(scale, direction),
+                    workspace=workspace
                 )
 
         return statistics
 
-    def get_angle_ij(self, angle, scale):
-        if angle == H_VERTICAL:
-            return scale, 0
-
-        if angle == H_HORIZONTAL:
-            return 0, scale
-
-        if angle == H_DIAGONAL:
-            return scale, scale
-
-        if angle == H_ANTIDIAGONAL:
-            return scale, -scale
-
-    def run_image(self, image_name, scale, angle, workspace):
+    def run_image(self, image_name, scale, workspace):
         statistics = []
 
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        pixel_data = image.pixel_data
+        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+        pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
 
-        image_labels = numpy.ones(pixel_data.shape, int)
+        features = mahotas.features.haralick(pixel_data, distance=scale)
 
-        if image.has_mask:
-            image_labels[~ image.mask] = 0
+        for direction, direction_features in enumerate(features):
+            object_name = "{:d}_{:02d}".format(scale, direction)
 
-        scale_i, scale_j = self.get_angle_ij(angle, scale)
-
-        names_and_values = zip(F_HARALICK, centrosome.haralick.Haralick(pixel_data, image_labels, scale_i, scale_j).all())
-
-        for name, value in names_and_values:
-            object_name = str(scale) + "_" + H_TO_A[angle]
-
-            statistics += self.record_image_measurement(workspace, image_name, object_name, name, value)
-
-        return statistics
-
-    def run_one_gabor(self, image_name, object_name, scale, workspace):
-        objects = workspace.get_objects(object_name)
-
-        labels = objects.segmented
-
-        object_count = numpy.max(labels)
-
-        if object_count > 0:
-            image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-
-            pixel_data = image.pixel_data
-
-            labels = objects.segmented
-
-            if image.has_mask:
-                mask = image.mask
-            else:
-                mask = None
-
-            try:
-                pixel_data = objects.crop_image_similarly(pixel_data)
-
-                if mask is not None:
-                    mask = objects.crop_image_similarly(mask)
-
-                    labels[~mask] = 0
-            except ValueError:
-                pixel_data, m1 = cellprofiler.object.size_similarly(labels, pixel_data)
-
-                labels[~m1] = 0
-
-                if mask is not None:
-                    mask, m2 = cellprofiler.object.size_similarly(labels, mask)
-
-                    labels[~m2] = 0
-
-                    labels[~mask] = 0
-
-            pixel_data = centrosome.haralick.normalized_per_object(pixel_data, labels)
-
-            best_score = numpy.zeros((object_count,))
-
-            for angle in range(self.gabor_angles.value):
-                theta = numpy.pi * angle / self.gabor_angles.value
-
-                g = centrosome.filter.gabor(pixel_data, labels, scale, theta)
-
-                score_r = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(g.real, labels, numpy.arange(object_count, dtype=numpy.int32) + 1))
-
-                score_i = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(g.imag, labels, numpy.arange(object_count, dtype=numpy.int32) + 1))
-
-                score = numpy.sqrt(score_r ** 2 + score_i ** 2)
-
-                best_score = numpy.maximum(best_score, score)
-        else:
-            best_score = numpy.zeros((0,))
-
-        statistics = self.record_measurement(
-            workspace,
-            image_name,
-            object_name,
-            scale,
-            F_GABOR,
-            best_score
-        )
-
-        return statistics
-
-    def run_image_gabor(self, image_name, scale, workspace):
-        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-
-        pixel_data = image.pixel_data
-
-        labels = numpy.ones(pixel_data.shape, int)
-
-        if image.has_mask:
-            labels[~image.mask] = 0
-
-        pixel_data = centrosome.filter.stretch(pixel_data, labels > 0)
-
-        best_score = 0
-
-        for angle in range(self.gabor_angles.value):
-            theta = numpy.pi * angle / self.gabor_angles.value
-
-            g = centrosome.filter.gabor(pixel_data, labels, scale, theta)
-
-            score_r = numpy.sum(g.real)
-            score_i = numpy.sum(g.imag)
-
-            score = numpy.sqrt(score_r ** 2 + score_i ** 2)
-
-            best_score = max(best_score, score)
-
-        statistics = self.record_image_measurement(workspace, image_name, scale, F_GABOR, best_score)
+            for feature_name, feature in zip(F_HARALICK, direction_features):
+                statistics += self.record_image_measurement(
+                    feature_name=feature_name,
+                    image_name=image_name,
+                    result=feature,
+                    scale=object_name,
+                    workspace=workspace
+                )
 
         return statistics
 
     def record_measurement(self, workspace, image, obj, scale, feature, result):
-        data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
-
-        data[~numpy.isfinite(data)] = 0
+        result[~numpy.isfinite(result)] = 0
 
         workspace.add_measurement(
             obj,
             "{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale)),
-            data
+            result
         )
 
         # TODO: get outta crazee towne
@@ -921,7 +678,7 @@ class MeasureTexture(cellprofiler.module.Module):
             [
                 image,
                 obj,
-                "{} {}".format(aggregate, feature), scale, "{:.2}".format(fn(data)) if len(data) else "-"
+                "{} {}".format(aggregate, feature), scale, "{:.2}".format(fn(result)) if len(result) else "-"
             ] for aggregate, fn in functions
         ]
 
@@ -966,7 +723,7 @@ class MeasureTexture(cellprofiler.module.Module):
             for scale in setting_values[scale_offset:scale_offset + scale_count]:
                 new_setting_values += [
                     scale,
-                    H_HORIZONTAL
+                    "Horizontal"
                 ]
 
             new_setting_values += setting_values[scale_offset + scale_count:]
@@ -983,4 +740,24 @@ class MeasureTexture(cellprofiler.module.Module):
 
             variable_revision_number = 4
 
+        if variable_revision_number == 4:
+            #
+            #  Removed angles
+            #
+            image_count, object_count, scale_count = setting_values[:3]
+            scale_offset = 3 + int(image_count) + int(object_count)
+            scales = setting_values[scale_offset::2][:int(scale_count)]
+            new_setting_values = setting_values[:scale_offset] + scales
+
+            #
+            # Removed "wants_gabor", and "gabor_angles"
+            #
+            new_setting_values += setting_values[-1:]
+
+            setting_values = new_setting_values
+            variable_revision_number = 5
+
         return setting_values, variable_revision_number, False
+
+    def volumetric(self):
+        return True

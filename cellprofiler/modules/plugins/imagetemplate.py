@@ -1,38 +1,116 @@
-'''<b>ImageTemplate</b> - an example image processing module
-<hr>
-This is an example of a module that takes one image as an input and
-produces a second image for downstream processing. You can use this as
-a starting point for your own module: rename this file and put it in your
-plugins directory.
+# coding=utf-8
 
-The text you see here will be displayed as the help for your module. You
-can use HTML markup here and in the settings text; the Python HTML control
-does not fully support the HTML specification, so you may have to experiment
-to get it to display correctly.
-'''
 #################################
 #
 # Imports from useful Python libraries
 #
 #################################
 
-import numpy as np
-from scipy.ndimage import gaussian_gradient_magnitude, correlate1d
+import numpy
+import scipy.ndimage
 
 #################################
 #
 # Imports from CellProfiler
 #
-# The package aliases are the standard ones we use
-# throughout the code.
-#
 ##################################
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
 
-###################################
+__doc__ = """\
+ImageTemplate
+=============
+
+**ImageTemplate** is an example image processing module. It's recommended to
+put a brief description of this module here and go into more detail below.
+
+This is an example of a module that takes one image as an input and
+produces a second image for downstream processing. You can use this as
+a starting point for your own module: rename this file and put it in your
+plugins directory.
+
+The text you see here will be displayed as the help for your module, formatted
+as `reStructuredText <http://docutils.sourceforge.net/rst.html>`_.
+
+Note whether or not this module supports 3D image data and respects masks.
+A module which respects masks applies an image's mask and operates only on
+the image data not obscured by the mask. Update the table below to indicate 
+which image processing features this module supports.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           YES
+============ ============ ===============
+
+See also
+^^^^^^^^
+
+Is there another **Module** that is related to this one? If so, refer
+to that **Module** in this section. Otherwise, this section can be omitted.
+
+What do I need as input?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Are there any assumptions about input data someone using this module
+should be made aware of? For example, is there a strict requirement that
+image data be single-channel, or that the foreground is brighter than
+the background? Describe any assumptions here.
+
+This section can be omitted if there is no requirement on the input.
+
+What do I get as output?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Describe the output of this module. This is necessary if the output is
+more complex than a single image. For example, if there is data displayed
+over the image then describe what the data represents.
+
+This section can be omitted if there is no specialized output.
+
+Measurements made by this module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Describe the measurements made by this module, if any. Typically, measurements
+are described in the following format:
+
+**Measurement category:**
+
+-  *MeasurementName*: A brief description of the measurement.
+-  *MeasurementName*: A brief description of the measurement.
+
+**Measurement category:**
+
+-  *MeasurementName*: A brief description of the measurement.
+-  *MeasurementName*: A brief description of the measurement.
+
+This section can be omitted if no measurements are made by this module.
+
+Technical notes
+^^^^^^^^^^^^^^^
+
+Include implementation details or notes here. Additionally provide any 
+other background information about this module, including definitions
+or adopted conventions. Information which may be too specific to fit into
+the general description should be provided here.
+
+Omit this section if there is no technical information to mention.
+
+References
+^^^^^^^^^^
+
+Provide citations here, if appropriate. Citations are formatted as a list and,
+wherever possible, include a link to the original work. For example,
+
+-  Meyer F, Beucher S (1990) “Morphological segmentation.” *J Visual
+   Communication and Image Representation* 1, 21-46.
+   (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
+"""
+
 #
 # Constants
 #
@@ -40,114 +118,132 @@ import cellprofiler.setting as cps
 # constants if they will appear more than once in your program. That way,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
-###################################
-
+#
 GRADIENT_MAGNITUDE = "Gradient magnitude"
 GRADIENT_DIRECTION_X = "Gradient direction - X"
 GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 
 
-###################################
 #
-# The module class
+# The module class.
 #
-# Your module should "inherit" from cellprofiler.cpmodule.CPModule.
-# This means that your module will use the methods from CPModule unless
-# you re-implement them. You can let CPModule do most of the work and
-# implement only what you need.
+# Your module should "inherit" from cellprofiler.module.Module, or a
+# subclass of cellprofiler.module.Module. This module inherits from
+# cellprofiler.module.ImageProcessing, which is the base class for
+# image processing modules. Image processing modules take an image as
+# input and output an image.
 #
-###################################
-
-class ImageTemplate(cpm.Module):
-    ###############################################
+# This module will use the methods from cellprofiler.module.ImageProcessing
+# unless you re-implement them. You can let cellprofiler.module.ImageProcessing
+# do most of the work and implement only what you need.
+#
+# Other classes you can inherit from are:
+#
+# -  cellprofiler.module.ImageSegmentation: modules which take an image
+#    as input and output a segmentation (objects) should inherit from this
+#    class.
+# -  cellprofiler.module.ObjectProcessing: modules which operate on objects
+#    should inherit from this class. These are modules that take objects as
+#    input and output new objects.
+#
+class ImageTemplate(cellprofiler.module.ImageProcessing):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
     # number which can be used to provide backwards compatibility if
     # you add user-interface functionality later.
     #
-    ###############################################
+    # This module's category is "Image Processing" which is defined
+    # by its superclass.
+    #
     module_name = "ImageTemplate"
-    category = "Image Processing"
+
     variable_revision_number = 1
 
-    ###############################################
     #
-    # create_settings is where you declare the user interface elements
+    # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.
     #
     # You can look at other modules and in cellprofiler.settings for
     # settings you can use.
     #
-    ################################################
-
     def create_settings(self):
         #
-        # The ImageNameSubscriber "subscribes" to all ImageNameProviders in
-        # prior modules. Modules before yours will put images into CellProfiler.
-        # The ImageSubscriber gives your user a list of these images
-        # which can then be used as inputs in your module.
+        # The superclass (cellprofiler.module.ImageProcessing) defines two
+        # settings for image input and output:
         #
-        self.input_image_name = cps.ImageNameSubscriber(
-                # The text to the left of the edit box
-                "Input image name:",
-                # HTML help that gets displayed when the user presses the
-                # help button to the right of the edit box
-                doc="""This is the image that the module operates on. You can
-            choose any image that is made available by a prior module.
-            <br>
-            <b>ImageTemplate</b> will do something to this image.
-            """)
+        # -  x_name: an ImageNameSubscriber which "subscribes" to all
+        #    ImageNameProviders in prior modules. Modules before yours will
+        #    put images into CellProfiler. The ImageNameSubscriber gives
+        #    your user a list of these images which can then be used as inputs
+        #    in your module.
+        # -  y_name: an ImageNameProvider makes the image available to subsequent
+        #    modules.
+        super(ImageTemplate, self).create_settings()
+
         #
-        # The ImageNameProvider makes the image available to subsequent
-        # modules.
+        # reST help that gets displayed when the user presses the
+        # help button to the right of the edit box.
         #
-        self.output_image_name = cps.ImageNameProvider(
-                "Output image name:",
-                # The second parameter holds a suggested name for the image.
-                "OutputImage",
-                doc="""This is the image resulting from the operation.""")
+        # The superclass defines some generic help test. You can add
+        # module-specific help text by modifying the setting's "doc"
+        # string.
+        #
+        self.x_name.doc = """\
+This is the image that the module operates on. You can choose any image
+that is made available by a prior module.
+
+**ImageTemplate** will do something to this image.
+"""
+
         #
         # Here's a choice box - the user gets a drop-down list of what
         # can be done.
         #
-        self.gradient_choice = cps.Choice(
-                "Gradient choice:",
-                # The choice takes a list of possibilities. The first one
-                # is the default - the one the user will typically choose.
-                [GRADIENT_MAGNITUDE, GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y],
-                #
-                # Here, in the documentation, we do a little trick so that
-                # we use the actual text that's displayed in the documentation.
-                #
-                # %(GRADIENT_MAGNITUDE)s will get changed into "Gradient magnitude"
-                # etc. Python will look in globals() for the "GRADIENT_" names
-                # and paste them in where it sees %(GRADIENT_...)s
-                #
-                # The <ul> and <li> tags make a neat bullet-point list in the docs
-                #
-                doc="""Choose what to calculate:
-            <ul>
-            <li><i>%(GRADIENT_MAGNITUDE)s</i> to calculate the
-            magnitude of the gradient at each pixel.</li>
-            <li><i>%(GRADIENT_DIRECTION_X)s</i> to get the relative contribution
-            of the gradient in the X direction (.5 = no contribution,
-            0 to .5 = decreasing with increasing X, .5 to 1 = increasing
-            with increasing X).</li>
-            <li><i>%(GRADIENT_DIRECTION_Y)s</i> to get the relative
-            contribution of the gradient in the Y direction.</li></ul>
-            """ % globals()
+        self.gradient_choice = cellprofiler.setting.Choice(
+            text="Gradient choice:",
+            # The choice takes a list of possibilities. The first one
+            # is the default - the one the user will typically choose.
+            choices=[GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y, GRADIENT_MAGNITUDE],
+            # The default value is the first choice in choices. You can
+            # specify a different initial value using the value keyword.
+            value=GRADIENT_MAGNITUDE,
+            #
+            # Here, in the documentation, we do a little trick so that
+            # we use the actual text that's displayed in the documentation.
+            #
+            # {GRADIENT_MAGNITUDE} will get changed into "Gradient magnitude"
+            # etc. Python will look in keyword arguments for format()
+            # for the "GRADIENT_" names and paste them in where it sees
+            # a matching {GRADIENT_...}.
+            #
+            doc="""\
+Choose what to calculate:
 
+-  *{GRADIENT_MAGNITUDE}*: calculate the magnitude of the gradient at
+   each pixel.
+-  *{GRADIENT_DIRECTION_X}*: get the relative contribution of the
+   gradient in the X direction (.5 = no contribution, 0 to .5 =
+   decreasing with increasing X, .5 to 1 = increasing with increasing
+   X).
+-  *{GRADIENT_DIRECTION_Y}*: get the relative contribution of the
+   gradient in the Y direction.
+""".format(**{
+                "GRADIENT_MAGNITUDE": GRADIENT_MAGNITUDE,
+                "GRADIENT_DIRECTION_X": GRADIENT_DIRECTION_X,
+                "GRADIENT_DIRECTION_Y": GRADIENT_DIRECTION_Y
+            })
         )
+
         #
         # A binary setting displays a checkbox.
         #
-        self.automatic_smoothing = cps.Binary(
-                "Automatically choose the smoothing scale?",
-                # The default value is to choose automatically
-                True,
-                doc="""The module will automatically choose a
-            smoothing scale for you if you leave this checked.""")
+        self.automatic_smoothing = cellprofiler.setting.Binary(
+            text="Automatically choose the smoothing scale?",
+            value=True,  # The default value is to choose automatically
+            doc="The module will automatically choose a smoothing scale for you if you leave this checked."
+        )
+
         #
         # We do a little smoothing which supplies a scale to the gradient.
         #
@@ -155,19 +251,18 @@ class ImageTemplate(cpm.Module):
         # for the scale. The control will turn red if the user types in
         # an invalid scale.
         #
-        self.scale = cps.Float(
-                "Scale:",
-                # The default value is 1 - a short-range scale
-                1,
-                # We don't let the user type in really small values
-                minval=.1,
-                # or large values
-                maxval=100,
-                doc="""This is a scaling factor that supplies the sigma for
-            a gaussian that's used to smooth the image. The gradient is
-            calculated on the smoothed image, so large scales will give
-            you long-range gradients and small scales will give you
-            short-range gradients""")
+        self.scale = cellprofiler.setting.Float(
+            text="Scale",
+            value=1,  # The default value is 1 - a short-range scale
+            minval=0.1,  # We don't let the user type in really small values
+            maxval=100,  # or large values
+            doc="""\
+This is a scaling factor that supplies the sigma for a gaussian that's
+used to smooth the image. The gradient is calculated on the smoothed
+image, so large scales will give you long-range gradients and small
+scales will give you short-range gradients.
+"""
+        )
 
     #
     # The "settings" method tells CellProfiler about the settings you
@@ -176,12 +271,21 @@ class ImageTemplate(cpm.Module):
     # pipeline file.
     #
     def settings(self):
-        return [self.input_image_name, self.output_image_name,
-                self.gradient_choice, self.automatic_smoothing,
-                self.scale]
+        #
+        # The superclass's "settings" method returns [self.x_name, self.y_name],
+        # which are the input and output image settings.
+        #
+        settings = super(ImageTemplate, self).settings()
+
+        # Append additional settings here.
+        return settings + [
+            self.gradient_choice,
+            self.automatic_smoothing,
+            self.scale
+        ]
 
     #
-    # visible_settings tells CellProfiler which settings should be
+    # "visible_settings" tells CellProfiler which settings should be
     # displayed and in what order.
     #
     # You don't have to implement "visible_settings" - if you delete
@@ -189,115 +293,92 @@ class ImageTemplate(cpm.Module):
     # for display.
     #
     def visible_settings(self):
-        result = [self.input_image_name, self.output_image_name,
-                  self.gradient_choice, self.automatic_smoothing]
+        #
+        # The superclass's "visible_settings" method returns [self.x_name,
+        # self.y_name], which are the input and output image settings.
+        #
+        visible_settings = super(ImageTemplate, self).visible_settings()
+
+        # Configure the visibility of additional settings below.
+        visible_settings += [
+            self.gradient_choice,
+            self.automatic_smoothing
+        ]
+
         #
         # Show the user the scale only if self.wants_smoothing is checked
         #
         if not self.automatic_smoothing:
-            result += [self.scale]
-        return result
+            visible_settings += [self.scale]
+
+        return visible_settings
 
     #
     # CellProfiler calls "run" on each image set in your pipeline.
-    # This is where you do the real work.
     #
     def run(self, workspace):
         #
-        # Get the input and output image names. You need to get the .value
-        # because otherwise you'll get the setting object instead of
-        # the string name.
+        # The superclass's "run" method handles retreiving the input image
+        # and saving the output image. Module-specific behavior is defined
+        # by setting "self.function", defined in this module. "self.function"
+        # is called after retrieving the input image and before saving
+        # the output image.
         #
-        input_image_name = self.input_image_name.value
-        output_image_name = self.output_image_name.value
+        # The first argument of "self.function" is always the input image
+        # data (as a numpy array). The remaining arguments are the values of
+        # the module settings as they are returned from "settings" (excluding
+        # "self.y_data", or the output image).
         #
-        # Get the image set. The image set has all of the images in it.
-        #
-        image_set = workspace.image_set
-        #
-        # Get the input image object. We want a grayscale image here.
-        # The image set will convert a color image to a grayscale one
-        # and warn the user.
-        #
-        input_image = image_set.get_image(input_image_name,
-                                          must_be_grayscale=True)
-        #
-        # Get the pixels - these are a 2-d Numpy array.
-        #
-        pixels = input_image.pixel_data
-        #
-        # Get the smoothing parameter
-        #
-        if self.automatic_smoothing:
-            # Pick the mode of the power spectrum - obviously this
-            # is pretty hokey, not intended to really find a good number.
-            #
-            fft = np.fft.fft2(pixels)
-            power2 = np.sqrt((fft * fft.conjugate()).real)
-            mode = np.argwhere(power2 == power2.max())[0]
-            scale = np.sqrt(np.sum((mode + .5) ** 2))
-        else:
-            scale = self.scale.value
-        g = gaussian_gradient_magnitude(pixels, scale)
-        if self.gradient_choice == GRADIENT_MAGNITUDE:
-            output_pixels = g
-        else:
-            # Numpy uses i and j instead of x and y. The x axis is 1
-            # and the y axis is 0
-            x = correlate1d(g, [-1, 0, 1], 1)
-            y = correlate1d(g, [-1, 0, 1], 0)
-            norm = np.sqrt(x ** 2 + y ** 2)
-            if self.gradient_choice == GRADIENT_DIRECTION_X:
-                output_pixels = .5 + x / norm / 2
-            else:
-                output_pixels = .5 + y / norm / 2
-        #
-        # Make an image object. It's nice if you tell CellProfiler
-        # about the parent image - the child inherits the parent's
-        # cropping and masking, but it's not absolutely necessary
-        #
-        output_image = cpi.Image(output_pixels, parent_image=input_image)
-        image_set.add(output_image_name, output_image)
-        #
-        # Save intermediate results for display if the window frame is on
-        #
-        if self.show_window:
-            workspace.display_data.input_pixels = pixels
-            workspace.display_data.gradient = g
-            workspace.display_data.output_pixels = output_pixels
+        self.function = gradient_image
+
+        super(ImageTemplate, self).run(workspace)
 
     #
-    # display lets you use matplotlib to display your results.
+    # "volumetric" indicates whether or not this module supports 3D images.
+    # The "gradient_image" function is inherently 2D, and we've noted this
+    # in the documentation for the module. Explicitly return False here
+    # to indicate that 3D images are not supported.
     #
-    def display(self, workspace, figure):
+    def volumetric(self):
+        return False
+
+#
+# This is the function that gets called during "run" to create the output image.
+# The first parameter must be the input image data. The remaining parameters are
+# the additional settings defined in "settings", in the order they are returned.
+#
+# This function must return the output image data (as a numpy array).
+#
+def gradient_image(pixels, gradient_choice, automatic_smoothing, scale):
+    #
+    # Get the smoothing parameter
+    #
+    if automatic_smoothing:
+        # Pick the mode of the power spectrum - obviously this
+        # is pretty hokey, not intended to really find a good number.
         #
-        # the "figure" is really the frame around the figure. You almost always
-        # use figure.subplot or figure.subplot_imshow to get axes to draw on
-        # so we pretty much ignore the figure.
+        fft = numpy.fft.fft2(pixels)
+        power2 = numpy.sqrt((fft * fft.conjugate()).real)
+        mode = numpy.argwhere(power2 == power2.max())[0]
+        scale = numpy.sqrt(numpy.sum((mode + .5) ** 2))
+
+    gradient_magnitude = scipy.ndimage.gaussian_gradient_magnitude(pixels, scale)
+
+    if gradient_choice == GRADIENT_MAGNITUDE:
+        gradient_image = gradient_magnitude
+    else:
+        # Image data is indexed by rows and columns, with a given point located at
+        # position (row, column). Here, x represents the column coordinate (at index 1)
+        # and y represents the row coordinate (at index 0).
         #
-        figure = workspace.create_or_find_figure(subplots=(3, 1))
-        #
-        # Show the user the input image
-        #
-        figure.subplot_imshow_grayscale(
-                0, 0,  # show the image in the first row and column
-                workspace.display_data.input_pixels,
-                title=self.input_image_name.value)
-        lead_subplot = figure.subplot(0, 0)
-        #
-        # Show the user the gradient image, linking it to the first
-        # so that they zoom and pan together
-        #
-        figure.subplot_imshow_grayscale(
-                1, 0,  # show the image in the first row and second column
-                workspace.display_data.gradient,
-                title="Gradient",
-                sharex=lead_subplot, sharey=lead_subplot)
-        #
-        # Show the user the final image
-        #
-        figure.subplot_imshow_grayscale(
-                2, 0,  # show the image in the first row and last column
-                workspace.display_data.output_pixels,
-                title=self.output_image_name.value,
-                sharex=lead_subplot, sharey=lead_subplot)
+        # You can learn more about image coordinate systems here:
+        # http://scikit-image.org/docs/dev/user_guide/numpy_images.html#coordinate-conventions
+        x = scipy.ndimage.correlate1d(gradient_magnitude, [-1, 0, 1], 1)
+        y = scipy.ndimage.correlate1d(gradient_magnitude, [-1, 0, 1], 0)
+        norm = numpy.sqrt(x ** 2 + y ** 2)
+        if gradient_choice == GRADIENT_DIRECTION_X:
+            gradient_image = .5 + x / norm / 2
+        else:
+            gradient_image = .5 + y / norm / 2
+
+    return gradient_image

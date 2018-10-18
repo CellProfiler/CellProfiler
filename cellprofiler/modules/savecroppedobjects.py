@@ -159,7 +159,8 @@ class SaveCroppedObjects(cellprofiler.module.Module):
         result = [
             self.export_option,
             self.objects_name,
-            self.directory
+            self.directory,
+            self.file_format
         ]
 
         if self.export_option.value == SAVE_PER_OBJECT:

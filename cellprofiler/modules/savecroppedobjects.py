@@ -1,66 +1,68 @@
 # -*- coding: utf-8 -*-
 
 """
-SaveCroppedObjects
-==================
-
-**SaveCroppedObjects** exports each object as a binary image. Pixels corresponding to an exported object are assigned
-the value 255. All other pixels (i.e., background pixels and pixels corresponding to other objects) are assigned the
-value 0. The dimensions of each image are the same as the original image.
-
-The filename for an exported image is formatted as "{object name}_{label index}.{image_format}", where *object name*
-is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting
-from 1).
-
-|
-
-============ ============ ===============
-Supports 2D? Supports 3D? Respects masks?
-============ ============ ===============
-YES          NO           YES
-============ ============ ===============
-
+CropObjects exports individual images per object as masks or as a crop from the original image. In the case of masks,
+each object is saved as a mask where the object is labeled as “255” and the background is labeled as “0.”
+The dimensions of the mask are the same as the parent image.
+In the case of crops from the original image, an image is saved for each object based on its bounding box (the dimensions
+of the resulting images are the same as the ones of the bounding boxes)
+The filename for a crop or mask is formatted like “{object name}_{label index}_{timestamp}.tiff”
 """
 
 import numpy
 import os.path
 import skimage.io
+import skimage.measure
 import time
 
 import cellprofiler.module
 import cellprofiler.setting
 
-O_PNG = "png"
-O_TIFF = "tiff"
+SAVE_PER_OBJECT = "Objects"
+SAVE_MASK = "Masks"
 
-class SaveCroppedObjects(cellprofiler.module.Module):
+
+class CropObjects(cellprofiler.module.Module):
     category = "File Processing"
 
-    module_name = "SaveCroppedObjects"
+    module_name = "CropObjects"
 
     variable_revision_number = 1
 
     def create_settings(self):
+
+        self.export_option = cellprofiler.setting.Choice(
+            "Export option",
+            [
+                SAVE_PER_OBJECT,
+                SAVE_MASK
+            ],
+            doc="""
+            Choose the way you want the per-object crops to be exported.
+            <p>The choices are:<br>
+            <ul><li><i>{SAVE_PER_OBJECT}</i>: Save a per-object crop from the original image based on the object's
+            bounding box.</li>
+            <li><i>{SAVE_MASK}</i>: Export a per-object mask.</li>
+            </ul></p>
+            """.format(**{
+                "SAVE_PER_OBJECT": SAVE_PER_OBJECT,
+                "SAVE_MASK": SAVE_MASK
+            })
+        )
+
         self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
             "Objects",
-            doc="Select the objects you want to export as per-object crops."
+            doc="Select the objects you want to export per-object crops of."
+        )
+
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+            "Image",
+            doc="Select the image to crop"
         )
 
         self.directory = cellprofiler.setting.DirectoryPath(
             "Directory",
-            doc="Enter the directory where object crops are saved.",
-            value=cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
-        )
-
-        self.file_format = cellprofiler.setting.Choice(
-            "Saved file format",
-            [
-                O_PNG,
-                O_TIFF
-            ],
-            value=O_TIFF,
-            doc="""\
-**%(O_PNG)** files do not support 3D. **%(O_TIFF)** files use zlib compression level 6."""
+            doc="Enter the directory where object crops are saved."
         )
 
     def display(self, workspace, figure):
@@ -71,11 +73,6 @@ class SaveCroppedObjects(cellprofiler.module.Module):
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.objects_name.value)
 
-        directory = self.directory.get_absolute_path(workspace.measurements)
-
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
         labels = objects.segmented
 
         unique_labels = numpy.unique(labels)
@@ -85,35 +82,46 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
         filenames = []
 
-        for label in unique_labels:
-            mask = labels == label
+        if self.export_option == SAVE_MASK:
+            for label in unique_labels:
+                mask = labels == label
 
-            if self.file_format.value == O_PNG:
                 filename = os.path.join(
-                    directory,
-                    "{}_{}.{}".format(self.objects_name.value, label, O_PNG)
-                    )
+                    self.directory.get_absolute_path(),
+                    "{}_{:04d}_{}.tiff".format(self.objects_name.value, label, int(time.time()))
+                )
 
                 skimage.io.imsave(filename, skimage.img_as_ubyte(mask))
 
-            elif self.file_format.value == O_TIFF:
+                filenames.append(filename)
+
+        if self.export_option == SAVE_PER_OBJECT:
+            orig_image = workspace.image_set.get_image(self.image_name.value)
+            obj_regions = skimage.measure.regionprops(labels)
+            for obj in obj_regions:
+                cropped_image = numpy.copy(orig_image.get_image())
+                top, left, bot, right = obj.bbox
+
+                cropped_image = cropped_image[top:bot, left:right]
+
                 filename = os.path.join(
-                    directory,
-                    "{}_{}.{}".format(self.objects_name.value, label, O_TIFF)
-                    )
+                    self.directory.get_absolute_path(),
+                    "{}_{:04d}_{}.tiff".format(self.objects_name.value, obj.label, int(time.time()))
+                )
 
-                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6)
+                skimage.io.imsave(filename, skimage.img_as_ubyte(cropped_image))
 
-            filenames.append(filename)
+                filenames.append(filename)
 
         if self.show_window:
             workspace.display_data.filenames = filenames
 
     def settings(self):
         settings = [
+            self.export_option,
             self.objects_name,
-            self.directory,
-            self.file_format
+            self.image_name,
+            self.directory
         ]
 
         return settings

@@ -50,17 +50,17 @@ class SaveCroppedObjects(cellprofiler.module.Module):
                 SAVE_PER_OBJECT,
                 SAVE_MASK
             ],
-            doc="""
-            Choose the way you want the per-object crops to be exported.
-            <p>The choices are:<br>
-            <ul><li><i>{SAVE_PER_OBJECT}</i>: Save a per-object crop from the original image based on the object's
-            bounding box.</li>
-            <li><i>{SAVE_MASK}</i>: Export a per-object mask.</li>
-            </ul></p>
-            """.format(**{
-                "SAVE_PER_OBJECT": SAVE_PER_OBJECT,
-                "SAVE_MASK": SAVE_MASK
-            })
+            doc="""\
+Choose the way you want the per-object crops to be exported.
+
+The choices are:
+
+-  *{SAVE_PER_OBJECT}*: Save a per-object crop from the original image
+   based on the object's bounding box.
+-  *{SAVE_MASK}*: Export a per-object mask.""".format(
+                SAVE_PER_OBJECT=SAVE_PER_OBJECT,
+                SAVE_MASK=SAVE_MASK
+            )
         )
 
         self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
@@ -87,7 +87,10 @@ class SaveCroppedObjects(cellprofiler.module.Module):
             ],
             value=O_TIFF,
             doc="""\
-**%(O_PNG)** files do not support 3D. **%(O_TIFF)** files use zlib compression level 6."""
+**{O_PNG}** files do not support 3D. **{O_TIFF}** files use zlib compression level 6.""".format(
+                O_PNG=O_PNG,
+                O_TIFF=O_TIFF
+            )
         )
 
     def display(self, workspace, figure):
@@ -120,8 +123,8 @@ class SaveCroppedObjects(cellprofiler.module.Module):
                 mask_in = labels == label
                 images = workspace.image_set
                 x = images.get_image(self.image_name.value)
-                properties=skimage.measure.regionprops(mask_in.astype(int),intensity_image=x.pixel_data)
-                mask=properties[0].intensity_image
+                properties = skimage.measure.regionprops(mask_in.astype(int), intensity_image=x.pixel_data)
+                mask = properties[0].intensity_image
 
             if self.file_format.value == O_PNG:
                 filename = os.path.join(

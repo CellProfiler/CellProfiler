@@ -25,6 +25,7 @@ YES          NO           YES
 import numpy
 import os.path
 import skimage.io
+import skimage.measure
 import time
 
 import cellprofiler.module
@@ -32,18 +33,44 @@ import cellprofiler.setting
 
 O_PNG = "png"
 O_TIFF = "tiff"
+SAVE_PER_OBJECT = "Images"
+SAVE_MASK = "Masks"
 
 class SaveCroppedObjects(cellprofiler.module.Module):
     category = "File Processing"
 
     module_name = "SaveCroppedObjects"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
+        self.export_option = cellprofiler.setting.Choice(
+            "Do you want to save cropped images or object masks?",
+            [
+                SAVE_PER_OBJECT,
+                SAVE_MASK
+            ],
+            doc="""
+            Choose the way you want the per-object crops to be exported.
+            <p>The choices are:<br>
+            <ul><li><i>{SAVE_PER_OBJECT}</i>: Save a per-object crop from the original image based on the object's
+            bounding box.</li>
+            <li><i>{SAVE_MASK}</i>: Export a per-object mask.</li>
+            </ul></p>
+            """.format(**{
+                "SAVE_PER_OBJECT": SAVE_PER_OBJECT,
+                "SAVE_MASK": SAVE_MASK
+            })
+        )
+
         self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
             "Objects",
             doc="Select the objects you want to export as per-object crops."
+        )
+
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+            "Image",
+            doc="Select the image to crop"
         )
 
         self.directory = cellprofiler.setting.DirectoryPath(
@@ -86,7 +113,15 @@ class SaveCroppedObjects(cellprofiler.module.Module):
         filenames = []
 
         for label in unique_labels:
-            mask = labels == label
+            if self.export_option == SAVE_MASK:
+                mask = labels == label
+
+            elif self.export_option == SAVE_PER_OBJECT:
+                mask_in = labels == label
+                images = workspace.image_set
+                x = images.get_image(self.image_name.value)
+                properties=skimage.measure.regionprops(mask_in.astype(int),intensity_image=x.pixel_data)
+                mask=properties[0].intensity_image
 
             if self.file_format.value == O_PNG:
                 filename = os.path.join(
@@ -104,7 +139,7 @@ class SaveCroppedObjects(cellprofiler.module.Module):
 
                 skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6)
 
-            filenames.append(filename)
+        filenames.append(filename)
 
         if self.show_window:
             workspace.display_data.filenames = filenames
@@ -113,10 +148,24 @@ class SaveCroppedObjects(cellprofiler.module.Module):
         settings = [
             self.objects_name,
             self.directory,
-            self.file_format
+            self.file_format,
+            self.export_option,
+            self.image_name
         ]
 
         return settings
+
+    def visible_settings(self):
+        result = [
+            self.export_option,
+            self.objects_name,
+            self.directory
+        ]
+
+        if self.export_option.value == SAVE_PER_OBJECT:
+            result += [self.image_name]
+
+        return result
 
     def volumetric(self):
         return True

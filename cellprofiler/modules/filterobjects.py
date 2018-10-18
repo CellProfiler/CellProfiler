@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import _help
+from cellprofiler.modules import _help
 
 __doc__ = """\
 FilterObjects
@@ -74,8 +74,6 @@ import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.utilities.rules
-import _help
-
 
 logger = logging.getLogger(__name__)
 
@@ -593,7 +591,7 @@ value will be retained.""".format(**{
         if self.mode == MODE_RULES:
             try:
                 rules = self.get_rules()
-            except Exception, instance:
+            except Exception as instance:
                 logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
                 raise cellprofiler.setting.ValidationError(str(instance),
                                                            self.rules_file_name)
@@ -795,7 +793,7 @@ value will be retained.""".format(**{
                 svalues = values
             order = numpy.lexsort((-areas, svalues[src_labels - 1]))
             src_labels, enclosing_labels, areas = [
-                x[order] for x in src_labels, enclosing_labels, areas]
+                x[order] for x in (src_labels, enclosing_labels, areas)]
             firsts = numpy.hstack((
                 [0], numpy.where(src_labels[:-1] != src_labels[1:])[0] + 1,
                 src_labels.shape[:1]))
@@ -1024,7 +1022,11 @@ value will be retained.""".format(**{
             # Added CPA rules
             #
             setting_values = (setting_values[:11] +
-                              [MODE_MEASUREMENTS, dir_default_input, "."] +
+                              [
+                                  MODE_MEASUREMENTS, 
+                                  cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, 
+                                  "."
+                              ] +
                               setting_values[11:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
@@ -1062,11 +1064,11 @@ value will be retained.""".format(**{
             rules_directory_choice = setting_values[7]
             rules_path_name = setting_values[8]
             if rules_directory_choice == DIR_CUSTOM:
-                rules_directory_choice == cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                rules_directory_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
                 if rules_path_name.startswith('.'):
-                    rules_directory_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+                    rules_directory_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif rules_path_name.startswith('&'):
-                    rules_directory_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    rules_directory_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     rules_path_name = "." + rules_path_name[1:]
 
             rules_directory = cellprofiler.setting.DirectoryPath.static_join_string(

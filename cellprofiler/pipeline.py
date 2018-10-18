@@ -1,6 +1,6 @@
 """Pipeline.py - an ordered set of modules to be executed
 """
-from __future__ import with_statement
+from __future__ import print_function
 
 import bisect
 import csv
@@ -22,7 +22,6 @@ except:
     has_mat_read_error = False
 
 import os
-import StringIO  # XXX - replace with cStringIO?
 import sys
 import tempfile
 import traceback
@@ -30,11 +29,15 @@ import datetime
 import timeit
 import traceback
 import threading
-import urlparse
-import urllib
-import urllib2
 import re
 import numpy
+import six
+import six.moves
+
+from future.standard_library import install_aliases
+install_aliases()
+import urllib.parse
+import urllib.request
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
@@ -46,6 +49,7 @@ import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 import cellprofiler.utilities.utf16encode
+import cellprofiler.utilities.legacy
 from bioformats.omexml import OMEXML
 from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
@@ -245,7 +249,7 @@ def map_feature_names(feature_names, max_size=63):
     seeded = False
 
     def shortest_first(a, b):
-        return -1 if len(a) < len(b) else 1 if len(b) < len(a) else cmp(a, b)
+        return -1 if len(a) < len(b) else 1 if len(b) < len(a) else cellprofiler.utilities.legacy.cmp(a, b)
 
     for feature_name in sorted(feature_names, shortest_first):
         if len(feature_name) > max_size:
@@ -367,7 +371,7 @@ class ImagePlaneDetails(object):
     def path(self):
         '''The file path if a file: URL, otherwise the URL'''
         if self.url.startswith("file:"):
-            return urllib.url2pathname(self.url[5:]).decode('utf8')
+            return urllib.request.url2pathname(self.url[5:]).decode('utf8')
         return self.url
 
     @property
@@ -425,26 +429,26 @@ def read_file_list(file_or_fd):
     "file:///imaging/analysis/singleplane.tif",,,
     """
 
-    if isinstance(file_or_fd, basestring):
+    if isinstance(file_or_fd, six.string_types):
         needs_close = True
         fd = open(file_or_fd, "r")
     else:
         needs_close = False
         fd = file_or_fd
     try:
-        line = fd.next()
+        line = next(fd)
         properties = dict(read_fields(line))
-        if not properties.has_key(H_VERSION):
+        if H_VERSION not in properties:
             raise ValueError("Image plane details header is missing its version #")
         version = int(properties[H_VERSION])
         if version != IMAGE_PLANE_DESCRIPTOR_VERSION:
             raise ValueError("Unable to read image plane details version # %d" % version)
         plane_count = int(properties[H_PLANE_COUNT])
-        header = read_fields(fd.next())
+        header = read_fields(next(fd))
         result = []
         pattern = r'(?:"((?:[^\\]|\\.)+?)")?(?:,|\s+)'
         for i in range(plane_count):
-            fields = [x.groups()[0] for x in re.finditer(pattern, fd.next())]
+            fields = [x.groups()[0] for x in re.finditer(pattern, next(fd))]
             fields = [None if x is None else x.decode('string-escape')
                       for x in fields]
             url = fields[0]
@@ -465,7 +469,7 @@ def write_file_list(file_or_fd, file_list):
     file_list - collection of URLs to be output
 
     '''
-    if isinstance(file_or_fd, basestring):
+    if isinstance(file_or_fd, six.string_types):
         fd = open(file_or_fd, "w")
         needs_close = True
     else:
@@ -477,7 +481,7 @@ def write_file_list(file_or_fd, file_list):
             len(file_list)))
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:
-            if isinstance(url, unicode):
+            if isinstance(url, six.text_type):
                 url = url.encode("utf-8")
             url = url.encode("string_escape").replace('"', r'\"')
             line = "\"%s\",,,\n" % url
@@ -587,7 +591,7 @@ class Pipeline(object):
 
     def copy(self, save_image_plane_details=True):
         '''Create a copy of the pipeline modules and settings'''
-        fd = StringIO.StringIO()
+        fd = six.moves.StringIO()
         self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
@@ -623,7 +627,7 @@ class Pipeline(object):
         try:
             settings = handles[SETTINGS][0, 0]
             module_names = settings[MODULE_NAMES]
-        except Exception, instance:
+        except Exception as instance:
             logger.error("Failed to load pipeline", exc_info=True)
             e = LoadExceptionEvent(instance, None)
             self.notify_listeners(e)
@@ -638,7 +642,7 @@ class Pipeline(object):
                 module = self.instantiate_module(module_name)
                 module.create_from_handles(handles, module_num)
                 module.module_num = real_module_num
-            except Exception, instance:
+            except Exception as instance:
                 logger.error("Failed to load pipeline", exc_info=True)
                 number_of_variables = settings[NUMBERS_OF_VARIABLES][0, idx]
                 module_settings = [settings[VARIABLE_VALUES][idx, i]
@@ -674,17 +678,17 @@ class Pipeline(object):
         """
         # clear previously seen errors on reload
         import cellprofiler.modules
-        reload(cellprofiler.modules)
+        six.moves.reload_module(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload
-            fd = StringIO.StringIO()
+            fd = six.moves.StringIO()
             self.save(fd)
             fd.seek(0)
             self.loadtxt(fd, raise_on_error=True)
             return True
-        except Exception, e:
+        except Exception as e:
             logging.warning("Modules reloaded, but could not reinstantiate pipeline with new versions.", exc_info=True)
             return False
 
@@ -769,7 +773,7 @@ class Pipeline(object):
         elif hasattr(fd_or_filename, 'read') and hasattr(fd_or_filename, 'url'):
             # This is a URL file descriptor. Read into a StringIO so that
             # seek is available.
-            fd = StringIO.StringIO()
+            fd = six.moves.StringIO()
             while True:
                 text = fd_or_filename.read()
                 if len(text) == 0:
@@ -783,10 +787,10 @@ class Pipeline(object):
             filename = fd_or_filename
         else:
             # Assume is string URL
-            parsed_path = urlparse.urlparse(fd_or_filename)
+            parsed_path = urllib.parse.urlparse(fd_or_filename)
             if len(parsed_path.scheme) < 2:
                 raise IOError("Could not find file, " + fd_or_filename)
-            fd = urllib2.urlopen(fd_or_filename)
+            fd = urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
@@ -809,7 +813,7 @@ class Pipeline(object):
                 m = cpmeas.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
                 pipeline_text = pipeline_text.encode('us-ascii')
-                self.load(StringIO.StringIO(pipeline_text))
+                self.load(six.moves.StringIO(pipeline_text))
                 return
 
         if has_mat_read_error:
@@ -823,7 +827,7 @@ class Pipeline(object):
                         fd_or_filename)
                 self.notify_listeners(LoadExceptionEvent(e, None))
                 return
-            except Exception, e:
+            except Exception as e:
                 logging.error("Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
                               exc_info=True)
                 self.notify_listeners(LoadExceptionEvent(e, None))
@@ -832,7 +836,7 @@ class Pipeline(object):
             handles = scipy.io.matlab.mio.loadmat(fd_or_filename,
                                                   struct_as_record=True)
 
-        if handles.has_key("handles"):
+        if "handles" in handles:
             #
             # From measurements...
             #
@@ -858,7 +862,7 @@ class Pipeline(object):
         self.__modules = []
         self.caption_for_user = None
         self.message_for_user = None
-        module_count = sys.maxint
+        module_count = sys.maxsize
         if hasattr(fd_or_filename, 'seek') and hasattr(fd_or_filename, 'read'):
             fd = fd_or_filename
         else:
@@ -867,7 +871,7 @@ class Pipeline(object):
         def rl():
             '''Read a line from fd'''
             try:
-                line = fd.next()
+                line = next(fd)
                 if line is None:
                     return None
                 line = line.strip("\r\n")
@@ -876,7 +880,7 @@ class Pipeline(object):
                 return None
 
         header = rl()
-        if not self.is_pipeline_txt_fd(StringIO.StringIO(header)):
+        if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
         version = NATIVE_VERSION
         from_matlab = False
@@ -918,7 +922,7 @@ class Pipeline(object):
             elif kwd == H_GIT_HASH:
                 git_hash = value
             else:
-                print line
+                print(line)
 
         if pipeline_version > 20080101000000 and\
            pipeline_version < 30080101000000:
@@ -980,7 +984,7 @@ class Pipeline(object):
         new_modules = []
         module_number = 1
         skip_attributes = ['svn_version', 'module_num']
-        for i in xrange(module_count):
+        for i in six.moves.xrange(module_count):
             line = rl()
             if line is None:
                 break
@@ -1056,7 +1060,7 @@ class Pipeline(object):
                 if module_name == "NamesAndTypes":
                     self.__volumetric = module.process_as_3d.value
 
-            except Exception, instance:
+            except Exception as instance:
                 if raise_on_error:
                     raise
                 logging.error("Failed to load pipeline", exc_info=True)
@@ -1194,7 +1198,7 @@ class Pipeline(object):
                                   attribute_string))
             for setting in module.settings():
                 setting_text = setting.text
-                if isinstance(setting_text, unicode):
+                if isinstance(setting_text, six.text_type):
                     # setting_text = setting_text.encode('utf-16')
                     setting_text = setting_text.encode('utf-8')
                 else:
@@ -1258,7 +1262,7 @@ class Pipeline(object):
                         created by CreateBatchFiles.
         '''
         assert (isinstance(m, cpmeas.Measurements))
-        fd = StringIO.StringIO()
+        fd = six.moves.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT,
                           M_USER_PIPELINE if user_pipeline else M_PIPELINE,
@@ -1304,8 +1308,7 @@ class Pipeline(object):
 
         current = np.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
         handles[CURRENT] = current
-        current[NUMBER_OF_IMAGE_SETS][0, 0] = [(image_set is not None and image_set.legacy_fields.has_key(
-                NUMBER_OF_IMAGE_SETS) and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
+        current[NUMBER_OF_IMAGE_SETS][0, 0] = [(image_set is not None and NUMBER_OF_IMAGE_SETS in image_set.legacy_fields and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
         current[SET_BEING_ANALYZED][0, 0] = [(measurements and measurements.image_set_number) or 1]
         current[NUMBER_OF_MODULES][0, 0] = [len(self.__modules)]
         current[SAVE_OUTPUT_HOW_OFTEN][0, 0] = [1]
@@ -1605,8 +1608,8 @@ class Pipeline(object):
                 if image_set_end is not None and image_number > image_set_end:
                     continue
 
-                if initial_measurements is not None and all([initial_measurements.has_feature(cpmeas.IMAGE, f) for f in GROUP_NUMBER, GROUP_INDEX]):
-                    group_number, group_index = [initial_measurements[cpmeas.IMAGE, f, image_number] for f in GROUP_NUMBER, GROUP_INDEX]
+                if initial_measurements is not None and all([initial_measurements.has_feature(cpmeas.IMAGE, f) for f in (GROUP_NUMBER, GROUP_INDEX)]):
+                    group_number, group_index = [initial_measurements[cpmeas.IMAGE, f, image_number] for f in (GROUP_NUMBER, GROUP_INDEX)]
                 else:
                     group_number = gn + 1
 
@@ -1898,7 +1901,7 @@ class Pipeline(object):
         grids = None
         should_write_measurements = True
         for module in self.modules():
-            print "Running module", module.module_name, module.module_num
+            print("Running module", module.module_name, module.module_num)
             if module.should_stop_writing_measurements():
                 should_write_measurements = False
             workspace = cpw.Workspace(self,
@@ -1925,7 +1928,7 @@ class Pipeline(object):
                 # Analysis worker interaction handler is telling us that
                 # the UI has cancelled the run. Forward exception upward.
                 raise
-            except Exception, exception:
+            except Exception as exception:
                 logger.error("Error detected during run of module %s#%d",
                              module.module_name, module.module_num, exc_info=True)
                 if should_write_measurements:
@@ -2097,7 +2100,7 @@ class Pipeline(object):
                             had_image_sets = True
                         self.clear_measurements(workspace.measurements)
                         break
-                except Exception, instance:
+                except Exception as instance:
                     logging.error("Failed to prepare run for module %s",
                                   module.module_name, exc_info=True)
                     event = PrepareRunExceptionEvent(instance, module, sys.exc_info()[2])
@@ -2177,7 +2180,7 @@ class Pipeline(object):
         if len(args) == 3:
             measurements, image_set_list, frame = args
             workspace = cpw.Workspace(self,
-                                      module,
+                                      None,
                                       None,
                                       None,
                                       measurements,
@@ -2189,7 +2192,7 @@ class Pipeline(object):
             workspace.refresh()
             try:
                 module.post_run(workspace)
-            except Exception, instance:
+            except Exception as instance:
                 logging.error(
                         "Failed to complete post_run processing for module %s." %
                         module.module_name, exc_info=True)
@@ -2201,7 +2204,7 @@ class Pipeline(object):
                             module.__class__.display_post_run != Module.display_post_run:
                 try:
                     workspace.post_run_display(module)
-                except Exception, instance:
+                except Exception as instance:
                     # Warn about display failure but keep going.
                     logging.warn(
                             "Caught exception during post_run_display for module %s." %
@@ -2232,7 +2235,7 @@ class Pipeline(object):
                 workspace.set_module(module)
                 module.prepare_to_create_batch(workspace,
                                                fn_alter_path)
-            except Exception, instance:
+            except Exception as instance:
                 logger.error("Failed to collect batch information for module %s",
                              module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
@@ -2296,7 +2299,7 @@ class Pipeline(object):
             m = re.findall('\\\\g[<](.+?)[>]', pattern)
         if m:
             m = filter((lambda x: not any(
-                    [x.startswith(y) for y in cpmeas.C_SERIES, cpmeas.C_FRAME])), m)
+                    [x.startswith(y) for y in (cpmeas.C_SERIES, cpmeas.C_FRAME)])), m)
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
@@ -2313,7 +2316,7 @@ class Pipeline(object):
         for module in self.modules():
             try:
                 module.prepare_group(workspace, grouping, image_numbers)
-            except Exception, instance:
+            except Exception as instance:
                 logger.error("Failed to prepare group in module %s",
                              module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
@@ -2331,7 +2334,7 @@ class Pipeline(object):
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
-            except Exception, instance:
+            except Exception as instance:
                 logging.error(
                         "Failed during post-group processing for module %s" %
                         module.module_name, exc_info=True)
@@ -2517,12 +2520,12 @@ class Pipeline(object):
         n = len(urls)
         for i, url in enumerate(urls):
             if i % 100 == 0:
-                path = urlparse.urlparse(url).path
+                path = urllib.parse.urlparse(url).path
                 if "/" in path:
                     filename = path.rsplit("/", 1)[1]
                 else:
                     filename = path
-                filename = urllib.url2pathname(filename)
+                filename = urllib.request.url2pathname(filename)
                 cpprefs.report_progress(
                         uid, float(i) / n,
                              u"Adding %s" % filename)
@@ -2592,7 +2595,7 @@ class Pipeline(object):
             return
         try:
             urls = file_list.get_filelist()
-        except Exception, instance:
+        except Exception as instance:
             logger.error("Failed to get file list from workspace", exc_info=True)
             x = IPDLoadExceptionEvent("Failed to get file list from workspace")
             self.notify_listeners(x)
@@ -2611,7 +2614,7 @@ class Pipeline(object):
 
         path - a path to a file or a URL
         '''
-        if isinstance(path_or_fd, basestring):
+        if isinstance(path_or_fd, six.string_types):
             from cellprofiler.modules.loadimages import \
                 url2pathname, FILE_SCHEME, PASSTHROUGH_SCHEMES
             pathname = path_or_fd
@@ -2620,9 +2623,8 @@ class Pipeline(object):
                 with open(pathname, "r") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
-                import urllib2
                 try:
-                    fd = urllib2.urlopen(pathname)
+                    fd = urllib.request.urlopen(pathname)
                     self.read_file_list(fd, add_undo=add_undo)
                 finally:
                     fd.close()
@@ -2656,7 +2658,7 @@ class Pipeline(object):
         returns an object that represents the state of the first instance
         of the named module or None if not in pipeline
         '''
-        if isinstance(module_name_or_module, basestring):
+        if isinstance(module_name_or_module, six.string_types):
             modules = [module for module in self.modules()
                        if module.module_name == module_name_or_module]
             if len(modules) == 0:
@@ -3043,13 +3045,13 @@ class Pipeline(object):
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            url = "file:" + urllib.pathname2url(path)
+            url = "file:" + urllib.request.pathname2url(path)
             ipd = ImagePlaneDetails(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
     def wp_add_image_metadata(self, path, metadata):
-        self.add_image_metadata("file:" + urllib.pathname2url(path), metadata)
+        self.add_image_metadata("file:" + urllib.request.pathname2url(path), metadata)
 
     def add_image_metadata(self, url, metadata, ipd=None):
         if metadata.image_count == 1:
@@ -3083,7 +3085,6 @@ class Pipeline(object):
                 ipd = self.find_image_plane_details(exemplar)
             if ipd is not None:
                 ipd.metadata.update(m)
-                self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
 
         #
         # If there are planes, we create image plane descriptors for them
@@ -3119,7 +3120,6 @@ class Pipeline(object):
                         to_add.append(exemplar)
                     else:
                         ipd.metadata.update(m)
-                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
 
             elif pixels.SizeZ > 1 or pixels.SizeT > 1:
                 #
@@ -3174,7 +3174,6 @@ class Pipeline(object):
                         to_add.append(exemplar)
                     else:
                         ipd.metadata.update(metadata)
-                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
         if len(to_add) > 0:
             self.add_image_plane_details(to_add, False)
 
@@ -3263,10 +3262,10 @@ class Pipeline(object):
             self.__measurement_columns = {}
             self.__measurement_column_hash = hash
 
-        terminating_module_num = (sys.maxint
+        terminating_module_num = (sys.maxsize
                                   if terminating_module is None
                                   else terminating_module.module_num)
-        if self.__measurement_columns.has_key(terminating_module_num):
+        if terminating_module_num in self.__measurement_columns:
             return self.__measurement_columns[terminating_module_num]
         columns = [
             (cpmeas.EXPERIMENT, M_PIPELINE, cpmeas.COLTYPE_LONGBLOB),
@@ -3342,14 +3341,14 @@ class Pipeline(object):
             #
             p = module.other_providers(groupname)
             for name in p:
-                if (not result.has_key(name)) or target_module is not None:
+                if (name not in result) or target_module is not None:
                     result[name] = []
                 result[name].append((module, None))
             if groupname == cps.MEASUREMENTS_GROUP:
                 for c in module.get_measurement_columns(self):
                     object_name, feature_name = c[:2]
                     k = (object_name, feature_name)
-                    if (not result.has_key(k)) or target_module is not None:
+                    if (k not in result) or target_module is not None:
                         result[k] = []
                     result[k].append((module, None))
             for setting in module.visible_settings():
@@ -3358,7 +3357,7 @@ class Pipeline(object):
                     name = setting.value
                     if name == cps.DO_NOT_USE:
                         continue
-                    if not result.has_key(name) or target_module is not None:
+                    if name not in result or target_module is not None:
                         result[name] = []
                     result[name].append((module, setting))
         return result
@@ -3391,8 +3390,8 @@ class Pipeline(object):
                 if isinstance(setting, cps.NameSubscriber):
                     group = setting.get_group()
                     name = setting.value
-                    if (providers.has_key(group) and
-                            providers[group].has_key(name)):
+                    if (group in providers and
+                            name in providers[group]):
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
                                 if group == cps.OBJECT_GROUP:
@@ -3410,7 +3409,7 @@ class Pipeline(object):
                     object_name = setting.get_measurement_object()
                     feature_name = setting.value
                     key = (object_name, feature_name)
-                    if providers[cps.MEASUREMENTS_GROUP].has_key(key):
+                    if key in providers[cps.MEASUREMENTS_GROUP]:
                         for pmodule, psetting in providers[cps.MEASUREMENTS_GROUP][key]:
                             if pmodule.module_num < module.module_num:
                                 dependency = MeasurementDependency(
@@ -3484,7 +3483,7 @@ def find_image_plane_details(exemplar, ipds):
     '''
     pos = bisect.bisect_left(ipds, exemplar)
     if (pos == len(ipds) or
-            cmp(ipds[pos], exemplar)):
+            cellprofiler.utilities.legacy.cmp(ipds[pos], exemplar)):
         return None
     return ipds[pos]
 
@@ -3929,14 +3928,14 @@ def encapsulate_strings_in_arrays(handles):
         # cells - descend recursively
         flat = handles.flat
         for i in range(0, len(flat)):
-            if isinstance(flat[i], str) or isinstance(flat[i], unicode):
+            if isinstance(flat[i], six.string_types):
                 flat[i] = encapsulate_string(flat[i])
             elif isinstance(flat[i], numpy.ndarray):
                 encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
         for field in handles.dtype.fields.keys():
-            if isinstance(handles[field], str) or isinstance(handles[field], unicode):
+            if isinstance(handles[field], six.string_types):
                 handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field], numpy.ndarray):
                 encapsulate_strings_in_arrays(handles[field])

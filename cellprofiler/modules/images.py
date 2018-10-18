@@ -3,6 +3,8 @@
 import os
 import urllib
 
+import six
+
 import _help
 import cellprofiler.gui.help.content
 import cellprofiler.icons
@@ -330,7 +332,7 @@ pass the current filter.
                 if url.startswith("s3:"):
                     url = url.replace(" ", "+")
 
-                if isinstance(url, unicode):
+                if isinstance(url, six.text_type):
                     ourl = env.new_string(url)
                 else:
                     ourl = env.new_string_utf(url)
@@ -390,7 +392,7 @@ class DirectoryPredicate(cellprofiler.setting.Filter.FilterPredicate):
                                                              'directory', "Directory", self.fn_filter,
                                                              predicates, doc="Apply the rule to directories")
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, node_type__modpath__module, *args):
         """The DirectoryPredicate filter function
 
         The arg slot expects a tuple of node_type and modpath.
@@ -399,6 +401,7 @@ class DirectoryPredicate(cellprofiler.setting.Filter.FilterPredicate):
         modpath into a file path and applies it to the rest of
         the args.
         """
+        (node_type, modpath, module) = node_type__modpath__module
         if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             path = os.path.join(*modpath[:-2])
         else:
@@ -426,7 +429,7 @@ class FilePredicate(cellprofiler.setting.Filter.FilterPredicate):
                                                              'file', "File", self.fn_filter, predicates,
                                                              doc="Apply the rule to files")
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, node_type__modpath__module, *args):
         """The FilePredicate filter function
 
         The arg slot expects a tuple of node_type and modpath.
@@ -435,6 +438,7 @@ class FilePredicate(cellprofiler.setting.Filter.FilterPredicate):
         modpath into a file path and applies it to the rest of
         the args
         """
+        (node_type, modpath, module) = node_type__modpath__module
         if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
@@ -497,12 +501,13 @@ class ExtensionPredicate(cellprofiler.setting.Filter.FilterPredicate):
                                                              'extension', "Extension", self.fn_filter, predicates,
                                                              doc="The rule applies to the file extension")
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, node_type__modpath__module, *args):
         """The ExtensionPredicate filter function
 
         If the element is a file, try the different predicates on
         all possible extension parsings.
         """
+        (node_type, modpath, module) = node_type__modpath__module
         if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
@@ -578,7 +583,8 @@ class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
             doc="Filter based on image characteristics"
         )
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, node_type__modpath__module, *args):
+        (node_type, modpath, module) = node_type__modpath__module
         if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         ipd = module.get_image_plane_details(modpath)

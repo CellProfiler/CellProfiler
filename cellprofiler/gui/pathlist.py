@@ -12,6 +12,7 @@ import urllib2
 import uuid
 import wx
 import wx.lib.scrolledpanel
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 

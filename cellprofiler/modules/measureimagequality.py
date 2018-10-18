@@ -10,8 +10,7 @@ import centrosome.threshold
 import centrosome.radial_power_spectrum
 import centrosome.threshold
 import itertools
-import identify
-import loadimages
+from cellprofiler.modules import identify, loadimages
 import cellprofiler.preferences
 import cellprofiler.module
 import cellprofiler.measurement

@@ -17,6 +17,7 @@ the analysis worker runs three threads:
                    the read call throws an exception and the monitor thread
                    stops the main thread's run loop.
 """
+from __future__ import print_function
 import logging
 import os
 import sys
@@ -119,12 +120,11 @@ if __name__ == "__main__":
 
 import time
 import threading
-import thread
 import random
 import zmq
-import cStringIO as StringIO
 import traceback
 from weakref import WeakSet
+import six.moves
 
 import cellprofiler.workspace as cpw
 import cellprofiler.measurement as cpmeas
@@ -329,7 +329,7 @@ class AnalysisWorker(object):
                 logger.debug("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
-                current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob),
+                current_pipeline.loadtxt(six.moves.StringIO(pipeline_blob),
                                          raise_on_error=True)
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(
@@ -659,12 +659,12 @@ class AnalysisWorker(object):
                     debug_reply = [None]
 
                     def pc(port):
-                        print "GOT PORT ", port
+                        print("GOT PORT ", port)
                         debug_reply[0] = self.send(
                                 DebugWaiting(self.current_analysis_id, port),
                                 report_socket)
 
-                    print  "HASH", reply.verification_hash
+                    print("HASH", reply.verification_hash)
 
                     # We get a new reply at the end, which might be "DEBUG" again.
                     reply = self.send(DebugComplete(self.current_analysis_id), report_socket)
@@ -735,7 +735,7 @@ def exit_on_stdin_close():
     except:
         pass
     finally:
-        print "Cancelling worker"
+        print("Cancelling worker")
         notify_pub_socket.send(NOTIFY_STOP)
         notify_pub_socket.close()
         # hard exit after 10 seconds unless app exits

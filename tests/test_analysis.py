@@ -89,7 +89,7 @@ class TestAnalysis(unittest.TestCase):
                         try:
                             response = fn_and_args[0](*fn_and_args[1:])
                             self.response_queue.put((None, response))
-                        except Exception, e:
+                        except Exception as e:
                             traceback.print_exc()
                             self.response_queue.put((e, None))
             except:

@@ -8,7 +8,7 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
 import cellprofiler.object
-import _help
+from cellprofiler.modules import _help
 
 __doc__ = """\
 RelateObjects

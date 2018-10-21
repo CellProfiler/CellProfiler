@@ -113,7 +113,7 @@ ellipse with the same second-moments as each object.
    largest possible diameters, rotating the calipers along all possible
    angles.
 -  *BoundingBoxMinX, BoundingBoxMinY, BoundingBoxMaxX, BoundingBoxMaxY:* *(2D only)* The
-   bounding box coordinates for an object. X corresponds to rows and Y corresponds to columns.
+   bounding box coordinates for an object. X corresponds to position up-and-down and Y corresponds to position left-and-right.
 -  *Zernike shape features:* *(2D only)* These metrics of shape describe a binary object
    (or more precisely, a patch with background and an object in the
    center) in a basis of Zernike polynomials, using the coefficients as
@@ -381,10 +381,10 @@ module.""".format(**{
 
             for label, index in objects.get_labels():
                 props = skimage.measure.regionprops(label)
-                bounding_box_min_x += [int(prop.bbox[0]) for prop in props]
-                bounding_box_min_y += [int(prop.bbox[1]) for prop in props]
-                bounding_box_max_x += [int(prop.bbox[2]) for prop in props]
-                bounding_box_max_y += [int(prop.bbox[3]) for prop in props]
+                bounding_box_min_x += [int(prop.bbox[1]) for prop in props]
+                bounding_box_min_y += [int(prop.bbox[0]) for prop in props]
+                bounding_box_max_x += [int(prop.bbox[3]) for prop in props]
+                bounding_box_max_y += [int(prop.bbox[2]) for prop in props]
 
             mcenter_x = numpy.zeros(nobjects)
             mcenter_y = numpy.zeros(nobjects)

@@ -84,28 +84,28 @@ M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
 M_IMAGES_AND_OBJECTS = "Both"
 
-'''Feature name format for the correlation measurement'''
+"""Feature name format for the correlation measurement"""
 F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
 
-'''Feature name format for the slope measurement'''
+"""Feature name format for the slope measurement"""
 F_SLOPE_FORMAT = "Correlation_Slope_%s_%s"
 
-'''Feature name format for the overlap coefficient measurement'''
+"""Feature name format for the overlap coefficient measurement"""
 F_OVERLAP_FORMAT = "Correlation_Overlap_%s_%s"
 
-'''Feature name format for the Manders Coefficient measurement'''
+"""Feature name format for the Manders Coefficient measurement"""
 F_K_FORMAT = "Correlation_K_%s_%s"
 
-'''Feature name format for the Manders Coefficient measurement'''
+"""Feature name format for the Manders Coefficient measurement"""
 F_KS_FORMAT = "Correlation_KS_%s_%s"
 
-'''Feature name format for the Manders Coefficient measurement'''
+"""Feature name format for the Manders Coefficient measurement"""
 F_MANDERS_FORMAT = "Correlation_Manders_%s_%s"
 
-'''Feature name format for the RWC Coefficient measurement'''
+"""Feature name format for the RWC Coefficient measurement"""
 F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 
-'''Feature name format for the Costes Coefficient measurement'''
+"""Feature name format for the Costes Coefficient measurement"""
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
@@ -115,7 +115,7 @@ class MeasureColocalization(cpm.Module):
     variable_revision_number = 4
 
     def create_settings(self):
-        '''Create the initial settings for the module'''
+        """Create the initial settings for the module"""
         self.image_groups = []
         self.add_image(can_delete=False)
         self.spacer_1 = cps.Divider()
@@ -139,7 +139,7 @@ class MeasureColocalization(cpm.Module):
                 M_OBJECTS,
                 M_IMAGES_AND_OBJECTS
             ],
-            doc='''\
+            doc="""\
 You can measure the correlation in several ways:
 
 -  *%(M_OBJECTS)s:* Measure correlation only in those pixels previously
@@ -150,7 +150,7 @@ You can measure the correlation in several ways:
 -  *%(M_IMAGES_AND_OBJECTS)s:* Calculate both measurements above.
 
 All methods measure correlation on a pixel by pixel basis.
-''' % globals()
+""" % globals()
         )
 
         self.object_groups = []
@@ -225,11 +225,11 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         )
 
     def add_image(self, can_delete=True):
-        '''Add an image to the image_groups collection
+        """Add an image to the image_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
@@ -251,7 +251,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         self.image_groups.append(group)
 
     def add_object(self, can_delete=True):
-        '''Add an object to the object_groups collection'''
+        """Add an object to the object_groups collection"""
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
@@ -272,19 +272,18 @@ Select the objects to be measured."""
             group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))
         self.object_groups.append(group)
 
-
     def settings(self):
-        '''Return the settings to be saved in the pipeline'''
+        """Return the settings to be saved in the pipeline"""
         result = [self.image_count, self.object_count]
         result += [image_group.image_name for image_group in self.image_groups]
         result += [self.thr]
         result += [self.images_or_objects]
         result += [object_group.object_name for object_group in self.object_groups]
-        result += [self.do_all, self.do_corr_and_slope, self.do_manders,self.do_rwc, self.do_overlap, self.do_costes]
+        result += [self.do_all, self.do_corr_and_slope, self.do_manders, self.do_rwc, self.do_overlap, self.do_costes]
         return result
 
     def prepare_settings(self, setting_values):
-        '''Make sure there are the right number of image and object slots for the incoming settings'''
+        """Make sure there are the right number of image and object slots for the incoming settings"""
         image_count = int(setting_values[0])
         object_count = int(setting_values[1])
         if image_count < 2:
@@ -310,11 +309,11 @@ Select the objects to be measured."""
             result += [self.add_object_button]
         result += [self.do_all]
         if not self.do_all:
-            result += [self.do_corr_and_slope, self.do_manders,self.do_rwc, self.do_overlap, self.do_costes]
+            result += [self.do_corr_and_slope, self.do_manders, self.do_rwc, self.do_overlap, self.do_costes]
         return result
 
     def help_settings(self):
-        '''Return the settings to be displayed in the help menu'''
+        """Return the settings to be displayed in the help menu"""
         help_settings = [self.images_or_objects,
                          self.thr,
                          self.image_groups[0].image_name,
@@ -323,25 +322,25 @@ Select the objects to be measured."""
         return help_settings
 
     def get_image_pairs(self):
-        '''Yield all permutations of pairs of images to correlate
+        """Yield all permutations of pairs of images to correlate
 
         Yields the pairs of images in a canonical order.
-        '''
+        """
         for i in range(self.image_count.value - 1):
             for j in range(i + 1, self.image_count.value):
                 yield (self.image_groups[i].image_name.value,
                        self.image_groups[j].image_name.value)
 
     def wants_images(self):
-        '''True if the user wants to measure correlation on whole images'''
+        """True if the user wants to measure correlation on whole images"""
         return self.images_or_objects in (M_IMAGES, M_IMAGES_AND_OBJECTS)
 
     def wants_objects(self):
-        '''True if the user wants to measure per-object correlations'''
+        """True if the user wants to measure per-object correlations"""
         return self.images_or_objects in (M_OBJECTS, M_IMAGES_AND_OBJECTS)
 
     def run(self, workspace):
-        '''Calculate measurements on an image set'''
+        """Calculate measurements on an image set"""
         col_labels = ["First image", "Second image", "Objects", "Measurement", "Value"]
         statistics = []
         for first_image_name, second_image_name in self.get_image_pairs():
@@ -366,7 +365,7 @@ Select the objects to be measured."""
 
     def run_image_pair_images(self, workspace, first_image_name,
                               second_image_name):
-        '''Calculate the correlation between the pixels of two images'''
+        """Calculate the correlation between the pixels of two images"""
         first_image = workspace.image_set.get_image(first_image_name,
                                                     must_be_grayscale=True)
         second_image = workspace.image_set.get_image(second_image_name,
@@ -394,7 +393,7 @@ Select the objects to be measured."""
             fi = first_pixel_data[mask]
             si = second_pixel_data[mask]
 
-            if self.do_corr_and_slope == True:
+            if self.do_corr_and_slope:
                 #
                 # Perform the correlation, which returns:
                 # [ [ii, ij],
@@ -420,17 +419,17 @@ Select the objects to be measured."""
                 tot_fi_thr = fi[(fi > thr_fi)].sum()
                 tot_si_thr = si[(si > thr_si)].sum()
 
-            if self.do_manders == True:
+            if self.do_manders:
                 # Manders Coefficient
                 M1 = 0
                 M2 = 0
                 M1 = fi_thresh.sum() / tot_fi_thr
                 M2 = si_thresh.sum() / tot_si_thr
 
-                result += [[first_image_name, second_image_name, "-", "Manders Coefficient","%.3f"%M1],
-                           [second_image_name, first_image_name, "-", "Manders Coefficient","%.3f"%M2]]
+                result += [[first_image_name, second_image_name, "-", "Manders Coefficient", "%.3f" % M1],
+                           [second_image_name, first_image_name, "-", "Manders Coefficient", "%.3f" % M2]]
 
-            if self.do_rwc == True:
+            if self.do_rwc:
                 # RWC Coefficient
                 RWC1 = 0
                 RWC2 = 0
@@ -454,7 +453,7 @@ Select the objects to be measured."""
                 result += [[first_image_name, second_image_name, "-", "RWC Coefficient", "%.3f" % RWC1],
                            [second_image_name, first_image_name, "-", "RWC Coefficient", "%.3f" % RWC2]]
 
-            if self.do_overlap == True:
+            if self.do_overlap:
                 # Overlap Coefficient
                 overlap = 0
                 overlap = (fi_thresh * si_thresh).sum() / np.sqrt((fi_thresh ** 2).sum() * (si_thresh ** 2).sum())
@@ -462,7 +461,7 @@ Select the objects to be measured."""
                 K2 = (fi_thresh * si_thresh).sum() / (si_thresh ** 2).sum()
                 result += [[first_image_name, second_image_name, "-", "Overlap Coefficient", "%.3f" % overlap]]
 
-            if self.do_costes == True:
+            if self.do_costes:
                 # Orthogonal Regression for Costes' automated threshold
                 nonZero = (fi > 0) | (si > 0)
 
@@ -505,9 +504,8 @@ Select the objects to be measured."""
                 C1 = fi_thresh_c.sum() / tot_fi_thr_c
                 C2 = si_thresh_c.sum() / tot_si_thr_c
 
-                result += [[first_image_name, second_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C1],
-                           [second_image_name, first_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C2]]
-
+                result += [[first_image_name, second_image_name, "-", "Manders Coefficient (Costes)", "%.3f" % C1],
+                           [second_image_name, first_image_name, "-", "Manders Coefficient (Costes)", "%.3f" % C2]]
 
         else:
             corr = np.NaN
@@ -525,14 +523,14 @@ Select the objects to be measured."""
         #
         # Add the measurements
         #
-        if self.do_corr_and_slope == True:
+        if self.do_corr_and_slope:
             corr_measurement = F_CORRELATION_FORMAT % (first_image_name,
                                                        second_image_name)
             slope_measurement = F_SLOPE_FORMAT % (first_image_name,
                                                   second_image_name)
             workspace.measurements.add_image_measurement(corr_measurement, corr)
             workspace.measurements.add_image_measurement(slope_measurement, slope)
-        if self.do_overlap == True:
+        if self.do_overlap:
             overlap_measurement = F_OVERLAP_FORMAT % (first_image_name,
                                                       second_image_name)
             k_measurement_1 = F_K_FORMAT % (first_image_name,
@@ -542,21 +540,21 @@ Select the objects to be measured."""
             workspace.measurements.add_image_measurement(overlap_measurement, overlap)
             workspace.measurements.add_image_measurement(k_measurement_1, K1)
             workspace.measurements.add_image_measurement(k_measurement_2, K2)
-        if self.do_manders == True:
+        if self.do_manders:
             manders_measurement_1 = F_MANDERS_FORMAT % (first_image_name,
                                                         second_image_name)
             manders_measurement_2 = F_MANDERS_FORMAT % (second_image_name,
                                                         first_image_name)
             workspace.measurements.add_image_measurement(manders_measurement_1, M1)
             workspace.measurements.add_image_measurement(manders_measurement_2, M2)
-        if self.do_rwc == True:
+        if self.do_rwc:
             rwc_measurement_1 = F_RWC_FORMAT % (first_image_name,
                                                 second_image_name)
             rwc_measurement_2 = F_RWC_FORMAT % (second_image_name,
                                                 first_image_name)
             workspace.measurements.add_image_measurement(rwc_measurement_1, RWC1)
             workspace.measurements.add_image_measurement(rwc_measurement_2, RWC2)
-        if self.do_costes == True:
+        if self.do_costes:
             costes_measurement_1 = F_COSTES_FORMAT % (first_image_name,
                                                       second_image_name)
             costes_measurement_2 = F_COSTES_FORMAT % (second_image_name,
@@ -568,7 +566,7 @@ Select the objects to be measured."""
 
     def run_image_pair_objects(self, workspace, first_image_name,
                                second_image_name, object_name):
-        '''Calculate per-object correlations between intensities in two images'''
+        """Calculate per-object correlations between intensities in two images"""
         first_image = workspace.image_set.get_image(first_image_name,
                                                     must_be_grayscale=True)
         second_image = workspace.image_set.get_image(second_image_name,
@@ -619,7 +617,6 @@ Select the objects to be measured."""
             fi = first_pixel_data[mask]
             si = second_pixel_data[mask]
 
-
         n_objects = objects.count
         # Handle case when both images for the correlation are completely masked out
 
@@ -641,13 +638,12 @@ Select the objects to be measured."""
         else:
             lrange = np.arange(n_objects, dtype=np.int32) + 1
 
-            if self.do_corr_and_slope == True:
+            if self.do_corr_and_slope:
                 #
                 # The correlation is sum((x-mean(x))(y-mean(y)) /
                 #                         ((n-1) * std(x) *std(y)))
                 #
 
-                area = fix(scind.sum(np.ones_like(labels), labels, lrange))
                 mean1 = fix(scind.mean(first_pixels, labels, lrange))
                 mean2 = fix(scind.mean(second_pixels, labels, lrange))
                 #
@@ -664,13 +660,14 @@ Select the objects to be measured."""
                 # Explicitly set the correlation to NaN for masked objects
                 corr[scind.sum(1, labels, lrange) == 0] = np.NaN
                 result += [
-                    [first_image_name, second_image_name, object_name, "Mean Correlation coeff", "%.3f" % np.mean(corr)],
+                    [first_image_name, second_image_name, object_name, "Mean Correlation coeff",
+                     "%.3f" % np.mean(corr)],
                     [first_image_name, second_image_name, object_name, "Median Correlation coeff",
                      "%.3f" % np.median(corr)],
                     [first_image_name, second_image_name, object_name, "Min Correlation coeff", "%.3f" % np.min(corr)],
                     [first_image_name, second_image_name, object_name, "Max Correlation coeff", "%.3f" % np.max(corr)]]
 
-            if any((self.do_manders,self.do_rwc,self.do_overlap)):
+            if any((self.do_manders, self.do_rwc, self.do_overlap)):
                 # Threshold as percentage of maximum intensity of objects in each channel
                 tff = (self.thr.value / 100) * fix(scind.maximum(first_pixels, labels, lrange))
                 tss = (self.thr.value / 100) * fix(scind.maximum(second_pixels, labels, lrange))
@@ -678,29 +675,37 @@ Select the objects to be measured."""
                 combined_thresh = (first_pixels >= tff[labels - 1]) & (second_pixels >= tss[labels - 1])
                 fi_thresh = first_pixels[combined_thresh]
                 si_thresh = second_pixels[combined_thresh]
-                tot_fi_thr = scind.sum(first_pixels[first_pixels >= tff[labels - 1]], labels[first_pixels >= tff[labels - 1]],
-                                       lrange)
+                tot_fi_thr = scind.sum(first_pixels[first_pixels >= tff[labels - 1]],
+                                       labels[first_pixels >= tff[labels - 1]], lrange)
                 tot_si_thr = scind.sum(second_pixels[second_pixels >= tss[labels - 1]],
                                        labels[second_pixels >= tss[labels - 1]], lrange)
 
-            if self.do_manders == True:
+            if self.do_manders:
                 # Manders Coefficient
                 M1 = np.zeros(len(lrange))
                 M2 = np.zeros(len(lrange))
 
                 if np.any(combined_thresh):
-                    M1 = np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
-                    M2 = np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
-                result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff","%.3f"%np.mean(M1)],
-                           [first_image_name, second_image_name, object_name,"Median Manders coeff","%.3f"%np.median(M1)],
-                           [first_image_name, second_image_name, object_name,"Min Manders coeff","%.3f"%np.min(M1)],
-                           [first_image_name, second_image_name, object_name,"Max Manders coeff","%.3f"%np.max(M1)]]
-                result += [[second_image_name, first_image_name, object_name,"Mean Manders coeff","%.3f"%np.mean(M2)],
-                           [second_image_name, first_image_name, object_name,"Median Manders coeff","%.3f"%np.median(M2)],
-                           [second_image_name, first_image_name, object_name,"Min Manders coeff","%.3f"%np.min(M2)],
-                           [second_image_name, first_image_name, object_name,"Max Manders coeff","%.3f"%np.max(M2)]]
+                    M1 = np.array(scind.sum(fi_thresh, labels[combined_thresh], lrange)) / np.array(tot_fi_thr)
+                    M2 = np.array(scind.sum(si_thresh, labels[combined_thresh], lrange)) / np.array(tot_si_thr)
+                result += [[first_image_name, second_image_name, object_name,
+                            "Mean Manders coeff", "%.3f" % np.mean(M1)],
+                           [first_image_name, second_image_name, object_name,
+                            "Median Manders coeff", "%.3f" % np.median(M1)],
+                           [first_image_name, second_image_name, object_name,
+                            "Min Manders coeff", "%.3f" % np.min(M1)],
+                           [first_image_name, second_image_name, object_name,
+                            "Max Manders coeff", "%.3f" % np.max(M1)]]
+                result += [[second_image_name, first_image_name, object_name,
+                            "Mean Manders coeff", "%.3f" % np.mean(M2)],
+                           [second_image_name, first_image_name, object_name,
+                            "Median Manders coeff", "%.3f" % np.median(M2)],
+                           [second_image_name, first_image_name, object_name,
+                            "Min Manders coeff", "%.3f" % np.min(M2)],
+                           [second_image_name, first_image_name, object_name,
+                            "Max Manders coeff", "%.3f" % np.max(M2)]]
 
-            if self.do_rwc == True:
+            if self.do_rwc:
                 # RWC Coefficient
                 RWC1 = np.zeros(len(lrange))
                 RWC2 = np.zeros(len(lrange))
@@ -726,16 +731,24 @@ Select the objects to be measured."""
                     RWC2 = np.array(scind.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
                         tot_si_thr)
 
-                result += [[first_image_name, second_image_name, object_name, "Mean RWC coeff", "%.3f" % np.mean(RWC1)],
-                           [first_image_name, second_image_name, object_name, "Median RWC coeff", "%.3f" % np.median(RWC1)],
-                           [first_image_name, second_image_name, object_name, "Min RWC coeff", "%.3f" % np.min(RWC1)],
-                           [first_image_name, second_image_name, object_name, "Max RWC coeff", "%.3f" % np.max(RWC1)]]
-                result += [[second_image_name, first_image_name, object_name, "Mean RWC coeff", "%.3f" % np.mean(RWC2)],
-                           [second_image_name, first_image_name, object_name, "Median RWC coeff", "%.3f" % np.median(RWC2)],
-                           [second_image_name, first_image_name, object_name, "Min RWC coeff", "%.3f" % np.min(RWC2)],
-                           [second_image_name, first_image_name, object_name, "Max RWC coeff", "%.3f" % np.max(RWC2)]]
+                result += [[first_image_name, second_image_name, object_name, "Mean RWC coeff",
+                            "%.3f" % np.mean(RWC1)],
+                           [first_image_name, second_image_name, object_name, "Median RWC coeff",
+                            "%.3f" % np.median(RWC1)],
+                           [first_image_name, second_image_name, object_name, "Min RWC coeff",
+                            "%.3f" % np.min(RWC1)],
+                           [first_image_name, second_image_name, object_name, "Max RWC coeff",
+                            "%.3f" % np.max(RWC1)]]
+                result += [[second_image_name, first_image_name, object_name, "Mean RWC coeff",
+                            "%.3f" % np.mean(RWC2)],
+                           [second_image_name, first_image_name, object_name, "Median RWC coeff",
+                            "%.3f" % np.median(RWC2)],
+                           [second_image_name, first_image_name, object_name, "Min RWC coeff",
+                            "%.3f" % np.min(RWC2)],
+                           [second_image_name, first_image_name, object_name, "Max RWC coeff",
+                            "%.3f" % np.max(RWC2)]]
 
-            if self.do_overlap == True:
+            if self.do_overlap:
                 # Overlap Coefficient
                 if np.any(combined_thresh):
                     fpsq = scind.sum(first_pixels[combined_thresh] ** 2, labels[combined_thresh], lrange)
@@ -755,12 +768,16 @@ Select the objects to be measured."""
                 else:
                     overlap = K1 = K2 = np.zeros(len(lrange))
                 result += [
-                    [first_image_name, second_image_name, object_name, "Mean Overlap coeff", "%.3f" % np.mean(overlap)],
-                    [first_image_name, second_image_name, object_name, "Median Overlap coeff", "%.3f" % np.median(overlap)],
-                    [first_image_name, second_image_name, object_name, "Min Overlap coeff", "%.3f" % np.min(overlap)],
-                    [first_image_name, second_image_name, object_name, "Max Overlap coeff", "%.3f" % np.max(overlap)]]
+                    [first_image_name, second_image_name, object_name, "Mean Overlap coeff",
+                     "%.3f" % np.mean(overlap)],
+                    [first_image_name, second_image_name, object_name, "Median Overlap coeff",
+                     "%.3f" % np.median(overlap)],
+                    [first_image_name, second_image_name, object_name, "Min Overlap coeff",
+                     "%.3f" % np.min(overlap)],
+                    [first_image_name, second_image_name, object_name, "Max Overlap coeff",
+                     "%.3f" % np.max(overlap)]]
 
-            if self.do_costes == True:
+            if self.do_costes:
                 nonZero = (fi > 0) | (si > 0)
                 xvar = np.var(fi[nonZero], axis=0, ddof=1)
                 yvar = np.var(si[nonZero], axis=0, ddof=1)
@@ -795,12 +812,13 @@ Select the objects to be measured."""
                 fi_thresh_c = first_pixels[combined_thresh_c]
                 si_thresh_c = second_pixels[combined_thresh_c]
                 if np.any(fi_above_thr):
-                    tot_fi_thr_c = scind.sum(first_pixels[first_pixels >= thr_fi_c], labels[first_pixels >= thr_fi_c], lrange)
+                    tot_fi_thr_c = scind.sum(first_pixels[first_pixels >= thr_fi_c],
+                                             labels[first_pixels >= thr_fi_c], lrange)
                 else:
                     tot_fi_thr_c = np.zeros(len(lrange))
                 if np.any(si_above_thr):
-                    tot_si_thr_c = scind.sum(second_pixels[second_pixels >= thr_si_c], labels[second_pixels >= thr_si_c],
-                                             lrange)
+                    tot_si_thr_c = scind.sum(second_pixels[second_pixels >= thr_si_c],
+                                             labels[second_pixels >= thr_si_c], lrange)
                 else:
                     tot_si_thr_c = np.zeros(len(lrange))
 
@@ -808,49 +826,56 @@ Select the objects to be measured."""
                 C1 = np.zeros(len(lrange))
                 C2 = np.zeros(len(lrange))
                 if np.any(combined_thresh_c):
-                    C1 = np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_fi_thr_c)
-                    C2 = np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_si_thr_c)
-                result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff (Costes)","%.3f"%np.mean(C1)],
-                           [first_image_name, second_image_name, object_name,"Median Manders coeff (Costes)","%.3f"%np.median(C1)],
-                           [first_image_name, second_image_name, object_name,"Min Manders coeff (Costes)","%.3f"%np.min(C1)],
-                           [first_image_name, second_image_name, object_name,"Max Manders coeff (Costes)","%.3f"%np.max(C1)]
+                    C1 = np.array(scind.sum(fi_thresh_c, labels[combined_thresh_c], lrange)) / np.array(tot_fi_thr_c)
+                    C2 = np.array(scind.sum(si_thresh_c, labels[combined_thresh_c], lrange)) / np.array(tot_si_thr_c)
+                result += [[first_image_name, second_image_name, object_name, "Mean Manders coeff (Costes)",
+                            "%.3f" % np.mean(C1)],
+                           [first_image_name, second_image_name, object_name, "Median Manders coeff (Costes)",
+                            "%.3f" % np.median(C1)],
+                           [first_image_name, second_image_name, object_name, "Min Manders coeff (Costes)",
+                            "%.3f" % np.min(C1)],
+                           [first_image_name, second_image_name, object_name, "Max Manders coeff (Costes)",
+                            "%.3f" % np.max(C1)]
                            ]
-                result += [[second_image_name, first_image_name, object_name,"Mean Manders coeff (Costes)","%.3f"%np.mean(C2)],
-                           [second_image_name, first_image_name, object_name,"Median Manders coeff (Costes)","%.3f"%np.median(C2)],
-                           [second_image_name, first_image_name, object_name,"Min Manders coeff (Costes)","%.3f"%np.min(C2)],
-                           [second_image_name, first_image_name, object_name,"Max Manders coeff (Costes)","%.3f"%np.max(C2)]
+                result += [[second_image_name, first_image_name, object_name, "Mean Manders coeff (Costes)",
+                            "%.3f" % np.mean(C2)],
+                           [second_image_name, first_image_name, object_name, "Median Manders coeff (Costes)",
+                            "%.3f" % np.median(C2)],
+                           [second_image_name, first_image_name, object_name, "Min Manders coeff (Costes)",
+                            "%.3f" % np.min(C2)],
+                           [second_image_name, first_image_name, object_name, "Max Manders coeff (Costes)",
+                            "%.3f" % np.max(C2)]
                            ]
 
-
-        if self.do_corr_and_slope == True:
+        if self.do_corr_and_slope:
             measurement = ("Correlation_Correlation_%s_%s" %
                            (first_image_name, second_image_name))
             workspace.measurements.add_measurement(object_name, measurement, corr)
-        if self.do_manders == True:
+        if self.do_manders:
             manders_measurement_1 = (F_MANDERS_FORMAT % (first_image_name,
                                                          second_image_name))
             manders_measurement_2 = (F_MANDERS_FORMAT % (second_image_name,
-                                                     first_image_name))
+                                                         first_image_name))
             workspace.measurements.add_measurement(object_name, manders_measurement_1, M1)
             workspace.measurements.add_measurement(object_name, manders_measurement_2, M2)
-        if self.do_rwc == True:
+        if self.do_rwc:
             rwc_measurement_1 = (F_RWC_FORMAT % (first_image_name,
                                                  second_image_name))
             rwc_measurement_2 = (F_RWC_FORMAT % (second_image_name,
-                                             first_image_name))
+                                                 first_image_name))
             workspace.measurements.add_measurement(object_name, rwc_measurement_1, RWC1)
             workspace.measurements.add_measurement(object_name, rwc_measurement_2, RWC2)
-        if self.do_overlap == True:
+        if self.do_overlap:
             overlap_measurement = (F_OVERLAP_FORMAT % (first_image_name,
                                                        second_image_name))
             k_measurement_1 = (F_K_FORMAT % (first_image_name,
-                                         second_image_name))
+                                             second_image_name))
             k_measurement_2 = (F_K_FORMAT % (second_image_name,
-                                         first_image_name))
+                                             first_image_name))
             workspace.measurements.add_measurement(object_name, overlap_measurement, overlap)
             workspace.measurements.add_measurement(object_name, k_measurement_1, K1)
             workspace.measurements.add_measurement(object_name, k_measurement_2, K2)
-        if self.do_costes == True:
+        if self.do_costes:
             costes_measurement_1 = (F_COSTES_FORMAT % (first_image_name,
                                                        second_image_name))
             costes_measurement_2 = (F_COSTES_FORMAT % (second_image_name,
@@ -871,18 +896,18 @@ Select the objects to be measured."""
             return result
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for all measurements made by this module'''
+        """Return column definitions for all measurements made by this module"""
         columns = []
         for first_image, second_image in self.get_image_pairs():
             if self.wants_images():
-                if self.do_corr_and_slope == True:
+                if self.do_corr_and_slope:
                     columns += [(cpmeas.IMAGE,
                                  F_CORRELATION_FORMAT % (first_image, second_image),
                                  cpmeas.COLTYPE_FLOAT),
                                 (cpmeas.IMAGE,
                                  F_SLOPE_FORMAT % (first_image, second_image),
                                  cpmeas.COLTYPE_FLOAT)]
-                if self.do_overlap == True:
+                if self.do_overlap:
                     columns += [(cpmeas.IMAGE,
                                  F_OVERLAP_FORMAT % (first_image, second_image),
                                  cpmeas.COLTYPE_FLOAT),
@@ -892,7 +917,7 @@ Select the objects to be measured."""
                                 (cpmeas.IMAGE,
                                  F_K_FORMAT % (second_image, first_image),
                                  cpmeas.COLTYPE_FLOAT)]
-                if self.do_manders == True:
+                if self.do_manders:
                     columns += [(cpmeas.IMAGE,
                                  F_MANDERS_FORMAT % (first_image, second_image),
                                  cpmeas.COLTYPE_FLOAT),
@@ -900,14 +925,14 @@ Select the objects to be measured."""
                                  F_MANDERS_FORMAT % (second_image, first_image),
                                  cpmeas.COLTYPE_FLOAT)]
 
-                if self.do_rwc == True:
+                if self.do_rwc:
                     columns += [(cpmeas.IMAGE,
                                  F_RWC_FORMAT % (first_image, second_image),
                                  cpmeas.COLTYPE_FLOAT),
                                 (cpmeas.IMAGE,
                                  F_RWC_FORMAT % (second_image, first_image),
                                  cpmeas.COLTYPE_FLOAT)]
-                if self.do_costes == True:
+                if self.do_costes:
                     columns += [(cpmeas.IMAGE,
                                 F_COSTES_FORMAT % (first_image, second_image),
                                 cpmeas.COLTYPE_FLOAT),
@@ -918,12 +943,12 @@ Select the objects to be measured."""
             if self.wants_objects():
                 for i in range(self.object_count.value):
                     object_name = self.object_groups[i].object_name.value
-                    if self.do_corr_and_slope == True:
+                    if self.do_corr_and_slope:
                         columns += [(object_name,
                                      F_CORRELATION_FORMAT %
                                      (first_image, second_image),
                                      cpmeas.COLTYPE_FLOAT)]
-                    if self.do_overlap == True:
+                    if self.do_overlap:
                         columns += [(object_name,
                                      F_OVERLAP_FORMAT %
                                      (first_image, second_image),
@@ -936,7 +961,7 @@ Select the objects to be measured."""
                                      F_K_FORMAT %
                                      (second_image, first_image),
                                      cpmeas.COLTYPE_FLOAT)]
-                    if self.do_manders == True:
+                    if self.do_manders:
                         columns += [(object_name,
                                      F_MANDERS_FORMAT %
                                      (first_image, second_image),
@@ -945,7 +970,7 @@ Select the objects to be measured."""
                                      F_MANDERS_FORMAT %
                                      (second_image, first_image),
                                      cpmeas.COLTYPE_FLOAT)]
-                    if self.do_rwc == True:
+                    if self.do_rwc:
                         columns += [(object_name,
                                      F_RWC_FORMAT %
                                      (first_image, second_image),
@@ -954,7 +979,7 @@ Select the objects to be measured."""
                                      F_RWC_FORMAT %
                                      (second_image, first_image),
                                      cpmeas.COLTYPE_FLOAT)]
-                    if self.do_costes == True:
+                    if self.do_costes:
                         columns += [(object_name,
                                      F_COSTES_FORMAT %
                                      (first_image, second_image),
@@ -966,10 +991,10 @@ Select the objects to be measured."""
         return columns
 
     def get_categories(self, pipeline, object_name):
-        '''Return the categories supported by this module for the given object
+        """Return the categories supported by this module for the given object
 
         object_name - name of the measured object or cpmeas.IMAGE
-        '''
+        """
         if ((object_name == cpmeas.IMAGE and self.wants_images()) or
                 ((object_name != cpmeas.IMAGE) and self.wants_objects() and
                      (object_name in [x.object_name.value for x in self.object_groups]))):
@@ -979,27 +1004,25 @@ Select the objects to be measured."""
     def get_measurements(self, pipeline, object_name, category):
         if self.get_categories(pipeline, object_name) == [category]:
             results = []
-            if self.do_corr_and_slope == True:
+            if self.do_corr_and_slope:
                 if object_name == cpmeas.IMAGE:
                     results += ["Correlation", "Slope"]
                 else:
                     results += ["Correlation"]
-            if self.do_overlap == True:
+            if self.do_overlap:
                 results += ["Overlap", "K"]
-            if self.do_manders == True:
+            if self.do_manders:
                 results += ["Manders"]
-            if self.do_rwc == True:
+            if self.do_rwc:
                 results += ["RWC"]
-            if self.do_costes == True:
+            if self.do_costes:
                 results += ["Costes"]
-
             return results
-
         return []
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
-        '''Return the joined pairs of images measured'''
+        """Return the joined pairs of images measured"""
         result = []
         if measurement in self.get_measurements(pipeline, object_name, category):
             for i1, i2 in self.get_image_pairs():
@@ -1011,7 +1034,7 @@ Select the objects to be measured."""
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust the setting values for pipelines saved under old revisions'''
+        """Adjust the setting values for pipelines saved under old revisions"""
         if from_matlab:
             raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
 

@@ -650,13 +650,13 @@ Select the objects to be measured."""
                 # Calculate the standard deviation times the population.
                 #
                 std1 = numpy.sqrt(fix(scipy.ndimage.sum((first_pixels - mean1[labels - 1]) ** 2,
-                                             labels, lrange)))
+                                                        labels, lrange)))
                 std2 = numpy.sqrt(fix(scipy.ndimage.sum((second_pixels - mean2[labels - 1]) ** 2,
-                                             labels, lrange)))
+                                                        labels, lrange)))
                 x = first_pixels - mean1[labels - 1]  # x - mean(x)
                 y = second_pixels - mean2[labels - 1]  # y - mean(y)
                 corr = fix(scipy.ndimage.sum(x * y / (std1[labels - 1] * std2[labels - 1]),
-                                     labels, lrange))
+                                             labels, lrange))
                 # Explicitly set the correlation to NaN for masked objects
                 corr[scipy.ndimage.sum(1, labels, lrange) == 0] = numpy.NaN
                 result += [
@@ -664,8 +664,10 @@ Select the objects to be measured."""
                      "%.3f" % numpy.mean(corr)],
                     [first_image_name, second_image_name, object_name, "Median Correlation coeff",
                      "%.3f" % numpy.median(corr)],
-                    [first_image_name, second_image_name, object_name, "Min Correlation coeff", "%.3f" % numpy.min(corr)],
-                    [first_image_name, second_image_name, object_name, "Max Correlation coeff", "%.3f" % numpy.max(corr)]]
+                    [first_image_name, second_image_name, object_name, "Min Correlation coeff",
+                     "%.3f" % numpy.min(corr)],
+                    [first_image_name, second_image_name, object_name, "Max Correlation coeff",
+                     "%.3f" % numpy.max(corr)]]
 
             if any((self.do_manders, self.do_rwc, self.do_overlap)):
                 # Threshold as percentage of maximum intensity of objects in each channel
@@ -676,9 +678,9 @@ Select the objects to be measured."""
                 fi_thresh = first_pixels[combined_thresh]
                 si_thresh = second_pixels[combined_thresh]
                 tot_fi_thr = scipy.ndimage.sum(first_pixels[first_pixels >= tff[labels - 1]],
-                                       labels[first_pixels >= tff[labels - 1]], lrange)
+                                               labels[first_pixels >= tff[labels - 1]], lrange)
                 tot_si_thr = scipy.ndimage.sum(second_pixels[second_pixels >= tss[labels - 1]],
-                                       labels[second_pixels >= tss[labels - 1]], lrange)
+                                               labels[second_pixels >= tss[labels - 1]], lrange)
 
             if self.do_manders:
                 # Manders Coefficient
@@ -686,8 +688,10 @@ Select the objects to be measured."""
                 M2 = numpy.zeros(len(lrange))
 
                 if numpy.any(combined_thresh):
-                    M1 = numpy.array(scipy.ndimage.sum(fi_thresh, labels[combined_thresh], lrange)) / numpy.array(tot_fi_thr)
-                    M2 = numpy.array(scipy.ndimage.sum(si_thresh, labels[combined_thresh], lrange)) / numpy.array(tot_si_thr)
+                    M1 = numpy.array(scipy.ndimage.sum(fi_thresh, labels[combined_thresh],
+                                                       lrange)) / numpy.array(tot_fi_thr)
+                    M2 = numpy.array(scipy.ndimage.sum(si_thresh, labels[combined_thresh],
+                                                       lrange)) / numpy.array(tot_si_thr)
                 result += [[first_image_name, second_image_name, object_name,
                             "Mean Manders coeff", "%.3f" % numpy.mean(M1)],
                            [first_image_name, second_image_name, object_name,
@@ -726,10 +730,10 @@ Select the objects to be measured."""
                 weight_thresh = weight[combined_thresh]
 
                 if numpy.any(combined_thresh):
-                    RWC1 = numpy.array(scipy.ndimage.sum(fi_thresh * weight_thresh, labels[combined_thresh], lrange)) / numpy.array(
-                        tot_fi_thr)
-                    RWC2 = numpy.array(scipy.ndimage.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)) / numpy.array(
-                        tot_si_thr)
+                    RWC1 = numpy.array(scipy.ndimage.sum(fi_thresh * weight_thresh, labels[combined_thresh],
+                                                         lrange)) / numpy.array(tot_fi_thr)
+                    RWC2 = numpy.array(scipy.ndimage.sum(si_thresh * weight_thresh, labels[combined_thresh],
+                                                         lrange)) / numpy.array(tot_si_thr)
 
                 result += [[first_image_name, second_image_name, object_name, "Mean RWC coeff",
                             "%.3f" % numpy.mean(RWC1)],
@@ -757,14 +761,12 @@ Select the objects to be measured."""
 
                     overlap = fix(
                         scipy.ndimage.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
-                                  labels[combined_thresh],
-                                  lrange) / pdt)
+                                          labels[combined_thresh], lrange) / pdt)
                     K1 = fix((scipy.ndimage.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
-                                        labels[combined_thresh], lrange)) / (numpy.array(fpsq)))
+                                                labels[combined_thresh], lrange)) / (numpy.array(fpsq)))
                     K2 = fix(
                         scipy.ndimage.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
-                                  labels[combined_thresh],
-                                  lrange) / numpy.array(spsq))
+                                          labels[combined_thresh], lrange) / numpy.array(spsq))
                 else:
                     overlap = K1 = K2 = numpy.zeros(len(lrange))
                 result += [
@@ -813,12 +815,12 @@ Select the objects to be measured."""
                 si_thresh_c = second_pixels[combined_thresh_c]
                 if numpy.any(fi_above_thr):
                     tot_fi_thr_c = scipy.ndimage.sum(first_pixels[first_pixels >= thr_fi_c],
-                                             labels[first_pixels >= thr_fi_c], lrange)
+                                                     labels[first_pixels >= thr_fi_c], lrange)
                 else:
                     tot_fi_thr_c = numpy.zeros(len(lrange))
                 if numpy.any(si_above_thr):
                     tot_si_thr_c = scipy.ndimage.sum(second_pixels[second_pixels >= thr_si_c],
-                                             labels[second_pixels >= thr_si_c], lrange)
+                                                     labels[second_pixels >= thr_si_c], lrange)
                 else:
                     tot_si_thr_c = numpy.zeros(len(lrange))
 
@@ -826,8 +828,10 @@ Select the objects to be measured."""
                 C1 = numpy.zeros(len(lrange))
                 C2 = numpy.zeros(len(lrange))
                 if numpy.any(combined_thresh_c):
-                    C1 = numpy.array(scipy.ndimage.sum(fi_thresh_c, labels[combined_thresh_c], lrange)) / numpy.array(tot_fi_thr_c)
-                    C2 = numpy.array(scipy.ndimage.sum(si_thresh_c, labels[combined_thresh_c], lrange)) / numpy.array(tot_si_thr_c)
+                    C1 = numpy.array(scipy.ndimage.sum(fi_thresh_c, labels[combined_thresh_c],
+                                                       lrange)) / numpy.array(tot_fi_thr_c)
+                    C2 = numpy.array(scipy.ndimage.sum(si_thresh_c, labels[combined_thresh_c],
+                                                       lrange)) / numpy.array(tot_si_thr_c)
                 result += [[first_image_name, second_image_name, object_name, "Mean Manders coeff (Costes)",
                             "%.3f" % numpy.mean(C1)],
                            [first_image_name, second_image_name, object_name, "Median Manders coeff (Costes)",

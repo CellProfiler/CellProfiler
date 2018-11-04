@@ -116,53 +116,57 @@ def main(args=None):
     if options.data_file is not None:
         cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
 
-    if not options.show_gui:
-        cellprofiler.utilities.cpjvm.cp_start_vm()
+    try:
+        if not options.show_gui:
+            cellprofiler.utilities.cpjvm.cp_start_vm()
 
-    if options.image_set_file is not None:
-        cellprofiler.preferences.set_image_set_file(options.image_set_file)
+        if options.image_set_file is not None:
+            cellprofiler.preferences.set_image_set_file(options.image_set_file)
 
-    #
-    # Handle command-line tasks that that need to load the modules to run
-    #
-    if options.print_measurements:
-        print_measurements(options)
+        #
+        # Handle command-line tasks that that need to load the modules to run
+        #
+        if options.print_measurements:
+            print_measurements(options)
 
-    if options.write_schema_and_exit:
-        write_schema(options.pipeline_filename)
+        if options.write_schema_and_exit:
+            write_schema(options.pipeline_filename)
 
-    if options.show_gui:
-        matplotlib.use('WXAgg')
+        if options.show_gui:
+            matplotlib.use('WXAgg')
 
-        import cellprofiler.gui.app
+            import cellprofiler.gui.app
 
-        if options.pipeline_filename:
-            if cellprofiler.workspace.is_workspace_file(options.pipeline_filename):
-                workspace_path = os.path.expanduser(options.pipeline_filename)
+            if options.pipeline_filename:
+                if cellprofiler.workspace.is_workspace_file(options.pipeline_filename):
+                    workspace_path = os.path.expanduser(options.pipeline_filename)
+
+                    pipeline_path = None
+                else:
+                    pipeline_path = os.path.expanduser(options.pipeline_filename)
+
+                    workspace_path = None
+            else:
+                workspace_path = None
 
                 pipeline_path = None
-            else:
-                pipeline_path = os.path.expanduser(options.pipeline_filename)
 
-                workspace_path = None
-        else:
-            workspace_path = None
+            app = cellprofiler.gui.app.App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
 
-            pipeline_path = None
+            if options.run_pipeline:
+                app.frame.pipeline_controller.do_analyze_images()
 
-        app = cellprofiler.gui.app.App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
+            app.MainLoop()
 
-        if options.run_pipeline:
-            app.frame.pipeline_controller.do_analyze_images()
+            return
+        elif options.run_pipeline:
+            run_pipeline_headless(options, args)
 
-        app.MainLoop()
-
-        return
-    elif options.run_pipeline:
-        run_pipeline_headless(options, args)
-
-    if not options.show_gui:
-        stop_cellprofiler()
+    finally:
+        # If anything goes wrong during the startup sequence headlessly, the JVM needs
+        # to be explicitly closed
+        if not options.show_gui:
+            stop_cellprofiler()
 
 
 def __version__(exit_code):

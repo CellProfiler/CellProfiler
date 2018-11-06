@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"boto3" = "==*"
+"boto3" = "*"
 centrosome = "==1.0.9"
 docutils = "==0.14"
 "h5py" = "==2.8.0"

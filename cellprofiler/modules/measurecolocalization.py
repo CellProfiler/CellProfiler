@@ -112,7 +112,7 @@ F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 class MeasureColocalization(cellprofiler.module.Module):
     module_name = 'MeasureColocalization'
     category = 'Measurement'
-    variable_revision_number = 4
+    variable_revision_number = 3
 
     def create_settings(self):
         """Create the initial settings for the module"""
@@ -1051,11 +1051,6 @@ Select the objects to be measured."""
             setting_values = \
                 setting_values[:idx_thr] + ["15.0"] + setting_values[idx_thr:]
             variable_revision_number = 3
-
-        if variable_revision_number == 3:
-            setting_values = \
-                setting_values + [True, True, True, True, True, True]
-            variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab
 

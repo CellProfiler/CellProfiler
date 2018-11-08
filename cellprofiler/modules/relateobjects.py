@@ -410,6 +410,8 @@ parents or children of the parent object."""
 
         objects.add_objects(y, y_name)
 
+        self.add_measurements(workspace)
+
         if self.show_window:
             workspace.display_data.parent_labels = parents.segmented
 
@@ -743,7 +745,8 @@ parents or children of the parent object."""
 
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
-        columns = [
+        columns = super(RelateObjects, self).get_measurement_columns(pipeline)
+        columns += [
             (
                 self.x_child_name.value,
                 cellprofiler.measurement.FF_PARENT % self.x_name.value,

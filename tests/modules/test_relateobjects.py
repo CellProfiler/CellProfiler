@@ -76,7 +76,13 @@ class TestRelateObjects(unittest.TestCase):
                      for feature in measurements.get_feature_names(object_name)
                      if feature not in (MEASUREMENT, IGNORED_MEASUREMENT)]
                     for object_name in object_names]
-        columns = module.get_measurement_columns(pipeline)
+        # The default ObjectProcessing measurements also add an 
+        # Image_Count<foo> measurement to the set. These are filtered out
+        # for the features above when defining object_names above,
+        # but we now also need to filter it out here.
+        columns = [column 
+                   for column in module.get_measurement_columns(pipeline)
+                   if column[0] != cellprofiler.measurement.IMAGE]
         self.assertEqual(sum([len(f) for f in features]), len(columns))
         for column in columns:
             index = object_names.index(column[0])

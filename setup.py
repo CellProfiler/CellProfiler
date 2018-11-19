@@ -55,7 +55,7 @@ setuptools.setup(
             "twine"
         ],
         "test": [
-            "pytest>=3.3.2"
+            "pytest>=3.3.2,<4"
         ]
     },
     install_requires=[

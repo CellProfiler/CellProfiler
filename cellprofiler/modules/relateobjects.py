@@ -4,6 +4,7 @@ import re
 import numpy
 import scipy.ndimage
 import skimage.segmentation
+import skimage.measure
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
@@ -404,7 +405,9 @@ parents or children of the parent object."""
 
         y = cellprofiler.object.Objects()
 
-        y.segmented = parent_labeled_children
+        y_data = skimage.measure.label(parent_labeled_children)
+
+        y.segmented = y_data
 
         y.parent_image = children.parent_image
 

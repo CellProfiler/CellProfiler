@@ -833,7 +833,7 @@ fewer iterations, but less accuracy.
         elif self.smoothing_method == SM_MEDIAN_FILTER:
             filter_sigma = max(1, int(sigma+.5))
             strel = strel_disk(filter_sigma)
-            rescaled_pixel_data=pixel_data*65535
+            rescaled_pixel_data = pixel_data * 65535
             rescaled_pixel_data = rescaled_pixel_data.astype(np.uint16)
             output_pixels = skimage.filters.median(rescaled_pixel_data, strel, mask=mask)
         elif self.smoothing_method == SM_TO_AVERAGE:

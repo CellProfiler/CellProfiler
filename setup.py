@@ -432,10 +432,12 @@ setuptools.setup(
         "h5py<=2.7.0",
         "inflect",
         "javabridge",
-        "matplotlib",
+        "matplotlib>=2.0.0, <3.0.0",
         "MySQL-python",
+        "pillow>=4.3.0"
         "prokaryote==2.3.3",
         "python-bioformats==1.4.0",
+        "python-dateutils>=2.5.0",
         "pyzmq",
         "scipy"
     ],

@@ -744,7 +744,7 @@ def circular_average_filter(image, radius, mask=None):
     This code is translated straight from MATLAB's fspecial function
     '''
 
-    crad = np.ceil(radius-0.5)
+    crad = int(np.ceil(radius-0.5))
     x,y = np.mgrid[-crad:crad+1,-crad:crad+1].astype(float)
     maxxy = np.maximum(abs(x),abs(y))
     minxy = np.minimum(abs(x),abs(y))

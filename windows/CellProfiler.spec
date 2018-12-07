@@ -27,10 +27,12 @@ hiddenimports = []
 
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('future')
 
 hiddenimports += [
     "scipy._lib.messagestream",
-    "pywt._extensions._cwt"
+    "pywt._extensions._cwt",
+    "sklearn.utils.sparsetools"
 ]
 
 a = Analysis(
@@ -63,7 +65,7 @@ exe = EXE(
     a.binaries,
     a.zipfiles,
     a.datas,
-    console=False,
+    console=True,
     debug=False,
     icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.ico",
     name="CellProfiler",

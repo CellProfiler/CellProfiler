@@ -2,7 +2,7 @@ boto3==1.9.60
 centrosome==1.1.6
 docutils==0.14
 h5py==2.8.0
-inflect==2.1.5
+inflect==2.1.0
 javabridge==1.0.18
 joblib==0.13.0
 mahotas==1.4.5

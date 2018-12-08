@@ -878,7 +878,15 @@ value will be retained.""".format(**{
         '''
         labels = src_objects.segmented
 
-        interior_pixels = scipy.ndimage.binary_erosion(numpy.ones_like(labels))
+        if src_objects.has_parent_image and src_objects.parent_image.has_mask:
+
+            mask = src_objects.parent_image.mask
+
+            interior_pixels = scipy.ndimage.binary_erosion(mask)
+
+        else:
+
+            interior_pixels = scipy.ndimage.binary_erosion(numpy.ones_like(labels))
 
         border_pixels = numpy.logical_not(interior_pixels)
 
@@ -892,6 +900,7 @@ value will be retained.""".format(**{
             # The operation below gets the mask pixels that are on the border of the mask
             # The erosion turns all pixels touching an edge to zero. The not of this
             # is the border + formerly masked-out pixels.
+
             mask = src_objects.parent_image.mask
 
             interior_pixels = scipy.ndimage.binary_erosion(mask)

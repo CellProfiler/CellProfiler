@@ -26,6 +26,7 @@ datas += [
 hiddenimports = []
 
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.utilities')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('future')
 

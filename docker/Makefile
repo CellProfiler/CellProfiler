@@ -4,7 +4,7 @@ EXAMPLE_CDN = https://github.com/CellProfiler/examples/archive/master.zip
 # Public gold output files
 S3_GOLD = https://s3.amazonaws.com/cellprofiler-examples/example-human-gold-standard
 
-VERSION := 3.0.0
+VERSION := 3.1.5
 
 TAG := latest
 

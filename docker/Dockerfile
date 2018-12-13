@@ -28,7 +28,7 @@ RUN git clone https://github.com/CellProfiler/CellProfiler.git
 
 WORKDIR /usr/local/src/CellProfiler
 
-ARG version=3.0.0
+ARG version=3.1.5
 
 RUN git fetch -a
 
@@ -36,7 +36,13 @@ RUN git pull
 
 RUN git checkout tags/v$version
 
-RUN pip install --editable .
+RUN pip install --upgrade pytest
+
+RUN pip install --upgrade Pillow
+
+RUN pip install matplotlib==2.2.2
+
+RUN pip install -e .
 
 # Fix init and zombie process reaping problems using s6 overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.2/s6-overlay-amd64.tar.gz /tmp/

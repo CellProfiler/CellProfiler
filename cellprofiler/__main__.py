@@ -1,4 +1,14 @@
 from __future__ import print_function
+
+import os
+import os.path
+import sys
+if sys.platform.startswith("win") and hasattr(sys, 'frozen'):
+    # Allow us to package java with windows builds
+    if 'JAVA_HOME' not in os.environ:
+        if 'CP_JAVAHOME' in os.environ:
+            os.environ['JAVA_HOME'] = os.environ['CP_JAVAHOME']
+
 import bioformats.formatreader
 import ctypes
 import cellprofiler
@@ -18,12 +28,9 @@ import logging.config
 import matplotlib
 import numpy
 import optparse
-import os
-import os.path
 import pkg_resources
 import re
 import site
-import sys
 import tempfile
 import six.moves
 
@@ -117,6 +124,7 @@ def main(args=None):
         cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
 
     try:
+
         if not options.show_gui:
             cellprofiler.utilities.cpjvm.cp_start_vm()
 

@@ -45,4 +45,4 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
-Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "CP_JAVAHOME"; ValueData: "{app}\java"; Flags: createvalueifdoesntexist
+Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "CP_JAVA_HOME"; ValueData: "{app}\java"; Flags: createvalueifdoesntexist

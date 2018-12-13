@@ -1,14 +1,14 @@
 from __future__ import print_function
 
 import os
+import os.path
 import sys
 if sys.platform.startswith("win") and hasattr(sys, 'frozen'):
     # For Windows builds, if JAVA_HOME is not already set, use the copy of Java packaged with CP
     # We specify this location by setting 'CP_JAVA_HOME' at install.
     # JAVA_HOME must be set before bioformats import.
-    if 'JAVA_HOME' not in os.environ:
-        if 'CP_JAVA_HOME' in os.environ:
-            os.environ['JAVA_HOME'] = os.environ['CP_JAVA_HOME']
+    if 'JAVA_HOME' not in os.environ and if 'CP_JAVA_HOME' in os.environ:
+        os.environ['JAVA_HOME'] = os.environ['CP_JAVA_HOME']
 
 import bioformats.formatreader
 import ctypes
@@ -29,7 +29,6 @@ import logging.config
 import matplotlib
 import numpy
 import optparse
-import os.path
 import pkg_resources
 import re
 import site

@@ -124,7 +124,6 @@ def main(args=None):
         cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
 
     try:
-
         if not options.show_gui:
             cellprofiler.utilities.cpjvm.cp_start_vm()
 

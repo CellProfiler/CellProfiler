@@ -478,71 +478,6 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
 
     numpy.testing.assert_array_equal(data, volume.pixel_data)
 
-
-@pytest.mark.parametrize(
-    "volume",
-    [cellprofiler.image.Image(image=numpy.ones((100, 100, 5)))]
-)
-def test_save_5_plus_channel_tiff_uint16(tmpdir, volume, module, workspace):
-    directory = str(tmpdir.mkdir("images"))
-
-    workspace.image_set.add("example_volume", volume)
-
-    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
-
-    module.image_name.value = "example_volume"
-
-    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
-
-    module.single_file_name.value = "example_volume"
-
-    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
-
-    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
-
-    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_16
-
-    module.run(workspace)
-
-    assert os.path.exists(os.path.join(directory, "example_volume.tiff"))
-
-    data = skimage.io.imread(os.path.join(directory, "example_volume.tiff"))
-
-    assert data.dtype == numpy.uint16
-
-    numpy.testing.assert_array_equal(data, numpy.transpose(skimage.util.img_as_uint(volume.pixel_data), (2, 0, 1)))
-
-@pytest.mark.parametrize(
-    "volume", # save a z=5, y=100, x=200, c=8 image
-    [cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3)]
-)
-def test_save_zyxc_hdf5_uint16(tmpdir, volume, module, workspace):
-    directory = str(tmpdir.mkdir("images"))
-    workspace.image_set.add("example_volume", volume)
-
-    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
-
-    module.image_name.value = "example_volume"
-
-    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
-
-    module.single_file_name.value = "example_volume"
-
-    module.pathname.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
-
-    module.file_format.value = cellprofiler.modules.saveimages.FF_H5
-
-    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_16
-
-    module.run(workspace)
-
-    assert os.path.exists(os.path.join(directory, "example_volume.h5"))
-
-    fn = (os.path.join(directory, "example_volume.h5"))
-    data = get_h5_dataset(fn)
-    assert data.dtype == numpy.uint16
-    numpy.testing.assert_array_equal(data, skimage.util.img_as_uint(volume.pixel_data))
-
 @pytest.mark.parametrize(
     "volume,outshape",
     [# an yxc image
@@ -551,6 +486,9 @@ def test_save_zyxc_hdf5_uint16(tmpdir, volume, module, workspace):
      # an zyx image
     (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200), dimensions=3),
         (5, 100, 200, 1)),
+     # an yx image
+    (cellprofiler.image.Image(image=numpy.random.rand(100, 200), dimensions=2),
+        (1, 100, 200, 1)),
      # an zyxc image
     (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3),
         (5, 100, 200, 8))

@@ -92,7 +92,6 @@ import centrosome.outline
 from cellprofiler.modules import identify, images
 import numpy
 import scipy.io.matlab.mio
-import skimage.external.tifffile
 import imageio
 
 logger = logging.getLogger(__name__)
@@ -3250,10 +3249,6 @@ def is_image(filename):
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
     return ext in SUPPORTED_MOVIE_EXTENSIONS
-
-
-def is_standard(filename):
-    return os.path.splitext(filename)[-1].lower() == ".npy"
 
 
 def is_numpy_file(filename):

@@ -93,6 +93,7 @@ from cellprofiler.modules import identify, images
 import numpy
 import scipy.io.matlab.mio
 import skimage.external.tifffile
+import imageio
 
 logger = logging.getLogger(__name__)
 cached_file_lists = {}
@@ -3251,6 +3252,10 @@ def is_movie(filename):
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
+def is_standard(filename):
+    return os.path.splitext(filename)[-1].lower() == ".npy"
+
+
 def is_numpy_file(filename):
     return os.path.splitext(filename)[-1].lower() == ".npy"
 
@@ -3508,24 +3513,43 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
     def __set_image(self):
         if self.__volume:
             self.__set_image_volume()
+
             return
 
-        from bioformats.formatreader import get_image_reader
         self.cache_file()
+
         channel_names = []
-        if is_matlab_file(self.__filename):
+
+        imageio_extensions = []
+
+        for f in imageio.formats:
+            imageio_extensions += f.extensions
+
+        extension = os.path.splitext(self.__filename)[-1].lower()
+
+        if extension == ".mat":
             img = load_data_file(self.get_full_name(), loadmat)
+
             self.scale = 1.0
-        elif is_numpy_file(self.__filename):
+        elif extension == ".npy":
             img = load_data_file(self.get_full_name(), numpy.load)
+
+            self.scale = 1.0
+        elif extension in imageio_extensions:
+            img = load_data_file(self.get_full_name(), imageio.imread)
+
             self.scale = 1.0
         else:
+            import bioformats.formatreader
+
             url = self.get_url()
+
             if url.lower().startswith("omero:"):
-                rdr = get_image_reader(self.get_name(), url=url)
+                rdr = bioformats.formatreader.get_image_reader(self.get_name(), url=url)
             else:
-                rdr = get_image_reader(
+                rdr = bioformats.formatreader.get_image_reader(
                     self.get_name(), url=self.get_url())
+
             if numpy.isscalar(self.index) or self.index is None:
                 img, self.scale = rdr.read(
                     c=self.channel,
@@ -3537,32 +3561,40 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
             else:
                 # It's a stack
                 stack = []
+
                 if numpy.isscalar(self.series):
                     series_list = [self.series] * len(self.index)
                 else:
                     series_list = self.series
+
                 if not numpy.isscalar(self.channel):
                     channel_list = [self.channel] * len(self.index)
                 else:
                     channel_list = self.channel
-                for series, index, channel in zip(
-                        series_list, self.index, channel_list):
+
+                for series, index, channel in zip(series_list, self.index, channel_list):
                     img, self.scale = rdr.read(
                         c=channel,
                         series=series,
                         index=index,
                         rescale=self.rescale,
                         wants_max_intensity=True,
-                        channel_names=channel_names)
+                        channel_names=channel_names
+                    )
+
                     stack.append(img)
+
                 img = numpy.dstack(stack)
+
         if isinstance(self.rescale, float):
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
+
         self.__image = cellprofiler.image.Image(img,
                                                 path_name=self.get_pathname(),
                                                 file_name=self.get_filename(),
                                                 scale=self.scale)
+
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             self.__image.channel_names = list(channel_names)
 
@@ -3580,7 +3612,7 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
         if is_numpy_file(self.__filename):
             data = numpy.load(pathname)
         else:
-            data = skimage.external.tifffile.imread(pathname)
+            data = imageio.volread(pathname)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:

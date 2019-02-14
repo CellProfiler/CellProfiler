@@ -26,11 +26,12 @@ YES          NO           NO
 .. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 """
 
+import imageio
+import skimage.feature
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.feature
-import skimage.io
 
 
 class MatchTemplate(cellprofiler.module.Module):
@@ -81,7 +82,7 @@ class MatchTemplate(cellprofiler.module.Module):
 
         input_pixels = input_image.pixel_data
 
-        template = skimage.io.imread(template_name)
+        template = imageio.imread(template_name)
 
         output_pixels = skimage.feature.match_template(
             image=input_pixels,

@@ -63,6 +63,7 @@ setuptools.setup(
         "centrosome",
         "docutils",
         "h5py",
+        "imageio",
         "inflect",
         "javabridge",
         "joblib",

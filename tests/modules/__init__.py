@@ -29,7 +29,7 @@ __temp_example_images_folder = None
 # FIXME: use a stable URI
 cp_logo_url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/0c64193dd9108934400494fffa41d24f3df1573c/artwork/CP_logo.png"
 cp_logo_url_folder, cp_logo_url_filename = cp_logo_url.rsplit("/", 1)
-cp_logo_url_shape = (70, 187, 3)
+cp_logo_url_shape = (70, 187, 4)
 
 
 def example_images_directory():

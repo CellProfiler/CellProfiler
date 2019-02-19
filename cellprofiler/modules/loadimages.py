@@ -3274,9 +3274,12 @@ def load_data_file(pathname_or_url, load_fn):
 
         try:
             src = urllib.urlopen(url)
+
             fd, path = tempfile.mkstemp(suffix=ext)
+
             with os.fdopen(fd, mode="wb") as dest:
                 shutil.copyfileobj(src, dest)
+
             img = load_fn(path)
         finally:
             try:
@@ -3531,9 +3534,58 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
 
             self.scale = 1.0
         elif extension in imageio_extensions:
-            img = load_data_file(self.get_full_name(), imageio.imread)
+            try:
+                img = load_data_file(self.get_full_name(), imageio.imread)
 
-            self.scale = 1.0
+                self.scale = 1.0
+            except ValueError:
+                import bioformats.formatreader
+
+                url = self.get_url()
+
+                if url.lower().startswith("omero:"):
+                    rdr = bioformats.formatreader.get_image_reader(
+                        self.get_name(), url=url)
+                else:
+                    rdr = bioformats.formatreader.get_image_reader(
+                        self.get_name(), url=self.get_url())
+
+                if numpy.isscalar(self.index) or self.index is None:
+                    img, self.scale = rdr.read(
+                        c=self.channel,
+                        series=self.series,
+                        index=self.index,
+                        rescale=self.rescale,
+                        wants_max_intensity=True,
+                        channel_names=channel_names)
+                else:
+                    # It's a stack
+                    stack = []
+
+                    if numpy.isscalar(self.series):
+                        series_list = [self.series] * len(self.index)
+                    else:
+                        series_list = self.series
+
+                    if not numpy.isscalar(self.channel):
+                        channel_list = [self.channel] * len(self.index)
+                    else:
+                        channel_list = self.channel
+
+                    for series, index, channel in zip(series_list, self.index,
+                                                      channel_list):
+                        img, self.scale = rdr.read(
+                            c=channel,
+                            series=series,
+                            index=index,
+                            rescale=self.rescale,
+                            wants_max_intensity=True,
+                            channel_names=channel_names
+                        )
+
+                        stack.append(img)
+
+                    img = numpy.dstack(stack)
         else:
             import bioformats.formatreader
 

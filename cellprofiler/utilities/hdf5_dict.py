@@ -536,9 +536,9 @@ class HDF5Dict(object):
                     else:
                         break
             hdf5_type_is_int = (
-                np.issubdtype(hdf5_type, int) or
+                np.issubdtype(hdf5_type, np.dtype(int).type) or
                 (isinstance(hdf5_type, np.dtype) and hdf5_type.kind == 'u'))
-            hdf5_type_is_float = np.issubdtype(hdf5_type, float)
+            hdf5_type_is_float = np.issubdtype(hdf5_type, np.dtype(float).type)
             hdf5_type_is_string = not (hdf5_type_is_int or hdf5_type_is_float)
         with self.lock:
             if not self.has_feature(object_name, feature_name):

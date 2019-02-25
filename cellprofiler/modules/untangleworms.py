@@ -1545,7 +1545,9 @@ should be processed.
 
         direction = graph_struct.incidence_directions[path.branch_areas[0],
                                                       path.segments[0]]
-        result = [graph_struct.segments[path.segments[0]][direction]]
+
+        result = [graph_struct.segments[path.segments[0]][int(direction)]]
+
         for branch_area, segment in zip(path.branch_areas, path.segments[1:]):
             direction = not graph_struct.incidence_directions[branch_area,
                                                               segment]

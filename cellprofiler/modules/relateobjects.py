@@ -543,7 +543,7 @@ parents or children of the parent object."""
             perim_loc = numpy.argwhere(pperim != 0)
 
             # Get the label # for each point
-            perim_idx = pperim[perim_loc.transpose().tolist()]
+            perim_idx = pperim[tuple(perim_loc.transpose())]
 
             # Sort the points by label #
             reverse_column_order = range(children.dimensions)[::-1]

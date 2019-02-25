@@ -373,10 +373,9 @@ blue absorbance values from the image.
         of absorbances corresponding to the entered row.
         '''
         idx = self.outputs.index(output)
-        absorbance_array = np.array([self.get_absorbances(o)
-                                     for o in self.outputs])
-        absorbance_matrix = np.matrix(absorbance_array)
-        return np.array(absorbance_matrix.I[:, idx]).flatten()
+        absorbance_array = np.array([self.get_absorbances(o) for o in self.outputs])
+
+        return np.array(np.linalg.inv(absorbance_array)[:, idx]).flatten()
 
     def estimate_absorbance(self):
         '''Load an image and use it to estimate the absorbance of a stain

@@ -281,7 +281,7 @@ class Module(object):
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[cpp.BATCH_STATE][0, module_idx] = numpy.fromstring(self.batch_state.tostring(), numpy.uint8)
+        setting[cpp.BATCH_STATE][0, module_idx] = numpy.frombuffer(self.batch_state.tostring(), numpy.uint8)
 
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''

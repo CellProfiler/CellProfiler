@@ -5,8 +5,8 @@
 import centrosome.cpmorphology
 import cStringIO
 import matplotlib
+import matplotlib.image
 import numpy
-import scipy
 
 
 def figure_to_image(figure, *args, **kwargs):
@@ -19,7 +19,7 @@ def figure_to_image(figure, *args, **kwargs):
     kwargs["format"] = 'png'
     figure.savefig(fd, *args, **kwargs)
     fd.seek(0)
-    image = scipy.misc.imread(fd)
+    image = matplotlib.image.imread(fd)
     return image[:, :, :3]
 
 

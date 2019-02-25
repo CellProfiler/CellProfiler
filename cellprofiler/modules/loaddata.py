@@ -611,7 +611,7 @@ safe to press it.""")
         return result
 
     def convert(self):
-        data = matplotlib.mlab.csv2rec(self.csv_path)
+        data = matplotlib.mlab.(self.csv_path)
         src_dsc = data['source_description']
 
         def uniquewaves(seq):

@@ -21,6 +21,7 @@ import cellprofiler.module
 import cellprofiler.setting
 import cellprofiler.image
 import skimage.filters
+import skimage.util
 import numpy
 
 
@@ -55,7 +56,13 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
 
         sigma = numpy.divide(self.sigma.value, x.spacing)
 
-        y_data = skimage.filters.gaussian(x_data, sigma=sigma)
+        y_data = skimage.util.apply_parallel(
+            array=x_data,
+            extra_keywords={
+                "sigma": sigma
+            },
+            function=skimage.filters.gaussian
+        )
 
         y = cellprofiler.image.Image(
             dimensions=dimensions,

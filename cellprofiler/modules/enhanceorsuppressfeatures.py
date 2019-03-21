@@ -33,7 +33,7 @@ import skimage.transform
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import _help
+from cellprofiler.modules import _help
 
 
 ENHANCE = 'Enhance'

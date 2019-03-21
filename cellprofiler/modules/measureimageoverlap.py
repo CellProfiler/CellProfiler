@@ -45,12 +45,15 @@ while a background pixel in the test image that overlaps with foreground
 in the ground truth will be considered a “false negative” (since it was
 labeled as part of the background, but should not be).
 
+For 3D images, all image planes are concatenated into one large XY image and 
+the overlap is computed on the transformed image. 
+
 |
 
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           YES
+YES          YES          YES
 ============ ============ ===============
 
 Measurements made by this module
@@ -81,7 +84,7 @@ Measurements made by this module
 References
 ^^^^^^^^^^
 
--  Collins LM, Dent CW (1998) “Omega: A general formulation of the Rand
+-  Collins LM, Dent CW (1988) “Omega: A general formulation of the Rand
    Index of cluster recovery suitable for non-disjoint solutions”,
    *Multivariate Behavioral Research*, 23, 231-242. `(link) <https://doi.org/10.1207/s15327906mbr2302_6>`__
 -  Pele O, Werman M (2009) “Fast and Robust Earth Mover’s Distances”,
@@ -103,7 +106,7 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import _help
+from cellprofiler.modules import _help
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
@@ -508,8 +511,8 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         returns a tuple of the Rand Index and the adjusted Rand Index
         """
-        ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint64)
-        test_labels = test_labels[mask].astype(numpy.uint64)
+        ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint32)
+        test_labels = test_labels[mask].astype(numpy.uint32)
         if len(test_labels) > 0:
             #
             # Create a sparse matrix of the pixel labels in each of the sets
@@ -701,7 +704,7 @@ the two images. Set this setting to “No” to assess no penalty."""
         #
         # Filter out all unmasked points
         #
-        ii, jj = [x[labels_mask] for x in ii, jj]
+        ii, jj = [x[labels_mask] for x in (ii, jj)]
         if len(ii) == 0:
             return numpy.zeros(0, numpy.int32)
         #

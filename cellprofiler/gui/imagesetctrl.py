@@ -1,13 +1,17 @@
 # coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
+from __future__ import print_function
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
 import cellprofiler.modules.images
+import cellprofiler.pipeline as cpp
 import cellprofiler.preferences
 import cellprofiler.setting
+import cellprofiler.pipeline
+import cellprofiler.utilities.legacy
 import numpy
 import re
 import urllib
@@ -15,6 +19,8 @@ import wx
 import wx.combo
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
+import six
+
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -233,7 +239,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 #
                 if a.is_key:
                     if b.is_key:
-                        return cmp(a.name, b.name)
+                        return cellprofiler.utilities.legacy.cmp(a.name, b.name)
                     return -1
                 elif b.is_key:
                     return 1
@@ -242,7 +248,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 #
                 if a.column_type == COL_METADATA:
                     if b.column_type == COL_METADATA:
-                        return cmp(a.name, b.name)
+                        return cellprofiler.utilities.legacy.cmp(a.name, b.name)
                     return 1
                 elif b.column_type == COL_METADATA:
                     return -1
@@ -250,12 +256,12 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 # If different channels, order by channel
                 #
                 if a.channel != b.channel:
-                    return cmp(a.channel, b.channel)
+                    return cellprofiler.utilities.legacy.cmp(a.channel, b.channel)
                 #
                 # Otherwise, the order is given by COL_ORDER
                 #
-                return cmp(COL_ORDER.index(a.column_type),
-                           COL_ORDER.index(b.column_type))
+                return cellprofiler.utilities.legacy.cmp(COL_ORDER.index(a.column_type),
+                                                         COL_ORDER.index(b.column_type))
 
             columns.sort(cmp=ordering_fn)
 
@@ -296,7 +302,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             """Get the URL for a cell"""
             image_set = self.image_numbers[row]
             column = self.columns[col]
-            if column.channel_type == cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
+            if column.channel_type == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
                 feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + column.channel
             else:
                 feature = cellprofiler.measurement.C_URL + "_" + column.channel
@@ -310,7 +316,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             image_number = self.image_numbers[row]
             metadata_tags = self.metadata_tags
             if len(metadata_tags) > 0:
-                key = [unicode(self.cache[tag, image_number])
+                key = [six.text_type(self.cache[tag, image_number])
                        for tag in metadata_tags]
                 return " : ".join(key)
 
@@ -632,19 +638,19 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.Title = "Change image type for %s" % (self.Table.GetColLabelValue(col))
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
                  self.monochrome_channel_image,
                  "Treat the image as monochrome, averaging colors if needed"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
                  self.color_channel_image,
                  "Treat the image as color. Use ColorToGray to get individual colors"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_MASK,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
                  self.mask_image,
                  "Treat the image as a binary mask"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
                  self.objects_image,
                  "Treat the image as objects"),
-                (cpp.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
+                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
                  self.illumination_function_image,
                  "Use the image for illumination correction")]
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -768,11 +774,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.ShowModal()
 
     def on_add_column(self):
-        print "Add column pressed"
+        print("Add column pressed")
         self.Table.AppendCols(1)
 
     def on_remove_column(self, col):
-        print "Remove column pressed"
+        print("Remove column pressed")
         self.Table.DeleteCols(col, 1)
 
     ####
@@ -977,7 +983,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if need_column_layout:
                 if self.Table.GetNumberRows() > 0:
                     first_width, _ = self.GridWindow.GetTextExtent(
-                            unicode(self.Table.GetValue(0, i)))
+                            six.text_type(self.Table.GetValue(0, i)))
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
                 else:
@@ -1000,7 +1006,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = six.text_type(grid.Table.GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1090,7 +1096,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = six.text_type(grid.Table.GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1252,7 +1258,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
-        elif isinstance(bitmap, basestring):
+        elif isinstance(bitmap, six.string_types):
             dc.Font = window.Font
             dc.BackgroundMode = wx.TRANSPARENT
             width, height = dc.GetTextExtent(bitmap)

@@ -102,18 +102,20 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
+import cellprofiler.utilities.legacy
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 import itertools
 from cellprofiler.measurement import C_COUNT, FTR_CENTER_X, FTR_CENTER_Y
 from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
-from identify import add_object_count_measurements
-from identify import add_object_location_measurements
-from identify import get_object_measurement_columns
-from untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
-from untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
-from untangleworms import read_params
-from untangleworms import recalculate_single_worm_control_points
+from .identify import add_object_count_measurements
+from .identify import add_object_location_measurements
+from .identify import get_object_measurement_columns
+from .untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
+from .untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
+from .untangleworms import read_params
+from .untangleworms import recalculate_single_worm_control_points
+
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -404,7 +406,7 @@ of the straightened worms.'''))
                 '''Sort by control point number'''
                 acp = int(a.split("_")[-1])
                 bcp = int(b.split("_")[-1])
-                return cmp(acp, bcp)
+                return cellprofiler.utilities.legacy.cmp(acp, bcp)
 
             cpx.sort(sort_fn)
             cpy.sort(sort_fn)
@@ -418,9 +420,9 @@ of the straightened worms.'''))
         half_width = self.width.value / 2
         width = 2 * half_width + 1
         if nworms == 0:
-            shape = (2 * half_width + 1, width)
+            shape = (width, width)
         else:
-            shape = (int(np.max(lengths)) + 2 * half_width + 1,
+            shape = (int(np.max(lengths)) + width,
                      nworms * width)
         labels = np.zeros(shape, int)
         #
@@ -1228,7 +1230,7 @@ of the straightened worms.'''))
                         if pixel_data.ndim == 3:
                             pixel_data = np.mean(pixel_data, 2)
                         imin, imax = [fn(pixel_data[labels != 0])
-                                      for fn in np.min, np.max]
+                                      for fn in (np.min, np.max)]
                         if imin == imax:
                             pixel_data = np.zeros(labels.shape)
                         else:

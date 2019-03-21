@@ -12,7 +12,7 @@ import zmq
 import unittest
 import uuid
 import numpy as np
-
+import six
 import cellprofiler.utilities.zmqrequest as Z
 
 CLIENT_MESSAGE = "Hello, server"
@@ -97,7 +97,7 @@ class TestZMQRequest(unittest.TestCase):
                                 req = self.queue.get_nowait()
                                 req.send_only(self.work_socket)
                                 logger.info("Client message sent")
-            except Exception, e:
+            except Exception as e:
                 self.response_queue.put((e, None))
             finally:
                 logger.info("Client thread exiting")
@@ -267,7 +267,7 @@ class TestZMQRequest(unittest.TestCase):
     def same(self, a, b):
         if isinstance(a, (float, int)):
             self.assertAlmostEquals(a, b)
-        elif isinstance(a, basestring):
+        elif isinstance(a, six.string_types):
             self.assertEquals(a, b)
         elif isinstance(a, dict):
             self.assertTrue(isinstance(b, dict))

@@ -2,6 +2,7 @@
 """
 
 import logging
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 import json
@@ -12,6 +13,8 @@ import sys
 import re
 import uuid
 
+import six
+
 from cellprofiler.preferences import \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
@@ -19,8 +22,10 @@ from cellprofiler.preferences import \
     get_default_image_directory, get_default_output_directory, \
     standardize_default_folder_names
 import cellprofiler.measurement
+import cellprofiler.utilities.legacy
 
 import skimage.morphology
+
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
@@ -57,6 +62,10 @@ AGGREGATE_IMAGE_ATTRIBUTE = "aggregate_image"
 AVAILABLE_ON_LAST_ATTRIBUTE = "available_on_last"
 '''Indicates that the control can contain metadata tags'''
 METADATA_ATTRIBUTE = "metadata"
+
+# Constants regarding scaling
+LINEAR = 'linear'
+LOG = 'log'
 
 
 class Setting(object):
@@ -148,7 +157,7 @@ class Setting(object):
         override this to do things like compare whether an integer
         setting's value matches a given number
         '''
-        return self.value == unicode(x)
+        return self.value == six.text_type(x)
 
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -188,7 +197,7 @@ class Setting(object):
 
         NOTE: strings are deprecated, use unicode_value instead.
         '''
-        if isinstance(self.__value, unicode):
+        if isinstance(self.__value, six.text_type):
             return str(self.__value.encode('utf-16'))
         if not isinstance(self.__value, str):
             raise ValidationError("%s was not a string" % self.__value, self)
@@ -199,7 +208,7 @@ class Setting(object):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
-        return unicode(self.value_text)
+        return six.text_type(self.value_text)
 
 
 class HiddenCount(Setting):
@@ -235,7 +244,7 @@ class HiddenCount(Setting):
         return str(len(self.__sequence))
 
     def get_unicode_value(self):
-        return unicode(len(self.__sequence))
+        return six.text_type(len(self.__sequence))
 
 
 class Text(Setting):
@@ -278,7 +287,7 @@ class RegexpText(Setting):
             # Convert Matlab to Python
             pattern = re.sub('(\\(\\?)([<][^)>]+?[>])', '\\1P\\2', self.value)
             re.search('(|(%s))' % pattern, '')
-        except re.error, v:
+        except re.error as v:
             raise ValidationError("Invalid regexp: %s" % v, self)
 
 
@@ -523,7 +532,7 @@ class Pathname(Text):
 
     def __init__(self, text, value="", *args, **kwargs):
         kwargs = kwargs.copy()
-        if kwargs.has_key("wildcard"):
+        if "wildcard" in kwargs:
             self.wildcard = kwargs["wildcard"]
             del kwargs["wildcard"]
         else:
@@ -599,7 +608,7 @@ class ImagePlane(Setting):
                     "URLs should not contain spaces. %s is the offending URL" % url)
             url = url.replace(" ", "%20")
         return " ".join([str(x) if x is not None else ""
-                         for x in url, series, index, channel])
+                         for x in (url, series, index, channel)])
 
     def __get_field(self, index):
         f = self.value_text.split(" ")[index]
@@ -701,7 +710,7 @@ class Number(Text):
 
     def __init__(self, text, value=0, minval=None, maxval=None, *args,
                  **kwargs):
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             text_value = value
             value = self.str_to_value(value)
         else:
@@ -729,7 +738,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = unicode(value) if isinstance(value, basestring) \
+        str_value = six.text_type(value) if isinstance(value, six.string_types) \
             else self.value_to_str(value)
         self.set_value_text(str_value)
 
@@ -750,7 +759,7 @@ class Number(Text):
         '''Programatically set the minimum value allowed'''
         self.__minval = minval
 
-    def set_max_value(self, minval):
+    def set_max_value(self, maxval):
         '''Programatically set the maximum value allowed'''
         self.__maxval = maxval
 
@@ -849,7 +858,7 @@ class Range(Setting):
 
     def set_value(self, value):
         '''Set the value of this range using either a string or a two-tuple'''
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             self.set_value_text(value)
         elif hasattr(value, "__getitem__") and len(value) == 2:
             self.set_value_text(",".join([self.value_to_str(v) for v in value]))
@@ -1196,7 +1205,7 @@ class FloatRange(Range):
         maxval - the maximum acceptable value of either
         """
         smin, smax = [(u"%f" % v).rstrip("0") for v in value]
-        text_value = ",".join([x + "0" if x.endswith(".") else x for x in smin, smax])
+        text_value = ",".join([x + "0" if x.endswith(".") else x for x in (smin, smax)])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
@@ -1258,7 +1267,7 @@ class NameProvider(AlphanumericText):
     def __init__(self, text, group, value=DO_NOT_USE, *args, **kwargs):
         self.__provided_attributes = {"group": group}
         kwargs = kwargs.copy()
-        if kwargs.has_key("provided_attributes"):
+        if "provided_attributes" in kwargs:
             self.__provided_attributes.update(kwargs["provided_attributes"])
             del kwargs[PROVIDED_ATTRIBUTES]
         kwargs["first_must_be_alpha"] = True
@@ -1298,7 +1307,7 @@ class FileImageNameProvider(ImageNameProvider):
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameProvider, self).__init__(text, value, *args,
@@ -1311,7 +1320,7 @@ class ExternalImageNameProvider(ImageNameProvider):
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][EXTERNAL_IMAGE_ATTRIBUTE] = True
         super(ExternalImageNameProvider, self).__init__(text, value, *args,
@@ -1323,7 +1332,7 @@ class CroppingNameProvider(ImageNameProvider):
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameProvider, self).__init__(text, value, *args, **kwargs)
@@ -1376,7 +1385,7 @@ class NameSubscriber(Setting):
         if value is None:
             value = (can_be_blank and blank_text) or "None"
         self.__required_attributes = {"group": group}
-        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES in kwargs:
             self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
             kwargs = kwargs.copy()
             del kwargs[REQUIRED_ATTRIBUTES]
@@ -1495,7 +1504,7 @@ class FileImageNameSubscriber(ImageNameSubscriber):
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES not in kwargs:
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameSubscriber, self).__init__(text, value, can_be_blank,
@@ -1509,7 +1518,7 @@ class CroppingNameSubscriber(ImageNameSubscriber):
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES not in kwargs:
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameSubscriber, self).__init__(text, value, can_be_blank,
@@ -1599,8 +1608,7 @@ class Binary(Setting):
 
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
-        if value == YES or value == NO or \
-                isinstance(value, str) or isinstance(value, unicode):
+        if value in (YES, NO) or isinstance(value, six.string_types):
             super(Binary, self).set_value(value)
         else:
             str_value = (value and YES) or NO
@@ -1789,7 +1797,7 @@ class MultiChoice(Setting):
     def parse_value(self, value):
         if value is None:
             return ''
-        elif isinstance(value, str) or isinstance(value, unicode):
+        elif isinstance(value, six.string_types):
             return value
         elif hasattr(value, "__getitem__"):
             return ','.join(value)
@@ -1855,7 +1863,7 @@ class SubscriberMultiChoice(MultiChoice):
 
     def __init__(self, text, group, value=None, *args, **kwargs):
         self.__required_attributes = {"group": group}
-        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES in kwargs:
             self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
             kwargs = kwargs.copy()
             del kwargs[REQUIRED_ATTRIBUTES]
@@ -1971,7 +1979,7 @@ class MeasurementMultiChoice(MultiChoice):
 
         def valid_mc(c):
             '''Disallow any measurement column with "," or "|" in its names'''
-            return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"])
+            return not any([any([bad in f for f in c[:2]]) for bad in (",", "|")])
 
         self.set_choices([self.make_measurement_choice(c[0], c[1])
                           for c in columns if valid_mc(c)])
@@ -2581,7 +2589,7 @@ class Color(Setting):
             return (int(value[1:3], 16),
                     int(value[3:5], 16),
                     int(value[5:7], 16))
-        elif self.colortable.has_key(value.lower()):
+        elif value.lower() in self.colortable:
             return self.colortable[value.lower()]
         else:
             raise ValueError("Unknown color: " + self.value)
@@ -3054,8 +3062,8 @@ class Filter(Setting):
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
                 s.append(
-                        cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
-            elif isinstance(element, basestring):
+                        cls.FilterPredicate.encode_symbol(six.text_type(element.symbol)))
+            elif isinstance(element, six.string_types):
                 s.append(u'"' + cls.encode_literal(element) + u'"')
             else:
                 s.append(u"(" + cls.build_string(element) + ")")
@@ -3070,7 +3078,7 @@ class Filter(Setting):
             """, dict(expr=self.value_text,
                       klass=J.class_for_name(
                               "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
-        except Exception, e:
+        except Exception as e:
             raise ValidationError(str(e), self)
 
     def test_setting_warnings(self, pipeline):
@@ -3256,7 +3264,7 @@ class FileCollectionDisplay(Setting):
         or 3-tuples representing image planes within an image file. Branches
         are two-tuples composed of a path part and more branches / leaves
         '''
-        return len(mod) != 2 or not isinstance(mod[0], basestring)
+        return len(mod) != 2 or not isinstance(mod[0], six.string_types)
 
     def node_count(self, file_tree=None):
         '''Count the # of nodes (leaves + directories) in the tree'''
@@ -3309,10 +3317,10 @@ class FileCollectionDisplay(Setting):
     def add_subtree(self, mods, tree):
         for mod in mods:
             if self.is_leaf(mod):
-                if not tree.has_key(mod):
+                if mod not in tree:
                     tree[mod] = True
             else:
-                if tree.has_key(mod[0]) and isinstance(tree[mod[0]], dict):
+                if mod[0] in tree and isinstance(tree[mod[0]], dict):
                     subtree = tree[mod[0]]
                 else:
                     subtree = tree[mod[0]] = {}
@@ -3337,7 +3345,7 @@ class FileCollectionDisplay(Setting):
 
     def remove_subtree(self, mod, tree):
         if not (isinstance(mod, tuple) and len(mod) == 2):
-            if tree.has_key(mod):
+            if mod in tree:
                 subtree = tree[mod]
                 if isinstance(subtree, dict):
                     #
@@ -3349,7 +3357,7 @@ class FileCollectionDisplay(Setting):
                         if isinstance(subtree[key], dict):
                             self.remove_subtree(key, subtree)
                 del tree[mod]
-        elif tree.has_key(mod[0]):
+        elif mod[0] in tree:
             root_mod = mod[0]
             subtree = tree[root_mod]
             if isinstance(subtree, dict):
@@ -3359,7 +3367,7 @@ class FileCollectionDisplay(Setting):
                 # Delete the subtree if the subtree is emptied
                 #
                 if len(subtree) == 0 or (
-                                len(subtree) == 1 and subtree.has_key(None)):
+                                len(subtree) == 1 and None in subtree):
                     del tree[root_mod]
             else:
                 del tree[root_mod]
@@ -3377,13 +3385,13 @@ class FileCollectionDisplay(Setting):
     def mark_subtree(self, mods, keep, tree):
         for mod in mods:
             if self.is_leaf(mod):
-                if tree.has_key(mod):
+                if mod in tree:
                     if isinstance(tree[mod], dict):
                         tree[mod][None] = keep
                     else:
                         tree[mod] = keep
             else:
-                if tree.has_key(mod[0]):
+                if mod[0] in tree:
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
         kept = [tree[k][None] if isinstance(tree[k], dict)
                 else tree[k]
@@ -3529,7 +3537,7 @@ class Table(Setting):
 
         def compare_fn(row1, row2):
             for index in indices:
-                x = cmp(row1[index], row2[index])
+                x = cellprofiler.utilities.legacy.cmp(row1[index], row2[index])
                 if x != 0:
                     return x
             return 0
@@ -3568,12 +3576,12 @@ class Table(Setting):
         set_attribute - True to set, False to clear
         '''
         if set_attribute:
-            if self.row_attributes.has_key(row_index):
+            if row_index in self.row_attributes:
                 self.row_attributes[row_index].add(attribute)
             else:
                 self.row_attributes[row_index] = set([attribute])
         else:
-            if self.row_attributes.has_key(row_index):
+            if row_index in self.row_attributes:
                 s = self.row_attributes[row_index]
                 s.remove(attribute)
                 if len(s) == 0:
@@ -3602,12 +3610,12 @@ class Table(Setting):
         '''
         key = (row_index, self.column_names.index(column_name))
         if set_attribute:
-            if self.cell_attributes.has_key(key):
+            if key in self.cell_attributes:
                 self.cell_attributes[key].add(attribute)
             else:
                 self.cell_attributes[key] = set([attribute])
         else:
-            if self.cell_attributes.has_key(key):
+            if key in self.cell_attributes:
                 s = self.cell_attributes[key]
                 s.remove(attribute)
                 if len(s) == 0:
@@ -3693,7 +3701,7 @@ class Joiner(Setting):
         best_count = 0
         for value_list in self.entities.values():
             for value in value_list:
-                if all_names.has_key(value):
+                if value in all_names:
                     all_names[value] += 1
                 else:
                     all_names[value] = 1
@@ -3831,13 +3839,16 @@ class NumberConnector(object):
         return int(self.__fn())
 
     def __long__(self):
-        return long(self.__fn())
+        try:
+            return long(self.__fn())  # Python  2
+        except NameError:
+            return int(self.__fn())   # Python  2
 
     def __float__(self):
         return float(self.__fn())
 
     def __cmp__(self, other):
-        return cmp(self.__fn(), other)
+        return cellprofiler.utilities.legacy.cmp(self.__fn(), other)
 
     def __hash__(self):
         return self.__fn().__hash__()

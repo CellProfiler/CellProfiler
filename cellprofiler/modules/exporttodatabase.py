@@ -91,6 +91,7 @@ import logging
 import numpy
 import os
 import re
+import six
 import cellprofiler
 import cellprofiler.module
 import cellprofiler.setting
@@ -99,8 +100,13 @@ import cellprofiler.measurement
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.modules.loadimages
-import _help
+import cellprofiler.utilities.legacy
+from cellprofiler.modules import _help
 
+try:
+    buffer         # Python 2
+except NameError:  # Python 3
+    buffer = memoryview
 
 logger = logging.getLogger(__name__)
 try:
@@ -109,7 +115,7 @@ try:
     import sqlite3
 
     HAS_MYSQL_DB = True
-except:
+except Exception:
     logger.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB = False
 
@@ -290,10 +296,10 @@ def get_results_as_list(cursor):
 
 def get_next_result(cursor):
     try:
-        return cursor.next()
-    except MySQLdb.Error, e:
+        return next(cursor)
+    except MySQLdb.Error as e:
         raise Exception('Error retrieving next result from database: %s' % e)
-    except StopIteration, e:
+    except StopIteration as e:
         return None
 
 
@@ -1882,7 +1888,7 @@ available:
                                        self.db_user.value,
                                        self.db_passwd.value,
                                        self.db_name.value)
-        except MySQLdb.Error, error:
+        except MySQLdb.Error as error:
             if error.args[0] == 1045:
                 msg = "Incorrect username or password"
             elif error.args[0] == 1049:
@@ -2634,7 +2640,7 @@ INSERT INTO %s (name) values ('%s')""" % (
         properties = self.get_property_file_text(workspace)
         for p in properties:
             for k, v in p.properties.iteritems():
-                if isinstance(v, unicode):
+                if isinstance(v, six.text_type):
                     v = v.encode('utf-8')
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
@@ -2670,7 +2676,7 @@ CREATE TABLE %s (
             value = workspace.measurements.get_experiment_measurement(ftr)
 
             if column[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
-                if isinstance(value, unicode):
+                if isinstance(value, six.text_type):
                     value = value.encode('utf-8')
                 if self.db_type != DB_SQLITE:
                     value = MySQLdb.escape_string(value)
@@ -2806,7 +2812,7 @@ CREATE TABLE %s (
         relationship_table_name = self.get_table_name(T_RELATIONSHIPS)
         statements += [
             "DROP TABLE IF EXISTS %s" % x for x in
-            relationship_table_name, relationship_type_table_name]
+            (relationship_table_name, relationship_type_table_name)]
         #
         # The relationship type table has the module #, relationship name
         # and object names of every relationship reported by
@@ -3159,7 +3165,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if isinstance(value, numpy.ndarray):
                     value = value[0]
                 if coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
-                    if isinstance(value, str) or isinstance(value, unicode):
+                    if isinstance(value, six.string_types):
                         value = '"' + MySQLdb.escape_string(value) + '"'
                     elif value is None:
                         value = "NULL"
@@ -3276,7 +3282,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return not post_group
         if not hasattr(column[3], "has_key"):
             return not post_group
-        if not column[3].has_key(cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP):
+        if cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP not in column[3]:
             return not post_group
         return (post_group if column[3][cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP]
                 else not post_group)
@@ -4179,7 +4185,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
     def get_pipeline_measurement_columns(self, pipeline, image_set_list, remove_postgroup_key=False):
         '''Get the measurement columns for this pipeline, possibly cached'''
         d = self.get_dictionary(image_set_list)
-        if not d.has_key(D_MEASUREMENT_COLUMNS):
+        if D_MEASUREMENT_COLUMNS not in d:
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
             d[D_MEASUREMENT_COLUMNS] = self.filter_measurement_columns(
                     d[D_MEASUREMENT_COLUMNS])
@@ -4204,12 +4210,12 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
                 elif y[0] == cellprofiler.measurement.IMAGE:
                     return 1
                 else:
-                    return cmp(x[0], y[0])
+                    return cellprofiler.utilities.legacy.cmp(x[0], y[0])
             if x[1] == M_NUMBER_OBJECT_NUMBER:
                 return -1
             if y[1] == M_NUMBER_OBJECT_NUMBER:
                 return 1
-            return cmp(x[1], y[1])
+            return cellprofiler.utilities.legacy.cmp(x[1], y[1])
 
         columns.sort(cmp=cmpfn)
         #
@@ -4620,9 +4626,9 @@ class ColumnNameMapping:
             orig_name = name
             if not re.match(valid_name_regexp, name):
                 name = re.sub("[^0-9a-zA-Z_$]", "_", name)
-                if reverse_dictionary.has_key(name):
+                if name in reverse_dictionary:
                     i = 1
-                    while reverse_dictionary.has_key(name + str(i)):
+                    while name + str(i) in reverse_dictionary:
                         i += 1
                     name = name + str(i)
             starting_name = name
@@ -4659,7 +4665,7 @@ class ColumnNameMapping:
                         rng = random_number_generator(starting_name)
                     name = starting_name
                     while len(name) > self.__max_len:
-                        index = rng.next() % len(name)
+                        index = next(rng) % len(name)
                         name = name[:index] + name[index + 1:]
             reverse_dictionary.pop(orig_name)
             reverse_dictionary[name] = key

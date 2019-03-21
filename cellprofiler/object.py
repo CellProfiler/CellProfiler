@@ -120,14 +120,7 @@ class Objects(object):
 
     @property
     def count(self):
-        """The number of objects labeled"""
-        sparse_labels = self.__segmented.sparse['label']
-        unique = numpy.unique(sparse_labels)
-        count = len(unique)
-        # Don't count the background
-        if 0 in unique:
-            count -= 1
-        return count
+        return len(self.indices)
 
     @property
     def areas(self):
@@ -161,8 +154,8 @@ class Objects(object):
         sparse = self.__segmented.sparse
         return numpy.column_stack(
             [sparse[axis] for axis in
-             "y", "x",
-             "label"])
+             ("y", "x",
+             "label")])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -589,7 +582,7 @@ class Segmentation(object):
         axes = list(("c", "t", "z", "y", "x"))
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in axes, self.shape]
+            for aa in (axes, self.shape)]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping

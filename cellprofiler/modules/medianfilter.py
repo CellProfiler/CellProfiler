@@ -35,12 +35,11 @@ class MedianFilter(cellprofiler.module.ImageProcessing):
             text="Window",
             value=3,
             minval=0,
-            doc="""
-                Patch size for computing the median filter. Must be odd. Use a window with a small size to
-                remove small elements of noise. A larger window will remove larger elements of noise at the
-                risk of blurring other features.
-                """
-        )
+            doc="""\
+Dimension in each direction for computing the median filter. Must be odd. Use a window with a small size to
+remove noise that's small in size. A larger window will remove larger scales of noise at the
+risk of blurring other features.
+""")
 
     def settings(self):
         __settings__ = super(MedianFilter, self).settings()

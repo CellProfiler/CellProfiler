@@ -4,10 +4,10 @@
 import logging
 
 logger = logging.getLogger(__name__)
-from cStringIO import StringIO
 import numpy as np
 import h5py
 import os
+from six.moves import StringIO
 
 from cellprofiler.grid import Grid
 from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
@@ -189,7 +189,7 @@ class Workspace(object):
 
     def get_grid(self, grid_name):
         '''Return a grid with the given name'''
-        if not self.__grid.has_key(grid_name):
+        if grid_name not in self.__grid:
             raise ValueError("Could not find grid %s" % grid_name)
         return self.__grid[grid_name]
 

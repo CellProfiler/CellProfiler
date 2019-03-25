@@ -57,89 +57,63 @@ See also **ColorToGray**.
 import numpy as np
 from scipy.linalg import lstsq
 
+import cellprofiler.gui.help.content
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 
 
-def html_color(rgb):
-    '''Return an HTML color for a given stain'''
-    rgb = np.exp(-np.array(rgb)) * 255
-    rgb = rgb.astype(int)
-    color = hex((rgb[0] * 256 + rgb[1]) * 256 + rgb[2])
-    if color.endswith("L"):
-        color = color[:-1]
-    return "#" + color[2:]
-
-
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)
-COLOR_HEMATOXYLIN = html_color(ST_HEMATOXYLIN)
 
 CHOICE_EOSIN = "Eosin"
 ST_EOSIN = (0.093, 0.954, 0.283)
-COLOR_EOSIN = html_color(ST_EOSIN)
 
 CHOICE_DAB = "DAB"
 ST_DAB = (0.268, 0.570, 0.776)
-COLOR_DAB = html_color(ST_DAB)
 
 CHOICE_FAST_RED = "Fast red"
 ST_FAST_RED = (0.214, 0.851, 0.478)
-COLOR_FAST_RED = html_color(ST_FAST_RED)
 
 CHOICE_FAST_BLUE = "Fast blue"
 ST_FAST_BLUE = (0.749, 0.606, 0.267)
-COLOR_FAST_BLUE = html_color(ST_FAST_BLUE)
 
 CHOICE_METHYL_BLUE = "Methyl blue"
 ST_METHYL_BLUE = (0.799, 0.591, 0.105)
-COLOR_METHYL_BLUE = html_color(ST_METHYL_BLUE)
 
 CHOICE_METHYL_GREEN = "Methyl green"
 ST_METHYL_GREEN = (0.980, 0.144, 0.133)
-COLOR_METHYL_GREEN = html_color(ST_METHYL_GREEN)
 
 CHOICE_AEC = "AEC"
 ST_AEC = (0.274, 0.679, 0.680)
-COLOR_AEC = html_color(ST_AEC)
 
 CHOICE_ANILINE_BLUE = "Aniline blue"
 ST_ANILINE_BLUE = (0.853, 0.509, 0.113)
-COLOR_ANILINE_BLUE = html_color(ST_ANILINE_BLUE)
 
 CHOICE_AZOCARMINE = "Azocarmine"
 ST_AZOCARMINE = (0.071, 0.977, 0.198)
-COLOR_AZOCARMINE = html_color(ST_AZOCARMINE)
 
 CHOICE_ALICAN_BLUE = "Alican blue"
 ST_ALICAN_BLUE = (0.875, 0.458, 0.158)
-COLOR_ALICAN_BLUE = html_color(ST_ALICAN_BLUE)
 
 CHOICE_PAS = "PAS"
 ST_PAS = (0.175, 0.972, 0.155)
-COLOR_PAS = html_color(ST_PAS)
 
 CHOICE_HEMATOXYLIN_AND_PAS = "Hematoxylin and PAS"
 ST_HEMATOXYLIN_AND_PAS = (0.553, 0.754, 0.354)
-COLOR_HEMATOXYLIN_AND_PAS = html_color(ST_HEMATOXYLIN_AND_PAS)
 
 CHOICE_FEULGEN = "Feulgen"
 ST_FEULGEN = (0.464, 0.830, 0.308)
-COLOR_FEULGEN = html_color(ST_FEULGEN)
 
 CHOICE_METHYLENE_BLUE = "Methylene blue"
 ST_METHYLENE_BLUE = (0.553, 0.754, 0.354)
-COLOR_METHYLENE_BLUE = html_color(ST_METHYLENE_BLUE)
 
 CHOICE_ORANGE_G = "Orange-G"
 ST_ORANGE_G = (0.107, 0.368, 0.923)
-COLOR_ORANGE_G = html_color(ST_ORANGE_G)
 
 CHOICE_PONCEAU_FUCHSIN = "Ponceau-fuchsin"
 ST_PONCEAU_FUCHSIN = (0.100, 0.737, 0.668)
-COLOR_PONCEAU_FUCHSIN = html_color(ST_PONCEAU_FUCHSIN)
 
 CHOICE_CUSTOM = "Custom"
 
@@ -223,54 +197,22 @@ Use this setting to choose the absorbance values for a particular stain.
 
 The stains are:
 
-+-----------------------------------+--------------------------------------------------+
-| Stain                             |Specific to                                       |
-+===================================+==================================================+
-| AEC (3-Amino-9-ethylcarbazole)    |Peroxidase                                        |
-+-----------------------------------+--------------------------------------------------+
-| Alican blue                       |Mucopolysaccharides                               |
-+-----------------------------------+--------------------------------------------------+
-| Aniline blue                      |Pollen tubes                                      |
-+-----------------------------------+--------------------------------------------------+
-| Azocarmine                        |Plasma                                            |
-+-----------------------------------+--------------------------------------------------+
-| DAB                               |Peroxisomes, mitochondria                         |
-+-----------------------------------+--------------------------------------------------+
-| Eosin                             |Elastic, collagen and reticular fibers            |
-+-----------------------------------+--------------------------------------------------+
-| Fast red                          |Nuclei                                            |
-+-----------------------------------+--------------------------------------------------+
-| Fast blue                         |Myelin fibers                                     |
-+-----------------------------------+--------------------------------------------------+
-| Feulgen                           |DNA                                               |
-+-----------------------------------+--------------------------------------------------+
-| Hematoxylin                       |Nucleic acids, endoplasmic reticulum              |
-+-----------------------------------+--------------------------------------------------+
-| Hematoxylin and PAS               |Nucleus (stained with both Hematoxylin and PAS)   |
-+-----------------------------------+--------------------------------------------------+
-| Methyl blue                       |Collagen                                          |
-+-----------------------------------+--------------------------------------------------+
-| Methyl green                      |Chromatin                                         |
-+-----------------------------------+--------------------------------------------------+
-| Methylene blue                    |Nuclei                                            |
-+-----------------------------------+--------------------------------------------------+
-| Orange G                          |Erythrocytes, pancreas, pituitary                 |
-+-----------------------------------+--------------------------------------------------+
-| PAS                               |Glycogen, carbohydrates                           |
-+-----------------------------------+--------------------------------------------------+
-| Ponceau Fuchsin                   |Red counterstain for Masson’s trichrome           |
-+-----------------------------------+--------------------------------------------------+
+|Unmix_image0|
 
 (Information taken from `here`_,
 `here <http://en.wikipedia.org/wiki/Staining>`__, and
 `here <http://stainsfile.info>`__.)
-You can choose *%(CHOICE_CUSTOM)s* and enter your custom values for the
+You can choose *{CHOICE_CUSTOM}* and enter your custom values for the
 absorbance (or use the estimator to determine values from single-stain
 images).
 
 .. _here: http://en.wikipedia.org/wiki/Histology#Staining
+.. |Unmix_image0| image:: {UNMIX_COLOR_CHART}
 
-""" % globals()))
+""".format(**{
+                "UNMIX_COLOR_CHART": cellprofiler.gui.help.content.image_resource("UnmixColors.png"),
+                "CHOICE_CUSTOM": CHOICE_CUSTOM
+            })))
 
         group.append("red_absorbance", cps.Float(
                 "Red absorbance", 0.5, 0, 1, doc="""\

@@ -6,7 +6,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import _help
+from cellprofiler.modules import _help
 
 __doc__ = """
 MeasureImageIntensity

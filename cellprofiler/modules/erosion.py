@@ -4,7 +4,7 @@
 Erosion
 =======
 
-**Erosion** shrinks shapes in an image.
+**Erosion** shrinks bright shapes in an image. See `this tutorial`_ for more information.
 
 |
 
@@ -13,6 +13,9 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          YES          NO
 ============ ============ ===============
+
+.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/xx_applications/plot_morphology.html#erosion
+
 """
 
 import numpy
@@ -21,6 +24,7 @@ import skimage.morphology
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
+from cellprofiler.modules._help import HELP_FOR_STREL
 
 
 class Erosion(cellprofiler.module.ImageProcessing):
@@ -33,7 +37,8 @@ class Erosion(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Erosion, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True)
+        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True,
+                                                                           doc=HELP_FOR_STREL)
 
     def settings(self):
         __settings__ = super(Erosion, self).settings()

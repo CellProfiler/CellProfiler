@@ -47,7 +47,7 @@ Measurements made by this module
 References
 ^^^^^^^^^^
 
--  Collins LM, Dent CW (1998) “Omega: A general formulation of the Rand
+-  Collins LM, Dent CW (1988) “Omega: A general formulation of the Rand
    Index of cluster recovery suitable for non-disjoint solutions”,
    *Multivariate Behavioral Research*, 23, 231-242 `(link)`_
 
@@ -72,7 +72,8 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import _help
+from cellprofiler.modules import _help
+from functools import reduce
 
 
 C_IMAGE_OVERLAP = "Overlap"
@@ -834,7 +835,7 @@ the two objects. Set this setting to “No” to assess no penalty."""
         #
         # Filter out all unmasked points
         #
-        ii, jj = [x[labels_mask] for x in ii, jj]
+        ii, jj = [x[labels_mask] for x in (ii, jj)]
         if len(ii) == 0:
             return numpy.zeros(0, numpy.int32)
         #

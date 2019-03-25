@@ -686,14 +686,14 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in (x_loc, y_loc)])
             radius = r.uniform() * (max_radius - 5) + 5
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(np.ones(np.sum(mask), np.uint32) * (idx + 1))
         ijv = np.core.records.fromarrays([
-                                             np.hstack(x) for x in ii, jj, vv],
+                                             np.hstack(x) for x in (ii, jj, vv)],
                                          [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
@@ -717,7 +717,7 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in (x_loc, y_loc)])
             radius = r.uniform() * (max_radius - 5) + 5
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             dense[idx, 0, 0, 0, mask] = idx + 1

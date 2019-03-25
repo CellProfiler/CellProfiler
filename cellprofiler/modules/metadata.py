@@ -7,15 +7,17 @@ import urllib
 
 import javabridge
 
-import _help
+import six
+import six.moves
+
+from cellprofiler.modules import _help
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.setting
-import images
-import loadimages
+from cellprofiler.modules import images, loadimages
 
 logger = logging.getLogger(__name__)
 
@@ -916,7 +918,7 @@ not being applied, your choice on this setting may be the culprit.
             if url.startswith("s3:"):
                 url = url.replace(" ", "+")
 
-            if isinstance(url, unicode):
+            if isinstance(url, six.text_type):
                 ourl = env.new_string(url)
             else:
                 ourl = env.new_string_utf(url)
@@ -1215,7 +1217,7 @@ not being applied, your choice on this setting may be the culprit.
 
     def get_data_type(self, key):
         '''Get the data type for a particular metadata key'''
-        if isinstance(key, basestring):
+        if isinstance(key, six.string_types):
             return self.get_data_type([key]).get(key, cellprofiler.measurement.COLTYPE_VARCHAR)
         result = {}
         if self.data_type_choice == DTC_CHOOSE:
@@ -1332,7 +1334,7 @@ not being applied, your choice on this setting may be the culprit.
             # Allow metadata CSVs to be loaded from default io directories.
             groups = []
             n_groups = int(setting_values[3])
-            for group_idx in xrange(n_groups):
+            for group_idx in six.moves.xrange(n_groups):
                 # group offset: 4
                 # no. group settings: 9
                 group = setting_values[4 + (group_idx * 9):4 + ((group_idx + 1) * 9)]

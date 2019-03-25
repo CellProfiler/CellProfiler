@@ -112,7 +112,7 @@ class TestCellProfiler(unittest.TestCase):
                                   "-p", measurements_file,
                                   m2_file)
             self.assertTrue(os.path.exists(m2_file))
-        except IOError, e:
+        except IOError as e:
             if e.args[0] != 'http error':
                 raise e
 

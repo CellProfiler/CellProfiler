@@ -1,6 +1,7 @@
 # coding=utf-8
 """errordialog - dialog box for reporting error.
 """
+from __future__ import print_function
 
 import logging
 import os
@@ -10,6 +11,7 @@ import sys
 import traceback
 import urllib
 import urllib2
+from functools import reduce
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
@@ -312,9 +314,9 @@ def on_report(event, dialog, traceback_text, pipeline):
         response = conn.read()
         wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
                       parent=dialog)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         wx.MessageBox("Failed to upload, server reported code %d" % e.code)
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         wx.MessageBox("Failed to upload: %s" % e.reason)
 
 
@@ -336,7 +338,7 @@ def show_warning(title, message, get_preference, set_preference):
     from cellprofiler.preferences import get_headless
 
     if get_headless():
-        print message
+        print(message)
         return
 
     if not get_preference():
@@ -344,7 +346,7 @@ def show_warning(title, message, get_preference, set_preference):
 
     import wx
     if wx.GetApp() is None:
-        print message
+        print(message)
         return
 
     with wx.Dialog(None, title=title) as dlg:

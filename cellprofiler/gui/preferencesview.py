@@ -477,7 +477,7 @@ class PreferencesView(object):
             if len(self.__errors) == 0:
                 self.set_message_text(WELCOME_MESSAGE)
             else:
-                self.set_message_text(self.__errors.__iter__().next())
+                self.set_message_text(next(self.__errors.__iter__()))
 
     def set_error_text(self, error_text):
         self.set_message_text(error_text)

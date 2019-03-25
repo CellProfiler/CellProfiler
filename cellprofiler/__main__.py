@@ -1,3 +1,15 @@
+from __future__ import print_function
+
+import os
+import os.path
+import sys
+if sys.platform.startswith("win") and hasattr(sys, 'frozen'):
+    # For Windows builds, if JAVA_HOME is not already set, use the copy of Java packaged with CP
+    # We specify this location by setting 'CP_JAVA_HOME' at install.
+    # JAVA_HOME must be set before bioformats import.
+    if 'JAVA_HOME' not in os.environ and 'CP_JAVA_HOME' in os.environ:
+        os.environ['JAVA_HOME'] = os.environ['CP_JAVA_HOME']
+
 import bioformats.formatreader
 import ctypes
 import cellprofiler
@@ -10,7 +22,6 @@ import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
-import cStringIO
 import h5py
 import json
 import logging
@@ -18,13 +29,11 @@ import logging.config
 import matplotlib
 import numpy
 import optparse
-import os
-import os.path
 import pkg_resources
 import re
 import site
-import sys
 import tempfile
+import six.moves
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -56,7 +65,7 @@ def main(args=None):
         cellprofiler.preferences.set_headless()
         cellprofiler.worker.aw_parse_args()
         cellprofiler.worker.main()
-        sys.exit(exit_code)
+        return exit_code
 
     options, args = parse_args(args)
 
@@ -115,53 +124,59 @@ def main(args=None):
     if options.data_file is not None:
         cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
 
-    if not options.show_gui:
-        cellprofiler.utilities.cpjvm.cp_start_vm()
+    try:
+        if not options.show_gui:
+            cellprofiler.utilities.cpjvm.cp_start_vm()
 
-    if options.image_set_file is not None:
-        cellprofiler.preferences.set_image_set_file(options.image_set_file)
+        if options.image_set_file is not None:
+            cellprofiler.preferences.set_image_set_file(options.image_set_file)
 
-    #
-    # Handle command-line tasks that that need to load the modules to run
-    #
-    if options.print_measurements:
-        print_measurements(options)
+        #
+        # Handle command-line tasks that that need to load the modules to run
+        #
+        if options.print_measurements:
+            print_measurements(options)
 
-    if options.write_schema_and_exit:
-        write_schema(options.pipeline_filename)
+        if options.write_schema_and_exit:
+            write_schema(options.pipeline_filename)
 
-    if options.show_gui:
-        matplotlib.use('WXAgg')
+        if options.show_gui:
+            matplotlib.use('WXAgg')
 
-        import cellprofiler.gui.app
+            import cellprofiler.gui.app
 
-        if options.pipeline_filename:
-            if cellprofiler.workspace.is_workspace_file(options.pipeline_filename):
-                workspace_path = os.path.expanduser(options.pipeline_filename)
+            if options.pipeline_filename:
+                if cellprofiler.workspace.is_workspace_file(options.pipeline_filename):
+                    workspace_path = os.path.expanduser(options.pipeline_filename)
+
+                    pipeline_path = None
+                else:
+                    pipeline_path = os.path.expanduser(options.pipeline_filename)
+
+                    workspace_path = None
+            else:
+                workspace_path = None
 
                 pipeline_path = None
-            else:
-                pipeline_path = os.path.expanduser(options.pipeline_filename)
 
-                workspace_path = None
-        else:
-            workspace_path = None
+            app = cellprofiler.gui.app.App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
 
-            pipeline_path = None
+            if options.run_pipeline:
+                app.frame.pipeline_controller.do_analyze_images()
 
-        app = cellprofiler.gui.app.App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
+            app.MainLoop()
 
-        if options.run_pipeline:
-            app.frame.pipeline_controller.do_analyze_images()
+            return
+        elif options.run_pipeline:
+            exit_code = run_pipeline_headless(options, args)
 
-        app.MainLoop()
+    finally:
+        # If anything goes wrong during the startup sequence headlessly, the JVM needs
+        # to be explicitly closed
+        if not options.show_gui:
+            stop_cellprofiler()
 
-        return
-    elif options.run_pipeline:
-        run_pipeline_headless(options, args)
-
-    if not options.show_gui:
-        stop_cellprofiler()
+    return exit_code
 
 
 def __version__(exit_code):
@@ -674,7 +689,7 @@ def run_pipeline_headless(options, args):
 
         pipeline_text = pipeline_text.encode('us-ascii')
 
-        pipeline.load(cStringIO.StringIO(pipeline_text))
+        pipeline.load(six.moves.StringIO(pipeline_text))
 
         if not pipeline.in_batch_mode():
             #
@@ -754,6 +769,9 @@ def run_pipeline_headless(options, args):
         fd = open(options.done_file, "wt")
         fd.write("%s\n" % done_text)
         fd.close()
+    elif not measurements.has_feature(cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS):
+        # The pipeline probably failed
+        exit_code = 1
     else:
         exit_code = 0
 
@@ -764,4 +782,4 @@ def run_pipeline_headless(options, args):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

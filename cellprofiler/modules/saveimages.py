@@ -46,7 +46,7 @@ import cellprofiler.module
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
-import _help
+from cellprofiler.modules import _help
 
 
 IF_IMAGE = "Image"

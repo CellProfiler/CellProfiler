@@ -216,12 +216,10 @@ measurements, per-object measurements or both.
         )
 
         self.levels_setting = cellprofiler.setting.Choice(
-            choices=[256, 8],
+            choices=["256", "8"],
             text="Grayscale levels",
-            value=256
+            value="8"
         )
-
-
 
     def settings(self):
         settings = [
@@ -641,7 +639,8 @@ measured and will result in a undefined value in the output file.
             try:
                 features[:, :, index] = haralick_2d(
                     label_data,
-                    distances=[scale]
+                    distances=[scale],
+                    levels=int(self.levels_setting.value)
                 )
             except ValueError:
                 features[:, :, index] = numpy.nan

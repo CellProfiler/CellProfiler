@@ -239,6 +239,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
         module.scale_groups[0].scale.value = 2
+        module.levels_setting.value = "256"
         module.run(workspace)
         m = workspace.measurements
         all_measurements = module.get_measurements(

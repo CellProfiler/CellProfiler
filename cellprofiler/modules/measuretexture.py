@@ -136,10 +136,8 @@ def haralick_2d(image, distances, levels, ignore_zeros=True):
     greycomatrix = skimage.feature.greycomatrix(image, distances, angles, levels, symmetric=True)
     if ignore_zeros:
         greycomatrix = greycomatrix[1:, 1:, :, :]
-
-    greycomatrices = numpy.split(greycomatrix, len(angles), -1)
-    if ignore_zeros:
         levels -= 1
+    greycomatrices = numpy.split(greycomatrix, len(angles), -1)
     greycomatrices = [greycomatrix.reshape((levels, levels)) for greycomatrix in greycomatrices]
 
     return mahotas.features.texture.haralick_features(greycomatrices)

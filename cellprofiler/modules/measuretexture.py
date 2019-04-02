@@ -125,7 +125,7 @@ IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
 
-def haralick_2d(image, distances, levels):
+def haralick_2d(image, distances, levels, ignore_zeros=True):
     angles = [
         0,
         1 * numpy.pi / 4,
@@ -134,7 +134,9 @@ def haralick_2d(image, distances, levels):
     ]
 
     greycomatrix = skimage.feature.greycomatrix(image, distances, angles, levels, symmetric=True)
-
+    if ignore_zeros:
+        greycomatrix = greycomatrix[1:, 1:, :, :]
+        levels -= 1
     greycomatrices = numpy.split(greycomatrix, len(angles), -1)
     greycomatrices = [greycomatrix.reshape((levels, levels)) for greycomatrix in greycomatrices]
 
@@ -216,12 +218,10 @@ measurements, per-object measurements or both.
         )
 
         self.levels_setting = cellprofiler.setting.Choice(
-            choices=[256, 8],
+            choices=["256", "8"],
             text="Grayscale levels",
-            value=256
+            value="8"
         )
-
-
 
     def settings(self):
         settings = [
@@ -641,7 +641,8 @@ measured and will result in a undefined value in the output file.
             try:
                 features[:, :, index] = haralick_2d(
                     label_data,
-                    distances=[scale]
+                    distances=[scale],
+                    levels=int(self.levels_setting.value)
                 )
             except ValueError:
                 features[:, :, index] = numpy.nan

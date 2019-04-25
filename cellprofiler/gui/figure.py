@@ -344,7 +344,7 @@ class Figure(wx.Frame):
         self.secret_panel = secret_panel_class(self)
         self.secret_panel.Hide()
         self.status_bar = self.CreateStatusBar()
-        wx.EVT_CLOSE(self, self.on_close)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_SIZE, self.on_size)
         if subplots:
             self.subplots = numpy.zeros(subplots, dtype=object)
@@ -397,8 +397,8 @@ class Figure(wx.Frame):
         self.__menu_file.Append(MENU_FILE_SAVE, "&Save")
         self.__menu_file.Append(MENU_FILE_SAVE_TABLE, "&Save table")
         self.__menu_file.Enable(MENU_FILE_SAVE_TABLE, False)
-        wx.EVT_MENU(self, MENU_FILE_SAVE, self.on_file_save)
-        wx.EVT_MENU(self, MENU_FILE_SAVE_TABLE, self.on_file_save_table)
+        self.Bind(wx.EVT_MENU, self.on_file_save, id=MENU_FILE_SAVE)
+        self.Bind(wx.EVT_MENU, self.on_file_save_table, id=MENU_FILE_SAVE_TABLE)
         self.MenuBar.Append(self.__menu_file, "&File")
 
         self.__menu_tools = wx.Menu()
@@ -410,7 +410,7 @@ class Figure(wx.Frame):
         self.menu_subplots = wx.Menu()
         self.MenuBar.Append(self.menu_subplots, 'Subplots')
 
-        wx.EVT_MENU(self, MENU_TOOLS_MEASURE_LENGTH, self.on_measure_length)
+        self.Bind(wx.EVT_MENU, self.on_measure_length, self.__menu_item_measure_length)
 
         # work around mac window menu losing bindings
         if wx.Platform == '__WXMAC__':
@@ -425,7 +425,7 @@ class Figure(wx.Frame):
                     [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW)])
 
         self.SetAcceleratorTable(accelerators)
-        wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
+        self.Bind(wx.EVT_MENU, self.on_close, id=MENU_CLOSE_WINDOW)
         self.MenuBar.Append(cellprofiler.gui.help.make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
@@ -654,12 +654,14 @@ class Figure(wx.Frame):
         return not (image is None or xi >= image.shape[1] or yi >= image.shape[0] or xi < 0 or yi < 0)
 
     def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
-        if event.xdata is None or event.ydata is None:
-            return
-        xi = int(event.xdata + .5)
-        yi = int(event.ydata + .5)
-        fields = self.get_fields(event, yi, xi, x1)
+        # Get the fields later used in the statusbar
+        fields = [""]
+        if event.xdata and event.ydata:
+            xi = int(event.xdata + .5)
+            yi = int(event.ydata + .5)
+            fields = self.get_fields(event, yi, xi, x1)
 
+        # Calculate the length field if mouse is down
         if self.mouse_down is not None:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
@@ -693,7 +695,12 @@ class Figure(wx.Frame):
                     self.length_arrow = None
             self.figure.canvas.draw()
             self.Refresh()
-        self.status_bar.SetFields(fields)
+
+        # Update the statusbar
+        if len(fields) > 0:
+            self.status_bar.SetFieldsCount(len(fields))
+            for i in range(len(fields)):
+                self.status_bar.SetStatusText(fields[i], i=i)
 
     def get_fields(self, event, yi, xi, x1):
         """Get the standard fields at the cursor location"""
@@ -728,16 +735,31 @@ class Figure(wx.Frame):
         return fields
 
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
-        if event.xdata is None or event.ydata is None:
-            return
+        # if event.xdata is None or event.ydata is None:
+        #     return
+        #
+        # xi = int(event.xdata + .5)
+        # yi = int(event.ydata + .5)
+        #
+        # fields = self.get_fields(event, yi, xi, x1)
+        #
+        # self.status_bar.SetFieldsCount(len(fields))
+        # if len(fields) > 0:
+        #     for i in range(len(fields)):
+        #         self.status_bar.SetStatusText(fields[i], i=i)
 
-        xi = int(event.xdata + .5)
-        yi = int(event.ydata + .5)
+        # Get the fields later used in the statusbar
+        fields = [""]
+        if event.xdata and event.ydata:
+            xi = int(event.xdata + .5)
+            yi = int(event.ydata + .5)
+            fields = self.get_fields(event, yi, xi, x1)
 
-        fields = self.get_fields(event, yi, xi, x1)
-
+        # Update the statusbar
         if len(fields) > 0:
-            self.status_bar.SetFields(fields)
+            self.status_bar.SetFieldsCount(len(fields))
+            for i in range(len(fields)):
+                self.status_bar.SetStatusText(fields[i], i=i)
 
     def find_image_for_axes(self, axes):
         for i, sl in enumerate(self.subplots):
@@ -1425,7 +1447,7 @@ class Figure(wx.Frame):
 
             # Draw (actual image drawing in on_redraw() below)
             subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
-            subplot._adjustable = 'box-forced'
+            subplot.set_adjustable("box", True)
             subplot.plot([0, 0], list(image.shape[:2]), 'k')
             subplot.set_xlim([-0.5, image.shape[1] - 0.5])
             subplot.set_ylim([image.shape[0] - 0.5, -0.5])

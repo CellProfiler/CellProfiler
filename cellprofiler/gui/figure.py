@@ -735,19 +735,6 @@ class Figure(wx.Frame):
         return fields
 
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
-        # if event.xdata is None or event.ydata is None:
-        #     return
-        #
-        # xi = int(event.xdata + .5)
-        # yi = int(event.ydata + .5)
-        #
-        # fields = self.get_fields(event, yi, xi, x1)
-        #
-        # self.status_bar.SetFieldsCount(len(fields))
-        # if len(fields) > 0:
-        #     for i in range(len(fields)):
-        #         self.status_bar.SetStatusText(fields[i], i=i)
-
         # Get the fields later used in the statusbar
         fields = [""]
         if event.xdata and event.ydata:

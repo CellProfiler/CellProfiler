@@ -410,7 +410,7 @@ class Figure(wx.Frame):
         self.menu_subplots = wx.Menu()
         self.MenuBar.Append(self.menu_subplots, 'Subplots')
 
-        self.Bind(wx.EVT_MENU, self.on_measure_length, self.__menu_item_measure_length)
+        self.Bind(wx.EVT_MENU, self.on_measure_length, id=MENU_TOOLS_MEASURE_LENGTH)
 
         # work around mac window menu losing bindings
         if wx.Platform == '__WXMAC__':

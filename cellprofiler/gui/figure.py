@@ -654,8 +654,8 @@ class Figure(wx.Frame):
         return not (image is None or xi >= image.shape[1] or yi >= image.shape[0] or xi < 0 or yi < 0)
 
     def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
-        # Get the fields later used in the statusbar
-        fields = [""]
+        # Get the fields later populated in the statusbar
+        fields = None
         if event.xdata and event.ydata:
             xi = int(event.xdata + .5)
             yi = int(event.ydata + .5)
@@ -697,10 +697,14 @@ class Figure(wx.Frame):
             self.Refresh()
 
         # Update the statusbar
-        if len(fields) > 0:
+        if fields:
             self.status_bar.SetFieldsCount(len(fields))
-            for i in range(len(fields)):
-                self.status_bar.SetStatusText(fields[i], i=i)
+
+            for idx, field in enumerate(fields):
+                self.status_bar.SetStatusText(field, i=idx)
+        else:
+            self.status_bar.SetFieldsCount(1)
+            self.status_bar.SetStatusText("")
 
     def get_fields(self, event, yi, xi, x1):
         """Get the standard fields at the cursor location"""
@@ -735,18 +739,22 @@ class Figure(wx.Frame):
         return fields
 
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
-        # Get the fields later used in the statusbar
-        fields = [""]
+        # Get the fields later populated in the statusbar
+        fields = None
         if event.xdata and event.ydata:
             xi = int(event.xdata + .5)
             yi = int(event.ydata + .5)
             fields = self.get_fields(event, yi, xi, x1)
 
         # Update the statusbar
-        if len(fields) > 0:
+        if fields:
             self.status_bar.SetFieldsCount(len(fields))
-            for i in range(len(fields)):
-                self.status_bar.SetStatusText(fields[i], i=i)
+
+            for idx, field in enumerate(fields):
+                self.status_bar.SetStatusText(field, i=idx)
+        else:
+            self.status_bar.SetFieldsCount(1)
+            self.status_bar.SetStatusText("")
 
     def find_image_for_axes(self, axes):
         for i, sl in enumerate(self.subplots):

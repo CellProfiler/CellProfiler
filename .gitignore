@@ -17,4 +17,5 @@ docs/source/images
 *venv/
 settings.json
 venv/
+*venv/
 .vscode/

@@ -60,7 +60,7 @@ def labeled_volume():
 
     return data
 
-
+@pytest.fixture
 def binary_image_to_grayscale(binary_image):
     data = numpy.random.randint(0, 128, binary_image.shape).astype(numpy.uint8)
 
@@ -70,7 +70,7 @@ def binary_image_to_grayscale(binary_image):
 
     return data
 
-
+@pytest.fixture
 def binary_volume_to_grayscale(binary_volume):
     data = numpy.random.randint(0, 128, binary_volume.shape).astype(numpy.uint8)
 
@@ -81,21 +81,7 @@ def binary_volume_to_grayscale(binary_volume):
     return data
 
 
-@pytest.fixture(
-    scope="function",
-    params=[
-        "binary_image",
-        "binary_image_to_grayscale",
-        "binary_volume",
-        "binary_volume_to_grayscale"
-    ],
-    ids=[
-        "binary_image",
-        "grayscale_image",
-        "binary_volume",
-        "grayscale_volume"
-    ]
-)
+@pytest.fixture
 def image(request):
     data = request.param
 
@@ -104,6 +90,15 @@ def image(request):
     return cellprofiler.image.Image(image=data, dimensions=dimensions)
 
 
+@pytest.mark.parametrize(
+    "image",
+    [
+        "binary_image",
+        "binary_image_to_grayscale",
+        "binary_volume",
+        "binary_volume_to_grayscale"
+    ]
+)
 def test_run_boolean(image, module, workspace):
     module.x_name.value = "example"
 

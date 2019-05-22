@@ -108,70 +108,70 @@ class PipelineController(object):
 
         assert isinstance(frame, wx.Frame)
 
-        frame.Bind(wx.EVT_MENU, self.__on_new_workspace, id=cpframe.ID_FILE_NEW_WORKSPACE)
+        frame.Bind(wx.EVT_MENU, self.__on_new_workspace, id=cellprofiler.gui.cpframe.ID_FILE_NEW_WORKSPACE)
 
-        frame.Bind(wx.EVT_MENU, self.__on_open_workspace, id=cpframe.ID_FILE_LOAD)
-        frame.Bind(wx.EVT_MENU, self.__on_save_workspace, id=cpframe.ID_FILE_SAVE)
-        frame.Bind(wx.EVT_MENU, self.__on_save_as_workspace, id=cpframe.ID_FILE_SAVE_AS)
-        frame.Bind(wx.EVT_MENU, self.__on_load_pipeline, id=cpframe.ID_FILE_LOAD_PIPELINE)
-        frame.Bind(wx.EVT_MENU, self.__on_url_load_pipeline, id=cpframe.ID_FILE_URL_LOAD_PIPELINE)
-        frame.Bind(wx.EVT_MENU, self.__on_import_file_list, id=cpframe.ID_FILE_IMPORT_FILE_LIST)
-        frame.Bind(wx.EVT_MENU, self.__on_save_as_pipeline, id=cpframe.ID_FILE_SAVE_PIPELINE)
-        frame.Bind(wx.EVT_MENU, self.__on_export_image_sets, id=cpframe.ID_FILE_EXPORT_IMAGE_SETS)
-        frame.Bind(wx.EVT_MENU, self.__on_export_pipeline_notes, id=cpframe.ID_FILE_EXPORT_PIPELINE_NOTES)
-        frame.Bind(wx.EVT_MENU, self.__on_revert_workspace, id=cpframe.ID_FILE_REVERT_TO_SAVED)
-        frame.Bind(wx.EVT_MENU, self.__on_clear_pipeline, id=cpframe.ID_FILE_CLEAR_PIPELINE)
-        frame.Bind(wx.EVT_MENU, self.__on_plateviewer, id=cpframe.ID_FILE_PLATEVIEWER)
-        frame.Bind(wx.EVT_MENU, self.on_analyze_images, id=cpframe.ID_FILE_ANALYZE_IMAGES)
-        frame.Bind(wx.EVT_MENU, self.on_stop_running, id=cpframe.ID_FILE_STOP_ANALYSIS)
-        frame.Bind(wx.EVT_MENU, self.on_run_multiple_pipelines, id=cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES)
-        frame.Bind(wx.EVT_MENU, self.on_restart, id=cpframe.ID_FILE_RESTART)
+        frame.Bind(wx.EVT_MENU, self.__on_open_workspace, id=cellprofiler.gui.cpframe.ID_FILE_LOAD)
+        frame.Bind(wx.EVT_MENU, self.__on_save_workspace, id=cellprofiler.gui.cpframe.ID_FILE_SAVE)
+        frame.Bind(wx.EVT_MENU, self.__on_save_as_workspace, id=cellprofiler.gui.cpframe.ID_FILE_SAVE_AS)
+        frame.Bind(wx.EVT_MENU, self.__on_load_pipeline, id=cellprofiler.gui.cpframe.ID_FILE_LOAD_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_url_load_pipeline, id=cellprofiler.gui.cpframe.ID_FILE_URL_LOAD_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_import_file_list, id=cellprofiler.gui.cpframe.ID_FILE_IMPORT_FILE_LIST)
+        frame.Bind(wx.EVT_MENU, self.__on_save_as_pipeline, id=cellprofiler.gui.cpframe.ID_FILE_SAVE_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_export_image_sets, id=cellprofiler.gui.cpframe.ID_FILE_EXPORT_IMAGE_SETS)
+        frame.Bind(wx.EVT_MENU, self.__on_export_pipeline_notes, id=cellprofiler.gui.cpframe.ID_FILE_EXPORT_PIPELINE_NOTES)
+        frame.Bind(wx.EVT_MENU, self.__on_revert_workspace, id=cellprofiler.gui.cpframe.ID_FILE_REVERT_TO_SAVED)
+        frame.Bind(wx.EVT_MENU, self.__on_clear_pipeline, id=cellprofiler.gui.cpframe.ID_FILE_CLEAR_PIPELINE)
+        frame.Bind(wx.EVT_MENU, self.__on_plateviewer, id=cellprofiler.gui.cpframe.ID_FILE_PLATEVIEWER)
+        frame.Bind(wx.EVT_MENU, self.on_analyze_images, id=cellprofiler.gui.cpframe.ID_FILE_ANALYZE_IMAGES)
+        frame.Bind(wx.EVT_MENU, self.on_stop_running, id=cellprofiler.gui.cpframe.ID_FILE_STOP_ANALYSIS)
+        frame.Bind(wx.EVT_MENU, self.on_run_multiple_pipelines, id=cellprofiler.gui.cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES)
+        frame.Bind(wx.EVT_MENU, self.on_restart, id=cellprofiler.gui.cpframe.ID_FILE_RESTART)
 
-        frame.Bind(wx.EVT_MENU, self.on_undo, id=cpframe.ID_EDIT_UNDO)
+        frame.Bind(wx.EVT_MENU, self.on_undo, id=cellprofiler.gui.cpframe.ID_EDIT_UNDO)
 
-        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_undo_ui, id=cpframe.ID_EDIT_UNDO)
+        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_undo_ui, id=cellprofiler.gui.cpframe.ID_EDIT_UNDO)
 
-        frame.Bind(wx.EVT_MENU, self.on_module_up, id=cpframe.ID_EDIT_MOVE_UP)
-        frame.Bind(wx.EVT_MENU, self.on_module_down, id=cpframe.ID_EDIT_MOVE_DOWN)
-        frame.Bind(wx.EVT_MENU, self.on_remove_module, id=cpframe.ID_EDIT_DELETE)
-        frame.Bind(wx.EVT_MENU, self.on_duplicate_module, id=cpframe.ID_EDIT_DUPLICATE)
+        frame.Bind(wx.EVT_MENU, self.on_module_up, id=cellprofiler.gui.cpframe.ID_EDIT_MOVE_UP)
+        frame.Bind(wx.EVT_MENU, self.on_module_down, id=cellprofiler.gui.cpframe.ID_EDIT_MOVE_DOWN)
+        frame.Bind(wx.EVT_MENU, self.on_remove_module, id=cellprofiler.gui.cpframe.ID_EDIT_DELETE)
+        frame.Bind(wx.EVT_MENU, self.on_duplicate_module, id=cellprofiler.gui.cpframe.ID_EDIT_DUPLICATE)
 
-        frame.Bind(wx.EVT_MENU, self.on_pathlist_browse, id=cpframe.ID_EDIT_BROWSE_FOR_FILES)
-        frame.Bind(wx.EVT_MENU, self.on_pathlist_clear, id=cpframe.ID_EDIT_CLEAR_FILE_LIST)
-        frame.Bind(wx.EVT_MENU, self.on_pathlist_collapse_all, id=cpframe.ID_EDIT_COLLAPSE_ALL)
-        frame.Bind(wx.EVT_MENU, self.on_pathlist_expand_all, id=cpframe.ID_EDIT_EXPAND_ALL)
-        frame.Bind(wx.EVT_MENU, self.on_pathlist_remove, id=cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST)
-        frame.Bind(wx.EVT_MENU, self.on_pathlist_show, id=cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_browse_folder, id=cellprofiler.gui.cpframe.ID_EDIT_BROWSE_FOR_FOLDER)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_clear, id=cellprofiler.gui.cpframe.ID_EDIT_CLEAR_FILE_LIST)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_collapse_all, id=cellprofiler.gui.cpframe.ID_EDIT_COLLAPSE_ALL)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_expand_all, id=cellprofiler.gui.cpframe.ID_EDIT_EXPAND_ALL)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_remove, id=cellprofiler.gui.cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST)
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_show, id=cellprofiler.gui.cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE)
 
         menu_identifiers = [
-            cpframe.ID_EDIT_BROWSE_FOR_FILES,
-            cpframe.ID_EDIT_CLEAR_FILE_LIST,
-            cpframe.ID_EDIT_COLLAPSE_ALL,
-            cpframe.ID_EDIT_EXPAND_ALL,
-            cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
-            cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE
+            cellprofiler.gui.cpframe.ID_EDIT_BROWSE_FOR_FILES,
+            cellprofiler.gui.cpframe.ID_EDIT_CLEAR_FILE_LIST,
+            cellprofiler.gui.cpframe.ID_EDIT_COLLAPSE_ALL,
+            cellprofiler.gui.cpframe.ID_EDIT_EXPAND_ALL,
+            cellprofiler.gui.cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
+            cellprofiler.gui.cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE
         ]
 
         for menu_id in menu_identifiers:
             frame.Bind(wx.EVT_UPDATE_UI, self.on_update_pathlist_ui, id=menu_id)
 
-        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_module_enable, id=cpframe.ID_EDIT_ENABLE_MODULE)
-        frame.Bind(wx.EVT_MENU, self.on_module_enable, id=cpframe.ID_EDIT_ENABLE_MODULE)
+        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_module_enable, id=cellprofiler.gui.cpframe.ID_EDIT_ENABLE_MODULE)
+        frame.Bind(wx.EVT_MENU, self.on_module_enable, id=cellprofiler.gui.cpframe.ID_EDIT_ENABLE_MODULE)
 
-        frame.Bind(wx.EVT_MENU, self.on_debug_toggle, id=cpframe.ID_DEBUG_TOGGLE)
-        frame.Bind(wx.EVT_MENU, self.on_debug_step, id=cpframe.ID_DEBUG_STEP)
-        frame.Bind(wx.EVT_MENU, self.on_debug_next_image_set, id=cpframe.ID_DEBUG_NEXT_IMAGE_SET)
-        frame.Bind(wx.EVT_MENU, self.on_debug_next_group, id=cpframe.ID_DEBUG_NEXT_GROUP)
-        frame.Bind(wx.EVT_MENU, self.on_debug_choose_group, id=cpframe.ID_DEBUG_CHOOSE_GROUP)
-        frame.Bind(wx.EVT_MENU, self.on_debug_choose_image_set, id=cpframe.ID_DEBUG_CHOOSE_IMAGE_SET)
-        frame.Bind(wx.EVT_MENU, self.on_debug_random_image_set, id=cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET)
-        frame.Bind(wx.EVT_MENU, self.on_debug_reload, id=cpframe.ID_DEBUG_RELOAD)
-        frame.Bind(wx.EVT_MENU, self.on_run_from_this_module, id=cpframe.ID_DEBUG_RUN_FROM_THIS_MODULE)
+        frame.Bind(wx.EVT_MENU, self.on_debug_toggle, id=cellprofiler.gui.cpframe.ID_DEBUG_TOGGLE)
+        frame.Bind(wx.EVT_MENU, self.on_debug_step, id=cellprofiler.gui.cpframe.ID_DEBUG_STEP)
+        frame.Bind(wx.EVT_MENU, self.on_debug_next_image_set, id=cellprofiler.gui.cpframe.ID_DEBUG_NEXT_IMAGE_SET)
+        frame.Bind(wx.EVT_MENU, self.on_debug_next_group, id=cellprofiler.gui.cpframe.ID_DEBUG_NEXT_GROUP)
+        frame.Bind(wx.EVT_MENU, self.on_debug_choose_group, id=cellprofiler.gui.cpframe.ID_DEBUG_CHOOSE_GROUP)
+        frame.Bind(wx.EVT_MENU, self.on_debug_choose_image_set, id=cellprofiler.gui.cpframe.ID_DEBUG_CHOOSE_IMAGE_SET)
+        frame.Bind(wx.EVT_MENU, self.on_debug_random_image_set, id=cellprofiler.gui.cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET)
+        frame.Bind(wx.EVT_MENU, self.on_debug_reload, id=cellprofiler.gui.cpframe.ID_DEBUG_RELOAD)
+        frame.Bind(wx.EVT_MENU, self.on_run_from_this_module, id=cellprofiler.gui.cpframe.ID_DEBUG_RUN_FROM_THIS_MODULE)
 
-        frame.Bind(wx.EVT_MENU, self.on_sample_init, id=cpframe.ID_SAMPLE_INIT)
+        frame.Bind(wx.EVT_MENU, self.on_sample_init, id=cellprofiler.gui.cpframe.ID_SAMPLE_INIT)
 
-        frame.Bind(wx.EVT_MENU, self.on_show_all_windows, id=cpframe.ID_WINDOW_SHOW_ALL_WINDOWS)
-        frame.Bind(wx.EVT_MENU, self.on_hide_all_windows, id=cpframe.ID_WINDOW_HIDE_ALL_WINDOWS)
+        frame.Bind(wx.EVT_MENU, self.on_show_all_windows, id=cellprofiler.gui.cpframe.ID_WINDOW_SHOW_ALL_WINDOWS)
+        frame.Bind(wx.EVT_MENU, self.on_hide_all_windows, id=cellprofiler.gui.cpframe.ID_WINDOW_HIDE_ALL_WINDOWS)
 
         from bioformats.formatreader import set_omero_login_hook
         set_omero_login_hook(self.omero_login)
@@ -1489,10 +1489,10 @@ class PipelineController(object):
         event.Enable(True)
         if not self.__path_list_ctrl.IsShownOnScreen():
             event.Enable(False)
-        elif event.GetId() == cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST:
+        elif event.GetId() == cellprofiler.gui.cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST:
             if not self.__path_list_ctrl.has_selections():
                 event.Enable(False)
-        elif event.GetId() == cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE:
+        elif event.GetId() == cellprofiler.gui.cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE:
             if not self.__path_list_ctrl.has_focus_item():
                 event.Enable(False)
     
@@ -1720,7 +1720,7 @@ class PipelineController(object):
                                parent=self.__frame,
                                style=wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
             assert isinstance(dlg, wx.ProgressDialog)
-            h, w = dlg.GetSizeTuple()
+            h, w = dlg.GetSize()
             if w < 480:
                 dlg.SetSize((max(w, 480), h))
             queue = Queue.Queue()
@@ -1778,6 +1778,9 @@ class PipelineController(object):
                 return keep_going
 
             while not interrupt[0]:
+                logger.warn("while is going")
+                logger.warn(thread.is_alive())
+                logger.warn(queue.empty())
                 try:
                     urls = queue.get(timeout=0.1)
                     try:
@@ -1796,6 +1799,7 @@ class PipelineController(object):
                         break
                     keep_going = update_pulse(message[0])
                 interrupt[0] = not keep_going
+                logger.warn("set stop")
             interrupt[0] = True
         self.__workspace.invalidate_image_set()
 

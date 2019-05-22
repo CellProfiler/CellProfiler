@@ -74,7 +74,7 @@ class AddModuleFrame(wx.Frame):
         selected_module_panel.SetSizer(selected_module_panel_sizer)
 
         self.__set_icon()
-        accelerators = wx.AcceleratorTable([(wx.ACCEL_CMD, ord('W'), cpframe.ID_FILE_EXIT)])
+        accelerators = wx.AcceleratorTable([(wx.ACCEL_CMD, ord('W'), cellprofiler.gui.cpframe.ID_FILE_EXIT)])
         self.SetAcceleratorTable(accelerators)
 
         self.Bind(wx.EVT_CLOSE, self.__on_close, self)
@@ -165,7 +165,7 @@ class AddModuleFrame(wx.Frame):
             filename = self.__module_list_box.GetItems()[idx]
             loader = self.__module_dict[category][filename]
             module = loader(0)
-            if isinstance(self.GetParent(), cpframe.CPFrame):
+            if isinstance(self.GetParent(), cellprofiler.gui.cpframe.CPFrame):
                 self.GetParent().do_help_module(module.module_name, module.get_help())
             else:
                 help_text = module.get_help()

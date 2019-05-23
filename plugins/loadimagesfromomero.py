@@ -658,7 +658,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
         '''
         # TODO: return 3d RGB images when c == None like loadimage.py does?
 
-        if self.__is_cached == True:
+        if self.__is_cached:
             return self.__omero_image_plane
 
         gateway = self.__gateway

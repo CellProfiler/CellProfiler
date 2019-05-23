@@ -36,31 +36,6 @@ def binary_volume():
 
 
 @pytest.fixture
-def labeled_image():
-    # Pre-labeled, connected image
-    data = numpy.zeros((100, 100), dtype=numpy.uint8)
-
-    data[10:30, 10:30] = 1
-
-    data[40:90, 40:50] = 2
-    data[40:50, 40:90] = 3
-
-    return data
-
-
-@pytest.fixture
-def labeled_volume():
-    # Pre-labeled, connected volume
-    data = numpy.zeros((10, 100, 100), dtype=numpy.uint8)
-
-    data[2:6, 10:30, 10:30] = 1
-
-    data[4:6, 40:90, 40:50] = 2
-    data[4:6, 40:50, 40:90] = 3
-
-    return data
-
-@pytest.fixture
 def binary_image_to_grayscale(binary_image):
     data = numpy.random.randint(0, 128, binary_image.shape).astype(numpy.uint8)
 
@@ -80,19 +55,16 @@ def binary_volume_to_grayscale(binary_volume):
 
     return data
 
-
 @pytest.fixture
 def image(request):
-    data = request.param
+    data = request.getfixturevalue(request.param)
 
     dimensions = data.ndim
 
     return cellprofiler.image.Image(image=data, dimensions=dimensions)
 
-
 @pytest.mark.parametrize(
-    "image",
-    [
+    "image", [
         "binary_image",
         "binary_image_to_grayscale",
         "binary_volume",
@@ -124,18 +96,39 @@ def test_run_boolean(image, module, workspace):
     )
 
 
-def labeled_cellprofiler_image(labeled_image):
-    return cellprofiler.image.Image(image=labeled_image, dimensions=labeled_image.ndim),
+@pytest.fixture
+def labeled_image():
+    # Pre-labeled, connected image
+    data = numpy.zeros((100, 100), dtype=numpy.uint8)
 
-def labeled_cellprofiler_volume(labeled_volume):
-    return cellprofiler.image.Image(image=labeled_volume, dimensions=labeled_volume.ndim)
+    data[10:30, 10:30] = 1
+
+    data[40:90, 40:50] = 2
+    data[40:50, 40:90] = 3
+
+    return data
+
+
+@pytest.fixture
+def labeled_volume():
+    # Pre-labeled, connected volume
+    data = numpy.zeros((10, 100, 100), dtype=numpy.uint8)
+
+    data[2:6, 10:30, 10:30] = 1
+
+    data[4:6, 40:90, 40:50] = 2
+    data[4:6, 40:50, 40:90] = 3
+
+    return data
 
 @pytest.mark.parametrize(
-    "image",
-    ["labeled_cellprofiler_image", "labeled_cellprofiler_volume"],
-    ids=["labeled_image", "labeled_volume"]
+    "image", [
+        "labeled_image",
+        "labeled_volume"
+    ]
 )
 def test_run_labels(image, module, workspace):
+
     # Ensure that pre-labeled objects retain their labels
     # even if they are connected
     module.x_name.value = "example"

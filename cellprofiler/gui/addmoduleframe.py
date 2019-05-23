@@ -3,7 +3,7 @@ import cellprofiler.gui
 import cellprofiler.gui.help.search
 import cellprofiler.modules
 import cellprofiler.preferences
-import cpframe
+import cellprofiler.gui.cpframe
 import wx
 
 
@@ -74,7 +74,8 @@ class AddModuleFrame(wx.Frame):
         selected_module_panel.SetSizer(selected_module_panel_sizer)
 
         self.__set_icon()
-        accelerators = wx.AcceleratorTable([(wx.ACCEL_CMD, ord('W'), cpframe.ID_FILE_EXIT)])
+        accelerators = wx.AcceleratorTable(
+                [(wx.ACCEL_CMD, ord('W'), cellprofiler.gui.cpframe.ID_FILE_EXIT)])
         self.SetAcceleratorTable(accelerators)
 
         self.Bind(wx.EVT_CLOSE, self.__on_close, self)
@@ -84,7 +85,7 @@ class AddModuleFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.__on_close, done_button)
         self.Bind(wx.EVT_BUTTON, self.__on_help, module_help_button)
         self.Bind(wx.EVT_BUTTON, self.__on_getting_started, getting_started_button)
-        self.Bind(wx.EVT_MENU, self.__on_close, id=cpframe.ID_FILE_EXIT)
+        self.Bind(wx.EVT_MENU, self.__on_close, id=cellprofiler.gui.cpframe.ID_FILE_EXIT)
         self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
         self.__set_categories()
@@ -131,7 +132,7 @@ class AddModuleFrame(wx.Frame):
                         self.__module_files.insert(-2, category)
                         self.__module_dict[category] = {}
                     self.__module_dict[category][module.module_name] = loader
-            except Exception, e:
+            except Exception as e:
                 import traceback
                 import logging
                 logging.root.error(
@@ -165,7 +166,7 @@ class AddModuleFrame(wx.Frame):
             filename = self.__module_list_box.GetItems()[idx]
             loader = self.__module_dict[category][filename]
             module = loader(0)
-            if isinstance(self.GetParent(), cpframe.CPFrame):
+            if isinstance(self.GetParent(), cellprofiler.gui.cpframe.CPFrame):
                 self.GetParent().do_help_module(module.module_name, module.get_help())
             else:
                 help_text = module.get_help()

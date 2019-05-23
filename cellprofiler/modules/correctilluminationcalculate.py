@@ -833,9 +833,9 @@ fewer iterations, but less accuracy.
         elif self.smoothing_method == SM_MEDIAN_FILTER:
             filter_sigma = max(1, int(sigma+.5))
             strel = strel_disk(filter_sigma)
-            indices, values = rank_order(pixel_data, 65535)
-            indices = indices.astype(np.uint16)
-            output_pixels = skimage.filters.median(pixel_data, strel, mask=mask)
+            rescaled_pixel_data = pixel_data * 65535
+            rescaled_pixel_data = rescaled_pixel_data.astype(np.uint16)
+            output_pixels = skimage.filters.median(rescaled_pixel_data, strel, mask=mask)
         elif self.smoothing_method == SM_TO_AVERAGE:
             mean = np.mean(pixel_data[mask])
             output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
@@ -934,7 +934,7 @@ fewer iterations, but less accuracy.
         d = self.illumination_image_name.provided_attributes
         if self.each_or_all == EA_ALL_ACROSS:
             d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
-        elif d.has_key(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
+        elif cps.AVAILABLE_ON_LAST_ATTRIBUTE in d:
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
 
     def validate_module_warnings(self, pipeline):

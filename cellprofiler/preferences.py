@@ -6,6 +6,7 @@
            Create a function to save the preferences.
            Create a function to populate a handles structure with preferences.
 """
+from __future__ import print_function
 
 import logging
 import multiprocessing
@@ -64,7 +65,7 @@ class HeadlessConfig(object):
     WriteBool = Write
 
     def Exists(self, kwd):
-        return self.__preferences.has_key(kwd)
+        return kwd in self.__preferences
 
     def GetEntryType(self, kwd):
         '''Get the data type of the registry key.
@@ -110,7 +111,7 @@ def get_awt_headless():
     '''Return True if Java is to be started with AWT headless, False to use AWT'''
     global __awt_headless
     if __awt_headless is None:
-        return get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB")
+        return get_headless() and "CELLPROFILER_USE_XVFB" not in os.environ
     return __awt_headless
 
 
@@ -193,7 +194,7 @@ def config_read(key):
         #
         import wx
         shutup = wx.LogNull()
-    if __cached_values.has_key(key):
+    if key in __cached_values:
         return __cached_values[key]
     if get_config().Exists(key):
         if not __is_headless:
@@ -840,7 +841,7 @@ def tuple_to_color(t, default=(0, 0, 0)):
     import wx
     try:
         return wx.Colour(red=int(t[0]), green=int(t[1]), blue=int(t[2]))
-    except IndexError, ValueError:
+    except IndexError as ValueError:
         return tuple_to_color(default)
 
 
@@ -876,7 +877,7 @@ def get_error_color():
             try:
                 __error_color = tuple_to_color(color_string.split(','))
             except:
-                print "Failed to parse error color string: " + color_string
+                print("Failed to parse error color string: " + color_string)
                 traceback.print_exc()
                 __error_color = default_color
     return __error_color

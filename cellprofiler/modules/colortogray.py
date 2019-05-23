@@ -54,8 +54,9 @@ SLOT_CHANNEL_CHOICE = 0
 
 class ColorToGray(cpm.Module):
     module_name = "ColorToGray"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Image Processing"
+    channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
@@ -206,32 +207,23 @@ Enter a name for the resulting grayscale image coming from the value.""")
 
         self.channel_count = cps.HiddenCount(self.channels, "Channel count")
 
-    channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
-
-    def _get_next_channel(self):
-        while True:
-            channel = str(len(self.channel_names) + 1)
-            yield channel
 
     def add_channel(self, can_remove=True):
         '''Add another channel to the channels list'''
         group = cps.SettingsGroup()
         group.can_remove = can_remove
-        if len(self.channels) == len(self.channel_names):
-            ch = next(self._get_next_channel())
-            self.channel_names.append(ch)
-        group.append("channel_choice", cps.Choice(
+        group.append("channel_choice", cps.Integer(
             text="Channel number",
-            choices=self.channel_names,
-            value=self.channel_names[len(self.channels)],
+            value=len(self.channels) + 1,
+            minval=1,
             doc="""\
 *(Used only when splitting images)*
 
-This setting chooses a channel to be processed. For example, *Red: 1*
+This setting chooses a channel to be processed. For example, *1*
 is the first
 channel in a .TIF or the red channel in a traditional image file.
-*Green: 2* and *Blue: 3* are the second and third channels of a TIF or
-the green and blue channels in other formats. *Alpha: 4* is the
+*2* and *3* are the second and third channels of a TIF or
+the green and blue channels in other formats. *4* is the
 transparency channel for image formats that support transparency and is
 channel # 4 for a .TIF file. **ColorToGray** will fail to process an
 image if you select a channel that is not supported by that image, for
@@ -345,7 +337,7 @@ Select the name of the output grayscale image."""))
                     (self.red_contribution, self.green_contribution,
                      self.blue_contribution))]
 
-        return [(self.channel_names.index(channel.channel_choice),
+        return [(self.get_channel_idx_from_choice(channel.channel_choice.value),
                  channel.contribution.value) for channel in self.channels]
 
     @staticmethod
@@ -356,7 +348,10 @@ Select the name of the output grayscale image."""))
                  (string ending in a one-based index)
         returns the zero-based index of the channel.
         '''
-        return int(re.search("[0-9]+$", choice).group()) - 1
+        if type(choice) == int:
+            return choice - 1
+        else:
+            return int(re.search("[0-9]+$", choice).group()) - 1
 
     def channels_and_image_names(self):
         """Return tuples of channel indexes and the image names for output"""
@@ -378,8 +373,12 @@ Select the name of the output grayscale image."""))
         for channel in self.channels:
             choice = channel.channel_choice.value
             channel_idx = self.get_channel_idx_from_choice(choice)
+            if channel_idx < len(self.channel_names):
+                channel_name = self.channel_names[channel_idx]
+            else:
+                channel_name = 'Channel: ' + str(choice)
             result.append((channel_idx, channel.image_name.value,
-                           channel.channel_choice.value))
+                           channel_name))
         return result
 
     def run(self, workspace):
@@ -429,9 +428,9 @@ Select the name of the output grayscale image."""))
         output_image = workspace.display_data.output_image
         figure.set_subplots((1, 2))
         figure.subplot_imshow_color(0, 0, input_image,
-                              title="Original image: %s" % self.image_name)
+                              title="Original image: %s" % self.image_name.value)
         figure.subplot_imshow(0, 1, output_image,
-                              title="Grayscale image: %s" % self.grayscale_name,
+                              title="Grayscale image: %s" % self.grayscale_name.value,
                               colormap=matplotlib.cm.Greys_r,
                               sharexy=figure.subplot(0, 0))
 
@@ -460,14 +459,14 @@ Select the name of the output grayscale image."""))
         input_image = workspace.display_data.input_image
         disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)
-        ncols = int(np.ceil((ndisp+1)**0.5))
-        subplots = (ncols, (ndisp/ncols)+1)
+        ncols = int(np.ceil((ndisp + 1) ** 0.5))
+        subplots = (ncols, (ndisp / ncols) + 1)
         figure.set_subplots(subplots)
         figure.subplot_imshow_color(0, 0, input_image, title="Original image")
 
         for eachplot in range(ndisp):
-             placenum = eachplot +1
-             figure.subplot_imshow(placenum%ncols, placenum/ncols, disp_collection[eachplot][0],
+             placenum = eachplot + 1
+             figure.subplot_imshow(placenum%ncols, placenum / ncols, disp_collection[eachplot][0],
                                    title="%s" % (disp_collection[eachplot][1]),
                                    colormap=matplotlib.cm.Greys_r,
                                    sharexy=figure.subplot(0, 0))
@@ -529,14 +528,16 @@ Select the name of the output grayscale image."""))
                               setting_values[13:])
             variable_revision_number = 3
 
-        #
-        # Standardize the channel choices
-        #
-        setting_values = list(setting_values)
-        nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
-        for i in range(nchannels):
-            idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
-            channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
-            setting_values[idx] = self.channel_names[channel_idx]
+        if variable_revision_number < 4:
+            #
+            # Standardize the channel choices
+            #
+            setting_values = list(setting_values)
+            nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
+            for i in range(nchannels):
+                idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
+                channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
+                setting_values[idx] = channel_idx + 1
+            variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab

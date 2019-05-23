@@ -1,4 +1,5 @@
 """test_Pipeline.py - test the CellProfiler.Pipeline module"""
+from __future__ import print_function
 
 import base64
 import cProfile
@@ -10,6 +11,8 @@ import tempfile
 import traceback
 import unittest
 import zlib
+
+import six
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
@@ -241,7 +244,7 @@ HasImagePlaneDetails:False"""
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
@@ -300,7 +303,7 @@ HasImagePlaneDetails:False"""
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             self.assertEqual(expects_grouping, 1)
@@ -323,7 +326,7 @@ HasImagePlaneDetails:False"""
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             expects[0], expects[1] = ('PostRun', 0)
@@ -470,7 +473,7 @@ HasImagePlaneDetails:False"""
             try:
                 v.module_name
             except:
-                print "%s needs to define module_name as a class variable" % k
+                print("%s needs to define module_name as a class variable" % k)
                 success = False
         self.assertTrue(success)
 
@@ -891,13 +894,13 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 2)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         providers = d[IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
         self.assertEqual(provider[0], module)
         self.assertEqual(provider[1], image_setting)
-        self.assertTrue(d.has_key(ALT_IMAGE_NAME))
+        self.assertTrue(ALT_IMAGE_NAME in d)
         providers = d[ALT_IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -906,7 +909,7 @@ HasImagePlaneDetails:False"""
 
         d = pipeline.get_provider_dictionary(cps.OBJECT_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(OBJECT_NAME))
+        self.assertTrue(OBJECT_NAME in d)
         providers = d[OBJECT_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -947,7 +950,7 @@ HasImagePlaneDetails:False"""
             pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(len(d[IMAGE_NAME]), 2)
         for module in (module1, module3):
             self.assertTrue(any([x[0] == module for x in d[IMAGE_NAME]]))
@@ -957,12 +960,12 @@ HasImagePlaneDetails:False"""
 
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module2)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(d[IMAGE_NAME][0][0], module1)
 
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module4)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(len(d[IMAGE_NAME]), 1)
         self.assertEqual(d[IMAGE_NAME][0][0], module3)
 
@@ -1074,13 +1077,13 @@ HasImagePlaneDetails:False"""
         fd.seek(0)
         result = cpp.read_file_list(fd)
         for rr, tt in zip(result, test_data):
-            if isinstance(tt, unicode):
+            if isinstance(tt, six.text_type):
                 tt = tt.encode("utf-8")
             self.assertEquals(rr, tt)
 
     def test_19_01_read_file_list_pathnames(self):
         root = os.path.split(__file__)[0]
-        paths = [os.path.join(root, x) for x in "foo.tif", "bar.tif"]
+        paths = [os.path.join(root, x) for x in ("foo.tif", "bar.tif")]
         fd = cStringIO.StringIO("\n".join([
             paths[0], "", paths[1]]))
         p = cpp.Pipeline()
@@ -1249,7 +1252,7 @@ def profile_pipeline(pipeline_filename,
         output_filename = os.path.join(cpprefs.get_default_output_directory(), pipeline_name + '_profile')
 
     if not os.path.exists(output_filename) or always_run:
-        print 'Profiling %s' % pipeline_filename
+        print('Profiling %s' % pipeline_filename)
         cProfile.runctx('run_pipeline(pipeline_filename)', globals(), locals(), output_filename)
 
     p = pstats.Stats(output_filename)

@@ -9,7 +9,8 @@ class AboutDialogInfo(wx.adv.AboutDialogInfo):
     def __init__(self):
         super(AboutDialogInfo, self).__init__()
 
-        self.SetCopyright(u"Copyright © 2003 - 2018 Broad Institute, Inc.\nAll rights reserved.")
+        self.Copyright = u"Copyright © 2003 - 2019 Broad Institute, Inc." \
+                         u"\nAll rights reserved."
 
         self.SetName("CellProfiler")
 

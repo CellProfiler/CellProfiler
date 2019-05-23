@@ -226,7 +226,7 @@ def search_module_help(text):
     for module_name in cellprofiler.modules.get_module_names():
         module = cellprofiler.modules.instantiate_module(module_name)
 
-        location = os.path.split(module.create_settings.im_func.func_code.co_filename)[0]
+        location = os.path.split(module.create_settings.__func__.__code__.co_filename)[0]
 
         if location == cellprofiler.preferences.get_plugin_directory():
             continue

@@ -307,7 +307,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         measurements = workspace.measurements
         count_feature = "Count_%s" % TERTIARY
         value = measurements.get_current_measurement("Image", count_feature)
-        self.assertEqual(value, 2)
+        self.assertEqual(value, 3)
 
         child_count_feature = "Children_%s_Count" % TERTIARY
         for parent_name in PRIMARY, SECONDARY:

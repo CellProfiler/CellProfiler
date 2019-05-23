@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import print_function
 import csv
 import logging
 import os
@@ -8,15 +9,16 @@ import urllib2
 import matplotlib.mlab
 import numpy
 
-import _help
+from cellprofiler.modules import _help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
-import identify
-import loadimages
+from cellprofiler.modules import identify, loadimages
+from functools import reduce
+import six
 
 logger = logging.getLogger(__name__)
 try:
@@ -526,7 +528,7 @@ safe to press it.""")
 
         try:
             self.open_csv()
-        except IOError, e:
+        except IOError as e:
             import errno
             if e.errno == errno.EWOULDBLOCK:
                 raise cellprofiler.setting.ValidationError("Another program (Excel?) is locking the CSV file %s." %
@@ -537,7 +539,7 @@ safe to press it.""")
 
         try:
             self.get_header()
-        except Exception, e:
+        except Exception as e:
             raise cellprofiler.setting.ValidationError(
                 "The CSV file, %s, is not in the proper format." 
                 " See this module's help for details on CSV format. (error: %s)" % (self.csv_path, e),
@@ -642,7 +644,7 @@ safe to press it.""")
             output = []
             for h in header:
                 if not h.startswith('file_'):
-                    if isinstance(h, unicode):
+                    if isinstance(h, six.text_type):
                         output.append(h.encode("utf-8"))
                     else:
                         output.append(h)
@@ -724,7 +726,7 @@ safe to press it.""")
                 try:
                     url = cellprofiler.misc.generate_presigned_url(self.csv_path)
                     url_fd = urllib2.urlopen(url)
-                except Exception, e:
+                except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
                 fd = StringIO()
@@ -748,7 +750,7 @@ safe to press it.""")
             wx.MessageBox("Could not read %s" % self.csv_path)
             return
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
         sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(sizer)
@@ -757,7 +759,7 @@ safe to press it.""")
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append([unicode(s, 'utf8') if isinstance(s, str) else s
+            list_ctl.Append([s.encode('utf8') if isinstance(s, str) else s
                              for s in line[:len(header)]])
         frame.SetMinSize((640, 480))
         frame.SetIcon(get_cp_icon())
@@ -776,12 +778,12 @@ safe to press it.""")
 
         fd = self.open_csv(do_not_cache=do_not_cache)
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         fd.close()
         if header[0].startswith('ELN_RUN_ID'):
             try:
                 data = self.convert()
-            except Exception, e:
+            except Exception as e:
                 raise RuntimeError("%s" % e)
             header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
@@ -809,13 +811,13 @@ safe to press it.""")
             try:
                 # do not load URLs automatically
                 return self.get_image_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
         elif group == 'objectgroup' and self.wants_images:
             try:
                 # do not load URLs automatically
                 return self.get_object_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
 
         return []
@@ -838,7 +840,7 @@ safe to press it.""")
             return True
         fd = self.open_csv()
         reader = csv.reader(fd)
-        header = [header_to_column(column) for column in reader.next()]
+        header = [header_to_column(column) for column in next(reader)]
         if header[0].startswith('ELN_RUN_ID'):
             reader = self.convert()
             header = list(reader.dtype.names)
@@ -852,14 +854,14 @@ safe to press it.""")
                     break
                 if len(row) == 0:
                     continue
-                row = [unicode(s, 'utf8') if isinstance(s, str) else s
+                row = [s.encode('utf8') if isinstance(s, str) else s
                        for s in row]
                 if len(row) != len(header):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d" %
-                                     (i, len(row), len(header)))
+                                     (idx, len(row), len(header)))
                 rows.append(row)
         else:
-            rows = [[unicode(s, 'utf8') if isinstance(s, str) else s
+            rows = [[s.encode('utf8') if isinstance(s, str) else s
                      for s in row] for row in reader
                     if len(row) > 0]
         fd.close()
@@ -1098,7 +1100,7 @@ safe to press it.""")
                             fullname = loadimages.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = unicode(loadimages.pathname2url(fullname), "utf-8")
+                            url = str(loadimages.pathname2url(fullname)).encode("utf-8")
                             m.add_measurement(cellprofiler.measurement.IMAGE, url_feature, url,
                                               image_set_number=image_number)
                             if file_feature is not None:
@@ -1185,7 +1187,7 @@ safe to press it.""")
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:
-                        print warning
+                        print(warning)
                         #
                         # Process any object tags
                         #
@@ -1243,7 +1245,7 @@ safe to press it.""")
                 return entry["measurement_columns"]
             fd = self.open_csv()
             reader = csv.reader(fd)
-            header = [header_to_column(x) for x in reader.next()]
+            header = [header_to_column(x) for x in next(reader)]
             if header[0].startswith('ELN_RUN_ID'):
                 reader = self.convert()
                 header = reader.dtype.names
@@ -1518,7 +1520,7 @@ def best_cast(sequence, coltype=None):
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
     '''
-    if (isinstance(coltype, (str, unicode)) and
+    if (isinstance(coltype, six.string_types) and
             coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
         return numpy.array(sequence)

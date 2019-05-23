@@ -8,7 +8,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import _help
+from functools import reduce
 
 __doc__ = """\
 ClassifyObjects

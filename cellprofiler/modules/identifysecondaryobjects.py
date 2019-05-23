@@ -6,14 +6,13 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 
-import threshold
+from cellprofiler.modules import _help, threshold
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import _help
 
 __doc__ = """\
 IdentifySecondaryObjects
@@ -870,7 +869,7 @@ segmentation.""")
             columns = super(IdentifySecondaryObjects, self).get_measurement_columns(
                 pipeline,
                 additional_objects=[
-                    (self.x_name, self.new_primary_objects_name.value)
+                    (self.x_name.value, self.new_primary_objects_name.value)
                 ]
             )
 

@@ -156,7 +156,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
             pipeline.load(file_path)
             if module_count[0] is not None:
                 index = self.file_chooser.InsertStringItem(
-                        sys.maxint, file_name)
+                        sys.maxsize, file_name)
                 self.file_chooser.SetStringItem(index, FC_DATE_COLUMN, mtime)
                 self.file_chooser.SetStringItem(index, FC_MODULE_COUNT_COLUMN,
                                                 str(module_count[0]))
@@ -180,7 +180,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                         self.directory_picker.GetPath(),
                         self.file_chooser.GetItemText(i))
                 index = self.pipeline_list_view.InsertStringItem(
-                        sys.maxint, path)
+                        sys.maxsize, path)
                 self.pipeline_list_view.SetStringItem(
                         index, P_INPUT_DIRECTORY_COLUMN,
                         cellprofiler.preferences.get_default_image_directory())

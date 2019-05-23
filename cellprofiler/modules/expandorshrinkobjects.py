@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import _help
+from cellprofiler.modules import _help
 
 __doc__ = """\
 ExpandOrShrinkObjects

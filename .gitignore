@@ -13,3 +13,4 @@ frozen_version.py
 plugins/
 docs/source/help
 docs/source/images
+.pytest_cache/

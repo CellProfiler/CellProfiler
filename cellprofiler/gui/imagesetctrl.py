@@ -1,6 +1,7 @@
 # coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
+from __future__ import print_function
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
@@ -9,6 +10,8 @@ import cellprofiler.modules.images
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
+import cellprofiler.pipeline
+import cellprofiler.utilities.legacy
 import numpy
 import re
 import urllib
@@ -16,6 +19,8 @@ import wx
 import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
+import six
+
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -355,6 +360,7 @@ class ImageSetCache:
 
 
 class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
+
     def __init__(self, workspace, *args, **kwargs):
         """Initialize the ImageSetCtrl
 
@@ -971,9 +977,9 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             min_width = self.col_label_renderer.minimum_width(label_size, last, only)
             self.SetColMinimalWidth(i, min_width)
             if need_column_layout:
-                if self.table.GetNumberRows() > 0:
-                    first_width, _ = self.GetGridWindow().GetTextExtent(
-                        unicode(self.table.GetValue(0, i)))
+                if self.Table.GetNumberRows() > 0:
+                    first_width, _ = self.GridWindow.GetTextExtent(
+                            six.text_type(self.Table.GetValue(0, i)))
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
                 else:
@@ -996,7 +1002,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.GetTable().GetValue(row, col))
+        s = six.text_type(grid.Table.GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1086,7 +1092,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = unicode(grid.GetTable().GetValue(row, col))
+        s = six.text_type(grid.Table.GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1248,9 +1254,9 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
-        elif isinstance(bitmap, basestring):
-            dc.SetFont(window.Font)
-            dc.SetBackgroundMode(wx.TRANSPARENT)
+        elif isinstance(bitmap, six.string_types):
+            dc.Font = window.Font
+            dc.BackgroundMode = wx.TRANSPARENT
             width, height = dc.GetTextExtent(bitmap)
             x = rect.GetX() + (rect.GetWidth() - width) / 2
             y = rect.GetY() + (rect.GetHeight() - height) / 2

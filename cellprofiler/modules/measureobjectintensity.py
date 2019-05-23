@@ -11,8 +11,8 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import identify
-import _help
+from cellprofiler.modules import identify
+from cellprofiler.modules import _help
 
 __doc__ = """
 MeasureObjectIntensity
@@ -315,7 +315,7 @@ Select the objects whose intensities you want to measure."""))
         else:
             return []
         for object_name_variable in [obj.name for obj in self.objects]:
-            if object_name_variable == object_name:
+            if object_name_variable.value == object_name:
                 return [image.name.value for image in self.images]
         return []
 

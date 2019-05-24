@@ -4,6 +4,7 @@ addons:
       - libhdf5-serial-dev
       - python-mysqldb
       - python-pip
+      - libgtk-3-dev
 cache:
   apt: true
   directories: $HOME/.cache/pip

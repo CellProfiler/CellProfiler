@@ -12,7 +12,7 @@ import cellprofiler.preferences
 import logging
 import math
 import os
-import StringIO
+import io
 import sys
 import time
 import wx
@@ -594,7 +594,7 @@ class PipelineListView(object):
         if len(modules_to_save) == 0:
             event.Veto()
             return
-        fd = StringIO.StringIO()
+        fd = io.StringIO()
         self.__pipeline.savetxt(fd, modules_to_save,
                                 save_image_plane_details=False)
         pipeline_data_object = PipelineDataObject()

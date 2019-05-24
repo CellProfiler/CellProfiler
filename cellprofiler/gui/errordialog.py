@@ -6,7 +6,7 @@ from __future__ import print_function
 import logging
 import os
 import platform
-import StringIO
+import io
 import sys
 import traceback
 import urllib
@@ -298,7 +298,7 @@ def on_report(event, dialog, traceback_text, pipeline):
     try:
         obfuscated_pipeline = pipeline.copy()
         obfuscated_pipeline.obfuscate()
-        fd = StringIO.StringIO()
+        fd = io.StringIO()
         obfuscated_pipeline.savetxt(fd)
         fd.seek(0)
         pipeline_text = fd.read()

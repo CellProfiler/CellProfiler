@@ -5,7 +5,7 @@ addons:
       - python-mysqldb
       - python-pip
       - libgtk-3-dev
-      - libwebkit2gtk-4.0-37
+      - libwebkit2gtk-4.0
       - libgstreamer1.0-dev
 cache:
   apt: true

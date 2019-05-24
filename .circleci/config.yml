@@ -1,17 +1,11 @@
 version: 2
 jobs:
-  build:
-    docker:
-      - image: ccircleci/python:2.7
-    steps:
-      - checkout
-      - run: echo
   test:
     docker:
       - image: circleci/python:2.7
     steps:
       - checkout
-      - run: echo
+      - run: pip install -e .[test]
 workflows:
   version: 2
   build_and_test:

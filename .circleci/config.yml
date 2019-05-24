@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get install default-jdk
-      - run: pip install -editable .[test] --progress-bar off
+      - run: pip install --progress-bar off .[test] 
 workflows:
   version: 2
   build_and_test:

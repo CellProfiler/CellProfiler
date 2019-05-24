@@ -3,6 +3,11 @@ jobs:
   test:
     docker:
       - image: circleci/python:2.7
+      - image: circleci/mysql:8
+    environment:
+      CP_MYSQL_TEST_HOST: "127.0.0.1"
+      CP_MYSQL_TEST_PASSWORD: ""
+      CP_MYSQL_TEST_USER: "root"
     steps:
       - checkout
       - run: sudo apt-get install default-jdk

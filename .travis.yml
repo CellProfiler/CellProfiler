@@ -13,10 +13,9 @@ env:
     - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
 matrix:
   allow_failures:
-    - python: 3.6
+    - python: 3.8
 install:
-  - pip install -r $REQUIREMENTS_FILE
-  - pip install .[test]
+  - pip install -e .[test]
   - pip freeze
 language: python
 notifications:
@@ -27,7 +26,7 @@ notifications:
     on_success: change
 python:
   - "2.7"
-  - "3.6"
+  - "3.8"
 before_script:
   - pip install flake8
   # stop the build if there are Python syntax errors or undefined names

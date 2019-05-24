@@ -27,7 +27,6 @@ YES          YES          NO
 from cellprofiler.gui.help.content import BATCH_PROCESSING_HELP_REF
 import logging
 logger = logging.getLogger(__name__)
-import httplib
 import numpy as np
 import os
 import re

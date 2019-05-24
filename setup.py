@@ -78,7 +78,6 @@ setuptools.setup(
         "scikit-image",
         "scikit-learn",
         "scipy",
-        "six",
         "wxPython==4.0.3"
     ],
     license="BSD",

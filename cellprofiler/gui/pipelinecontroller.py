@@ -136,6 +136,7 @@ class PipelineController(object):
         frame.Bind(wx.EVT_MENU, self.on_remove_module, id=cellprofiler.gui.cpframe.ID_EDIT_DELETE)
         frame.Bind(wx.EVT_MENU, self.on_duplicate_module, id=cellprofiler.gui.cpframe.ID_EDIT_DUPLICATE)
 
+        frame.Bind(wx.EVT_MENU, self.on_pathlist_browse_files, id=cellprofiler.gui.cpframe.ID_EDIT_BROWSE_FOR_FILES)
         frame.Bind(wx.EVT_MENU, self.on_pathlist_browse_folder, id=cellprofiler.gui.cpframe.ID_EDIT_BROWSE_FOR_FOLDER)
         frame.Bind(wx.EVT_MENU, self.on_pathlist_clear, id=cellprofiler.gui.cpframe.ID_EDIT_CLEAR_FILE_LIST)
         frame.Bind(wx.EVT_MENU, self.on_pathlist_collapse_all, id=cellprofiler.gui.cpframe.ID_EDIT_COLLAPSE_ALL)

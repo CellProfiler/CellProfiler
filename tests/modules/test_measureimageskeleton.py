@@ -36,8 +36,8 @@ def volume_skeleton():
 @pytest.fixture(
     scope="module",
     params=[
-        ("image_skeleton", 2),
-        ("volume_skeleton", 3)
+        (image_skeleton(), 2),
+        (volume_skeleton(), 3)
     ],
     ids=[
         "image_skeleton",

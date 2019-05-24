@@ -59,8 +59,8 @@ def volume_segmentation():
 @pytest.fixture(
     scope="module",
     params=[
-        "image_segmentation",
-        "volume_segmentation"
+        image_segmentation(),
+        volume_segmentation()
     ],
     ids=[
         "image_segmentation",

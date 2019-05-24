@@ -60,28 +60,32 @@ def labeled_volume():
 
     return data
 
-@pytest.fixture
-def binary_image_to_grayscale(binary_image):
-    data = numpy.random.randint(0, 128, binary_image.shape).astype(numpy.uint8)
 
-    foreground = numpy.random.randint(128, 256, binary_image.shape).astype(numpy.uint8)
+def binary_to_grayscale(binary):
+    data = numpy.random.randint(0, 128, binary.shape).astype(numpy.uint8)
 
-    data[binary_image] = foreground[binary_image]
+    foreground = numpy.random.randint(128, 256, binary.shape).astype(numpy.uint8)
 
-    return data
-
-@pytest.fixture
-def binary_volume_to_grayscale(binary_volume):
-    data = numpy.random.randint(0, 128, binary_volume.shape).astype(numpy.uint8)
-
-    foreground = numpy.random.randint(128, 256, binary_volume.shape).astype(numpy.uint8)
-
-    data[binary_volume] = foreground[binary_volume]
+    data[binary] = foreground[binary]
 
     return data
 
 
-@pytest.fixture
+@pytest.fixture(
+    scope="function",
+    params=[
+        binary_image(),
+        binary_to_grayscale(binary_image()),
+        binary_volume(),
+        binary_to_grayscale(binary_volume())
+    ],
+    ids=[
+        "binary_image",
+        "grayscale_image",
+        "binary_volume",
+        "grayscale_volume"
+    ]
+)
 def image(request):
     data = request.param
 
@@ -90,15 +94,6 @@ def image(request):
     return cellprofiler.image.Image(image=data, dimensions=dimensions)
 
 
-@pytest.mark.parametrize(
-    "image",
-    [
-        "binary_image",
-        "binary_image_to_grayscale",
-        "binary_volume",
-        "binary_volume_to_grayscale"
-    ]
-)
 def test_run_boolean(image, module, workspace):
     module.x_name.value = "example"
 
@@ -124,15 +119,9 @@ def test_run_boolean(image, module, workspace):
     )
 
 
-def labeled_cellprofiler_image(labeled_image):
-    return cellprofiler.image.Image(image=labeled_image, dimensions=labeled_image.ndim),
-
-def labeled_cellprofiler_volume(labeled_volume):
-    return cellprofiler.image.Image(image=labeled_volume, dimensions=labeled_volume.ndim)
-
 @pytest.mark.parametrize(
     "image",
-    ["labeled_cellprofiler_image", "labeled_cellprofiler_volume"],
+    [cellprofiler.image.Image(image=d, dimensions=d.ndim) for d in [labeled_image(), labeled_volume()]],
     ids=["labeled_image", "labeled_volume"]
 )
 def test_run_labels(image, module, workspace):

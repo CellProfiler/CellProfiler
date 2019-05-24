@@ -2096,7 +2096,7 @@ available:
     def run(self, workspace):
         if self.want_image_thumbnails:
             import PIL.Image as Image
-            from StringIO import StringIO
+            from io import StringIO
             measurements = workspace.measurements
             image_set = workspace.image_set
             for name in self.thumbnail_image_names.get_selections():

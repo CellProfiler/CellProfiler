@@ -213,7 +213,7 @@ def search_module_help(text):
 
     count = 0
 
-    for menu_item, help_text in MENU_HELP.iteritems():
+    for menu_item, help_text in MENU_HELP.items():
         help_text = cellprofiler.gui.html.utils.rst_to_html_fragment(help_text)
 
         matches = __search_fn(help_text, text)

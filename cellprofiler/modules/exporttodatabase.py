@@ -2639,7 +2639,7 @@ INSERT INTO %s (name) values ('%s')""" % (
 
         properties = self.get_property_file_text(workspace)
         for p in properties:
-            for k, v in p.properties.iteritems():
+            for k, v in p.properties.items():
                 if isinstance(v, six.text_type):
                     v = v.encode('utf-8')
                 statement = """
@@ -2764,7 +2764,7 @@ CREATE TABLE %s (
 
         column_defs = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
-        for (current_object, current_table) in all_objects.iteritems():
+        for (current_object, current_table) in all_objects.items():
             list_of_columns.append([])
             for column_def in column_defs:
                 obname, feature, ftype = column_def[:3]

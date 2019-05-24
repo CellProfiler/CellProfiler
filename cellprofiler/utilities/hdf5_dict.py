@@ -1874,7 +1874,7 @@ class HDFCSV(object):
         '''
         with self.lock:
             self.clear()
-            for k, v in d.iteritems():
+            for k, v in d.items():
                 self.add_column(k, v)
 
     def get_column_names(self):

@@ -2430,7 +2430,7 @@ class FilterPanelController(object):
             for key in self.hide_show_dict:
                 self.hide_show_dict[key] = False
             self.populate_subpanel(structure, [])
-            for key, value in self.hide_show_dict.iteritems():
+            for key, value in self.hide_show_dict.items():
                 self.panel.FindWindowByName(key).Show(value)
             self.panel.Layout()
         except:
@@ -3428,7 +3428,7 @@ class FileCollectionDisplayController(object):
 
             color = self.FILTERED_COLOR if node_is_filtered else self.ACTIVE_COLOR
             self.tree_ctrl.SetItemTextColour(item_id, color)
-        for last_part, (item_id, keep) in existing_items.iteritems():
+        for last_part, (item_id, keep) in existing_items.items():
             if not keep:
                 self.remove_item(modpath + [last_part])
         if needs_sort:
@@ -3665,7 +3665,7 @@ class JoinerController(object):
                                      flag=wx.ALIGN_BOTTOM)
                 all_subcontrols[move_down_button_name] = True
 
-        for key, value in all_subcontrols.iteritems():
+        for key, value in all_subcontrols.items():
             ctrl = self.panel.FindWindowByName(key)
             ctrl.Show(value)
 

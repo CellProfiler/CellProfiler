@@ -307,7 +307,7 @@ def find_cpmodule(m):
 
     returns the CPModule class
     '''
-    for v, val in m.__dict__.iteritems():
+    for v, val in m.__dict__.items():
         if isinstance(val, type) and issubclass(val, cpm.Module):
             return val
     raise ValueError("Could not find cellprofiler.module.Module class in %s" % m.__file__)

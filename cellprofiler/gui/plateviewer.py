@@ -125,7 +125,7 @@ class PlateData(object):
         n_cols = 12
         a = numpy.zeros((n_rows, n_cols), object)
         a[:, :] = None
-        for wellname, wd in pd.iteritems():
+        for wellname, wd in pd.items():
             wellname = wellname.lower()
             if wellname[:2].isalpha():
                 row = ord(wellname[0]) * 26 + ord(wellname[1]) - \
@@ -477,7 +477,7 @@ class PlateViewer(object):
             with self.image_dict_lock:
                 generation = self.image_dict_generation
 
-            for k, v in well.iteritems():
+            for k, v in well.items():
                 sd = {}
                 with self.image_dict_lock:
                     if self.image_dict_generation > generation:
@@ -516,7 +516,7 @@ class PlateViewer(object):
         if self.image_dict is None:
             return
         with self.image_dict_lock:
-            image_dict = dict([(x, y.copy()) for x, y in self.image_dict.iteritems()])
+            image_dict = dict([(x, y.copy()) for x, y in self.image_dict.items()])
         channel_dict = {}
         totals = numpy.zeros(4)
         for i in range(self.channel_grid.GetNumberRows()):
@@ -551,10 +551,10 @@ class PlateViewer(object):
             site_dict[k] *= img_size
         img_size = numpy.hstack([numpy.ceil(tile_dims * img_size).astype(int), [3]])
         megapicture = numpy.zeros(img_size, numpy.uint8)
-        for site, sd in image_dict.iteritems():
+        for site, sd in image_dict.items():
             offs = site_dict[site].astype(int)
             # TO_DO - handle images that aren't scaled from 0 to 255
-            for channel, image in sd.iteritems():
+            for channel, image in sd.items():
                 imgmax = numpy.max(image)
                 scale = 1 if imgmax <= 1 else 255 if imgmax < 256 \
                     else 4095 if imgmax < 4096 else 65535

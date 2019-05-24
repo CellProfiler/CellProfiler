@@ -234,7 +234,7 @@ def add_all_images(handles, image_set, object_set):
             images['SmallRemovedSegmented' + object_name] = objects.small_removed_segmented
 
     npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
-    for key, image in images.iteritems():
+    for key, image in images.items():
         npy_images[key][0, 0] = image
     handles[PIPELINE] = npy_images
 
@@ -309,7 +309,7 @@ def add_all_measurements(handles, measurements):
         object_dtype = make_cell_struct_dtype(mapping.keys())
         object_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[object_name][0, 0] = object_measurements
-        for field, feature_name in mapping.iteritems():
+        for field, feature_name in mapping.items():
             feature_measurements = np.ndarray((1, max_image_number),
                                               dtype='object')
             object_measurements[field][0, 0] = feature_measurements
@@ -328,7 +328,7 @@ def add_all_measurements(handles, measurements):
         object_dtype = make_cell_struct_dtype(mapping.keys())
         experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[cpmeas.EXPERIMENT][0, 0] = experiment_measurements
-        for field, feature_name in mapping.iteritems():
+        for field, feature_name in mapping.items():
             feature_measurements = np.ndarray((1, 1), dtype='object')
             feature_measurements[0, 0] = measurements.get_experiment_measurement(feature_name)
             experiment_measurements[field][0, 0] = feature_measurements
@@ -1247,7 +1247,7 @@ class Pipeline(object):
         # a single field named "handles"
         #
         root = {'handles': np.ndarray((1, 1), dtype=make_cell_struct_dtype(handles.keys()))}
-        for key, value in handles.iteritems():
+        for key, value in handles.items():
             root['handles'][key][0, 0] = value
         self.savemat(filename, root)
 
@@ -1343,7 +1343,7 @@ class Pipeline(object):
                     images[provider.name] = image.image
                 if image.mask is not None:
                     images['CropMask' + provider.name] = image.mask
-            for key, value in image_set.legacy_fields.iteritems():
+            for key, value in image_set.legacy_fields.items():
                 if key != NUMBER_OF_IMAGE_SETS:
                     images[key] = value
 

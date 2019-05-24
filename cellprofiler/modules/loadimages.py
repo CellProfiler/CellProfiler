@@ -1816,11 +1816,11 @@ to store the image.
                             None,
                             image_number,
                             self.images[i], full_path)
-                    for k, v in d.iteritems():
+                    for k, v in d.items():
                         if k not in features:
                             features[k] = [None] * n_image_sets
                         features[k][image_number - 1] = v
-        for k, v in features.iteritems():
+        for k, v in features.items():
             workspace.measurements.add_all_measurements(cellprofiler.measurement.IMAGE, k, v)
 
         return True

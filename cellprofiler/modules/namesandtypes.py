@@ -1148,7 +1148,7 @@ requests an object selection.
             return True
 
         image_set_channel_names = [None] * len(column_names)
-        for name, idx in channel_map.iteritems():
+        for name, idx in channel_map.items():
             image_set_channel_names[idx] = name
 
         m = workspace.measurements

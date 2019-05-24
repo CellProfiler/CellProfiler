@@ -2866,7 +2866,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         all_labels = age.keys()
         all_ages = age.values()
         if self.wants_lifetime_filtering.value:
-            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime or v >= maximum_lifetime]
+            labels_to_filter = [k for k, v in age.items() if v <= minimum_lifetime or v >= maximum_lifetime]
         for image_number in image_numbers:
             index = image_index[image_number]
 

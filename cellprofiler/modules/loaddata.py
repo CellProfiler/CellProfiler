@@ -1034,13 +1034,13 @@ safe to press it.""")
             image_numbers = numpy.array(image_numbers, int).flatten()
             max_image_number = numpy.max(image_numbers)
             new_columns = {}
-            for key, values in columns.iteritems():
+            for key, values in columns.items():
                 new_values = [None] * max_image_number
                 for image_number, value in zip(image_numbers, values):
                     new_values[image_number - 1] = value
                 new_columns[key] = new_values
             columns = new_columns
-        for feature, values in columns.iteritems():
+        for feature, values in columns.items():
             m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, values)
         if self.wants_image_groupings and len(self.metadata_fields.selections) > 0:
             keys = ["_".join((cellprofiler.measurement.C_METADATA, k))

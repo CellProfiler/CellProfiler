@@ -800,4 +800,4 @@ class ImageSetList(object):
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
     return u", ".join([u":".join([six.text_type(y) for y in x])
-                       for x in sorted(key.iteritems())])
+                       for x in sorted(key.items())])

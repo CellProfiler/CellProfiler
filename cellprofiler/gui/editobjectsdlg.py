@@ -1377,7 +1377,7 @@ class EditObjectsDialog(wx.Dialog):
             self.display()
         else:
             # Mark some other artist as edited.
-            for artist, d in self.artists.iteritems():
+            for artist, d in self.artists.items():
                 if d[self.K_LABEL] == object_number:
                     d[self.K_EDITED] = True
 
@@ -1858,7 +1858,7 @@ class EditObjectsDialog(wx.Dialog):
             object_numbers.add(self.artists[artist][self.K_LABEL])
             artist.remove()
             del self.artists[artist]
-        for artist, d in self.artists.iteritems():
+        for artist, d in self.artists.items():
             if d[self.K_LABEL] in object_numbers:
                 d[self.K_EDITED] = True
                 object_numbers.remove(d[self.K_LABEL])

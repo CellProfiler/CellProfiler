@@ -515,7 +515,7 @@ class CPFrame(wx.Frame):
         d = dict([(x, False) for x in (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
         for eyedee in ids:
             d[eyedee] = True
-        for k, v in d.iteritems():
+        for k, v in d.items():
             self.menu_edit.Enable(k, v)
 
     def __add_menu(self):

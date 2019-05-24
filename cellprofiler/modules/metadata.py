@@ -1264,7 +1264,7 @@ not being applied, your choice on this setting may be the culprit.
         '''Get the metadata measurements collected by this module'''
         key_types = pipeline.get_available_metadata_keys()
         result = []
-        for key, coltype in key_types.iteritems():
+        for key, coltype in key_types.items():
             if self.data_type_choice == DTC_CHOOSE:
                 data_type = self.get_data_type(key)
                 if data_type == cellprofiler.setting.DataTypes.DT_NONE:

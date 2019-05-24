@@ -995,7 +995,7 @@ class PipelineController(object):
         return True
 
     def __clear_errors(self):
-        for key, error in self.__setting_errors.iteritems():
+        for key, error in self.__setting_errors.items():
             self.__frame.preferences_view.pop_error_text(error)
         self.__setting_errors = {}
 
@@ -3082,7 +3082,7 @@ class PipelineController(object):
         choices = []
 
         for grouping, image_numbers in self.__groupings:
-            text = ["%s=%s" % (k, v) for k, v in grouping.iteritems()]
+            text = ["%s=%s" % (k, v) for k, v in grouping.items()]
             text = ', '.join(text)
             choices.append(text)
         lb = wx.ListBox(dialog, choices=choices)

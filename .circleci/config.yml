@@ -5,6 +5,7 @@ jobs:
       - image: circleci/python:2.7
     steps:
       - checkout
+      - run: sudo apt-get install default-jdk
       - run: pip install -e .[test]
 workflows:
   version: 2

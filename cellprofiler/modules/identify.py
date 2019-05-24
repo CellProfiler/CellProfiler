@@ -5,6 +5,7 @@ import scipy.ndimage
 
 import cellprofiler.measurement
 import cellprofiler.module
+from functools import reduce
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -82,7 +83,7 @@ class Identify(cellprofiler.module.Module):
         if object_name == cellprofiler.measurement.IMAGE:
             return [cellprofiler.measurement.C_COUNT]
         result = []
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             result += [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER]
             if len(object_dictionary[object_name]) > 0:
                 result += [cellprofiler.measurement.C_PARENT]
@@ -103,7 +104,7 @@ class Identify(cellprofiler.module.Module):
         if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_COUNT:
             return list(object_dictionary.keys())
 
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             if category == cellprofiler.measurement.C_LOCATION:
                 return [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
             elif category == cellprofiler.measurement.C_NUMBER:

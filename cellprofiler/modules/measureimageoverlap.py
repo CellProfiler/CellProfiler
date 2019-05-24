@@ -106,7 +106,7 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import _help
+from cellprofiler.modules import _help
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
@@ -704,7 +704,7 @@ the two images. Set this setting to “No” to assess no penalty."""
         #
         # Filter out all unmasked points
         #
-        ii, jj = [x[labels_mask] for x in ii, jj]
+        ii, jj = [x[labels_mask] for x in (ii, jj)]
         if len(ii) == 0:
             return numpy.zeros(0, numpy.int32)
         #

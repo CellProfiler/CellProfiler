@@ -33,6 +33,7 @@ import scipy.sparse
 import skimage.exposure
 import wx
 import wx.grid
+import six
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -43,6 +44,7 @@ import cellprofiler.gui.tools
 import cellprofiler.modules.loadimages
 import cellprofiler.object
 import cellprofiler.preferences
+from cellprofiler.setting import LINEAR, LOG
 
 logger = logging.getLogger(__name__)
 
@@ -233,10 +235,10 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     except IOError:
         wx.MessageBox(u'Failed to open file, "{}"'.format(filename), caption="File open error")
         return
-    except javabridge.JavaException, je:
+    except javabridge.JavaException as je:
         wx.MessageBox(u'Could not open "{}" as an image.'.format(filename), caption="File format error")
         return
-    except Exception, e:
+    except Exception as e:
         cellprofiler.gui.errordialog.display_error_dialog(
             None,
             e,
@@ -520,7 +522,7 @@ class Figure(wx.Frame):
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
         """
-        if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
+        if any([not hasattr(self, bar) for bar in ("navtoolbar", "status_bar")]):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
@@ -621,7 +623,7 @@ class Figure(wx.Frame):
         fields = []
         is_float = True
 
-        x, y = [int(round(xy)) for xy in xi, yi]
+        x, y = [int(round(xy)) for xy in (xi, yi)]
 
         if not self.in_bounds(image, x, y):
             return fields
@@ -929,7 +931,7 @@ class Figure(wx.Frame):
         popup = self.get_imshow_menu(subplot_xy)
         self.PopupMenu(popup, pos)
 
-    def get_imshow_menu(self, (x, y)):
+    def get_imshow_menu(self, coordinates):
         """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
@@ -937,6 +939,7 @@ class Figure(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         """
+        (x, y) = coordinates
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
@@ -1280,7 +1283,7 @@ class Figure(wx.Frame):
                 norm=norm
             )
 
-            ax.set_label("{:d}".format(position * (z - 1) / 8))
+            ax.set_xlabel("Z: {:d}".format(position * (z - 1) / 8))
 
             self.figure.add_subplot(ax)
 
@@ -1465,7 +1468,7 @@ class Figure(wx.Frame):
             else:
                 tick_vmax = image.max()
 
-            if isinstance(colormap, basestring):
+            if isinstance(colormap, six.string_types):
                 colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
             # NOTE: We bind this event each time imshow is called to a new closure
@@ -1900,7 +1903,7 @@ class Figure(wx.Frame):
         ctrl.CreateGrid(nrows, ncols)
         if col_labels is not None:
             for i, value in enumerate(col_labels):
-                ctrl.SetColLabelValue(i, unicode(value))
+                ctrl.SetColLabelValue(i, six.text_type(value))
         else:
             ctrl.SetColLabelSize(0)
         if row_labels is not None:
@@ -1908,7 +1911,7 @@ class Figure(wx.Frame):
             ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
             max_width = 0
             for i, value in enumerate(row_labels):
-                value = unicode(value)
+                value = six.text_type(value)
                 ctrl.SetRowLabelValue(i, value)
                 max_width = max(
                         max_width,
@@ -1919,7 +1922,7 @@ class Figure(wx.Frame):
 
         for i, row in enumerate(statistics):
             for j, value in enumerate(row):
-                ctrl.SetCellValue(i, j, unicode(value))
+                ctrl.SetCellValue(i, j, six.text_type(value))
                 ctrl.SetReadOnly(i, j, True)
         ctrl.AutoSize()
         ctrl.Show()
@@ -1942,6 +1945,8 @@ class Figure(wx.Frame):
                         xlabel='', ylabel='',
                         xscale='linear', yscale='linear',
                         title='',
+                        color='b',
+                        cmap=None,
                         clear=True):
         """Put a scatterplot into a subplot
 
@@ -1952,6 +1957,8 @@ class Figure(wx.Frame):
         xscale - scaling of the x axis (e.g., 'log' or 'linear')
         yscale - scaling of the y axis (e.g., 'log' or 'linear')
         title  - string title for the plot
+        color  - color, sequence, or sequence of color for the plotted points
+        cmap   - matplotlib Colormap
         """
         xvals = numpy.array(xvals).flatten()
         yvals = numpy.array(yvals).flatten()
@@ -1977,6 +1984,8 @@ class Figure(wx.Frame):
         plot = axes.scatter(xvals, yvals,
                             facecolor=(0.0, 0.62, 1.0),
                             edgecolor='none',
+                            c=color,
+                            cmap=cmap,
                             alpha=0.75)
         axes.set_title(title)
         axes.set_xlabel(xlabel)
@@ -2012,7 +2021,7 @@ class Figure(wx.Frame):
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
         values = numpy.array(values).flatten()
-        if xscale == 'log':
+        if xscale == LOG:
             values = numpy.log(values[values > 0])
             xlabel = 'Log(%s)' % (xlabel or '?')
         # hist apparently doesn't like nans, need to preen them out first
@@ -2030,7 +2039,7 @@ class Figure(wx.Frame):
         plot = axes.hist(values, bins,
                          facecolor=(0.0, 0.62, 1.0),
                          edgecolor='none',
-                         log=(yscale == 'log'),
+                         log=(yscale == LOG),
                          alpha=0.75)
         axes.set_xlabel(xlabel)
         axes.set_title(title)
@@ -2223,7 +2232,7 @@ class Figure(wx.Frame):
         axes.axis('image')
 
         if colorbar and not numpy.all(numpy.isnan(data)):
-            if self.colorbar.has_key(axes):
+            if axes in self.colorbar:
                 cb = self.colorbar[axes]
                 cb.set_clim(numpy.min(clean_data), numpy.max(clean_data))
                 cb.update_normal(clean_data)

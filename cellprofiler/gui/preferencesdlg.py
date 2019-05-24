@@ -10,6 +10,7 @@ import matplotlib.cm
 import os
 import sys
 import wx
+import six
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"
@@ -103,9 +104,9 @@ class PreferencesDlg(wx.Dialog):
                 ctl = wx.CheckBox(scrollpanel, -1)
                 ctl.SetValue(getter())
             elif isinstance(ui_info, IntegerPreference):
-                minval = (-sys.maxint if ui_info.minval is None
+                minval = (-sys.maxsize if ui_info.minval is None
                           else ui_info.minval)
-                maxval = (sys.maxint if ui_info.maxval is None
+                maxval = (sys.maxsize if ui_info.maxval is None
                           else ui_info.maxval)
                 ctl = wx.SpinCtrl(scrollpanel,
                                   min=minval,

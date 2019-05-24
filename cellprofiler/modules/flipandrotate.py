@@ -232,7 +232,7 @@ negative as clockwise.""" % globals())
                                               self.horiz_or_vert.value)
             elif self.rotate_choice == ROTATE_MOUSE:
                 d = self.get_dictionary()
-                if (self.how_often == IO_ONCE and d.has_key(D_ANGLE) and
+                if (self.how_often == IO_ONCE and D_ANGLE in d and
                             d[D_ANGLE] is not None):
                     angle = d[D_ANGLE]
                 else:

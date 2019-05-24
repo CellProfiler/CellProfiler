@@ -20,7 +20,7 @@ paths to the image and output files.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES          NO
 ============ ============ ===============
 """
 
@@ -72,6 +72,9 @@ class CreateBatchFiles(cpm.Module):
     module_name = "CreateBatchFiles"
     category = 'File Processing'
     variable_revision_number = 8
+
+    def volumetric(self):
+        return True
 
     #
     def create_settings(self):

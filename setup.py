@@ -55,7 +55,7 @@ setuptools.setup(
             "twine"
         ],
         "test": [
-            "pytest>=3.3.2"
+            "pytest>=3.3.2,<4"
         ]
     },
     install_requires=[
@@ -70,8 +70,8 @@ setuptools.setup(
         "matplotlib>=2.0.0, !=2.1.0",
         "mysqlclient==1.3.13",
         "numpy",
-        "prokaryote==2.4.0",
-        "python-bioformats==1.4.0",
+        "prokaryote==2.4.1",
+        "python-bioformats==1.5.2",
         "pyzmq==15.3.0",
         "raven",
         "requests",
@@ -89,7 +89,8 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=[
         "tests*"
     ]),
-    python_requires=">=2.7, <3",
+    # Allow experimentation with Travis' Python 3.6.3 but not many other Py3s
+    python_requires=">=2.7, !=3.0, !=3.1, !=3.2, !=3.3, !=3.4, !=3.5, <=3.6.3",
     setup_requires=[
         "pytest"
     ],

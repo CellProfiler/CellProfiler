@@ -1,6 +1,7 @@
 # coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
+from __future__ import print_function
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
@@ -9,6 +10,8 @@ import cellprofiler.modules.images
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
+import cellprofiler.pipeline
+import cellprofiler.utilities.legacy
 import numpy
 import re
 import urllib
@@ -16,6 +19,8 @@ import wx
 import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
+import six
+
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -764,11 +769,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.ShowModal()
 
     def on_add_column(self):
-        print "Add column pressed"
+        print("Add column pressed")
         self.table.AppendCols(1)
 
     def on_remove_column(self, col):
-        print "Remove column pressed"
+        print("Remove column pressed")
         self.table.DeleteCols(col, 1)
 
     ####

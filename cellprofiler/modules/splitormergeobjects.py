@@ -17,7 +17,7 @@ from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.setting import YES, NO
-import _help
+from cellprofiler.modules import _help
 
 __doc__ = """\
 SplitOrMergeObjects

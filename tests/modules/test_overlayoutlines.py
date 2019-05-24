@@ -260,7 +260,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
+        numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
     def test_03_02_gray_max_possible(self):
         numpy.random.seed(0)
@@ -277,7 +277,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        numpy.testing.assert_array_equal(output_image.pixel_data, expected)
+        numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
     def test_03_03_wrong_size_gray(self):
         '''Regression test of IMG-961 - image and outline size differ'''
@@ -295,7 +295,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
     def test_04_01_ijv(self):
         numpy.random.seed(0)

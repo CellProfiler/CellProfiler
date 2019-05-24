@@ -1801,10 +1801,10 @@ class EditObjectsDialog(wx.Dialog):
         if (self.delete_mode_start is not None and
                     event.inaxes == self.orig_axes):
             (xmin, xmax), (ymin, ymax) = [
-                [fn(a, b) for fn in min, max]
+                [fn(a, b) for fn in (min, max)]
                 for a, b in
-                (self.delete_mode_start[0], event.xdata),
-                (self.delete_mode_start[1], event.ydata)]
+                ((self.delete_mode_start[0], event.xdata),
+                 (self.delete_mode_start[1], event.ydata))]
             self.delete_mode_rect_artist.set_data([
                 [xmin, xmin, xmax, xmax, xmin],
                 [ymin, ymax, ymax, ymin, ymin]])

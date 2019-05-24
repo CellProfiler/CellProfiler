@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'CellProfiler'
-copyright = u'2018, Broad Institute'
+copyright = u'2003-2019, Broad Institute'
 author = u'Broad Institute'
 
 # The version info for the project you're documenting, acts as replacement for

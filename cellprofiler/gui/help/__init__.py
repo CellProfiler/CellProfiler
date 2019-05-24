@@ -1,4 +1,5 @@
 # coding=utf-8
+import six
 
 
 def make_help_menu(h, window, menu=None):

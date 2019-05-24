@@ -7,7 +7,8 @@ jobs:
       - checkout
       - run: sudo apt-get install default-jdk
       - run: sudo -H pip install --progress-bar off cython numpy
-      - run: sudo -H pip install --progress-bar off .[test] 
+      - run: sudo -H pip install --progress-bar off .[test]
+      - run: py.test
 workflows:
   version: 2
   build_and_test:

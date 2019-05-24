@@ -70,7 +70,7 @@ def volume_segmentation():
 def objects(request):
     objects = cellprofiler.object.Objects()
 
-    objects.segmented = request.param
+    objects.segmented = request.getfixturevalue(request.param)
 
     return objects
 

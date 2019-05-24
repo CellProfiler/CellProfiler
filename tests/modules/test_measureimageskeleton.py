@@ -46,6 +46,7 @@ def volume_skeleton():
 )
 def image(request):
     data, dimensions = request.param
+    data = request.getfixturevalue(data)
 
     return cellprofiler.image.Image(image=data, dimensions=dimensions, convert=False)
 

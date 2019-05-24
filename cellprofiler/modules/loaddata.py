@@ -21,10 +21,7 @@ from functools import reduce
 import six
 
 logger = logging.getLogger(__name__)
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import StringIO
 
 __doc__ = """\
 LoadData

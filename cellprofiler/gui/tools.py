@@ -3,7 +3,7 @@
 """
 
 import centrosome.cpmorphology
-import cStringIO
+import io
 import matplotlib
 import numpy
 import scipy
@@ -14,7 +14,7 @@ def figure_to_image(figure, *args, **kwargs):
     #
     # Save the figure as a .PNG and then load it using scipy.misc.imread
     #
-    fd = cStringIO.StringIO()
+    fd = io.StringIO()
     kwargs = kwargs.copy()
     kwargs["format"] = 'png'
     figure.savefig(fd, *args, **kwargs)

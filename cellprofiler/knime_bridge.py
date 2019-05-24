@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from cStringIO import StringIO
+from io import StringIO
 import json
 import javabridge
 import numpy as np

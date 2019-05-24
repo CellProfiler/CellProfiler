@@ -3754,7 +3754,7 @@ class BinaryMatrixController(object):
 
     def update(self):
         h, w = self.setting.get_size()
-        hh, ww = [(x - 1) / 2 for x in h, w]
+        hh, ww = [(x - 1) / 2 for x in (h, w)]
         if self.height_ctrl.GetValue() != hh:
             self.height_ctrl.SetValue(hh)
         if self.width_ctrl.GetValue() != ww:

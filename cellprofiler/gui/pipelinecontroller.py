@@ -30,7 +30,7 @@ import cellprofiler.setting
 import cellprofiler.workspace
 import cellprofiler.gui.cpframe
 import cellprofiler.utilities.legacy
-import cStringIO
+import io
 import csv
 import datetime
 import exceptions
@@ -991,7 +991,7 @@ class PipelineController(object):
             ftr = cellprofiler.pipeline.M_PIPELINE
         pipeline_text = m.get_experiment_measurement(ftr)
         pipeline_text = pipeline_text.encode('us-ascii')
-        self.__pipeline.load(cStringIO.StringIO(pipeline_text))
+        self.__pipeline.load(io.StringIO(pipeline_text))
         return True
 
     def __clear_errors(self):
@@ -2692,7 +2692,7 @@ class PipelineController(object):
             measurements = cellprofiler.measurement.load_measurements(path)
             pipeline_txt = measurements.get_experiment_measurement(
                 cellprofiler.pipeline.M_PIPELINE)
-            self.__pipeline.loadtxt(cStringIO.StringIO(pipeline_txt.encode("utf-8")))
+            self.__pipeline.loadtxt(io.StringIO(pipeline_txt.encode("utf-8")))
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()

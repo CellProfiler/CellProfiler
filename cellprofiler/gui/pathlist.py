@@ -8,7 +8,7 @@ import cellprofiler.preferences
 import logging
 import numpy
 import urllib
-import urllib2
+import urllib.request
 import uuid
 import wx
 import wx.lib.scrolledpanel
@@ -248,7 +248,7 @@ class PathListCtrl(wx.ScrolledWindow):
                         uid, float(i) / npaths,
                              "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
-            display_name = urllib2.url2pathname(filename)
+            display_name = urllib.request.url2pathname(filename)
             width, _ = self.GetTextExtent(display_name)
             idx = bisect.bisect_left(self.folder_names, folder)
             if idx >= len(self.folder_names) or self.folder_names[idx] != folder:

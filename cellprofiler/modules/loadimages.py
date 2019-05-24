@@ -74,7 +74,7 @@ import re
 import sys
 import tempfile
 import urllib
-import urlparse
+import urllib.parse
 import shutil
 
 import six
@@ -3401,14 +3401,14 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
             filename = self.get_filename()
             if os.path.exists(filename):
                 return False
-            parsed_path = urlparse.urlparse(filename)
+            parsed_path = urllib.parse.urlparse(filename)
             url = filename
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to file failed. File: %s" % filename)
         elif os.path.exists(path):
             return False
         else:
-            parsed_path = urlparse.urlparse(path)
+            parsed_path = urllib.parse.urlparse(path)
             url = '/'.join((path, self.get_filename()))
             #
             # Scheme length == 0 means no scheme
@@ -3751,7 +3751,7 @@ def urlfilename(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[1]
-    path = urlparse.urlparse(url)[2]
+    path = urllib.parse.urlparse(url)[2]
     if "/" in path:
         return urllib.unquote(path.rsplit("/", 1)[1])
     else:
@@ -3768,8 +3768,8 @@ def urlpathname(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[0]
-    scheme, netloc, path = urlparse.urlparse(url)[:3]
-    path = urlparse.urlunparse([scheme, netloc, path, "", "", ""])
+    scheme, netloc, path = urllib.parse.urlparse(url)[:3]
+    path = urllib.parse.urlunparse([scheme, netloc, path, "", "", ""])
     if "/" in path:
         return urllib.unquote(path.rsplit("/", 1)[0])
     else:

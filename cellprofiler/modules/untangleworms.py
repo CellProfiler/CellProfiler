@@ -95,7 +95,7 @@ import logging
 import os
 import re
 import sys
-import urllib2
+import urllib.request
 import xml.dom.minidom as DOM
 
 import cellprofiler.measurement
@@ -2611,7 +2611,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
     if training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
         url = file_name
-        fd_or_file = urllib2.urlopen(url)
+        fd_or_file = urllib.request.urlopen(url)
         is_url = True
         timestamp = "URL"
     else:
@@ -2677,7 +2677,7 @@ def read_params(training_set_directory, training_set_file_name, d):
                 result.inv_angles_covariance_matrix[i, j] = float(text.strip())
     except:
         if is_url:
-            fd_or_file = urllib2.urlopen(url)
+            fd_or_file = urllib.request.urlopen(url)
 
         mat_params = loadmat(fd_or_file)["params"][0, 0]
         field_names = mat_params.dtype.fields.keys()

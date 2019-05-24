@@ -4,7 +4,7 @@ from __future__ import print_function
 import csv
 import logging
 import os
-import urllib2
+import urllib.request
 
 import matplotlib.mlab
 import numpy
@@ -722,7 +722,7 @@ safe to press it.""")
                     raise RuntimeError('Need to fetch URL manually.')
                 try:
                     url = cellprofiler.misc.generate_presigned_url(self.csv_path)
-                    url_fd = urllib2.urlopen(url)
+                    url_fd = urllib.request.urlopen(url)
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e

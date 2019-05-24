@@ -11,12 +11,8 @@ dist: trusty
 env:
   global:
     - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="root" CP_MYSQL_TEST_PASSWORD=""
-  matrix:
-    - REQUIREMENTS_FILE="unpinned_requirements.txt"
-    - REQUIREMENTS_FILE="requirements.txt"
 matrix:
   allow_failures:
-    - env: REQUIREMENTS_FILE="unpinned_requirements.txt"
     - python: 3.6
 install:
   - pip install -r $REQUIREMENTS_FILE
@@ -30,8 +26,8 @@ notifications:
     on_failure: always
     on_success: change
 python:
-  - 2.7
-  - 3.6    
+  - "2.7"
+  - "3.6"
 before_script:
   - pip install flake8
   # stop the build if there are Python syntax errors or undefined names

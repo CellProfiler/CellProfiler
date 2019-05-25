@@ -152,7 +152,7 @@ other, increase or decrease the relative weights.""",
             doc="""\
 *(Used only when splitting RGB images)*
 
-Select *"%(YES)s"* to extract the red channel to grayscale. Otherwise, the
+Select *"Yes"* to extract the red channel to grayscale. Otherwise, the
 red channel will be ignored.
 """
             % globals(),
@@ -173,7 +173,7 @@ Enter a name for the resulting grayscale image coming from the red channel.""",
             doc="""\
 *(Used only when splitting RGB images)*
 
-Select *"%(YES)s"* to extract the green channel to grayscale. Otherwise, the
+Select *"Yes"* to extract the green channel to grayscale. Otherwise, the
 green channel will be ignored.
 """
             % globals(),
@@ -194,7 +194,7 @@ Enter a name for the resulting grayscale image coming from the green channel."""
             doc="""\
 *(Used only when splitting RGB images)*
 
-Select *"%(YES)s"* to extract the blue channel to grayscale. Otherwise, the
+Select *"Yes"* to extract the blue channel to grayscale. Otherwise, the
 blue channel will be ignored.
 """
             % globals(),
@@ -216,7 +216,7 @@ Enter a name for the resulting grayscale image coming from the blue channel.""",
             doc="""\
 *(Used only when splitting HSV images)*
 
-Select *"%(YES)s"* to extract the hue to grayscale. Otherwise, the hue
+Select *"Yes"* to extract the hue to grayscale. Otherwise, the hue
 will be ignored.
 """
             % globals(),
@@ -237,7 +237,7 @@ Enter a name for the resulting grayscale image coming from the hue.""",
             doc="""\
 *(Used only when splitting HSV images)*
 
-Select *"%(YES)s"* to extract the saturation to grayscale. Otherwise, the
+Select *"Yes"* to extract the saturation to grayscale. Otherwise, the
 saturation will be ignored.
 """
             % globals(),
@@ -258,7 +258,7 @@ Enter a name for the resulting grayscale image coming from the saturation.""",
             doc="""\
 *(Used only when splitting HSV images)*
 
-Select *"%(YES)s"* to extract the value to grayscale. Otherwise, the
+Select *"Yes"* to extract the value to grayscale. Otherwise, the
 value will be ignored.
 """
             % globals(),

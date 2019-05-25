@@ -193,7 +193,7 @@ Enter a number to add to the result *after* the chosen operation.""",
             True,
             doc="""\
 Values outside the range 0 to 1 might not be handled well by other
-modules. Select *%(YES)s* to set negative values to 0.
+modules. Select *Yes* to set negative values to 0.
 """
             % globals(),
         )
@@ -203,7 +203,7 @@ modules. Select *%(YES)s* to set negative values to 0.
             True,
             doc="""\
 Values outside the range 0 to 1 might not be handled well by other
-modules. Select *%(YES)s* to set values greater than 1 to a maximum
+modules. Select *Yes* to set values greater than 1 to a maximum
 value of 1.
 """
             % globals(),
@@ -213,7 +213,7 @@ value of 1.
             "Ignore the image masks?",
             False,
             doc="""\
-Select *%(YES)s* to set equal to zero all previously masked pixels and
+Select *Yes* to set equal to zero all previously masked pixels and
 operate on the masked images as if no mask had been applied. Otherwise,
 the smallest image mask is applied after image math has been completed.
 """

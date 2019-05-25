@@ -433,7 +433,7 @@ is most consistent from frame to frame of your movie.
       first phase. Therefore, it is a good idea to optimize the first
       phase settings as the initial step.
 
-      -  You can disable 2nd phase calculation by selecting *%(NO)s* for
+      -  You can disable 2nd phase calculation by selecting *No* for
          "Run the second phase of the LAP algorithm?"
       -  By maximizing the number of correct frame-to-frame links in the
          first phase, the 2nd phase will have less candidates to
@@ -630,8 +630,8 @@ constrains the search radius to reasonable values.
             doc="""\
 *(Used only if the "LAP" tracking method is applied)*
 
-Select "*%(YES)s*" to run the second phase of the LAP algorithm after
-processing all images. Select *%(NO)s* to omit the second phase or to
+Select "*Yes*" to run the second phase of the LAP algorithm after
+processing all images. Select *No* to omit the second phase or to
 perform the second phase when running the module as a data tool.
 
 Since object tracks may start and end not only because of the true
@@ -964,7 +964,7 @@ differences in area when identifying objects between frames.""",
             "Filter objects by lifetime?",
             False,
             doc="""\
-Select "*%(YES)s*" if you want objects to be filtered by their lifetime,
+Select "*Yes*" if you want objects to be filtered by their lifetime,
 i.e., total duration in frames. This is useful for marking objects
 which transiently appear and disappear, such as the results of a
 mis-segmentation.
@@ -990,7 +990,7 @@ mis-segmentation.
             doc="""\
 *(Used only if objects are filtered by lifetime)*
 
-Select "*%(YES)s*" to filter the object on the basis of a minimum number
+Select "*Yes*" to filter the object on the basis of a minimum number
 of frames.""".format(
                 **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
             ),
@@ -1011,7 +1011,7 @@ which last this number of frames or lower are filtered out.""",
             doc="""\
 *(Used only if objects are filtered by lifetime)*
 
-Select "*%(YES)s*" to filter the object on the basis of a maximum number
+Select "*Yes*" to filter the object on the basis of a maximum number
 of frames."""
             % globals(),
         )
@@ -1041,7 +1041,7 @@ The output image can be saved as:
             "Save color-coded image?",
             False,
             doc="""\
-Select "*%(YES)s*" to retain the image showing the tracked objects for
+Select "*Yes*" to retain the image showing the tracked objects for
 later use in the pipeline. For example, a common use is for quality
 control purposes saving the image with the **SaveImages** module.
 

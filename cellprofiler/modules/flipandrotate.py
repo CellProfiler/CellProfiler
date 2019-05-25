@@ -108,8 +108,8 @@ Select how the image is to be flipped.""",
 *(Used only when rotating images)*
 
 When an image is rotated, there will be black space at the
-corners/edges; select *%(YES)s* to crop away the incomplete rows and
-columns of the image, or select *%(NO)s* to leave it as-is.
+corners/edges; select *Yes* to crop away the incomplete rows and
+columns of the image, or select *No* to leave it as-is.
 
 This cropping will produce an image that is not exactly the same size as
 the original, which may affect downstream modules.

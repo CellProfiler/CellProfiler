@@ -110,11 +110,11 @@ is best to test them against each other empirically:
             doc="""\
 *(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
 
-Select *%(YES)s* to automatically calculate the threshold using a
+Select *Yes* to automatically calculate the threshold using a
 three-category Otsu algorithm performed on the Sobel transform of the
 image.
 
-Select *%(NO)s* to manually enter the threshold value.
+Select *No* to manually enter the threshold value.
 """
             % globals(),
         )
@@ -164,9 +164,9 @@ Select the direction of the edges you aim to identify in the image
             "Calculate Gaussian's sigma automatically?",
             True,
             doc="""\
-Select *%(YES)s* to automatically calculate the Gaussian's sigma.
+Select *Yes* to automatically calculate the Gaussian's sigma.
 
-Select *%(NO)s* to manually enter the value.
+Select *No* to manually enter the value.
 """
             % globals(),
         )
@@ -181,10 +181,10 @@ Select *%(NO)s* to manually enter the value.
             doc="""\
 *(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
 
-Select *%(YES)s* to automatically calculate the low / soft threshold
+Select *Yes* to automatically calculate the low / soft threshold
 cutoff for the %(M_CANNY)s method.
 
-Select *%(NO)s* to manually enter the low threshold value.
+Select *No* to manually enter the low threshold value.
 """
             % globals(),
         )

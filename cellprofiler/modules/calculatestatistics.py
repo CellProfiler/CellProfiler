@@ -238,10 +238,10 @@ images. See the help for the previous setting for details.""",
                 "Log-transform the dose values?",
                 False,
                 doc="""\
-Select *%(YES)s* if you have dose-response data and you want to
+Select *Yes* if you have dose-response data and you want to
 log-transform the dose values before fitting a sigmoid curve.
 
-Select *%(NO)s* if your data values indicate only positive vs. negative
+Select *No* if your data values indicate only positive vs. negative
 controls.
 """
                 % globals(),
@@ -253,7 +253,7 @@ controls.
             cps.Binary(
                 """Create dose-response plots?""",
                 False,
-                doc="""Select *%(YES)s* if you want to create and save dose-response plots.
+                doc="""Select *Yes* if you want to create and save dose-response plots.
 You will be asked for information on how to save the plots."""
                 % globals(),
             ),

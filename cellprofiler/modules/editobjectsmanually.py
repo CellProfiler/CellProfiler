@@ -122,7 +122,7 @@ overlaps another or it can prevent you from overlapping one object with
 another. Objects such as worms or the neurites of neurons may cross each
 other and might need to be edited with overlapping allowed, whereas a
 monolayer of cells might be best edited with overlapping off.
-Select "*%(YES)s*" to allow overlaps or select "*%(NO)s*" to prevent them.
+Select "*Yes*" to allow overlaps or select "*No*" to prevent them.
 """
             % globals(),
         )
@@ -154,9 +154,9 @@ controls how edited objects are associated with their predecessors:
             "Display a guiding image?",
             True,
             doc="""\
-Select "*%(YES)s*" to display an image and outlines of the objects.
+Select "*Yes*" to display an image and outlines of the objects.
 
-Select "*%(NO)s*" if you do not want a guide image while editing.
+Select "*No*" if you do not want a guide image while editing.
 """
             % globals(),
         )

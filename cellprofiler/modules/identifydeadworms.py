@@ -154,8 +154,8 @@ This setting determines whether or not **IdentifyDeadWorms**
 automatically calculates the parameters used to determine whether two
 found-worm centers belong to the same worm.
 
-Select "*%(YES)s*" to have **IdentifyDeadWorms** automatically calculate
-the distance from the worm length and width. Select "*%(NO)s*" to set the
+Select "*Yes*" to have **IdentifyDeadWorms** automatically calculate
+the distance from the worm length and width. Select "*No*" to set the
 distances manually.
 """
             % globals(),

@@ -174,7 +174,7 @@ the image beforehand solves this problem.
 For some applications, the incoming images are binary and each object
 should be dilated with a Gaussian filter in the final averaged
 (projection) image. This is for a sophisticated method of illumination
-correction where model objects are produced. Select *%(YES)s* to dilate
+correction where model objects are produced. Select *Yes* to dilate
 objects for this approach.
 """
             % globals(),
@@ -213,12 +213,12 @@ located.
 The illumination function can be rescaled so that the pixel intensities
 are all equal to or greater than 1. You have the following options:
 
--  *%(YES)s:* Rescaling is recommended if you plan to use the
+-  *Yes:* Rescaling is recommended if you plan to use the
    *%(IC_REGULAR)s* method (and hence, the *%(DOS_DIVIDE)s* option in
    **CorrectIlluminationApply**). Rescaling the illumination function to
    >1 ensures that the values in your corrected image will stay between
    0-1 after division.
--  *%(NO)s:* Rescaling is not recommended if you plan to use the
+-  *No:* Rescaling is not recommended if you plan to use the
    *%(IC_BACKGROUND)s* method, which is paired with the
    *%(DOS_SUBTRACT)s* option in **CorrectIlluminationApply**. Because
    rescaling causes the illumination function to have values from 1 to
@@ -401,7 +401,7 @@ typically needed for downstream modules. It can be helpful to retain it
 in case you wish to try several different smoothing methods without
 taking the time to recalculate the averaged image each time.
 
-Select *%(YES)s* to retain this averaged image. Use the **SaveImages**
+Select *Yes* to retain this averaged image. Use the **SaveImages**
 module to save it to your hard drive.
 """
             % globals(),
@@ -424,7 +424,7 @@ The dilated image is the illumination function after dilation but prior
 to smoothing. It is an image produced during the calculations, and is
 not typically needed for downstream modules.
 
-Select *%(YES)s* to retain this dilated image. Use the **SaveImages**
+Select *Yes* to retain this dilated image. Use the **SaveImages**
 module to save it to your hard drive.
 """
             % globals(),
@@ -446,10 +446,10 @@ the pipeline.""",
             doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method)*
 
-Select *%(YES)s* to automatically calculate the parameters for spline
+Select *Yes* to automatically calculate the parameters for spline
 fitting.
 
-Select *%(NO)s* to specify the background mode, background threshold,
+Select *No* to specify the background mode, background threshold,
 scale, maximum number of iterations and convergence.
 """
             % globals(),

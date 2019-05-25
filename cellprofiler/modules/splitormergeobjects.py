@@ -214,7 +214,7 @@ components. If you want to add pixels around objects, see
             doc="""\
 *(Used only with the "%(OPTION_MERGE)s" option)*
 
-Select *%(YES)s* to use the objects’ intensity features to determine
+Select *Yes* to use the objects’ intensity features to determine
 whether two objects should be merged. If you choose to use a grayscale
 image, *%(OPTION_MERGE)s* will merge two objects only if they are
 within the distance you have specified *and* certain criteria about the

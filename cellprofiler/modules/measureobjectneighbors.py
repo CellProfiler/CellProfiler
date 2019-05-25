@@ -215,7 +215,7 @@ available colormaps can be seen `here`_.
             "Retain the image of objects colored by percent of touching pixels?",
             False,
             doc="""\
-Select *%(YES)s* to keep an image of the input objects colored by the
+Select *Yes* to keep an image of the input objects colored by the
 percentage of the boundary touching their neighbors. A colormap of your
 choice is used to show the touching percentage of each object. Use the
 **SaveImages** module to save this image to a file.

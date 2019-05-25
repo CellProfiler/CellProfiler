@@ -359,7 +359,7 @@ and 1, respectively.
             "Retain an image of the grid?",
             False,
             doc="""\
-Select "*%(YES)s*" to retain an image of the grid for use later in the
+Select "*Yes*" to retain an image of the grid for use later in the
 pipeline. This module can create an annotated image of the grid that can
 be saved using the **SaveImages** module.
 """

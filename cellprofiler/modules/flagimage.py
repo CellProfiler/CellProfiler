@@ -151,9 +151,9 @@ an image set is flagged:
                 "Skip image set if flagged?",
                 False,
                 doc="""\
-Select *%(YES)s* to skip the remainder of the pipeline for image sets
+Select *Yes* to skip the remainder of the pipeline for image sets
 that are flagged. CellProfiler will not run subsequent modules in the
-pipeline on the images for any image set that is flagged. Select *%(NO)s*
+pipeline on the images for any image set that is flagged. Select *No*
 for CellProfiler to continue to process the pipeline regardless of
 flagging.
 
@@ -340,7 +340,7 @@ Please note the following:
                 "Flag images based on low values?",
                 True,
                 doc="""\
-Select *%(YES)s* to flag images with measurements below the specified
+Select *Yes* to flag images with measurements below the specified
 cutoff. If the measurement evaluates to Not-A-Number (NaN), then the
 image is not flagged.
 """
@@ -359,7 +359,7 @@ image is not flagged.
                 "Flag images based on high values?",
                 True,
                 doc="""\
-Select *%(YES)s* to flag images with measurements above the specified
+Select *Yes* to flag images with measurements above the specified
 cutoff. If the measurement evaluates to Not-A-Number (NaN), then the
 image is not flagged.
 """

@@ -129,7 +129,7 @@ by the **Morph** module’s *Skel* operation.""",
             "Retain the branchpoint image?",
             False,
             doc="""\
-Select "*%(YES)s*" if you want to save the color image of branchpoints and
+Select "*Yes*" if you want to save the color image of branchpoints and
 trunks. This is the image that is displayed in the output window for
 this module."""
             % globals(),
@@ -151,7 +151,7 @@ in a later module, such as **SaveImages**.""",
             doc="""\
 The algorithm reskeletonizes the image and this can leave artifacts
 caused by small holes in the image prior to skeletonizing. These holes
-result in false trunks and branchpoints. Select "*%(YES)s*" to fill in
+result in false trunks and branchpoints. Select "*Yes*" to fill in
 these small holes prior to skeletonizing."""
             % globals(),
         )
@@ -171,7 +171,7 @@ algorithm will fill in any hole whose area is this size or smaller.""",
             "Export the skeleton graph relationships?",
             False,
             doc="""\
-Select "*%(YES)s*" to produce an edge file and a vertex file that gives the
+Select "*Yes*" to produce an edge file and a vertex file that gives the
 relationships between vertices (trunks, branchpoints and endpoints)."""
             % globals(),
         )

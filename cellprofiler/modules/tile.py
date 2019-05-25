@@ -205,7 +205,7 @@ your images are named A01, A02, etc, enter "*%(S_ROW)s*".
             "Use meander mode?",
             False,
             doc="""\
-Select "*%(YES)s*" to tile adjacent images in one direction, then the next
+Select "*Yes*" to tile adjacent images in one direction, then the next
 row/column is tiled in the opposite direction. Some microscopes capture
 images in this fashion. The default mode is “comb”, or “typewriter”
 mode; in this mode, when one row is completely tiled in one direction,
@@ -221,8 +221,8 @@ the same direction.
             doc="""\
 **Tile** can automatically calculate the number of rows in the grid
 based on the number of image cycles that will be processed. Select
-"*%(YES)s*" to create a grid that has the number of columns that you
-entered and enough rows to display all of your images. Select "*%(NO)s*"
+"*Yes*" to create a grid that has the number of columns that you
+entered and enough rows to display all of your images. Select "*No*"
 to specify the number of rows.
 
 If you check both automatic rows and automatic columns, **Tile** will
@@ -236,9 +236,9 @@ create a grid that has roughly the same number of rows and columns.
             False,
             doc="""\
 **Tile** can automatically calculate the number of columns in the grid
-from the number of image cycles that will be processed. Select "*%(YES)s*"
+from the number of image cycles that will be processed. Select "*Yes*"
 to create a grid that has the number of rows that you entered and enough
-columns to display all of your images. Select "*%(NO)s*" to specify the
+columns to display all of your images. Select "*No*" to specify the
 number of rows.
 
 If you check both automatic rows and automatic columns, **Tile** will

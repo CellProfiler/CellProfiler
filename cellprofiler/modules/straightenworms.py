@@ -233,7 +233,7 @@ An additional option is the following:
             "Measure intensity distribution?",
             True,
             doc="""\
-Select *%(YES)s* to divide a worm into sections and measure the
+Select *Yes* to divide a worm into sections and measure the
 intensities of each section in each of the straightened images. These
 measurements can help classify phenotypes if the staining pattern across
 the segments differs between phenotypes.

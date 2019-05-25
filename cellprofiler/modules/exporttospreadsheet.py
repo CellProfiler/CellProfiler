@@ -208,8 +208,8 @@ This setting lets you choose whether or not to add a prefix to each of
 the .CSV filenames produced by **ExportToSpreadsheet**. A prefix may be
 useful if you use the same directory for the results of more than one
 pipeline; you can specify a different prefix in each pipeline. Select
-*"%(YES)s"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
-Select *"%(NO)s"* to use filenames without prefixes (e.g., “Images.csv”).
+*"Yes"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
+Select *"No"* to use filenames without prefixes (e.g., “Images.csv”).
             """
             % globals(),
         )
@@ -218,7 +218,7 @@ Select *"%(NO)s"* to use filenames without prefixes (e.g., “Images.csv”).
             "Filename prefix",
             "MyExpt_",
             doc="""\
-(*Used only if “Add a prefix to file names?” is "%(YES)s"*)
+(*Used only if “Add a prefix to file names?” is "Yes"*)
 
 The text you enter here is prepended to the names of each file produced by
 **ExportToSpreadsheet**.
@@ -231,9 +231,9 @@ The text you enter here is prepended to the names of each file produced by
             False,
             doc="""\
 This setting either prevents or allows overwriting of old .CSV files by
-**ExportToSpreadsheet** without confirmation. Select *"%(YES)s"* to
+**ExportToSpreadsheet** without confirmation. Select *"Yes"* to
 overwrite without warning any .CSV file that already exists. Select
-*"%(NO)s"* to prompt before overwriting when running CellProfiler in the
+*"No"* to prompt before overwriting when running CellProfiler in the
 GUI and to fail when running headless."""
             % globals(),
         )
@@ -243,7 +243,7 @@ GUI and to fail when running headless."""
             False,
             doc="""\
 “Image\_Metadata\_” columns are normally exported in the Image data
-file, but if you select *"%(YES)s"*, they will also be exported with the
+file, but if you select *"Yes"*, they will also be exported with the
 Object data file(s)."""
             % globals(),
         )
@@ -293,7 +293,7 @@ check the measurements or categories to export.""",
             "Calculate the per-image mean values for object measurements?",
             False,
             doc="""\
-Select *"%(YES)s"* for **ExportToSpreadsheet** to calculate population
+Select *"Yes"* for **ExportToSpreadsheet** to calculate population
 statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
@@ -311,7 +311,7 @@ per-object measurements."""
             "Calculate the per-image median values for object measurements?",
             False,
             doc="""\
-Select *"%(YES)s"* for **ExportToSpreadsheet** to calculate population
+Select *"Yes"* for **ExportToSpreadsheet** to calculate population
 statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
@@ -329,7 +329,7 @@ per-object measurements."""
             "Calculate the per-image standard deviation values for object measurements?",
             False,
             doc="""\
-Select *"%(YES)s"* for **ExportToSpreadsheet** to calculate population
+Select *"Yes"* for **ExportToSpreadsheet** to calculate population
 statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
@@ -347,7 +347,7 @@ per-object measurements."""
             "Create a GenePattern GCT file?",
             False,
             doc="""\
-Select *"%(YES)s"* to create a GCT file compatible with `GenePattern`_.
+Select *"Yes"* to create a GCT file compatible with `GenePattern`_.
 The GCT file format is a tab-delimited text file format designed for
 gene expression datasets; the specifics of the format are described
 `here`_. By converting your measurements into a GCT file, you can make
@@ -413,7 +413,7 @@ Select which image whose filename will be used to identify each sample row.""",
             "Export all measurement types?",
             True,
             doc="""\
-Select *"%(YES)s"* to export every category of measurement.
+Select *"Yes"* to export every category of measurement.
 **ExportToSpreadsheet** will create one data file for each object
 produced in the pipeline, as well as per-image, per-experiment and
 object relationships, if relevant. See *%(MEASUREMENT_NAMING_HELP)s*
@@ -421,7 +421,7 @@ for more details on the various measurement types. The module will use
 the object name as the file name, optionally prepending the output file
 name if specified above.
 
-Select *"%(NO)s"* if you want to do either (or both) of two things:
+Select *"No"* if you want to do either (or both) of two things:
 
 -  Specify which objects should be exported;
 -  Override the automatic nomenclature of the exported files."""
@@ -441,7 +441,7 @@ Select *"%(NO)s"* if you want to do either (or both) of two things:
             EEObjectNameSubscriber(
                 "Data to export",
                 doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+*(Used only when “Export all measurements?” is set to “No”)*
 
 Choose *Image*, *Experiment*, *Object relationships* or an object name
 from the list. **ExportToSpreadsheet** will write out a file of
@@ -457,14 +457,14 @@ for more details on the various measurement types."""
                 "Combine these object measurements with those of the previous object?",
                 False,
                 doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+*(Used only when “Export all measurements?” is set to “No”)*
 
-Select *"%(YES)s"* to create a file composed of measurements made on
+Select *"Yes"* to create a file composed of measurements made on
 this object and the one directly above it. This can be convenient, for
 example, if you measured Nuclei, Cells, and Cytoplasm objects, and you
 want to look at the measurements for all of them in a single spreadsheet.
 
-Select *"%(NO)s"* to create separate files for this and the previous
+Select *"No"* to create separate files for this and the previous
 object."""
                 % globals(),
             ),
@@ -476,13 +476,13 @@ object."""
                 "Use the object name for the file name?",
                 True,
                 doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+*(Used only when “Export all measurements?” is set to “No”)*
 
-Select *"%(YES)s"* to use the object name as selected above to generate
+Select *"Yes"* to use the object name as selected above to generate
 a file name for the spreadsheet. For example, if you selected *Image*
 above and have not checked the "*Prepend output file name*" option, your
 output file will be named “Image.csv”.
-Select *"%(NO)s"* to name the file yourself."""
+Select *"No"* to name the file yourself."""
                 % globals(),
             ),
         )
@@ -494,7 +494,7 @@ Select *"%(NO)s"* to name the file yourself."""
                 "DATA.csv",
                 metadata=True,
                 doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+*(Used only when “Export all measurements?” is set to “No”)*
 
 Enter a file name for the named objects’ measurements.
 **ExportToSpreadsheet** will prepend the name of the measurements file

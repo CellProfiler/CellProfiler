@@ -407,10 +407,10 @@ An additional option is the following:
             "Use training set weights?",
             True,
             doc="""\
-Select "*%(YES)s*" to use the overlap and leftover weights from the
+Select "*Yes*" to use the overlap and leftover weights from the
 training set.
 
-Select "*%(NO)s*" to override these weights with user-specified values.
+Select "*No*" to override these weights with user-specified values.
 """
             % globals(),
         )

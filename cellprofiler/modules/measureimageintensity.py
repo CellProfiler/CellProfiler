@@ -145,7 +145,7 @@ objects.""",
                 "Measure the intensity only from areas enclosed by objects?",
                 False,
                 doc="""\
-Select *%(YES)s* to measure only those pixels within an object type you
+Select *Yes* to measure only those pixels within an object type you
 choose, identified by a prior module. Note that this module will
 aggregate intensities across all objects in the image: to measure each
 object individually, see **MeasureObjectIntensity** instead.

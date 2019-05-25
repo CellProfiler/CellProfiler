@@ -79,8 +79,8 @@ class CreateBatchFiles(cpm.Module):
             "Store batch files in default output folder?",
             True,
             doc="""\
-Select "*%(YES)s*" to store batch files in the Default Output folder.
-Select "*%(NO)s*" to enter the path to the folder that will be used to
+Select "*Yes*" to store batch files in the Default Output folder.
+Select "*No*" to enter the path to the folder that will be used to
 store these files. The Default Output folder can be set by clicking the "View output settings" button in the main CP window, or in CellProfiler Preferences. """
             % globals(),
         )
@@ -97,10 +97,10 @@ store these files. The Default Output folder can be set by clicking the "View ou
             "Are the cluster computers running Windows?",
             False,
             doc="""\
-Select "*%(YES)s*" if the cluster computers are running one of the
+Select "*Yes*" if the cluster computers are running one of the
 Microsoft Windows operating systems. In this case, **CreateBatchFiles**
 will modify all paths to use the Windows file separator (backslash \\\\ ).
-Select "*%(NO)s*" for **CreateBatchFiles** to modify all paths to use the
+Select "*No*" for **CreateBatchFiles** to modify all paths to use the
 Unix or Macintosh file separator (slash / )."""
             % globals(),
         )

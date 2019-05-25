@@ -240,10 +240,10 @@ This is the cutoff value separating objects in the two classes.""",
             doc="""\
 *(Used only if using a pair of measurements)*
 
-Select "*%(YES)s*" if you want to specify the names of each bin
+Select "*Yes*" if you want to specify the names of each bin
 measurement.
 
-Select "*%(NO)s*" to create names based on the measurements. For instance,
+Select "*No*" to create names based on the measurements. For instance,
 for “Intensity_MeanIntensity_Green” and
 “Intensity_TotalIntensity_Blue”, the module generates measurements
 such as
@@ -300,7 +300,7 @@ are above the threshold for both measurements.""",
             "Retain an image of the classified objects?",
             False,
             doc="""\
-Select "*%(YES)s*" to retain the image of the objects color-coded
+Select "*Yes*" to retain the image of the objects color-coded
 according to their classification, for use later in the pipeline (for
 example, to be saved by a **SaveImages** module).
 """
@@ -417,8 +417,8 @@ thresholds of bins between the lowest and highest.
                 doc="""\
 *(Used only if using a single measurement)*
 
-Select "*%(YES)s*" if you want to create a bin for objects whose values
-fall below the low threshold. Select "*%(NO)s*" if you do not want a bin
+Select "*Yes*" if you want to create a bin for objects whose values
+fall below the low threshold. Select "*No*" if you do not want a bin
 for these objects.
 """
                 % globals(),
@@ -452,10 +452,10 @@ that if you would like two bins, you should select "*%(BC_CUSTOM)s*".
                 doc="""\
 *(Used only if using a single measurement)*
 
-Select "*%(YES)s*" if you want to create a bin for objects whose values
+Select "*Yes*" if you want to create a bin for objects whose values
 are above the high threshold.
 
-Select "*%(NO)s*" if you do not want a bin for these objects.
+Select "*No*" if you do not want a bin for these objects.
 """
                 % globals(),
             ),
@@ -486,9 +486,9 @@ more bin than there are thresholds.
                 doc="""\
 *(Used only if using a single measurement)*
 
-Select "*%(YES)s*" to assign custom names to bins you have specified.
+Select "*Yes*" to assign custom names to bins you have specified.
 
-Select "*%(NO)s*" for the module to automatically assign names based on
+Select "*No*" for the module to automatically assign names based on
 the measurements and the bin number.
 """
                 % globals(),
@@ -514,7 +514,7 @@ An example including three bins might be *First,Second,Third*.""",
                 "Retain an image of the classified objects?",
                 False,
                 doc="""\
-Select "*%(YES)s*" to keep an image of the objects which is color-coded
+Select "*Yes*" to keep an image of the objects which is color-coded
 according to their classification, for use later in the pipeline (for
 example, to be saved by a **SaveImages** module).
 """

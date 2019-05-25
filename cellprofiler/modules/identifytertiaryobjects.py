@@ -147,13 +147,13 @@ will consist of the smaller object subtracted from the larger object.""",
             "Shrink smaller object prior to subtraction?",
             True,
             doc="""\
-Select *%(YES)s* to shrink the smaller objects by 1 pixel before
+Select *Yes* to shrink the smaller objects by 1 pixel before
 subtracting them from the larger objects. this approach will ensure that
 there is always a tertiary object produced, even if it is only 1 pixel wide.
 If you need alternate amounts of shrinking, use the **ExpandOrShrink**
 module prior to **IdentifyTertiaryObjects**.
 
-Select *%(NO)s* to subtract the objects directly, which will ensure that
+Select *No* to subtract the objects directly, which will ensure that
 no pixels are shared between the primary/secondary/tertiary objects and
 hence measurements for all three sets of objects will not use the same
 pixels multiple times. However, this may result in the creation of

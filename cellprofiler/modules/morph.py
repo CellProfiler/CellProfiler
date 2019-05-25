@@ -403,12 +403,12 @@ applied successively to the image.
                 doc="""\
 *(Used only for the "%(F_DISTANCE)s" operation).*
 
-Select "*%(YES)s*" to rescale the transformed values to lie between 0 and
+Select "*Yes*" to rescale the transformed values to lie between 0 and
 1. This is the option to use if the distance transformed image is to be
 used for thresholding by an **Identify** module or the like, which
 assumes a 0-1 scaling.
 
-Select "*%(NO)s*" to leave the values in absolute pixel units. This useful
+Select "*No*" to leave the values in absolute pixel units. This useful
 in cases where the actual pixel distances are to be used downstream as
 input for a measurement module."""
                 % globals(),

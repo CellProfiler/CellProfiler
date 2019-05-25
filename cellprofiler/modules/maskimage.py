@@ -109,9 +109,9 @@ Select the image that you like to use to mask the input image.
             doc="""\
 This option reverses the foreground/background relationship of the mask.
 
--  Select "*%(NO)s*" to produce the mask from the foreground (white
+-  Select "*No*" to produce the mask from the foreground (white
    portion) of the masking image or the area within the masking objects.
--  Select "*%(YES)s*" to instead produce the mask from the *background*
+-  Select "*Yes*" to instead produce the mask from the *background*
    (black portions) of the masking image or the area *outside* the
    masking objects.
        """

@@ -210,72 +210,6 @@ builtin_modules = [
     "watershed",
 ]
 
-# Module renames and CP-Matlab to CP-python module substitutions
-substitutions = {
-    "Average": "MakeProjection",
-    "ApplyThreshold": "Threshold",
-    "CalculateImageOverlap": "MeasureImageOverlap",
-    "CalculateRatios": "CalculateMath",
-    "ClassifyObjectsByTwoMeasurements": "ClassifyObjects",
-    "Combine": "ImageMath",
-    "cellprofiler.modules.converttoimage.ConvertToImage": "ConvertObjectsToImage",
-    "ConvertToImage": "ConvertObjectsToImage",
-    "CorrectIllumination_Apply": "CorrectIlluminationApply",
-    "cellprofiler.modules.correctillumination_apply.CorrectIllumination_Apply": "CorrectIlluminationApply",
-    "CorrectIllumination_Calculate": "CorrectIlluminationCalculate",
-    "cellprofiler.modules.correctillumination_calculate.CorrectIllumination_Calculate": "CorrectIlluminationCalculate",
-    "cellprofiler.modules.enhanceorsuppressspeckles.EnhanceOrSuppressSpeckles": "EnhanceOrSuppressFeatures",
-    "CropObjects": "SaveCroppedObjects",
-    "DifferentiateStains": "UnmixColors",
-    "Dilation": "DilateImage",
-    "EnhanceOrSuppressSpeckles": "EnhanceOrSuppressFeatures",
-    "Exclude": "MaskObjects",
-    "cellprofiler.modules.expandorshrink.ExpandOrShrink": "ExpandOrShrinkObjects",
-    "ExpandOrShrink": "ExpandOrShrinkObjects",
-    "ExportToExcel": "ExportToSpreadsheet",
-    "cellprofiler.modules.exporttoexcel.ExportToExcel": "ExportToSpreadsheet",
-    "FilterByObjectMeasurement": "FilterObjects",
-    "cellprofiler.modules.filterbyobjectmeasurement.FilterByObjectMeasurement": "FilterObjects",
-    "FindEdges": "EnhanceEdges",
-    "cellprofiler.modules.findedges.FindEdges": "EnhanceEdges",
-    "FlagImageForQC": "FlagImage",
-    "Flip": "FlipAndRotate",
-    "IdentifyPrimManual": "IdentifyObjectsManually",
-    "cellprofiler.modules.identifytertiarysubregion.IdentifyTertiarySubregion": "IdentifyTertiaryObjects",
-    "IdentifyTertiarySubregion": "IdentifyTertiaryObjects",
-    "cellprofiler.modules.imageconvexhull.ImageConvexHull": "Morph",
-    "ImageConvexHull": "Morph",
-    "InvertIntensity": "ImageMath",
-    "KeepLargestObject": "FilterObjects",
-    "cellprofiler.modules.loadtext.LoadText": "LoadData",
-    "LoadText": "LoadData",
-    "cellprofiler.modules.measureimagegranularity.MeasureImageGranularity": "MeasureGranularity",
-    "MeasureImageGranularity": "MeasureGranularity",
-    "MeasureNeurons": "MeasureObjectSkeleton",
-    "cellprofiler.modules.measureobjectareashape.MeasureObjectAreaShape": "MeasureObjectSizeShape",
-    "MeasureObjectAreaShape": "MeasureObjectSizeShape",
-    "MeasureCorrelation": "MeasureColocalization",
-    "MeasureImageSaturationBlur": "MeasureImageQuality",
-    "MeasureRadialDistribution": "MeasureObjectIntensityDistribution",
-    "MeasureObjectRadialDistribution": "MeasureObjectIntensityDistribution",
-    "cellprofiler.modules.measureobjectradialdistribution.MeasureObjectRadialDistribution": "MeasureObjectIntensityDistribution",
-    "Multiply": "ImageMath",
-    "NoiseReduction": "ReduceNoise",
-    "PlaceAdjacent": "Tile",
-    "cellprofiler.modules.relate.Relate": "RelateObjects",
-    "ReassignObjectNumbers": "SplitOrMergeObjects",
-    "Relate": "RelateObjects",
-    "Rotate": "FlipAndRotate",
-    "SmoothOrEnhance": "Smooth",
-    "SmoothKeepingEdges": "Smooth",
-    "SplitIntoContiguousObjects": "SplitOrMergeObjects",
-    "Subtract": "ImageMath",
-    "UnifyObjects": "SplitOrMergeObjects",
-    "cellprofiler.modules.overlay_outlines.OverlayOutlines": "OverlayOutlines",
-    "CorrectIllumination_Apply": "CorrectIlluminationApply",
-    "CorrectIllumination_Calculate": "CorrectIlluminationCalculate",
-}
-
 all_modules = {}
 svn_revisions = {}
 pymodules = []
@@ -411,8 +345,6 @@ unimplemented_modules = ["LabelImages", "Restart", "SplitOrSpliceMovie"]
 
 
 def get_module_class(module_name):
-    if module_name in substitutions:
-        module_name = substitutions[module_name]
     module_class = module_name.split(".")[-1]
     if module_class not in all_modules:
         if module_class in pure_datatools:

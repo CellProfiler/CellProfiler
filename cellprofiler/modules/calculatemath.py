@@ -250,7 +250,7 @@ module, such as multiplying or exponentiating your image by a constant.
         self.wants_log = cps.Binary(
             "Take log10 of result?",
             False,
-            doc="""Select *%(YES)s* if you want the log (base 10) of the result."""
+            doc="""Select *Yes* if you want the log (base 10) of the result."""
             % globals(),
         )
 
@@ -283,7 +283,7 @@ Enter the power by which you would like to raise the result.
         self.constrain_lower_bound = cps.Binary(
             "Constrain the result to a lower bound?",
             False,
-            doc="""Select *%(YES)s* if you want the result to be constrained to a lower bound."""
+            doc="""Select *Yes* if you want the result to be constrained to a lower bound."""
             % globals(),
         )
 
@@ -296,7 +296,7 @@ Enter the power by which you would like to raise the result.
         self.constrain_upper_bound = cps.Binary(
             "Constrain the result to an upper bound?",
             False,
-            doc="""Select *%(YES)s* if you want the result to be constrained to an upper bound."""
+            doc="""Select *Yes* if you want the result to be constrained to an upper bound."""
             % globals(),
         )
 

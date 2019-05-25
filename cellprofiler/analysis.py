@@ -13,7 +13,7 @@ import threading
 import uuid
 
 import numpy as np
-import queue
+import six.moves.queue
 import six
 import six.moves
 import zmq
@@ -195,9 +195,9 @@ class AnalysisRunner(object):
         self.paused = False
         self.cancelled = False
 
-        self.work_queue = queue.Queue()
-        self.in_process_queue = queue.Queue()
-        self.finished_queue = queue.Queue()
+        self.work_queue = six.moves.queue.Queue()
+        self.in_process_queue = six.moves.queue.Queue()
+        self.finished_queue = six.moves.queue.Queue()
 
         # We use a queue size of 10 because we keep measurements in memory (as
         # their HDF5 file contents) until they get merged into the full
@@ -206,7 +206,7 @@ class AnalysisRunner(object):
         # than interface() doing so.  Currently, passing measurements in this
         # way seems like it might be buggy:
         # http://code.google.com/p/h5py/issues/detail?id=244
-        self.received_measurements_queue = queue.Queue(maxsize=10)
+        self.received_measurements_queue = six.moves.queue.Queue(maxsize=10)
 
         self.shared_dicts = None
 
@@ -598,7 +598,7 @@ class AnalysisRunner(object):
         # all the requests from workers, of which there might be several.
 
         # start the zmqrequest Boundary
-        request_queue = queue.Queue()
+        request_queue = six.moves.queue.Queue()
         boundary = register_analysis(analysis_id, request_queue)
         #
         # The boundary is announcing our analysis at this point. Workers
@@ -630,7 +630,7 @@ class AnalysisRunner(object):
 
             try:
                 req = request_queue.get(timeout=0.25)
-            except queue.Empty:
+            except six.moves.queue.Empty:
                 continue
 
             if isinstance(req, PipelinePreferencesRequest):

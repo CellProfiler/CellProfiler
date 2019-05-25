@@ -89,7 +89,7 @@ def main(args=None):
     if options.batch_commands_file is not None:
         try:
             nr_per_batch = int(options.images_per_batch)
-        except (ValueError):
+        except ValueError:
             logging.warning(
                 "non-integer argument to --images-per-batch. Defaulting to 1."
             )

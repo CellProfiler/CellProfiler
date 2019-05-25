@@ -2791,7 +2791,7 @@ class Color(Setting):
     def to_rgb(self):
         value = self.value.replace(" ", "")
         if value.startswith("#") and len(value) >= 7:
-            return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
+            return int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
         elif value.lower() in self.colortable:
             return self.colortable[value.lower()]
         else:
@@ -4067,7 +4067,7 @@ class SettingsGroup(object):
         """
         assert name not in self.__dict__, (
             "%s already in SettingsGroup (previous setting or built in attribute)"
-            % (name)
+            % name
         )
         self.__setattr__(name, setting)
         self.settings.append(setting)
@@ -4102,7 +4102,7 @@ class NumberConnector(object):
 
     def __long__(self):
         try:
-            return long(self.__fn())  # Python  2
+            return int(self.__fn())  # Python  2
         except NameError:
             return int(self.__fn())  # Python  2
 

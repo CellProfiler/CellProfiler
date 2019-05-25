@@ -961,9 +961,9 @@ def crop_labels_and_image(labels, image):
         )
 
     if image.ndim == 3:  # multichannel image
-        return (labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2, :])
+        return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2, :]
 
-    return (labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2])
+    return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2]
 
 
 def size_similarly(labels, secondary):

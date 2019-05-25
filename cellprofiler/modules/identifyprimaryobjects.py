@@ -1,8 +1,7 @@
 # coding=utf-8
 
-import cellprofiler.gui.help
-
 import math
+
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate
@@ -11,6 +10,8 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
+
+import cellprofiler.gui.help
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.object

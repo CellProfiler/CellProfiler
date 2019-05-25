@@ -1,20 +1,17 @@
 # coding=utf-8
+import logging
+
 import cellprofiler.gui.help.content
 import cellprofiler.icons
-from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-import logging
 
 logger = logging.getLogger(__name__)
 import numpy as np
-import os
 import six
-
-from cellprofiler.modules import _help
 
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+from cellprofiler.setting import YES
 import cellprofiler.measurement as cpmeas
 
 __doc__ = """\

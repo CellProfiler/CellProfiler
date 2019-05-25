@@ -31,7 +31,7 @@ import numpy as np
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+from cellprofiler.setting import YES
 
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"

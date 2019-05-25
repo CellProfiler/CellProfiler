@@ -22,12 +22,13 @@ YES          YES          NO
 
 """
 
+import numpy
+import skimage.measure
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import numpy
-import skimage.measure
 
 
 class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):

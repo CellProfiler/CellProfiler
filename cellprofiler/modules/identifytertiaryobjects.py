@@ -1,19 +1,14 @@
 # coding=utf-8
 
-import cellprofiler.measurement
-import matplotlib
-import matplotlib.cm
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
+import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.modules import _help, identify as cpmi
-from cellprofiler.setting import YES, NO
 
 __doc__ = """\
 IdentifyTertiaryObjects

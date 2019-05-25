@@ -71,15 +71,17 @@ import logging
 import os
 import os.path
 import re
+import shutil
 import sys
 import tempfile
-import urllib
-import six.moves.urllib.parse
-import shutil
 
+import centrosome.outline
+import numpy
+import scipy.io.matlab.mio
 import six
+import six.moves.urllib.parse
+import skimage.external.tifffile
 
-from cellprofiler.modules import _help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.misc
@@ -88,11 +90,8 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import centrosome.outline
+from cellprofiler.modules import _help
 from cellprofiler.modules import identify, images
-import numpy
-import scipy.io.matlab.mio
-import skimage.external.tifffile
 
 logger = logging.getLogger(__name__)
 cached_file_lists = {}
@@ -2446,7 +2445,7 @@ to store the image.
                     md = get_omexml_metadata(provider.get_full_name())
                     md = bioformats.omexml.OMEXML(md)
                     mdpixels = md.image().Pixels
-                    if (mdpixels.channel_count == 1 and mdpixels.Channel().SamplesPerPixel == 3):
+                    if mdpixels.channel_count == 1 and mdpixels.Channel().SamplesPerPixel == 3:
                         #
                         # Single interleaved color image
                         #
@@ -2572,7 +2571,7 @@ to store the image.
         url = pathname2url(full_path)
         metadata = self.get_filename_metadata(image_settings, filename, path)
         for channel in image_settings.channels:
-            if (channel_name is not None and channel_name != channel.get_image_name()):
+            if channel_name is not None and channel_name != channel.get_image_name():
                 continue
             if self.channel_wants_images(channel):
                 path_name_category = cellprofiler.measurement.C_PATH_NAME

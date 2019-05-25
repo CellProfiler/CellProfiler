@@ -69,19 +69,18 @@ will be positive, but there will not be a corresponding
 import matplotlib.cm
 import numpy as np
 import scipy.ndimage as scind
+import skimage.morphology
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.setting import YES, NO
-import skimage.morphology
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND = 'Expand until adjacent'

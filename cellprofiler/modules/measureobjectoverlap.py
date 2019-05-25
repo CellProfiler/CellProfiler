@@ -57,6 +57,8 @@ References
 .. _(link): https://doi.org/10.1207/s15327906mbr2302_6
 """
 
+from functools import reduce
+
 import centrosome.cpmorphology
 import centrosome.fastemd
 import centrosome.filter
@@ -73,8 +75,6 @@ import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 from cellprofiler.modules import _help
-from functools import reduce
-
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"

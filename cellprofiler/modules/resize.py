@@ -30,11 +30,12 @@ See also **Crop**.
 
 import logging
 
+import numpy
+import skimage.transform
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import numpy
-import skimage.transform
 
 logger = logging.getLogger(__name__)
 

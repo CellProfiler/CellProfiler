@@ -165,7 +165,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             #
             if a.is_key:
                 if b.is_key:
-                    return cmp(a.name, b.name)
+                    return cellprofiler.utilities.legacy.cmp(a.name, b.name)
                 return -1
             elif b.is_key:
                 return 1
@@ -174,7 +174,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             #
             if a.column_type == COL_METADATA:
                 if b.column_type == COL_METADATA:
-                    return cmp(a.name, b.name)
+                    return cellprofiler.utilities.legacy.cmp(a.name, b.name)
                 return 1
             elif b.column_type == COL_METADATA:
                 return -1
@@ -182,11 +182,11 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             # If different channels, order by channel
             #
             if a.channel != b.channel:
-                return cmp(a.channel, b.channel)
+                return cellprofiler.utilities.legacy.cmp(a.channel, b.channel)
             #
             # Otherwise, the order is given by COL_ORDER
             #
-            return cmp(COL_ORDER.index(a.column_type),
+            return cellprofiler.utilities.legacy.cmp(COL_ORDER.index(a.column_type),
                        COL_ORDER.index(b.column_type))
 
         columns.sort(cmp=ordering_fn)

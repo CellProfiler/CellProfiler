@@ -25,8 +25,8 @@ import skimage.util
 
 import cellprofiler.image
 import cellprofiler.module
-import cellprofiler.setting
 import cellprofiler.object
+import cellprofiler.setting
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"
@@ -213,7 +213,7 @@ maximal brightness already occurring in the image.
         if not self.blank_image.value:
             result += [self.image_name]
         result += [self.output_image_name, self.wants_color, self.line_mode, self.spacer]
-        if (self.wants_color.value == WANTS_GRAYSCALE and not self.blank_image.value):
+        if self.wants_color.value == WANTS_GRAYSCALE and not self.blank_image.value:
             result += [self.max_type]
         for outline in self.outlines:
             result += [outline.objects_name]
@@ -376,7 +376,7 @@ maximal brightness already occurring in the image.
             cropped,
             [(0, dim_adjust) for dim_adjust in numpy.maximum(adjust, numpy.zeros_like(adjust))],
             mode="constant",
-            constant_values=(0)
+            constant_values=0
         )
 
     def upgrade_settings(self, setting_values, variable_revision_number,

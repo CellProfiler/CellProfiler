@@ -1,20 +1,22 @@
 # coding=utf-8
 
+import itertools
 import logging
-import numpy
-import scipy.ndimage
-import scipy.linalg.basic
+
 import centrosome.cpmorphology
 import centrosome.haralick
-import centrosome.threshold
 import centrosome.radial_power_spectrum
 import centrosome.threshold
-import itertools
-from cellprofiler.modules import identify, loadimages
-import cellprofiler.preferences
-import cellprofiler.module
+import centrosome.threshold
+import numpy
+import scipy.linalg.basic
+import scipy.ndimage
+
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.preferences
 import cellprofiler.setting
+from cellprofiler.modules import identify, loadimages
 
 __doc__ = """\
 MeasureImageQuality

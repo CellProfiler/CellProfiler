@@ -144,7 +144,7 @@ class AddModuleFrame(wx.Frame):
         category = self.__get_selected_category()
         self.__module_list_box.Clear()
         keys = self.__module_dict[category].keys()
-        keys.sort()
+        sorted(keys)
         self.__module_list_box.AppendItems(keys)
         self.__module_list_box.Select(0)
 

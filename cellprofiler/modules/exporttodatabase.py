@@ -88,18 +88,20 @@ import csv
 import datetime
 import hashlib
 import logging
-import numpy
 import os
 import re
+
+import numpy
 import six
+
 import cellprofiler
-import cellprofiler.module
-import cellprofiler.setting
-import cellprofiler.preferences
-import cellprofiler.measurement
 import cellprofiler.icons
-import cellprofiler.pipeline
+import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.modules.loadimages
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.setting
 import cellprofiler.utilities.legacy
 from cellprofiler.modules import _help
 

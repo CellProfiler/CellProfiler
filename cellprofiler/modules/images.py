@@ -1,19 +1,20 @@
 # coding=utf-8
 
 import os
-import urllib
 
-import six
+import javabridge
+import six.moves.urllib
+import six.moves.urllib.parse
+import six.moves.urllib.request
 
-import _help
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.module
+import cellprofiler.modules._help
+import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.utilities.hdf5_dict
-import javabridge
-import loadimages
 
 __doc__ = """\
 Images
@@ -223,7 +224,7 @@ Specify a set of rules to narrow down the files to be analyzed.
 
 {FILTER_RULES_BUTTONS_HELP}
 """.format(**{
-                "FILTER_RULES_BUTTONS_HELP": _help.FILTER_RULES_BUTTONS_HELP
+                "FILTER_RULES_BUTTONS_HELP": cellprofiler.modules._help.FILTER_RULES_BUTTONS_HELP
             })
         )
 
@@ -252,16 +253,16 @@ pass the current filter.
                 return modpath[0] + ":" + modpath[1]
             else:
                 return modpath[0] + ":" + modpath[1] + "/" + "/".join(
-                    [six.moves.urllib.quote(part) for part in modpath[2:]])
+                    [six.moves.urllib.parse.quote(part) for part in modpath[2:]])
         path = os.path.join(*modpath)
-        return loadimages.pathname2url(path)
+        return cellprofiler.modules.loadimages.pathname2url(path)
 
     @staticmethod
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
             schema, rest = cellprofiler.utilities.hdf5_dict.HDF5FileList.split_url(url)
-            return [schema] + rest[0:1] + [six.moves.urllib.unquote(part) for part in rest[1:]]
-        path = six.moves.urllib.url2pathname(url[5:])
+            return [schema] + rest[0:1] + [six.moves.urllib.parse.unquote(part) for part in rest[1:]]
+        path = six.moves.urllib.request.url2pathname(url[5:])
         parts = []
         while True:
             new_path, part = os.path.split(path)

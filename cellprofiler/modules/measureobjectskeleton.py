@@ -69,15 +69,14 @@ import centrosome.propagate as propagate
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
+from scipy.ndimage import grey_dilation, grey_erosion
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 
 '''The measurement category'''
 C_OBJSKELETON = "ObjectSkeleton"

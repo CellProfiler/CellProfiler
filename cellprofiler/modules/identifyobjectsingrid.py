@@ -57,15 +57,12 @@ See also **DefineGrid**.
 })
 
 import numpy as np
-from centrosome.cpmorphology import centers_of_labels, relabel
+from centrosome.cpmorphology import centers_of_labels
 
 import cellprofiler.grid as cpg
-import cellprofiler.image as cpi
 import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns

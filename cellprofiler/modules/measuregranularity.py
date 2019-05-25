@@ -45,17 +45,15 @@ References
    Statistics, Moskow, (in Russian)
 """
 
-import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind
+import skimage.morphology
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-import skimage.morphology
 
 'Granularity category'
 C_GRANULARITY = "Granularity_%s_%s"

@@ -63,7 +63,6 @@ import numpy
 import scipy
 import scipy.ndimage
 import scipy.sparse
-import skimage.segmentation
 
 import cellprofiler.gui.help
 import cellprofiler.image

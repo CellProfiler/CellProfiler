@@ -22,11 +22,12 @@ YES          YES          NO
 .. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/filters/plot_nonlocal_means.html
 """
 
+import skimage.restoration
+import skimage.util
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.restoration
-import skimage.util
 
 
 class ReduceNoise(cellprofiler.module.ImageProcessing):

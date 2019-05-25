@@ -85,37 +85,29 @@ References
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
+import itertools
 import os
 
-import centrosome.cpmorphology as morph
 import centrosome.index as INDEX
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy.interpolate.fitpack import bisplrep, dblint
 from scipy.ndimage import map_coordinates, extrema
-from scipy.ndimage import mean as nd_mean
-from scipy.ndimage import standard_deviation as nd_standard_deviation
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.utilities.legacy
-from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.setting import YES, NO
-import itertools
-from cellprofiler.measurement import C_COUNT, FTR_CENTER_X, FTR_CENTER_Y
 from cellprofiler.measurement import C_LOCATION, C_NUMBER, C_COUNT, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
 from .identify import add_object_count_measurements
 from .identify import add_object_location_measurements
 from .identify import get_object_measurement_columns
 from .untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
-from .untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
+from .untangleworms import F_LENGTH
 from .untangleworms import read_params
 from .untangleworms import recalculate_single_worm_control_points
-
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -1154,8 +1146,6 @@ of the straightened worms.'''))
         returns a tuple of flipped worm images and the flipped labels matrix
         '''
         import wx
-        import matplotlib
-        import matplotlib.cm
         import matplotlib.backends.backend_wxagg
 
         frame_size = wx.GetDisplaySize()

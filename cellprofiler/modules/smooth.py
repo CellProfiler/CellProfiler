@@ -26,17 +26,14 @@ See also several related modules in the *Advanced* category (e.g.,
 
 import numpy as np
 import scipy.ndimage as scind
-from centrosome.filter import median_filter, bilateral_filter, circular_average_filter
-from centrosome.smooth import circular_gaussian_kernel
+import skimage.restoration
+from centrosome.filter import median_filter, circular_average_filter
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
-import skimage.restoration
 
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
-from cellprofiler.setting import YES, NO
 
 FIT_POLYNOMIAL = 'Fit Polynomial'
 MEDIAN_FILTER = 'Median Filter'

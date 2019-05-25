@@ -25,12 +25,10 @@ YES          NO           YES
 import numpy as np
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.module as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"
@@ -395,7 +393,6 @@ color map.
         self.display_on_figure(workspace, ax, imshow_fn)
 
     def display_on_figure(self, workspace, axes, imshow_fn):
-        import matplotlib
         import matplotlib.cm
 
         if self.use_color_map():

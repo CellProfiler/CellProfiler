@@ -69,5 +69,7 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
 
         super(OverlayObjects, self).run(workspace)
 
-    def display(self, workspace, figure, cmap=["gray", None]):
+    def display(self, workspace, figure, cmap=None):
+        if cmap is None:
+            cmap = ["gray", None]
         super(OverlayObjects, self).display(workspace, figure, cmap=["gray", None])

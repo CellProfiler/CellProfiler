@@ -3,21 +3,16 @@
 import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind
-from centrosome.filter import stretch
-from scipy.sparse import coo_matrix
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.measurement import C_PARENT, C_CHILDREN, FF_CHILDREN_COUNT, FF_PARENT
+from cellprofiler.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
+from cellprofiler.modules import _help
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.setting import YES, NO
-from cellprofiler.modules import _help
 
 __doc__ = """\
 SplitOrMergeObjects
@@ -378,8 +373,6 @@ above):
 
         workspace - workspace containing saved display data
         '''
-        from cellprofiler.gui.tools import renumber_labels_for_display
-        import matplotlib.cm as cm
 
         figure.set_subplots((2, 1))
         ax = figure.subplot_imshow_labels(

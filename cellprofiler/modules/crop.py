@@ -41,16 +41,17 @@ help for more information on saving cropping shapes.
 
 import logging
 import math
+
+import matplotlib.axes
+import matplotlib.cm
+import matplotlib.figure
+import matplotlib.patches
 import numpy
 from centrosome.filter import stretch
-import matplotlib.figure
-import matplotlib.cm
-import matplotlib.axes
-import matplotlib.patches
 
 import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.preferences
 import cellprofiler.setting
 

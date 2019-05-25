@@ -64,8 +64,8 @@ import sys
 import h5py
 import numpy as np
 
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.utilities.legacy
 from cellprofiler.preferences import get_headless
@@ -180,7 +180,6 @@ class MergeOutputFiles(cpm.Module):
 
     @staticmethod
     def on_help(event, list_control):
-        import cellprofiler.modules
         from cellprofiler.gui.htmldialog import HTMLDialog
         import cellprofiler.gui.html.utils
         dlg = HTMLDialog(

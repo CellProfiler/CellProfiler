@@ -2,7 +2,7 @@
 
 import numpy
 import scipy.ndimage
-import skimage.transform
+
 import cellprofiler.module
 import cellprofiler.setting
 from cellprofiler.modules import _help

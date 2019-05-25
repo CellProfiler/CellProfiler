@@ -55,7 +55,6 @@ well as video tutorials.
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
-import cellprofiler.measurement
 import numpy as np
 from centrosome.cpmorphology import all_connected_components
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -63,13 +62,12 @@ from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-import cellprofiler.module as cpm
+import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.modules import identify as I
-from cellprofiler.setting import YES, NO
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"

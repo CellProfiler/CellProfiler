@@ -6,23 +6,22 @@
 #
 #################################
 
+import centrosome.cpmorphology
+import centrosome.zernike
 import numpy
 import scipy.ndimage
+
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.setting
 
 #################################
 #
 # Imports from CellProfiler
 #
 ##################################
-
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.object
-import cellprofiler.setting
-
-import centrosome.zernike
-import centrosome.cpmorphology
 
 
 __doc__ = """\
@@ -586,7 +585,7 @@ radial degree you enter here.
     # Return the feature names if the object_name and category match
     #
     def get_measurements(self, pipeline, object_name, category):
-        if (object_name == self.input_object_name and category == C_MEASUREMENT_TEMPLATE):
+        if object_name == self.input_object_name and category == C_MEASUREMENT_TEMPLATE:
             return ["Intensity"]
 
         return []

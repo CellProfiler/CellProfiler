@@ -24,27 +24,23 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-from cellprofiler.gui.help.content import BATCH_PROCESSING_HELP_REF
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 import os
 import re
 import sys
-import urllib
 import zlib
 
 import cellprofiler
-import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 
-from cellprofiler.measurement import F_BATCH_DATA, F_BATCH_DATA_H5
+from cellprofiler.measurement import F_BATCH_DATA_H5
 
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 8

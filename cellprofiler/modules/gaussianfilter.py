@@ -17,11 +17,12 @@ YES          YES          NO
 ============ ============ ===============
 """
 
+import numpy
+import skimage.filters
+
+import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import cellprofiler.image
-import skimage.filters
-import numpy
 
 
 class GaussianFilter(cellprofiler.module.ImageProcessing):

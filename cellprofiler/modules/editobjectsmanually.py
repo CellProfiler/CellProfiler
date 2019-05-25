@@ -60,17 +60,10 @@ logger = logging.getLogger(__name__)
 
 import os
 import numpy as np
-import sys
 
-import cellprofiler.preferences as cpprefs
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
-import cellprofiler.image as cpi
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.workspace as cpw
-from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules import identify as I

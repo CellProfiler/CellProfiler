@@ -37,8 +37,6 @@ import cellprofiler.image  as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
-from cellprofiler.setting import YES, NO
-
 COMBINE = "Combine"
 SPLIT = "Split"
 

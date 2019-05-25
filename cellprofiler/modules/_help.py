@@ -1,9 +1,5 @@
 # coding:utf-8
 
-import os.path
-
-import pkg_resources
-
 import cellprofiler.gui.help.content
 from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 

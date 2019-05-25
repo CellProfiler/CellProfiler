@@ -47,7 +47,6 @@ References
 
 import centrosome.cpmorphology as cpmm
 import numpy as np
-import scipy.linalg
 import scipy.ndimage as scind
 import skimage.filters
 from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
@@ -55,19 +54,15 @@ from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import grey_erosion, grey_dilation, strel_disk
 from centrosome.filter import convex_hull_transform
-from centrosome.rankorder import rank_order
 from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler.image  as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
-from cellprofiler.setting import YES, NO
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"

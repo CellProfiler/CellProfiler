@@ -22,11 +22,11 @@ YES          NO           YES
 
 """
 
-import numpy
 import os.path
+
+import numpy
 import skimage.io
 import skimage.measure
-import time
 
 import cellprofiler.module
 import cellprofiler.setting

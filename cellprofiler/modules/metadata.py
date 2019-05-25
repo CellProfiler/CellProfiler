@@ -3,20 +3,18 @@ import logging
 import os
 import re
 import time
-import urllib
 
 import javabridge
-
 import six
 import six.moves
 
-from cellprofiler.modules import _help
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.setting
+from cellprofiler.modules import _help
 from cellprofiler.modules import images, loadimages
 
 logger = logging.getLogger(__name__)

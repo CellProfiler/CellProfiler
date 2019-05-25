@@ -40,17 +40,14 @@ YES          NO           NO
 
 import logging
 import os
-import sys
 
 import numpy as np
 
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
-from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)
 C_ANY = "Flag if any fail"

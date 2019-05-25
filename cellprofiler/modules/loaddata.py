@@ -1,24 +1,25 @@
 # coding=utf-8
 
 from __future__ import print_function
+
 import csv
 import logging
 import os
-import six.moves.urllib.request
+from functools import reduce
 
 import matplotlib.mlab
 import numpy
+import six
+import six.moves.urllib.request
 
-from cellprofiler.modules import _help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
+from cellprofiler.modules import _help
 from cellprofiler.modules import identify, loadimages
-from functools import reduce
-import six
 
 logger = logging.getLogger(__name__)
 from io import StringIO
@@ -908,7 +909,7 @@ safe to press it.""")
                     elif cellprofiler.measurement.is_well_column_token(feature):
                         well_column_column = i
 
-        if (well_row_column is not None and well_column_column is not None and well_well_column is None):
+        if well_row_column is not None and well_column_column is not None and well_well_column is None:
             # add a synthetic well column
             metadata_columns[cellprofiler.measurement.M_WELL] = len(header)
             header.append(cellprofiler.measurement.M_WELL)
@@ -1223,7 +1224,7 @@ safe to press it.""")
 
         See CPModule for documentation
         '''
-        if (self.wants_images.value and self.wants_image_groupings.value and len(self.metadata_fields.selections) > 0):
+        if self.wants_images.value and self.wants_image_groupings.value and len(self.metadata_fields.selections) > 0:
             keys = ["_".join((cellprofiler.measurement.C_METADATA, k))
                     for k in self.metadata_fields.selections]
             if len(keys) == 0:
@@ -1363,7 +1364,7 @@ safe to press it.""")
                 well_row_column = column
             elif feature.lower() == cellprofiler.measurement.FTR_WELL.lower():
                 well_column = column
-        if (well_column is None and well_row_column is not None and well_col_column is not None):
+        if well_column is None and well_row_column is not None and well_col_column is not None:
             length = cellprofiler.measurement.get_length_from_varchar(well_row_column[2])
             length += cellprofiler.measurement.get_length_from_varchar(well_col_column[2])
             result += [(cellprofiler.measurement.IMAGE,

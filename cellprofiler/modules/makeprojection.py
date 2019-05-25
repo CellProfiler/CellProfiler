@@ -58,8 +58,8 @@ See also the help for the **Input** modules.
 
 import numpy as np
 
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
 P_AVERAGE = 'Average'

@@ -33,13 +33,12 @@ import cellprofiler.utilities.legacy
 import io
 import csv
 import datetime
-import exceptions
 import h5py
 import hashlib
 import logging
 import numpy
 import os
-import Queue
+import six.moves.queue
 import random
 import re
 import cellprofiler.gui.runmultiplepipelinesdialog
@@ -97,7 +96,7 @@ class PipelineController(object):
         cellprofiler.preferences.add_output_directory_listener(self.__on_output_directory_change)
 
         # interaction/display requests and exceptions from an Analysis
-        self.interaction_request_queue = Queue.PriorityQueue()
+        self.interaction_request_queue = six.moves.queue.PriorityQueue()
         self.interaction_pending = False
         self.debug_request_queue = None
 
@@ -1371,7 +1370,7 @@ class PipelineController(object):
             except:
                 pass
             if error_msg is None:
-                if isinstance(event.error, exceptions.EnvironmentError):
+                if isinstance(event.error, EnvironmentError):
                     error_msg = event.error.strerror
                 else:
                     error_msg = str(event.error)
@@ -1724,14 +1723,18 @@ class PipelineController(object):
             h, w = dlg.GetSize()
             if w < 480:
                 dlg.SetSize((max(w, 480), h))
-            queue = Queue.Queue()
+            queue = six.moves.queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
 
             def fn(filenames=filenames,
-                   interrupt=interrupt,
-                   message=message,
+                   interrupt=None,
+                   message=None,
                    queue=queue):
+                if message is None:
+                    message = message
+                if interrupt is None:
+                    interrupt = interrupt
                 urls = []
                 for pathname in filenames:
                     if interrupt[0]:
@@ -2410,7 +2413,7 @@ class PipelineController(object):
             while True:
                 try:
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-                except Queue.Empty:
+                except six.moves.queue.Empty:
                     break
             if evt.cancelled:
                 self.pipeline_list = []
@@ -2465,7 +2468,7 @@ class PipelineController(object):
 
         try:
             pri_func_args = self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-        except Queue.Empty:
+        except six.moves.queue.Empty:
             return
 
         self.interaction_pending = True
@@ -2605,12 +2608,14 @@ class PipelineController(object):
 
         assert wx.IsMainThread(), "PipelineController.analysis_exception() must be called from main thread!"
 
-        self.debug_request_queue = Queue.Queue()
+        self.debug_request_queue = six.moves.queue.Queue()
 
         evtlist = [evt]
 
-        def remote_debug(evtlist=evtlist):
+        def remote_debug(evtlist=None):
             # choose a random string for verification
+            if evtlist is None:
+                evtlist = evtlist
             verification = ''.join(random.choice(string.ascii_letters) for x in range(5))
             evt = evtlist[0]
             # Request debugging.  We get back a port.
@@ -2639,7 +2644,7 @@ class PipelineController(object):
                     try:
                         evtlist[0] = self.debug_request_queue.get(timeout=.25)
                         return True
-                    except Queue.Empty:
+                    except six.moves.queue.Empty:
                         keep_going, skip = dlg.UpdatePulse(
                             "Debugging remotely, Cancel to abandon")
                         if not keep_going:
@@ -2898,7 +2903,9 @@ class PipelineController(object):
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
             cancelled = [False]
 
-            def cancel_handler(cancelled=cancelled):
+            def cancel_handler(cancelled=None):
+                if cancelled is None:
+                    cancelled = cancelled
                 cancelled[0] = True
 
             workspace.cancel_handler = cancel_handler

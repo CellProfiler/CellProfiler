@@ -35,7 +35,6 @@ import cellprofiler.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
 
-
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'
 

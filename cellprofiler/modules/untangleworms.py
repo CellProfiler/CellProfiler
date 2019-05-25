@@ -94,17 +94,17 @@ References
 import logging
 import os
 import re
-import sys
-import six.moves.urllib.request
 import xml.dom.minidom as DOM
 
-import cellprofiler.measurement
 import matplotlib.mlab as mlab
 import numpy as np
 import scipy.ndimage as scind
+import six.moves.urllib.request
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
+
+import cellprofiler.measurement
 
 logger = logging.getLogger(__name__)
 import cellprofiler
@@ -113,17 +113,12 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME
-from cellprofiler.modules._help import USING_METADATA_GROUPING_HELP_REF, \
-    IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 
 RETAINING_OUTLINES_HELP = """\
 Select *{YES}* to retain the outlines of the new objects for later use
@@ -1031,8 +1026,6 @@ should be processed.
                 figure.subplot_imshow_grayscale(
                         0, 0, image, title=title, cplabels=cplabels)
         else:
-            from matplotlib.path import Path
-            from matplotlib.patches import PathPatch
             figure.set_subplots((1, 1))
             figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
                                      title=self.image_name.value)

@@ -5,12 +5,12 @@ from __future__ import print_function
 
 import logging
 import os
-import Queue
 import stat
 import sys
 import threading
 import time
 import uuid
+import six.moves.queue
 
 import numpy
 import six
@@ -1207,11 +1207,15 @@ class ModuleView(object):
             def on_press(event, v=v, control=control):
                 id_dict = {}
 
-                def on_event(event, v=v, control=control, id_dict=id_dict):
+                def on_event(event, v=v, control=control, id_dict=None):
+                    if id_dict is None:
+                        id_dict = id_dict
                     new_path = v.encode_path_parts(id_dict[event.GetId()])
                     self.on_value_change(v, control, new_path, event)
 
-                def make_menu(tree, id_dict=id_dict, path=None):
+                def make_menu(tree, id_dict=None, path=None):
+                    if id_dict is None:
+                        id_dict = id_dict
                     if path is None:
                         path = []
                     menu = wx.Menu()
@@ -4437,7 +4441,7 @@ class ModuleSizer(wx.Sizer):
                 self.__printed_exception = True
 
 
-validation_queue = Queue.Queue()
+validation_queue = six.moves.queue.Queue()
 pipeline_queue_thread = None  # global, protected by above lock
 request_pipeline_cache = threading.local()  # used to cache the last requested pipeline
 validation_queue_keep_running = True

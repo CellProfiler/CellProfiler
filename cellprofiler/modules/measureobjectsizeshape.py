@@ -1,17 +1,16 @@
 # coding=utf-8
-import cellprofiler.gui.help.content
-import cellprofiler.icons
-
+import centrosome.cpmorphology
+import centrosome.zernike
 import numpy
 import scipy.ndimage
+import skimage.measure
 
+import cellprofiler.gui.help.content
+import cellprofiler.icons
+import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import cellprofiler.measurement
-import centrosome.zernike
-import centrosome.cpmorphology
-import skimage.measure
 
 __doc__ = """\
 MeasureObjectSizeShape

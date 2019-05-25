@@ -46,7 +46,9 @@ RE_FOLDER_GUESSES = [
 ]
 
 
-def edit_regexp(parent, regexp, test_text, guesses=RE_FILENAME_GUESSES):
+def edit_regexp(parent, regexp, test_text, guesses=None):
+    if guesses is None:
+        guesses = RE_FILENAME_GUESSES
     frame = RegexpDialog(parent, size=(500, 200),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
     frame.value = regexp

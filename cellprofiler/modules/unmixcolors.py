@@ -63,7 +63,6 @@ import cellprofiler.module as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 
-
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)
 

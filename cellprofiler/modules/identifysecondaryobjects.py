@@ -6,13 +6,13 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 
-from cellprofiler.modules import _help, threshold
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
+from cellprofiler.modules import _help, threshold
 
 __doc__ = """\
 IdentifySecondaryObjects

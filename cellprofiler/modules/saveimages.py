@@ -33,7 +33,6 @@ See also **NamesAndTypes**.
 
 import os
 import os.path
-import sys
 
 import bioformats.formatwriter
 import bioformats.omexml
@@ -47,7 +46,6 @@ import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
 from cellprofiler.modules import _help
-
 
 IF_IMAGE = "Image"
 IF_MASK = "Mask"
@@ -559,7 +557,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
                            t=current_frame, size_t=frames)
 
     def post_group(self, workspace, *args):
-        if (self.when_to_save == WS_LAST_CYCLE and self.save_image_or_figure != IF_MOVIE):
+        if self.when_to_save == WS_LAST_CYCLE and self.save_image_or_figure != IF_MOVIE:
             self.save_image(workspace)
 
     def do_save_image(self, workspace, filename, pixels, pixel_type,
@@ -802,7 +800,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         return self.file_format.value
 
     def get_bit_depth(self):
-        if (self.save_image_or_figure == IF_IMAGE and self.get_file_format() == FF_TIFF):
+        if self.save_image_or_figure == IF_IMAGE and self.get_file_format() == FF_TIFF:
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8

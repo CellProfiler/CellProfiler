@@ -1,11 +1,12 @@
 # coding=utf-8
 
+from functools import reduce
+
 import numpy
 import scipy.ndimage
 
 import cellprofiler.measurement
 import cellprofiler.module
-from functools import reduce
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'

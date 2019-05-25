@@ -39,9 +39,8 @@ See also **DisplayDensityPlot**, **DisplayHistogram**.
 
 import numpy as np
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
 SOURCE_IM = cpmeas.IMAGE

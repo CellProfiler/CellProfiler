@@ -3,10 +3,13 @@
 import logging
 import re
 
-import numpy
-
 import bioformats
 import bioformats.omexml
+import javabridge
+import numpy
+import skimage.color
+from six.moves import xrange
+
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.image
@@ -16,9 +19,6 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import javabridge
-import skimage.color
-from six.moves import xrange
 from cellprofiler.modules import _help, identify, images, loadimages
 
 logger = logging.getLogger(__name__)

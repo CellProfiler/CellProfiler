@@ -142,20 +142,15 @@ References
 """
 
 import os
+from functools import reduce
 
 import numpy as np
 import scipy.optimize
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
-from cellprofiler.setting import YES, NO
-from functools import reduce
 import six
+
+import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1

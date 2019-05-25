@@ -1,13 +1,15 @@
 # coding=utf-8
 
 import re
+
 import numpy
 import scipy.ndimage
 import skimage.segmentation
+
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.setting
 import cellprofiler.object
+import cellprofiler.setting
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -260,7 +262,7 @@ parents or children of the parent object."""
     @property
     def has_step_parents(self):
         '''True if there are possible step-parents for the parent object'''
-        return (len(self.step_parent_names) > 0 and len(self.step_parent_names[0].step_parent_name.choices) > 0)
+        return len(self.step_parent_names) > 0 and len(self.step_parent_names[0].step_parent_name.choices) > 0
 
     def settings(self):
         __settings__ = super(RelateObjects, self).settings()
@@ -291,7 +293,7 @@ parents or children of the parent object."""
             self.find_parent_child_distances
         ]
 
-        if (self.find_parent_child_distances != D_NONE and self.has_step_parents):
+        if self.find_parent_child_distances != D_NONE and self.has_step_parents:
             __settings__ += [self.wants_step_parent_distances]
 
             if self.wants_step_parent_distances:
@@ -825,7 +827,7 @@ parents or children of the parent object."""
                 return [u"{}_Count".format(self.x_child_name.value)]
         elif object_name == self.x_child_name.value and category == "Parent":
             return [self.x_name.value]
-        elif (object_name == self.x_child_name.value and category == C_DISTANCE):
+        elif object_name == self.x_child_name.value and category == C_DISTANCE:
             result = []
 
             if self.find_parent_child_distances in (D_BOTH, D_CENTROID):

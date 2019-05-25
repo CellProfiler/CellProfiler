@@ -48,7 +48,6 @@ Measurements made by this module
 """
 
 import logging
-import traceback
 
 import numpy as np
 
@@ -58,7 +57,6 @@ import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 from centrosome.cpmorphology import centers_of_labels
 
 NUM_TOP_LEFT = "Top left"

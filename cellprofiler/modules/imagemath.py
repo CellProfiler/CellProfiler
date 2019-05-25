@@ -42,8 +42,6 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
 
-from cellprofiler.setting import YES, NO
-
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
 O_DIFFERENCE = "Absolute Difference"
@@ -515,7 +513,7 @@ is applied before other operations."""))
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if (from_matlab and module_name == 'Subtract' and variable_revision_number == 3):
+        if from_matlab and module_name == 'Subtract' and variable_revision_number == 3:
             subtract_image_name, basic_image_name, resulting_image_name, \
                 multiply_factor_1, multiply_factor_2, truncate = setting_values
             setting_values = [O_SUBTRACT,
@@ -532,7 +530,7 @@ is applied before other operations."""))
             module_name = 'ImageMath'
             from_matlab = False
             variable_revision_number = 1
-        if (from_matlab and module_name == 'Combine' and variable_revision_number == 3):
+        if from_matlab and module_name == 'Combine' and variable_revision_number == 3:
             names_and_weights = [
                 (name, weight)
                 for name, weight in zip(setting_values[:3],
@@ -554,14 +552,14 @@ is applied before other operations."""))
             module_name = 'ImageMath'
             variable_revision_number = 1
             from_matlab = False
-        if (from_matlab and module_name == 'InvertIntensity' and variable_revision_number == 1):
+        if from_matlab and module_name == 'InvertIntensity' and variable_revision_number == 1:
             image_name, output_image = setting_values
             setting_values = [image_name, cellprofiler.setting.DO_NOT_USE, cellprofiler.setting.DO_NOT_USE,
                               'Invert',
                               1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO, output_image]
             module_name = 'ImageMath'
             variable_revision_number = 2
-        if (from_matlab and module_name == 'Multiply' and variable_revision_number == 1):
+        if from_matlab and module_name == 'Multiply' and variable_revision_number == 1:
             image1, image2, output_image = setting_values
             setting_values = [image1, image2, cellprofiler.setting.DO_NOT_USE,
                               'Multiply', 1, 1, 1, 1, 1, cellprofiler.setting.NO, cellprofiler.setting.NO,
@@ -569,7 +567,7 @@ is applied before other operations."""))
             module_name = 'ImageMath'
             variable_revision_number = 2
 
-        if (from_matlab and variable_revision_number == 1 and module_name == 'ImageMath'):
+        if from_matlab and variable_revision_number == 1 and module_name == 'ImageMath':
             image_names = [setting_values[1]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]
@@ -613,7 +611,7 @@ is applied before other operations."""))
             from_matlab = False
             variable_revision_number = 1
 
-        if (from_matlab and variable_revision_number == 2 and module_name == 'ImageMath'):
+        if from_matlab and variable_revision_number == 2 and module_name == 'ImageMath':
             image_names = [setting_values[0]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]

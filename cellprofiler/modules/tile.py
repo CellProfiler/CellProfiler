@@ -62,17 +62,13 @@ YES          NO
 """
 
 import logging
-import sys
 
 import numpy as np
-import scipy.ndimage as scind
 
 logger = logging.getLogger(__name__)
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.measurement as cpmeas
 
 T_WITHIN_CYCLES = 'Within cycles'
 T_ACROSS_CYCLES = 'Across cycles'

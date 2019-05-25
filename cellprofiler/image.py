@@ -6,12 +6,9 @@ ImageSetList - Represents the list of image filenames that make up a pipeline ru
 
 import logging
 import math
-import struct
 import sys
-import zlib
 
 import numpy
-
 import six
 import six.moves
 

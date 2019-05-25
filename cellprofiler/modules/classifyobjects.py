@@ -1,14 +1,14 @@
 # coding=utf-8
 
+from functools import reduce
+
 import numpy as np
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-from functools import reduce
 
 __doc__ = """\
 ClassifyObjects

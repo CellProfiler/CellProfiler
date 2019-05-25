@@ -1,19 +1,16 @@
 # coding=utf-8
 
 import numpy as np
-import cellprofiler.measurement
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.outline import outline
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
+import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.modules import _help, identify as I
-from cellprofiler.setting import YES, NO
 
 __doc__ = """\
 MaskObjects

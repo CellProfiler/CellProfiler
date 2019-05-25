@@ -31,12 +31,10 @@ from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
 from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
 from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
-from scipy.ndimage import convolve
 
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

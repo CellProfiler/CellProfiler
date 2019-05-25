@@ -39,7 +39,6 @@ import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 
-
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"
 

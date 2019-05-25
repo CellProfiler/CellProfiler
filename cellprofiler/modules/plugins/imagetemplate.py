@@ -9,15 +9,15 @@
 import numpy
 import scipy.ndimage
 
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+
 #################################
 #
 # Imports from CellProfiler
 #
 ##################################
-
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
 
 __doc__ = """\
 ImageTemplate

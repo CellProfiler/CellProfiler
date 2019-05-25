@@ -2,10 +2,9 @@
 
 import numpy as np
 
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 from cellprofiler.modules import _help
 
 __doc__ = """

@@ -37,14 +37,11 @@ See also other **Display** modules and data tools.
 """
 
 import numpy as np
-
 import six
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.modules._help import USING_METADATA_HELP_REF
 
 AGG_AVG = 'avg'
 AGG_MEDIAN = 'median'

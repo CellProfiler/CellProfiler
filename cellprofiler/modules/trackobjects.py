@@ -3,28 +3,12 @@
 import logging
 
 logger = logging.getLogger(__name__)
-import numpy as np
 import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
 from cellprofiler.modules import _help
-from centrosome.lapjv import lapjv
-import centrosome.filter as cpfilter
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import centers_of_labels
-from centrosome.cpmorphology import associate_by_distance
-from centrosome.cpmorphology import all_connected_components
-from centrosome.index import Indexes
-from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
 __doc__ = """\
 TrackObjects
@@ -226,7 +210,6 @@ import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 from centrosome.lapjv import lapjv
@@ -237,7 +220,7 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
 # if neighmovetrack is not available remove it from options
 TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
@@ -2155,7 +2138,7 @@ Enter a name to give the color-coded image of tracked labels.''')
             # have been assigned to a mitosis, skip
             #
             if x[pidx] == midx + mitosis_off and not \
-                    any([y[idx] >= mitosis_off and y[idx] < mitosis_end
+                    any([mitosis_off <= y[idx] < mitosis_end
                          for idx in (lidx, ridx)]):
                 alt_score = sum([score_matrix[y[idx], idx] for idx in (lidx, ridx)])
                 #
@@ -2309,7 +2292,7 @@ Enter a name to give the color-coded image of tracked labels.''')
                               image_numbers[my_image_index],
                               object_numbers[my_image_index][my_object_index],
                               score_matrix[yi, i]))
-            elif yi >= split_off and yi < split_end:
+            elif split_off <= yi < split_end:
                 # ------------------------------------
                 #
                 #     SPLIT
@@ -2354,7 +2337,7 @@ Enter a name to give the color-coded image of tracked labels.''')
             if x[i] < start_end_end:
                 a[i + 1] = x[i] + 1
                 d[a[i + 1]] = i + 1
-            elif x[i] >= merge_off and x[i] < merge_end:
+            elif merge_off <= x[i] < merge_end:
                 # -------------------
                 #
                 #    MERGE

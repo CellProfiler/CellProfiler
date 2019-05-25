@@ -31,7 +31,6 @@ import cellprofiler.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
 
-
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
 

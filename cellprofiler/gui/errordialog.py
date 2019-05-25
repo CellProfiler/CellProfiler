@@ -9,7 +9,7 @@ import platform
 import io
 import sys
 import traceback
-import urllib.request
+import six.moves.urllib.request
 from functools import reduce
 
 ED_STOP = "Stop"
@@ -305,17 +305,17 @@ def on_report(event, dialog, traceback_text, pipeline):
     except:
         pass
     headers = {"Accept": "text/plain"}
-    data = urllib.urlencode(params)
-    req = urllib.request.Request(ERROR_URL, data, headers)
+    data = six.moves.urllib.urlencode(params)
+    req = six.moves.urllib.request.Request(ERROR_URL, data, headers)
     import wx
     try:
-        conn = urllib.request.urlopen(req)
+        conn = six.moves.urllib.request.urlopen(req)
         response = conn.read()
         wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
                       parent=dialog)
-    except urllib.request.HTTPError as e:
+    except six.moves.urllib.request.HTTPError as e:
         wx.MessageBox("Failed to upload, server reported code %d" % e.code)
-    except urllib.request.URLError as e:
+    except six.moves.urllib.request.URLError as e:
         wx.MessageBox("Failed to upload: %s" % e.reason)
 
 

@@ -2,7 +2,7 @@
 
 import glob
 import os.path
-import urllib
+import six.moves.urllib.parse
 
 import pkg_resources
 import wx
@@ -13,15 +13,15 @@ import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
 import cellprofiler.preferences
 
-CONFIGURE_IMAGES_REF = urllib.quote("Configure images")
-EXPORTING_RESULTS_REF = urllib.quote("Exporting results")
-IDENTIFY_FEATUREES_REF = urllib.quote("Identifying features")
-IN_APP_HELP_REF = urllib.quote("Using the help")
-MAKING_MEASUREMENTS_REF = urllib.quote("Making measurements")
-RUNNING_YOUR_PIPELINE_REF = urllib.quote("Analyzing your images")
-TEST_MODE_REF = urllib.quote("Using test mode")
-SELECTING_IMAGES_REF = urllib.quote("Selecting images")
-WELCOME_MAIN_REF = urllib.quote("Welcome")
+CONFIGURE_IMAGES_REF = six.moves.urllib.parse.quote("Configure images")
+EXPORTING_RESULTS_REF = six.moves.urllib.parse.quote("Exporting results")
+IDENTIFY_FEATUREES_REF = six.moves.urllib.parse.quote("Identifying features")
+IN_APP_HELP_REF = six.moves.urllib.parse.quote("Using the help")
+MAKING_MEASUREMENTS_REF = six.moves.urllib.parse.quote("Making measurements")
+RUNNING_YOUR_PIPELINE_REF = six.moves.urllib.parse.quote("Analyzing your images")
+TEST_MODE_REF = six.moves.urllib.parse.quote("Using test mode")
+SELECTING_IMAGES_REF = six.moves.urllib.parse.quote("Selecting images")
+WELCOME_MAIN_REF = six.moves.urllib.parse.quote("Welcome")
 
 GO_BACK = """<p>Go <a href=help://{}>back</a> to the welcome screen.</p>""".format(WELCOME_MAIN_REF)
 

@@ -252,7 +252,7 @@ pass the current filter.
                 return modpath[0] + ":" + modpath[1]
             else:
                 return modpath[0] + ":" + modpath[1] + "/" + "/".join(
-                    [urllib.quote(part) for part in modpath[2:]])
+                    [six.moves.urllib.quote(part) for part in modpath[2:]])
         path = os.path.join(*modpath)
         return loadimages.pathname2url(path)
 
@@ -260,8 +260,8 @@ pass the current filter.
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
             schema, rest = cellprofiler.utilities.hdf5_dict.HDF5FileList.split_url(url)
-            return [schema] + rest[0:1] + [urllib.unquote(part) for part in rest[1:]]
-        path = urllib.url2pathname(url[5:])
+            return [schema] + rest[0:1] + [six.moves.urllib.unquote(part) for part in rest[1:]]
+        path = six.moves.urllib.url2pathname(url[5:])
         parts = []
         while True:
             new_path, part = os.path.split(path)

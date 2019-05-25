@@ -2,10 +2,9 @@
 
 import os
 import sys
-import urllib
 import webbrowser
-
 import cellprofiler.icons
+import six.moves.urllib.request
 import wx.html
 from cellprofiler.gui.html import utils
 
@@ -37,6 +36,6 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 if sys.platform.startswith("win"):
                     my_url = full_path
                 else:
-                    my_url = "file:" + urllib.pathname2url(full_path)
+                    my_url = "file:" + six.moves.urllib.request.pathname2url(full_path)
                 return my_url
         return wx.html.HTML_OPEN

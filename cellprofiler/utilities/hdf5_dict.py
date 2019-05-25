@@ -22,7 +22,7 @@ import cellprofiler.utilities.legacy
 
 from future.standard_library import install_aliases
 install_aliases()
-import urllib.parse
+import six.moves.urllib.parse
 
 
 try:
@@ -1057,7 +1057,7 @@ class HDF5FileList(object):
             url = url.encode("utf-8")
         else:
             url = str(url)
-        schema, rest = urllib.parse.splittype(url)
+        schema, rest = six.moves.urllib.parse.splittype(url)
         if schema is not None and schema.lower() == "omero":
             return schema, [rest]
         #

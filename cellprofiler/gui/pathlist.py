@@ -8,7 +8,7 @@ import cellprofiler.preferences
 import logging
 import numpy
 import urllib
-import urllib.request
+import six.moves.urllib.request
 import uuid
 import wx
 import wx.lib.scrolledpanel
@@ -248,7 +248,7 @@ class PathListCtrl(wx.ScrolledWindow):
                         uid, float(i) / npaths,
                              "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
-            display_name = urllib.request.url2pathname(filename)
+            display_name = six.moves.urllib.request.url2pathname(filename)
             width, _ = self.GetTextExtent(display_name)
             idx = bisect.bisect_left(self.folder_names, folder)
             if idx >= len(self.folder_names) or self.folder_names[idx] != folder:
@@ -324,7 +324,7 @@ class PathListCtrl(wx.ScrolledWindow):
         For files, the user expects to see a path, not a URL
         """
         if folder.startswith("file:"):
-            return urllib.url2pathname(folder[5:]).decode("utf8")
+            return six.moves.urllib.url2pathname(folder[5:]).decode("utf8")
         return folder
 
     def recalc(self):

@@ -74,7 +74,7 @@ import re
 import sys
 import tempfile
 import urllib
-import urllib.parse
+import six.moves.urllib.parse
 import shutil
 
 import six
@@ -3273,7 +3273,7 @@ def load_data_file(pathname_or_url, load_fn):
         url = cellprofiler.misc.generate_presigned_url(pathname_or_url)
 
         try:
-            src = urllib.urlopen(url)
+            src = six.moves.urllib.urlopen(url)
             fd, path = tempfile.mkstemp(suffix=ext)
             with os.fdopen(fd, mode="wb") as dest:
                 shutil.copyfileobj(src, dest)
@@ -3401,14 +3401,14 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
             filename = self.get_filename()
             if os.path.exists(filename):
                 return False
-            parsed_path = urllib.parse.urlparse(filename)
+            parsed_path = six.moves.urllib.parse.urlparse(filename)
             url = filename
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to file failed. File: %s" % filename)
         elif os.path.exists(path):
             return False
         else:
-            parsed_path = urllib.parse.urlparse(path)
+            parsed_path = six.moves.urllib.parse.urlparse(path)
             url = '/'.join((path, self.get_filename()))
             #
             # Scheme length == 0 means no scheme
@@ -3428,7 +3428,7 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
             self.__cached_file = temppath
             try:
                 url = cellprofiler.misc.generate_presigned_url(url)
-                self.__cached_file, headers = urllib.urlretrieve(url, filename=temppath)
+                self.__cached_file, headers = six.moves.urllib.urlretrieve(url, filename=temppath)
             finally:
                 os.close(tempfd)
         else:
@@ -3726,7 +3726,7 @@ def pathname2url(path):
     utf8_path = path.encode('utf-8')
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
-    return FILE_SCHEME + urllib.pathname2url(utf8_path)
+    return FILE_SCHEME + six.moves.urllib.pathname2url(utf8_path)
 
 
 def is_file_url(url):
@@ -3739,7 +3739,7 @@ def url2pathname(url):
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
-    utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])
+    utf8_url = six.moves.urllib.url2pathname(url[len(FILE_SCHEME):])
     return utf8_url.encode('utf-8')
 
 
@@ -3751,11 +3751,11 @@ def urlfilename(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[1]
-    path = urllib.parse.urlparse(url)[2]
+    path = six.moves.urllib.parse.urlparse(url)[2]
     if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[1])
+        return six.moves.urllib.unquote(path.rsplit("/", 1)[1])
     else:
-        return urllib.unquote(path)
+        return six.moves.urllib.unquote(path)
 
 
 def urlpathname(url):
@@ -3768,9 +3768,9 @@ def urlpathname(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[0]
-    scheme, netloc, path = urllib.parse.urlparse(url)[:3]
-    path = urllib.parse.urlunparse([scheme, netloc, path, "", "", ""])
+    scheme, netloc, path = six.moves.urllib.parse.urlparse(url)[:3]
+    path = six.moves.urllib.parse.urlunparse([scheme, netloc, path, "", "", ""])
     if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[0])
+        return six.moves.urllib.unquote(path.rsplit("/", 1)[0])
     else:
-        return urllib.unquote(path)
+        return six.moves.urllib.unquote(path)

@@ -36,8 +36,8 @@ import six.moves
 
 from future.standard_library import install_aliases
 install_aliases()
-import urllib.parse
-import urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.request
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
@@ -371,7 +371,7 @@ class ImagePlaneDetails(object):
     def path(self):
         '''The file path if a file: URL, otherwise the URL'''
         if self.url.startswith("file:"):
-            return urllib.request.url2pathname(self.url[5:]).decode('utf8')
+            return six.moves.urllib.request.url2pathname(self.url[5:]).decode('utf8')
         return self.url
 
     @property
@@ -787,10 +787,10 @@ class Pipeline(object):
             filename = fd_or_filename
         else:
             # Assume is string URL
-            parsed_path = urllib.parse.urlparse(fd_or_filename)
+            parsed_path = six.moves.urllib.parse.urlparse(fd_or_filename)
             if len(parsed_path.scheme) < 2:
                 raise IOError("Could not find file, " + fd_or_filename)
-            fd = urllib.request.urlopen(fd_or_filename)
+            fd = six.moves.urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
@@ -1172,12 +1172,12 @@ class Pipeline(object):
         if len(self.__file_list) == 0:
             save_image_plane_details = False
 
-        fd.write("%s\n" % COOKIE)
-        fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
-        fd.write("%s:%d\n" % (H_DATE_REVISION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))))
-        fd.write("%s:%s\n" % (H_GIT_HASH, ""))
-        fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.__modules)))
-        fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
+        fd.write("%s\n" % six.text_type(COOKIE))
+        fd.write("%s:%d\n" % (six.text_type(H_VERSION), NATIVE_VERSION))
+        fd.write("%s:%d\n" % (six.text_type(H_DATE_REVISION), int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))))
+        fd.write("%s:%s\n" % (six.text_type(H_GIT_HASH), ""))
+        fd.write("%s:%d\n" % (six.text_type(H_MODULE_COUNT), len(self.__modules)))
+        fd.write("%s:%s\n" % (six.text_type(H_HAS_IMAGE_PLANE_DETAILS), str(save_image_plane_details)))
         attributes = (
             'module_num', 'svn_version', 'variable_revision_number',
             'show_window', 'notes', 'batch_state', 'enabled', 'wants_pause')
@@ -1186,7 +1186,7 @@ class Pipeline(object):
             if ((modules_to_save is not None) and
                         module.module_num not in modules_to_save):
                 continue
-            fd.write("\n")
+            fd.write(six.text_type("\n"))
             attribute_values = [repr(getattr(module, attribute))
                                 for attribute in attributes]
             attribute_values = [self.encode_txt(v) for v in attribute_values]
@@ -1194,8 +1194,9 @@ class Pipeline(object):
                                  for attribute, value
                                  in zip(attributes, attribute_values)]
             attribute_string = '[%s]' % ('|'.join(attribute_strings))
-            fd.write('%s:%s\n' % (self.encode_txt(module.module_name),
-                                  attribute_string))
+
+            fd.write('%s:%s\n' % (self.encode_txt(module.module_name), six.text_type(attribute_string)))
+
             for setting in module.settings():
                 setting_text = setting.text
                 if isinstance(setting_text, six.text_type):
@@ -1203,10 +1204,12 @@ class Pipeline(object):
                     setting_text = setting_text.encode('utf-8')
                 else:
                     setting_text = str(setting_text)
-                fd.write('    %s:%s\n' % (
-                    self.encode_txt(setting_text),
-                    # self.encode_txt(utf16encode(setting.unicode_value))))
-                    self.encode_txt(setting.unicode_value.encode('utf-16'))))
+
+                encoded_setting_text = self.encode_txt(setting_text)
+
+                encoded_unicode_value = self.encode_txt(setting.unicode_value.encode('utf-16'))
+
+                fd.write('    %s:%s\n' % (six.text_type(encoded_setting_text), six.text_type(encoded_unicode_value)))
         if save_image_plane_details:
             fd.write("\n")
             write_file_list(fd, self.__file_list)
@@ -2520,12 +2523,12 @@ class Pipeline(object):
         n = len(urls)
         for i, url in enumerate(urls):
             if i % 100 == 0:
-                path = urllib.parse.urlparse(url).path
+                path = six.moves.urllib.parse.urlparse(url).path
                 if "/" in path:
                     filename = path.rsplit("/", 1)[1]
                 else:
                     filename = path
-                filename = urllib.request.url2pathname(filename)
+                filename = six.moves.urllib.request.url2pathname(filename)
                 cpprefs.report_progress(
                         uid, float(i) / n,
                              u"Adding %s" % filename)
@@ -2624,7 +2627,7 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
                 try:
-                    fd = urllib.request.urlopen(pathname)
+                    fd = six.moves.urllib.request.urlopen(pathname)
                     self.read_file_list(fd, add_undo=add_undo)
                 finally:
                     fd.close()
@@ -3045,13 +3048,13 @@ class Pipeline(object):
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            url = "file:" + urllib.request.pathname2url(path)
+            url = "file:" + six.moves.urllib.request.pathname2url(path)
             ipd = ImagePlaneDetails(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
     def wp_add_image_metadata(self, path, metadata):
-        self.add_image_metadata("file:" + urllib.request.pathname2url(path), metadata)
+        self.add_image_metadata("file:" + six.moves.urllib.request.pathname2url(path), metadata)
 
     def add_image_metadata(self, url, metadata, ipd=None):
         if metadata.image_count == 1:

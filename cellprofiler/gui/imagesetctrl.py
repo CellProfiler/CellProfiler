@@ -221,7 +221,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                 self.display_mode == DISPLAY_MODE_SIMPLE and
                 value is not None):
             last_slash = value.rfind("/")
-            return urllib.unquote(value[(last_slash + 1):])
+            return six.moves.urllib.unquote(value[(last_slash + 1):])
         return value
 
     def get_url(self, row, col):

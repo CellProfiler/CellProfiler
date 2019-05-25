@@ -75,9 +75,10 @@ setuptools.setup(
         "pyzmq>=18.0",
         "raven>=6.10",
         "requests>=2.22",
-        "scikit-image>=0.15",
-        "scikit-learn>=0.21",
-        "scipy>=1.3",
+        "scikit-image>=0.14",
+        "scikit-learn>=0.20",
+        "scipy>=1.2",
+        "six",
         "wxPython==4.0.3"
     ],
     license="BSD",
@@ -89,7 +90,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=[
         "tests*"
     ]),
-    python_requires=">=3.7",
+    python_requires=">=2.7",
     setup_requires=[
         "pytest"
     ],

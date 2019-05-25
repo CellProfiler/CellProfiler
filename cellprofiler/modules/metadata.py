@@ -703,7 +703,7 @@ not being applied, your choice on this setting may be the culprit.
         try:
             if group.csv_location.is_url():
                 url = cellprofiler.misc.generate_presigned_url(csv_path)
-                fd = urllib.urlopen(url)
+                fd = six.moves.urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()

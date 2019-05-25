@@ -7,7 +7,6 @@ from functools import reduce
 logger = logging.getLogger(__name__)
 import json
 import matplotlib.cm
-import numpy as np
 import os
 import sys
 import re

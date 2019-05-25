@@ -30,10 +30,10 @@ import numpy
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
+import six
 import skimage.exposure
 import wx
 import wx.grid
-import six
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -44,7 +44,7 @@ import cellprofiler.gui.tools
 import cellprofiler.modules.loadimages
 import cellprofiler.object
 import cellprofiler.preferences
-from cellprofiler.setting import LINEAR, LOG
+from cellprofiler.setting import LOG
 
 logger = logging.getLogger(__name__)
 

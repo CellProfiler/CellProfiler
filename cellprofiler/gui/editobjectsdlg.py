@@ -3,15 +3,13 @@
 
 """
 
-import cellprofiler.gui.figure
-import cellprofiler.gui.tools
-import cellprofiler.object
-import cellprofiler.preferences
+import logging
+import sys
+
 import centrosome.cpmorphology
 import centrosome.cpmorphology
 import centrosome.cpmorphology
 import centrosome.index
-import logging
 import matplotlib
 import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
@@ -21,10 +19,14 @@ import matplotlib.path
 import numpy
 import scipy.ndimage
 import scipy.ndimage
-import sys
 import wx
 import wx.adv
 import wx.html
+
+import cellprofiler.gui.figure
+import cellprofiler.gui.tools
+import cellprofiler.object
+import cellprofiler.preferences
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,9 @@
 """ tools.py - cpfigure tools that do not depend on WX
 """
 
-import centrosome.cpmorphology
 import io
+
+import centrosome.cpmorphology
 import matplotlib
 import numpy
 import scipy

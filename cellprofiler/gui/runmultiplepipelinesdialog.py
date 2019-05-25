@@ -2,13 +2,15 @@
 """ runmultiplepipelinesdialog.py - Dialog to collect info for RunMultiplePipelines
 """
 
-import cellprofiler.gui.pipeline
-import cellprofiler.pipeline
-import cellprofiler.preferences
 import datetime
 import os
 import sys
+
 import wx
+
+import cellprofiler.gui.pipeline
+import cellprofiler.pipeline
+import cellprofiler.preferences
 
 FC_FILENAME_COLUMN = 0
 FC_DATE_COLUMN = 1

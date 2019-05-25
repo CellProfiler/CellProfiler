@@ -3,24 +3,24 @@
 """
 from __future__ import print_function
 
+import re
+
+import numpy
+import six
+import wx
+import wx.adv
+import wx.grid
+import wx.lib.mixins.gridlabelrenderer
+
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
 import cellprofiler.modules.images
 import cellprofiler.pipeline
+import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import cellprofiler.pipeline
 import cellprofiler.utilities.legacy
-import numpy
-import re
-import urllib
-import wx
-import wx.adv
-import wx.grid
-import wx.lib.mixins.gridlabelrenderer
-import six
-
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -433,7 +433,6 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.table.workspace.refresh_image_set()
         n_imagesets = self.table.workspace.measurements.image_set_count
         if n_imagesets == 0:
-            from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
             wx.MessageBox(
                 "Sorry, your pipeline doesn't produce any valid image sets "
                 "as currently configured. Check your Input module settings, "

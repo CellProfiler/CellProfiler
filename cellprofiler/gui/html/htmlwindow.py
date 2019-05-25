@@ -3,9 +3,11 @@
 import os
 import sys
 import webbrowser
-import cellprofiler.icons
+
 import six.moves.urllib.request
 import wx.html
+
+import cellprofiler.icons
 from cellprofiler.gui.html import utils
 
 MEMORY_SCHEME = "memory:"

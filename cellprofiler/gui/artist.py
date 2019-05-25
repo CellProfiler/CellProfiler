@@ -2,7 +2,6 @@
 """artist.py - Specialized matplotlib artists for CellProfiler
 """
 
-import cellprofiler.gui.tools
 import centrosome.cpmorphology
 import centrosome.outline
 import matplotlib
@@ -13,6 +12,8 @@ import matplotlib.colors
 import matplotlib.image
 import numpy
 import scipy.ndimage
+
+import cellprofiler.gui.tools
 
 '''Render the image in shades of gray'''
 MODE_GRAYSCALE = "grayscale"

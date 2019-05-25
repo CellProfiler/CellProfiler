@@ -3,16 +3,17 @@
 """
 
 import bisect
-import cellprofiler.gui
-import cellprofiler.preferences
 import logging
-import numpy
-import urllib
-import six.moves.urllib.request
 import uuid
+from functools import reduce
+
+import numpy
+import six.moves.urllib.request
 import wx
 import wx.lib.scrolledpanel
-from functools import reduce
+
+import cellprofiler.gui
+import cellprofiler.preferences
 
 logger = logging.getLogger(__name__)
 

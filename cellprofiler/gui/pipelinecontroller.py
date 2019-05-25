@@ -3,56 +3,56 @@
 """
 from __future__ import print_function
 
+import csv
+import datetime
+import hashlib
+import io
+import logging
+import os
+import random
+import re
+import string
+import sys
+import threading
+import traceback
+from functools import reduce
+
+import h5py
+import numpy
+import six
+import six.moves.queue
+import wx
+import wx.lib.buttons
+import wx.lib.mixins.listctrl
+
 import cellprofiler
 import cellprofiler.analysis
-import cellprofiler.gui.help.content
-import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.gui.addmoduleframe
+import cellprofiler.gui.cpframe
 import cellprofiler.gui.dialog
 import cellprofiler.gui.help
+import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.runmultiplepipelinesdialog
 import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
+import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadimages
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import cellprofiler.workspace
-import cellprofiler.gui.cpframe
 import cellprofiler.utilities.legacy
-import io
-import csv
-import datetime
-import h5py
-import hashlib
-import logging
-import numpy
-import os
-import six.moves.queue
-import random
-import re
-import cellprofiler.gui.runmultiplepipelinesdialog
-import string
-import sys
-import threading
-import traceback
-import urllib
-import wx
-import wx.lib.buttons
-import wx.lib.mixins.listctrl
-from functools import reduce
-import six
-
+import cellprofiler.workspace
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]

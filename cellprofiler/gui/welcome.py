@@ -2,9 +2,9 @@
 
 import glob
 import os.path
-import six.moves.urllib.parse
 
 import pkg_resources
+import six.moves.urllib.parse
 import wx
 
 import cellprofiler

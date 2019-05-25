@@ -3,8 +3,9 @@
 """
 
 import bioformats.formatreader
-import cellprofiler.preferences
 import wx
+
+import cellprofiler.preferences
 
 
 class OmeroLoginDlg(wx.Dialog):

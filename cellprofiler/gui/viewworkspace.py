@@ -1,3 +1,9 @@
+import matplotlib
+import numpy
+import wx
+import wx.lib.colourselect
+import wx.lib.scrolledpanel
+
 import cellprofiler.gui.artist
 import cellprofiler.gui.figure
 import cellprofiler.gui.help
@@ -6,11 +12,6 @@ import cellprofiler.gui.htmldialog
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.preferences
-import matplotlib
-import numpy
-import wx
-import wx.lib.colourselect
-import wx.lib.scrolledpanel
 
 __the_workspace_viewer = None
 

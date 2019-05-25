@@ -1,5 +1,6 @@
-import cellprofiler.pipeline
 import wx
+
+import cellprofiler.pipeline
 
 FMT_NATIVE = "Native"
 

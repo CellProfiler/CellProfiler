@@ -2,14 +2,15 @@
 """plateviewer.py - a user interface to view the image files for a plate
 """
 
+import multiprocessing
+import threading
+import traceback
+
 import matplotlib
 import matplotlib.backends.backend_wx
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
-import multiprocessing
 import numpy
-import threading
-import traceback
 import wx
 import wx.grid
 

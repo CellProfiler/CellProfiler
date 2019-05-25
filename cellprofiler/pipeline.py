@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 import bisect
-import csv
 import hashlib
 import json
 import logging
@@ -24,11 +23,8 @@ except:
 import os
 import sys
 import tempfile
-import traceback
 import datetime
 import timeit
-import traceback
-import threading
 import re
 import numpy
 import six
@@ -50,7 +46,6 @@ import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 import cellprofiler.utilities.utf16encode
 import cellprofiler.utilities.legacy
-from bioformats.omexml import OMEXML
 from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
 
@@ -1516,7 +1511,6 @@ class Pipeline(object):
         image_dict - dictionary mapping image names to image pixel data in the
                      form of a numpy array.
         """
-        import cellprofiler.setting as cps
         from cellprofiler import object as cpo
 
         output_image_names = self.find_external_output_images()

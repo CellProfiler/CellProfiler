@@ -9,7 +9,6 @@ import bisect
 import logging
 import os
 import sys
-import tempfile
 import threading
 import time
 import uuid
@@ -17,10 +16,10 @@ import uuid
 import h5py
 import numpy as np
 import six
+from future.standard_library import install_aliases
 
 import cellprofiler.utilities.legacy
 
-from future.standard_library import install_aliases
 install_aliases()
 import six.moves.urllib.parse
 

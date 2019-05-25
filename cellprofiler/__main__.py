@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import os.path
 import sys
+
 if sys.platform.startswith("win") and hasattr(sys, 'frozen'):
     # For Windows builds, if JAVA_HOME is not already set, use the copy of Java packaged with CP
     # We specify this location by setting 'CP_JAVA_HOME' at install.
@@ -11,7 +12,6 @@ if sys.platform.startswith("win") and hasattr(sys, 'frozen'):
         os.environ['JAVA_HOME'] = os.environ['CP_JAVA_HOME']
 
 import bioformats.formatreader
-import ctypes
 import cellprofiler
 import cellprofiler.measurement
 import cellprofiler.object
@@ -31,7 +31,6 @@ import numpy
 import optparse
 import pkg_resources
 import re
-import site
 import tempfile
 import six.moves
 

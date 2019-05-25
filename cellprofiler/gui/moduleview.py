@@ -10,10 +10,17 @@ import sys
 import threading
 import time
 import uuid
-import six.moves.queue
 
+import matplotlib.cm
 import numpy
 import six
+import six.moves.queue
+import wx
+import wx.grid
+import wx.lib.colourselect
+import wx.lib.rcsizer
+import wx.lib.resizewidget
+import wx.lib.scrolledpanel
 
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
@@ -22,13 +29,6 @@ import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import matplotlib.cm
-import wx
-import wx.grid
-import wx.lib.colourselect
-import wx.lib.rcsizer
-import wx.lib.resizewidget
-import wx.lib.scrolledpanel
 from cellprofiler.gui import (cornerbuttonmixin, metadatactrl, namesubscriber,
                               regexp_editor, treecheckboxdialog)
 

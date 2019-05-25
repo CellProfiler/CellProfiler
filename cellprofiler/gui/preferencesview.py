@@ -2,17 +2,19 @@
 """PreferencesView.py - displays the default preferences in the lower right corner
 """
 
-import cellprofiler.analysis
-import cellprofiler.gui.help
-import cellprofiler.gui.help.content
-import cellprofiler.gui.htmldialog
-import cellprofiler.gui.html.utils
-import cellprofiler.preferences
-import numpy
 import os
 import string
 import time
+
+import numpy
 import wx
+
+import cellprofiler.analysis
+import cellprofiler.gui.help
+import cellprofiler.gui.help.content
+import cellprofiler.gui.html.utils
+import cellprofiler.gui.htmldialog
+import cellprofiler.preferences
 
 WELCOME_MESSAGE = ""
 

@@ -2,21 +2,22 @@
 """datatoolframe.py - Holder for a data tool
 """
 
-import cellprofiler.image
+import h5py
+import wx
+import wx.adv
+import wx.lib.scrolledpanel
+
 import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.workspace
+import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
-import cellprofiler.gui.workspace
-import h5py
-import wx
-import wx.adv
-import wx.lib.scrolledpanel
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()

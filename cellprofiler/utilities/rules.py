@@ -4,10 +4,7 @@
 import re
 
 import numpy as np
-
 import six
-
-import cellprofiler.measurement as cpmeas
 
 
 class Rules(object):

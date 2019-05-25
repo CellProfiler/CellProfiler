@@ -18,9 +18,11 @@ the analysis worker runs three threads:
                    stops the main thread's run loop.
 """
 from __future__ import print_function
+
 import logging
 import os
 import sys
+
 import pkg_resources
 
 logger = logging.getLogger(__name__)
@@ -133,10 +135,8 @@ from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
     NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
     DisplayPostGroupRequest, AnalysisCancelRequest, \
-    ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
-    ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
-    SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
-    OmeroLoginRequest, OmeroLoginReply
+    ExceptionReport, DebugWaiting, DebugComplete, ImageSetSuccess, ImageSetSuccessWithDictionary, \
+    SharedDictionaryRequest, UpstreamExit, OmeroLoginRequest
 import javabridge as J
 #
 # CellProfiler expects NaN as a result during calculation
@@ -167,7 +167,6 @@ def main():
     # an app.
     #
     if sys.platform == "darwin":
-        from cellprofiler.icons import get_builtin_images_path
         import os.path
         icon_path = pkg_resources.resource_filename("cellprofiler", os.path.join("data", "icons", "CellProfiler.png"))
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"

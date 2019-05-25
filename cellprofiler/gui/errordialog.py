@@ -3,14 +3,15 @@
 """
 from __future__ import print_function
 
+import io
 import logging
 import os
 import platform
-import io
 import sys
 import traceback
-import six.moves.urllib.request
 from functools import reduce
+
+import six.moves.urllib.request
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"

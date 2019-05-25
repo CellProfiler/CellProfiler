@@ -7,19 +7,21 @@ Author: AJ Pretorius
 """
 from __future__ import print_function
 
+import os
+import traceback
+
+import numpy
+import skimage.io
+import wx
+import wx.lib.agw.floatspin
+
+import cellprofiler.gui.workspace
 import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
-import cellprofiler.gui.workspace
-import numpy
-import os
-import skimage.io
-import traceback
-import wx
-import wx.lib.agw.floatspin
 
 PARAM_CLASS_TEXT_LABEL = 'Input text label'
 PARAM_CLASS_BOUNDED_DISCRETE = 'Bounded, discrete'

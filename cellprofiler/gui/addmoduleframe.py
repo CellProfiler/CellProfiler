@@ -1,10 +1,11 @@
-import cellprofiler.module
+import wx
+
 import cellprofiler.gui
+import cellprofiler.gui.cpframe
 import cellprofiler.gui.help.search
+import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.preferences
-import cellprofiler.gui.cpframe
-import wx
 
 
 class AddModuleFrame(wx.Frame):

@@ -2,12 +2,12 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
-import cellprofiler.measurement
-import cellprofiler.preferences
+import six
 import wx
 import wx.lib.masked
 
-import six
+import cellprofiler.measurement
+import cellprofiler.preferences
 
 __choice_ids = []
 

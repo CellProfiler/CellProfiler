@@ -2,6 +2,15 @@
 """PipelineListView.py
 """
 
+import io
+import logging
+import math
+import os
+import sys
+import time
+
+import wx
+
 import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
@@ -9,13 +18,6 @@ import cellprofiler.gui.pipeline
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
-import logging
-import math
-import os
-import io
-import sys
-import time
-import wx
 
 logger = logging.getLogger(__name__)
 

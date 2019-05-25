@@ -2,8 +2,6 @@
 
 import webbrowser
 
-import requests
-
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog

@@ -3,8 +3,6 @@ import uuid
 
 import docutils.core
 import numpy
-import skimage.color
-
 import six
 
 import cellprofiler.image

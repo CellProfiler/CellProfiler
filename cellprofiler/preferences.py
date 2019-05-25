@@ -12,16 +12,14 @@ import logging
 import multiprocessing
 import os
 import os.path
+import sys
 import tempfile
 import threading
+import time
 import traceback
 import uuid
 import weakref
 
-import sys
-import time
-
-import cellprofiler
 import cellprofiler.gui.help.content
 import cellprofiler.utilities.utf16encode
 
